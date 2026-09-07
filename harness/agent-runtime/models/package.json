@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@edh/foundation": "workspace:*",
-    "zod": "4.4.3"
+    "zod": "4.4.3",
+    "@edh/storage": "workspace:*"
   }
 }

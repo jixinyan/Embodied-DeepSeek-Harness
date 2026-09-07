@@ -13,3 +13,11 @@ Independent role sessions backed by selected DSH implementations.
 
 See [module responsibilities](../../../docs/architecture/modules.md) for dependencies,
 source provenance and the intended direction of calls.
+
+## Step 00 runtime seam
+
+[createDshSession](src/runtime.ts) now creates an actual scoped session using the
+absorbed DSH factory. It installs the supplied instructions/tools before publication
+and returns the native owned handle. It is a trusted host primitive; the Team-level
+AgentFactory, InvocationBrief validation and role permissions remain future work.
+See [integration evidence](../../../docs/implementation/dsh-integration.md).

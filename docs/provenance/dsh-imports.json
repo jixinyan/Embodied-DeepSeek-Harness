@@ -516,8 +516,10 @@
       "source": "packages/llm/llm/src/attribution.ts",
       "destination": "harness/agent-runtime/models/src/dsh/llm/attribution.ts",
       "source_sha256": "031f0a29b75498b9208ab2ede0a32b755c925f1a992562dd23970cff7caea075",
-      "local_sha256": "031f0a29b75498b9208ab2ede0a32b755c925f1a992562dd23970cff7caea075",
-      "modifications": []
+      "local_sha256": "add89e19181c8016047b132717a10a3168e7524cc9c24007608325df68740957",
+      "modifications": [
+        "Resolve the version from the EDH root manifest after relocation and identify EDH in provider attribution. Agent-loop behavior is unchanged."
+      ]
     },
     {
       "source": "packages/llm/llm/src/brand.ts",
@@ -938,5 +940,13 @@
   "external_imports": [
     "zod",
     "@standard-schema/spec"
+  ],
+  "runtime_assets": [
+    {
+      "requester": "harness/agent-runtime/models/src/dsh/llm/attribution.ts",
+      "relative_path": "../../../../../../package.json",
+      "destination": "package.json",
+      "purpose": "Public EDH product version used in provider attribution"
+    }
   ]
 }

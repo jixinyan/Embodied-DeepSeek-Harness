@@ -10,6 +10,8 @@ async function* files(dir) {
     else yield p;
   }
 }
+const dshImports = JSON.parse(await readFile('docs/provenance/dsh-imports.json', 'utf8'));
+const dshOwners = new Map(dshImports.packages.map((pkg) => [pkg.name, `@edh/${pkg.owner}`]));
 const manifests = new Map();
 let linkCount = 0;
 for await (const file of files('.')) {
@@ -48,6 +50,16 @@ for (const { file, data } of manifests.values()) {
   const sourceRoot = path.join(path.dirname(file), 'src');
   for await (const sourceFile of files(sourceRoot)) {
     if (!sourceFile.endsWith('.ts')) continue;
+    for (const match of (await readFile(sourceFile, 'utf8')).matchAll(
+      /from ['"](@deepseek-ai\/[^'"/]+)(?:\/[^'"]+)?['"]/g,
+    )) {
+      const dependency = dshOwners.get(match[1]);
+      assert(dependency, `Unmapped DSH module ${match[1]} in ${sourceFile}`);
+      assert(
+        dependency === data.name || Object.hasOwn(data.dependencies ?? {}, dependency),
+        `Undeclared DSH owner dependency ${dependency} in ${sourceFile}`,
+      );
+    }
     for (const match of (await readFile(sourceFile, 'utf8')).matchAll(
       /from ['"](@edh\/[^'"]+)['"]/g,
     )) {

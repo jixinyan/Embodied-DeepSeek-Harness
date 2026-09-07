@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/deepseek-ai/deepseek-harness",
   "commit": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
-  "integration_status": "source_absorbed_runtime_acceptance_pending",
+  "integration_status": "step_00_runtime_verified",
   "runtime_source_copied": true,
   "audit_kind": "transitive manifest dependencies, peerDependencies and optionalDependencies within the source workspace; excludes devDependencies and is not an executable import-closure proof",
   "seeds": [

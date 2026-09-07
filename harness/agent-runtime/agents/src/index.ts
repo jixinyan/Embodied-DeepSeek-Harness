@@ -1,4 +1,4 @@
-// Architecture contract only. No runtime implementation.
+// Team-level contracts; the lower-level DSH session seam is exported separately below.
 import type { AgentReport, InvocationBrief, RoleDefinition } from '@edh/contracts';
 export interface AgentIdentity {
   readonly agentId: string;
@@ -16,3 +16,5 @@ export interface AgentFactory {
 export interface AgentReports {
   receive(agentId: string): AsyncIterable<AgentReport>;
 }
+
+export { createDshSession, type DshSessionDefinition } from './runtime.js';

@@ -52,3 +52,11 @@ for (const license of ['DSH', 'CORDIS', 'COSMOKIT', 'SCHEMASTERY']) {
 console.log(
   `Verified ${files.size} pinned DSH source files, ${used.size} module bindings and source closure.`,
 );
+for (const asset of imported.runtime_assets ?? []) {
+  assert.equal(
+    path.normalize(path.join(path.dirname(asset.requester), asset.relative_path)),
+    asset.destination,
+    'Runtime metadata path drift',
+  );
+  await access(asset.destination);
+}

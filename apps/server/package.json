@@ -8,6 +8,10 @@
     "@edh/teams": "workspace:*",
     "@edh/execution": "workspace:*",
     "@edh/verification": "workspace:*",
-    "@edh/memory": "workspace:*"
+    "@edh/memory": "workspace:*",
+    "@edh/foundation": "workspace:*",
+    "@edh/models": "workspace:*",
+    "@edh/tools": "workspace:*",
+    "@edh/storage": "workspace:*"
   }
 }

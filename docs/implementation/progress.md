@@ -3,24 +3,29 @@
 Spec: v1.4. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
 [unified harness layout](decisions/0002-unified-harness.md).
 
-## Skeleton Bootstrap
+**Current checkpoint: Skeleton Bootstrap and Step 00 complete. Next: Step 01.**
 
-Status: **done** — the architecture skeleton and its local checks are complete. The initial Git commit records the delivered snapshot; functional Step 00 is in progress; Steps 01–16 remain unimplemented.
+## Delivered capabilities
 
-Created: 15 private TypeScript domain packages, server/console interface entries,
-Python provider Protocols, a single-source wire schema and generated TypeScript,
-default role definitions, Team/tool/deployment/SKILL examples, synthetic fixtures,
-SVG diagrams, source dependency audit and handoff documentation.
+- Original DSH loop, model/tool services, sessions and scoped lifecycle selectively
+  absorbed into EDH. No independent replacement loop or full upstream product.
+- Trusted host assembly and explicit scoped-session creation. Six keyless behavior
+  tests check actual model inputs/results, wake-up, cancellation and teardown.
+- Shared schema and generated TypeScript; Python interfaces; role/team/tool/skill
+  examples; English specification, SVG figures, module map and implementation plan.
+- Per-file source hashes, original MIT notices and documented compatibility patches.
 
-Not created: an agent runtime, Team loader, callable tool providers, job service,
-asynchronous monitor, recovery engine, skill persistence/retrieval, functioning
-console, simulator adapters or real robot support. Selected DSH source has now been absorbed; see the Step 00 checkpoint below.
+Still unimplemented: Team/Role loading, validated assignment briefs, durable EDH
+communication, physical providers/jobs, async Verifier, owner retry coordination,
+Evolver/SKILL services, live console, simulator adapters and real robot support.
+The host uses an in-memory session store and a scripted model in tests. It does
+not yet implement the Team-level AgentFactory contract or physical execution.
 
 ## Functional plan status
 
 | Step | Status | Next concrete work |
 | --- | --- | --- |
-| 00 | in_progress | Source absorbed and checked; assemble and exercise the original loop |
+| 00 | done | Original DSH loop, scoped sessions, structured tool, wake-up and cancellation verified |
 | 01 | not_started | Refine schema, implement TS/Python boundary validation and state contracts; scaffold schema is input |
 | 02 | not_started | Implement Team/Role loader and tool binding validation |
 | 03 | not_started | Implement fresh scoped role sessions; inspect actual model inputs |
@@ -42,50 +47,50 @@ console, simulator adapters or real robot support. Selected DSH source has now b
 
 Local verification on 2026-09-07: Node v25.4.0, pnpm 11.19.0, Python 3.14.0.
 
-| Command / inspection | Result |
+| Check | Observed result |
 | --- | --- |
-| `pnpm install --frozen-lockfile` | Passed; all 18 workspace projects resolve against the lockfile |
-| `pnpm check:contracts` | Passed; generated types current; 6 wire fixtures, role/team/tool references and malformed input rejection cases |
-| `pnpm format:check` | Passed; public interfaces and development checks have consistent formatting |
-| `pnpm typecheck` | Passed; includes checks that generated success criteria keep required fields |
-| `pnpm check:structure` | Passed; 17 private source workspaces and local documentation links |
-| `pnpm check:python` | Passed; 12 Python interface modules compile/import; SVG XML parses |
-| SVG visual inspection | Overview and async recovery sequence rendered and checked; no clipped titles |
+| `pnpm install --frozen-lockfile` | Passed; all 19 workspace projects resolve |
+| `pnpm check` | Passed: formatting, schema, provenance, TypeScript, structure, Python and runtime suite |
+| `pnpm check:provenance` | 90 source files, source import closure, 20 referenced module bindings and runtime metadata path checked |
+| `pnpm check:contracts` | Generated types current; 6 wire fixtures and structural rejection cases |
+| `pnpm typecheck` | Three foundation declaration builds plus strict EDH/non-foundation DSH checks |
+| `pnpm check:structure` | 18 private source workspaces; English public text and local links |
+| `pnpm check:python` | 12 interface modules compile/import; repository SVG XML valid |
+| `pnpm test:runtime` | 6 integration tests pass; no skipped cases |
 
-These are skeleton checks, not implementation acceptance tests. GitHub CI is
-configured for Node 22 / Python 3.11; its actual status is reported by the workflow,
-not inferred from local results.
-No simulation, hardware or model-runtime test has been run.
+The runtime tests are actual Step 00 acceptance, using a scripted model boundary.
+They do not prove model intelligence, task success, GT verification or robot support.
+No live model API, simulation, GPU policy or hardware test has been run. GitHub CI
+uses Node 22 / Python 3.11; its result is reported by the workflow separately.
+
+## Source and integration decisions
+
+The selected graph contains 90 files from 21 upstream modules, mapped to agents,
+models, tools, storage and foundation. The source audit added attachment definitions
+missing from the earlier manifest closure and excluded unused optional peers.
+The original agent-loop algorithms are unchanged. Local patches translate two
+comment examples and bind provider attribution to EDH's root product metadata.
+The original relative manifest lookup did not survive source relocation; its fix
+and runtime asset are tracked alongside source hashes.
+
+Native DSH module names remain internal local aliases. The application, CLI,
+configuration Loader, presets and console are not copied. Original runtime module
+relationships include cyclic type/service references; source workspaces declare
+them explicitly instead of rewriting the upstream loop to force an artificial DAG.
+No published package build is claimed.
+
+[The integration guide](dsh-integration.md) provides exact API signatures,
+composition, acceptance tests, compiler boundaries and remaining limits.
 
 ## Handoff
 
-The next functional action is Step 00. Read the pinned provenance and inspect source
-imports as well as manifests. Reuse this checkout; do not regenerate it from a full
-DSH clone. Existing schema/examples are design inputs, not passed functional steps.
+Continue Step 01 in the existing checkout. Read the shared schema and current
+fixtures, refine missing identities/units/versions and state rules, then implement
+matching TypeScript/Python validators against the same positive and negative cases.
+The new runtime suite remains a regression gate. Do not regenerate from a full DSH
+clone, install robot/GPU dependencies for CPU work, or label existing example YAML
+as a working Team loader. New public content stays English; diagrams stay SVG.
 
-## English presentation and unified directory follow-up
-
-Public docs, role/tool examples and SVG labels are now English. The separate translated
-README was removed in favor of one English entry point. English presentation applies
-to new public content as well; internal user discussion can stay in Chinese.
-
-The user approved a shared `harness/` parent with `agent-runtime/`, `physical-runtime/`
-and `contracts/`. Package names and Python imports are unchanged. Functional Steps
-00–16 remain unimplemented. The relocated `pnpm check` passed: schema generation and 6 wire fixtures,
-TypeScript interfaces, 17 workspace boundaries, 117 local documentation links,
-English public-text checks and 12 Python interface imports. Both English SVGs
-were rendered and visually checked. The lockfile now records the new importers;
-`pnpm install --frozen-lockfile` is the reproduction check for the committed layout.
-
-## Step 00 — source absorption checkpoint
-
-The selected transitive source graph is now present: 90 files from 21 upstream
-modules, distributed across agents, models, tools, storage and foundation. The
-manifest-only audit missed attachment imports; the source map records this correction.
-The CLI, configuration loader, presets, UI and optional diagnostics are not imported.
-The agent-loop algorithms are unchanged. Two documentation examples were translated;
-every source file has upstream/local hashes and license attribution.
-
-Foundation libraries retain their upstream TypeScript compiler boundaries. EDH and
-the remaining DSH source retain strict checking. Runtime acceptance is still pending
-at this checkpoint; no Team loader, simulator, model API or hardware is available.
+Version checkpoints: `1109790` records the unified skeleton; `cd5e032` records source
+absorption. The subsequent Step 00 implementation commit records working assembly
+and acceptance. Preserve published history and commit each verified work slice.

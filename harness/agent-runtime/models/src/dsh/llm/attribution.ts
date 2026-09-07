@@ -9,11 +9,9 @@
 
 import { createRequire } from 'node:module'
 
-// The package's own manifest is the single source of the version so the
-// User-Agent cannot drift from what is published (`./package.json` is an
-// export of this package; the relative path resolves from both `src/` and
-// the bundled `lib/`).
-const { version } = createRequire(import.meta.url)('../package.json') as { version: string }
+// EDH owns the application identity. Resolve its root manifest from this
+// absorbed source location; no upstream package directory is required.
+const { version } = createRequire(import.meta.url)('../../../../../../package.json') as { version: string }
 
 /**
  * Static public application identity sent to LLM providers.
@@ -38,9 +36,9 @@ export interface AppIdentity {
  * can suppress attribution entirely.
  */
 export const APP_IDENTITY: AppIdentity = {
-  product: 'deepseek-harness',
+  product: 'embodied-deepseek-harness',
   version,
-  url: 'https://github.com/deepseek-ai/deepseek-harness',
+  url: 'https://github.com/jixinyan/Embodied-DeepSeek-Harness',
 }
 
 /**

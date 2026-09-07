@@ -11,3 +11,5 @@ export interface ServerAssembly {
   readonly verification: VerificationCoordinator;
   readonly skills: SkillStore;
 }
+
+export { createDshHost, type ModelBinding } from './runtime.js';

@@ -47,12 +47,24 @@ importers:
       '@edh/execution':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/execution
+      '@edh/foundation':
+        specifier: workspace:*
+        version: link:../../harness/agent-runtime/foundation
       '@edh/memory':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/memory
+      '@edh/models':
+        specifier: workspace:*
+        version: link:../../harness/agent-runtime/models
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../../harness/agent-runtime/storage
       '@edh/teams':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/teams
+      '@edh/tools':
+        specifier: workspace:*
+        version: link:../../harness/agent-runtime/tools
       '@edh/verification':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/verification
@@ -65,6 +77,15 @@ importers:
       '@edh/foundation':
         specifier: workspace:*
         version: link:../foundation
+      '@edh/models':
+        specifier: workspace:*
+        version: link:../models
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../storage
+      '@edh/tools':
+        specifier: workspace:*
+        version: link:../tools
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -103,6 +124,9 @@ importers:
       '@edh/foundation':
         specifier: workspace:*
         version: link:../foundation
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../storage
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -127,12 +151,18 @@ importers:
 
   harness/agent-runtime/storage:
     dependencies:
+      '@edh/agents':
+        specifier: workspace:*
+        version: link:../agents
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
       '@edh/foundation':
         specifier: workspace:*
         version: link:../foundation
+      '@edh/models':
+        specifier: workspace:*
+        version: link:../models
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -151,12 +181,21 @@ importers:
 
   harness/agent-runtime/tools:
     dependencies:
+      '@edh/agents':
+        specifier: workspace:*
+        version: link:../agents
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
       '@edh/foundation':
         specifier: workspace:*
         version: link:../foundation
+      '@edh/models':
+        specifier: workspace:*
+        version: link:../models
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../storage
       zod:
         specifier: 4.4.3
         version: 4.4.3

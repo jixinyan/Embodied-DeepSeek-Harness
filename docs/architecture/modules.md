@@ -1,14 +1,14 @@
 # Architecture and module ownership
 
-EDH is the product and repository owner. Runtime implementations will be absorbed
-selectively from DSH into these modules. Bootstrap provides **interfaces only**;
-there is no functional DSH adapter or independently invented agent loop.
+EDH is the product and repository owner. Selected runtime implementations are absorbed
+from DSH into these modules. Step 00 verifies the original loop and scoped lifecycle;
+Team, physical and experience modules still provide interfaces only.
 
 ![Architecture](assets/framework-overview.svg)
 
-The diagram's “EDH Host / DSH runtime” denotes the intended absorbed runtime, not a separate
-copied upstream application or a running integration. It is a logical target
-architecture, not a statement of bootstrap capabilities.
+The diagram shows the target architecture. The minimal DSH host/session integration
+is verified; other boxes do not imply implemented capabilities. No separate upstream
+application is copied. See [runtime integration](../implementation/dsh-integration.md).
 
 ## One harness, two runtime responsibilities
 
@@ -29,6 +29,7 @@ the physical worker decision ownership or cause agent contexts to be shared.
 | `apps/server` | EDH application assembly, future API and startup | Agent loop implementation | ServerAssembly; Step 00/12 |
 | `apps/console` | Sensors, team/agent/robot state, tools, verdicts and timeline | Device truth or planner decisions | ConsoleProjection; Step 12 |
 | `harness/agent-runtime/agents` | Independent assignments, DSH session lifecycle, built-in role definitions | Implicit parent context or another loop | AgentFactory; Step 03 |
+| `harness/agent-runtime/foundation` | Plugin context, schemas and selected runtime support | Another agent loop or physical policy | Pinned source and compiler boundaries; Step 00 |
 | `harness/agent-runtime/teams` | Team/member definitions and immutable role/provider bindings | Hard-coded role enum | TeamLoader; Step 02 |
 | `harness/agent-runtime/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelRegistry; Step 00 |
 | `harness/agent-runtime/tools` | Logical tools, role exposure, provider selection and invocation boundary | Every concrete perception/robot implementation | ToolRegistry/ToolExecutor; Step 02/07 |

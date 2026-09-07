@@ -1165,9 +1165,9 @@ are superseded by the confirmed decisions here.
 ### 15.2 Current status
 
 Delivered: EDH skeleton, interfaces, structural schema, configuration examples, spec
-and SVG figures. The console has a projection contract, not a running UI. DSH absorption,
-loaders, tool execution, verification, memory services, live streams, simulators and
-hardware remain unimplemented. See [progress](implementation/progress.md).
+and SVG figures. The console has a projection contract, not a running UI. Step 00 now verifies selected DSH loop integration, scoped native tools, follow-up
+input and cancellation with a scripted model. Team loaders, physical tool providers,
+verification, memory services, live streams, simulators and hardware remain unimplemented. See [progress](implementation/progress.md).
 
 ## 16. Work packages, source entry points and first CPU scenario
 

@@ -4,13 +4,13 @@
 
 EDH is an independent physical-agent framework designed around user-defined
 teams, explicit context handoff, replaceable tools and policies, asynchronous
-verification, and reusable recovery experience. Its agent runtime will absorb
+verification, and reusable recovery experience. Its agent runtime incorporates
 selected DeepSeek Harness implementations, with traceable provenance.
 
-> **Architecture skeleton — no runnable agent system yet.**
-> This repository contains module interfaces, configuration examples, source
-> schemas, Python protocols and development documentation. DSH runtime integration,
-> simulator support, device control and the console are not implemented.
+> **Early development: the DSH runtime baseline is working.**
+> Keyless tests exercise the original loop, structured tools, isolated sessions,
+> follow-up input and cancellation. Team loading, physical execution, verification,
+> experience services, simulator/device support and the console remain unimplemented.
 
 [Project spec](docs/project-spec.md) ·
 [Implementation plan](docs/implementation/plan.md) ·
@@ -28,10 +28,10 @@ selected DeepSeek Harness implementations, with traceable provenance.
 | [harness/contracts](harness/contracts/README.md) | Shared schemas and generated wire types |
 | [harness/physical-runtime](harness/physical-runtime/README.md) | Policy, simulator, embodiment and hardware boundaries |
 | [examples](examples/README.md) | User-defined roles, teams, tools and skills |
-| [tests](tests/integration/README.md) | Future behavioral acceptance suites; fixtures are synthetic |
+| [tests/runtime](tests/runtime/README.md) | Keyless DSH runtime acceptance; physical fixtures remain synthetic |
 | [docs](docs/README.md) | Architecture, decisions, implementation steps and handoff |
 
-## Check the skeleton
+## Run the checks
 
 Use Node.js 22.19+ (the bootstrap was checked on Node 25), pnpm 11.19.0 and
 Python 3.11+. From the repository root:
@@ -39,11 +39,13 @@ Python 3.11+. From the repository root:
 ```sh
 pnpm install --frozen-lockfile
 pnpm check
+pnpm test:runtime
 ```
 
 These commands check generated schema types, example structure/references,
-TypeScript interfaces, documentation links and Python importability. They do
-**not** start a model, simulator, server or console. No GPU or model key is needed.
+TypeScript, documentation links and Python importability, then execute six DSH
+runtime integration tests using a scripted model. `test:runtime` runs that suite
+alone. No live model API, simulator, server or console is started. No GPU or key is needed.
 The Python command defaults to `python3`; override `EDH_PYTHON` for the check if needed.
 
 ## Design commitments
@@ -58,4 +60,4 @@ The Python command defaults to `python3`; override `EDH_PYTHON` for the check if
   support requires its own verification.
 
 See [DSH provenance](docs/provenance/README.md) for the pinned source baseline
-and planned absorption. EDH is not an official DeepSeek product.
+and the [integration guide](docs/implementation/dsh-integration.md). EDH is not an official DeepSeek product.
