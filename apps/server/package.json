@@ -1,0 +1,13 @@
+{
+  "name": "@edh/server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@edh/agents": "workspace:*",
+    "@edh/teams": "workspace:*",
+    "@edh/execution": "workspace:*",
+    "@edh/verification": "workspace:*",
+    "@edh/memory": "workspace:*"
+  }
+}

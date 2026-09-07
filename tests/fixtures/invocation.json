@@ -1,0 +1,50 @@
+{
+  "contract": "InvocationBrief",
+  "value": {
+    "objective": "Verify whether the specified cup is inside the cabinet.",
+    "task_scope": {
+      "task_id": "fixture_task",
+      "goal_id": "store_cup",
+      "attempt_id": "attempt_1"
+    },
+    "expected_output": {
+      "schema": "VerificationResult.v1",
+      "recipient": "planner_1"
+    },
+    "entities": {
+      "object": "cup_1",
+      "container": "cabinet_1"
+    },
+    "success_contract": {
+      "id": "store_object",
+      "version": "1",
+      "all": [
+        {
+          "check": "inside",
+          "args": [
+            "cup_1",
+            "cabinet_1"
+          ]
+        }
+      ]
+    },
+    "known_facts": [],
+    "history_summary": "Synthetic fixture only. No robot executed this task.",
+    "changes": [],
+    "evidence_refs": [
+      "fixture_frame"
+    ],
+    "tools_and_limits": {
+      "allowed_tools": [
+        "perception.capture",
+        "verification.check",
+        "verification.submit"
+      ],
+      "allowed_actions": [
+        "observe",
+        "check",
+        "pause"
+      ]
+    }
+  }
+}

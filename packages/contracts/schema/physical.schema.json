@@ -1,0 +1,1345 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urn:edh:contracts:v1",
+  "title": "PhysicalContract",
+  "description": "EDH scaffold wire contracts. Structural validation only; no runtime authorization or semantic verification.",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/TaskScope"
+    },
+    {
+      "$ref": "#/$defs/EvidenceRef"
+    },
+    {
+      "$ref": "#/$defs/Observation"
+    },
+    {
+      "$ref": "#/$defs/RoleDefinition"
+    },
+    {
+      "$ref": "#/$defs/TeamDefinition"
+    },
+    {
+      "$ref": "#/$defs/ToolDefinition"
+    },
+    {
+      "$ref": "#/$defs/ToolResult"
+    },
+    {
+      "$ref": "#/$defs/SuccessCheck"
+    },
+    {
+      "$ref": "#/$defs/SuccessContract"
+    },
+    {
+      "$ref": "#/$defs/Budget"
+    },
+    {
+      "$ref": "#/$defs/SubgoalRequest"
+    },
+    {
+      "$ref": "#/$defs/InvocationBrief"
+    },
+    {
+      "$ref": "#/$defs/MessageEnvelope"
+    },
+    {
+      "$ref": "#/$defs/AgentReport"
+    },
+    {
+      "$ref": "#/$defs/ExecutionStatus"
+    },
+    {
+      "$ref": "#/$defs/VerificationResult"
+    },
+    {
+      "$ref": "#/$defs/PlanDocument"
+    },
+    {
+      "$ref": "#/$defs/RecoveryRecord"
+    },
+    {
+      "$ref": "#/$defs/SkillMetadata"
+    },
+    {
+      "$ref": "#/$defs/SegmentationRequest"
+    },
+    {
+      "$ref": "#/$defs/SegmentationResult"
+    }
+  ],
+  "$defs": {
+    "TaskScope": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "goal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attempt_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recovery_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "task_id"
+      ],
+      "additionalProperties": false,
+      "title": "TaskScope"
+    },
+    "EvidenceRef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "image",
+            "mask",
+            "depth",
+            "video",
+            "event",
+            "report",
+            "stream"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "created_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "visibility": {
+          "type": "string",
+          "enum": [
+            "agent",
+            "debug_only"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "source",
+        "created_at",
+        "visibility"
+      ],
+      "additionalProperties": false,
+      "title": "EvidenceRef"
+    },
+    "Observation": {
+      "type": "object",
+      "properties": {
+        "observation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_scope": {
+          "$ref": "#/$defs/TaskScope"
+        },
+        "sensor_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "captured_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "frame_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "media": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          }
+        },
+        "coordinate_frame": {
+          "type": "string",
+          "minLength": 1
+        },
+        "calibration_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "observation_id",
+        "task_scope",
+        "sensor_id",
+        "captured_at",
+        "frame_id",
+        "media"
+      ],
+      "additionalProperties": false,
+      "title": "Observation"
+    },
+    "RoleDefinition": {
+      "type": "object",
+      "properties": {
+        "role_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "output_schema": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "role_id",
+        "description",
+        "tools"
+      ],
+      "additionalProperties": false,
+      "title": "RoleDefinition"
+    },
+    "TeamDefinition": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.team.v1"
+        },
+        "team_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entrypoint": {
+          "type": "string",
+          "minLength": 1
+        },
+        "members": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "bindings": {
+          "type": "object",
+          "properties": {
+            "decision_owner": {
+              "type": "string",
+              "minLength": 1
+            },
+            "final_verifier": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recovery_evolver": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "decision_owner",
+            "final_verifier",
+            "recovery_evolver"
+          ],
+          "additionalProperties": false
+        },
+        "tool_bindings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "team_id",
+        "entrypoint",
+        "members",
+        "bindings",
+        "tool_bindings"
+      ],
+      "additionalProperties": false,
+      "title": "TeamDefinition"
+    },
+    "ToolDefinition": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.tool.v1"
+        },
+        "tool_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "output_schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "executor": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "native",
+                "python_rpc",
+                "mcp"
+              ]
+            },
+            "provider": {
+              "type": "string",
+              "minLength": 1
+            },
+            "operation": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "kind",
+            "provider",
+            "operation"
+          ],
+          "additionalProperties": false
+        },
+        "effect": {
+          "type": "string",
+          "enum": [
+            "read_observation",
+            "read_state",
+            "write_state",
+            "physical_motion"
+          ]
+        },
+        "required_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "resource_policy": {
+          "type": "string",
+          "enum": [
+            "none",
+            "provider_serialized",
+            "exclusive_device"
+          ]
+        },
+        "result_media": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "tool_id",
+        "version",
+        "description",
+        "input_schema",
+        "output_schema",
+        "executor",
+        "effect",
+        "required_capabilities",
+        "resource_policy",
+        "result_media"
+      ],
+      "additionalProperties": false,
+      "title": "ToolDefinition"
+    },
+    "ToolResult": {
+      "type": "object",
+      "properties": {
+        "call_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tool_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "failed",
+            "cancelled",
+            "unsupported"
+          ]
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "minLength": 1
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "code",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "call_id",
+        "tool_id",
+        "status",
+        "evidence_refs"
+      ],
+      "additionalProperties": false,
+      "title": "ToolResult"
+    },
+    "SuccessCheck": {
+      "type": "object",
+      "properties": {
+        "check": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "check",
+        "args"
+      ],
+      "additionalProperties": false,
+      "title": "SuccessCheck"
+    },
+    "SuccessContract": {
+      "title": "SuccessContract",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "all": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/SuccessCheck"
+              }
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "all"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "any": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/SuccessCheck"
+              }
+            }
+          },
+          "required": [
+            "id",
+            "version",
+            "any"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Budget": {
+      "type": "object",
+      "properties": {
+        "max_control_steps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_wall_time_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "max_control_steps",
+        "max_wall_time_s"
+      ],
+      "additionalProperties": false,
+      "title": "Budget"
+    },
+    "SubgoalRequest": {
+      "type": "object",
+      "properties": {
+        "goal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attempt_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "entities": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "success_contract": {
+          "$ref": "#/$defs/SuccessContract"
+        },
+        "budget": {
+          "$ref": "#/$defs/Budget"
+        },
+        "context_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "goal_id",
+        "attempt_id",
+        "instruction",
+        "entities",
+        "required_capabilities",
+        "success_contract",
+        "budget",
+        "context_refs"
+      ],
+      "additionalProperties": false,
+      "title": "SubgoalRequest"
+    },
+    "InvocationBrief": {
+      "type": "object",
+      "properties": {
+        "objective": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_scope": {
+          "$ref": "#/$defs/TaskScope"
+        },
+        "expected_output": {
+          "type": "object",
+          "properties": {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "recipient": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "schema",
+            "recipient"
+          ],
+          "additionalProperties": false
+        },
+        "entities": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "success_contract": {
+          "$ref": "#/$defs/SuccessContract"
+        },
+        "known_facts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "statement": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observed_at": {
+                "type": "string",
+                "minLength": 1
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "statement",
+              "observed_at",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "history_summary": {
+          "type": "string"
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "tools_and_limits": {
+          "type": "object",
+          "properties": {
+            "allowed_tools": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "allowed_actions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "budget": {
+              "$ref": "#/$defs/Budget"
+            }
+          },
+          "required": [
+            "allowed_tools",
+            "allowed_actions"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "objective",
+        "task_scope",
+        "expected_output",
+        "entities",
+        "success_contract",
+        "known_facts",
+        "history_summary",
+        "changes",
+        "evidence_refs",
+        "tools_and_limits"
+      ],
+      "additionalProperties": false,
+      "title": "InvocationBrief"
+    },
+    "MessageEnvelope": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.message.v1"
+        },
+        "message_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "command",
+            "event",
+            "request",
+            "response",
+            "artifact"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sender": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "agent_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "agent_id"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "service_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "service_id"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "destination": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "agent_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "agent_id"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "service_id": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "service_id"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "topic": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "topic"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "scope": {
+          "$ref": "#/$defs/TaskScope"
+        },
+        "correlation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "causation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "created_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "payload": {
+          "type": "object",
+          "additionalProperties": {}
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "message_id",
+        "kind",
+        "type",
+        "sender",
+        "destination",
+        "scope",
+        "sequence",
+        "created_at",
+        "payload",
+        "evidence_refs"
+      ],
+      "additionalProperties": false,
+      "title": "MessageEnvelope"
+    },
+    "AgentReport": {
+      "type": "object",
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "assignment_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_scope": {
+          "$ref": "#/$defs/TaskScope"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "failed",
+            "insufficient_context",
+            "cancelled"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requested_context": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "agent_id",
+        "assignment_id",
+        "task_scope",
+        "status",
+        "summary",
+        "evidence_refs"
+      ],
+      "additionalProperties": false,
+      "title": "AgentReport"
+    },
+    "ExecutionStatus": {
+      "type": "object",
+      "properties": {
+        "execution_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_scope": {
+          "$ref": "#/$defs/TaskScope"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "running",
+            "pausing",
+            "paused",
+            "ended"
+          ]
+        },
+        "control_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "policy_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "raw_sim_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stop_reason": {
+          "type": "string",
+          "enum": [
+            "policy_stop",
+            "budget_exhausted",
+            "verifier_pause",
+            "user_stop",
+            "backend_error",
+            "episode_terminated"
+          ]
+        },
+        "device_confirmed": {
+          "type": "boolean"
+        },
+        "observation_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "execution_id",
+        "task_scope",
+        "state",
+        "control_steps",
+        "policy_calls",
+        "device_confirmed",
+        "observation_refs"
+      ],
+      "additionalProperties": false,
+      "title": "ExecutionStatus"
+    },
+    "VerificationResult": {
+      "type": "object",
+      "properties": {
+        "task_scope": {
+          "$ref": "#/$defs/TaskScope"
+        },
+        "verifier_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "running",
+            "passed",
+            "failed",
+            "unknown"
+          ]
+        },
+        "goal_contract_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "boundary_event_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "check_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "check_id",
+              "value",
+              "evidence_refs"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "task_scope",
+        "verifier_id",
+        "status",
+        "goal_contract_version",
+        "boundary_event_id",
+        "checks",
+        "evidence_refs",
+        "explanation"
+      ],
+      "additionalProperties": false,
+      "title": "VerificationResult"
+    },
+    "PlanDocument": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "goal_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "planned",
+                  "active",
+                  "waiting",
+                  "done",
+                  "abandoned"
+                ]
+              }
+            },
+            "required": [
+              "goal_id",
+              "description",
+              "status"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "task_id",
+        "version",
+        "items"
+      ],
+      "additionalProperties": false,
+      "title": "PlanDocument"
+    },
+    "RecoveryRecord": {
+      "type": "object",
+      "properties": {
+        "recovery_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "original_goal_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "goal_contract_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "failed_attempt_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attempt_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "recording",
+            "resolved_success",
+            "abandoned"
+          ]
+        },
+        "verdict_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "recovery_id",
+        "task_id",
+        "original_goal_id",
+        "goal_contract_version",
+        "failed_attempt_id",
+        "attempt_ids",
+        "changes",
+        "evidence_refs",
+        "status"
+      ],
+      "additionalProperties": false,
+      "title": "RecoveryRecord"
+    },
+    "SkillMetadata": {
+      "type": "object",
+      "properties": {
+        "skill_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "task_semantics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required_capabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "source_configurations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "recovery_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "verdict_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "test_fixture",
+            "simulation",
+            "hardware"
+          ]
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "skill_id",
+        "version",
+        "task_semantics",
+        "required_capabilities",
+        "source_configurations",
+        "evidence_refs",
+        "recovery_id",
+        "verdict_ref",
+        "origin",
+        "limitations"
+      ],
+      "additionalProperties": false,
+      "title": "SkillMetadata"
+    },
+    "SegmentationRequest": {
+      "type": "object",
+      "properties": {
+        "observation_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text_prompt": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "observation_ref",
+        "text_prompt"
+      ],
+      "additionalProperties": false,
+      "title": "SegmentationRequest"
+    },
+    "SegmentationResult": {
+      "type": "object",
+      "properties": {
+        "observation_ref": {
+          "type": "string",
+          "minLength": 1
+        },
+        "instances": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "entity_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "mask_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "confidence": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "entity_id",
+              "mask_ref",
+              "confidence"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "overlay_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "observation_ref",
+        "instances",
+        "overlay_ref"
+      ],
+      "additionalProperties": false,
+      "title": "SegmentationResult"
+    }
+  }
+}

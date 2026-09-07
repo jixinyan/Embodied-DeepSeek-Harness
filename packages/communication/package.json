@@ -1,0 +1,16 @@
+{
+  "name": "@edh/communication",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Explicit delegation, context requests and durable scoped messages",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

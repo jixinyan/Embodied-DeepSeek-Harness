@@ -1,0 +1,14 @@
+// Architecture contract only. No runtime implementation.
+import type { RecoveryRecord, SubgoalRequest, TaskScope, VerificationResult } from '@edh/contracts';
+export interface PlannerDecision {
+  readonly ownerAgentId: string;
+  readonly scope: TaskScope;
+  readonly action: 'resume' | 'retry' | 'replan' | 'finish' | 'abandon';
+  readonly evidenceRefs: readonly string[];
+  readonly newSubgoal?: SubgoalRequest;
+}
+export interface TaskCoordinator {
+  decide(decision: PlannerDecision): Promise<void>;
+  receiveVerdict(verdict: VerificationResult): Promise<void>;
+  recovery(recoveryId: string): Promise<RecoveryRecord>;
+}

@@ -1,0 +1,5 @@
+{
+  "planner": "planner/ROLE.md",
+  "verifier": "verifier/ROLE.md",
+  "evolver": "evolver/ROLE.md"
+}

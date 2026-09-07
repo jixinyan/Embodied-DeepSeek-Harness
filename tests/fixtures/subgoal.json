@@ -1,0 +1,35 @@
+{
+  "contract": "SubgoalRequest",
+  "value": {
+    "goal_id": "store_cup",
+    "attempt_id": "attempt_1",
+    "instruction": "Place the specified cup inside the cabinet.",
+    "entities": {
+      "object": "cup_1",
+      "container": "cabinet_1"
+    },
+    "required_capabilities": [
+      "object_manipulation"
+    ],
+    "success_contract": {
+      "id": "store_object",
+      "version": "1",
+      "all": [
+        {
+          "check": "inside",
+          "args": [
+            "cup_1",
+            "cabinet_1"
+          ]
+        }
+      ]
+    },
+    "budget": {
+      "max_control_steps": 200,
+      "max_wall_time_s": 60
+    },
+    "context_refs": [
+      "fixture_frame"
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@edh/observation",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Active observation with declared head/gimbal/base resource effects",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

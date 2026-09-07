@@ -1,0 +1,30 @@
+# Illustrative deployment boundary. No loader/provider implementation exists.
+schema_version: edh.deployment.draft.v1
+status: not_implemented
+team: ../teams/household.yaml
+models:
+  planner: {provider: REQUIRED, model: REQUIRED}
+  verifier: {provider: REQUIRED, model: REQUIRED}
+  evolver: {provider: REQUIRED, model: REQUIRED}
+  scene: {provider: REQUIRED, model: REQUIRED}
+environment:
+  adapter: behavior
+  configuration: REQUIRED
+embodiment:
+  adapter: REQUIRED
+  configuration: REQUIRED
+policy:
+  provider: REQUIRED
+  checkpoint: REQUIRED
+  accepts_subgoal_instruction: REQUIRED
+providers:
+  sam_local:
+    kind: python_rpc
+    endpoint: REQUIRED
+    implementation_status: not_implemented
+verification:
+  facts: limited_ground_truth
+  debug_state_visible_to_agents: false
+storage:
+  runs: .runs/behavior
+  skills: .local/skills

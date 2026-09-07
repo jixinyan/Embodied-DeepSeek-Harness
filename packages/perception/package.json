@@ -1,0 +1,16 @@
+{
+  "name": "@edh/perception",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Capture, segmentation, depth and localization tool boundaries",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

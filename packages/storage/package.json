@@ -1,0 +1,16 @@
+{
+  "name": "@edh/storage",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Persistence primitives for events, sessions and media; no access-policy bypass",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

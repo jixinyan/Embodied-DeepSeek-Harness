@@ -1,0 +1,16 @@
+{
+  "name": "@edh/execution",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Nonblocking Python worker jobs and physical-resource coordination",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

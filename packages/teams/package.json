@@ -1,0 +1,16 @@
+{
+  "name": "@edh/teams",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Team definitions, validation and immutable role/provider bindings",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

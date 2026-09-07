@@ -1,0 +1,16 @@
+{
+  "name": "@edh/agents",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Independent role sessions backed by selected DSH implementations",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

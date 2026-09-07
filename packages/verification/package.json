@@ -1,0 +1,16 @@
+{
+  "name": "@edh/verification",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Async verifier feedback, post-stop evidence and formal verdict gates",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

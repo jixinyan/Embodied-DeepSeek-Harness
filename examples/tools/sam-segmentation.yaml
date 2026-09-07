@@ -1,0 +1,14 @@
+schema_version: physical.tool.v1
+tool_id: perception.segment_objects
+version: '1'
+description: 在指定观察帧上按文本提示返回实例分割结果
+input_schema: builtin:SegmentationRequest.v1
+output_schema: builtin:SegmentationResult.v1
+executor:
+  kind: python_rpc
+  provider: sam_local
+  operation: segment_objects
+effect: read_observation
+required_capabilities: [rgb_observation]
+resource_policy: provider_serialized
+result_media: [json, image_ref, mask_ref]

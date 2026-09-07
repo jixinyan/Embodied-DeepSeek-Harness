@@ -1,0 +1,23 @@
+{
+  "contract": "Observation",
+  "value": {
+    "observation_id": "fixture_frame",
+    "task_scope": {
+      "task_id": "fixture_task",
+      "goal_id": "store_cup",
+      "attempt_id": "attempt_1"
+    },
+    "sensor_id": "fixture_sensor",
+    "captured_at": "2026-09-07T00:00:00Z",
+    "frame_id": "fixture_frame",
+    "media": [
+      {
+        "id": "fixture_image",
+        "kind": "image",
+        "source": "tests/fixtures/cup-scene.svg",
+        "created_at": "2026-09-07T00:00:00Z",
+        "visibility": "agent"
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@edh/memory",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Scoped evidence and versioned recovery skills; explicit retrieval only",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

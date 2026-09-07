@@ -1,0 +1,19 @@
+{
+  "contract": "VerificationResult",
+  "value": {
+    "task_scope": {
+      "task_id": "fixture_task",
+      "goal_id": "store_cup",
+      "attempt_id": "attempt_1"
+    },
+    "verifier_id": "fixture_verifier",
+    "status": "unknown",
+    "goal_contract_version": "1",
+    "boundary_event_id": "fixture_boundary",
+    "checks": [],
+    "evidence_refs": [
+      "fixture_frame"
+    ],
+    "explanation": "Fixture only; no actual environment checks performed."
+  }
+}

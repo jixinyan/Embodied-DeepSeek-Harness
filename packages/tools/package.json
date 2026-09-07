@@ -1,0 +1,16 @@
+{
+  "name": "@edh/tools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Tool definitions, registration and role-scoped provider bindings",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

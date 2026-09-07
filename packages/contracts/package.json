@@ -1,0 +1,14 @@
+{
+  "name": "@edh/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Single-source cross-language schema and generated TypeScript declarations",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@edh/tasks",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Goal/attempt lifecycle, decision ownership and recovery linkage",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

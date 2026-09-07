@@ -1,0 +1,25 @@
+{
+  "contract": "SkillMetadata",
+  "value": {
+    "skill_id": "recovery-check",
+    "version": "1",
+    "task_semantics": [
+      "store_object"
+    ],
+    "required_capabilities": [
+      "object_manipulation"
+    ],
+    "source_configurations": [
+      "synthetic_fixture"
+    ],
+    "evidence_refs": [
+      "fixture_frame"
+    ],
+    "recovery_id": "fixture_recovery",
+    "verdict_ref": "fictional_verdict_for_format_example",
+    "origin": "test_fixture",
+    "limitations": [
+      "Format illustration only; no recovery or transfer experiment performed."
+    ]
+  }
+}

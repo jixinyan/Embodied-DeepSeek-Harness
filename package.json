@@ -1,0 +1,29 @@
+{
+  "name": "embodied-deepseek-harness",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Composable agent teams for embodied intelligence. Architecture skeleton.",
+  "license": "MIT",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "check": "pnpm format:check && pnpm check:contracts && pnpm typecheck && pnpm check:structure && pnpm check:python",
+    "generate:contracts": "node scripts/generate-contracts.mjs",
+    "check:contracts": "node scripts/generate-contracts.mjs --check && node scripts/check-contracts.mjs",
+    "typecheck": "tsc --noEmit",
+    "check:structure": "node scripts/check-structure.mjs",
+    "check:python": "node scripts/check-python.mjs",
+    "format": "prettier --write \"packages/*/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\"",
+    "format:check": "prettier --check \"packages/*/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "22.19.0",
+    "ajv": "8.17.1",
+    "json-schema-to-typescript": "15.0.4",
+    "prettier": "3.6.2",
+    "typescript": "5.9.3",
+    "yaml": "2.8.1"
+  }
+}

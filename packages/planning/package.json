@@ -1,0 +1,16 @@
+{
+  "name": "@edh/planning",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Durable task plans; DSH todo is a projection, not goal truth",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@edh/contracts": "workspace:*"
+  }
+}

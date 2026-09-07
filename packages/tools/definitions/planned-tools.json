@@ -1,0 +1,106 @@
+{
+  "status": "not_implemented",
+  "description": "Logical tool inventory for scaffold reference validation, not a runtime registry. Each tool needs its own callable schema during implementation.",
+  "tools": [
+    {
+      "id": "context.request",
+      "status": "not_implemented"
+    },
+    {
+      "id": "context.respond",
+      "status": "not_implemented"
+    },
+    {
+      "id": "evidence.read",
+      "status": "not_implemented"
+    },
+    {
+      "id": "execution.pause",
+      "status": "not_implemented"
+    },
+    {
+      "id": "execution.query",
+      "status": "not_implemented"
+    },
+    {
+      "id": "execution.resume",
+      "status": "not_implemented"
+    },
+    {
+      "id": "execution.start",
+      "status": "not_implemented"
+    },
+    {
+      "id": "files.read",
+      "status": "not_implemented"
+    },
+    {
+      "id": "files.search",
+      "status": "not_implemented"
+    },
+    {
+      "id": "files.write",
+      "status": "not_implemented"
+    },
+    {
+      "id": "observation.turn_view",
+      "status": "not_implemented"
+    },
+    {
+      "id": "perception.capture",
+      "status": "not_implemented"
+    },
+    {
+      "id": "perception.estimate_depth",
+      "status": "not_implemented"
+    },
+    {
+      "id": "perception.segment_objects",
+      "status": "not_implemented"
+    },
+    {
+      "id": "planning.read",
+      "status": "not_implemented"
+    },
+    {
+      "id": "planning.update",
+      "status": "not_implemented"
+    },
+    {
+      "id": "skills.load",
+      "status": "not_implemented"
+    },
+    {
+      "id": "skills.save",
+      "status": "not_implemented"
+    },
+    {
+      "id": "skills.search",
+      "status": "not_implemented"
+    },
+    {
+      "id": "tasks.replan",
+      "status": "not_implemented"
+    },
+    {
+      "id": "tasks.retry",
+      "status": "not_implemented"
+    },
+    {
+      "id": "team.delegate",
+      "status": "not_implemented"
+    },
+    {
+      "id": "team.send",
+      "status": "not_implemented"
+    },
+    {
+      "id": "verification.check",
+      "status": "not_implemented"
+    },
+    {
+      "id": "verification.submit",
+      "status": "not_implemented"
+    }
+  ]
+}
