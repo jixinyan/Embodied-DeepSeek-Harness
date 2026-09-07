@@ -10,5 +10,8 @@
       "default": "./src/index.ts"
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "@edh/foundation": "workspace:*",
+    "zod": "4.4.3"
+  }
 }

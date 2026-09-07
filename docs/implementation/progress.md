@@ -5,7 +5,7 @@ Spec: v1.4. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
 
 ## Skeleton Bootstrap
 
-Status: **done** — the architecture skeleton and its local checks are complete. The initial Git commit records the delivered snapshot; functional Steps 00–16 remain unimplemented.
+Status: **done** — the architecture skeleton and its local checks are complete. The initial Git commit records the delivered snapshot; functional Step 00 is in progress; Steps 01–16 remain unimplemented.
 
 Created: 15 private TypeScript domain packages, server/console interface entries,
 Python provider Protocols, a single-source wire schema and generated TypeScript,
@@ -14,13 +14,13 @@ SVG diagrams, source dependency audit and handoff documentation.
 
 Not created: an agent runtime, Team loader, callable tool providers, job service,
 asynchronous monitor, recovery engine, skill persistence/retrieval, functioning
-console, simulator adapters or real robot support. No DSH runtime code is copied.
+console, simulator adapters or real robot support. Selected DSH source has now been absorbed; see the Step 00 checkpoint below.
 
 ## Functional plan status
 
 | Step | Status | Next concrete work |
 | --- | --- | --- |
-| 00 | not_started | Absorb and assemble the necessary DSH implementation; prove one loop/tool/follow-up path |
+| 00 | in_progress | Source absorbed and checked; assemble and exercise the original loop |
 | 01 | not_started | Refine schema, implement TS/Python boundary validation and state contracts; scaffold schema is input |
 | 02 | not_started | Implement Team/Role loader and tool binding validation |
 | 03 | not_started | Implement fresh scoped role sessions; inspect actual model inputs |
@@ -76,3 +76,16 @@ TypeScript interfaces, 17 workspace boundaries, 117 local documentation links,
 English public-text checks and 12 Python interface imports. Both English SVGs
 were rendered and visually checked. The lockfile now records the new importers;
 `pnpm install --frozen-lockfile` is the reproduction check for the committed layout.
+
+## Step 00 — source absorption checkpoint
+
+The selected transitive source graph is now present: 90 files from 21 upstream
+modules, distributed across agents, models, tools, storage and foundation. The
+manifest-only audit missed attachment imports; the source map records this correction.
+The CLI, configuration loader, presets, UI and optional diagnostics are not imported.
+The agent-loop algorithms are unchanged. Two documentation examples were translated;
+every source file has upstream/local hashes and license attribution.
+
+Foundation libraries retain their upstream TypeScript compiler boundaries. EDH and
+the remaining DSH source retain strict checking. Runtime acceptance is still pending
+at this checkpoint; no Team loader, simulator, model API or hardware is available.

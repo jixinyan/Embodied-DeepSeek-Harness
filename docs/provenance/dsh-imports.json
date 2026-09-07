@@ -1,0 +1,942 @@
+{
+  "repository": "https://github.com/deepseek-ai/deepseek-harness",
+  "commit": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
+  "selection": "Transitive TypeScript imports, exports, type imports and module augmentations from the five audited seeds plus session-projection. Optional manifest peers not imported by this graph are excluded.",
+  "source_discovery_correction": "The manifest audit omitted dsh-attachment, which the llm source imports. Included from source; no attachment filesystem provider is mounted.",
+  "packages": [
+    {
+      "name": "@deepseek-ai/cordis",
+      "source": "vendor/cordis",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cordis",
+      "owner": "foundation",
+      "manifest_sha256": "8b38780c3a8e5de57f9ad98219bfd6b8fb7877829a1b84e1e987926f32f2dae9",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/cosmokit",
+      "source": "vendor/cosmokit",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cosmokit",
+      "owner": "foundation",
+      "manifest_sha256": "107da8ad972f40a836e52acfe1f22ca418ba759b966ed02c2693e6c942a6ef72",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent",
+      "source": "packages/core/agent",
+      "destination": "harness/agent-runtime/agents/src/dsh/agent",
+      "owner": "agents",
+      "manifest_sha256": "25dc5de02facf7c9c3f3ede14630235adcce38af7fd51a7f21eedf973f8bc4e3",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-agent-loop",
+      "source": "packages/core/agent-loop",
+      "destination": "harness/agent-runtime/agents/src/dsh/loop",
+      "owner": "agents",
+      "manifest_sha256": "d756bee0ab4a75e0f498f895eab0df4d60250b713572a4a275aa80e0826bfc99",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-attachment",
+      "source": "packages/attachment/attachment",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachments",
+      "owner": "storage",
+      "manifest_sha256": "77d6bb89d961b0e5824ee941b183fe94c3cfe97c1e84365f90f5c69ca2d716e2",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-brand",
+      "source": "packages/util/brand",
+      "destination": "harness/agent-runtime/foundation/src/dsh/brand",
+      "owner": "foundation",
+      "manifest_sha256": "a9f5854f7f030eaa99e0e4edb12f0f6d2aa3792f39600ea796ee73beb081c087",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-code-runtime",
+      "source": "packages/code-runtime/code-runtime",
+      "destination": "harness/agent-runtime/tools/src/dsh/code-runtime",
+      "owner": "tools",
+      "manifest_sha256": "965915da95a9f6089933b164119bd1cbdbb4e71de67d4b192d9a0dccbfd45b14",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm",
+      "source": "packages/llm/llm",
+      "destination": "harness/agent-runtime/models/src/dsh/llm",
+      "owner": "models",
+      "manifest_sha256": "5a89d094273d273d1216ab0464a17a324257531f0165996743d83af1475ab091",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-scope",
+      "source": "packages/core/scope",
+      "destination": "harness/agent-runtime/agents/src/dsh/scope",
+      "owner": "agents",
+      "manifest_sha256": "208685b735bbb2479c2b9b7f382f6e59d828b6a475cebab1b76259c753e103cf",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-session",
+      "source": "packages/core/session",
+      "destination": "harness/agent-runtime/storage/src/dsh/session",
+      "owner": "storage",
+      "manifest_sha256": "383d933df674889f801bfaa13d37dfa02b9ef087058d644fd624acaf121be148",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-persistence",
+      "source": "packages/session/session-persistence",
+      "destination": "harness/agent-runtime/storage/src/dsh/persistence",
+      "owner": "storage",
+      "manifest_sha256": "9c2f9f8bc6f533f1ed7f1b557717e7d8798382c44ce75a096013c501bbab6e9c",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-session-projection",
+      "source": "packages/session/session-projection",
+      "destination": "harness/agent-runtime/storage/src/dsh/projection",
+      "owner": "storage",
+      "manifest_sha256": "c92017587f3c43d0cbf2ad592d9aac2607a859d61be07fd1805778aaf550b4dc",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-settings",
+      "source": "packages/settings/settings",
+      "destination": "harness/agent-runtime/foundation/src/dsh/settings",
+      "owner": "foundation",
+      "manifest_sha256": "87d11d18c3b8d8f10e18f6e320197e88b73f5dc795ae5fece44508fb9885ff79",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-system-prompt",
+      "source": "packages/core/system-prompt",
+      "destination": "harness/agent-runtime/agents/src/dsh/prompts",
+      "owner": "agents",
+      "manifest_sha256": "02d60fc5df3f4a73e6d2737b2141825071526332437214327d2dde432a1b29a4",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-timeout",
+      "source": "packages/util/timeout",
+      "destination": "harness/agent-runtime/foundation/src/dsh/timeout",
+      "owner": "foundation",
+      "manifest_sha256": "df2da9383dbd58817a8c2429e8be6410d415d5dbd8f4164669cdbfc46e6e629e",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-tools",
+      "source": "packages/core/tools",
+      "destination": "harness/agent-runtime/tools/src/dsh/tools",
+      "owner": "tools",
+      "manifest_sha256": "045b78a715a1ed1d0bed706550c618b311fff728bff6f16de57bcff230215ca3",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-typert-protocol",
+      "source": "packages/typert/protocol",
+      "destination": "harness/agent-runtime/foundation/src/dsh/protocol",
+      "owner": "foundation",
+      "manifest_sha256": "6201471850292271dc12fbf57029795fa3139679ae5f51c465cc2b8e82fe062a",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-user-approval",
+      "source": "packages/interaction/user-approval",
+      "destination": "harness/agent-runtime/tools/src/dsh/approval",
+      "owner": "tools",
+      "manifest_sha256": "88d8a1e68e2db4d072b5d5cb66cf4560ca8cff9bf780e5ce062e6d526fadb09d",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-util-crypto",
+      "source": "packages/util/crypto",
+      "destination": "harness/agent-runtime/foundation/src/dsh/crypto",
+      "owner": "foundation",
+      "manifest_sha256": "67d166ffe1d1268199aeb66ae02f9917b694cac1bddb7d16eaddd849dd41542b",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-util-values",
+      "source": "packages/util/values",
+      "destination": "harness/agent-runtime/foundation/src/dsh/values",
+      "owner": "foundation",
+      "manifest_sha256": "b5a308d0833d5d71c57f1f4e80d55fe2f2472fa3b3147a82bd4f19c8f70c1e23",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/schemastery",
+      "source": "vendor/schemastery",
+      "destination": "harness/agent-runtime/foundation/src/dsh/schemastery",
+      "owner": "foundation",
+      "manifest_sha256": "5f789ce810205bcfe3c5f9c6b22f5cdd3adeadc55220d57d5a903165b1e4ec38",
+      "license": "MIT"
+    }
+  ],
+  "files": [
+    {
+      "source": "packages/attachment/attachment/src/admission.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachments/admission.ts",
+      "source_sha256": "34d6453071f95e639fed9c9c23f6b59418f9b523ec2fe554b304e5bf6c03341b",
+      "local_sha256": "34d6453071f95e639fed9c9c23f6b59418f9b523ec2fe554b304e5bf6c03341b",
+      "modifications": []
+    },
+    {
+      "source": "packages/attachment/attachment/src/brand.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachments/brand.ts",
+      "source_sha256": "558fa7aca6f787a568ca27d6bb7c5eb4747d56c811c625d4cb78d4885630064f",
+      "local_sha256": "558fa7aca6f787a568ca27d6bb7c5eb4747d56c811c625d4cb78d4885630064f",
+      "modifications": []
+    },
+    {
+      "source": "packages/attachment/attachment/src/error.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachments/error.ts",
+      "source_sha256": "ee24eb3fd7538212e7c95b4a4167ad28637df58b2f70549661630ae71eca2517",
+      "local_sha256": "ee24eb3fd7538212e7c95b4a4167ad28637df58b2f70549661630ae71eca2517",
+      "modifications": []
+    },
+    {
+      "source": "packages/attachment/attachment/src/index.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachments/index.ts",
+      "source_sha256": "0dea8ca7745b4d1c1e2f0543613d9533c6fd7394bd91b1cf73346e1dd84bbb4f",
+      "local_sha256": "0dea8ca7745b4d1c1e2f0543613d9533c6fd7394bd91b1cf73346e1dd84bbb4f",
+      "modifications": []
+    },
+    {
+      "source": "packages/attachment/attachment/src/request-projection.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachments/request-projection.ts",
+      "source_sha256": "13819be610b0e4785c98bafe68328273f3f9190505d6df817911405c46152cb0",
+      "local_sha256": "13819be610b0e4785c98bafe68328273f3f9190505d6df817911405c46152cb0",
+      "modifications": []
+    },
+    {
+      "source": "packages/attachment/attachment/src/types.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachments/types.ts",
+      "source_sha256": "5bf1b7094c2dd23f352c91d7c683eb80a42933b205553de0d10e79bfd81d849f",
+      "local_sha256": "5bf1b7094c2dd23f352c91d7c683eb80a42933b205553de0d10e79bfd81d849f",
+      "modifications": []
+    },
+    {
+      "source": "packages/code-runtime/code-runtime/src/index.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/code-runtime/index.ts",
+      "source_sha256": "e004d132f81d88ed6c14013b8cc9268fa0bfd15045cbdbdb47291a44fa621076",
+      "local_sha256": "e004d132f81d88ed6c14013b8cc9268fa0bfd15045cbdbdb47291a44fa621076",
+      "modifications": []
+    },
+    {
+      "source": "packages/code-runtime/code-runtime/src/types.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/code-runtime/types.ts",
+      "source_sha256": "0c0c9b57783aeddcf6f7b1422cb85580e84351269471277bced65e3e63068249",
+      "local_sha256": "0c0c9b57783aeddcf6f7b1422cb85580e84351269471277bced65e3e63068249",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent-loop/src/agent.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/loop/agent.ts",
+      "source_sha256": "01109eaef935ea2b8e401af07d64724ab52f24c37482f9e0cf77ed6ca8fd80c0",
+      "local_sha256": "01109eaef935ea2b8e401af07d64724ab52f24c37482f9e0cf77ed6ca8fd80c0",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent-loop/src/assistant-stream.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/loop/assistant-stream.ts",
+      "source_sha256": "120d2bec5efeec2aa54bf0e4261a45282936272d610dbbab21eee36b902629de",
+      "local_sha256": "120d2bec5efeec2aa54bf0e4261a45282936272d610dbbab21eee36b902629de",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent-loop/src/constants.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/loop/constants.ts",
+      "source_sha256": "435d31d3c8740f5ebaefa5c12f22d7cda8ea8c6d018e6fcda459161174ecc971",
+      "local_sha256": "435d31d3c8740f5ebaefa5c12f22d7cda8ea8c6d018e6fcda459161174ecc971",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent-loop/src/index.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/loop/index.ts",
+      "source_sha256": "c647e143019154e10025b05015d9d530c191c75844242a1b0c9f7fb0b93d129a",
+      "local_sha256": "c647e143019154e10025b05015d9d530c191c75844242a1b0c9f7fb0b93d129a",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent-loop/src/runtime-context.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/loop/runtime-context.ts",
+      "source_sha256": "ba960f755d136e7da6d430ede85948c4c5282b02a8fc5a4a97375ab95e297168",
+      "local_sha256": "ba960f755d136e7da6d430ede85948c4c5282b02a8fc5a4a97375ab95e297168",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent-loop/src/tool-calls.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/loop/tool-calls.ts",
+      "source_sha256": "1f8984127d4245b6a08c1e4b0c8b9d8fa7ce30ffcf08184187f16dc1bf57ae6d",
+      "local_sha256": "1f8984127d4245b6a08c1e4b0c8b9d8fa7ce30ffcf08184187f16dc1bf57ae6d",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent/src/consumed-work.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/agent/consumed-work.ts",
+      "source_sha256": "b894bdba6cbeda47e3667af60422bad77a386627aec3fe9e4383dd0ec3dc416f",
+      "local_sha256": "b894bdba6cbeda47e3667af60422bad77a386627aec3fe9e4383dd0ec3dc416f",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent/src/dispatch.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/agent/dispatch.ts",
+      "source_sha256": "6dc2702311305b9ecc8c8a932417bb7929f7313722fbb432a899e53d16efc6e0",
+      "local_sha256": "6dc2702311305b9ecc8c8a932417bb7929f7313722fbb432a899e53d16efc6e0",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent/src/inbox.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/agent/inbox.ts",
+      "source_sha256": "d6fd44097114e7931e5875ab5a35cd820dff5be7b78fd5dcba96d804ceaaabb0",
+      "local_sha256": "d6fd44097114e7931e5875ab5a35cd820dff5be7b78fd5dcba96d804ceaaabb0",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent/src/index.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/agent/index.ts",
+      "source_sha256": "ad1e057330eaa2c651266803906f80ec0215a52035f51dfe2088f69bf4daf9ec",
+      "local_sha256": "ad1e057330eaa2c651266803906f80ec0215a52035f51dfe2088f69bf4daf9ec",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent/src/model-selection.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/agent/model-selection.ts",
+      "source_sha256": "633f4e84d0ff0a1a24facf1a946ce742a8439dae0245a5194d31ee559cdbae53",
+      "local_sha256": "633f4e84d0ff0a1a24facf1a946ce742a8439dae0245a5194d31ee559cdbae53",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent/src/projection.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/agent/projection.ts",
+      "source_sha256": "2113e31ffcb4c98a1d4ddb15d36ee833f086ed5965520febaca65d6dbea6fe40",
+      "local_sha256": "2113e31ffcb4c98a1d4ddb15d36ee833f086ed5965520febaca65d6dbea6fe40",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent/src/runtime-types.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/agent/runtime-types.ts",
+      "source_sha256": "461be30d53a0f20351e5546fe5ba86e28e7181059b4d28fad823ddc463f46b67",
+      "local_sha256": "461be30d53a0f20351e5546fe5ba86e28e7181059b4d28fad823ddc463f46b67",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/agent/src/types.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/agent/types.ts",
+      "source_sha256": "b6421734118ba61b51668081cdf724d33ffa06014baffbc809d396cba8532baa",
+      "local_sha256": "b6421734118ba61b51668081cdf724d33ffa06014baffbc809d396cba8532baa",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/scope/src/index.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/scope/index.ts",
+      "source_sha256": "074b8f0c3fa2e240effd0a7e65c54be7c14debc1e53bb712334ce20d15affe4a",
+      "local_sha256": "074b8f0c3fa2e240effd0a7e65c54be7c14debc1e53bb712334ce20d15affe4a",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/scope/src/store.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/scope/store.ts",
+      "source_sha256": "e2f6c98e271cbae483393ccd1e5212a255def165a8a591d308efbd827af67278",
+      "local_sha256": "e2f6c98e271cbae483393ccd1e5212a255def165a8a591d308efbd827af67278",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/session/src/index.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/session/index.ts",
+      "source_sha256": "7244f6180d85306a58e16a6bf1cfe1b7a655a4968afb570198c4a1f08b1f4c7a",
+      "local_sha256": "7244f6180d85306a58e16a6bf1cfe1b7a655a4968afb570198c4a1f08b1f4c7a",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/session/src/known-event-types.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/session/known-event-types.ts",
+      "source_sha256": "6267479bc237461d8dce4e6aff063c083d08ce2d7e93a5f3b364ac6357e20b79",
+      "local_sha256": "6267479bc237461d8dce4e6aff063c083d08ce2d7e93a5f3b364ac6357e20b79",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/session/src/preparation.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/session/preparation.ts",
+      "source_sha256": "51bcd61f505928fc1d98cc59ecfd5e0a34b3a5cbd3ecb7937caef0da87b7baa5",
+      "local_sha256": "51bcd61f505928fc1d98cc59ecfd5e0a34b3a5cbd3ecb7937caef0da87b7baa5",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/session/src/repair.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/session/repair.ts",
+      "source_sha256": "985740ced27041c1964ca721caea9099703af8b32fa6b610b537909c86f7a76a",
+      "local_sha256": "985740ced27041c1964ca721caea9099703af8b32fa6b610b537909c86f7a76a",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/session/src/request-header.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/session/request-header.ts",
+      "source_sha256": "2003c7c30ee8a660686c6deb01a844d95416ecad182acaf3beba6360fec1e9b8",
+      "local_sha256": "2003c7c30ee8a660686c6deb01a844d95416ecad182acaf3beba6360fec1e9b8",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/session/src/seq-ranges.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/session/seq-ranges.ts",
+      "source_sha256": "9f746691995926cb17d3dd19da04871f2355be40c798ed5a8256659e6bf14559",
+      "local_sha256": "9f746691995926cb17d3dd19da04871f2355be40c798ed5a8256659e6bf14559",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/session/src/surface.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/session/surface.ts",
+      "source_sha256": "aa75a34df001b33d3b1e4dd5c24a0391d00bc457e0a83f25757d3358b12b684f",
+      "local_sha256": "aa75a34df001b33d3b1e4dd5c24a0391d00bc457e0a83f25757d3358b12b684f",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/session/src/types.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/session/types.ts",
+      "source_sha256": "1f8b010994d89d65853be484d65c32555f53668151aa827f57650b03c3669ea3",
+      "local_sha256": "1f8b010994d89d65853be484d65c32555f53668151aa827f57650b03c3669ea3",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/system-prompt/src/index.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/prompts/index.ts",
+      "source_sha256": "be62470215076483070d4c785eceed489cbbed4792bd6c30a299a7459954d73c",
+      "local_sha256": "be62470215076483070d4c785eceed489cbbed4792bd6c30a299a7459954d73c",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/tools/src/index.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/tools/index.ts",
+      "source_sha256": "5f696f8840cbd136ab0b5903e7de8fd83ad39b3b057e6202845aede4d827c90b",
+      "local_sha256": "5f696f8840cbd136ab0b5903e7de8fd83ad39b3b057e6202845aede4d827c90b",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/tools/src/json-schema.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/tools/json-schema.ts",
+      "source_sha256": "13deffdfd34539e23706b0fde235991da45b2f07c5c18dbbf3ca734c1da0c788",
+      "local_sha256": "13deffdfd34539e23706b0fde235991da45b2f07c5c18dbbf3ca734c1da0c788",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/tools/src/presentation.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/tools/presentation.ts",
+      "source_sha256": "2e729538403ef924430187df13ec5e140de95e0ea41a8225093dba644c1f2b6a",
+      "local_sha256": "2e729538403ef924430187df13ec5e140de95e0ea41a8225093dba644c1f2b6a",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/tools/src/ptc.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/tools/ptc.ts",
+      "source_sha256": "c0fde4ef0867eafe617675d105d87da510fa438742d037332eec75afc417e4f6",
+      "local_sha256": "c0fde4ef0867eafe617675d105d87da510fa438742d037332eec75afc417e4f6",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/tools/src/py-types.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/tools/py-types.ts",
+      "source_sha256": "a9894e3555ad9767d4a4b2de30f6d4d717438f7abf686e07688298db51a96cef",
+      "local_sha256": "923bb5875c809cf280f218a9eff211a78ab0970b6d119d1fde47cc30a11f960d",
+      "modifications": [
+        "Translate two documentation examples to a non-Han Unicode identifier; no executable change."
+      ]
+    },
+    {
+      "source": "packages/core/tools/src/schema.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/tools/schema.ts",
+      "source_sha256": "be6e4b3fa18fe633c6c83ed4f9072da5a2a203f64bf0b70c9066fd58b0e2c897",
+      "local_sha256": "be6e4b3fa18fe633c6c83ed4f9072da5a2a203f64bf0b70c9066fd58b0e2c897",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/tools/src/testing.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/tools/testing.ts",
+      "source_sha256": "8b7bf72750d885c1acb52e99ccac9e42542cc5efcb581098ad3507e83ca0a651",
+      "local_sha256": "8b7bf72750d885c1acb52e99ccac9e42542cc5efcb581098ad3507e83ca0a651",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/tools/src/ts-types.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/tools/ts-types.ts",
+      "source_sha256": "473562e67f2282579b2abb451acee759e2d2af681a051690c4980af4459016e1",
+      "local_sha256": "473562e67f2282579b2abb451acee759e2d2af681a051690c4980af4459016e1",
+      "modifications": []
+    },
+    {
+      "source": "packages/core/tools/src/types.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/tools/types.ts",
+      "source_sha256": "262a439f55fdba0f0088ae2ae19cc44c4441433fbfd420f19f3fdfdb5f6786b5",
+      "local_sha256": "262a439f55fdba0f0088ae2ae19cc44c4441433fbfd420f19f3fdfdb5f6786b5",
+      "modifications": []
+    },
+    {
+      "source": "packages/interaction/user-approval/src/index.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/approval/index.ts",
+      "source_sha256": "632d819c0e1d0b0f489a17264a1e3bd9f88ae537746be768bbb0775d842e4a24",
+      "local_sha256": "632d819c0e1d0b0f489a17264a1e3bd9f88ae537746be768bbb0775d842e4a24",
+      "modifications": []
+    },
+    {
+      "source": "packages/interaction/user-approval/src/types.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/approval/types.ts",
+      "source_sha256": "46548447cf6aab4283d5473a99014b2b6075724982b99cc3dc77b9ae8274200c",
+      "local_sha256": "46548447cf6aab4283d5473a99014b2b6075724982b99cc3dc77b9ae8274200c",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/adapter-failure.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/adapter-failure.ts",
+      "source_sha256": "7132ce407d433eedf94304f342fd703de60f80190431e2be707948b0c5104d54",
+      "local_sha256": "7132ce407d433eedf94304f342fd703de60f80190431e2be707948b0c5104d54",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/api-key.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/api-key.ts",
+      "source_sha256": "16bf926a82b0c0c1d4adbee78e2a1eebe260f100285795edb8330f3fe46141a4",
+      "local_sha256": "16bf926a82b0c0c1d4adbee78e2a1eebe260f100285795edb8330f3fe46141a4",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/assembler.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/assembler.ts",
+      "source_sha256": "ff30f5ca346015bfffeffb5ee3398901d03eb3429fda5d0d4e0c40e8638dfe58",
+      "local_sha256": "ff30f5ca346015bfffeffb5ee3398901d03eb3429fda5d0d4e0c40e8638dfe58",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/assistant-stream.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/assistant-stream.ts",
+      "source_sha256": "167ee3f7fdea6b0c1975f2f3a05f2efaa18c5c806a662fbe5ce9482a37ae66fe",
+      "local_sha256": "167ee3f7fdea6b0c1975f2f3a05f2efaa18c5c806a662fbe5ce9482a37ae66fe",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/attribution.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/attribution.ts",
+      "source_sha256": "031f0a29b75498b9208ab2ede0a32b755c925f1a992562dd23970cff7caea075",
+      "local_sha256": "031f0a29b75498b9208ab2ede0a32b755c925f1a992562dd23970cff7caea075",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/brand.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/brand.ts",
+      "source_sha256": "a3a3f22174353af8aea34a9a439986530bffcc6df6339e55612fd5a1fa4fb14c",
+      "local_sha256": "a3a3f22174353af8aea34a9a439986530bffcc6df6339e55612fd5a1fa4fb14c",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/call-config.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/call-config.ts",
+      "source_sha256": "c2ead88240db88af3199235389585d2ddc566312d8976d9648a5f5190d32e6c6",
+      "local_sha256": "c2ead88240db88af3199235389585d2ddc566312d8976d9648a5f5190d32e6c6",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/content.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/content.ts",
+      "source_sha256": "af534a2a2c573fcb78209491d0c986bb3404d321569e98a23a02ecd1d4a8a663",
+      "local_sha256": "af534a2a2c573fcb78209491d0c986bb3404d321569e98a23a02ecd1d4a8a663",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/error.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/error.ts",
+      "source_sha256": "d5a46153de9293456b7c998f849b4e3f1a95c3830777aab932cdc5acf036b1b1",
+      "local_sha256": "d5a46153de9293456b7c998f849b4e3f1a95c3830777aab932cdc5acf036b1b1",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/index.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/index.ts",
+      "source_sha256": "b1f1b17cb013a0f2fa844a0e2cdd59ab512252335c9e83d92df3e3e972198c88",
+      "local_sha256": "b1f1b17cb013a0f2fa844a0e2cdd59ab512252335c9e83d92df3e3e972198c88",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/message.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/message.ts",
+      "source_sha256": "e6cfdb59a42098dc404f6f00262f12c1f96117ddfbfc33ee0ae6a7a4373dd6c8",
+      "local_sha256": "e6cfdb59a42098dc404f6f00262f12c1f96117ddfbfc33ee0ae6a7a4373dd6c8",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/retry-policy.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/retry-policy.ts",
+      "source_sha256": "eee2423a0152096026446dd651f29678e0c504f0349a91758720f01f74efa871",
+      "local_sha256": "eee2423a0152096026446dd651f29678e0c504f0349a91758720f01f74efa871",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm/src/types.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/llm/types.ts",
+      "source_sha256": "52252f82457db589c5c8b396f25117d76af59a2fa555c7ffbfe94f72f362ff62",
+      "local_sha256": "52252f82457db589c5c8b396f25117d76af59a2fa555c7ffbfe94f72f362ff62",
+      "modifications": []
+    },
+    {
+      "source": "packages/session/session-persistence/src/errors.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/persistence/errors.ts",
+      "source_sha256": "caaa07e52ac133e4012ff6f4f920e7cc737dce6dd1083e279e363b993c2524bd",
+      "local_sha256": "caaa07e52ac133e4012ff6f4f920e7cc737dce6dd1083e279e363b993c2524bd",
+      "modifications": []
+    },
+    {
+      "source": "packages/session/session-persistence/src/handle.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/persistence/handle.ts",
+      "source_sha256": "1b3012d94520374292f5bbc3f6b927a1343b90b95f1ac4d33fb81f83b2449d4a",
+      "local_sha256": "1b3012d94520374292f5bbc3f6b927a1343b90b95f1ac4d33fb81f83b2449d4a",
+      "modifications": []
+    },
+    {
+      "source": "packages/session/session-persistence/src/index.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/persistence/index.ts",
+      "source_sha256": "44323f7c978546b1971d31dc27dce9a8d9f2e956fa41ba21e43f903dfb7bebe5",
+      "local_sha256": "44323f7c978546b1971d31dc27dce9a8d9f2e956fa41ba21e43f903dfb7bebe5",
+      "modifications": []
+    },
+    {
+      "source": "packages/session/session-persistence/src/revision.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/persistence/revision.ts",
+      "source_sha256": "bc860d72f32e17335ee9c7dd74a2a3309053704ff7ebbe377c50e3927c879855",
+      "local_sha256": "bc860d72f32e17335ee9c7dd74a2a3309053704ff7ebbe377c50e3927c879855",
+      "modifications": []
+    },
+    {
+      "source": "packages/session/session-persistence/src/storage-contract.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/persistence/storage-contract.ts",
+      "source_sha256": "107f60af732e232cb40b5d5f1917a32046a08f6956e57b2d502008396f5d31a3",
+      "local_sha256": "107f60af732e232cb40b5d5f1917a32046a08f6956e57b2d502008396f5d31a3",
+      "modifications": []
+    },
+    {
+      "source": "packages/session/session-projection/src/index.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/projection/index.ts",
+      "source_sha256": "84859250fee641df58b386446dfeffef6dac11a40f7785fdf700e54d8df2572a",
+      "local_sha256": "84859250fee641df58b386446dfeffef6dac11a40f7785fdf700e54d8df2572a",
+      "modifications": []
+    },
+    {
+      "source": "packages/session/session-projection/src/types.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/projection/types.ts",
+      "source_sha256": "6ad9530ea5cfc8ff3e73b34413e5757da8091248b0a874c304f5c5a83500f555",
+      "local_sha256": "6ad9530ea5cfc8ff3e73b34413e5757da8091248b0a874c304f5c5a83500f555",
+      "modifications": []
+    },
+    {
+      "source": "packages/settings/settings/src/index.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/settings/index.ts",
+      "source_sha256": "2591a71e8cf42a0ec0c22394d1568cf9c108b6eb937b4e525def6e5c686efb8f",
+      "local_sha256": "2591a71e8cf42a0ec0c22394d1568cf9c108b6eb937b4e525def6e5c686efb8f",
+      "modifications": []
+    },
+    {
+      "source": "packages/settings/settings/src/redact.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/settings/redact.ts",
+      "source_sha256": "786f9971d506da44461d96bf45c497fdfc03115edebd2873a04ccc637e98b78c",
+      "local_sha256": "786f9971d506da44461d96bf45c497fdfc03115edebd2873a04ccc637e98b78c",
+      "modifications": []
+    },
+    {
+      "source": "packages/settings/settings/src/types.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/settings/types.ts",
+      "source_sha256": "5094d7d56adf4ff0e714faeffa2512a318fe2ae1f610c3f7029d9223de7784f2",
+      "local_sha256": "5094d7d56adf4ff0e714faeffa2512a318fe2ae1f610c3f7029d9223de7784f2",
+      "modifications": []
+    },
+    {
+      "source": "packages/typert/protocol/src/index.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/protocol/index.ts",
+      "source_sha256": "508f522d8c5b04e6ea96cda5fa13c5e4c783ded00dbfb35f864577bbcd15c190",
+      "local_sha256": "508f522d8c5b04e6ea96cda5fa13c5e4c783ded00dbfb35f864577bbcd15c190",
+      "modifications": []
+    },
+    {
+      "source": "packages/typert/protocol/src/remote-error.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/protocol/remote-error.ts",
+      "source_sha256": "64db3b3fdcefcf9d1997cbda0ff37053cc9ff466141f9dd8bd5094e5fc6e8ada",
+      "local_sha256": "64db3b3fdcefcf9d1997cbda0ff37053cc9ff466141f9dd8bd5094e5fc6e8ada",
+      "modifications": []
+    },
+    {
+      "source": "packages/typert/protocol/src/types.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/protocol/types.ts",
+      "source_sha256": "73869903a477e1636e10503c00cb8829e66121a064bc57dc271203779576808a",
+      "local_sha256": "73869903a477e1636e10503c00cb8829e66121a064bc57dc271203779576808a",
+      "modifications": []
+    },
+    {
+      "source": "packages/util/brand/src/index.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/brand/index.ts",
+      "source_sha256": "f9d6da858d7308117227dcc2306ce7246b7309b2ae22d413d289cbae51e83e98",
+      "local_sha256": "f9d6da858d7308117227dcc2306ce7246b7309b2ae22d413d289cbae51e83e98",
+      "modifications": []
+    },
+    {
+      "source": "packages/util/crypto/src/index.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/crypto/index.ts",
+      "source_sha256": "6d314b677a163808a732c53fc509eebea1f8b8cc34b67031644dcfa4a97e28f0",
+      "local_sha256": "6d314b677a163808a732c53fc509eebea1f8b8cc34b67031644dcfa4a97e28f0",
+      "modifications": []
+    },
+    {
+      "source": "packages/util/timeout/src/index.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/timeout/index.ts",
+      "source_sha256": "fdfd67e7d9c0a09668a4101880439f28446a8bf038f060a0bc4d27d941be562c",
+      "local_sha256": "fdfd67e7d9c0a09668a4101880439f28446a8bf038f060a0bc4d27d941be562c",
+      "modifications": []
+    },
+    {
+      "source": "packages/util/values/src/index.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/values/index.ts",
+      "source_sha256": "573c77ba7017fc747f90fdbd5445cfd565db6ff6d53a6b999f6c34ed842bbb8f",
+      "local_sha256": "573c77ba7017fc747f90fdbd5445cfd565db6ff6d53a6b999f6c34ed842bbb8f",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cordis/src/context.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cordis/context.ts",
+      "source_sha256": "96b388162d6013c1898de61e35f28917abb93809de24174980f2a1a348d0b115",
+      "local_sha256": "96b388162d6013c1898de61e35f28917abb93809de24174980f2a1a348d0b115",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cordis/src/events.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cordis/events.ts",
+      "source_sha256": "96565a2b5fbf35c26b78cbdc785b2b2e3f01fa55a9fd1f6af5355ab35ccc343c",
+      "local_sha256": "96565a2b5fbf35c26b78cbdc785b2b2e3f01fa55a9fd1f6af5355ab35ccc343c",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cordis/src/fiber.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cordis/fiber.ts",
+      "source_sha256": "750555b47603f88e7ef7a05d1a8d629b355c176a1185af411aac6e3e1e2b7ba3",
+      "local_sha256": "750555b47603f88e7ef7a05d1a8d629b355c176a1185af411aac6e3e1e2b7ba3",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cordis/src/index.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cordis/index.ts",
+      "source_sha256": "c2232f082c763488225eafcd33530640ad26af0c7d6ea871a4f7e8ebf0eb3704",
+      "local_sha256": "c2232f082c763488225eafcd33530640ad26af0c7d6ea871a4f7e8ebf0eb3704",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cordis/src/logger.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cordis/logger.ts",
+      "source_sha256": "5121e76fd9f55b9b90dfea09d6e60d122e7530246b8b19970ddebd9c35ccf7d8",
+      "local_sha256": "5121e76fd9f55b9b90dfea09d6e60d122e7530246b8b19970ddebd9c35ccf7d8",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cordis/src/reflect.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cordis/reflect.ts",
+      "source_sha256": "6847b9781044023d65aebb5896a873b9f0a3d777eaf7fa0dd2a7a408eb6b74a6",
+      "local_sha256": "6847b9781044023d65aebb5896a873b9f0a3d777eaf7fa0dd2a7a408eb6b74a6",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cordis/src/registry.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cordis/registry.ts",
+      "source_sha256": "34bbd60ae502b4f85201c204afb52a9acabde6878d9278493478c1b2183debd3",
+      "local_sha256": "34bbd60ae502b4f85201c204afb52a9acabde6878d9278493478c1b2183debd3",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cordis/src/service.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cordis/service.ts",
+      "source_sha256": "614205c6ce7cf1a057b8b352e96aa4fcd734c967a3d2283a126c9c61f268e3be",
+      "local_sha256": "614205c6ce7cf1a057b8b352e96aa4fcd734c967a3d2283a126c9c61f268e3be",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cordis/src/utils.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cordis/utils.ts",
+      "source_sha256": "8fe273424583d21267ef13f248840e97454d09d836a0ac08323a9482c2069263",
+      "local_sha256": "8fe273424583d21267ef13f248840e97454d09d836a0ac08323a9482c2069263",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cosmokit/src/array.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cosmokit/array.ts",
+      "source_sha256": "cf4de899ecffd66a90d8cef6f4c7d127d31f77f776d8e173d41c30d2d7632cf7",
+      "local_sha256": "cf4de899ecffd66a90d8cef6f4c7d127d31f77f776d8e173d41c30d2d7632cf7",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cosmokit/src/index.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cosmokit/index.ts",
+      "source_sha256": "51dd173c70001d7d7891d3aab7e26594da65f7cb6671253f6d457ac889326b3c",
+      "local_sha256": "51dd173c70001d7d7891d3aab7e26594da65f7cb6671253f6d457ac889326b3c",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cosmokit/src/misc.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cosmokit/misc.ts",
+      "source_sha256": "117617943074ea57c15f216905dacd2f6d1c4c2ff16586f97a7a7a87dbf2141f",
+      "local_sha256": "117617943074ea57c15f216905dacd2f6d1c4c2ff16586f97a7a7a87dbf2141f",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cosmokit/src/string.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cosmokit/string.ts",
+      "source_sha256": "5564272b3e15e49235cbe3a8b453f27306baf282d23a893982841670f65d3c04",
+      "local_sha256": "5564272b3e15e49235cbe3a8b453f27306baf282d23a893982841670f65d3c04",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cosmokit/src/time.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cosmokit/time.ts",
+      "source_sha256": "49957c4608465a1fbd738186a92c47fffcd1fc4ba59dbf89524f8a773fe16fe2",
+      "local_sha256": "49957c4608465a1fbd738186a92c47fffcd1fc4ba59dbf89524f8a773fe16fe2",
+      "modifications": []
+    },
+    {
+      "source": "vendor/cosmokit/src/types.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/cosmokit/types.ts",
+      "source_sha256": "09d72a91052105e88500bfb99a8e8ce0c9ebf6f6e7df569053e114bc77aa019c",
+      "local_sha256": "09d72a91052105e88500bfb99a8e8ce0c9ebf6f6e7df569053e114bc77aa019c",
+      "modifications": []
+    },
+    {
+      "source": "vendor/schemastery/src/index.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/schemastery/index.ts",
+      "source_sha256": "cf8a4de0481969a1a6d44eac390015f3494be1ce19b84d4fcfb7e93e5072cee5",
+      "local_sha256": "cf8a4de0481969a1a6d44eac390015f3494be1ce19b84d4fcfb7e93e5072cee5",
+      "modifications": []
+    }
+  ],
+  "aliases": {
+    "@deepseek-ai/dsh-agent": [
+      "harness/agent-runtime/agents/src/dsh/agent/index.ts"
+    ],
+    "@deepseek-ai/dsh-agent/*": [
+      "harness/agent-runtime/agents/src/dsh/agent/*.ts"
+    ],
+    "@deepseek-ai/dsh-agent-loop": [
+      "harness/agent-runtime/agents/src/dsh/loop/index.ts"
+    ],
+    "@deepseek-ai/dsh-agent-loop/*": [
+      "harness/agent-runtime/agents/src/dsh/loop/*.ts"
+    ],
+    "@deepseek-ai/dsh-scope": [
+      "harness/agent-runtime/agents/src/dsh/scope/index.ts"
+    ],
+    "@deepseek-ai/dsh-scope/*": [
+      "harness/agent-runtime/agents/src/dsh/scope/*.ts"
+    ],
+    "@deepseek-ai/dsh-system-prompt": [
+      "harness/agent-runtime/agents/src/dsh/prompts/index.ts"
+    ],
+    "@deepseek-ai/dsh-system-prompt/*": [
+      "harness/agent-runtime/agents/src/dsh/prompts/*.ts"
+    ],
+    "@deepseek-ai/dsh-llm": [
+      "harness/agent-runtime/models/src/dsh/llm/index.ts"
+    ],
+    "@deepseek-ai/dsh-llm/*": [
+      "harness/agent-runtime/models/src/dsh/llm/*.ts"
+    ],
+    "@deepseek-ai/dsh-tools": [
+      "harness/agent-runtime/tools/src/dsh/tools/index.ts"
+    ],
+    "@deepseek-ai/dsh-tools/*": [
+      "harness/agent-runtime/tools/src/dsh/tools/*.ts"
+    ],
+    "@deepseek-ai/dsh-code-runtime": [
+      "harness/agent-runtime/tools/src/dsh/code-runtime/index.ts"
+    ],
+    "@deepseek-ai/dsh-code-runtime/*": [
+      "harness/agent-runtime/tools/src/dsh/code-runtime/*.ts"
+    ],
+    "@deepseek-ai/dsh-user-approval": [
+      "harness/agent-runtime/tools/src/dsh/approval/index.ts"
+    ],
+    "@deepseek-ai/dsh-user-approval/*": [
+      "harness/agent-runtime/tools/src/dsh/approval/*.ts"
+    ],
+    "@deepseek-ai/dsh-session": [
+      "harness/agent-runtime/storage/src/dsh/session/index.ts"
+    ],
+    "@deepseek-ai/dsh-session/*": [
+      "harness/agent-runtime/storage/src/dsh/session/*.ts"
+    ],
+    "@deepseek-ai/dsh-session-persistence": [
+      "harness/agent-runtime/storage/src/dsh/persistence/index.ts"
+    ],
+    "@deepseek-ai/dsh-session-persistence/*": [
+      "harness/agent-runtime/storage/src/dsh/persistence/*.ts"
+    ],
+    "@deepseek-ai/dsh-session-projection": [
+      "harness/agent-runtime/storage/src/dsh/projection/index.ts"
+    ],
+    "@deepseek-ai/dsh-session-projection/*": [
+      "harness/agent-runtime/storage/src/dsh/projection/*.ts"
+    ],
+    "@deepseek-ai/dsh-attachment": [
+      "harness/agent-runtime/storage/src/dsh/attachments/index.ts"
+    ],
+    "@deepseek-ai/dsh-attachment/*": [
+      "harness/agent-runtime/storage/src/dsh/attachments/*.ts"
+    ],
+    "@deepseek-ai/dsh-settings": [
+      "harness/agent-runtime/foundation/src/dsh/settings/index.ts"
+    ],
+    "@deepseek-ai/dsh-settings/*": [
+      "harness/agent-runtime/foundation/src/dsh/settings/*.ts"
+    ],
+    "@deepseek-ai/dsh-typert-protocol": [
+      "harness/agent-runtime/foundation/src/dsh/protocol/index.ts"
+    ],
+    "@deepseek-ai/dsh-typert-protocol/*": [
+      "harness/agent-runtime/foundation/src/dsh/protocol/*.ts"
+    ],
+    "@deepseek-ai/dsh-brand": [
+      "harness/agent-runtime/foundation/src/dsh/brand/index.ts"
+    ],
+    "@deepseek-ai/dsh-brand/*": [
+      "harness/agent-runtime/foundation/src/dsh/brand/*.ts"
+    ],
+    "@deepseek-ai/dsh-util-crypto": [
+      "harness/agent-runtime/foundation/src/dsh/crypto/index.ts"
+    ],
+    "@deepseek-ai/dsh-util-crypto/*": [
+      "harness/agent-runtime/foundation/src/dsh/crypto/*.ts"
+    ],
+    "@deepseek-ai/dsh-timeout": [
+      "harness/agent-runtime/foundation/src/dsh/timeout/index.ts"
+    ],
+    "@deepseek-ai/dsh-timeout/*": [
+      "harness/agent-runtime/foundation/src/dsh/timeout/*.ts"
+    ],
+    "@deepseek-ai/dsh-util-values": [
+      "harness/agent-runtime/foundation/src/dsh/values/index.ts"
+    ],
+    "@deepseek-ai/dsh-util-values/*": [
+      "harness/agent-runtime/foundation/src/dsh/values/*.ts"
+    ],
+    "@deepseek-ai/cordis": [
+      "harness/agent-runtime/foundation/src/dsh/cordis/index.ts"
+    ],
+    "@deepseek-ai/cordis/*": [
+      "harness/agent-runtime/foundation/src/dsh/cordis/*.ts"
+    ],
+    "@deepseek-ai/cosmokit": [
+      "harness/agent-runtime/foundation/src/dsh/cosmokit/index.ts"
+    ],
+    "@deepseek-ai/cosmokit/*": [
+      "harness/agent-runtime/foundation/src/dsh/cosmokit/*.ts"
+    ],
+    "@deepseek-ai/schemastery": [
+      "harness/agent-runtime/foundation/src/dsh/schemastery/index.ts"
+    ],
+    "@deepseek-ai/schemastery/*": [
+      "harness/agent-runtime/foundation/src/dsh/schemastery/*.ts"
+    ]
+  },
+  "external_imports": [
+    "zod",
+    "@standard-schema/spec"
+  ]
+}

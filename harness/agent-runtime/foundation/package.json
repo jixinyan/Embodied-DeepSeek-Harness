@@ -1,0 +1,14 @@
+{
+  "name": "@edh/foundation",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Plugin context, schemas and runtime support for the absorbed DSH core",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@standard-schema/spec": "1.1.0",
+    "zod": "4.4.3"
+  }
+}
