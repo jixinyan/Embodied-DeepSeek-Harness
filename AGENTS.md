@@ -33,3 +33,17 @@ requirement or deployment binding is unclear.
   unimplemented areas and the next action. Never claim simulation/hardware results
   from synthetic fixtures. Do not add models, datasets, secrets or local run data.
 - Keep source licenses and provenance mappings when DSH code is imported.
+
+## Version control
+
+- Commit frequently at coherent, verified checkpoints; do not wait until an entire
+  implementation step is finished. For example, schema changes and their fixtures
+  can be one commit, followed by a separate loader implementation commit.
+- Inspect the diff and run checks appropriate to the change before committing.
+  Stage only the intended files; preserve unrelated user changes.
+- Use descriptive commit messages explaining the concrete change. Record known
+  incomplete work explicitly rather than describing it as finished.
+- Push completed checkpoints at phase delivery or handoff and report the commit
+  and any remaining local changes. Commit frequency does not imply a push per edit.
+- Preserve published history; do not force-push, reset away work or rewrite existing
+  commits without explicit authorization. Keep secrets and runtime data out of Git.

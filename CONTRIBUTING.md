@@ -11,3 +11,10 @@ scaffold checks do not substitute for lifecycle, policy or adapter verification.
 Every contribution should explain the problem, resulting behavior, validation
 commands/results and material limitations. Keep private run data and model
 weights outside the repository. Use SVG for architecture figures.
+
+Commit small, coherent changes frequently after relevant checks, rather than
+accumulating a whole implementation phase in one commit. For example, commit a
+protocol update with its fixtures separately from the provider that consumes it.
+Inspect and stage only the intended changes, use descriptive messages, and push
+completed checkpoints at delivery or handoff. Preserve published history and
+leave unrelated work intact. See [AGENTS.md](AGENTS.md) for the full policy.
