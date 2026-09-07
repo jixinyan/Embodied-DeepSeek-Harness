@@ -31,99 +31,99 @@ importers:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
-        version: link:../../packages/contracts
+        version: link:../../harness/contracts
 
   apps/server:
     dependencies:
       '@edh/agents':
         specifier: workspace:*
-        version: link:../../packages/agents
+        version: link:../../harness/agent-runtime/agents
       '@edh/execution':
         specifier: workspace:*
-        version: link:../../packages/execution
+        version: link:../../harness/agent-runtime/execution
       '@edh/memory':
         specifier: workspace:*
-        version: link:../../packages/memory
+        version: link:../../harness/agent-runtime/memory
       '@edh/teams':
         specifier: workspace:*
-        version: link:../../packages/teams
+        version: link:../../harness/agent-runtime/teams
       '@edh/verification':
         specifier: workspace:*
-        version: link:../../packages/verification
+        version: link:../../harness/agent-runtime/verification
 
-  packages/agents:
+  harness/agent-runtime/agents:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/communication:
+  harness/agent-runtime/communication:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/contracts: {}
+  harness/contracts: {}
 
-  packages/execution:
+  harness/agent-runtime/execution:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/files: {}
+  harness/agent-runtime/files: {}
 
-  packages/memory:
+  harness/agent-runtime/memory:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/models: {}
+  harness/agent-runtime/models: {}
 
-  packages/observation:
+  harness/agent-runtime/observation:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/perception:
+  harness/agent-runtime/perception:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/planning:
+  harness/agent-runtime/planning:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/storage:
+  harness/agent-runtime/storage:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/tasks:
+  harness/agent-runtime/tasks:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/teams:
+  harness/agent-runtime/teams:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/tools:
+  harness/agent-runtime/tools:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../contracts
 
-  packages/verification:
+  harness/agent-runtime/verification:
     dependencies:
       '@edh/contracts':
         specifier: workspace:*

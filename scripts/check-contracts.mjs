@@ -5,7 +5,7 @@ import Ajv from 'ajv';
 import { parse } from 'yaml';
 const json = async (p) => JSON.parse(await readFile(p, 'utf8'));
 const yaml = async (p) => parse(await readFile(p, 'utf8'));
-const schema = await json('packages/contracts/schema/physical.schema.json');
+const schema = await json('harness/contracts/schema/physical.schema.json');
 const ajv = new Ajv({ strict: false, allErrors: true });
 assert(ajv.validateSchema(schema), ajv.errorsText());
 const validators = new Map();
@@ -32,8 +32,8 @@ valid('TeamDefinition', team, teamPath);
 assert(Object.hasOwn(team.members, team.entrypoint), 'Entrypoint is not a member');
 for (const [binding, member] of Object.entries(team.bindings))
   assert(Object.hasOwn(team.members, member), `Unknown member for ${binding}`);
-const builtins = await json('packages/agents/roles/builtins.json');
-const inventory = await json('packages/tools/definitions/planned-tools.json');
+const builtins = await json('harness/agent-runtime/agents/roles/builtins.json');
+const inventory = await json('harness/agent-runtime/tools/definitions/planned-tools.json');
 const toolIds = new Set(inventory.tools.map((t) => t.id));
 assert.equal(toolIds.size, inventory.tools.length, 'Duplicate logical tool ID');
 for (const [member, reference] of Object.entries(team.members)) {
@@ -41,7 +41,7 @@ for (const [member, reference] of Object.entries(team.members)) {
   if (reference.startsWith('builtin:')) {
     const key = reference.slice('builtin:'.length);
     assert(Object.hasOwn(builtins, key), `Unknown built-in: ${key}`);
-    rolePath = path.join('packages/agents/roles', builtins[key]);
+    rolePath = path.join('harness/agent-runtime/agents/roles', builtins[key]);
   } else rolePath = path.resolve(path.dirname(teamPath), reference);
   const roleText = await readFile(rolePath, 'utf8');
   const match = /^---\n([\s\S]*?)\n---\n/.exec(roleText);

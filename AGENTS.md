@@ -29,8 +29,9 @@ requirement or deployment binding is unclear.
 
 ## Structure and checks
 
-- Use intuitive module names under `packages/`. Keep provider execution in Python.
-- Wire schema source: `packages/contracts/schema/physical.schema.json`.
+- Use intuitive modules under `harness/agent-runtime/`, physical providers under
+  `harness/physical-runtime/`, and shared contracts under `harness/contracts/`.
+- Wire schema source: `harness/contracts/schema/physical.schema.json`.
   Regenerate TypeScript with `pnpm generate:contracts`; never hand-edit generated types.
 - Runtime/semantic validation is separate from scaffold schema checks.
 - All packages are private source workspaces in bootstrap, not published builds.

@@ -69,7 +69,7 @@
 <text x="583" y="994" class="small">Subgoal policy or explicit head / base motion</text>
 <path d="M490 970 H555" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)" />
 <path d="M305 791 V915" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)" />
-<text x="330" y="833" class="label">Tasks and tool calls</text>
+<text x="330" y="833" class="label">Task / tool calls</text>
 <path d="M480 920 V815 H900 V794" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#orange)" />
 <text x="532" y="838" class="label" style="fill:#b45309">Budget ends → formal check</text>
 <path d="M900 646 V610 H642 V574" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#blue)" />

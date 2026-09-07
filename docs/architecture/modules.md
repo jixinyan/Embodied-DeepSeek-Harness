@@ -10,34 +10,46 @@ The diagram's “EDH Host / DSH runtime” denotes the intended absorbed runtime
 copied upstream application or a running integration. It is a logical target
 architecture, not a statement of bootstrap capabilities.
 
+## One harness, two runtime responsibilities
+
+Both sides are under [harness](../../harness/README.md). `agent-runtime` coordinates
+agents, tasks, tools, verification and experience; `physical-runtime` advances policies
+and interacts with simulators/devices. Shared `contracts` define their communication.
+They may run on one host while retaining independent process and dependency boundaries.
+
+For a cup-placement task, the upper side supplies the subgoal/budget and makes the
+formal verification/retry decisions; the physical side returns real frames, control
+steps, device acknowledgement and limited fact checks. Folder placement does not grant
+the physical worker decision ownership or cause agent contexts to be shared.
+
 ## Working directories
 
 | Module | Owns | Does not own | Main boundary / next step |
 | --- | --- | --- | --- |
 | `apps/server` | EDH application assembly, future API and startup | Agent loop implementation | ServerAssembly; Step 00/12 |
 | `apps/console` | Sensors, team/agent/robot state, tools, verdicts and timeline | Device truth or planner decisions | ConsoleProjection; Step 12 |
-| `packages/agents` | Independent assignments, DSH session lifecycle, built-in role definitions | Implicit parent context or another loop | AgentFactory; Step 03 |
-| `packages/teams` | Team/member definitions and immutable role/provider bindings | Hard-coded role enum | TeamLoader; Step 02 |
-| `packages/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelRegistry; Step 00 |
-| `packages/tools` | Logical tools, role exposure, provider selection and invocation boundary | Every concrete perception/robot implementation | ToolRegistry/ToolExecutor; Step 02/07 |
-| `packages/communication` | Explicit briefs, scoped messages, delivery and subscriptions | Shared conversation memory | TeamRouter; Step 04 |
-| `packages/planning` | Persistent PlanDocument and progress projection | Authoritative success | PlanStore; Step 05 |
-| `packages/files` | Private assignment files and controlled search | Shared unrestricted filesystem | AgentFiles; Step 05 |
-| `packages/tasks` | Goals, attempts, decision ownership and recovery linkage | Policy action generation | TaskCoordinator; Step 09 |
-| `packages/execution` | Host/worker bridge, job status and resource coordination | TS control loop or autonomous retry | ExecutionClient; Step 06 |
-| `packages/perception` | Model-facing capture/segmentation/depth/localization tool adapters | Shared global scene state | PerceptionProvider; Step 07 |
-| `packages/observation` | Active-view intent, resource effects and achieved pose | Assumption that turn-view only moves a camera | ActiveObservation; Step 07 |
-| `packages/verification` | Monitoring and formal-verdict coordination | Retry, replan or ground-truth fabrication | VerificationCoordinator; Step 08 |
-| `packages/memory` | Authorized evidence access, skills and recovery experience | Automatic shared prompts or VLA training | SkillStore/EvidenceReader; Step 10 |
-| `packages/storage` | Persistence primitives used through scoped service boundaries | Bypass of evidence visibility | EventStore/AssetStore; Step 04 |
-| `packages/contracts` | Authoritative wire schema and generated declarations | Runtime semantic authorization | physical.schema.json; Step 01 |
-| `python/.../execution` | Actual action progression, budget and device job handling | Upper-level retry decision | ExecutionWorker; Step 06 |
-| `python/.../policies` | Subgoal-to-action policy adapter | Agent orchestration | SubgoalPolicy; Step 13 |
-| `python/.../environments` | Simulator observation/action/task mapping | Environment-specific host protocol | EnvironmentAdapter; Step 13/15 |
-| `python/.../embodiments` | Capabilities, units, frames and action/observation specifications | Simulator lifecycle | EmbodimentAdapter; Step 06/13 |
-| `python/.../backends` | Device connection, commands and confirmed state | Agent-mediated emergency response | DeviceBackend; Step 06/16 |
-| `python/.../perception` | Optional model/provider execution | Host role permissions | PerceptionProvider; Step 07/13 |
-| `python/.../verification` | Limited GT/device fact checks | Final agent verdict | VerificationProvider; Step 08/13 |
+| `harness/agent-runtime/agents` | Independent assignments, DSH session lifecycle, built-in role definitions | Implicit parent context or another loop | AgentFactory; Step 03 |
+| `harness/agent-runtime/teams` | Team/member definitions and immutable role/provider bindings | Hard-coded role enum | TeamLoader; Step 02 |
+| `harness/agent-runtime/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelRegistry; Step 00 |
+| `harness/agent-runtime/tools` | Logical tools, role exposure, provider selection and invocation boundary | Every concrete perception/robot implementation | ToolRegistry/ToolExecutor; Step 02/07 |
+| `harness/agent-runtime/communication` | Explicit briefs, scoped messages, delivery and subscriptions | Shared conversation memory | TeamRouter; Step 04 |
+| `harness/agent-runtime/planning` | Persistent PlanDocument and progress projection | Authoritative success | PlanStore; Step 05 |
+| `harness/agent-runtime/files` | Private assignment files and controlled search | Shared unrestricted filesystem | AgentFiles; Step 05 |
+| `harness/agent-runtime/tasks` | Goals, attempts, decision ownership and recovery linkage | Policy action generation | TaskCoordinator; Step 09 |
+| `harness/agent-runtime/execution` | Host/worker bridge, job status and resource coordination | TS control loop or autonomous retry | ExecutionClient; Step 06 |
+| `harness/agent-runtime/perception` | Model-facing capture/segmentation/depth/localization tool adapters | Shared global scene state | PerceptionProvider; Step 07 |
+| `harness/agent-runtime/observation` | Active-view intent, resource effects and achieved pose | Assumption that turn-view only moves a camera | ActiveObservation; Step 07 |
+| `harness/agent-runtime/verification` | Monitoring and formal-verdict coordination | Retry, replan or ground-truth fabrication | VerificationCoordinator; Step 08 |
+| `harness/agent-runtime/memory` | Authorized evidence access, skills and recovery experience | Automatic shared prompts or VLA training | SkillStore/EvidenceReader; Step 10 |
+| `harness/agent-runtime/storage` | Persistence primitives used through scoped service boundaries | Bypass of evidence visibility | EventStore/AssetStore; Step 04 |
+| `harness/contracts` | Authoritative wire schema and generated declarations | Runtime semantic authorization | physical.schema.json; Step 01 |
+| `harness/physical-runtime/src/physical_harness/execution` | Actual action progression, budget and device job handling | Upper-level retry decision | ExecutionWorker; Step 06 |
+| `harness/physical-runtime/src/physical_harness/policies` | Subgoal-to-action policy adapter | Agent orchestration | SubgoalPolicy; Step 13 |
+| `harness/physical-runtime/src/physical_harness/environments` | Simulator observation/action/task mapping | Environment-specific host protocol | EnvironmentAdapter; Step 13/15 |
+| `harness/physical-runtime/src/physical_harness/embodiments` | Capabilities, units, frames and action/observation specifications | Simulator lifecycle | EmbodimentAdapter; Step 06/13 |
+| `harness/physical-runtime/src/physical_harness/backends` | Device connection, commands and confirmed state | Agent-mediated emergency response | DeviceBackend; Step 06/16 |
+| `harness/physical-runtime/src/physical_harness/perception` | Optional model/provider execution | Host role permissions | PerceptionProvider; Step 07/13 |
+| `harness/physical-runtime/src/physical_harness/verification` | Limited GT/device fact checks | Final agent verdict | VerificationProvider; Step 08/13 |
 
 ## Direction of dependencies
 

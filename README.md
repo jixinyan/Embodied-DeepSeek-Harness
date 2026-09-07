@@ -24,8 +24,9 @@ selected DeepSeek Harness implementations, with traceable provenance.
 | --- | --- |
 | [apps/server](apps/server/README.md) | Application composition and host entry |
 | [apps/console](apps/console/README.md) | Physical control panel |
-| [packages](docs/architecture/modules.md) | Agents, teams, models, tools, tasks, verification and memory |
-| [python/physical_harness](python/physical_harness/README.md) | Policy, simulator, embodiment and hardware boundaries |
+| [harness/agent-runtime](harness/agent-runtime/README.md) | Agents, teams, models, tools, tasks, verification and memory |
+| [harness/contracts](harness/contracts/README.md) | Shared schemas and generated wire types |
+| [harness/physical-runtime](harness/physical-runtime/README.md) | Policy, simulator, embodiment and hardware boundaries |
 | [examples](examples/README.md) | User-defined roles, teams, tools and skills |
 | [tests](tests/integration/README.md) | Future behavioral acceptance suites; fixtures are synthetic |
 | [docs](docs/README.md) | Architecture, decisions, implementation steps and handoff |

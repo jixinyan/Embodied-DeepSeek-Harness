@@ -15,8 +15,8 @@
     "typecheck": "tsc --noEmit",
     "check:structure": "node scripts/check-structure.mjs",
     "check:python": "node scripts/check-python.mjs",
-    "format": "prettier --write \"packages/*/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\"",
-    "format:check": "prettier --check \"packages/*/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\""
+    "format": "prettier --write \"harness/agent-runtime/*/src/index.ts\" \"harness/contracts/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\"",
+    "format:check": "prettier --check \"harness/agent-runtime/*/src/index.ts\" \"harness/contracts/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\""
   },
   "devDependencies": {
     "@types/node": "22.19.0",

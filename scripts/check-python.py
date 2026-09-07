@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 assert sys.version_info >= (3, 11), "Python 3.11+ required"
 sys.dont_write_bytecode = True
 root = Path(__file__).resolve().parents[1]
-source = root / "python/physical_harness/src"
+source = root / "harness/physical-runtime/src"
 sys.path.insert(0, str(source))
 count = 0
 for file in sorted(source.rglob("*.py")):

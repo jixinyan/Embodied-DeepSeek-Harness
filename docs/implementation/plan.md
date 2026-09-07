@@ -66,7 +66,7 @@ the bridge before Step 01.
 
 ## Step 01 — Fix shared schemas and state contracts
 
-**Prerequisite:** Step 00. Primary locations: `packages/contracts/`, `tests/contracts/`.
+**Prerequisite:** Step 00. Primary locations: `harness/contracts/`, `tests/contracts/`.
 
 1. Refine the single schema source for teams, roles, tools, briefs, envelopes, reports,
    plans, observations/media, subgoals, execution, verification, recovery and skills.
@@ -85,7 +85,7 @@ fields here rather than allowing each side to invent them independently.
 
 ## Step 02 — Implement Team/Role loading and the tool catalog
 
-**Prerequisite:** Step 01. Locations: `packages/teams/`, `packages/tools/`, `examples/`.
+**Prerequisite:** Step 01. Locations: `harness/agent-runtime/teams/`, `harness/agent-runtime/tools/`, `examples/`.
 
 1. Read team.yaml, ROLE.md and tool packs; resolve relative paths, built-ins, toolsets,
    provider bindings and documented defaults.
@@ -104,7 +104,7 @@ import SAM, torch or simulator packages.
 
 ## Step 03 — Create genuinely independent DSH role sessions
 
-**Prerequisite:** Step 02. Locations: `packages/agents/`, `packages/teams/` and DSH bridge.
+**Prerequisite:** Step 02. Locations: `harness/agent-runtime/agents/`, `harness/agent-runtime/teams/` and DSH bridge.
 
 1. Build instances from snapshots, assigning a fresh assignment/session for every new
    delegation and explicitly selecting that role's prompt, tools and resource view.
@@ -123,8 +123,8 @@ role. A prompt instruction alone is not permission enforcement.
 
 ## Step 04 — Implement explicit communication and evidence access
 
-**Prerequisite:** Step 03. Locations: `packages/communication/`, `packages/storage/`,
-`packages/tasks/` and scoped evidence services.
+**Prerequisite:** Step 03. Locations: `harness/agent-runtime/communication/`, `harness/agent-runtime/storage/`,
+`harness/agent-runtime/tasks/` and scoped evidence services.
 
 1. Implement nonblocking delegation, send/reply, context.request/response and scoped
    subscriptions. The caller continues after acceptance rather than awaiting a long rollout.
@@ -143,7 +143,7 @@ visibility bypass. Trace acceptance, processing and actual model-visible input s
 
 ## Step 05 — Add upper-level tools and default roles
 
-**Prerequisite:** Step 04. Locations: `packages/planning/`, `packages/files/`, `packages/agents/`.
+**Prerequisite:** Step 04. Locations: `harness/agent-runtime/planning/`, `harness/agent-runtime/files/`, `harness/agent-runtime/agents/`.
 
 1. Implement durable PlanDocument, expected-version updates and DSH todo/UI projection.
    Keep plan progress distinct from authoritative goal/verdict state.
@@ -163,7 +163,7 @@ missing information, use tools and return a report.
 
 ## Step 06 — Implement CPU execution and physical resource contracts
 
-**Prerequisite:** Step 05. Locations: `packages/execution/` and Python execution,
+**Prerequisite:** Step 05. Locations: `harness/agent-runtime/execution/` and Python execution,
 embodiment and backend modules.
 
 1. Connect TypeScript host and Python CPU worker through versioned requests/events.
@@ -185,7 +185,7 @@ budgets stop control. These tests do not establish real-hardware support.
 
 ## Step 07 — Connect perception and active observation tools
 
-**Prerequisite:** Step 06. Locations: `packages/perception/`, `packages/observation/`
+**Prerequisite:** Step 06. Locations: `harness/agent-runtime/perception/`, `harness/agent-runtime/observation/`
 and Python providers.
 
 1. Implement capture, segmentation and depth/localization contracts with readable images
@@ -205,7 +205,7 @@ Every candidate can be traced to the input frame and output evidence.
 
 ## Step 08 — Implement async Verifier and mandatory formal checking
 
-**Prerequisite:** Step 07. Locations: `packages/verification/`, `packages/tasks/`
+**Prerequisite:** Step 07. Locations: `harness/agent-runtime/verification/`, `harness/agent-runtime/tasks/`
 and Python fact providers.
 
 1. Start Verifier as an independent DSH agent with its brief. Coalesce latest frames/clips,
@@ -227,7 +227,7 @@ passed. A pending monitor request must not swallow a termination/verification ev
 
 ## Step 09 — Implement Planner decisions and recovery linkage
 
-**Prerequisite:** Step 08. Locations: `packages/tasks/`, `packages/communication/`
+**Prerequisite:** Step 08. Locations: `harness/agent-runtime/tasks/`, `harness/agent-runtime/communication/`
 and Planner decision tools.
 
 1. Add resume/retry/replan/finish/abandon with current decision-owner validation. Only
@@ -247,7 +247,7 @@ acceptance does not create multiple chains.
 
 ## Step 10 — Implement Evolver and retrievable skills
 
-**Prerequisite:** Step 09. Locations: `packages/memory/`, `packages/agents/` and DSH skill bridge.
+**Prerequisite:** Step 09. Locations: `harness/agent-runtime/memory/`, `harness/agent-runtime/agents/` and DSH skill bridge.
 
 1. On retry.started, create a fresh Evolver with original failure, recovery goal, changes
    and authorized evidence. Send subsequent attempts in the same chain explicitly.

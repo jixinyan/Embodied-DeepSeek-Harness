@@ -1,7 +1,7 @@
 # Extending EDH
 
 1. Read [the household team](teams/household.yaml).
-2. Follow `builtin:planner` to [the canonical role](../packages/agents/roles/planner/ROLE.md).
+2. Follow `builtin:planner` to [the canonical role](../harness/agent-runtime/agents/roles/planner/ROLE.md).
 3. Inspect [a user-defined scene analyst](roles/scene-analyst.md).
 4. See [a SAM tool binding](tools/sam-segmentation.yaml) and
    [the deployment boundary](deployments/behavior.yaml).

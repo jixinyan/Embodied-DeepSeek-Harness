@@ -13,7 +13,7 @@ async function* files(dir) {
 const manifests = new Map();
 let linkCount = 0;
 for await (const file of files('.')) {
-  if (file.endsWith('package.json') && (file.startsWith('packages/') || file.startsWith('apps/'))) {
+  if (file.endsWith('package.json') && (file.startsWith('harness/') || file.startsWith('apps/'))) {
     const p = JSON.parse(await readFile(file, 'utf8'));
     assert(!manifests.has(p.name), `Duplicate workspace ${p.name}`);
     assert.equal(p.private, true, `Bootstrap packages must be private: ${file}`);

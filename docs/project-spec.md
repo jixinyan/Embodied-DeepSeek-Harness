@@ -13,7 +13,8 @@ are deployment bindings; they do not block the framework design.
 
 This revision translates the public specification, examples and diagrams into English.
 It preserves the Team/Role design, complete tool surface and implementation gates.
-Repository naming proposals do not change the runtime responsibilities defined here.
+The unified harness directory groups agent-runtime, physical-runtime and shared contracts;
+this code organization preserves their runtime responsibilities.
 
 Reading order: start at Section 0; Sections 1–3 explain positioning and architecture;
 4–8 define agents, communication, execution, verification and experience; 9–11 cover
@@ -99,7 +100,7 @@ tracks explicit recovery attempts and turns formally verified recovery into reus
 `SKILL.md` knowledge.
 
 Primary users are embodied intelligence researchers, policy/environment adapter
- developers, and operators who need to observe and debug long-horizon robot tasks.
+developers, and operators who need to observe and debug long-horizon robot tasks.
 
 Example: “Put the cup on the table into the cabinet.” The same semantic goal and
 communication protocol can apply to different environments or robots. Adapters bind
@@ -649,7 +650,7 @@ to wire-name mapping. Do not reduce the entire interface to an opaque
 
 Examples of logical tool IDs are `perception.capture`, `perception.segment_objects`,
 `observation.turn_view`, `execution.start`, `skills.search` and `skills.load`.
-The skeleton's [planned inventory](../packages/tools/definitions/planned-tools.json)
+The skeleton's [planned inventory](../harness/agent-runtime/tools/definitions/planned-tools.json)
 records its current draft spellings. Section 9 defines required capabilities;
 Step 01/02 must reconcile aliases and final tool schemas before exposing callable APIs.
 
@@ -1021,8 +1022,9 @@ tool list, evidence and returned report. No fixed role enum or special builder c
 
 ### 12.1 EDH ownership and selective DSH absorption
 
-EDH owns its monorepo. The server and console assemble the product. Domain modules
-cover agents, teams, models, tools, communication, planning, files, tasks, execution,
+EDH owns its monorepo. The server and console assemble the product. Both runtime sides live under `harness/`, with public wire contracts alongside them.
+The TypeScript `agent-runtime/` and Python `physical-runtime/` can run separately while
+remaining parts of one physical-agent framework. Domain modules cover agents, teams, models, tools, communication, planning, files, tasks, execution,
 perception, observation, verification, memory, storage and contracts. The current
 [module map](architecture/modules.md) is the source of actual code paths.
 
@@ -1278,7 +1280,8 @@ checks, skipped items/reasons and next steps.
 - v1.3 (2026-09-07): EDH-owned repository, intuitive flat modules, selective DSH absorption,
   provenance, skeleton bootstrap and a separate canonical implementation plan.
 - v1.4 (2026-09-07): English public documentation and diagrams. Preserve requirements
-  and explicitly distinguish intended contracts from partial skeleton declarations.
+  and explicitly distinguish intended contracts from partial skeleton declarations. Group
+  both runtimes and shared contracts under `harness/` (decision 0002).
 
 ## 17. Step-by-step implementation plan
 

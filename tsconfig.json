@@ -11,13 +11,16 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
+      "@edh/contracts": [
+        "harness/contracts/src/index.ts"
+      ],
       "@edh/*": [
-        "packages/*/src/index.ts"
+        "harness/agent-runtime/*/src/index.ts"
       ]
     }
   },
   "include": [
-    "packages/**/*.ts",
+    "harness/**/*.ts",
     "apps/**/*.ts",
     "tests/contracts/**/*.ts"
   ],

@@ -1,6 +1,7 @@
 # Implementation progress
 
-Spec: v1.3. Architecture: [decision 0001](decisions/0001-edh-owned-skeleton.md).
+Spec: v1.4. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
+[unified harness layout](decisions/0002-unified-harness.md).
 
 ## Skeleton Bootstrap
 
@@ -61,3 +62,17 @@ No simulation, hardware or model-runtime test has been run.
 The next functional action is Step 00. Read the pinned provenance and inspect source
 imports as well as manifests. Reuse this checkout; do not regenerate it from a full
 DSH clone. Existing schema/examples are design inputs, not passed functional steps.
+
+## English presentation and unified directory follow-up
+
+Public docs, role/tool examples and SVG labels are now English. The separate translated
+README was removed in favor of one English entry point. English presentation applies
+to new public content as well; internal user discussion can stay in Chinese.
+
+The user approved a shared `harness/` parent with `agent-runtime/`, `physical-runtime/`
+and `contracts/`. Package names and Python imports are unchanged. Functional Steps
+00–16 remain unimplemented. The relocated `pnpm check` passed: schema generation and 6 wire fixtures,
+TypeScript interfaces, 17 workspace boundaries, 117 local documentation links,
+English public-text checks and 12 Python interface imports. Both English SVGs
+were rendered and visually checked. The lockfile now records the new importers;
+`pnpm install --frozen-lockfile` is the reproduction check for the committed layout.

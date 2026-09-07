@@ -16,3 +16,5 @@ a package registry and no simulator/model dependency is installed in bootstrap.
 
 The repository spec is the implementation source of truth. The earlier Obsidian
 copy is a design-history snapshot; maintain implementation changes here.
+
+Directory organization is superseded by [decision 0002](0002-unified-harness.md); the EDH ownership and selective-absorption decision remains unchanged.

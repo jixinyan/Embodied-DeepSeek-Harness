@@ -25,12 +25,12 @@ assembly before calling it integrated. No date-based “latest” claim is made.
 
 | DSH source responsibility | EDH destination | Status |
 | --- | --- | --- |
-| `packages/core/agent`, `agent-loop`, `scope`, `system-prompt` | `packages/agents` | Planned; retain the original loop semantics |
-| `packages/llm/llm` and selected provider bindings | `packages/models` | Planned |
-| `packages/core/tools` | `packages/tools` | Planned |
-| `packages/core/session`, session projections/persistence | `packages/agents` / `packages/storage` | Planned; distinguish session lifecycle from persistence |
-| Subagent control/preset composition | `packages/agents` / `packages/communication` | Later audit; not included in the five-seed closure |
-| File, todo and skill tools | `packages/files` / `planning` / `memory` | Later audit; retain only required behavior |
+| `packages/core/agent`, `agent-loop`, `scope`, `system-prompt` | `harness/agent-runtime/agents` | Planned; retain the original loop semantics |
+| `packages/llm/llm` and selected provider bindings | `harness/agent-runtime/models` | Planned |
+| `packages/core/tools` | `harness/agent-runtime/tools` | Planned |
+| `packages/core/session`, session projections/persistence | `harness/agent-runtime/agents` / `harness/agent-runtime/storage` | Planned; distinguish session lifecycle from persistence |
+| Subagent control/preset composition | `harness/agent-runtime/agents` / `harness/agent-runtime/communication` | Later audit; not included in the five-seed closure |
+| File, todo and skill tools | `harness/agent-runtime/files` / `planning` / `memory` | Later audit; retain only required behavior |
 | Cordis/Schemastery and transitive support | Internal dependencies chosen after source review | No arbitrary reimplementation or silently missing dependencies |
 
 ## Source migration record

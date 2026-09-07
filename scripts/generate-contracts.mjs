@@ -1,11 +1,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { compile } from 'json-schema-to-typescript';
-const source = 'packages/contracts/schema/physical.schema.json';
-const target = 'packages/contracts/src/generated.ts';
+const source = 'harness/contracts/schema/physical.schema.json';
+const target = 'harness/contracts/src/generated.ts';
 const schema = JSON.parse(await readFile(source, 'utf8'));
 const generated = await compile(schema, 'PhysicalContract', {
-  bannerComment:
-    '/* Generated from packages/contracts/schema/physical.schema.json. Do not edit. */',
+  bannerComment: '/* Generated from harness/contracts/schema/physical.schema.json. Do not edit. */',
   unreachableDefinitions: true,
   additionalProperties: false,
   unknownAny: true,
