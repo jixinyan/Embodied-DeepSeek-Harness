@@ -1,112 +1,112 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1460" viewBox="0 0 1680 1460" role="img" aria-labelledby="title desc">
-<title id="title">Embodied DeepSeek Harness v1.3：Define a Team，Equip Roles with Tools</title>
-<desc id="desc">用户通过 team.yaml 和 ROLE.md 定义团队和角色。DSH 按目标角色建立独立会话。角色通过明确任务消息协作，通过开放 Tool Catalog 调用规划、文件、感知、主动观察、执行、验证和经验工具。Verifier 异步监控，预算耗尽必须验证；Evolver 在 retry 后追踪成功恢复并回传 SKILL。</desc>
+<title id="title">Embodied DeepSeek Harness: framework overview</title>
+<desc id="desc">User-defined teams and independent role sessions use open tools, physical execution, asynchronous verification and source-linked recovery skills. This diagram describes target architecture, not implemented functionality.</desc>
 <defs>
-<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#334155"/></marker>
-<marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#2563eb"/></marker>
-<marker id="green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#087f5b"/></marker>
-<marker id="orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#b45309"/></marker>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#334155" /></marker>
+<marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#2563eb" /></marker>
+<marker id="green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#087f5b" /></marker>
+<marker id="orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#b45309" /></marker>
 <style>text{font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;fill:#172b43} .muted{fill:#53657a} .label{font-size:18px;font-weight:600} .body{font-size:21px} .small{font-size:18px} .head{font-size:25px;font-weight:650}</style></defs>
-<rect x="0" y="0" width="1680" height="1460" rx="0" fill="#f6f8fb" stroke="none"/>
+<rect x="0" y="0" width="1680" height="1460" rx="0" fill="#f6f8fb" stroke="none" />
 <text x="48" y="61" class="head">EMBODIED DEEPSEEK HARNESS</text>
-<text x="48" y="100" class="body">定义你的 Team，让每个 Role 带着合适的 Tools 工作</text>
-<text x="1260" y="61" class="label">PROJECT SPEC  /  v1.3</text>
-<text x="1260" y="97" class="small muted">设计基线 · 2026.09.07</text>
-<rect x="48" y="130" width="1010" height="100" rx="16" fill="#172b43" stroke="none"/>
-<text x="75" y="165" class="head" style="fill:#ffffff">01  用户定义团队</text>
+<text x="48" y="100" class="body">Define your team. Equip each role with the right tools.</text>
+<text x="1260" y="61" class="label">PROJECT SPEC / v1.4</text>
+<text x="1260" y="97" class="small muted">Design baseline · 2026.09.07</text>
+<rect x="48" y="130" width="1010" height="100" rx="16" fill="#172b43" stroke="none" />
+<text x="75" y="165" class="head" style="fill:#ffffff">01  DEFINE YOUR TEAM</text>
 <text x="75" y="202" class="body" style="fill:#dbeafe">team.yaml  +  ROLE.md  +  Tool Bindings</text>
-<text x="695" y="201" class="small" style="fill:#b8d4ef">新增角色只需定义与接入</text>
-<rect x="1090" y="130" width="542" height="100" rx="16" fill="#172b43" stroke="none"/>
-<text x="1115" y="165" class="head" style="fill:#ffffff">用户控制面板</text>
-<text x="1115" y="202" class="small" style="fill:#dbeafe">选择 Team · 指令 · Sensor · 状态与证据</text>
-<path d="M550 231 V268" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<path d="M1360 231 V268" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-<rect x="48" y="275" width="1584" height="320" rx="22" fill="#eaf0f8" stroke="#c9d6e6"/>
+<text x="695" y="201" class="small" style="fill:#b8d4ef">Add roles through definitions</text>
+<rect x="1090" y="130" width="542" height="100" rx="16" fill="#172b43" stroke="none" />
+<text x="1115" y="165" class="head" style="fill:#ffffff">Control console</text>
+<text x="1115" y="202" class="small" style="fill:#dbeafe">Teams · Tasks · Sensors · State · Evidence</text>
+<path d="M550 231 V268" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M1360 231 V268" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+<rect x="48" y="275" width="1584" height="320" rx="22" fill="#eaf0f8" stroke="#c9d6e6" />
 <text x="80" y="309" class="label">02  EDH HOST  /  DSH runtime + Team / Role</text>
-<text x="1030" y="309" class="label" style="fill:#2563eb">各 Role 独立 Prompt / Tools；每次新委派新上下文</text>
-<rect x="80" y="335" width="345" height="155" rx="16" fill="#ffffff" stroke="#c9d6e6"/>
-<text x="98" y="373" class="head" style="fill:#334155">决策角色 / Planner</text>
-<text x="98" y="414" class="body">计划与委派</text>
-<text x="98" y="447" class="body">独占 Retry / Replan / Resume</text>
-<path d="M252 491 V518" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-<rect x="470" y="335" width="345" height="155" rx="16" fill="#f3f7ff" stroke="#c9d6e6"/>
+<text x="1030" y="309" class="label" style="fill:#2563eb">Private role context; every delegation starts fresh</text>
+<rect x="80" y="335" width="345" height="155" rx="16" fill="#ffffff" stroke="#c9d6e6" />
+<text x="98" y="373" class="head" style="fill:#334155">Planner</text>
+<text x="98" y="414" class="body">Planning and delegation</text>
+<text x="98" y="447" class="body">Owns retry / replan / resume</text>
+<path d="M252 491 V518" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+<rect x="470" y="335" width="345" height="155" rx="16" fill="#f3f7ff" stroke="#c9d6e6" />
 <text x="488" y="373" class="head" style="fill:#2563eb">Verifier</text>
-<text x="488" y="414" class="body">异步监控 · 可暂停</text>
-<text x="488" y="447" class="body">预算耗尽 → 必须正式验证</text>
-<path d="M642 491 V518" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-<rect x="860" y="335" width="345" height="155" rx="16" fill="#eefaf4" stroke="#c9d6e6"/>
+<text x="488" y="414" class="body">Async monitor · may pause</text>
+<text x="488" y="447" class="body">Budget ends → formal check</text>
+<path d="M642 491 V518" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+<rect x="860" y="335" width="345" height="155" rx="16" fill="#eefaf4" stroke="#c9d6e6" />
 <text x="878" y="373" class="head" style="fill:#087f5b">Evolver</text>
-<text x="878" y="414" class="body">Retry 时开始追踪</text>
-<text x="878" y="447" class="body">恢复成功 → 总结经验</text>
-<path d="M1032 491 V518" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-<rect x="1250" y="335" width="345" height="155" rx="16" fill="#fff8e9" stroke="#c9d6e6"/>
-<text x="1268" y="373" class="head" style="fill:#a16207">用户自定义 Role</text>
-<text x="1268" y="414" class="body">例如 Scene Analyst</text>
-<text x="1268" y="447" class="body">用户定义职责与所选工具</text>
-<path d="M1422 491 V518" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-<rect x="80" y="520" width="1515" height="50" rx="10" fill="#ffffff" stroke="#b7c9df"/>
-<text x="104" y="553" class="body">显式通信：完整任务包 · 请求 / 回复 · 发布 / 订阅</text>
-<text x="905" y="553" class="small muted">Team / Assignment / Goal / Attempt / Recovery 关联</text>
-<path d="M305 571 V641" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-<text x="340" y="620" class="label">按 Role 装配工具</text>
-<rect x="48" y="645" width="1584" height="145" rx="20" fill="#fff8e9" stroke="#e9d6ab"/>
-<text x="80" y="681" class="label" style="fill:#a16207">03  OPEN TOOL CATALOG  /  统一接口，可插入用户工具与 Provider</text>
-<text x="80" y="724" class="body">规划 / 文件 / 通信</text>
+<text x="878" y="414" class="body">Starts tracking on retry</text>
+<text x="878" y="447" class="body">Verified recovery → experience</text>
+<path d="M1032 491 V518" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+<rect x="1250" y="335" width="345" height="155" rx="16" fill="#fff8e9" stroke="#c9d6e6" />
+<text x="1268" y="373" class="head" style="fill:#a16207">Custom role</text>
+<text x="1268" y="414" class="body">Example: Scene Analyst</text>
+<text x="1268" y="447" class="body">User-defined duties and tools</text>
+<path d="M1422 491 V518" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+<rect x="80" y="520" width="1515" height="50" rx="10" fill="#ffffff" stroke="#b7c9df" />
+<text x="104" y="553" class="body">Explicit messages: briefs · request/reply · pub/sub</text>
+<text x="905" y="553" class="small muted">Team / Assignment / Goal / Attempt / Recovery IDs</text>
+<path d="M305 571 V641" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+<text x="340" y="620" class="label">Bind tools per role</text>
+<rect x="48" y="645" width="1584" height="145" rx="20" fill="#fff8e9" stroke="#e9d6ab" />
+<text x="80" y="681" class="label" style="fill:#a16207">03  OPEN TOOL CATALOG  /  Common contracts, user tools and replaceable providers</text>
+<text x="80" y="724" class="body">Planning / files / messaging</text>
 <text x="80" y="759" class="small muted">Plan · Workspace · Team</text>
-<text x="475" y="724" class="body">感知 / 主动观察</text>
-<text x="475" y="759" class="small muted">Capture · SAM 类模型 · 转头</text>
-<text x="870" y="724" class="body">执行 / 验证</text>
-<text x="870" y="759" class="small muted">VLA / VLN · Primitive · GT Check</text>
-<text x="1265" y="724" class="body">记忆 / 经验</text>
-<text x="1265" y="759" class="small muted">Scene Facts · SKILL · Evidence</text>
-<rect x="48" y="850" width="1040" height="380" rx="22" fill="#ffffff" stroke="#c9d6e6"/>
+<text x="475" y="724" class="body">Perception / active views</text>
+<text x="475" y="759" class="small muted">Capture · Segment · Turn view</text>
+<text x="870" y="724" class="body">Execution / verification</text>
+<text x="870" y="759" class="small muted">VLA / VLN · Primitives · GT checks</text>
+<text x="1265" y="724" class="body">Memory / experience</text>
+<text x="1265" y="759" class="small muted">Scene facts · SKILL · Evidence</text>
+<rect x="48" y="850" width="1040" height="380" rx="22" fill="#ffffff" stroke="#c9d6e6" />
 <text x="80" y="885" class="label">PHYSICAL RUNTIME</text>
-<rect x="80" y="920" width="410" height="100" rx="16" fill="#f1f5f9" stroke="#cbd5e1"/>
-<text x="101" y="959" class="head">执行与资源服务</text>
-<text x="101" y="994" class="small">异步 Job · 实际资源 · 预算与停止确认</text>
-<rect x="560" y="920" width="490" height="100" rx="16" fill="#fff8e9" stroke="#e9d6ab"/>
-<text x="583" y="959" class="head">可替换策略 / 主动观察动作</text>
-<text x="583" y="994" class="small">Subgoal 策略，或显式转头 / 云台 / 底盘</text>
-<path d="M490 970 H555" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<path d="M305 791 V915" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<text x="330" y="833" class="label">任务与工具调用</text>
-<path d="M480 920 V815 H900 V794" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#orange)"/>
-<text x="532" y="838" class="label" style="fill:#b45309">预算耗尽 → 正式验证</text>
-<path d="M900 646 V610 H642 V574" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#blue)"/>
-<rect x="80" y="1060" width="970" height="48" rx="10" fill="#eaf0f8" stroke="#c9d6e6"/>
-<text x="102" y="1092" class="small">Embodiment / Backend Adapters：能力 · 标定 · 坐标 · 单位 · 设备状态</text>
-<path d="M805 1021 V1056" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<rect x="80" y="1143" width="460" height="65" rx="12" fill="#f3f7ff" stroke="#c9d6e6"/>
-<text x="99" y="1170" class="small">仿真  /  BEHAVIOR · RoboCasa · RoboTwin</text>
-<text x="99" y="1195" class="small muted">按阶段接入；限定 GT 检查用于验证</text>
-<rect x="585" y="1143" width="465" height="65" rx="12" fill="#f3f7ff" stroke="#c9d6e6"/>
-<text x="605" y="1170" class="small">真机  /  DiMOS 候选 · SDK · ROS2</text>
-<text x="605" y="1195" class="small muted">先验证硬件接口，随后真机实测</text>
-<path d="M310 1109 V1138" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<path d="M817 1109 V1138" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)"/>
-<rect x="1120" y="850" width="512" height="380" rx="22" fill="#ffffff" stroke="#c9d6e6"/>
-<text x="1150" y="885" class="label">传感器、证据与长期经验</text>
-<rect x="1150" y="920" width="450" height="100" rx="16" fill="#f3f7ff" stroke="#c9d6e6"/>
-<text x="1171" y="959" class="head">Sensor / Perception / 事件证据</text>
-<text x="1171" y="994" class="small">绑定源观察；给 Agent 的是明确引用</text>
-<path d="M1050 1084 H1100 V970 H1145" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#blue)"/>
-<path d="M1150 940 H1110 V815 H1350 V794" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#blue)"/>
-<text x="1370" y="838" class="label" style="fill:#2563eb">观察 / 感知反馈</text>
-<rect x="1150" y="1109" width="450" height="99" rx="16" fill="#eefaf4" stroke="#afd5c1"/>
-<text x="1171" y="1147" class="head" style="fill:#087f5b">SKILL.md 经验库</text>
-<text x="1171" y="1181" class="small">决策启发 · 验证知识 · 范围与来源</text>
-<text x="1150" y="1077" class="label" style="fill:#087f5b">恢复成功后提炼；后续任务显式检索</text>
-<path d="M1575 571 H1658 V1158 H1604" fill="none" stroke="#087f5b" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#green)"/>
-<path d="M1150 1158 H1105 V825 H1230 V794" fill="none" stroke="#087f5b" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#green)"/>
-<rect x="48" y="1260" width="1584" height="137" rx="18" fill="#eaf0f8" stroke="none"/>
-<text x="80" y="1296" class="label">A  Team 是用户定义的</text>
-<text x="80" y="1332" class="small muted">加入新角色、选择工具和配置协作，</text>
-<text x="80" y="1362" class="small muted">不修改固定 Agent 枚举或专用 Builder。</text>
-<text x="620" y="1296" class="label">B  Tools 覆盖完整工作能力</text>
-<text x="620" y="1332" class="small muted">规划、感知、主动观察、策略与记忆；</text>
-<text x="620" y="1362" class="small muted">实际副作用与资源决定执行方式。</text>
-<text x="1160" y="1296" class="label">C  上下文独立，经验可回传</text>
-<text x="1160" y="1332" class="small muted">调用方明确交接，信息不足可请求补充；</text>
-<text x="1160" y="1362" class="small muted">Verifier 确认恢复成功后生成经验。</text>
-<text x="48" y="1433" class="small muted">实线：配置 / 任务 / 控制    虚线：观察 / 反馈 / 经验    ·    本图描述设计，不代表所有工具与后端已实现</text>
+<rect x="80" y="920" width="410" height="100" rx="16" fill="#f1f5f9" stroke="#cbd5e1" />
+<text x="101" y="959" class="head">Execution and resources</text>
+<text x="101" y="994" class="small">Async jobs · budgets · stop ACK</text>
+<rect x="560" y="920" width="490" height="100" rx="16" fill="#fff8e9" stroke="#e9d6ab" />
+<text x="583" y="959" class="head">Policies / active observation</text>
+<text x="583" y="994" class="small">Subgoal policy or explicit head / base motion</text>
+<path d="M490 970 H555" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M305 791 V915" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<text x="330" y="833" class="label">Tasks and tool calls</text>
+<path d="M480 920 V815 H900 V794" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#orange)" />
+<text x="532" y="838" class="label" style="fill:#b45309">Budget ends → formal check</text>
+<path d="M900 646 V610 H642 V574" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#blue)" />
+<rect x="80" y="1060" width="970" height="48" rx="10" fill="#eaf0f8" stroke="#c9d6e6" />
+<text x="102" y="1092" class="small">Embodiment / backend adapters: capabilities · calibration · frames · units · device state</text>
+<path d="M805 1021 V1056" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="80" y="1143" width="460" height="65" rx="12" fill="#f3f7ff" stroke="#c9d6e6" />
+<text x="99" y="1170" class="small">Sim / BEHAVIOR · RoboCasa · RoboTwin</text>
+<text x="99" y="1195" class="small muted">Phased adapters · limited GT for verification</text>
+<rect x="585" y="1143" width="465" height="65" rx="12" fill="#f3f7ff" stroke="#c9d6e6" />
+<text x="605" y="1170" class="small">Hardware / DiMOS candidate · SDK · ROS2</text>
+<text x="605" y="1195" class="small muted">Contract tests first, then real-device trials</text>
+<path d="M310 1109 V1138" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<path d="M817 1109 V1138" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)" />
+<rect x="1120" y="850" width="512" height="380" rx="22" fill="#ffffff" stroke="#c9d6e6" />
+<text x="1150" y="885" class="label">Sensors, evidence and experience</text>
+<rect x="1150" y="920" width="450" height="100" rx="16" fill="#f3f7ff" stroke="#c9d6e6" />
+<text x="1171" y="959" class="head">Sensors / perception / events</text>
+<text x="1171" y="994" class="small">Source-linked frames and explicit references</text>
+<path d="M1050 1084 H1100 V970 H1145" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#blue)" />
+<path d="M1150 940 H1110 V815 H1350 V794" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#blue)" />
+<text x="1370" y="838" class="label" style="fill:#2563eb">Observation feedback</text>
+<rect x="1150" y="1109" width="450" height="99" rx="16" fill="#eefaf4" stroke="#afd5c1" />
+<text x="1171" y="1147" class="head" style="fill:#087f5b">SKILL.md library</text>
+<text x="1171" y="1181" class="small">Decision cues · checks · scope · sources</text>
+<text x="1150" y="1077" class="label" style="fill:#087f5b">Verified recovery → later explicit retrieval</text>
+<path d="M1575 571 H1658 V1158 H1604" fill="none" stroke="#087f5b" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#green)" />
+<path d="M1150 1158 H1105 V825 H1230 V794" fill="none" stroke="#087f5b" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#green)" />
+<rect x="48" y="1260" width="1584" height="137" rx="18" fill="#eaf0f8" stroke="none" />
+<text x="80" y="1296" class="label">A  User-defined teams</text>
+<text x="80" y="1332" class="small muted">Add roles, tools and collaboration bindings.</text>
+<text x="80" y="1362" class="small muted">No fixed role enum or dedicated builder.</text>
+<text x="620" y="1296" class="label">B  Tools cover the complete task</text>
+<text x="620" y="1332" class="small muted">Plan, perceive, observe, execute and remember.</text>
+<text x="620" y="1362" class="small muted">Actual effects and resources govern execution.</text>
+<text x="1160" y="1296" class="label">C  Private context, reusable experience</text>
+<text x="1160" y="1332" class="small muted">Explicit handoff; request missing context.</text>
+<text x="1160" y="1362" class="small muted">Verifier confirms the original recovery goal.</text>
+<text x="48" y="1433" class="small muted">Solid: configuration / tasks / control    ·    Dashed: observations / feedback / experience    ·    Target design; providers are not yet implemented</text>
 </svg>
