@@ -20,6 +20,13 @@ requirement or deployment binding is unclear.
 - Tools include planning, files, perception and active observation as well as
   execution. Actual physical resource effects determine scheduling.
 
+## Public language
+
+- All repository-facing content must be in English: documentation, example role
+  prompts, configuration descriptions, diagrams/SVG text, comments and commit messages.
+- Internal conversation with the user may be in Chinese. Do not copy untranslated
+  discussion notes into the repository. Translate diagrams and inspect their layout.
+
 ## Structure and checks
 
 - Use intuitive module names under `packages/`. Keep provider execution in Python.

@@ -12,7 +12,7 @@ selected DeepSeek Harness implementations, with traceable provenance.
 > schemas, Python protocols and development documentation. DSH runtime integration,
 > simulator support, device control and the console are not implemented.
 
-[中文说明](README.zh.md) · [Project spec](docs/project-spec.md) ·
+[Project spec](docs/project-spec.md) ·
 [Implementation plan](docs/implementation/plan.md) ·
 [Current status](docs/implementation/progress.md)
 

@@ -1,7 +1,7 @@
 schema_version: physical.tool.v1
 tool_id: perception.segment_objects
 version: '1'
-description: 在指定观察帧上按文本提示返回实例分割结果
+description: Return instance segmentation for a text prompt on a referenced observation frame
 input_schema: builtin:SegmentationRequest.v1
 output_schema: builtin:SegmentationResult.v1
 executor:

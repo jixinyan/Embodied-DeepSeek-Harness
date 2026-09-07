@@ -18,3 +18,6 @@ protocol update with its fixtures separately from the provider that consumes it.
 Inspect and stage only the intended changes, use descriptive messages, and push
 completed checkpoints at delivery or handoff. Preserve published history and
 leave unrelated work intact. See [AGENTS.md](AGENTS.md) for the full policy.
+
+Use English for all public repository content, including SVG labels and examples.
+Internal planning discussions may use Chinese.
