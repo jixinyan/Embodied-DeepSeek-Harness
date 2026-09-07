@@ -41,3 +41,10 @@ native DSH imports resolve locally. Deleting `.cache/` is safe; typecheck rebuil
 
 See [the integration guide](../implementation/dsh-integration.md) for APIs, exact
 acceptance, compatibility patches and features still missing.
+
+## Shared contract checks
+
+`pnpm test:contracts` runs identical wire and lifecycle cases in TypeScript and
+Python. Python tests require the pinned environment installed above; no optional
+robotics packages are imported. See [the contract guide](../implementation/contracts.md)
+for callable APIs, state tables and limits.

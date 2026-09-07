@@ -1,8 +1,8 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.4 · 2026-09-07
+Version: v1.5 · 2026-09-07
 
-Status: architecture and product baseline; only the engineering skeleton exists.
+Status: architecture and product baseline; Steps 00–01 implemented. See current progress.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -11,10 +11,11 @@ Items marked “v1 default” are initial implementation choices that may evolve
 configuration or a documented decision. Model checkpoints, compute and robot models
 are deployment bindings; they do not block the framework design.
 
-This revision translates the public specification, examples and diagrams into English.
-It preserves the Team/Role design, complete tool surface and implementation gates.
-The unified harness directory groups agent-runtime, physical-runtime and shared contracts;
-this code organization preserves their runtime responsibilities.
+This revision updates the engineering handoff after DSH runtime integration and
+shared contract validation. Confirmed product requirements remain unchanged. Detailed
+wire payloads and validation rules are authoritative in the schema and
+[contract guide](implementation/contracts.md); examples below are conceptual excerpts,
+not complete copyable wire messages. Public documentation and SVG labels use English.
 
 Reading order: start at Section 0; Sections 1–3 explain positioning and architecture;
 4–8 define agents, communication, execution, verification and experience; 9–11 cover
@@ -26,22 +27,24 @@ are SVG assets; include their directory when handing over this document.
 
 ### 0.1 Current work and next action
 
-The runtime choice is settled. First absorb and validate the necessary DSH runtime
-implementation, then implement Team/Role loading, tools and the CPU event-loop slice.
-Do not begin by installing the entire simulator, GPU or robot dependency stack.
-Section 16 groups the initial work packages; the implementation plan starts at Step 00.
+The runtime choice is settled. Steps 00–01 provide a working original DSH loop seam,
+scoped sessions, shared wire validators and pure execution/verification/recovery gates.
+Continue Step 02: Team/Role loading and tool-catalog preflight. Read
+[progress](implementation/progress.md), [runtime integration](implementation/dsh-integration.md)
+and [shared contracts](implementation/contracts.md) first. Do not install the entire
+simulator, GPU or robot stack for this CPU phase.
 
-The current repository contains interfaces, schema sources and examples. Tools,
-loaders, application startup and providers remain unimplemented. Pseudocode and YAML
-in this specification describe intended contracts, not callable APIs.
+Team loading, durable communication, physical jobs/providers, verifier/evolver services
+and live application startup remain unimplemented. Pseudocode and YAML in this
+specification describe intended contracts; current callable APIs are in the guides.
 
 | Asset | Status | Handoff use |
 | --- | --- | --- |
-| This specification | v1.4 implementation baseline | Takes precedence over historical discussion; later explicit user decisions take precedence over it |
+| This specification | v1.5 implementation baseline | Takes precedence over historical discussion; later explicit user decisions take precedence over it |
 | Legacy EAF | Existing code at `714e00ca83999da2df7221dcf205968adde5b441` | Reference tools, policies and evidence design; preserve the old project |
 | Official DSH | Key paths inspected at `d347e703908d0406b7a7ef80e3a0e594d86b2215` | Selectively absorb necessary implementations and record provenance |
 | Console prototype | Direction approved; synthetic demonstration data | Reuse layout intent and reassess after real data integration |
-| EDH skeleton | Interfaces, definitions, examples and documentation exist | Inspect actual modules and progress; do not infer runtime support |
+| EDH repository | Steps 00–01 verified; remaining domains are interfaces | Inspect actual modules and progress; do not infer runtime support |
 | Model/simulation/hardware evaluation | Not performed | Test doubles are not evidence of real environment or robot performance |
 
 ### 0.2 Repository and workspace

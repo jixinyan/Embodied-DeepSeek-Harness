@@ -1,9 +1,9 @@
 # Implementation progress
 
-Spec: v1.4. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
+Spec: v1.5. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
 [unified harness layout](decisions/0002-unified-harness.md).
 
-**Current checkpoint: Step 01 in progress. Bootstrap and Step 00 complete.**
+**Current checkpoint: Steps 00–01 complete. Next: Step 02 Team/Role loading.**
 
 ## Delivered capabilities
 
@@ -13,6 +13,8 @@ Spec: v1.4. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
   tests check actual model inputs/results, wake-up, cancellation and teardown.
 - Shared schema and generated TypeScript; Python interfaces; role/team/tool/skill
   examples; English specification, SVG figures, module map and implementation plan.
+- Matching TS/Python wire validators and pure execution, verification and recovery
+  gates; 77 shared wire cases and 69 shared lifecycle cases pass in both languages.
 - Per-file source hashes, original MIT notices and documented compatibility patches.
 
 Still unimplemented: Team/Role loading, validated assignment briefs, durable EDH
@@ -26,7 +28,7 @@ not yet implement the Team-level AgentFactory contract or physical execution.
 | Step | Status | Next concrete work |
 | --- | --- | --- |
 | 00 | done | Original DSH loop, scoped sessions, structured tool, wake-up and cancellation verified |
-| 01 | in_progress | Refine schema, implement TS/Python boundary validation and state contracts; scaffold schema is input |
+| 01 | done | Versioned wire schemas, TS/Python validation and state/attempt/evidence gates verified |
 | 02 | not_started | Implement Team/Role loader and tool binding validation |
 | 03 | not_started | Implement fresh scoped role sessions; inspect actual model inputs |
 | 04 | not_started | Implement scoped communication, durable delivery and evidence access |
@@ -50,13 +52,14 @@ Local verification on 2026-09-07: Node v25.4.0, pnpm 11.19.0, Python 3.14.0.
 | Check | Observed result |
 | --- | --- |
 | `pnpm install --frozen-lockfile` | Passed; all 19 workspace projects resolve |
-| `pnpm check` | Passed: formatting, schema, provenance, TypeScript, structure, Python and runtime suite |
+| `pnpm check` | Passed: formatting, schema, provenance, TypeScript, structure, Python, runtime and shared contract suites |
 | `pnpm check:provenance` | 90 source files, source import closure, 20 referenced module bindings and runtime metadata path checked |
-| `pnpm check:contracts` | Generated types current; 6 wire fixtures and structural rejection cases |
+| `pnpm check:contracts` | Generated types current; 6 example wire fixtures and structural rejection cases |
 | `pnpm typecheck` | Three foundation declaration builds plus strict EDH/non-foundation DSH checks |
 | `pnpm check:structure` | 18 private source workspaces; English public text and local links |
-| `pnpm check:python` | 12 interface modules compile/import; repository SVG XML valid |
+| `pnpm check:python` | 14 CPU modules compile/import; repository SVG XML valid |
 | `pnpm test:runtime` | 6 integration tests pass; no skipped cases |
+| `pnpm test:contracts` | 146 shared wire/lifecycle cases pass in each language, plus non-JSON rejection tests |
 
 The runtime tests are actual Step 00 acceptance, using a scripted model boundary.
 They do not prove model intelligence, task success, GT verification or robot support.
@@ -84,21 +87,38 @@ composition, acceptance tests, compiler boundaries and remaining limits.
 
 ## Handoff
 
-Continue Step 01 in the existing checkout. Read the shared schema and current
-fixtures, refine missing identities/units/versions and state rules, then implement
-matching TypeScript/Python validators against the same positive and negative cases.
-The new runtime suite remains a regression gate. Do not regenerate from a full DSH
-clone, install robot/GPU dependencies for CPU work, or label existing example YAML
-as a working Team loader. New public content stays English; diagrams stay SVG.
+Continue Step 02 in the existing checkout. Read [contract integration](contracts.md),
+then implement Team/Role loading, tool catalog and an inspectable preflight command.
+Resolve defaults and references into a frozen snapshot. Verify unknown roles/tools,
+missing required responsibilities and incompatible provider capabilities before any
+execution. Adding a role should require configuration, not a core role enum.
+
+Do not create another loop, regenerate from a full DSH clone or install robot/GPU
+dependencies for CPU work. Example YAML is not yet a working Team loader. Current
+contract gates are pure functions: later services must supply authoritative state,
+identities and facts and enforce transitions atomically. They do not run a verifier,
+communicate across processes, execute a policy or publish SKILL files.
 
 Version checkpoints: `1109790` records the unified skeleton; `cd5e032` records source
-absorption. The subsequent Step 00 implementation commit records working assembly
-and acceptance. Preserve published history and commit each verified work slice.
+absorption; `56ea601` records Step 00 assembly and acceptance; `c062126` records shared
+wire validation. The subsequent Step 01 commit records lifecycle acceptance and this
+handoff. Preserve published history and commit each verified work slice.
 
-## Step 01 — wire validation checkpoint
+## Step 01 decisions and evidence
 
-Refined versioned identities, timestamps, success-check IDs/sources, async tool
-results, device acknowledgement, evidence metadata, plan/recovery references and
-action units. Both TypeScript and Python load the same authoritative JSON Schema.
-A shared fixture corpus exercises positive and negative wire boundaries. Lifecycle
-transition and current-attempt verdict gates are the remaining work for this step.
+One JSON Schema owns versioned fields and transition tables. Generated TypeScript is
+only a static projection; runtime validators retain conditional branches and check
+local field relations. Python loads the same source via an explicit path. Both reject
+unsupported versions, malformed identity/time/unit values and non-JSON input.
+
+Pure lifecycle gates reject old attempts, executions, verification requests,
+assignments and criteria, stale/cross-clock/debug evidence, unauthorized resume,
+budget violations and unknown-as-success. A recovery can resolve only against the
+original goal and its retry lineage; prerequisite success is insufficient. A supplied
+recovery verdict must already pass the formal verdict gate. These checks assume a
+trusted service supplies identity and provider facts; runtime integration is future work.
+
+CPU dependencies are pinned in the pnpm lockfile and Python constraints. The setup
+and CI create a local Python environment; no simulator, GPU or model key is required.
+See [contract APIs and exact limits](contracts.md) and the shared case corpora for
+reproduction. Schema v1 remains a pre-release draft, not a deployed compatibility claim.

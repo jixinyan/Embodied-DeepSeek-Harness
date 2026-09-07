@@ -4,7 +4,7 @@ This is the construction sequence. Section references point to the
 [project specification](../project-spec.md). Work packages group responsibilities;
 these steps define executable slices, prerequisites and acceptance gates.
 
-**Step 00 has passed its local runtime acceptance. Steps 01–16 remain unimplemented.**
+**Steps 00–01 have passed local acceptance. Steps 02–16 remain unimplemented.**
 Skeleton interfaces and examples are implementation inputs, not completed behavior.
 [Progress](progress.md) records actual state. Steps 00–14 deliver v1; 15–16 extend it.
 A checklist or document change never substitutes for execution evidence.

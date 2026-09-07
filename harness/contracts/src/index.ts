@@ -7,3 +7,5 @@ export {
   type ContractIssue,
   type ContractName,
 } from './validation.js';
+
+export { LifecycleValidator, type VerificationContext } from './lifecycle.js';

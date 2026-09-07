@@ -73,10 +73,9 @@ not three implementations of the same agent.
 
 ## Wire contract maturity
 
-The source schema defines the draft structural vocabulary. It does not establish
-semantic sufficiency of context, event-type payload validation, goal/attempt
-matching, evidence access, model compatibility or recovery eligibility. Those
-checks belong to Steps 01–10. The generated TypeScript types do not express every
-JSON Schema constraint (for example exclusive `all`/`any`); use runtime validation
-at actual boundaries once implemented. Python Protocols use wire-object aliases
-and do not duplicate or validate schema fields.
+The authoritative draft schema now has matching TypeScript/Python wire validation
+and pure lifecycle gates for attempt identity, budgets, formal verdicts and recovery
+lineage. See [contract integration](../implementation/contracts.md). Semantic context
+sufficiency, authentication, event payload registration, evidence authorization and
+runtime enforcement remain service work in Steps 02–10. Generated TypeScript and
+Python Protocol annotations alone do not validate runtime data.

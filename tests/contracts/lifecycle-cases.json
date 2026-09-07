@@ -1,0 +1,2168 @@
+{
+  "description": "Synthetic shared contract cases. No agent, simulator or robot executes these scenarios.",
+  "bases": {
+    "execution": {
+      "operation": "execution",
+      "args": [
+        {
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1",
+          "instruction": "Place the specified cup inside the cabinet.",
+          "entities": {
+            "object": "cup_1",
+            "container": "cabinet_1"
+          },
+          "required_capabilities": [
+            "object_manipulation"
+          ],
+          "success_contract": {
+            "id": "store_object",
+            "version": "1",
+            "all": [
+              {
+                "check": "inside",
+                "args": [
+                  "cup_1",
+                  "cabinet_1"
+                ],
+                "check_id": "inside_target"
+              }
+            ],
+            "source": {
+              "kind": "benchmark",
+              "reference": "synthetic-store-object-v1"
+            }
+          },
+          "budget": {
+            "max_control_steps": 200,
+            "max_wall_time_s": 60
+          },
+          "context_refs": [
+            "fixture_frame"
+          ],
+          "schema_version": "physical.subgoal.v1",
+          "task_id": "fixture_task",
+          "team_run_id": "fixture_team",
+          "decision_owner_id": "planner_1",
+          "owner_assignment_id": "planner_assignment",
+          "idempotency_key": "fixture_request_1"
+        },
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "running",
+          "state_version": 2,
+          "control_steps": 100,
+          "policy_calls": 2,
+          "elapsed_wall_time_s": 1,
+          "device_confirmed": true,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:01Z"
+        },
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "ended",
+          "state_version": 3,
+          "control_steps": 200,
+          "policy_calls": 2,
+          "elapsed_wall_time_s": 2,
+          "device_confirmed": true,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:02Z",
+          "stop_reason": "budget_exhausted",
+          "boundary_event_id": "fixture_boundary",
+          "boundary_at": "2026-09-07T00:00:02Z"
+        }
+      ]
+    },
+    "start": {
+      "operation": "execution",
+      "args": [
+        {
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1",
+          "instruction": "Place the specified cup inside the cabinet.",
+          "entities": {
+            "object": "cup_1",
+            "container": "cabinet_1"
+          },
+          "required_capabilities": [
+            "object_manipulation"
+          ],
+          "success_contract": {
+            "id": "store_object",
+            "version": "1",
+            "all": [
+              {
+                "check": "inside",
+                "args": [
+                  "cup_1",
+                  "cabinet_1"
+                ],
+                "check_id": "inside_target"
+              }
+            ],
+            "source": {
+              "kind": "benchmark",
+              "reference": "synthetic-store-object-v1"
+            }
+          },
+          "budget": {
+            "max_control_steps": 200,
+            "max_wall_time_s": 60
+          },
+          "context_refs": [
+            "fixture_frame"
+          ],
+          "schema_version": "physical.subgoal.v1",
+          "task_id": "fixture_task",
+          "team_run_id": "fixture_team",
+          "decision_owner_id": "planner_1",
+          "owner_assignment_id": "planner_assignment",
+          "idempotency_key": "fixture_request_1"
+        },
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "accepted",
+          "state_version": 1,
+          "control_steps": 0,
+          "policy_calls": 0,
+          "elapsed_wall_time_s": 0,
+          "device_confirmed": true,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:01Z"
+        },
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "running",
+          "state_version": 2,
+          "control_steps": 100,
+          "policy_calls": 2,
+          "elapsed_wall_time_s": 1,
+          "device_confirmed": true,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:01Z"
+        }
+      ]
+    },
+    "pause": {
+      "operation": "execution",
+      "args": [
+        {
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1",
+          "instruction": "Place the specified cup inside the cabinet.",
+          "entities": {
+            "object": "cup_1",
+            "container": "cabinet_1"
+          },
+          "required_capabilities": [
+            "object_manipulation"
+          ],
+          "success_contract": {
+            "id": "store_object",
+            "version": "1",
+            "all": [
+              {
+                "check": "inside",
+                "args": [
+                  "cup_1",
+                  "cabinet_1"
+                ],
+                "check_id": "inside_target"
+              }
+            ],
+            "source": {
+              "kind": "benchmark",
+              "reference": "synthetic-store-object-v1"
+            }
+          },
+          "budget": {
+            "max_control_steps": 200,
+            "max_wall_time_s": 60
+          },
+          "context_refs": [
+            "fixture_frame"
+          ],
+          "schema_version": "physical.subgoal.v1",
+          "task_id": "fixture_task",
+          "team_run_id": "fixture_team",
+          "decision_owner_id": "planner_1",
+          "owner_assignment_id": "planner_assignment",
+          "idempotency_key": "fixture_request_1"
+        },
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "pausing",
+          "state_version": 2,
+          "control_steps": 100,
+          "policy_calls": 2,
+          "elapsed_wall_time_s": 1,
+          "device_confirmed": false,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:01Z"
+        },
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "paused",
+          "state_version": 3,
+          "control_steps": 100,
+          "policy_calls": 2,
+          "elapsed_wall_time_s": 1,
+          "device_confirmed": true,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:01Z",
+          "stop_reason": "verifier_pause",
+          "boundary_event_id": "fixture_pause",
+          "boundary_at": "2026-09-07T00:00:01Z"
+        }
+      ]
+    },
+    "resume": {
+      "operation": "execution",
+      "args": [
+        {
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1",
+          "instruction": "Place the specified cup inside the cabinet.",
+          "entities": {
+            "object": "cup_1",
+            "container": "cabinet_1"
+          },
+          "required_capabilities": [
+            "object_manipulation"
+          ],
+          "success_contract": {
+            "id": "store_object",
+            "version": "1",
+            "all": [
+              {
+                "check": "inside",
+                "args": [
+                  "cup_1",
+                  "cabinet_1"
+                ],
+                "check_id": "inside_target"
+              }
+            ],
+            "source": {
+              "kind": "benchmark",
+              "reference": "synthetic-store-object-v1"
+            }
+          },
+          "budget": {
+            "max_control_steps": 200,
+            "max_wall_time_s": 60
+          },
+          "context_refs": [
+            "fixture_frame"
+          ],
+          "schema_version": "physical.subgoal.v1",
+          "task_id": "fixture_task",
+          "team_run_id": "fixture_team",
+          "decision_owner_id": "planner_1",
+          "owner_assignment_id": "planner_assignment",
+          "idempotency_key": "fixture_request_1"
+        },
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "paused",
+          "state_version": 3,
+          "control_steps": 100,
+          "policy_calls": 2,
+          "elapsed_wall_time_s": 1,
+          "device_confirmed": true,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:01Z",
+          "stop_reason": "verifier_pause",
+          "boundary_event_id": "fixture_pause",
+          "boundary_at": "2026-09-07T00:00:01Z"
+        },
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "running",
+          "state_version": 4,
+          "control_steps": 100,
+          "policy_calls": 2,
+          "elapsed_wall_time_s": 1,
+          "device_confirmed": true,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:01Z"
+        },
+        "planner_1"
+      ]
+    },
+    "verification": {
+      "operation": "verification",
+      "args": [
+        {
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "verifier_id": "fixture_verifier",
+          "status": "running",
+          "goal_contract_version": "1",
+          "boundary_event_id": "fixture_boundary",
+          "checks": [],
+          "evidence_refs": [],
+          "explanation": "Synthetic successful check.",
+          "schema_version": "physical.verification.v1",
+          "verdict_id": "fixture_verdict",
+          "verification_request_id": "fixture_verify_request",
+          "execution_id": "fixture_execution",
+          "verifier_assignment_id": "verifier_assignment",
+          "goal_contract_id": "store_object",
+          "observed_at": "2026-09-07T00:00:03Z",
+          "clock_id": "fixture_clock"
+        },
+        {
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "verifier_id": "fixture_verifier",
+          "status": "passed",
+          "goal_contract_version": "1",
+          "boundary_event_id": "fixture_boundary",
+          "checks": [
+            {
+              "check_id": "inside_target",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            }
+          ],
+          "evidence_refs": [
+            "fresh_fact"
+          ],
+          "explanation": "Synthetic successful check.",
+          "schema_version": "physical.verification.v1",
+          "verdict_id": "fixture_verdict",
+          "verification_request_id": "fixture_verify_request",
+          "execution_id": "fixture_execution",
+          "verifier_assignment_id": "verifier_assignment",
+          "goal_contract_id": "store_object",
+          "observed_at": "2026-09-07T00:00:03Z",
+          "clock_id": "fixture_clock"
+        }
+      ]
+    },
+    "verification_start": {
+      "operation": "verification",
+      "args": [
+        {
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "verifier_id": "fixture_verifier",
+          "status": "pending",
+          "goal_contract_version": "1",
+          "boundary_event_id": "fixture_boundary",
+          "checks": [],
+          "evidence_refs": [],
+          "explanation": "Synthetic successful check.",
+          "schema_version": "physical.verification.v1",
+          "verdict_id": "fixture_verdict",
+          "verification_request_id": "fixture_verify_request",
+          "execution_id": "fixture_execution",
+          "verifier_assignment_id": "verifier_assignment",
+          "goal_contract_id": "store_object",
+          "observed_at": "2026-09-07T00:00:03Z",
+          "clock_id": "fixture_clock"
+        },
+        {
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "verifier_id": "fixture_verifier",
+          "status": "running",
+          "goal_contract_version": "1",
+          "boundary_event_id": "fixture_boundary",
+          "checks": [],
+          "evidence_refs": [],
+          "explanation": "Synthetic successful check.",
+          "schema_version": "physical.verification.v1",
+          "verdict_id": "fixture_verdict",
+          "verification_request_id": "fixture_verify_request",
+          "execution_id": "fixture_execution",
+          "verifier_assignment_id": "verifier_assignment",
+          "goal_contract_id": "store_object",
+          "observed_at": "2026-09-07T00:00:03Z",
+          "clock_id": "fixture_clock"
+        }
+      ]
+    },
+    "verdict": {
+      "operation": "verdict",
+      "args": [
+        {
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "verifier_id": "fixture_verifier",
+          "status": "passed",
+          "goal_contract_version": "1",
+          "boundary_event_id": "fixture_boundary",
+          "checks": [
+            {
+              "check_id": "inside_target",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            }
+          ],
+          "evidence_refs": [
+            "fresh_fact"
+          ],
+          "explanation": "Synthetic successful check.",
+          "schema_version": "physical.verification.v1",
+          "verdict_id": "fixture_verdict",
+          "verification_request_id": "fixture_verify_request",
+          "execution_id": "fixture_execution",
+          "verifier_assignment_id": "verifier_assignment",
+          "goal_contract_id": "store_object",
+          "observed_at": "2026-09-07T00:00:03Z",
+          "clock_id": "fixture_clock"
+        },
+        {
+          "request": {
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1",
+            "instruction": "Place the specified cup inside the cabinet.",
+            "entities": {
+              "object": "cup_1",
+              "container": "cabinet_1"
+            },
+            "required_capabilities": [
+              "object_manipulation"
+            ],
+            "success_contract": {
+              "id": "store_object",
+              "version": "1",
+              "all": [
+                {
+                  "check": "inside",
+                  "args": [
+                    "cup_1",
+                    "cabinet_1"
+                  ],
+                  "check_id": "inside_target"
+                }
+              ],
+              "source": {
+                "kind": "benchmark",
+                "reference": "synthetic-store-object-v1"
+              }
+            },
+            "budget": {
+              "max_control_steps": 200,
+              "max_wall_time_s": 60
+            },
+            "context_refs": [
+              "fixture_frame"
+            ],
+            "schema_version": "physical.subgoal.v1",
+            "task_id": "fixture_task",
+            "team_run_id": "fixture_team",
+            "decision_owner_id": "planner_1",
+            "owner_assignment_id": "planner_assignment",
+            "idempotency_key": "fixture_request_1"
+          },
+          "execution": {
+            "schema_version": "physical.execution.v1",
+            "execution_id": "fixture_execution",
+            "task_scope": {
+              "task_id": "fixture_task",
+              "goal_id": "store_cup",
+              "attempt_id": "attempt_1"
+            },
+            "state": "ended",
+            "state_version": 3,
+            "control_steps": 200,
+            "policy_calls": 2,
+            "elapsed_wall_time_s": 2,
+            "device_confirmed": true,
+            "observation_refs": [],
+            "clock_id": "fixture_clock",
+            "recorded_at": "2026-09-07T00:00:02Z",
+            "stop_reason": "budget_exhausted",
+            "boundary_event_id": "fixture_boundary",
+            "boundary_at": "2026-09-07T00:00:02Z"
+          },
+          "verifierId": "fixture_verifier",
+          "verifierAssignmentId": "verifier_assignment",
+          "verificationRequestId": "fixture_verify_request",
+          "evidence": [
+            {
+              "id": "fresh_fact",
+              "kind": "report",
+              "source": "synthetic://check/inside",
+              "created_at": "2026-09-07T00:00:04Z",
+              "observed_at": "2026-09-07T00:00:03Z",
+              "clock_id": "fixture_clock",
+              "task_scope": {
+                "task_id": "fixture_task",
+                "goal_id": "store_cup",
+                "attempt_id": "attempt_1"
+              },
+              "visibility": "agent"
+            }
+          ],
+          "checkFacts": [
+            {
+              "check_id": "inside_target",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "recovery": {
+      "operation": "recovery",
+      "args": [
+        {
+          "schema_version": "physical.recovery.v1",
+          "recovery_id": "recovery_1",
+          "task_id": "fixture_task",
+          "original_goal_id": "store_cup",
+          "goal_contract_id": "store_object",
+          "goal_contract_version": "1",
+          "decision_owner_id": "planner_1",
+          "failed_attempt_id": "attempt_1",
+          "attempt_ids": [
+            "attempt_2"
+          ],
+          "changes": [
+            "Inspect access before retry."
+          ],
+          "evidence_refs": [
+            "fixture_frame"
+          ],
+          "status": "recording"
+        },
+        {
+          "schema_version": "physical.recovery.v1",
+          "recovery_id": "recovery_1",
+          "task_id": "fixture_task",
+          "original_goal_id": "store_cup",
+          "goal_contract_id": "store_object",
+          "goal_contract_version": "1",
+          "decision_owner_id": "planner_1",
+          "failed_attempt_id": "attempt_1",
+          "attempt_ids": [
+            "attempt_2"
+          ],
+          "changes": [
+            "Inspect access before retry."
+          ],
+          "evidence_refs": [
+            "fixture_frame"
+          ],
+          "status": "resolved_success",
+          "verdict_ref": "retry_verdict"
+        },
+        {
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_2",
+            "recovery_id": "recovery_1"
+          },
+          "verifier_id": "fixture_verifier",
+          "status": "passed",
+          "goal_contract_version": "1",
+          "boundary_event_id": "fixture_boundary",
+          "checks": [
+            {
+              "check_id": "inside_target",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            }
+          ],
+          "evidence_refs": [
+            "fresh_fact"
+          ],
+          "explanation": "Synthetic successful check.",
+          "schema_version": "physical.verification.v1",
+          "verdict_id": "retry_verdict",
+          "verification_request_id": "fixture_verify_request",
+          "execution_id": "fixture_execution",
+          "verifier_assignment_id": "verifier_assignment",
+          "goal_contract_id": "store_object",
+          "observed_at": "2026-09-07T00:00:03Z",
+          "clock_id": "fixture_clock"
+        }
+      ]
+    },
+    "requires_running": {
+      "operation": "requiresVerification",
+      "args": [
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "running",
+          "state_version": 2,
+          "control_steps": 100,
+          "policy_calls": 2,
+          "elapsed_wall_time_s": 1,
+          "device_confirmed": true,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:01Z"
+        }
+      ]
+    },
+    "requires_paused": {
+      "operation": "requiresVerification",
+      "args": [
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "paused",
+          "state_version": 3,
+          "control_steps": 100,
+          "policy_calls": 2,
+          "elapsed_wall_time_s": 1,
+          "device_confirmed": true,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:01Z",
+          "stop_reason": "verifier_pause",
+          "boundary_event_id": "fixture_pause",
+          "boundary_at": "2026-09-07T00:00:01Z"
+        }
+      ]
+    },
+    "requires_ended": {
+      "operation": "requiresVerification",
+      "args": [
+        {
+          "schema_version": "physical.execution.v1",
+          "execution_id": "fixture_execution",
+          "task_scope": {
+            "task_id": "fixture_task",
+            "goal_id": "store_cup",
+            "attempt_id": "attempt_1"
+          },
+          "state": "ended",
+          "state_version": 3,
+          "control_steps": 200,
+          "policy_calls": 2,
+          "elapsed_wall_time_s": 2,
+          "device_confirmed": true,
+          "observation_refs": [],
+          "clock_id": "fixture_clock",
+          "recorded_at": "2026-09-07T00:00:02Z",
+          "stop_reason": "budget_exhausted",
+          "boundary_event_id": "fixture_boundary",
+          "boundary_at": "2026-09-07T00:00:02Z"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "name": "accept valid execution",
+      "base": "execution",
+      "patches": [],
+      "error": null
+    },
+    {
+      "name": "accept valid start",
+      "base": "start",
+      "patches": [],
+      "error": null
+    },
+    {
+      "name": "accept valid pause",
+      "base": "pause",
+      "patches": [],
+      "error": null
+    },
+    {
+      "name": "accept valid resume",
+      "base": "resume",
+      "patches": [],
+      "error": null
+    },
+    {
+      "name": "accept valid verification",
+      "base": "verification",
+      "patches": [],
+      "error": null
+    },
+    {
+      "name": "accept valid verification_start",
+      "base": "verification_start",
+      "patches": [],
+      "error": null
+    },
+    {
+      "name": "accept valid verdict",
+      "base": "verdict",
+      "patches": [],
+      "error": null
+    },
+    {
+      "name": "accept valid recovery",
+      "base": "recovery",
+      "patches": [],
+      "error": null
+    },
+    {
+      "name": "requires_running",
+      "base": "requires_running",
+      "patches": [],
+      "expected": false
+    },
+    {
+      "name": "requires_paused",
+      "base": "requires_paused",
+      "patches": [],
+      "expected": true
+    },
+    {
+      "name": "requires_ended",
+      "base": "requires_ended",
+      "patches": [],
+      "expected": true
+    },
+    {
+      "name": "reject old execution version",
+      "base": "execution",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/state_version",
+          "value": 2
+        }
+      ],
+      "error": "stale_state_version"
+    },
+    {
+      "name": "reject new attempt in existing execution",
+      "base": "execution",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/task_scope/attempt_id",
+          "value": "attempt_2"
+        }
+      ],
+      "error": "execution_identity_mismatch"
+    },
+    {
+      "name": "reject changed execution ID",
+      "base": "execution",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/execution_id",
+          "value": "execution_2"
+        }
+      ],
+      "error": "execution_identity_mismatch"
+    },
+    {
+      "name": "reject regressing counters",
+      "base": "execution",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/policy_calls",
+          "value": 1
+        }
+      ],
+      "error": "counter_regression"
+    },
+    {
+      "name": "reject control budget overrun",
+      "base": "execution",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/control_steps",
+          "value": 201
+        }
+      ],
+      "error": "step_budget_exceeded"
+    },
+    {
+      "name": "budget requires terminal state",
+      "base": "start",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/control_steps",
+          "value": 200
+        }
+      ],
+      "error": "budget_requires_end"
+    },
+    {
+      "name": "wall budget requires terminal state",
+      "base": "start",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/elapsed_wall_time_s",
+          "value": 60
+        }
+      ],
+      "error": "budget_requires_end"
+    },
+    {
+      "name": "reject premature budget stop",
+      "base": "execution",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/control_steps",
+          "value": 199
+        }
+      ],
+      "error": "budget_not_exhausted"
+    },
+    {
+      "name": "reject clock switch",
+      "base": "execution",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/clock_id",
+          "value": "unrelated_clock"
+        }
+      ],
+      "error": "clock_mismatch"
+    },
+    {
+      "name": "only owner resumes",
+      "base": "resume",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/3",
+          "value": "fixture_verifier"
+        }
+      ],
+      "error": "resume_requires_owner"
+    },
+    {
+      "name": "missing owner cannot resume",
+      "base": "resume",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/3",
+          "value": null
+        }
+      ],
+      "error": "resume_requires_owner"
+    },
+    {
+      "name": "ended execution cannot restart",
+      "base": "start",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1",
+          "value": {
+            "schema_version": "physical.execution.v1",
+            "execution_id": "fixture_execution",
+            "task_scope": {
+              "task_id": "fixture_task",
+              "goal_id": "store_cup",
+              "attempt_id": "attempt_1"
+            },
+            "state": "ended",
+            "state_version": 3,
+            "control_steps": 200,
+            "policy_calls": 2,
+            "elapsed_wall_time_s": 2,
+            "device_confirmed": true,
+            "observation_refs": [],
+            "clock_id": "fixture_clock",
+            "recorded_at": "2026-09-07T00:00:02Z",
+            "stop_reason": "budget_exhausted",
+            "boundary_event_id": "fixture_boundary",
+            "boundary_at": "2026-09-07T00:00:02Z"
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/args/2/state_version",
+          "value": 4
+        }
+      ],
+      "error": "invalid_transition"
+    },
+    {
+      "name": "pause must pass through acknowledgement",
+      "base": "pause",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1",
+          "value": {
+            "schema_version": "physical.execution.v1",
+            "execution_id": "fixture_execution",
+            "task_scope": {
+              "task_id": "fixture_task",
+              "goal_id": "store_cup",
+              "attempt_id": "attempt_1"
+            },
+            "state": "running",
+            "state_version": 2,
+            "control_steps": 100,
+            "policy_calls": 2,
+            "elapsed_wall_time_s": 1,
+            "device_confirmed": true,
+            "observation_refs": [],
+            "clock_id": "fixture_clock",
+            "recorded_at": "2026-09-07T00:00:01Z"
+          }
+        }
+      ],
+      "error": "invalid_transition"
+    },
+    {
+      "name": "paused status cannot accumulate motion",
+      "base": "resume",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2",
+          "value": {
+            "schema_version": "physical.execution.v1",
+            "execution_id": "fixture_execution",
+            "task_scope": {
+              "task_id": "fixture_task",
+              "goal_id": "store_cup",
+              "attempt_id": "attempt_1"
+            },
+            "state": "paused",
+            "state_version": 4,
+            "control_steps": 101,
+            "policy_calls": 2,
+            "elapsed_wall_time_s": 1,
+            "device_confirmed": true,
+            "observation_refs": [],
+            "clock_id": "fixture_clock",
+            "recorded_at": "2026-09-07T00:00:01Z",
+            "stop_reason": "verifier_pause",
+            "boundary_event_id": "fixture_pause",
+            "boundary_at": "2026-09-07T00:00:01Z"
+          }
+        }
+      ],
+      "error": "motion_while_paused"
+    },
+    {
+      "name": "verification cannot change assignment",
+      "base": "verification",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/verifier_assignment_id",
+          "value": "other_assignment"
+        }
+      ],
+      "error": "verification_identity_mismatch"
+    },
+    {
+      "name": "terminal verification cannot reopen",
+      "base": "verification_start",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0",
+          "value": {
+            "task_scope": {
+              "task_id": "fixture_task",
+              "goal_id": "store_cup",
+              "attempt_id": "attempt_1"
+            },
+            "verifier_id": "fixture_verifier",
+            "status": "passed",
+            "goal_contract_version": "1",
+            "boundary_event_id": "fixture_boundary",
+            "checks": [
+              {
+                "check_id": "inside_target",
+                "value": true,
+                "evidence_refs": [
+                  "fresh_fact"
+                ]
+              }
+            ],
+            "evidence_refs": [
+              "fresh_fact"
+            ],
+            "explanation": "Synthetic successful check.",
+            "schema_version": "physical.verification.v1",
+            "verdict_id": "fixture_verdict",
+            "verification_request_id": "fixture_verify_request",
+            "execution_id": "fixture_execution",
+            "verifier_assignment_id": "verifier_assignment",
+            "goal_contract_id": "store_object",
+            "observed_at": "2026-09-07T00:00:03Z",
+            "clock_id": "fixture_clock"
+          }
+        }
+      ],
+      "error": "invalid_transition"
+    },
+    {
+      "name": "reject verdict task_scope/attempt_id",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/task_scope/attempt_id",
+          "value": "attempt_0"
+        }
+      ],
+      "error": "verdict_identity_mismatch"
+    },
+    {
+      "name": "reject verdict task_scope/task_id",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/task_scope/task_id",
+          "value": "other_task"
+        }
+      ],
+      "error": "verdict_identity_mismatch"
+    },
+    {
+      "name": "reject verdict execution_id",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/execution_id",
+          "value": "other_execution"
+        }
+      ],
+      "error": "verdict_identity_mismatch"
+    },
+    {
+      "name": "reject verdict boundary_event_id",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/boundary_event_id",
+          "value": "old_boundary"
+        }
+      ],
+      "error": "verdict_identity_mismatch"
+    },
+    {
+      "name": "reject verdict verification_request_id",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/verification_request_id",
+          "value": "old_request"
+        }
+      ],
+      "error": "verdict_identity_mismatch"
+    },
+    {
+      "name": "reject verdict verifier_id",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/verifier_id",
+          "value": "planner_1"
+        }
+      ],
+      "error": "wrong_verifier"
+    },
+    {
+      "name": "reject verdict verifier_assignment_id",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/verifier_assignment_id",
+          "value": "old_assignment"
+        }
+      ],
+      "error": "wrong_verifier"
+    },
+    {
+      "name": "reject verdict goal_contract_version",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/goal_contract_version",
+          "value": "2"
+        }
+      ],
+      "error": "criterion_version_mismatch"
+    },
+    {
+      "name": "reject verdict goal_contract_id",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/goal_contract_id",
+          "value": "other_contract"
+        }
+      ],
+      "error": "criterion_version_mismatch"
+    },
+    {
+      "name": "reject verdict observed_at",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/observed_at",
+          "value": "2026-09-07T00:00:01Z"
+        }
+      ],
+      "error": "stale_verdict"
+    },
+    {
+      "name": "reject verdict clock_id",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/clock_id",
+          "value": "camera_clock"
+        }
+      ],
+      "error": "clock_mismatch"
+    },
+    {
+      "name": "unconfirmed stop cannot pass",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/execution/device_confirmed",
+          "value": false
+        }
+      ],
+      "error": "unconfirmed_stop"
+    },
+    {
+      "name": "running execution cannot pass",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/execution",
+          "value": {
+            "schema_version": "physical.execution.v1",
+            "execution_id": "fixture_execution",
+            "task_scope": {
+              "task_id": "fixture_task",
+              "goal_id": "store_cup",
+              "attempt_id": "attempt_1"
+            },
+            "state": "running",
+            "state_version": 2,
+            "control_steps": 100,
+            "policy_calls": 2,
+            "elapsed_wall_time_s": 1,
+            "device_confirmed": true,
+            "observation_refs": [],
+            "clock_id": "fixture_clock",
+            "recorded_at": "2026-09-07T00:00:01Z"
+          }
+        }
+      ],
+      "error": "missing_execution_boundary"
+    },
+    {
+      "name": "pending verification cannot complete goal",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0",
+          "value": {
+            "task_scope": {
+              "task_id": "fixture_task",
+              "goal_id": "store_cup",
+              "attempt_id": "attempt_1"
+            },
+            "verifier_id": "fixture_verifier",
+            "status": "pending",
+            "goal_contract_version": "1",
+            "boundary_event_id": "fixture_boundary",
+            "checks": [],
+            "evidence_refs": [],
+            "explanation": "Synthetic successful check.",
+            "schema_version": "physical.verification.v1",
+            "verdict_id": "fixture_verdict",
+            "verification_request_id": "fixture_verify_request",
+            "execution_id": "fixture_execution",
+            "verifier_assignment_id": "verifier_assignment",
+            "goal_contract_id": "store_object",
+            "observed_at": "2026-09-07T00:00:03Z",
+            "clock_id": "fixture_clock"
+          }
+        }
+      ],
+      "error": "not_a_final_verdict"
+    },
+    {
+      "name": "reject evidence observed_at: 2026-09-07T00:00:01Z",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/evidence/0/observed_at",
+          "value": "2026-09-07T00:00:01Z"
+        }
+      ],
+      "error": "stale_or_unaligned_evidence"
+    },
+    {
+      "name": "reject evidence observed_at: 2026-09-07T00:00:04Z",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/evidence/0/observed_at",
+          "value": "2026-09-07T00:00:04Z"
+        }
+      ],
+      "error": "stale_or_unaligned_evidence"
+    },
+    {
+      "name": "reject evidence clock_id: camera_clock",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/evidence/0/clock_id",
+          "value": "camera_clock"
+        }
+      ],
+      "error": "stale_or_unaligned_evidence"
+    },
+    {
+      "name": "reject evidence visibility: debug_only",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/evidence/0/visibility",
+          "value": "debug_only"
+        }
+      ],
+      "error": "evidence_scope_mismatch"
+    },
+    {
+      "name": "reject evidence task_scope/attempt_id: attempt_0",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/evidence/0/task_scope/attempt_id",
+          "value": "attempt_0"
+        }
+      ],
+      "error": "evidence_scope_mismatch"
+    },
+    {
+      "name": "fresh file creation cannot refresh old observation",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/evidence/0/created_at",
+          "value": "2026-09-07T00:00:09Z"
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/evidence/0/observed_at",
+          "value": "2026-09-07T00:00:01Z"
+        }
+      ],
+      "error": "stale_or_unaligned_evidence"
+    },
+    {
+      "name": "missing evidence cannot pass",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/evidence",
+          "value": []
+        }
+      ],
+      "error": "missing_evidence"
+    },
+    {
+      "name": "duplicate evidence ID cannot pass",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/evidence",
+          "value": [
+            {
+              "id": "fresh_fact",
+              "kind": "report",
+              "source": "synthetic://check/inside",
+              "created_at": "2026-09-07T00:00:04Z",
+              "observed_at": "2026-09-07T00:00:03Z",
+              "clock_id": "fixture_clock",
+              "task_scope": {
+                "task_id": "fixture_task",
+                "goal_id": "store_cup",
+                "attempt_id": "attempt_1"
+              },
+              "visibility": "agent"
+            },
+            {
+              "id": "fresh_fact",
+              "kind": "report",
+              "source": "synthetic://check/inside",
+              "created_at": "2026-09-07T00:00:04Z",
+              "observed_at": "2026-09-07T00:00:03Z",
+              "clock_id": "fixture_clock",
+              "task_scope": {
+                "task_id": "fixture_task",
+                "goal_id": "store_cup",
+                "attempt_id": "attempt_1"
+              },
+              "visibility": "agent"
+            }
+          ]
+        }
+      ],
+      "error": "ambiguous_evidence"
+    },
+    {
+      "name": "false check cannot be reported true",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/checkFacts/0/value",
+          "value": false
+        }
+      ],
+      "error": "fact_mismatch"
+    },
+    {
+      "name": "failed check produces failed verdict",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/status",
+          "value": "failed"
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/checks/0/value",
+          "value": false
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/checkFacts/0/value",
+          "value": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "name": "unknown fact cannot become passed",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/checks/0",
+          "value": {
+            "check_id": "inside_target",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "Check unavailable."
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/checkFacts/0",
+          "value": {
+            "check_id": "inside_target",
+            "value": null,
+            "evidence_refs": [],
+            "reason": "Check unavailable."
+          }
+        }
+      ],
+      "error": "verdict_fact_conflict"
+    },
+    {
+      "name": "unknown preserves uncertainty after unconfirmed stop",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/status",
+          "value": "unknown"
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/checks",
+          "value": []
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/evidence_refs",
+          "value": []
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/checkFacts",
+          "value": []
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/evidence",
+          "value": []
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/execution/device_confirmed",
+          "value": false
+        }
+      ],
+      "error": null
+    },
+    {
+      "name": "unknown still rejects old attempt",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/status",
+          "value": "unknown"
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/task_scope/attempt_id",
+          "value": "attempt_0"
+        }
+      ],
+      "error": "verdict_identity_mismatch"
+    },
+    {
+      "name": "check must cite global evidence",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/checks/0/evidence_refs",
+          "value": [
+            "other_fact"
+          ]
+        }
+      ],
+      "error": "check_evidence_mismatch"
+    },
+    {
+      "name": "unknown criterion cannot replace required check",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0/checks/0/check_id",
+          "value": "other_check"
+        }
+      ],
+      "error": "check_coverage_mismatch"
+    },
+    {
+      "name": "any aggregation [True, None]",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/request/success_contract",
+          "value": {
+            "id": "store_object",
+            "version": "1",
+            "source": {
+              "kind": "benchmark",
+              "reference": "synthetic-store-object-v1"
+            },
+            "any": [
+              {
+                "check_id": "check_0",
+                "check": "synthetic",
+                "args": []
+              },
+              {
+                "check_id": "check_1",
+                "check": "synthetic",
+                "args": []
+              }
+            ]
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/checks",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": null,
+              "evidence_refs": [
+                "fresh_fact"
+              ],
+              "reason": "Unavailable."
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/checkFacts",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": null,
+              "evidence_refs": [
+                "fresh_fact"
+              ],
+              "reason": "Unavailable."
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/status",
+          "value": "passed"
+        }
+      ],
+      "error": null
+    },
+    {
+      "name": "any aggregation [False, False]",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/request/success_contract",
+          "value": {
+            "id": "store_object",
+            "version": "1",
+            "source": {
+              "kind": "benchmark",
+              "reference": "synthetic-store-object-v1"
+            },
+            "any": [
+              {
+                "check_id": "check_0",
+                "check": "synthetic",
+                "args": []
+              },
+              {
+                "check_id": "check_1",
+                "check": "synthetic",
+                "args": []
+              }
+            ]
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/checks",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": false,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": false,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/checkFacts",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": false,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": false,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/status",
+          "value": "failed"
+        }
+      ],
+      "error": null
+    },
+    {
+      "name": "any aggregation [False, None]",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/request/success_contract",
+          "value": {
+            "id": "store_object",
+            "version": "1",
+            "source": {
+              "kind": "benchmark",
+              "reference": "synthetic-store-object-v1"
+            },
+            "any": [
+              {
+                "check_id": "check_0",
+                "check": "synthetic",
+                "args": []
+              },
+              {
+                "check_id": "check_1",
+                "check": "synthetic",
+                "args": []
+              }
+            ]
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/checks",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": false,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": null,
+              "evidence_refs": [
+                "fresh_fact"
+              ],
+              "reason": "Unavailable."
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/checkFacts",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": false,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": null,
+              "evidence_refs": [
+                "fresh_fact"
+              ],
+              "reason": "Unavailable."
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/status",
+          "value": "passed"
+        }
+      ],
+      "error": "verdict_fact_conflict"
+    },
+    {
+      "name": "all aggregation [True, True]",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/request/success_contract",
+          "value": {
+            "id": "store_object",
+            "version": "1",
+            "source": {
+              "kind": "benchmark",
+              "reference": "synthetic-store-object-v1"
+            },
+            "all": [
+              {
+                "check_id": "check_0",
+                "check": "synthetic",
+                "args": []
+              },
+              {
+                "check_id": "check_1",
+                "check": "synthetic",
+                "args": []
+              }
+            ]
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/checks",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/checkFacts",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/status",
+          "value": "passed"
+        }
+      ],
+      "error": null
+    },
+    {
+      "name": "all aggregation [False, None]",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/request/success_contract",
+          "value": {
+            "id": "store_object",
+            "version": "1",
+            "source": {
+              "kind": "benchmark",
+              "reference": "synthetic-store-object-v1"
+            },
+            "all": [
+              {
+                "check_id": "check_0",
+                "check": "synthetic",
+                "args": []
+              },
+              {
+                "check_id": "check_1",
+                "check": "synthetic",
+                "args": []
+              }
+            ]
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/checks",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": false,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": null,
+              "evidence_refs": [
+                "fresh_fact"
+              ],
+              "reason": "Unavailable."
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/checkFacts",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": false,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": null,
+              "evidence_refs": [
+                "fresh_fact"
+              ],
+              "reason": "Unavailable."
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/status",
+          "value": "failed"
+        }
+      ],
+      "error": null
+    },
+    {
+      "name": "all aggregation [True, None]",
+      "base": "verdict",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/request/success_contract",
+          "value": {
+            "id": "store_object",
+            "version": "1",
+            "source": {
+              "kind": "benchmark",
+              "reference": "synthetic-store-object-v1"
+            },
+            "all": [
+              {
+                "check_id": "check_0",
+                "check": "synthetic",
+                "args": []
+              },
+              {
+                "check_id": "check_1",
+                "check": "synthetic",
+                "args": []
+              }
+            ]
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/checks",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": null,
+              "evidence_refs": [
+                "fresh_fact"
+              ],
+              "reason": "Unavailable."
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/1/checkFacts",
+          "value": [
+            {
+              "check_id": "check_0",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "check_1",
+              "value": null,
+              "evidence_refs": [
+                "fresh_fact"
+              ],
+              "reason": "Unavailable."
+            }
+          ]
+        },
+        {
+          "op": "replace",
+          "path": "/args/0/status",
+          "value": "passed"
+        }
+      ],
+      "error": "verdict_fact_conflict"
+    },
+    {
+      "name": "prerequisite success does not resolve original recovery",
+      "base": "recovery",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/task_scope/goal_id",
+          "value": "open_cabinet"
+        }
+      ],
+      "error": "original_goal_not_verified"
+    },
+    {
+      "name": "unrelated recovery cannot resolve",
+      "base": "recovery",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/task_scope/recovery_id",
+          "value": "other_recovery"
+        }
+      ],
+      "error": "original_goal_not_verified"
+    },
+    {
+      "name": "failed attempt cannot resolve recovery",
+      "base": "recovery",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/task_scope/attempt_id",
+          "value": "attempt_1"
+        }
+      ],
+      "error": "original_goal_not_verified"
+    },
+    {
+      "name": "unknown verdict cannot resolve recovery",
+      "base": "recovery",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/2/status",
+          "value": "unknown"
+        }
+      ],
+      "error": "original_goal_not_verified"
+    },
+    {
+      "name": "recovery retains original criteria",
+      "base": "recovery",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/goal_contract_version",
+          "value": "2"
+        }
+      ],
+      "error": "recovery_identity_mismatch"
+    },
+    {
+      "name": "recovery retains prior retry attempts",
+      "base": "recovery",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/1/attempt_ids",
+          "value": [
+            "attempt_3"
+          ]
+        }
+      ],
+      "error": "recovery_lineage_mismatch"
+    },
+    {
+      "name": "resolved recovery cannot reopen",
+      "base": "recovery",
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/args/0",
+          "value": {
+            "schema_version": "physical.recovery.v1",
+            "recovery_id": "recovery_1",
+            "task_id": "fixture_task",
+            "original_goal_id": "store_cup",
+            "goal_contract_id": "store_object",
+            "goal_contract_version": "1",
+            "decision_owner_id": "planner_1",
+            "failed_attempt_id": "attempt_1",
+            "attempt_ids": [
+              "attempt_2"
+            ],
+            "changes": [
+              "Inspect access before retry."
+            ],
+            "evidence_refs": [
+              "fixture_frame"
+            ],
+            "status": "resolved_success",
+            "verdict_ref": "retry_verdict"
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/args/1",
+          "value": {
+            "schema_version": "physical.recovery.v1",
+            "recovery_id": "recovery_1",
+            "task_id": "fixture_task",
+            "original_goal_id": "store_cup",
+            "goal_contract_id": "store_object",
+            "goal_contract_version": "1",
+            "decision_owner_id": "planner_1",
+            "failed_attempt_id": "attempt_1",
+            "attempt_ids": [
+              "attempt_2"
+            ],
+            "changes": [
+              "Inspect access before retry."
+            ],
+            "evidence_refs": [
+              "fixture_frame"
+            ],
+            "status": "recording"
+          }
+        }
+      ],
+      "error": "invalid_transition"
+    }
+  ]
+}

@@ -10,7 +10,8 @@ requirement or deployment binding is unclear.
 
 - EDH owns the repository. Absorb selected DSH source into its modules with
   provenance. Do not import the entire upstream repository or write a new loop.
-- Step 00 has a verified DSH runtime seam; most domain modules remain interfaces.
+- Steps 00–01 have a verified DSH runtime seam and shared contract gates; most
+  domain modules remain interfaces.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.
 - New delegations have independent contexts and explicit InvocationBriefs.

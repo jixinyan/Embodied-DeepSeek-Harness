@@ -7,7 +7,7 @@ teams, explicit context handoff, replaceable tools and policies, asynchronous
 verification, and reusable recovery experience. Its agent runtime incorporates
 selected DeepSeek Harness implementations, with traceable provenance.
 
-> **Early development: the DSH runtime baseline is working.**
+> **Early development: DSH runtime and shared contract validation are working.**
 > Keyless tests exercise the original loop, structured tools, isolated sessions,
 > follow-up input and cancellation. Team loading, physical execution, verification,
 > experience services, simulator/device support and the console remain unimplemented.
@@ -46,7 +46,7 @@ pnpm test:runtime
 
 These commands check generated schema types, example structure/references,
 TypeScript, documentation links and Python importability, then execute six DSH
-runtime integration tests using a scripted model. `test:runtime` runs that suite
+runtime integration tests and shared wire/lifecycle validation cases in both languages. `test:runtime` runs that suite
 alone. No live model API, simulator, server or console is started. No GPU or key is needed.
 Python checks prefer `.venv/bin/python`, falling back to `python3`; override
 `EDH_PYTHON` if needed. `pnpm test:contracts` runs shared TS/Python wire cases.
