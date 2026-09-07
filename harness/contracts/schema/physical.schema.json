@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "urn:edh:contracts:v1",
   "title": "PhysicalContract",
-  "description": "EDH scaffold wire contracts. Structural validation only; no runtime authorization or semantic verification.",
+  "description": "EDH v1 wire schemas and lifecycle topology. Schema validation is not sender authentication, provider compatibility or a running physical system.",
   "anyOf": [
     {
       "$ref": "#/$defs/TaskScope"
@@ -66,6 +66,18 @@
     },
     {
       "$ref": "#/$defs/SegmentationResult"
+    },
+    {
+      "$ref": "#/$defs/ExecutionScope"
+    },
+    {
+      "$ref": "#/$defs/CheckResult"
+    },
+    {
+      "$ref": "#/$defs/ActionChannel"
+    },
+    {
+      "$ref": "#/$defs/ActionSpec"
     }
   ],
   "$defs": {
@@ -74,33 +86,41 @@
       "properties": {
         "task_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "goal_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "attempt_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "recovery_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         }
       },
       "required": [
         "task_id"
       ],
       "additionalProperties": false,
-      "title": "TaskScope"
+      "title": "TaskScope",
+      "dependencies": {
+        "attempt_id": [
+          "goal_id"
+        ],
+        "recovery_id": [
+          "goal_id"
+        ]
+      }
     },
     "EvidenceRef": {
       "type": "object",
       "properties": {
         "id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "kind": {
           "type": "string",
@@ -120,7 +140,8 @@
         },
         "created_at": {
           "type": "string",
-          "minLength": 1
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
         },
         "visibility": {
           "type": "string",
@@ -128,6 +149,18 @@
             "agent",
             "debug_only"
           ]
+        },
+        "task_scope": {
+          "$ref": "#/$defs/TaskScope"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+        },
+        "clock_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         }
       },
       "required": [
@@ -135,7 +168,10 @@
         "kind",
         "source",
         "created_at",
-        "visibility"
+        "visibility",
+        "task_scope",
+        "observed_at",
+        "clock_id"
       ],
       "additionalProperties": false,
       "title": "EvidenceRef"
@@ -145,36 +181,66 @@
       "properties": {
         "observation_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "task_scope": {
           "$ref": "#/$defs/TaskScope"
         },
         "sensor_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "captured_at": {
           "type": "string",
-          "minLength": 1
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
         },
         "frame_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "media": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/EvidenceRef"
-          }
+          },
+          "minItems": 1
         },
         "coordinate_frame": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "calibration_ref": {
           "type": "string",
           "minLength": 1
+        },
+        "schema_version": {
+          "const": "physical.observation.v1"
+        },
+        "device_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "stream_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "source_sequence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "clock_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "source_kind": {
+          "enum": [
+            "simulation",
+            "hardware",
+            "replay",
+            "test_fixture"
+          ]
         }
       },
       "required": [
@@ -183,7 +249,14 @@
         "sensor_id",
         "captured_at",
         "frame_id",
-        "media"
+        "media",
+        "schema_version",
+        "device_id",
+        "stream_id",
+        "source_sequence",
+        "clock_id",
+        "source_kind",
+        "coordinate_frame"
       ],
       "additionalProperties": false,
       "title": "Observation"
@@ -193,7 +266,7 @@
       "properties": {
         "role_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$"
         },
         "description": {
           "type": "string",
@@ -213,6 +286,10 @@
         "output_schema": {
           "type": "string",
           "minLength": 1
+        },
+        "schema_version": {
+          "const": "physical.role.v1",
+          "default": "physical.role.v1"
         }
       },
       "required": [
@@ -231,7 +308,7 @@
         },
         "team_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$"
         },
         "entrypoint": {
           "type": "string",
@@ -242,6 +319,11 @@
           "additionalProperties": {
             "type": "string",
             "minLength": 1
+          },
+          "minProperties": 1,
+          "propertyNames": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$"
           }
         },
         "bindings": {
@@ -262,8 +344,7 @@
           },
           "required": [
             "decision_owner",
-            "final_verifier",
-            "recovery_evolver"
+            "final_verifier"
           ],
           "additionalProperties": false
         },
@@ -273,6 +354,10 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "learning_enabled": {
+          "type": "boolean",
+          "default": true
         }
       },
       "required": [
@@ -284,7 +369,31 @@
         "tool_bindings"
       ],
       "additionalProperties": false,
-      "title": "TeamDefinition"
+      "title": "TeamDefinition",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "learning_enabled": {
+                "const": false
+              }
+            },
+            "required": [
+              "learning_enabled"
+            ]
+          },
+          "then": {},
+          "else": {
+            "properties": {
+              "bindings": {
+                "required": [
+                  "recovery_evolver"
+                ]
+              }
+            }
+          }
+        }
+      ]
     },
     "ToolDefinition": {
       "type": "object",
@@ -294,7 +403,7 @@
         },
         "tool_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "version": {
           "type": "string",
@@ -392,19 +501,21 @@
       "properties": {
         "call_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "tool_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "status": {
           "type": "string",
           "enum": [
             "completed",
+            "running",
             "failed",
             "cancelled",
-            "unsupported"
+            "unsupported",
+            "unknown"
           ]
         },
         "data": {
@@ -435,16 +546,151 @@
             "message"
           ],
           "additionalProperties": false
+        },
+        "schema_version": {
+          "const": "physical.tool_result.v1"
+        },
+        "tool_version": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "agent_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "assignment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "task_scope": {
+          "$ref": "#/$defs/TaskScope"
+        },
+        "effect": {
+          "type": "string",
+          "enum": [
+            "read_observation",
+            "read_state",
+            "write_state",
+            "physical_motion"
+          ]
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "uniqueItems": true
+        },
+        "operation_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         }
       },
       "required": [
         "call_id",
         "tool_id",
         "status",
-        "evidence_refs"
+        "evidence_refs",
+        "schema_version",
+        "tool_version",
+        "agent_id",
+        "assignment_id",
+        "task_scope",
+        "effect",
+        "resources"
       ],
       "additionalProperties": false,
-      "title": "ToolResult"
+      "title": "ToolResult",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "running"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "operation_id"
+            ],
+            "not": {
+              "required": [
+                "error"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "completed"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "data"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "error"
+                  ]
+                },
+                {
+                  "required": [
+                    "operation_id"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "failed",
+                  "unsupported",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "failed",
+                  "unsupported",
+                  "unknown",
+                  "cancelled"
+                ]
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "data"
+              ]
+            }
+          }
+        }
+      ]
     },
     "SuccessCheck": {
       "type": "object",
@@ -459,11 +705,16 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "check_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         }
       },
       "required": [
         "check",
-        "args"
+        "args",
+        "check_id"
       ],
       "additionalProperties": false,
       "title": "SuccessCheck"
@@ -476,7 +727,7 @@
           "properties": {
             "id": {
               "type": "string",
-              "minLength": 1
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
             },
             "version": {
               "type": "string",
@@ -488,12 +739,34 @@
               "items": {
                 "$ref": "#/$defs/SuccessCheck"
               }
+            },
+            "source": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "user",
+                    "benchmark"
+                  ]
+                },
+                "reference": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "kind",
+                "reference"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
             "id",
             "version",
-            "all"
+            "all",
+            "source"
           ],
           "additionalProperties": false
         },
@@ -502,7 +775,7 @@
           "properties": {
             "id": {
               "type": "string",
-              "minLength": 1
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
             },
             "version": {
               "type": "string",
@@ -514,12 +787,34 @@
               "items": {
                 "$ref": "#/$defs/SuccessCheck"
               }
+            },
+            "source": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "user",
+                    "benchmark"
+                  ]
+                },
+                "reference": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "\\S"
+                }
+              },
+              "required": [
+                "kind",
+                "reference"
+              ],
+              "additionalProperties": false
             }
           },
           "required": [
             "id",
             "version",
-            "any"
+            "any",
+            "source"
           ],
           "additionalProperties": false
         }
@@ -530,7 +825,8 @@
       "properties": {
         "max_control_steps": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "maximum": 9007199254740991
         },
         "max_wall_time_s": {
           "type": "number",
@@ -549,11 +845,11 @@
       "properties": {
         "goal_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "attempt_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "instruction": {
           "type": "string",
@@ -585,6 +881,33 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "schema_version": {
+          "const": "physical.subgoal.v1"
+        },
+        "task_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "team_run_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "decision_owner_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "owner_assignment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "recovery_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         }
       },
       "required": [
@@ -595,7 +918,13 @@
         "required_capabilities",
         "success_contract",
         "budget",
-        "context_refs"
+        "context_refs",
+        "schema_version",
+        "task_id",
+        "team_run_id",
+        "decision_owner_id",
+        "owner_assignment_id",
+        "idempotency_key"
       ],
       "additionalProperties": false,
       "title": "SubgoalRequest"
@@ -649,7 +978,8 @@
               },
               "observed_at": {
                 "type": "string",
-                "minLength": 1
+                "format": "date-time",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
               },
               "evidence_refs": {
                 "type": "array",
@@ -710,6 +1040,25 @@
             "allowed_actions"
           ],
           "additionalProperties": false
+        },
+        "schema_version": {
+          "const": "physical.invocation.v1"
+        },
+        "assignment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "caller_agent_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "caller_assignment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "team_run_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         }
       },
       "required": [
@@ -722,7 +1071,12 @@
         "history_summary",
         "changes",
         "evidence_refs",
-        "tools_and_limits"
+        "tools_and_limits",
+        "schema_version",
+        "assignment_id",
+        "caller_agent_id",
+        "caller_assignment_id",
+        "team_run_id"
       ],
       "additionalProperties": false,
       "title": "InvocationBrief"
@@ -735,7 +1089,7 @@
         },
         "message_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "kind": {
           "type": "string",
@@ -758,11 +1112,16 @@
               "properties": {
                 "agent_id": {
                   "type": "string",
-                  "minLength": 1
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                },
+                "assignment_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
                 }
               },
               "required": [
-                "agent_id"
+                "agent_id",
+                "assignment_id"
               ],
               "additionalProperties": false
             },
@@ -771,7 +1130,7 @@
               "properties": {
                 "service_id": {
                   "type": "string",
-                  "minLength": 1
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
                 }
               },
               "required": [
@@ -788,11 +1147,16 @@
               "properties": {
                 "agent_id": {
                   "type": "string",
-                  "minLength": 1
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                },
+                "assignment_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
                 }
               },
               "required": [
-                "agent_id"
+                "agent_id",
+                "assignment_id"
               ],
               "additionalProperties": false
             },
@@ -801,7 +1165,7 @@
               "properties": {
                 "service_id": {
                   "type": "string",
-                  "minLength": 1
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
                 }
               },
               "required": [
@@ -829,19 +1193,28 @@
         },
         "correlation_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "causation_id": {
-          "type": "string",
-          "minLength": 1
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "sequence": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 9007199254740991
         },
         "created_at": {
           "type": "string",
-          "minLength": 1
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
         },
         "payload": {
           "type": "object",
@@ -853,6 +1226,10 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "team_run_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         }
       },
       "required": [
@@ -866,7 +1243,10 @@
         "sequence",
         "created_at",
         "payload",
-        "evidence_refs"
+        "evidence_refs",
+        "team_run_id",
+        "correlation_id",
+        "causation_id"
       ],
       "additionalProperties": false,
       "title": "MessageEnvelope"
@@ -876,11 +1256,11 @@
       "properties": {
         "agent_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "assignment_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "task_scope": {
           "$ref": "#/$defs/TaskScope"
@@ -911,6 +1291,17 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "schema_version": {
+          "const": "physical.agent_report.v1"
+        },
+        "team_run_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "result": {
+          "type": "object",
+          "additionalProperties": {}
         }
       },
       "required": [
@@ -919,20 +1310,43 @@
         "task_scope",
         "status",
         "summary",
-        "evidence_refs"
+        "evidence_refs",
+        "schema_version",
+        "team_run_id"
       ],
       "additionalProperties": false,
-      "title": "AgentReport"
+      "title": "AgentReport",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "insufficient_context"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "requested_context"
+            ],
+            "properties": {
+              "requested_context": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "ExecutionStatus": {
       "type": "object",
       "properties": {
         "execution_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "task_scope": {
-          "$ref": "#/$defs/TaskScope"
+          "$ref": "#/$defs/ExecutionScope"
         },
         "state": {
           "type": "string",
@@ -946,15 +1360,18 @@
         },
         "control_steps": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 9007199254740991
         },
         "policy_calls": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 9007199254740991
         },
         "raw_sim_steps": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 9007199254740991
         },
         "stop_reason": {
           "type": "string",
@@ -976,6 +1393,36 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "schema_version": {
+          "const": "physical.execution.v1"
+        },
+        "state_version": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "elapsed_wall_time_s": {
+          "type": "number",
+          "minimum": 0
+        },
+        "clock_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+        },
+        "boundary_event_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "boundary_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
         }
       },
       "required": [
@@ -985,20 +1432,131 @@
         "control_steps",
         "policy_calls",
         "device_confirmed",
-        "observation_refs"
+        "observation_refs",
+        "schema_version",
+        "state_version",
+        "elapsed_wall_time_s",
+        "clock_id",
+        "recorded_at"
       ],
       "additionalProperties": false,
-      "title": "ExecutionStatus"
+      "title": "ExecutionStatus",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "paused",
+                  "ended"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "boundary_event_id",
+              "boundary_at",
+              "stop_reason"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "paused"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "device_confirmed": {
+                "const": true
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "pausing"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "device_confirmed": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "accepted",
+                  "running",
+                  "pausing"
+                ]
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "stop_reason"
+                  ]
+                },
+                {
+                  "required": [
+                    "boundary_event_id"
+                  ]
+                },
+                {
+                  "required": [
+                    "boundary_at"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "stop_reason": {
+                "const": "budget_exhausted"
+              }
+            },
+            "required": [
+              "stop_reason"
+            ]
+          },
+          "then": {
+            "properties": {
+              "state": {
+                "const": "ended"
+              }
+            }
+          }
+        }
+      ]
     },
     "VerificationResult": {
       "type": "object",
       "properties": {
         "task_scope": {
-          "$ref": "#/$defs/TaskScope"
+          "$ref": "#/$defs/ExecutionScope"
         },
         "verifier_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "status": {
           "type": "string",
@@ -1016,37 +1574,12 @@
         },
         "boundary_event_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "checks": {
           "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "check_id": {
-                "type": "string",
-                "minLength": 1
-              },
-              "value": {
-                "type": [
-                  "boolean",
-                  "null"
-                ]
-              },
-              "evidence_refs": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "minLength": 1
-                }
-              }
-            },
-            "required": [
-              "check_id",
-              "value",
-              "evidence_refs"
-            ],
-            "additionalProperties": false
+            "$ref": "#/$defs/CheckResult"
           }
         },
         "evidence_refs": {
@@ -1059,6 +1592,38 @@
         "explanation": {
           "type": "string",
           "minLength": 1
+        },
+        "schema_version": {
+          "const": "physical.verification.v1"
+        },
+        "verdict_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "verification_request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "execution_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "verifier_assignment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "goal_contract_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+        },
+        "clock_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         }
       },
       "required": [
@@ -1069,21 +1634,54 @@
         "boundary_event_id",
         "checks",
         "evidence_refs",
-        "explanation"
+        "explanation",
+        "schema_version",
+        "verdict_id",
+        "verification_request_id",
+        "execution_id",
+        "verifier_assignment_id",
+        "goal_contract_id",
+        "observed_at",
+        "clock_id"
       ],
       "additionalProperties": false,
-      "title": "VerificationResult"
+      "title": "VerificationResult",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "passed",
+                  "failed"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "checks": {
+                "minItems": 1
+              },
+              "evidence_refs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "PlanDocument": {
       "type": "object",
       "properties": {
         "task_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "version": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "maximum": 9007199254740991
         },
         "items": {
           "type": "array",
@@ -1092,7 +1690,7 @@
             "properties": {
               "goal_id": {
                 "type": "string",
-                "minLength": 1
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
               },
               "description": {
                 "type": "string",
@@ -1107,21 +1705,68 @@
                   "done",
                   "abandoned"
                 ]
+              },
+              "dependencies": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                },
+                "uniqueItems": true
+              },
+              "success_contract": {
+                "$ref": "#/$defs/SuccessContract"
+              },
+              "last_verdict_ref": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
               }
             },
             "required": [
               "goal_id",
               "description",
-              "status"
+              "status",
+              "dependencies",
+              "success_contract"
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "status": {
+                      "const": "done"
+                    }
+                  }
+                },
+                "then": {
+                  "required": [
+                    "last_verdict_ref"
+                  ]
+                }
+              }
+            ]
           }
+        },
+        "schema_version": {
+          "const": "physical.plan.v1"
+        },
+        "owner_agent_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "owner_assignment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         }
       },
       "required": [
         "task_id",
         "version",
-        "items"
+        "items",
+        "schema_version",
+        "owner_agent_id",
+        "owner_assignment_id"
       ],
       "additionalProperties": false,
       "title": "PlanDocument"
@@ -1131,15 +1776,15 @@
       "properties": {
         "recovery_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "task_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "original_goal_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "goal_contract_version": {
           "type": "string",
@@ -1147,14 +1792,16 @@
         },
         "failed_attempt_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "attempt_ids": {
           "type": "array",
           "items": {
             "type": "string",
             "minLength": 1
-          }
+          },
+          "uniqueItems": true,
+          "minItems": 1
         },
         "changes": {
           "type": "array",
@@ -1181,6 +1828,17 @@
         "verdict_ref": {
           "type": "string",
           "minLength": 1
+        },
+        "schema_version": {
+          "const": "physical.recovery.v1"
+        },
+        "decision_owner_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "goal_contract_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         }
       },
       "required": [
@@ -1192,17 +1850,43 @@
         "attempt_ids",
         "changes",
         "evidence_refs",
-        "status"
+        "status",
+        "schema_version",
+        "decision_owner_id",
+        "goal_contract_id"
       ],
       "additionalProperties": false,
-      "title": "RecoveryRecord"
+      "title": "RecoveryRecord",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "resolved_success"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "verdict_ref"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "verdict_ref"
+              ]
+            }
+          }
+        }
+      ]
     },
     "SkillMetadata": {
       "type": "object",
       "properties": {
         "skill_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "version": {
           "type": "string",
@@ -1238,7 +1922,7 @@
         },
         "recovery_id": {
           "type": "string",
-          "minLength": 1
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
         },
         "verdict_ref": {
           "type": "string",
@@ -1258,6 +1942,24 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "schema_version": {
+          "const": "physical.skill_metadata.v1"
+        },
+        "validation_status": {
+          "enum": [
+            "source_validated",
+            "transfer_validated",
+            "test_fixture"
+          ]
+        },
+        "validated_configurations": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "uniqueItems": true
         }
       },
       "required": [
@@ -1270,10 +1972,44 @@
         "recovery_id",
         "verdict_ref",
         "origin",
-        "limitations"
+        "limitations",
+        "schema_version",
+        "validation_status",
+        "validated_configurations"
       ],
       "additionalProperties": false,
-      "title": "SkillMetadata"
+      "title": "SkillMetadata",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "origin": {
+                "const": "test_fixture"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "validation_status": {
+                "const": "test_fixture"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "validation_status": {
+                "enum": [
+                  "source_validated",
+                  "transfer_validated"
+                ]
+              },
+              "validated_configurations": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "SegmentationRequest": {
       "type": "object",
@@ -1285,11 +2021,15 @@
         "text_prompt": {
           "type": "string",
           "minLength": 1
+        },
+        "schema_version": {
+          "const": "physical.segmentation_request.v1"
         }
       },
       "required": [
         "observation_ref",
-        "text_prompt"
+        "text_prompt",
+        "schema_version"
       ],
       "additionalProperties": false,
       "title": "SegmentationRequest"
@@ -1307,8 +2047,15 @@
             "type": "object",
             "properties": {
               "entity_id": {
-                "type": "string",
-                "minLength": 1
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               "mask_ref": {
                 "type": "string",
@@ -1318,12 +2065,34 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 1
+              },
+              "detection_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "bbox_xyxy": {
+                "type": "array",
+                "items": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "minItems": 4,
+                "maxItems": 4
               }
             },
             "required": [
               "entity_id",
               "mask_ref",
-              "confidence"
+              "confidence",
+              "detection_id",
+              "label",
+              "bbox_xyxy"
             ],
             "additionalProperties": false
           }
@@ -1331,15 +2100,377 @@
         "overlay_ref": {
           "type": "string",
           "minLength": 1
+        },
+        "schema_version": {
+          "const": "physical.segmentation_result.v1"
+        },
+        "provider_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "provider_version": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "bbox_space": {
+          "const": "normalized_image"
         }
       },
       "required": [
         "observation_ref",
         "instances",
-        "overlay_ref"
+        "overlay_ref",
+        "schema_version",
+        "provider_id",
+        "provider_version",
+        "bbox_space"
       ],
       "additionalProperties": false,
       "title": "SegmentationResult"
+    },
+    "ExecutionScope": {
+      "type": "object",
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "goal_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "attempt_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "recovery_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        }
+      },
+      "required": [
+        "task_id",
+        "goal_id",
+        "attempt_id"
+      ],
+      "additionalProperties": false,
+      "title": "ExecutionScope",
+      "dependencies": {
+        "attempt_id": [
+          "goal_id"
+        ],
+        "recovery_id": [
+          "goal_id"
+        ]
+      }
+    },
+    "CheckResult": {
+      "type": "object",
+      "properties": {
+        "check_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "value": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          },
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        }
+      },
+      "required": [
+        "check_id",
+        "value",
+        "evidence_refs"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "value": {
+                "type": "null"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "reason"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "value": {
+                "type": "boolean"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence_refs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ],
+      "title": "CheckResult"
+    },
+    "ActionChannel": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "quantity": {
+          "enum": [
+            "angular",
+            "linear",
+            "normalized"
+          ]
+        },
+        "unit": {
+          "enum": [
+            "radian",
+            "meter",
+            "dimensionless",
+            "radian_per_second",
+            "meter_per_second"
+          ]
+        },
+        "minimum": {
+          "type": "number"
+        },
+        "maximum": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "quantity",
+        "unit",
+        "minimum",
+        "maximum"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "quantity": {
+                "const": "angular"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "unit": {
+                "enum": [
+                  "radian",
+                  "radian_per_second"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "quantity": {
+                "const": "linear"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "unit": {
+                "enum": [
+                  "meter",
+                  "meter_per_second"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "quantity": {
+                "const": "normalized"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "unit": {
+                "enum": [
+                  "dimensionless"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "title": "ActionChannel"
+    },
+    "ActionSpec": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.action_spec.v1"
+        },
+        "embodiment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "coordinate_frame": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+        },
+        "control_mode": {
+          "enum": [
+            "joint_position",
+            "joint_velocity",
+            "end_effector_delta"
+          ]
+        },
+        "frequency_hz": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "channels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ActionChannel"
+          },
+          "minItems": 1
+        }
+      },
+      "required": [
+        "schema_version",
+        "embodiment_id",
+        "version",
+        "coordinate_frame",
+        "control_mode",
+        "frequency_hz",
+        "channels"
+      ],
+      "additionalProperties": false,
+      "title": "ActionSpec",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "control_mode": {
+                "const": "joint_velocity"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "channels": {
+                "items": {
+                  "properties": {
+                    "unit": {
+                      "enum": [
+                        "radian_per_second",
+                        "meter_per_second",
+                        "dimensionless"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "channels": {
+                "items": {
+                  "properties": {
+                    "unit": {
+                      "enum": [
+                        "radian",
+                        "meter",
+                        "dimensionless"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "x-edh-lifecycle": {
+    "execution": {
+      "accepted": [
+        "running",
+        "ended"
+      ],
+      "running": [
+        "running",
+        "pausing",
+        "ended"
+      ],
+      "pausing": [
+        "pausing",
+        "paused",
+        "ended"
+      ],
+      "paused": [
+        "paused",
+        "running",
+        "ended"
+      ],
+      "ended": []
+    },
+    "verification": {
+      "pending": [
+        "running",
+        "unknown"
+      ],
+      "running": [
+        "passed",
+        "failed",
+        "unknown"
+      ],
+      "passed": [],
+      "failed": [],
+      "unknown": []
+    },
+    "recovery": {
+      "recording": [
+        "recording",
+        "resolved_success",
+        "abandoned"
+      ],
+      "resolved_success": [],
+      "abandoned": []
     }
   }
 }

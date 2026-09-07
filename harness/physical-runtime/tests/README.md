@@ -1,5 +1,5 @@
-# Python tests
+# Python contract tests
 
-Worker and adapter conformance tests are planned, not implemented. The bootstrap
-check compiles and imports interface modules without GPU dependencies; it does
-not validate robot behavior or cross-language runtime serialization.
+`pnpm test:contracts` runs TypeScript and Python against the same synthetic corpus
+in `tests/contracts/`. Python tests use `unittest` and the installed CPU dependencies.
+No worker, simulator, policy or robot is executed; provider conformance comes later.

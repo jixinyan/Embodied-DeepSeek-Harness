@@ -1,23 +1,18 @@
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
-import Ajv from 'ajv';
+import { ContractValidator } from '../harness/contracts/src/validation.ts';
 import { parse } from 'yaml';
 const json = async (p) => JSON.parse(await readFile(p, 'utf8'));
 const yaml = async (p) => parse(await readFile(p, 'utf8'));
 const schema = await json('harness/contracts/schema/physical.schema.json');
-const ajv = new Ajv({ strict: false, allErrors: true });
-assert(ajv.validateSchema(schema), ajv.errorsText());
-const validators = new Map();
+const contracts = new ContractValidator(schema);
 function validator(name) {
-  assert(Object.hasOwn(schema.$defs, name), `Unknown contract: ${name}`);
-  if (!validators.has(name))
-    validators.set(name, ajv.compile({ $defs: schema.$defs, $ref: `#/$defs/${name}` }));
-  return validators.get(name);
+  return (value) => contracts.issues(name, value).length === 0;
 }
 function valid(name, value, source) {
-  const check = validator(name);
-  assert(check(value), `${source}: ${ajv.errorsText(check.errors)}`);
+  const issues = contracts.issues(name, value);
+  assert.equal(issues.length, 0, `${source}: ${JSON.stringify(issues)}`);
 }
 let count = 0;
 for (const file of await readdir('tests/fixtures')) {

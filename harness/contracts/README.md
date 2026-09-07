@@ -1,15 +1,15 @@
-# contracts
+# Shared contracts
 
-Single-source cross-language schema and generated TypeScript declarations.
+The authoritative source is `schema/physical.schema.json`. Generate TypeScript
+with `pnpm generate:contracts`; never duplicate schema fields in Python.
 
-**Status:** interface skeleton only. Implementation begins in Step 01 of
-[the implementation plan](../../docs/implementation/plan.md).
+`ContractValidator` loads that schema explicitly and checks versions, identities,
+JSON values, UTC timestamps, units, conditional result fields and local field
+relationships. TypeScript and Python use the same positive/negative wire corpus.
+Generated types are a static convenience; runtime validation is required. Conditional
+schema branches remain in the runtime source even when omitted from static projection.
 
-- Public boundary: `src/index.ts`.
-- Wire data: [contracts](README.md); do not maintain a second schema.
-- Concrete adapters, authorization and lifecycle enforcement are not implemented.
-- Module tests will accompany behavior as it is implemented; scaffold checks only
-  establish valid types, references and configuration examples.
-
-See [module responsibilities](../../docs/architecture/modules.md) for dependencies,
-source provenance and the intended direction of calls.
+Step 01 is in progress. Lifecycle gates are the next checkpoint. Schema acceptance
+alone does not authenticate callers, authorize tools or execute a physical task.
+See [progress](../../docs/implementation/progress.md) and
+[setup](../../docs/development/setup.md).

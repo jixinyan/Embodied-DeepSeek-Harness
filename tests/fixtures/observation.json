@@ -16,8 +16,22 @@
         "kind": "image",
         "source": "tests/fixtures/cup-scene.svg",
         "created_at": "2026-09-07T00:00:00Z",
-        "visibility": "agent"
+        "visibility": "agent",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "observed_at": "2026-09-07T00:00:00Z",
+        "clock_id": "fixture_clock"
       }
-    ]
+    ],
+    "schema_version": "physical.observation.v1",
+    "device_id": "fixture_robot",
+    "stream_id": "fixture_rgb",
+    "source_sequence": 1,
+    "clock_id": "fixture_clock",
+    "source_kind": "test_fixture",
+    "coordinate_frame": "camera_optical"
   }
 }

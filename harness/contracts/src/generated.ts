@@ -1,7 +1,7 @@
 /* Generated from harness/contracts/schema/physical.schema.json. Do not edit. */
 
 /**
- * EDH scaffold wire contracts. Structural validation only; no runtime authorization or semantic verification.
+ * EDH v1 wire schemas and lifecycle topology. Schema validation is not sender authentication, provider compatibility or a running physical system.
  */
 export type PhysicalContract =
   | TaskScope
@@ -24,7 +24,11 @@ export type PhysicalContract =
   | RecoveryRecord
   | SkillMetadata
   | SegmentationRequest
-  | SegmentationResult;
+  | SegmentationResult
+  | ExecutionScope
+  | CheckResult
+  | ActionChannel
+  | ActionSpec;
 export type SuccessContract =
   | {
       id: string;
@@ -33,6 +37,10 @@ export type SuccessContract =
        * @minItems 1
        */
       all: [SuccessCheck, ...SuccessCheck[]];
+      source: {
+        kind: "user" | "benchmark";
+        reference: string;
+      };
     }
   | {
       id: string;
@@ -41,6 +49,10 @@ export type SuccessContract =
        * @minItems 1
        */
       any: [SuccessCheck, ...SuccessCheck[]];
+      source: {
+        kind: "user" | "benchmark";
+        reference: string;
+      };
     };
 
 export interface TaskScope {
@@ -55,6 +67,9 @@ export interface EvidenceRef {
   source: string;
   created_at: string;
   visibility: "agent" | "debug_only";
+  task_scope: TaskScope;
+  observed_at: string;
+  clock_id: string;
 }
 export interface Observation {
   observation_id: string;
@@ -62,9 +77,18 @@ export interface Observation {
   sensor_id: string;
   captured_at: string;
   frame_id: string;
-  media: EvidenceRef[];
-  coordinate_frame?: string;
+  /**
+   * @minItems 1
+   */
+  media: [EvidenceRef, ...EvidenceRef[]];
+  coordinate_frame: string;
   calibration_ref?: string;
+  schema_version: "physical.observation.v1";
+  device_id: string;
+  stream_id: string;
+  source_sequence: number;
+  clock_id: string;
+  source_kind: "simulation" | "hardware" | "replay" | "test_fixture";
 }
 export interface RoleDefinition {
   role_id: string;
@@ -72,6 +96,7 @@ export interface RoleDefinition {
   tools: string[];
   model?: string;
   output_schema?: string;
+  schema_version?: "physical.role.v1";
 }
 export interface TeamDefinition {
   schema_version: "physical.team.v1";
@@ -83,11 +108,12 @@ export interface TeamDefinition {
   bindings: {
     decision_owner: string;
     final_verifier: string;
-    recovery_evolver: string;
+    recovery_evolver?: string;
   };
   tool_bindings: {
     [k: string]: string;
   };
+  learning_enabled?: boolean;
 }
 export interface ToolDefinition {
   schema_version: "physical.tool.v1";
@@ -109,7 +135,7 @@ export interface ToolDefinition {
 export interface ToolResult {
   call_id: string;
   tool_id: string;
-  status: "completed" | "failed" | "cancelled" | "unsupported";
+  status: "completed" | "running" | "failed" | "cancelled" | "unsupported" | "unknown";
   data?: {
     [k: string]: unknown;
   };
@@ -118,10 +144,19 @@ export interface ToolResult {
     code: string;
     message: string;
   };
+  schema_version: "physical.tool_result.v1";
+  tool_version: string;
+  agent_id: string;
+  assignment_id: string;
+  task_scope: TaskScope;
+  effect: "read_observation" | "read_state" | "write_state" | "physical_motion";
+  resources: string[];
+  operation_id?: string;
 }
 export interface SuccessCheck {
   check: string;
   args: string[];
+  check_id: string;
 }
 export interface Budget {
   max_control_steps: number;
@@ -138,6 +173,13 @@ export interface SubgoalRequest {
   success_contract: SuccessContract;
   budget: Budget;
   context_refs: string[];
+  schema_version: "physical.subgoal.v1";
+  task_id: string;
+  team_run_id: string;
+  decision_owner_id: string;
+  owner_assignment_id: string;
+  idempotency_key: string;
+  recovery_id?: string;
 }
 export interface InvocationBrief {
   objective: string;
@@ -163,6 +205,11 @@ export interface InvocationBrief {
     allowed_actions: string[];
     budget?: Budget;
   };
+  schema_version: "physical.invocation.v1";
+  assignment_id: string;
+  caller_agent_id: string;
+  caller_assignment_id: string;
+  team_run_id: string;
 }
 export interface MessageEnvelope {
   schema_version: "physical.message.v1";
@@ -172,6 +219,7 @@ export interface MessageEnvelope {
   sender:
     | {
         agent_id: string;
+        assignment_id: string;
       }
     | {
         service_id: string;
@@ -179,6 +227,7 @@ export interface MessageEnvelope {
   destination:
     | {
         agent_id: string;
+        assignment_id: string;
       }
     | {
         service_id: string;
@@ -187,14 +236,15 @@ export interface MessageEnvelope {
         topic: string;
       };
   scope: TaskScope;
-  correlation_id?: string;
-  causation_id?: string;
+  correlation_id: string;
+  causation_id: string | null;
   sequence: number;
   created_at: string;
   payload: {
     [k: string]: unknown;
   };
   evidence_refs: string[];
+  team_run_id: string;
 }
 export interface AgentReport {
   agent_id: string;
@@ -204,10 +254,15 @@ export interface AgentReport {
   summary: string;
   evidence_refs: string[];
   requested_context?: string[];
+  schema_version: "physical.agent_report.v1";
+  team_run_id: string;
+  result?: {
+    [k: string]: unknown;
+  };
 }
 export interface ExecutionStatus {
   execution_id: string;
-  task_scope: TaskScope;
+  task_scope: ExecutionScope;
   state: "accepted" | "running" | "pausing" | "paused" | "ended";
   control_steps: number;
   policy_calls: number;
@@ -216,20 +271,43 @@ export interface ExecutionStatus {
     "policy_stop" | "budget_exhausted" | "verifier_pause" | "user_stop" | "backend_error" | "episode_terminated";
   device_confirmed: boolean;
   observation_refs: string[];
+  schema_version: "physical.execution.v1";
+  state_version: number;
+  elapsed_wall_time_s: number;
+  clock_id: string;
+  recorded_at: string;
+  boundary_event_id?: string;
+  boundary_at?: string;
+}
+export interface ExecutionScope {
+  task_id: string;
+  goal_id: string;
+  attempt_id: string;
+  recovery_id?: string;
 }
 export interface VerificationResult {
-  task_scope: TaskScope;
+  task_scope: ExecutionScope;
   verifier_id: string;
   status: "pending" | "running" | "passed" | "failed" | "unknown";
   goal_contract_version: string;
   boundary_event_id: string;
-  checks: {
-    check_id: string;
-    value: boolean | null;
-    evidence_refs: string[];
-  }[];
+  checks: CheckResult[];
   evidence_refs: string[];
   explanation: string;
+  schema_version: "physical.verification.v1";
+  verdict_id: string;
+  verification_request_id: string;
+  execution_id: string;
+  verifier_assignment_id: string;
+  goal_contract_id: string;
+  observed_at: string;
+  clock_id: string;
+}
+export interface CheckResult {
+  check_id: string;
+  value: boolean | null;
+  evidence_refs: string[];
+  reason?: string;
 }
 export interface PlanDocument {
   task_id: string;
@@ -238,7 +316,13 @@ export interface PlanDocument {
     goal_id: string;
     description: string;
     status: "planned" | "active" | "waiting" | "done" | "abandoned";
+    dependencies: string[];
+    success_contract: SuccessContract;
+    last_verdict_ref?: string;
   }[];
+  schema_version: "physical.plan.v1";
+  owner_agent_id: string;
+  owner_assignment_id: string;
 }
 export interface RecoveryRecord {
   recovery_id: string;
@@ -246,11 +330,17 @@ export interface RecoveryRecord {
   original_goal_id: string;
   goal_contract_version: string;
   failed_attempt_id: string;
-  attempt_ids: string[];
+  /**
+   * @minItems 1
+   */
+  attempt_ids: [string, ...string[]];
   changes: string[];
   evidence_refs: string[];
   status: "recording" | "resolved_success" | "abandoned";
   verdict_ref?: string;
+  schema_version: "physical.recovery.v1";
+  decision_owner_id: string;
+  goal_contract_id: string;
 }
 export interface SkillMetadata {
   skill_id: string;
@@ -263,17 +353,79 @@ export interface SkillMetadata {
   verdict_ref: string;
   origin: "test_fixture" | "simulation" | "hardware";
   limitations: string[];
+  schema_version: "physical.skill_metadata.v1";
+  validation_status: "source_validated" | "transfer_validated" | "test_fixture";
+  validated_configurations: string[];
 }
 export interface SegmentationRequest {
   observation_ref: string;
   text_prompt: string;
+  schema_version: "physical.segmentation_request.v1";
 }
 export interface SegmentationResult {
   observation_ref: string;
   instances: {
-    entity_id: string;
+    entity_id: string | null;
     mask_ref: string;
     confidence: number;
+    detection_id: string;
+    label: string;
+    /**
+     * @minItems 4
+     * @maxItems 4
+     */
+    bbox_xyxy: [number, number, number, number];
   }[];
   overlay_ref: string;
+  schema_version: "physical.segmentation_result.v1";
+  provider_id: string;
+  provider_version: string;
+  bbox_space: "normalized_image";
+}
+export interface ActionChannel {
+  name: string;
+  quantity: "angular" | "linear" | "normalized";
+  unit: "radian" | "meter" | "dimensionless" | "radian_per_second" | "meter_per_second";
+  minimum: number;
+  maximum: number;
+}
+export interface ActionSpec {
+  schema_version: "physical.action_spec.v1";
+  embodiment_id: string;
+  version: string;
+  coordinate_frame: string;
+  control_mode: "joint_position" | "joint_velocity" | "end_effector_delta";
+  frequency_hz: number;
+  /**
+   * @minItems 1
+   */
+  channels: [ActionChannel, ...ActionChannel[]];
+}
+
+export interface ContractTypes {
+  TaskScope: TaskScope;
+  EvidenceRef: EvidenceRef;
+  Observation: Observation;
+  RoleDefinition: RoleDefinition;
+  TeamDefinition: TeamDefinition;
+  ToolDefinition: ToolDefinition;
+  ToolResult: ToolResult;
+  SuccessCheck: SuccessCheck;
+  SuccessContract: SuccessContract;
+  Budget: Budget;
+  SubgoalRequest: SubgoalRequest;
+  InvocationBrief: InvocationBrief;
+  MessageEnvelope: MessageEnvelope;
+  AgentReport: AgentReport;
+  ExecutionStatus: ExecutionStatus;
+  VerificationResult: VerificationResult;
+  PlanDocument: PlanDocument;
+  RecoveryRecord: RecoveryRecord;
+  SkillMetadata: SkillMetadata;
+  SegmentationRequest: SegmentationRequest;
+  SegmentationResult: SegmentationResult;
+  ExecutionScope: ExecutionScope;
+  CheckResult: CheckResult;
+  ActionChannel: ActionChannel;
+  ActionSpec: ActionSpec;
 }

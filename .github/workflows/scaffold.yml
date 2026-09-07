@@ -1,4 +1,4 @@
-name: Scaffold checks
+name: Framework checks
 on:
   push:
   pull_request:
@@ -20,4 +20,6 @@ jobs:
         with:
           python-version: '3.11'
       - run: pnpm install --frozen-lockfile
+      - run: python -m venv .venv
+      - run: .venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e harness/physical-runtime
       - run: pnpm check

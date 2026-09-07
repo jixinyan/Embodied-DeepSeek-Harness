@@ -24,9 +24,14 @@
           "args": [
             "cup_1",
             "cabinet_1"
-          ]
+          ],
+          "check_id": "inside_target"
         }
-      ]
+      ],
+      "source": {
+        "kind": "benchmark",
+        "reference": "synthetic-store-object-v1"
+      }
     },
     "known_facts": [],
     "history_summary": "Synthetic fixture only. No robot executed this task.",
@@ -45,6 +50,11 @@
         "check",
         "pause"
       ]
-    }
+    },
+    "schema_version": "physical.invocation.v1",
+    "assignment_id": "verifier_assignment",
+    "caller_agent_id": "planner_1",
+    "caller_assignment_id": "planner_assignment",
+    "team_run_id": "fixture_team"
   }
 }

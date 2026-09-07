@@ -1,0 +1,1480 @@
+{
+  "description": "Shared synthetic inputs and expected acceptance for both language validators. Patches use JSON Pointer; values are never executed.",
+  "bases": {
+    "observation": {
+      "contract": "Observation",
+      "value": {
+        "observation_id": "fixture_frame",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "sensor_id": "fixture_sensor",
+        "captured_at": "2026-09-07T00:00:00Z",
+        "frame_id": "fixture_frame",
+        "media": [
+          {
+            "id": "fixture_image",
+            "kind": "image",
+            "source": "tests/fixtures/cup-scene.svg",
+            "created_at": "2026-09-07T00:00:00Z",
+            "visibility": "agent",
+            "task_scope": {
+              "task_id": "fixture_task",
+              "goal_id": "store_cup",
+              "attempt_id": "attempt_1"
+            },
+            "observed_at": "2026-09-07T00:00:00Z",
+            "clock_id": "fixture_clock"
+          }
+        ],
+        "schema_version": "physical.observation.v1",
+        "device_id": "fixture_robot",
+        "stream_id": "fixture_rgb",
+        "source_sequence": 1,
+        "clock_id": "fixture_clock",
+        "source_kind": "test_fixture",
+        "coordinate_frame": "camera_optical"
+      }
+    },
+    "subgoal": {
+      "contract": "SubgoalRequest",
+      "value": {
+        "goal_id": "store_cup",
+        "attempt_id": "attempt_1",
+        "instruction": "Place the specified cup inside the cabinet.",
+        "entities": {
+          "object": "cup_1",
+          "container": "cabinet_1"
+        },
+        "required_capabilities": [
+          "object_manipulation"
+        ],
+        "success_contract": {
+          "id": "store_object",
+          "version": "1",
+          "all": [
+            {
+              "check": "inside",
+              "args": [
+                "cup_1",
+                "cabinet_1"
+              ],
+              "check_id": "inside_target"
+            }
+          ],
+          "source": {
+            "kind": "benchmark",
+            "reference": "synthetic-store-object-v1"
+          }
+        },
+        "budget": {
+          "max_control_steps": 200,
+          "max_wall_time_s": 60
+        },
+        "context_refs": [
+          "fixture_frame"
+        ],
+        "schema_version": "physical.subgoal.v1",
+        "task_id": "fixture_task",
+        "team_run_id": "fixture_team",
+        "decision_owner_id": "planner_1",
+        "owner_assignment_id": "planner_assignment",
+        "idempotency_key": "fixture_request_1"
+      }
+    },
+    "verification": {
+      "contract": "VerificationResult",
+      "value": {
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "verifier_id": "fixture_verifier",
+        "status": "unknown",
+        "goal_contract_version": "1",
+        "boundary_event_id": "fixture_boundary",
+        "checks": [],
+        "evidence_refs": [
+          "fixture_frame"
+        ],
+        "explanation": "Fixture only; no actual environment checks performed.",
+        "schema_version": "physical.verification.v1",
+        "verdict_id": "fixture_verdict",
+        "verification_request_id": "fixture_verify_request",
+        "execution_id": "fixture_execution",
+        "verifier_assignment_id": "verifier_assignment",
+        "goal_contract_id": "store_object",
+        "observed_at": "2026-09-07T00:00:01Z",
+        "clock_id": "fixture_clock"
+      }
+    },
+    "invocation": {
+      "contract": "InvocationBrief",
+      "value": {
+        "objective": "Verify whether the specified cup is inside the cabinet.",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "expected_output": {
+          "schema": "VerificationResult.v1",
+          "recipient": "planner_1"
+        },
+        "entities": {
+          "object": "cup_1",
+          "container": "cabinet_1"
+        },
+        "success_contract": {
+          "id": "store_object",
+          "version": "1",
+          "all": [
+            {
+              "check": "inside",
+              "args": [
+                "cup_1",
+                "cabinet_1"
+              ],
+              "check_id": "inside_target"
+            }
+          ],
+          "source": {
+            "kind": "benchmark",
+            "reference": "synthetic-store-object-v1"
+          }
+        },
+        "known_facts": [],
+        "history_summary": "Synthetic fixture only. No robot executed this task.",
+        "changes": [],
+        "evidence_refs": [
+          "fixture_frame"
+        ],
+        "tools_and_limits": {
+          "allowed_tools": [
+            "perception.capture",
+            "verification.check",
+            "verification.submit"
+          ],
+          "allowed_actions": [
+            "observe",
+            "check",
+            "pause"
+          ]
+        },
+        "schema_version": "physical.invocation.v1",
+        "assignment_id": "verifier_assignment",
+        "caller_agent_id": "planner_1",
+        "caller_assignment_id": "planner_assignment",
+        "team_run_id": "fixture_team"
+      }
+    },
+    "skill": {
+      "contract": "SkillMetadata",
+      "value": {
+        "skill_id": "recovery-check",
+        "version": "1",
+        "task_semantics": [
+          "store_object"
+        ],
+        "required_capabilities": [
+          "object_manipulation"
+        ],
+        "source_configurations": [
+          "synthetic_fixture"
+        ],
+        "evidence_refs": [
+          "fixture_frame"
+        ],
+        "recovery_id": "fixture_recovery",
+        "verdict_ref": "fictional_verdict_for_format_example",
+        "origin": "test_fixture",
+        "limitations": [
+          "Format illustration only; no recovery or transfer experiment performed."
+        ],
+        "schema_version": "physical.skill_metadata.v1",
+        "validation_status": "test_fixture",
+        "validated_configurations": []
+      }
+    },
+    "message": {
+      "contract": "MessageEnvelope",
+      "value": {
+        "schema_version": "physical.message.v1",
+        "message_id": "fixture_message",
+        "kind": "event",
+        "type": "execution.budget_exhausted",
+        "sender": {
+          "service_id": "fixture_worker"
+        },
+        "destination": {
+          "topic": "fixture_task.execution"
+        },
+        "scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "sequence": 1,
+        "created_at": "2026-09-07T00:00:00Z",
+        "payload": {
+          "execution_id": "fixture_execution"
+        },
+        "evidence_refs": [
+          "fixture_frame"
+        ],
+        "team_run_id": "fixture_team",
+        "correlation_id": "fixture_correlation",
+        "causation_id": null
+      }
+    },
+    "execution_running": {
+      "contract": "ExecutionStatus",
+      "value": {
+        "schema_version": "physical.execution.v1",
+        "execution_id": "fixture_execution",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "state": "running",
+        "state_version": 2,
+        "control_steps": 100,
+        "policy_calls": 2,
+        "elapsed_wall_time_s": 1,
+        "device_confirmed": true,
+        "observation_refs": [],
+        "clock_id": "fixture_clock",
+        "recorded_at": "2026-09-07T00:00:01Z"
+      }
+    },
+    "execution_ended": {
+      "contract": "ExecutionStatus",
+      "value": {
+        "schema_version": "physical.execution.v1",
+        "execution_id": "fixture_execution",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "state": "ended",
+        "state_version": 3,
+        "control_steps": 200,
+        "policy_calls": 2,
+        "elapsed_wall_time_s": 2,
+        "device_confirmed": true,
+        "observation_refs": [],
+        "clock_id": "fixture_clock",
+        "recorded_at": "2026-09-07T00:00:02Z",
+        "stop_reason": "budget_exhausted",
+        "boundary_event_id": "fixture_boundary",
+        "boundary_at": "2026-09-07T00:00:02Z"
+      }
+    },
+    "execution_paused": {
+      "contract": "ExecutionStatus",
+      "value": {
+        "schema_version": "physical.execution.v1",
+        "execution_id": "fixture_execution",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "state": "paused",
+        "state_version": 3,
+        "control_steps": 100,
+        "policy_calls": 2,
+        "elapsed_wall_time_s": 1,
+        "device_confirmed": true,
+        "observation_refs": [],
+        "clock_id": "fixture_clock",
+        "recorded_at": "2026-09-07T00:00:01Z",
+        "stop_reason": "verifier_pause",
+        "boundary_event_id": "fixture_pause",
+        "boundary_at": "2026-09-07T00:00:01Z"
+      }
+    },
+    "evidence": {
+      "contract": "EvidenceRef",
+      "value": {
+        "id": "fresh_fact",
+        "kind": "report",
+        "source": "synthetic://check/inside",
+        "created_at": "2026-09-07T00:00:04Z",
+        "observed_at": "2026-09-07T00:00:03Z",
+        "clock_id": "fixture_clock",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "visibility": "agent"
+      }
+    },
+    "verification_passed": {
+      "contract": "VerificationResult",
+      "value": {
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "verifier_id": "fixture_verifier",
+        "status": "passed",
+        "goal_contract_version": "1",
+        "boundary_event_id": "fixture_boundary",
+        "checks": [
+          {
+            "check_id": "inside_target",
+            "value": true,
+            "evidence_refs": [
+              "fresh_fact"
+            ]
+          }
+        ],
+        "evidence_refs": [
+          "fresh_fact"
+        ],
+        "explanation": "Synthetic successful check.",
+        "schema_version": "physical.verification.v1",
+        "verdict_id": "fixture_verdict",
+        "verification_request_id": "fixture_verify_request",
+        "execution_id": "fixture_execution",
+        "verifier_assignment_id": "verifier_assignment",
+        "goal_contract_id": "store_object",
+        "observed_at": "2026-09-07T00:00:03Z",
+        "clock_id": "fixture_clock"
+      }
+    },
+    "tool_running": {
+      "contract": "ToolResult",
+      "value": {
+        "schema_version": "physical.tool_result.v1",
+        "call_id": "tool_1",
+        "tool_id": "perception.capture",
+        "tool_version": "1",
+        "agent_id": "planner_1",
+        "assignment_id": "planner_assignment",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "effect": "read_observation",
+        "resources": [],
+        "status": "running",
+        "evidence_refs": [],
+        "operation_id": "operation_1"
+      }
+    },
+    "tool_completed": {
+      "contract": "ToolResult",
+      "value": {
+        "schema_version": "physical.tool_result.v1",
+        "call_id": "tool_1",
+        "tool_id": "perception.capture",
+        "tool_version": "1",
+        "agent_id": "planner_1",
+        "assignment_id": "planner_assignment",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "effect": "read_observation",
+        "resources": [],
+        "status": "completed",
+        "evidence_refs": [],
+        "data": {
+          "observation_id": "fixture_frame"
+        }
+      }
+    },
+    "tool_failed": {
+      "contract": "ToolResult",
+      "value": {
+        "schema_version": "physical.tool_result.v1",
+        "call_id": "tool_1",
+        "tool_id": "perception.capture",
+        "tool_version": "1",
+        "agent_id": "planner_1",
+        "assignment_id": "planner_assignment",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "effect": "read_observation",
+        "resources": [],
+        "status": "failed",
+        "evidence_refs": [],
+        "error": {
+          "code": "provider_unavailable",
+          "message": "Synthetic test error."
+        }
+      }
+    },
+    "tool_unknown": {
+      "contract": "ToolResult",
+      "value": {
+        "schema_version": "physical.tool_result.v1",
+        "call_id": "tool_1",
+        "tool_id": "perception.capture",
+        "tool_version": "1",
+        "agent_id": "planner_1",
+        "assignment_id": "planner_assignment",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "effect": "read_observation",
+        "resources": [],
+        "status": "unknown",
+        "evidence_refs": [],
+        "error": {
+          "code": "provider_unavailable",
+          "message": "Synthetic test error."
+        }
+      }
+    },
+    "plan": {
+      "contract": "PlanDocument",
+      "value": {
+        "schema_version": "physical.plan.v1",
+        "task_id": "fixture_task",
+        "owner_agent_id": "planner_1",
+        "owner_assignment_id": "planner_assignment",
+        "version": 1,
+        "items": [
+          {
+            "goal_id": "store_cup",
+            "description": "Store the cup.",
+            "status": "active",
+            "dependencies": [],
+            "success_contract": {
+              "id": "store_object",
+              "version": "1",
+              "all": [
+                {
+                  "check": "inside",
+                  "args": [
+                    "cup_1",
+                    "cabinet_1"
+                  ],
+                  "check_id": "inside_target"
+                }
+              ],
+              "source": {
+                "kind": "benchmark",
+                "reference": "synthetic-store-object-v1"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "recovery": {
+      "contract": "RecoveryRecord",
+      "value": {
+        "schema_version": "physical.recovery.v1",
+        "recovery_id": "recovery_1",
+        "task_id": "fixture_task",
+        "original_goal_id": "store_cup",
+        "goal_contract_id": "store_object",
+        "goal_contract_version": "1",
+        "decision_owner_id": "planner_1",
+        "failed_attempt_id": "attempt_1",
+        "attempt_ids": [
+          "attempt_2"
+        ],
+        "changes": [
+          "Inspect access before retry."
+        ],
+        "evidence_refs": [
+          "fixture_frame"
+        ],
+        "status": "recording"
+      }
+    },
+    "recovery_success": {
+      "contract": "RecoveryRecord",
+      "value": {
+        "schema_version": "physical.recovery.v1",
+        "recovery_id": "recovery_1",
+        "task_id": "fixture_task",
+        "original_goal_id": "store_cup",
+        "goal_contract_id": "store_object",
+        "goal_contract_version": "1",
+        "decision_owner_id": "planner_1",
+        "failed_attempt_id": "attempt_1",
+        "attempt_ids": [
+          "attempt_2"
+        ],
+        "changes": [
+          "Inspect access before retry."
+        ],
+        "evidence_refs": [
+          "fixture_frame"
+        ],
+        "status": "resolved_success",
+        "verdict_ref": "retry_verdict"
+      }
+    },
+    "segmentation_request": {
+      "contract": "SegmentationRequest",
+      "value": {
+        "schema_version": "physical.segmentation_request.v1",
+        "observation_ref": "fixture_frame",
+        "text_prompt": "cup"
+      }
+    },
+    "segmentation": {
+      "contract": "SegmentationResult",
+      "value": {
+        "schema_version": "physical.segmentation_result.v1",
+        "observation_ref": "fixture_frame",
+        "provider_id": "synthetic_segmenter",
+        "provider_version": "1",
+        "bbox_space": "normalized_image",
+        "instances": [
+          {
+            "detection_id": "detection_1",
+            "entity_id": null,
+            "mask_ref": "fixture_mask",
+            "confidence": 0.8,
+            "label": "cup",
+            "bbox_xyxy": [
+              0.1,
+              0.2,
+              0.3,
+              0.4
+            ]
+          }
+        ],
+        "overlay_ref": "fixture_overlay"
+      }
+    },
+    "action": {
+      "contract": "ActionSpec",
+      "value": {
+        "schema_version": "physical.action_spec.v1",
+        "embodiment_id": "test_arm",
+        "version": "1",
+        "coordinate_frame": "robot_base",
+        "control_mode": "joint_position",
+        "frequency_hz": 20,
+        "channels": [
+          {
+            "name": "joint_1",
+            "quantity": "angular",
+            "unit": "radian",
+            "minimum": -1,
+            "maximum": 1
+          }
+        ]
+      }
+    },
+    "check_unknown": {
+      "contract": "CheckResult",
+      "value": {
+        "check_id": "inside_target",
+        "value": null,
+        "reason": "No reliable evidence.",
+        "evidence_refs": []
+      }
+    },
+    "agent_report": {
+      "contract": "AgentReport",
+      "value": {
+        "schema_version": "physical.agent_report.v1",
+        "team_run_id": "fixture_team",
+        "agent_id": "scene_1",
+        "assignment_id": "scene_assignment",
+        "task_scope": {
+          "task_id": "fixture_task",
+          "goal_id": "store_cup",
+          "attempt_id": "attempt_1"
+        },
+        "status": "completed",
+        "summary": "Synthetic analysis completed, not physical task success.",
+        "result": {
+          "candidates": [
+            "cup_1"
+          ]
+        },
+        "evidence_refs": [
+          "fixture_frame"
+        ]
+      }
+    },
+    "criteria": {
+      "contract": "SuccessContract",
+      "value": {
+        "id": "store_object",
+        "version": "1",
+        "all": [
+          {
+            "check": "inside",
+            "args": [
+              "cup_1",
+              "cabinet_1"
+            ],
+            "check_id": "inside_target"
+          }
+        ],
+        "source": {
+          "kind": "benchmark",
+          "reference": "synthetic-store-object-v1"
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "name": "observation accepted",
+      "base": "observation",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "subgoal accepted",
+      "base": "subgoal",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "verification accepted",
+      "base": "verification",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "invocation accepted",
+      "base": "invocation",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "skill accepted",
+      "base": "skill",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "message accepted",
+      "base": "message",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "execution_running accepted",
+      "base": "execution_running",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "execution_ended accepted",
+      "base": "execution_ended",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "execution_paused accepted",
+      "base": "execution_paused",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "evidence accepted",
+      "base": "evidence",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "verification_passed accepted",
+      "base": "verification_passed",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "tool_running accepted",
+      "base": "tool_running",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "tool_completed accepted",
+      "base": "tool_completed",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "tool_failed accepted",
+      "base": "tool_failed",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "tool_unknown accepted",
+      "base": "tool_unknown",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "plan accepted",
+      "base": "plan",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "recovery accepted",
+      "base": "recovery",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "recovery_success accepted",
+      "base": "recovery_success",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "segmentation_request accepted",
+      "base": "segmentation_request",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "segmentation accepted",
+      "base": "segmentation",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "action accepted",
+      "base": "action",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "check_unknown accepted",
+      "base": "check_unknown",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "agent_report accepted",
+      "base": "agent_report",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "unsupported subgoal version",
+      "base": "subgoal",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/schema_version",
+          "value": "physical.subgoal.v2"
+        }
+      ]
+    },
+    {
+      "name": "missing task identity",
+      "base": "subgoal",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/task_id"
+        }
+      ]
+    },
+    {
+      "name": "blank owner identity",
+      "base": "subgoal",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/decision_owner_id",
+          "value": " "
+        }
+      ]
+    },
+    {
+      "name": "zero step budget",
+      "base": "subgoal",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/budget/max_control_steps",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "boolean step count",
+      "base": "subgoal",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/budget/max_control_steps",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "unsafe integer sequence",
+      "base": "message",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/sequence",
+          "value": 9007199254740992
+        }
+      ]
+    },
+    {
+      "name": "negative time budget",
+      "base": "subgoal",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/budget/max_wall_time_s",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "coercion is disabled",
+      "base": "subgoal",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/budget/max_control_steps",
+          "value": "200"
+        }
+      ]
+    },
+    {
+      "name": "missing criterion source",
+      "base": "subgoal",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/success_contract/source"
+        }
+      ]
+    },
+    {
+      "name": "duplicate check identities",
+      "base": "subgoal",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/success_contract/all",
+          "value": [
+            {
+              "check_id": "same",
+              "check": "inside",
+              "args": [
+                "cup",
+                "a"
+              ]
+            },
+            {
+              "check_id": "same",
+              "check": "inside",
+              "args": [
+                "cup",
+                "b"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "missing assignment",
+      "base": "invocation",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/assignment_id"
+        }
+      ]
+    },
+    {
+      "name": "attempt without goal",
+      "base": "message",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/scope",
+          "value": {
+            "task_id": "fixture_task",
+            "attempt_id": "attempt_1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ambiguous sender",
+      "base": "message",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/sender",
+          "value": {
+            "agent_id": "a",
+            "assignment_id": "aa",
+            "service_id": "s"
+          }
+        }
+      ]
+    },
+    {
+      "name": "missing correlation",
+      "base": "message",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/correlation_id"
+        }
+      ]
+    },
+    {
+      "name": "malformed timestamp",
+      "base": "message",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/created_at",
+          "value": "yesterday"
+        }
+      ]
+    },
+    {
+      "name": "impossible calendar date",
+      "base": "message",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/created_at",
+          "value": "2026-02-30T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "name": "timezone offset not wire UTC",
+      "base": "message",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/created_at",
+          "value": "2026-09-07T08:00:00+08:00"
+        }
+      ]
+    },
+    {
+      "name": "millisecond timestamp accepted",
+      "base": "message",
+      "valid": true,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/created_at",
+          "value": "2026-09-07T00:00:00.123Z"
+        }
+      ]
+    },
+    {
+      "name": "year zero rejected",
+      "base": "message",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/created_at",
+          "value": "0000-01-01T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "name": "observation without frame",
+      "base": "observation",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/coordinate_frame"
+        }
+      ]
+    },
+    {
+      "name": "empty observation media",
+      "base": "observation",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/media",
+          "value": []
+        }
+      ]
+    },
+    {
+      "name": "negative sensor sequence",
+      "base": "observation",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/source_sequence",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "execution missing attempt",
+      "base": "execution_running",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/task_scope/attempt_id"
+        }
+      ]
+    },
+    {
+      "name": "ended without stop reason",
+      "base": "execution_ended",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/stop_reason"
+        }
+      ]
+    },
+    {
+      "name": "ended without boundary",
+      "base": "execution_ended",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/boundary_event_id"
+        }
+      ]
+    },
+    {
+      "name": "paused without device acknowledgement",
+      "base": "execution_paused",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/device_confirmed",
+          "value": false
+        }
+      ]
+    },
+    {
+      "name": "running with ended boundary",
+      "base": "execution_running",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/stop_reason",
+          "value": "budget_exhausted"
+        }
+      ]
+    },
+    {
+      "name": "budget stop cannot be resumed pause",
+      "base": "execution_paused",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/stop_reason",
+          "value": "budget_exhausted"
+        }
+      ]
+    },
+    {
+      "name": "running operation needs identity",
+      "base": "tool_running",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/operation_id"
+        }
+      ]
+    },
+    {
+      "name": "completed tool cannot carry error",
+      "base": "tool_completed",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/error",
+          "value": {
+            "code": "timeout",
+            "message": "Unknown."
+          }
+        }
+      ]
+    },
+    {
+      "name": "completed tool needs data",
+      "base": "tool_completed",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/data"
+        }
+      ]
+    },
+    {
+      "name": "unknown tool result needs error",
+      "base": "tool_unknown",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/error"
+        }
+      ]
+    },
+    {
+      "name": "failed tool cannot carry success data",
+      "base": "tool_failed",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/data",
+          "value": {
+            "success": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "passed verdict cannot omit evidence",
+      "base": "verification_passed",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/evidence_refs",
+          "value": []
+        }
+      ]
+    },
+    {
+      "name": "duplicate verdict checks",
+      "base": "verification_passed",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/checks",
+          "value": [
+            {
+              "check_id": "inside_target",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            },
+            {
+              "check_id": "inside_target",
+              "value": true,
+              "evidence_refs": [
+                "fresh_fact"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unknown check needs a reason",
+      "base": "check_unknown",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/reason"
+        }
+      ]
+    },
+    {
+      "name": "conclusive check needs evidence",
+      "base": "check_unknown",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/value",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "plan completion needs verdict",
+      "base": "plan",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/items/0/status",
+          "value": "done"
+        }
+      ]
+    },
+    {
+      "name": "successful recovery needs verdict",
+      "base": "recovery_success",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/verdict_ref"
+        }
+      ]
+    },
+    {
+      "name": "unfinished recovery cannot claim verdict",
+      "base": "recovery",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/verdict_ref",
+          "value": "pretend"
+        }
+      ]
+    },
+    {
+      "name": "fixture cannot claim transfer validation",
+      "base": "skill",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/validation_status",
+          "value": "transfer_validated"
+        }
+      ]
+    },
+    {
+      "name": "pixel bbox violates normalized unit",
+      "base": "segmentation",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/instances/0/bbox_xyxy",
+          "value": [
+            10,
+            20,
+            30,
+            40
+          ]
+        }
+      ]
+    },
+    {
+      "name": "reversed bbox",
+      "base": "segmentation",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/instances/0/bbox_xyxy",
+          "value": [
+            0.5,
+            0.2,
+            0.1,
+            0.4
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unsupported metric unit",
+      "base": "action",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/channels/0/unit",
+          "value": "degree"
+        }
+      ]
+    },
+    {
+      "name": "wrong quantity unit pairing",
+      "base": "action",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/channels/0/unit",
+          "value": "meter"
+        }
+      ]
+    },
+    {
+      "name": "joint limit inversion",
+      "base": "action",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/channels/0/minimum",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "name": "zero control frequency",
+      "base": "action",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/frequency_hz",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "duplicate action channels",
+      "base": "action",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/channels",
+          "value": [
+            {
+              "name": "joint_1",
+              "quantity": "angular",
+              "unit": "radian",
+              "minimum": -1,
+              "maximum": 1
+            },
+            {
+              "name": "joint_1",
+              "quantity": "angular",
+              "unit": "radian",
+              "minimum": -1,
+              "maximum": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "analysis lacking requested context",
+      "base": "agent_report",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/status",
+          "value": "insufficient_context"
+        }
+      ]
+    },
+    {
+      "name": "unknown wire field rejected",
+      "base": "subgoal",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/hidden_retry",
+          "value": true
+        }
+      ]
+    },
+    {
+      "name": "criteria accepted",
+      "base": "criteria",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "criterion missing all or any",
+      "base": "criteria",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/all"
+        }
+      ]
+    },
+    {
+      "name": "position unit cannot masquerade as velocity",
+      "base": "action",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/control_mode",
+          "value": "joint_velocity"
+        }
+      ]
+    },
+    {
+      "name": "velocity channels declare per-second units",
+      "base": "action",
+      "valid": true,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/control_mode",
+          "value": "joint_velocity"
+        },
+        {
+          "op": "replace",
+          "path": "/channels/0/unit",
+          "value": "radian_per_second"
+        }
+      ]
+    }
+  ]
+}

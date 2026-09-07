@@ -10,5 +10,7 @@
       "default": "./src/index.ts"
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "ajv": "8.17.1"
+  }
 }

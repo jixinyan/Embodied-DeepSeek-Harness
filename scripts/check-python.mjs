@@ -1,5 +1,7 @@
 import { spawnSync } from 'node:child_process';
-const executable = process.env.EDH_PYTHON || 'python3';
+import { existsSync } from 'node:fs';
+const localPython = process.platform === 'win32' ? '.venv/Scripts/python.exe' : '.venv/bin/python';
+const executable = process.env.EDH_PYTHON || (existsSync(localPython) ? localPython : 'python3');
 const result = spawnSync(executable, ['scripts/check-python.py'], {
   stdio: 'inherit',
   env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },

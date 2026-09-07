@@ -18,5 +18,8 @@
   "origin": "test_fixture",
   "limitations": [
     "Format illustration only; no recovery or transfer experiment performed."
-  ]
+  ],
+  "schema_version": "physical.skill_metadata.v1",
+  "validation_status": "test_fixture",
+  "validated_configurations": []
 }

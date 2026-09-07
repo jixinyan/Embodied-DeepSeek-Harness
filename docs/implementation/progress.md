@@ -3,7 +3,7 @@
 Spec: v1.4. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
 [unified harness layout](decisions/0002-unified-harness.md).
 
-**Current checkpoint: Skeleton Bootstrap and Step 00 complete. Next: Step 01.**
+**Current checkpoint: Step 01 in progress. Bootstrap and Step 00 complete.**
 
 ## Delivered capabilities
 
@@ -26,7 +26,7 @@ not yet implement the Team-level AgentFactory contract or physical execution.
 | Step | Status | Next concrete work |
 | --- | --- | --- |
 | 00 | done | Original DSH loop, scoped sessions, structured tool, wake-up and cancellation verified |
-| 01 | not_started | Refine schema, implement TS/Python boundary validation and state contracts; scaffold schema is input |
+| 01 | in_progress | Refine schema, implement TS/Python boundary validation and state contracts; scaffold schema is input |
 | 02 | not_started | Implement Team/Role loader and tool binding validation |
 | 03 | not_started | Implement fresh scoped role sessions; inspect actual model inputs |
 | 04 | not_started | Implement scoped communication, durable delivery and evidence access |
@@ -94,3 +94,11 @@ as a working Team loader. New public content stays English; diagrams stay SVG.
 Version checkpoints: `1109790` records the unified skeleton; `cd5e032` records source
 absorption. The subsequent Step 00 implementation commit records working assembly
 and acceptance. Preserve published history and commit each verified work slice.
+
+## Step 01 — wire validation checkpoint
+
+Refined versioned identities, timestamps, success-check IDs/sources, async tool
+results, device acknowledgement, evidence metadata, plan/recovery references and
+action units. Both TypeScript and Python load the same authoritative JSON Schema.
+A shared fixture corpus exercises positive and negative wire boundaries. Lifecycle
+transition and current-attempt verdict gates are the remaining work for this step.

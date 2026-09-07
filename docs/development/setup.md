@@ -1,11 +1,13 @@
 # Development setup
 
 Use Node.js >=22.19.0, pnpm 11.19.0 and Python >=3.11. The Python source package
-has no runtime dependencies in bootstrap. Use `EDH_PYTHON` to select an alternate
-Python executable for the import check.
+uses `jsonschema` for boundary validation. The commands below install its pinned CPU
+dependencies. Checks prefer `.venv/bin/python`; `EDH_PYTHON` overrides the executable.
 
 ```sh
 pnpm install --frozen-lockfile
+python3 -m venv .venv
+.venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e harness/physical-runtime
 pnpm check
 ```
 

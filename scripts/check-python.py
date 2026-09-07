@@ -1,4 +1,4 @@
-"""Compile/import Protocol-only modules without installing optional providers."""
+"""Compile/import CPU modules without installing optional providers."""
 import importlib
 import sys
 from pathlib import Path
@@ -20,5 +20,5 @@ for file in sorted(source.rglob("*.py")):
 for file in (root / "docs/architecture/assets").glob("*.svg"):
     ET.parse(file)
 ET.parse(root / "tests/fixtures/cup-scene.svg")
-print(f"Compiled/imported {count} Python interface modules; SVG XML valid.")
+print(f"Compiled/imported {count} Python modules; SVG XML valid.")
 print("No worker, simulator, policy or hardware behavior was exercised.")

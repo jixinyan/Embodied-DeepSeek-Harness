@@ -206,7 +206,11 @@ importers:
         specifier: workspace:*
         version: link:../../contracts
 
-  harness/contracts: {}
+  harness/contracts:
+    dependencies:
+      ajv:
+        specifier: 8.17.1
+        version: 8.17.1
 
 packages:
 

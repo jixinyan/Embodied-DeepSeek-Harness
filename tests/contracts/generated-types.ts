@@ -3,7 +3,8 @@ import type { SuccessContract, InvocationBrief } from '@edh/contracts';
 const criterion: SuccessContract = {
   id: 'inside',
   version: '1',
-  all: [{ check: 'inside', args: ['cup', 'cabinet'] }],
+  source: { kind: 'benchmark', reference: 'synthetic-check' },
+  all: [{ check_id: 'inside_target', check: 'inside', args: ['cup', 'cabinet'] }],
 };
 const id: string = criterion.id;
 // @ts-expect-error Missing a required criterion must not degenerate into an unknown dictionary.

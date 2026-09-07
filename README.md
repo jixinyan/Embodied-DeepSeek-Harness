@@ -38,6 +38,8 @@ Python 3.11+. From the repository root:
 
 ```sh
 pnpm install --frozen-lockfile
+python3 -m venv .venv
+.venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e harness/physical-runtime
 pnpm check
 pnpm test:runtime
 ```
@@ -46,7 +48,8 @@ These commands check generated schema types, example structure/references,
 TypeScript, documentation links and Python importability, then execute six DSH
 runtime integration tests using a scripted model. `test:runtime` runs that suite
 alone. No live model API, simulator, server or console is started. No GPU or key is needed.
-The Python command defaults to `python3`; override `EDH_PYTHON` for the check if needed.
+Python checks prefer `.venv/bin/python`, falling back to `python3`; override
+`EDH_PYTHON` if needed. `pnpm test:contracts` runs shared TS/Python wire cases.
 
 ## Design commitments
 

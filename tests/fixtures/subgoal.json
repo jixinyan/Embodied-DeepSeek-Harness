@@ -20,9 +20,14 @@
           "args": [
             "cup_1",
             "cabinet_1"
-          ]
+          ],
+          "check_id": "inside_target"
         }
-      ]
+      ],
+      "source": {
+        "kind": "benchmark",
+        "reference": "synthetic-store-object-v1"
+      }
     },
     "budget": {
       "max_control_steps": 200,
@@ -30,6 +35,12 @@
     },
     "context_refs": [
       "fixture_frame"
-    ]
+    ],
+    "schema_version": "physical.subgoal.v1",
+    "task_id": "fixture_task",
+    "team_run_id": "fixture_team",
+    "decision_owner_id": "planner_1",
+    "owner_assignment_id": "planner_assignment",
+    "idempotency_key": "fixture_request_1"
   }
 }

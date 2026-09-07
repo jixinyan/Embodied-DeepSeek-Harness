@@ -14,6 +14,14 @@
     "evidence_refs": [
       "fixture_frame"
     ],
-    "explanation": "Fixture only; no actual environment checks performed."
+    "explanation": "Fixture only; no actual environment checks performed.",
+    "schema_version": "physical.verification.v1",
+    "verdict_id": "fixture_verdict",
+    "verification_request_id": "fixture_verify_request",
+    "execution_id": "fixture_execution",
+    "verifier_assignment_id": "verifier_assignment",
+    "goal_contract_id": "store_object",
+    "observed_at": "2026-09-07T00:00:01Z",
+    "clock_id": "fixture_clock"
   }
 }

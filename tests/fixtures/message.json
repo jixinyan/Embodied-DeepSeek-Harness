@@ -23,6 +23,9 @@
     },
     "evidence_refs": [
       "fixture_frame"
-    ]
+    ],
+    "team_run_id": "fixture_team",
+    "correlation_id": "fixture_correlation",
+    "causation_id": null
   }
 }
