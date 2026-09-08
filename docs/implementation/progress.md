@@ -1,9 +1,15 @@
 # Implementation progress
 
-Spec: v1.5. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
+Spec: v1.6. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
 [unified harness layout](decisions/0002-unified-harness.md).
 
-**Current checkpoint: Steps 00–01 complete. Next: Step 02 Team/Role loading.**
+**Current checkpoint: Steps 00–01 complete. Next: pre-MVP foundation F1.**
+
+The latest accepted priority is to harden all MVP-critical mechanisms (agents, tools, communication, execution,
+verification, experience, persistence and application lifecycle),
+then deliver a runnable simulation-to-console MVP. Read
+[foundation acceptance](mvp-foundation.md) before continuing. F1–F7 are new integration
+gates and remain unimplemented; the historical step statuses below are unchanged.
 
 ## Delivered capabilities
 
@@ -87,11 +93,13 @@ composition, acceptance tests, compiler boundaries and remaining limits.
 
 ## Handoff
 
-Continue Step 02 in the existing checkout. Read [contract integration](contracts.md),
-then implement Team/Role loading, tool catalog and an inspectable preflight command.
-Resolve defaults and references into a frozen snapshot. Verify unknown roles/tools,
-missing required responsibilities and incompatible provider capabilities before any
-execution. Adding a role should require configuration, not a core role enum.
+Continue F1 in [the foundation plan](mvp-foundation.md): register typed message
+payloads and add authoritative tool-call/async-operation contracts. Resolve envelope
+and payload identity together; preserve operation identity through completion; validate
+both selected tool input and output. Update TS/Python cases and compatibility notes.
+Then implement the minimal Team/assignment binding and runtime routing needed for F2.
+A document update does not pass these gates. The runnable MVP remains the next product
+deliverable after foundation acceptance, ahead of broad provider and UI refinement.
 
 Do not create another loop, regenerate from a full DSH clone or install robot/GPU
 dependencies for CPU work. Example YAML is not yet a working Team loader. Current

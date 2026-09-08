@@ -9,6 +9,15 @@ Skeleton interfaces and examples are implementation inputs, not completed behavi
 [Progress](progress.md) records actual state. Steps 00–14 deliver v1; 15–16 extend it.
 A checklist or document change never substitutes for execution evidence.
 
+## Current delivery priority
+
+The latest accepted order is [pre-MVP foundation F1–F7](mvp-foundation.md), followed
+by one runnable real-simulation-to-console MVP, then broader refinement. F1 starts
+with typed messages, tool calls and async-operation identity. The numbered steps
+below remain the architectural work breakdown; do not interpret them as requiring
+completion of every general-purpose module before an end-to-end MVP. The foundation
+plan maps its executable slices to these steps and defines the stopping criterion.
+
 ## Sequence and gates
 
 | Step | Capability | Prerequisite | Work package / milestone | Enables |

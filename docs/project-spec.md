@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.5 · 2026-09-07
+Version: v1.6 · 2026-09-08
 
 Status: architecture and product baseline; Steps 00–01 implemented. See current progress.
 
@@ -11,8 +11,8 @@ Items marked “v1 default” are initial implementation choices that may evolve
 configuration or a documented decision. Model checkpoints, compute and robot models
 are deployment bindings; they do not block the framework design.
 
-This revision updates the engineering handoff after DSH runtime integration and
-shared contract validation. Confirmed product requirements remain unchanged. Detailed
+This revision prioritizes all MVP-critical runtime mechanisms and foundation acceptance before
+a runnable simulation-to-console MVP. It preserves the verified DSH and contract baseline. Confirmed product requirements remain unchanged. Detailed
 wire payloads and validation rules are authoritative in the schema and
 [contract guide](implementation/contracts.md); examples below are conceptual excerpts,
 not complete copyable wire messages. Public documentation and SVG labels use English.
@@ -29,7 +29,8 @@ are SVG assets; include their directory when handing over this document.
 
 The runtime choice is settled. Steps 00–01 provide a working original DSH loop seam,
 scoped sessions, shared wire validators and pure execution/verification/recovery gates.
-Continue Step 02: Team/Role loading and tool-catalog preflight. Read
+Continue F1 of [pre-MVP foundation acceptance](implementation/mvp-foundation.md):
+typed communication, tool calls and async-operation contracts. Read
 [progress](implementation/progress.md), [runtime integration](implementation/dsh-integration.md)
 and [shared contracts](implementation/contracts.md) first. Do not install the entire
 simulator, GPU or robot stack for this CPU phase.
@@ -40,7 +41,7 @@ specification describe intended contracts; current callable APIs are in the guid
 
 | Asset | Status | Handoff use |
 | --- | --- | --- |
-| This specification | v1.5 implementation baseline | Takes precedence over historical discussion; later explicit user decisions take precedence over it |
+| This specification | v1.6 implementation baseline | Takes precedence over historical discussion; later explicit user decisions take precedence over it |
 | Legacy EAF | Existing code at `714e00ca83999da2df7221dcf205968adde5b441` | Reference tools, policies and evidence design; preserve the old project |
 | Official DSH | Key paths inspected at `d347e703908d0406b7a7ef80e3a0e594d86b2215` | Selectively absorb necessary implementations and record provenance |
 | Console prototype | Direction approved; synthetic demonstration data | Reuse layout intent and reassess after real data integration |
@@ -794,8 +795,8 @@ unknown, and records call/agent/assignment identity, tool version, input/output 
 effects, actual resources and errors. Errors include invalid_input, unsupported,
 observation_stale, provider_unavailable, resource_busy, timeout and execution_state_unknown.
 Read-only inference may return an error; uncertain physical timeouts require state
-reconciliation before any further motion. The bootstrap result schema is incomplete
-and must be extended before runtime acceptance.
+reconciliation before any further motion. The current result schema checks structural status rules, but operation tracking and
+selected-tool payload validation still require F1–F3 work before runtime acceptance.
 
 Declared concurrency is only a preliminary filter. A SAM session may need serial
 provider access; active observation may need device resources. Actual resolved resources
