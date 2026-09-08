@@ -69,3 +69,84 @@ test('team loading freezes explicit role context and rejects unavailable binding
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('role result schemas are immutable DSH-supported object schemas with contained paths', async () => {
+  const directory = await mkdtemp(resolve(tmpdir(), 'edh-role-schema-'));
+  try {
+    const validator = new ContractValidator(
+      JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
+    );
+    const teamPath = resolve(directory, 'team.yaml');
+    const rolePath = resolve(directory, 'role.md');
+    await writeFile(
+      teamPath,
+      `schema_version: physical.team.v1
+team_id: schema-test
+entrypoint: lead
+learning_enabled: false
+members:
+  lead: role.md
+  check: role.md
+bindings:
+  decision_owner: lead
+  final_verifier: check
+tool_bindings: {}
+`,
+    );
+    const role =
+      '---\nrole_id: analyst\ndescription: Return a typed scene assessment.\ntools: []\noutput_schema: result.json\n---\nUse explicit evidence.\n';
+    await writeFile(rolePath, role);
+    const path = resolve(directory, 'result.json');
+    const loader = new FileTeamLoader({
+      validator,
+      builtinDirectory: resolve('harness/agent-runtime/agents/roles'),
+      roleRoot: directory,
+      defaultModel: 'fixture',
+      models: ['fixture'],
+      tools: [],
+      providers: [],
+    });
+    await assert.rejects(loader.inspect(teamPath), /ENOENT/);
+    await writeFile(
+      path,
+      JSON.stringify({
+        type: 'object',
+        properties: { target: { type: 'string' } },
+        required: ['target'],
+        additionalProperties: false,
+      }),
+    );
+    const first = await loader.inspect(teamPath);
+    assert(Object.isFrozen(first.members.lead!.outputSchema!.schema.properties));
+    assert(first.members.lead!.definition.tools.includes('agent.report'));
+    assert(first.members.lead!.definition.tools.includes('team.query'));
+    await writeFile(
+      path,
+      JSON.stringify({
+        type: 'object',
+        properties: { target: { type: 'number' } },
+        required: ['target'],
+        additionalProperties: false,
+      }),
+    );
+    const second = await loader.inspect(teamPath);
+    assert.notEqual(
+      first.sourceDigest,
+      second.sourceDigest,
+      'Schema changes invalidate the frozen team digest.',
+    );
+    assert.equal(first.members.lead!.outputSchema!.schema.properties!.target!.type, 'string');
+    for (const schema of [
+      { type: 'string' },
+      { type: 'object', $ref: 'https://example.invalid/schema.json' },
+      { type: 'object', properties: { value: { type: 'number', minimum: 0 } } },
+    ]) {
+      await writeFile(path, JSON.stringify(schema));
+      await assert.rejects(loader.inspect(teamPath), /schema|object/i);
+    }
+    await writeFile(rolePath, role.replace('result.json', '../../escape.json'));
+    await assert.rejects(loader.inspect(teamPath));
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});

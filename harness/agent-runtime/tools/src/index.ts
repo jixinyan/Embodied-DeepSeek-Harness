@@ -1,6 +1,10 @@
 // Native tools execute through DSH. EDH adds only physical/provider metadata.
 export {
   defineTool,
+  assertObjectJsonSchema,
+  ToolArgsError,
+  validateJsonSchemaValue,
+  type ObjectJsonSchema,
   type ToolDefinition,
   type ToolExecutionInput,
   type ToolExecutionResult,
@@ -25,4 +29,4 @@ export interface PhysicalToolProvider {
   invoke(call: ToolCall, signal: AbortSignal): Promise<ToolResult>;
 }
 
-export { CORE_TOOLS, CORE_TOOL_PARAMETERS } from './core-inputs.js';
+export { CORE_TOOLS, CORE_TOOL_PARAMETERS, assertCoreInputLimits } from './core-inputs.js';

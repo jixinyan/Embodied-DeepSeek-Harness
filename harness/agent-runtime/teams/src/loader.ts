@@ -3,12 +3,14 @@ import { dirname, resolve, relative, isAbsolute } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { parseDocument } from 'yaml';
 import { ContractValidator, type RoleDefinition } from '@edh/contracts';
+import { assertObjectJsonSchema, type ObjectJsonSchema } from '@edh/tools';
 import type { TeamRunSnapshot } from './index.js';
 
 export interface ResolvedRole {
   readonly definition: Readonly<RoleDefinition>;
   readonly instructions: string;
   readonly model: string;
+  readonly outputSchema?: { readonly reference: string; readonly schema: ObjectJsonSchema };
 }
 export interface LoadedTeam extends TeamRunSnapshot {
   readonly members: Readonly<Record<string, ResolvedRole>>;
@@ -74,10 +76,31 @@ export class FileTeamLoader {
         if (!o.tools.includes(tool)) throw new Error(`Unavailable tool for ${alias}: ${tool}`);
       if (new Set(role.tools).size !== role.tools.length)
         throw new Error(`Duplicate tool binding for ${alias}`);
-      if (role.output_schema)
-        throw new Error(`Output schema binding is not configured: ${role.output_schema}`);
-      roles[alias] = role;
-      members[alias] = { definition: role, instructions: match[2]!.trim(), model };
+      let outputSchema: ResolvedRole['outputSchema'];
+      if (role.output_schema && role.output_schema !== 'builtin:AgentReport.v1') {
+        if (role.output_schema.startsWith('builtin:'))
+          throw new Error(`Unsupported role result schema: ${role.output_schema}`);
+        const schemaPath = await within(
+          resolve(dirname(location), role.output_schema),
+          builtin ? o.builtinDirectory : o.roleRoot,
+        );
+        const schemaSource = await readFile(schemaPath, 'utf8');
+        if (Buffer.byteLength(schemaSource) > 64 * 1024)
+          throw new Error('Role result schema exceeds 64 KiB.');
+        const schema: unknown = JSON.parse(schemaSource);
+        assertObjectJsonSchema(schema);
+        outputSchema = { reference: role.output_schema, schema };
+        digest.update(schemaSource);
+      }
+      // Reporting is a framework-owned capability available to every configured role.
+      const bound = { ...role, tools: [...new Set([...role.tools, 'agent.report', 'team.query'])] };
+      roles[alias] = bound;
+      members[alias] = {
+        definition: bound,
+        instructions: match[2]!.trim(),
+        model,
+        ...(outputSchema ? { outputSchema } : {}),
+      };
       digest.update(alias).update(markdown).update(model);
     }
     for (const [tool, provider] of Object.entries(definition.tool_bindings)) {

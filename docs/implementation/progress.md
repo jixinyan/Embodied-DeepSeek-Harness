@@ -92,3 +92,22 @@ Read [extension guide](upper-runtime.md), [plan](plan.md), and decisions
 - `1212ca9`: custom extension lifetime, concurrent assignment admission and isolation acceptance.
 
 Preserve these commits and push verified phase checkpoints. Do not rewrite published history.
+
+## Role-report checkpoint (2026-09-08)
+
+Added framework-provided agent.report and team.query tools. Role-authored result
+schemas are loaded within the role root, checked using the original DSH object
+schema subset and frozen into the team digest. AgentReport identity/scope/recipient
+come from the assignment, not model-supplied fields. Missing-context reports can be
+followed by explicit context and a completed result. Final reports are immutable;
+exact retry returns a durable receipt without another caller message. Report delivery
+state is inspectable and distinct from business acknowledgement.
+
+Fixed a discovered raw ToolDefinition input-validation gap: unlike defineTool, raw
+definitions must invoke the native validator explicitly. Upper tools now call DSH's
+validator before domain effects and enforce EDH size/version admission limits.
+Forged fields and malformed execution/report calls fail without creating physical work.
+
+Twenty runtime tests pass, including actual native report calls and caller model
+inputs, schema preflight, missing-context handoff, immutable replay and persisted
+reports across restart. No generic dispatcher or agent loop was added.

@@ -13,7 +13,7 @@ import { LocalStore } from '@edh/storage';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 import { UpperRun, CORE_TOOLS } from '../../apps/server/src/application.js';
 import { FixtureBackend, FIXTURE_GOAL } from '../../apps/server/src/fixture-backend.js';
-import { ScriptedModel, textResponse } from './scripted-model.js';
+import { ScriptedModel, textResponse, toolResponse } from './scripted-model.js';
 
 test(
   'user role and native tool compose through explicit delegation with isolated context and run lifetime',
@@ -24,6 +24,23 @@ test(
     const model = new ScriptedModel([
       textResponse('Planner ready.'),
       textResponse('Analyst received explicit context.'),
+      textResponse('Planner received missing-context report.'),
+      async function* (options) {
+        const message = options.messages.filter((item) => item.source.kind === 'plugin').at(-1)!;
+        const block = message.content.find((item) => item.type === 'text');
+        assert(block?.type === 'text');
+        const evidenceId = JSON.parse(block.text).payload.evidence[0].evidence.id;
+        yield* toolResponse('agent__report', {
+          status: 'completed',
+          summary: 'Target identified.',
+          result: { target: 'cup', confidence: 'high' },
+          evidenceRefs: [evidenceId],
+          requestedContext: [],
+          expectedVersion: 1,
+        })(options);
+      },
+      textResponse('Structured report received or acknowledged.'),
+      textResponse('Structured report received or acknowledged.'),
     ]);
     const host = await createDshHost([{ providers: ['fixture'], adapter: model }]);
     let run: UpperRun | undefined;
@@ -53,10 +70,23 @@ tool_bindings: {}
         `---
 role_id: scene-analyst
 description: Inspect explicit evidence using a custom native tool.
+output_schema: result.json
 tools: [scene.describe, files.read, files.write, evidence.read, execution.start, todo_write]
 ---
 ANALYST_ROLE_MARKER. Only use explicitly supplied context.
 `,
+      );
+      await writeFile(
+        resolve(directory, 'result.json'),
+        JSON.stringify({
+          type: 'object',
+          properties: {
+            target: { type: 'string' },
+            confidence: { type: 'string', enum: ['low', 'high'] },
+          },
+          required: ['target', 'confidence'],
+          additionalProperties: false,
+        }),
       );
       const team = await new FileTeamLoader({
         validator,
@@ -106,6 +136,14 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
           signal: new AbortController().signal,
         });
       const owner = run.state.decisionAssignmentId;
+      for (const args of [{}, { instruction: 3 }, { instruction: 'Move', unexpected: true }])
+        assert.equal((await invoke(owner, 'execution__start', args)).isError, true);
+      assert.equal(run.state.requests.length, 0, 'Malformed calls must not admit physical work.');
+      assert.equal(
+        (await invoke(owner, 'tasks__abandon', { status: 'succeeded', reason: 'forged' })).isError,
+        true,
+      );
+      assert.equal(run.state.state, 'running');
       assert.equal(
         (
           await invoke(owner, 'files__write', {
@@ -168,6 +206,133 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       assert.equal(run.state.state, 'running', 'Completed TODOs cannot finish the physical task.');
       assert.equal(run.state.verdicts.length, 0);
 
+      const report = {
+        status: 'completed',
+        summary: 'Target identified.',
+        result: { target: 'cup', confidence: 'high' },
+        evidenceRefs: [],
+        requestedContext: [],
+        expectedVersion: 0,
+      };
+      assert.equal(
+        (
+          await invoke(analyst.id, 'agent__report', {
+            ...report,
+            result: { target: 'cup', confidence: 'invented' },
+          })
+        ).isError,
+        true,
+      );
+      assert.equal(
+        (await invoke(analyst.id, 'agent__report', { ...report, result: null })).isError,
+        true,
+      );
+      assert.equal(
+        (await invoke(analyst.id, 'agent__report', { ...report, evidenceRefs: ['ungranted'] }))
+          .isError,
+        true,
+      );
+      assert.equal(
+        (await invoke(analyst.id, 'agent__report', { ...report, agent_id: 'forged' })).isError,
+        true,
+      );
+      assert.equal(
+        (await invoke(analyst.id, 'agent__report', { ...report, expectedVersion: 5 })).isError,
+        true,
+      );
+      assert.equal(
+        (
+          await invoke(analyst.id, 'agent__report', {
+            ...report,
+            status: 'insufficient_context',
+            result: null,
+          })
+        ).isError,
+        true,
+      );
+      assert.equal(run.state.events.filter((event) => event.type === 'agent.report').length, 0);
+      assert.equal(
+        (
+          await invoke(analyst.id, 'agent__report', {
+            ...report,
+            status: 'insufficient_context',
+            result: null,
+            requestedContext: ['A current view of the cabinet.'],
+          })
+        ).isError,
+        false,
+      );
+      await run.settle();
+      assert.match(JSON.stringify(model.requests[2]?.messages), /insufficient_context/);
+      assert.equal(run.state.assignments[analyst.id]!.reportVersion, 1);
+      await invoke(owner, 'perception__capture');
+      const evidenceId = run.state.latestSensor!.evidence.id;
+      assert.equal(
+        (
+          await invoke(owner, 'context__respond', {
+            assignmentId: analyst.id,
+            message: 'Here is the requested frame.',
+            evidenceRefs: [evidenceId],
+          })
+        ).isError,
+        false,
+      );
+      await run.settle();
+      assert.match(JSON.stringify(model.requests[3]?.messages), new RegExp(evidenceId));
+      const completed = { ...report, evidenceRefs: [evidenceId], expectedVersion: 1 };
+      assert.equal((await invoke(analyst.id, 'agent__report', completed)).isError, false);
+      await run.settle();
+      const callerInput = model.requests
+        .slice(4)
+        .find((request) => JSON.stringify(request.messages).includes('agent-report'));
+      assert(callerInput, 'Actual caller input must include the accepted structured report.');
+      assert.match(JSON.stringify(callerInput.messages), /confidence/);
+      assert(
+        run.state.events.some(
+          (event) =>
+            event.type === 'dsh.tool-call' &&
+            (event.detail.data as { name: string }).name === 'agent__report',
+        ),
+      );
+      assert.equal(run.state.assignments[analyst.id]!.report?.agent_id, analyst.sessionId);
+      assert.equal(run.state.assignments[analyst.id]!.reportVersion, 2);
+      assert.equal(
+        (await invoke(analyst.id, 'agent__report', completed)).isError,
+        false,
+        'Exact replay returns the durable receipt.',
+      );
+      assert.equal(run.state.events.filter((event) => event.type === 'agent.report').length, 2);
+      assert.equal(model.requests.length, 6, 'Report replay does not duplicate caller input.');
+      assert.equal(
+        (
+          await invoke(analyst.id, 'agent__report', {
+            ...completed,
+            summary: 'Changed final result.',
+          })
+        ).isError,
+        true,
+      );
+      assert.equal(
+        (
+          await invoke(analyst.id, 'files__write', {
+            path: 'late.md',
+            content: 'late',
+            expectedVersion: 0,
+          })
+        ).isError,
+        true,
+      );
+      assert.equal(
+        (await invoke(owner, 'team__query', { assignmentId: analyst.id })).isError,
+        false,
+      );
+      assert.equal(
+        run.state.state,
+        'running',
+        'A completed analysis report cannot finish the robot task.',
+      );
+      assert.equal(run.state.verdicts.length, 0);
+
       const duplicateBrief = { ...analyst.brief, assignment_id: randomUUID() };
       const attempts = await Promise.allSettled([
         run.sessions.create('analyst', duplicateBrief),
@@ -177,7 +342,7 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       assert.equal(attempts.filter((result) => result.status === 'rejected').length, 1);
       await run.stop();
       assert.equal(
-        (await invoke(analyst.id, 'scene__describe')).isError,
+        (await invoke(duplicateBrief.assignment_id, 'scene__describe')).isError,
         true,
         'Custom tools cannot start after task cancellation.',
       );

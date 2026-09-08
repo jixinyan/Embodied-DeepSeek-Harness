@@ -12,7 +12,12 @@ import {
   type EvidenceRef,
   type PlanDocument,
 } from '@edh/contracts';
-import { TeamSessions, type Assignment } from '@edh/communication';
+import {
+  TeamSessions,
+  AssignmentReports,
+  type ReportInput,
+  type Assignment,
+} from '@edh/communication';
 import type { LoadedTeam } from '@edh/teams';
 import { LocalStore } from '@edh/storage';
 import { AssignmentFiles } from '@edh/files';
@@ -22,7 +27,13 @@ import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/executio
 import type { RunState } from '@edh/tasks';
 
 export { CORE_TOOLS } from '@edh/tools';
-import { CORE_TOOL_PARAMETERS } from '@edh/tools';
+import {
+  CORE_TOOL_PARAMETERS,
+  assertObjectJsonSchema,
+  validateJsonSchemaValue,
+  ToolArgsError,
+  assertCoreInputLimits,
+} from '@edh/tools';
 export const terminal = (state: RunState['state']) =>
   ['succeeded', 'failed', 'cancelled', 'interrupted', 'unknown'].includes(state);
 interface CheckedBoundary {
@@ -63,6 +74,7 @@ export class UpperRun {
   private readonly gates: LifecycleValidator;
   private readonly plans: TaskPlans;
   private readonly files: AssignmentFiles;
+  private readonly reports: AssignmentReports;
   private readonly skills: SkillLibrary;
   private readonly evidence = new Map<string, SensorSample>();
   private readonly grants = new Map<string, Set<string>>();
@@ -113,6 +125,7 @@ export class UpperRun {
     this.gates = new LifecycleValidator(options.validator);
     this.plans = new TaskPlans(options.store, options.validator);
     this.files = new AssignmentFiles(options.store);
+    this.reports = new AssignmentReports(options.store, options.validator);
     this.skills = new SkillLibrary(options.store, options.validator);
     this.sessions = new TeamSessions(
       options.host,
@@ -316,7 +329,10 @@ export class UpperRun {
         attempt_id: `attempt-${this.state.attempt}`,
         ...(this.state.recoveryId ? { recovery_id: this.state.recoveryId } : {}),
       },
-      expected_output: { schema: 'edh.role-report.v1', recipient: caller?.id ?? 'user' },
+      expected_output: {
+        schema: role.outputSchema?.reference ?? 'builtin:AgentReport.v1',
+        recipient: caller?.id ?? 'user',
+      },
       entities: structuredClone(this.options.goal.entities),
       success_contract: structuredClone(this.contract),
       known_facts: samples.map((s) => ({
@@ -386,7 +402,21 @@ export class UpperRun {
             description: `${logical}. Operates only within this assignment and task.`,
             parameters: {
               type: 'object',
-              properties,
+              properties:
+                logical === 'agent.report'
+                  ? {
+                      ...properties,
+                      result: {
+                        oneOf: [
+                          this.sessions.team.members[a.member]!.outputSchema?.schema ?? {
+                            type: 'object',
+                            additionalProperties: true,
+                          },
+                          { type: 'null' },
+                        ],
+                      },
+                    }
+                  : properties,
               required: Object.keys(properties),
               additionalProperties: false,
             },
@@ -394,8 +424,16 @@ export class UpperRun {
               schema: { type: 'object', additionalProperties: true },
               render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
             },
-            execute: (args, exec) =>
-              this.invoke(a, logical, args as Record<string, unknown>, exec.signal),
+            execute: async (args, exec) => {
+              // Raw ToolDefinition owns input validation; use DSH's existing validator,
+              // just as defineTool does, before any EDH side effects.
+              const parameters = native.parameters;
+              assertObjectJsonSchema(parameters);
+              const violations = validateJsonSchemaValue(parameters, args, 'arguments');
+              if (violations.length) throw new ToolArgsError(violations);
+              assertCoreInputLimits(args as Record<string, unknown>);
+              return this.invoke(a, logical, args as Record<string, unknown>, exec.signal);
+            },
           };
         }
         // DSH still owns registration, schema checks, timeout and dispatch. This
@@ -410,9 +448,20 @@ export class UpperRun {
               a.id === this.evolverId &&
               (logical.startsWith('files.') ||
                 logical.startsWith('skills.') ||
-                logical === 'evidence.read');
+                logical === 'evidence.read' ||
+                logical === 'agent.report');
             if (this.closed || (terminal(this.state.state) && !recoveryWrite))
               throw new Error('Run is no longer writable.');
+            const priorReport = this.reports.read(a.id);
+            if (
+              logical !== 'agent.report' &&
+              logical !== 'team.query' &&
+              priorReport &&
+              priorReport.report.status !== 'insufficient_context'
+            )
+              throw new Error(
+                'Assignment has finished; delegate a fresh assignment for more work.',
+              );
             this.event('tool.started', {
               assignmentId: a.id,
               tool: logical,
@@ -450,6 +499,100 @@ export class UpperRun {
   ): Promise<object> {
     const s = (key: string) => String(args[key]);
     switch (tool) {
+      case 'team.query': {
+        const target = this.sessions.get(s('assignmentId'));
+        if (target.id !== a.id && target.brief.expected_output.recipient !== a.id)
+          throw new Error('Only the assignment or its direct caller may query its report.');
+        const latestReport = this.reports.read(target.id);
+        return {
+          assignmentId: target.id,
+          member: target.member,
+          agentStatus: this.state.assignments[target.id]!.status,
+          latestReport: latestReport ?? null,
+          reportDelivery: latestReport
+            ? (this.reports.delivery(latestReport.id) ?? { state: 'unconfirmed' })
+            : null,
+        };
+      }
+      case 'agent.report': {
+        const input = args as unknown as ReportInput;
+        if (
+          a.id !== this.evolverId &&
+          a.brief.task_scope.attempt_id !== `attempt-${this.state.attempt}`
+        )
+          throw new Error('Report belongs to a stale attempt.');
+        if (a.id === this.state.decisionAssignmentId && input.status !== 'insufficient_context')
+          throw new Error(
+            'Decision owner finishes the task through tasks.finish or tasks.abandon, not a role report.',
+          );
+        const samples = this.permit(a, input.evidenceRefs);
+        const recipient = a.brief.expected_output.recipient;
+        if (recipient !== 'user') this.sessions.get(recipient);
+        const { record, replay } = this.reports.submit(
+          a,
+          input,
+          this.sessions.team.members[a.member]!.outputSchema?.schema,
+        );
+        if (!replay) {
+          this.state.assignments[a.id]!.report = structuredClone(record.report);
+          this.state.assignments[a.id]!.reportVersion = record.version;
+          this.event('agent.report', {
+            assignmentId: a.id,
+            reportId: record.id,
+            version: record.version,
+            recipient,
+            report: record.report,
+          });
+          this.reports.markDelivery(record.id, {
+            state: recipient === 'user' ? 'recorded' : 'queued',
+          });
+          if (recipient !== 'user') {
+            for (const sample of samples) this.grants.get(recipient)!.add(sample.evidence.id);
+            const delivery = this.sessions
+              .deliver(
+                recipient,
+                {
+                  kind: 'agent-report',
+                  reportId: record.id,
+                  version: record.version,
+                  report: record.report,
+                  evidence: samples,
+                },
+                a.id,
+              )
+              .then(
+                () => {
+                  this.reports.markDelivery(record.id, { state: 'settled' });
+                  this.event('agent.report-delivery', {
+                    reportId: record.id,
+                    recipient,
+                    state: 'settled',
+                  });
+                },
+                (error: unknown) => {
+                  const message = error instanceof Error ? error.message : String(error);
+                  this.reports.markDelivery(record.id, { state: 'failed', error: message });
+                  this.event('agent.report-delivery', {
+                    reportId: record.id,
+                    recipient,
+                    state: 'failed',
+                    error: message,
+                  });
+                  throw error;
+                },
+              );
+            this.spawn(delivery);
+          }
+        }
+        return {
+          accepted: true,
+          reportId: record.id,
+          version: record.version,
+          replay,
+          recipient,
+          delivery: this.reports.delivery(record.id)?.state ?? 'unconfirmed',
+        };
+      }
       case 'planning.read':
         return {
           plan: this.plans.read(this.state.id) ?? null,
@@ -495,6 +638,9 @@ export class UpperRun {
       case 'context.request':
       case 'context.respond': {
         const target = this.sessions.get(s('assignmentId'));
+        const targetReport = this.reports.read(target.id);
+        if (targetReport && targetReport.report.status !== 'insufficient_context')
+          throw new Error('Recipient assignment has finished. Delegate a fresh assignment.');
         const refs = args.evidenceRefs as string[];
         const samples = this.permit(a, refs);
         if (target.id === a.id) throw new Error('Self messaging is not a delegation.');

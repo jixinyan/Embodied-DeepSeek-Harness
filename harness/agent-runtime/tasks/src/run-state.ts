@@ -1,5 +1,6 @@
 import type {
   InvocationBrief,
+  AgentReport,
   ExecutionStatus,
   SubgoalRequest,
   VerificationResult,
@@ -20,6 +21,8 @@ export interface RunAssignment {
   model: string;
   tools: string[];
   todos?: { content: string; status: 'pending' | 'in_progress' | 'completed' }[];
+  report?: AgentReport;
+  reportVersion?: number;
   todoSequence?: number;
   todoTurn?: number;
   turn?: number;

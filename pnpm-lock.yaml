@@ -125,6 +125,9 @@ importers:
       '@edh/planning':
         specifier: workspace:*
         version: link:../planning
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../storage
       '@edh/teams':
         specifier: workspace:*
         version: link:../teams
@@ -236,6 +239,9 @@ importers:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      '@edh/tools':
+        specifier: workspace:*
+        version: link:../tools
       yaml:
         specifier: 2.8.1
         version: 2.8.1

@@ -58,7 +58,7 @@ export class TeamSessions {
       const handle = await createDshSession(this.host, {
         sessionId: assignment.sessionId,
         ...binding,
-        instructions: `${role.instructions}\n\nTools use double underscores in place of dots. Source: ${this.team.sourceDigest}.\nEvery message is explicit context. Never infer another role's hidden conversation.`,
+        instructions: `${role.instructions}\n\nTools use double underscores in place of dots. Source: ${this.team.sourceDigest}.\nEvery message is explicit context. Never infer another role's hidden conversation.\nUse agent__report to return assignment work to your fixed caller. Start expectedVersion at 0; use the returned version for later reports. Use insufficient_context with specific requestedContext and result=null when blocked. A completed/failed/cancelled report is final for this assignment. Custom output_schema constrains completed report.result. Use team__query to inspect your own or a directly delegated assignment's report. Never treat an analysis report as formal physical success.`,
         tools: this.hooks.tools(assignment),
         todo: brief.tools_and_limits.allowed_tools.includes('todo_write'),
       });

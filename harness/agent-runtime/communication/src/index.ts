@@ -11,3 +11,5 @@ export interface TeamRouter {
 }
 
 export { TeamSessions, type Assignment, type SessionHooks } from './sessions.js';
+
+export { AssignmentReports, type AcceptedReport, type ReportInput } from './reports.js';

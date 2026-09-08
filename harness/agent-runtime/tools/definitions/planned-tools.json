@@ -3,6 +3,10 @@
   "description": "Logical tool inventory, not a second runtime registry. Upper tools use native DSH schemas/dispatch; physical bindings currently use a CPU fixture.",
   "tools": [
     {
+      "id": "agent.report",
+      "status": "upper_application"
+    },
+    {
       "id": "context.request",
       "status": "upper_application"
     },
@@ -79,6 +83,14 @@
       "status": "upper_application"
     },
     {
+      "id": "tasks.abandon",
+      "status": "upper_application"
+    },
+    {
+      "id": "tasks.finish",
+      "status": "upper_application"
+    },
+    {
       "id": "tasks.replan",
       "status": "upper_application"
     },
@@ -91,8 +103,16 @@
       "status": "upper_application"
     },
     {
+      "id": "team.query",
+      "status": "upper_application"
+    },
+    {
       "id": "team.send",
       "status": "upper_application"
+    },
+    {
+      "id": "todo_write",
+      "status": "native_dsh"
     },
     {
       "id": "verification.check",
@@ -101,18 +121,6 @@
     {
       "id": "verification.submit",
       "status": "upper_application"
-    },
-    {
-      "id": "tasks.finish",
-      "status": "upper_application"
-    },
-    {
-      "id": "tasks.abandon",
-      "status": "upper_application"
-    },
-    {
-      "id": "todo_write",
-      "status": "native_dsh"
     }
   ]
 }
