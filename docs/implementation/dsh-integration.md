@@ -8,7 +8,7 @@ keyless integration baseline, not a functioning physical agent product.
 ```sh
 pnpm install --frozen-lockfile
 pnpm check
-# Or run the six runtime acceptance tests alone:
+# Or run the native runtime acceptance suite alone:
 pnpm test:runtime
 ```
 
@@ -145,3 +145,16 @@ status rather than inferring that result from the local Node version.
 Step 01: refine shared wire schemas, implement matching TypeScript/Python validation
 and state-transition contracts. Keep the DSH lifecycle tests as regressions. Do not
 start with robot/GPU installation or treat this seam as a completed Team system.
+
+## Native tool reuse alignment
+
+The public `@edh/tools` export is DSH's exact `defineTool`, with native tool types.
+The three tests in [native-tools.test.ts](../../tests/runtime/native-tools.test.ts)
+prove API identity, scalar output through the original loop without physical envelopes,
+and DSH-native rejection of invalid input/output. Together with the original six cases,
+the current runtime suite has nine tests. These are integration checks of reused DSH
+mechanisms, not newly written agent capabilities. Read
+[decision 0003](decisions/0003-reuse-dsh-mechanisms.md) for the scope of embodied additions.
+
+Tool `timeoutMs` metadata alone does not enforce a timeout in the current host; the
+upstream timeout-policy plugin is not mounted. Disk persistence is also not mounted.

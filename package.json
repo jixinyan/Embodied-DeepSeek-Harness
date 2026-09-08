@@ -15,8 +15,8 @@
     "typecheck": "node scripts/build-dsh-types.mjs && tsc --noEmit",
     "check:structure": "node scripts/check-structure.mjs",
     "check:python": "node scripts/check-python.mjs",
-    "format": "prettier --write \"harness/agent-runtime/*/src/index.ts\" \"harness/contracts/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\" \"harness/agent-runtime/agents/src/runtime.ts\" \"apps/server/src/runtime.ts\" \"tests/runtime/*.ts\" \"harness/contracts/src/validation.ts\" \"harness/contracts/src/lifecycle.ts\" \"harness/contracts/src/boundary.ts\"",
-    "format:check": "prettier --check \"harness/agent-runtime/*/src/index.ts\" \"harness/contracts/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\" \"harness/agent-runtime/agents/src/runtime.ts\" \"apps/server/src/runtime.ts\" \"tests/runtime/*.ts\" \"harness/contracts/src/validation.ts\" \"harness/contracts/src/lifecycle.ts\" \"harness/contracts/src/boundary.ts\"",
+    "format": "prettier --write \"harness/agent-runtime/*/src/index.ts\" \"harness/contracts/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\" \"harness/agent-runtime/agents/src/runtime.ts\" \"apps/server/src/runtime.ts\" \"tests/runtime/*.ts\" \"harness/contracts/src/validation.ts\" \"harness/contracts/src/lifecycle.ts\" \"harness/contracts/src/physical-boundary.ts\"",
+    "format:check": "prettier --check \"harness/agent-runtime/*/src/index.ts\" \"harness/contracts/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\" \"harness/agent-runtime/agents/src/runtime.ts\" \"apps/server/src/runtime.ts\" \"tests/runtime/*.ts\" \"harness/contracts/src/validation.ts\" \"harness/contracts/src/lifecycle.ts\" \"harness/contracts/src/physical-boundary.ts\"",
     "check:provenance": "node scripts/check-dsh-source.mjs",
     "test:runtime": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/*.test.ts",
     "test:contracts": "tsx --tsconfig tsconfig.runtime.json --test --test-reporter=dot tests/contracts/*.test.ts && node scripts/test-python.mjs"

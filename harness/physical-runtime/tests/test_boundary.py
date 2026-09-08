@@ -3,11 +3,11 @@ import copy
 import json
 import unittest
 from test_contracts import ROOT, patched
-from physical_harness.boundary import BoundaryValidator
+from physical_harness.physical_boundary import PhysicalBoundaryValidator
 
 SOURCE = json.loads((ROOT / "harness/contracts/schema/physical.schema.json").read_text())
 FIXTURES = json.loads((ROOT / "tests/contracts/boundary-cases.json").read_text())
-SHARED = BoundaryValidator(SOURCE, FIXTURES["extensions"])
+SHARED = PhysicalBoundaryValidator(SOURCE, FIXTURES["extensions"])
 
 
 class BoundaryTests(unittest.TestCase):
@@ -19,7 +19,7 @@ class BoundaryTests(unittest.TestCase):
 
                 def invoke():
                     if value["method"] == "construct":
-                        return BoundaryValidator(SOURCE, value["extensions"])
+                        return PhysicalBoundaryValidator(SOURCE, value["extensions"])
                     return getattr(SHARED, value["method"])(*value["args"])
 
                 if case["throws"]:
@@ -36,7 +36,7 @@ class BoundaryTests(unittest.TestCase):
 
     def test_registration_snapshot(self):
         source, extensions = copy.deepcopy(SOURCE), copy.deepcopy(FIXTURES["extensions"])
-        validator = BoundaryValidator(source, extensions)
+        validator = PhysicalBoundaryValidator(source, extensions)
         source["x-edh-message-types"]["tool.invoke"]["version"] = "changed"
         extensions["messages"][0]["version"] = "changed"
         self.assertEqual(validator.message(FIXTURES["bases"]["message"]["args"][0]), [])

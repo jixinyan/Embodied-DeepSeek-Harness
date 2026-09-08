@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.6 · 2026-09-08
+Version: v1.7 · 2026-09-08
 
 Status: architecture and product baseline; Steps 00–01 implemented. See current progress.
 
@@ -29,9 +29,11 @@ are SVG assets; include their directory when handing over this document.
 
 The runtime choice is settled. Steps 00–01 provide a working original DSH loop seam,
 scoped sessions, shared wire validators and pure execution/verification/recovery gates.
-F1 typed boundary acceptance is complete. Continue F2 of
-[pre-MVP foundation acceptance](implementation/mvp-foundation.md): runtime role/model
-binding, assignment isolation and authenticated communication. Read
+F1 domain boundary acceptance is complete. [Decision 0003](implementation/decisions/0003-reuse-dsh-mechanisms.md)
+clarifies that DSH owns the generic runtime; EDH adds embodied bindings and behavior.
+Continue F2 of
+[pre-MVP foundation acceptance](implementation/mvp-foundation.md): Team/Role and physical permission
+binding onto existing DSH sessions, tools and inboxes. Read
 [progress](implementation/progress.md), [runtime integration](implementation/dsh-integration.md)
 and [shared contracts](implementation/contracts.md) first. Do not install the entire
 simulator, GPU or robot stack for this CPU phase.
@@ -42,7 +44,7 @@ specification describe intended contracts; current callable APIs are in the guid
 
 | Asset | Status | Handoff use |
 | --- | --- | --- |
-| This specification | v1.6 implementation baseline | Takes precedence over historical discussion; later explicit user decisions take precedence over it |
+| This specification | v1.7 implementation baseline | Takes precedence over historical discussion; later explicit user decisions take precedence over it |
 | Legacy EAF | Existing code at `714e00ca83999da2df7221dcf205968adde5b441` | Reference tools, policies and evidence design; preserve the old project |
 | Official DSH | Key paths inspected at `d347e703908d0406b7a7ef80e3a0e594d86b2215` | Selectively absorb necessary implementations and record provenance |
 | Console prototype | Direction approved; synthetic demonstration data | Reuse layout intent and reassess after real data integration |

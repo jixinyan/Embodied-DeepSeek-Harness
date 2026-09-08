@@ -7,6 +7,15 @@ deliver one real simulation-to-console MVP before broadening providers. Communic
 and tool contracts are examples of this requirement, not its full scope.
 Historical step numbers remain traceable in [the full plan](plan.md).
 
+## DSH reuse boundary
+
+[Decision 0003](decisions/0003-reuse-dsh-mechanisms.md) governs every slice below.
+Agent loops, native tool schema/dispatch, sessions, inboxes, model calls and cancellation
+are DSH mechanisms to reuse and configure. F2 binds Team/Role/permissions to those
+mechanisms; F3 builds a physical provider bridge inside a native DSH tool body. The
+foundation acceptance matrix verifies the resulting composition and embodied rules;
+it is not authorization to implement another general-purpose runtime.
+
 ## What the current audit establishes
 
 | Boundary | Exists at commit 3624fd6 | Gap to close |
@@ -21,9 +30,9 @@ Historical step numbers remain traceable in [the full plan](plan.md).
 | Observation/evidence | Scope, time, clock, frame and visibility fields | Resolve and authorize references; distinguish latest captured from last supplied to each agent |
 | Persistence and console | Interfaces and target layout | Durable critical events, resumable subscriptions and projections using the same accepted events |
 
-Two concrete structural gaps deserve explicit treatment in F1. The current message
-`payload` accepts an arbitrary object independently of `type`. The current ToolResult
-schema forbids `operation_id` on `completed`, which does not support tracing an async
+The audit found two structural gaps, subsequently addressed by F1. The earlier message
+`payload` accepts an arbitrary object independently of `type`. The earlier ToolResult
+schema forbade `operation_id` on `completed`, which does not support tracing an async
 operation through completion. A later completion must retain operation identity;
 synchronous results need not invent an operation. Draft schema changes require both
 language fixtures, regenerated static types and migration notes for existing examples.
@@ -91,8 +100,8 @@ A schema-only slice is not completion of the foundation as a whole.
 | Slice | Concrete deliverable | Exit gate | Original steps |
 | --- | --- | --- | --- |
 | F1: canonical boundary contracts | Registered message-type payloads; shared ToolCall and async-operation contracts; resolved schema/version rules; updated examples and TS/Python fixtures | Reject envelope/payload scope conflicts, wrong versions, invalid async transitions and lost operation identity in both languages; preserve a minimal custom message/tool extension path | Extend 01; contract portion of 02/04/06 |
-| F2: agent runtime, configuration and communication | Team/Role loader, model capability preflight, immutable assignment/tool bindings, bounded DSH sessions, router and explicit context exchange | Inspect actual model requests; reject incompatible bindings and leaked context/tools; route to the right assignment; cancellation, failed setup and subsequent run cleanup work | Required portions of 02/03/04 |
-| F3: tool dispatch, observation and physical boundary | Common sync/async dispatcher; separate Python CPU worker; selected schemas, evidence access, action/observation compatibility, resource coordination and provider reset/close | A DSH call crosses processes and returns to its assignment; invalid input/output or action fails; duplicate acceptance does not duplicate work; motion conflicts and uncertain stop are handled explicitly | Required portions of 02/06/07 |
+| F2: Team/Role binding onto DSH | Team/Role loader, model capability preflight, immutable assignment/tool bindings and explicit handoff through DSH sessions/inboxes | Inspect actual model requests; reject incompatible bindings and leaked context/tools; route to the right assignment; cancellation, failed setup and subsequent run cleanup work | Required portions of 02/03/04 |
+| F3: DSH physical-tool bridge | Native DSH tools wrapping a separate Python CPU worker; provider schemas, evidence access, action/observation compatibility, resources and reset/close | A DSH call crosses processes and returns to its assignment; invalid input/output or action fails; duplicate acceptance does not duplicate work; motion conflicts and uncertain stop are handled explicitly | Required portions of 02/06/07 |
 | F4: durable task state, plans and private files | Persist critical events and operation identities, task-stream cursors, versioned plans, scoped files/assets, deduplication and atomic lifecycle gates | Restart/replay preserves accepted facts without duplicate effects; reject stale plan/state updates and unauthorized evidence/files; reconcile uncertain devices before releasing resources | Required portions of 04/05/06/09 |
 | F5: verification, retry and experience | Independent verifier/evolver assignments on DSH, async monitor scheduling, formal verification, owner retry, original-goal recovery and minimal durable SKILL storage/retrieval | Actual CPU retry trace triggers Evolver; original-goal success permits a valid bundle; a later assignment retrieves it; failed/prerequisite/unknown outcomes cannot publish success | Required portions of 08/09/10 |
 | F6: application lifecycle and console state | Documented startup command, bound configuration, readiness, shutdown/restart, structured diagnostics and resumable authoritative console projection | Host/worker start and stop reproducibly; reconnect reproduces task state and last-seen evidence; stop is available without waiting for an LLM | Core portions of 11/12 |

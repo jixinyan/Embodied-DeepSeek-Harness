@@ -1,9 +1,9 @@
 # Implementation progress
 
-Spec: v1.6. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
+Spec: v1.7. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
 [unified harness layout](decisions/0002-unified-harness.md).
 
-**Current checkpoint: Steps 00–01 complete. F1 complete. Next: F2 runtime binding and communication.**
+**Current checkpoint: Steps 00–01 complete. F1 complete. Next: Team/Role binding onto DSH (F2).**
 
 The latest accepted priority is to harden all MVP-critical mechanisms (agents, tools, communication, execution,
 verification, experience, persistence and application lifecycle),
@@ -15,7 +15,7 @@ step statuses below are unchanged because runtime integration is still outstandi
 
 - Original DSH loop, model/tool services, sessions and scoped lifecycle selectively
   absorbed into EDH. No independent replacement loop or full upstream product.
-- Trusted host assembly and explicit scoped-session creation. Six keyless behavior
+- Trusted host assembly and explicit scoped-session creation. Nine keyless runtime
   tests check actual model inputs/results, wake-up, cancellation and teardown.
 - Shared schema and generated TypeScript; Python interfaces; role/team/tool/skill
   examples; English specification, SVG figures, module map and implementation plan.
@@ -66,7 +66,7 @@ Local verification on 2026-09-08: Node v25.4.0, pnpm 11.19.0, Python 3.14.0.
 | `pnpm typecheck` | Three foundation declaration builds plus strict EDH/non-foundation DSH checks |
 | `pnpm check:structure` | 18 private source workspaces; English public text and local links |
 | `pnpm check:python` | 15 CPU modules compile/import; repository SVG XML valid |
-| `pnpm test:runtime` | 6 integration tests pass; no skipped cases |
+| `pnpm test:runtime` | 9 runtime tests pass; no skipped cases |
 | `pnpm test:contracts` | 230 shared wire/lifecycle/boundary cases pass in each language, plus non-JSON rejection tests |
 
 The runtime tests are actual Step 00 acceptance, using a scripted model boundary.
@@ -95,7 +95,9 @@ composition, acceptance tests, compiler boundaries and remaining limits.
 
 ## Handoff
 
-Continue F2 in [the foundation plan](mvp-foundation.md): minimum Team/Role loading,
+Read [decision 0003](decisions/0003-reuse-dsh-mechanisms.md) first: native loop, tools,
+validation, sessions, inbox/followup and cancellation are reused from DSH. Continue F2
+in [the foundation plan](mvp-foundation.md): minimum Team/Role loading,
 model capability preflight, frozen assignment/tool bindings and authenticated routing
 through existing DSH sessions. Read [boundary APIs and migration](boundaries.md).
 Bind identity to the actual caller, enforce destination/assignment lifetime and make
@@ -147,3 +149,15 @@ is exercised in both languages. These are contract gates, not the services thems
 
 `be72630` records the expanded core-first MVP plan. The following implementation
 commit records F1 code, fixtures and guide. Existing source provenance is unchanged.
+
+## DSH reuse alignment
+
+Native `@edh/tools` now directly re-exports DSH authoring/types. Generic registry and
+executor placeholders were replaced by explicitly physical provider ports. The standalone
+F1 validator was renamed PhysicalBoundaryValidator; ordinary DSH tools/messages do not
+require it. Three additional tests prove direct native API reuse, scalar output through
+the original loop and DSH-owned input/output rejection. No upstream source was modified.
+
+Timeout metadata is available upstream but its enforcement plugin is not mounted.
+Disk persistence has an interface but no mounted backend. Full Team routing, Python
+workers, verifier/evolver agents, simulation and console are still unimplemented.

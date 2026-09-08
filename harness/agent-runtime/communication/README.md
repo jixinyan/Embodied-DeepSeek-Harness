@@ -1,6 +1,9 @@
 # communication
 
-Explicit delegation, context requests and durable scoped messages.
+EDH-specific assignment routing, explicit briefs and physical task events. Delivery
+into an agent uses DSH's existing inbox/followup and event machinery; this module must
+not create another generic agent messaging runtime. Domain persistence and permission
+checks remain unimplemented.
 
 **Status:** interface skeleton only. Implementation begins in Step 04 of
 [the implementation plan](../../../docs/implementation/plan.md).

@@ -1,6 +1,6 @@
 # DSH runtime acceptance
 
-Run `pnpm test:runtime` from the repository root. Six tests assemble the actual EDH
+Run `pnpm test:runtime` from the repository root. Nine tests assemble the actual EDH
 host and original DSH loop with a scripted model. They check structured tool results,
 later host input, sibling isolation, direct out-of-scope dispatch, cancellation,
 creation rollback and shutdown draining. Every physical-looking value is synthetic.

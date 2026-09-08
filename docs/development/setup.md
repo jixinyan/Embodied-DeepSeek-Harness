@@ -29,7 +29,7 @@ from the example SKILL.
 
 ## DSH runtime baseline
 
-`pnpm test:runtime` runs six keyless integration tests against the original DSH
+`pnpm test:runtime` runs nine keyless integration tests against the original DSH
 loop and the EDH host assembly. It is included in `pnpm check`. The host is a callable
 source entry, not a network service; no `dev` or `start` command exists yet.
 

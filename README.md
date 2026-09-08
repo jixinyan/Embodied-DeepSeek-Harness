@@ -45,7 +45,7 @@ pnpm test:runtime
 ```
 
 These commands check generated schema types, example structure/references,
-TypeScript, documentation links and Python importability, then execute six DSH
+TypeScript, documentation links and Python importability, then execute nine DSH
 runtime integration tests and shared wire/lifecycle validation cases in both languages. `test:runtime` runs that suite
 alone. No live model API, simulator, server or console is started. No GPU or key is needed.
 Python checks prefer `.venv/bin/python`, falling back to `python3`; override

@@ -4,10 +4,20 @@ F1 adds executable boundary validation in TypeScript and Python. This is a core
 contract checkpoint, not a router, dispatcher, worker or persistence implementation.
 Read [foundation acceptance](mvp-foundation.md) for the remaining F2–F7 integration.
 
+## Scope after the DSH reuse audit
+
+This is a domain/provider boundary library, not an alternative native tool registry,
+dispatcher or agent protocol. DSH already validates tool arguments and canonical output,
+returns results to its model loop and manages session lifetimes. Ordinary DSH tools
+and messages bypass this library. Use it for embodied task/event fields and the
+cross-language physical provider port. See [decision 0003](decisions/0003-reuse-dsh-mechanisms.md).
+The earlier `BoundaryValidator` export was renamed `PhysicalBoundaryValidator`; update
+internal imports. There is no published backwards-compatibility guarantee in bootstrap.
+
 ## Entry points and registration
 
-TypeScript: `BoundaryValidator` from `@edh/contracts`.
-Python: `physical_harness.boundary.BoundaryValidator`.
+TypeScript: `PhysicalBoundaryValidator` from `@edh/contracts`.
+Python: `physical_harness.physical_boundary.PhysicalBoundaryValidator`.
 Both constructors receive the parsed authoritative schema plus optional extensions:
 `{schemas: {reference: schema}, messages: [MessageTypeDefinition, ...]}`. Registrations
 are copied at construction so changing caller-owned configuration cannot alter them.
@@ -137,7 +147,7 @@ IDs also reject trailing newlines that regex end anchors previously could accept
 
 `pnpm test:contracts` includes 84 shared boundary cases plus the existing 77 wire and
 69 lifecycle cases: 230 shared cases in each language, with extra non-JSON and copied
-registration tests. The six DSH runtime tests remain regression gates. Tests prove
+registration tests. The nine DSH runtime tests remain regression gates. Tests prove
 pure contract behavior and extension registration with synthetic data. They do not
 prove network delivery, durable replay, permission enforcement, device stopping,
 provider performance, or a functional verifier/evolver/console.

@@ -65,7 +65,7 @@ def _local_schema(value, root=None):
                 _local_schema(value[key], root)
 
 
-class BoundaryValidator:
+class PhysicalBoundaryValidator:
     def __init__(self, source, extensions=None):
         self._source = copy.deepcopy(source)
         self.contracts = ContractValidator(self._source)

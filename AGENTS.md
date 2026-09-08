@@ -14,6 +14,11 @@ requirement or deployment binding is unclear.
   domain modules remain interfaces.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.
+- Reuse DSH tool registration/dispatch/validation, sessions, inbox/followup, model
+  adapters and cancellation. Do not build a parallel generic registry, dispatcher,
+  message loop or model SDK. Read decision 0003 before adding a runtime abstraction.
+- PhysicalBoundaryValidator is for EDH domain/provider wire checks, not mandatory
+  middleware for ordinary DSH tools or messages.
 - New delegations have independent contexts and explicit InvocationBriefs.
 - Only the decision owner may retry/replan/resume; verifier may pause.
 - Budget expiry requires formal verification. A stopped job is not success.

@@ -10,4 +10,4 @@ export {
 
 export { LifecycleValidator, type VerificationContext } from './lifecycle.js';
 
-export { BoundaryValidator, type BoundaryExtensions } from './boundary.js';
+export { PhysicalBoundaryValidator, type PhysicalBoundaryExtensions } from './physical-boundary.js';

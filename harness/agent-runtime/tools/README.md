@@ -1,15 +1,16 @@
-# tools
+# Tools
 
-Tool definitions, registration and role-scoped provider bindings.
+Native tool authoring, registration, dispatch and input/output validation come from
+DSH. `@edh/tools` re-exports the exact native `defineTool` function and tool types.
+Register the result in the DSH agent scope; no additional EDH generic executor exists.
+The host/runtime tests exercise this path, including scalar results and invalid input/output.
 
-**Status:** interface skeleton only. Implementation begins in Step 02 of
-[the implementation plan](../../../docs/implementation/plan.md).
+EDH's `PhysicalToolCatalog` and `PhysicalToolProvider` are unimplemented provider
+metadata/transport interfaces below a future DSH tool body. The `PhysicalToolCall`,
+`PhysicalToolDefinition` and `PhysicalToolResult` aliases describe that domain wire
+boundary. Ordinary native tools do not need these envelopes. A physical adapter adds
+job identity, evidence, resources, budgets and device acknowledgement.
 
-- Public boundary: `src/index.ts`.
-- Wire data: [contracts](../../contracts/README.md); do not maintain a second schema.
-- Concrete adapters, authorization and lifecycle enforcement are not implemented.
-- Module tests will accompany behavior as it is implemented; scaffold checks only
-  establish valid types, references and configuration examples.
-
-See [module responsibilities](../../../docs/architecture/modules.md) for dependencies,
-source provenance and the intended direction of calls.
+See [reuse decision](../../../docs/implementation/decisions/0003-reuse-dsh-mechanisms.md),
+[native runtime integration](../../../docs/implementation/dsh-integration.md) and
+[physical boundary checks](../../../docs/implementation/boundaries.md).

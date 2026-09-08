@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { test } from 'node:test';
-import { BoundaryValidator, type BoundaryExtensions } from '@edh/contracts';
+import { PhysicalBoundaryValidator, type PhysicalBoundaryExtensions } from '@edh/contracts';
 
 const root = new URL('../../', import.meta.url);
 const source = JSON.parse(
@@ -10,7 +10,7 @@ const source = JSON.parse(
 const fixtures = JSON.parse(
   await readFile(new URL('tests/contracts/boundary-cases.json', root), 'utf8'),
 );
-const shared = new BoundaryValidator(source, fixtures.extensions);
+const shared = new PhysicalBoundaryValidator(source, fixtures.extensions);
 type Method = 'message' | 'definition' | 'call' | 'result' | 'operation' | 'replay';
 for (const scenario of fixtures.cases) {
   test(`boundary: ${scenario.name}`, () => {
@@ -28,7 +28,7 @@ for (const scenario of fixtures.cases) {
     const before = structuredClone(input);
     const invoke = () =>
       input.method === 'construct'
-        ? new BoundaryValidator(source, input.extensions)
+        ? new PhysicalBoundaryValidator(source, input.extensions)
         : (shared[input.method as Method] as (...args: unknown[]) => unknown).apply(
             shared,
             input.args,
@@ -46,9 +46,9 @@ for (const scenario of fixtures.cases) {
   });
 }
 test('boundary: registrations are isolated from later caller mutation', () => {
-  const extensions = structuredClone(fixtures.extensions) as BoundaryExtensions;
+  const extensions = structuredClone(fixtures.extensions) as PhysicalBoundaryExtensions;
   const schema = structuredClone(source);
-  const validator = new BoundaryValidator(schema, extensions);
+  const validator = new PhysicalBoundaryValidator(schema, extensions);
   schema['x-edh-message-types']['tool.invoke'].version = 'changed';
   (extensions.messages![0] as { version: string }).version = 'changed';
   assert.deepEqual(validator.message(fixtures.bases.message.args[0]), []);

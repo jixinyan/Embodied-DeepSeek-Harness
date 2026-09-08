@@ -3,7 +3,7 @@ import type { MessageTypeDefinition, ToolDefinition } from './generated.js';
 import { ContractValidator, isWireTimestamp, type ContractName } from './validation.js';
 
 type Schema = Record<string, unknown>;
-export interface BoundaryExtensions {
+export interface PhysicalBoundaryExtensions {
   readonly schemas?: Readonly<Record<string, Schema>>;
   readonly messages?: readonly MessageTypeDefinition[];
 }
@@ -76,14 +76,14 @@ function localSchema(schema: unknown, root: unknown = schema): void {
 }
 
 /** Frozen registration and pure cross-object checks; no routing, identity authentication or I/O. */
-export class BoundaryValidator {
+export class PhysicalBoundaryValidator {
   readonly contracts: ContractValidator;
   private readonly source: Schema;
   private readonly ajv = new Ajv({ strict: false, strictNumbers: true, allErrors: true });
   private readonly schemas = new Map<string, ValidateFunction>();
   private readonly messages = new Map<string, MessageTypeDefinition>();
   private readonly constraints = new Map<string, ValidateFunction>();
-  constructor(source: Schema, extensions: BoundaryExtensions = {}) {
+  constructor(source: Schema, extensions: PhysicalBoundaryExtensions = {}) {
     this.source = structuredClone(source);
     this.contracts = new ContractValidator(this.source);
     this.ajv.addFormat('date-time', { type: 'string', validate: isWireTimestamp });

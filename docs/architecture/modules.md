@@ -32,7 +32,7 @@ the physical worker decision ownership or cause agent contexts to be shared.
 | `harness/agent-runtime/foundation` | Plugin context, schemas and selected runtime support | Another agent loop or physical policy | Pinned source and compiler boundaries; Step 00 |
 | `harness/agent-runtime/teams` | Team/member definitions and immutable role/provider bindings | Hard-coded role enum | TeamLoader; Step 02 |
 | `harness/agent-runtime/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelRegistry; Step 00 |
-| `harness/agent-runtime/tools` | Logical tools, role exposure, provider selection and invocation boundary | Every concrete perception/robot implementation | ToolRegistry/ToolExecutor; Step 02/07 |
+| `harness/agent-runtime/tools` | Logical tools, role exposure, provider selection and invocation boundary | Every concrete perception/robot implementation | Native DSH tools + PhysicalToolCatalog/PhysicalToolProvider; Step 02/07 |
 | `harness/agent-runtime/communication` | Explicit briefs, scoped messages, delivery and subscriptions | Shared conversation memory | TeamRouter; Step 04 |
 | `harness/agent-runtime/planning` | Persistent PlanDocument and progress projection | Authoritative success | PlanStore; Step 05 |
 | `harness/agent-runtime/files` | Private assignment files and controlled search | Shared unrestricted filesystem | AgentFiles; Step 05 |
@@ -55,6 +55,7 @@ the physical worker decision ownership or cause agent contexts to be shared.
 ## Direction of dependencies
 
 Source interfaces depend on `contracts`; application assembly composes the modules.
+Native runtime mechanisms remain DSH-owned; see [reuse decision](../implementation/decisions/0003-reuse-dsh-mechanisms.md).
 Concrete runtime coupling is introduced only when implementing each step, with
 explicit interfaces and tests. `contracts` must not import agents, apps or Python.
 Communication uses storage for persistence; agents receive authorized evidence
