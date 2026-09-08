@@ -1,15 +1,7 @@
-# memory
+# Recovery experience
 
-Scoped evidence and versioned recovery skills; explicit retrieval only.
+[library.ts](src/library.ts) stores and exports versioned SKILL.md artifacts, searches explicit task semantics, and checks provenance. Failure signals, possible causes and avoid guidance accompany planning and verification guidance. Successful original-goal recovery gates publication in UpperRun. Fixture experience is excluded from ordinary searches by default.
 
-**Status:** interface skeleton only. Implementation begins in Step 10 of
-[the implementation plan](../../../docs/implementation/plan.md).
-
-- Public boundary: `src/index.ts`.
-- Wire data: [contracts](../../contracts/README.md); do not maintain a second schema.
-- Concrete adapters, authorization and lifecycle enforcement are not implemented.
-- Module tests will accompany behavior as it is implemented; scaffold checks only
-  establish valid types, references and configuration examples.
-
-See [module responsibilities](../../../docs/architecture/modules.md) for dependencies,
-source provenance and the intended direction of calls.
+See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
+[current capability](../../../docs/implementation/features.md) and
+[module responsibilities](../../../docs/architecture/modules.md).

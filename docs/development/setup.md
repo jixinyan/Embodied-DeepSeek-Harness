@@ -18,10 +18,9 @@ Individual checks: `pnpm check:contracts`, `pnpm typecheck`,
 `pnpm check:structure`, `pnpm check:python`.
 After editing the schema: `pnpm generate:contracts`.
 
-There is no `dev`, `start` or deployment command yet. The server has a callable
-DSH assembly entry; the console remains a projection interface. TypeScript packages export source and are private;
-a distributable build is a future runtime-integration task. No GPU, API key,
-policy checkpoint or simulator is required for skeleton checks.
+Run `pnpm demo` for the local HTTP/SSE console at `http://127.0.0.1:4317`.
+The fixture requires no GPU, API key, policy checkpoint or simulator. TypeScript
+workspaces export private source; a distributable build/deployment remains future work.
 
 Runtime data belongs in ignored `.runs/` and `.local/` locations. Tests use
 explicit synthetic fixtures. Do not initialize genuine experience libraries
@@ -29,9 +28,9 @@ from the example SKILL.
 
 ## DSH runtime baseline
 
-`pnpm test:runtime` runs nine keyless integration tests against the original DSH
-loop and the EDH host assembly. It is included in `pnpm check`. The host is a callable
-source entry, not a network service; no `dev` or `start` command exists yet.
+`pnpm test:runtime` runs 18 keyless integration tests against the original DSH
+loop and upper application. It is included in `pnpm check`. HTTP acceptance starts
+a temporary local server; physical observations and model responses remain fixtures.
 
 `pnpm check:provenance` verifies pinned source hashes and imports. `pnpm typecheck`
 first builds the three foundation libraries' declarations into ignored `.cache/`,

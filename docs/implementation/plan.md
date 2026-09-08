@@ -4,19 +4,18 @@ This is the construction sequence. Section references point to the
 [project specification](../project-spec.md). Work packages group responsibilities;
 these steps define executable slices, prerequisites and acceptance gates.
 
-**Steps 00–01 have passed local acceptance. Steps 02–16 remain unimplemented.**
+**Steps 00–01 pass; upper slices of 02–12 run with fixtures. Physical acceptance remains open.**
 Skeleton interfaces and examples are implementation inputs, not completed behavior.
 [Progress](progress.md) records actual state. Steps 00–14 deliver v1; 15–16 extend it.
 A checklist or document change never substitutes for execution evidence.
 
 ## Current delivery priority
 
-The latest accepted order is [pre-MVP foundation F1–F7](mvp-foundation.md), followed
-by one runnable real-simulation-to-console MVP, then broader refinement. F1 has passed typed-message/tool/async-operation contract acceptance. F2 next
-implements runtime binding and communication. The numbered steps
-below remain the architectural work breakdown; do not interpret them as requiring
-completion of every general-purpose module before an end-to-end MVP. The foundation
-plan maps its executable slices to these steps and defines the stopping criterion.
+Complete and harden the upper application first, using the runnable CPU fixture;
+then bind the physical runtime for one real-simulation MVP. UI design is deferred;
+key state must ultimately be visible together. The [current progress](progress.md)
+lists the exact status and next sequential actions. F1–F7 remain the full acceptance
+matrix: partial upper slices do not establish physical-provider readiness.
 
 ## Sequence and gates
 

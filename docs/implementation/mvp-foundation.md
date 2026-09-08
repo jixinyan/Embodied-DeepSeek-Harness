@@ -1,6 +1,7 @@
 # Foundation acceptance before the runnable MVP
 
-Status: F1 passed local contract acceptance; F2–F7 remain **not yet passed**.
+Status: F1 passed; upper portions of F2–F7 are implemented and fixture-tested.
+Full physical-provider acceptance remains open. See [current progress](progress.md).
 This document changes delivery order, not the confirmed product architecture. Preserve
 Steps 00–01 and the original DSH loop. Establish dependable core runtime behavior across every MVP-critical module, then
 deliver one real simulation-to-console MVP before broadening providers. Communication
@@ -16,7 +17,9 @@ mechanisms; F3 builds a physical provider bridge inside a native DSH tool body. 
 foundation acceptance matrix verifies the resulting composition and embodied rules;
 it is not authorization to implement another general-purpose runtime.
 
-## What the current audit establishes
+## Historical audit before upper integration
+
+The following table records the original gap analysis, not current implementation status.
 
 | Boundary | Exists at commit 3624fd6 | Gap to close |
 | --- | --- | --- |

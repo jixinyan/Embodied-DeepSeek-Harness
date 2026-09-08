@@ -1,15 +1,7 @@
-# planning
+# Plans and native TODOs
 
-Durable task plans; DSH todo is a projection, not goal truth.
+[workspace.ts](src/workspace.ts) stores versioned task plans with decision-owner and accepted-verdict gates. [DSH TODO](src/dsh/todo/index.ts) supplies session-local lists and history. Completing a TODO never establishes physical task success.
 
-**Status:** interface skeleton only. Implementation begins in Step 05 of
-[the implementation plan](../../../docs/implementation/plan.md).
-
-- Public boundary: `src/index.ts`.
-- Wire data: [contracts](../../contracts/README.md); do not maintain a second schema.
-- Concrete adapters, authorization and lifecycle enforcement are not implemented.
-- Module tests will accompany behavior as it is implemented; scaffold checks only
-  establish valid types, references and configuration examples.
-
-See [module responsibilities](../../../docs/architecture/modules.md) for dependencies,
-source provenance and the intended direction of calls.
+See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
+[current capability](../../../docs/implementation/features.md) and
+[module responsibilities](../../../docs/architecture/modules.md).

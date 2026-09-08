@@ -19,8 +19,8 @@ tool registry, constructs subsequent requests and drains cancellation.
 
 ## Source assembly and ownership
 
-[The pinned import map](../provenance/dsh-imports.json) records 90 source files from
-21 modules at `d347e703908d0406b7a7ef80e3a0e594d86b2215`.
+[The pinned import map](../provenance/dsh-imports.json) records 93 source files from
+23 modules at `d347e703908d0406b7a7ef80e3a0e594d86b2215`.
 
 | EDH location | Absorbed responsibilities |
 | --- | --- |
@@ -140,21 +140,14 @@ The complete upstream test suite has not been imported or claimed as passing.
 The normal CI runs the same suite on Node 22; consult the workflow for its actual
 status rather than inferring that result from the local Node version.
 
-## Next step
+## Current upper integration
 
-Step 01: refine shared wire schemas, implement matching TypeScript/Python validation
-and state-transition contracts. Keep the DSH lifecycle tests as regressions. Do not
-start with robot/GPU installation or treat this seam as a completed Team system.
+TeamSessions now composes this seam with immutable Team/Role bindings and explicit
+briefs; UpperRun implements task tools, verification and recovery. The original DSH
+TODO plugin is mounted per authorized session. The original cooperative timeout
+policy is mounted in the host. Native authoring and scalar output remain unchanged.
 
-## Native tool reuse alignment
-
-The public `@edh/tools` export is DSH's exact `defineTool`, with native tool types.
-The three tests in [native-tools.test.ts](../../tests/runtime/native-tools.test.ts)
-prove API identity, scalar output through the original loop without physical envelopes,
-and DSH-native rejection of invalid input/output. Together with the original six cases,
-the current runtime suite has nine tests. These are integration checks of reused DSH
-mechanisms, not newly written agent capabilities. Read
-[decision 0003](decisions/0003-reuse-dsh-mechanisms.md) for the scope of embodied additions.
-
-Tool `timeoutMs` metadata alone does not enforce a timeout in the current host; the
-upstream timeout-policy plugin is not mounted. Disk persistence is also not mounted.
+A local EDH domain journal is mounted; native DSH sessions remain in-memory with
+read-only audit exports. This is not resumable session persistence. See
+[upper-runtime guide](upper-runtime.md) and [progress](progress.md) for 18 runtime
+acceptance cases and remaining physical/deployment boundaries.

@@ -1,8 +1,8 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.7 · 2026-09-08
+Version: v1.8 · 2026-09-08
 
-Status: architecture and product baseline; Steps 00–01 implemented. See current progress.
+Status: upper application and console run with CPU fixtures; real physical integration pending.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -27,29 +27,15 @@ are SVG assets; include their directory when handing over this document.
 
 ### 0.1 Current work and next action
 
-The runtime choice is settled. Steps 00–01 provide a working original DSH loop seam,
-scoped sessions, shared wire validators and pure execution/verification/recovery gates.
-F1 domain boundary acceptance is complete. [Decision 0003](implementation/decisions/0003-reuse-dsh-mechanisms.md)
-clarifies that DSH owns the generic runtime; EDH adds embodied bindings and behavior.
-Continue F2 of
-[pre-MVP foundation acceptance](implementation/mvp-foundation.md): Team/Role and physical permission
-binding onto existing DSH sessions, tools and inboxes. Read
-[progress](implementation/progress.md), [runtime integration](implementation/dsh-integration.md)
-and [shared contracts](implementation/contracts.md) first. Do not install the entire
-simulator, GPU or robot stack for this CPU phase.
-
-Team loading, durable communication, physical jobs/providers, verifier/evolver services
-and live application startup remain unimplemented. Pseudocode and YAML in this
-specification describe intended contracts; current callable APIs are in the guides.
-
-| Asset | Status | Handoff use |
-| --- | --- | --- |
-| This specification | v1.7 implementation baseline | Takes precedence over historical discussion; later explicit user decisions take precedence over it |
-| Legacy EAF | Existing code at `714e00ca83999da2df7221dcf205968adde5b441` | Reference tools, policies and evidence design; preserve the old project |
-| Official DSH | Key paths inspected at `d347e703908d0406b7a7ef80e3a0e594d86b2215` | Selectively absorb necessary implementations and record provenance |
-| Console prototype | Direction approved; synthetic demonstration data | Reuse layout intent and reassess after real data integration |
-| EDH repository | Steps 00–01 verified; remaining domains are interfaces | Inspect actual modules and progress; do not infer runtime support |
-| Model/simulation/hardware evaluation | Not performed | Test doubles are not evidence of real environment or robot performance |
+The runtime choice is settled: reuse DSH, with EDH-owned composition and embodied
+behavior. Upper Team/Role, tools, TODOs, plans/files, verification, recovery, SKILL
+storage and a console now run with a scripted model and CPU fixture backend.
+Continue upper lifecycle/configuration and multi-goal/report/retention work before
+physical integration; do not replace the DSH loop. UI polish is deferred, and key
+state must ultimately be visible simultaneously without page/tab switching.
+Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)
+and [capability map](implementation/features.md) for concrete code, checks and limits.
+Do not install the simulator/GPU stack merely to run the upper acceptance suite.
 
 ### 0.2 Repository and workspace
 
@@ -1171,10 +1157,13 @@ are superseded by the confirmed decisions here.
 
 ### 15.2 Current status
 
-Delivered: EDH skeleton, interfaces, structural schema, configuration examples, spec
-and SVG figures. The console has a projection contract, not a running UI. Step 00 now verifies selected DSH loop integration, scoped native tools, follow-up
-input and cancellation with a scripted model. Team loaders, physical tool providers,
-verification, memory services, live streams, simulators and hardware remain unimplemented. See [progress](implementation/progress.md).
+Delivered: selective original DSH runtime, native tools/TODOs, immutable teams,
+independent role sessions, explicit context/evidence, versioned plans/files,
+async verification and recovery, failure-aware SKILLs, durable domain records and
+a runnable HTTP/SSE debugging console. These run with scripted model/backend
+fixtures. Live VLM deployment, multi-goal orchestration, physical transport/action
+admission, actual simulation/policies/perception and hardware remain pending.
+See [progress](implementation/progress.md) for acceptance and the next steps.
 
 ## 16. Work packages, source entry points and first CPU scenario
 
@@ -1316,3 +1305,13 @@ execution. Pause invalidates queued/late policy chunks and requires a separate
 controller acknowledgement. Resume is a decision-owner action. Device-specific
 buffering and interruption granularity remain explicit provider capabilities;
 software gate closure does not establish that physical motion has stopped.
+
+### v1.8 clarification: observability and delivery order
+
+Upper work continues before physical providers. Reuse the native DSH TODO plugin
+and expose real model output, tool arguments/results/errors, assignment/turn/step
+identity, explicit context and TODO history. Concise decision notes are useful;
+missing provider reasoning must never be fabricated. Agent-reported TODO completion
+is separate from verifier-accepted physical success. The final console must show
+key agent, task, sensor, execution, verification and recovery state together in one
+workspace, without page/tab switching for essential state. UI styling is deferred.

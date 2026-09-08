@@ -1,11 +1,14 @@
-# DSH runtime acceptance
+# Runtime acceptance
 
-Run `pnpm test:runtime` from the repository root. Nine tests assemble the actual EDH
-host and original DSH loop with a scripted model. They check structured tool results,
-later host input, sibling isolation, direct out-of-scope dispatch, cancellation,
-creation rollback and shutdown draining. Every physical-looking value is synthetic.
+Run `pnpm test:runtime` from the repository root. Eighteen tests exercise the actual
+DSH host and native model/tool loop, isolation, cancellation, cooperative timeout,
+configuration, storage, custom-role/tool extension, recovery and HTTP/SSE history.
+The model boundary emits scripted chunks; physical observations are synthetic.
 
-The model fixture only emits stream chunks and records requests. It does not decide
-when to call tools or implement an agent loop. Tests require no API key, ports, GPU,
-policy or simulator. See [the integration guide](../../docs/implementation/dsh-integration.md)
-for the exact seams and their limits. Physical recovery acceptance belongs to later steps.
+[team-extensions.test.ts](team-extensions.test.ts) loads a custom ROLE.md and verifies
+explicit context, private files/evidence, owner-only execution, scoped TODOs, duplicate
+assignment admission and rejection of custom tool calls after cancellation.
+[upper-run.test.ts](upper-run.test.ts) checks first-pass, retry-success, unknown/error
+and pause/resume/cancel paths. [console-server.test.ts](console-server.test.ts) starts
+a temporary loopback server to exercise admission/reconnect/interrupted restart.
+No live model key, simulator, learned policy or GPU is required.

@@ -1,15 +1,7 @@
-# storage
+# Durable domain records
 
-Persistence primitives for events, sessions and media; no access-policy bypass.
+[local-store.ts](src/local-store.ts) implements a single-writer CAS journal with checksum validation, fsync and incomplete-tail recovery. The application stores events, plans, files, recovery, skills and read-only DSH audits. No resumable model sessions, automatic stale-lock takeover or compaction is implemented.
 
-**Status:** interface skeleton only. Implementation begins in Step 04 of
-[the implementation plan](../../../docs/implementation/plan.md).
-
-- Public boundary: `src/index.ts`.
-- Wire data: [contracts](../../contracts/README.md); do not maintain a second schema.
-- Concrete adapters, authorization and lifecycle enforcement are not implemented.
-- Module tests will accompany behavior as it is implemented; scaffold checks only
-  establish valid types, references and configuration examples.
-
-See [module responsibilities](../../../docs/architecture/modules.md) for dependencies,
-source provenance and the intended direction of calls.
+See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
+[current capability](../../../docs/implementation/features.md) and
+[module responsibilities](../../../docs/architecture/modules.md).

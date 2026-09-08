@@ -10,8 +10,8 @@ requirement or deployment binding is unclear.
 
 - EDH owns the repository. Absorb selected DSH source into its modules with
   provenance. Do not import the entire upstream repository or write a new loop.
-- Steps 00–01 have a verified DSH runtime seam and shared contract gates; most
-  domain modules remain interfaces.
+- DSH-backed upper roles, tools, recovery, storage and a local console run with
+  explicitly labeled CPU fixtures. Physical providers remain unimplemented.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.
 - Reuse DSH tool registration/dispatch/validation, sessions, inbox/followup, model

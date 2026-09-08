@@ -1,15 +1,7 @@
-# execution
+# Upper execution boundary
 
-Nonblocking Python worker jobs and physical-resource coordination.
+[backend-port.ts](src/backend-port.ts) defines the currently used EmbodiedBackend port. The server composes a nonblocking CPU fixture for job/query/budget/pause/resume/check acceptance. Python transport, action-chunk gate and shared device resource arbitration remain unimplemented.
 
-**Status:** interface skeleton only. Implementation begins in Step 06 of
-[the implementation plan](../../../docs/implementation/plan.md).
-
-- Public boundary: `src/index.ts`.
-- Wire data: [contracts](../../contracts/README.md); do not maintain a second schema.
-- Concrete adapters, authorization and lifecycle enforcement are not implemented.
-- Module tests will accompany behavior as it is implemented; scaffold checks only
-  establish valid types, references and configuration examples.
-
-See [module responsibilities](../../../docs/architecture/modules.md) for dependencies,
-source provenance and the intended direction of calls.
+See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
+[current capability](../../../docs/implementation/features.md) and
+[module responsibilities](../../../docs/architecture/modules.md).

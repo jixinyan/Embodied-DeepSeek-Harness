@@ -1,15 +1,7 @@
-# observation
+# Active observation
 
-Active observation with declared head/gimbal/base resource effects.
+UpperRun binds observation.turn_view with decision-owner checks; the CPU fixture rejects concurrent policy/view motion. Actual head, base and gimbal resource resolution and device pose confirmation require physical providers.
 
-**Status:** interface skeleton only. Implementation begins in Step 07 of
-[the implementation plan](../../../docs/implementation/plan.md).
-
-- Public boundary: `src/index.ts`.
-- Wire data: [contracts](../../contracts/README.md); do not maintain a second schema.
-- Concrete adapters, authorization and lifecycle enforcement are not implemented.
-- Module tests will accompany behavior as it is implemented; scaffold checks only
-  establish valid types, references and configuration examples.
-
-See [module responsibilities](../../../docs/architecture/modules.md) for dependencies,
-source provenance and the intended direction of calls.
+See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
+[current capability](../../../docs/implementation/features.md) and
+[module responsibilities](../../../docs/architecture/modules.md).

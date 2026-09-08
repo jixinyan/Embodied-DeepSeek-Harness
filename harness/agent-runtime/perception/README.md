@@ -1,15 +1,7 @@
-# perception
+# Perception tools
 
-Capture, segmentation, depth and localization tool boundaries.
+Capture is wired through UpperRun to the EmbodiedBackend port and synthetic demo observations. Users may register native perception tool factories. Actual SAM, depth/localization and media providers remain unimplemented; src/index.ts describes their target boundary.
 
-**Status:** interface skeleton only. Implementation begins in Step 07 of
-[the implementation plan](../../../docs/implementation/plan.md).
-
-- Public boundary: `src/index.ts`.
-- Wire data: [contracts](../../contracts/README.md); do not maintain a second schema.
-- Concrete adapters, authorization and lifecycle enforcement are not implemented.
-- Module tests will accompany behavior as it is implemented; scaffold checks only
-  establish valid types, references and configuration examples.
-
-See [module responsibilities](../../../docs/architecture/modules.md) for dependencies,
-source provenance and the intended direction of calls.
+See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
+[current capability](../../../docs/implementation/features.md) and
+[module responsibilities](../../../docs/architecture/modules.md).

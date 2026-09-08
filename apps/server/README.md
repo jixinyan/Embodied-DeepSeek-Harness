@@ -1,8 +1,13 @@
-# Server assembly
+# Server application
 
-Application composition, transport and host startup.
+Run `pnpm demo` from the repository root. The local HTTP/SSE server composes DSH,
+team configuration, UpperRun, a local domain store and an explicitly synthetic backend.
 
-The [runtime entry](src/runtime.ts) now assembles the selected DSH services with
-explicit model bindings. Its keyless acceptance tests run the original agent loop.
-The public `ServerAssembly` remains a target interface; there is no network server,
-browser application or `start` command. See [DSH integration](../../docs/implementation/dsh-integration.md).
+- [runtime.ts](src/runtime.ts): original DSH services and cooperative timeout policy.
+- [application.ts](src/application.ts): role tools, task/verification/recovery coordination.
+- [http-server.ts](src/http-server.ts): admission, history, control endpoints and SSE snapshots.
+- [fixture-model.ts](src/fixture-model.ts) / [fixture-backend.ts](src/fixture-backend.ts): keyless test dependencies.
+
+See [extension and lifecycle guide](../../docs/implementation/upper-runtime.md).
+The public ServerAssembly interface is a target boundary; the concrete demo entry
+is startDemoServer. No real physical provider or live model is configured by default.

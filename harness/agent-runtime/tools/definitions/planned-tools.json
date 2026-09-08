@@ -1,54 +1,54 @@
 {
   "status": "partially_implemented",
-  "description": "Logical tool inventory for scaffold reference validation, not a runtime registry. Each tool needs its own callable schema during implementation.",
+  "description": "Logical tool inventory, not a second runtime registry. Upper tools use native DSH schemas/dispatch; physical bindings currently use a CPU fixture.",
   "tools": [
     {
       "id": "context.request",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "context.respond",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "evidence.read",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "execution.pause",
-      "status": "not_implemented"
+      "status": "upper_with_fixture_backend"
     },
     {
       "id": "execution.query",
-      "status": "not_implemented"
+      "status": "upper_with_fixture_backend"
     },
     {
       "id": "execution.resume",
-      "status": "not_implemented"
+      "status": "upper_with_fixture_backend"
     },
     {
       "id": "execution.start",
-      "status": "not_implemented"
+      "status": "upper_with_fixture_backend"
     },
     {
       "id": "files.read",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "files.search",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "files.write",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "observation.turn_view",
-      "status": "not_implemented"
+      "status": "upper_with_fixture_backend"
     },
     {
       "id": "perception.capture",
-      "status": "not_implemented"
+      "status": "upper_with_fixture_backend"
     },
     {
       "id": "perception.estimate_depth",
@@ -60,47 +60,47 @@
     },
     {
       "id": "planning.read",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "planning.update",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "skills.load",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "skills.save",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "skills.search",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "tasks.replan",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "tasks.retry",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "team.delegate",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "team.send",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "verification.check",
-      "status": "not_implemented"
+      "status": "upper_with_fixture_backend"
     },
     {
       "id": "verification.submit",
-      "status": "not_implemented"
+      "status": "upper_application"
     },
     {
       "id": "tasks.finish",

@@ -1,67 +1,33 @@
 # Current capability map
 
-Snapshot: 2026-09-08, runtime code at `abe810b`. This page describes the current
-checkout's verified capabilities, not the completed target architecture.
+Snapshot: 2026-09-08. Working upper-runtime code through `1212ca9`.
 
-![Current implementation and remaining work](../architecture/assets/implementation-status.svg)
+![Implemented capabilities and remaining work](../architecture/assets/implementation-status.svg)
 
-## Reused DSH mechanisms that run now
+| Working capability | Inspect the implementation / evidence |
+| --- | --- |
+| Original DSH loop, tool validation, sessions, timeout and cancellation | [Host](../../apps/server/src/runtime.ts), [native tests](../../tests/runtime/native-tools.test.ts) |
+| User-defined teams and independent role assignments | [Loader](../../harness/agent-runtime/teams/src/loader.ts), [sessions](../../harness/agent-runtime/communication/src/sessions.ts) |
+| Custom native tools, explicit context, private files and permission checks | [Application](../../apps/server/src/application.ts), [extension acceptance](../../tests/runtime/team-extensions.test.ts) |
+| Native TODO and versioned physical task plan | [DSH TODO](../../harness/agent-runtime/planning/src/dsh/todo/index.ts), [plans](../../harness/agent-runtime/planning/src/workspace.ts) |
+| Async monitor, formal verification, Planner recovery and Evolver progress | [Application](../../apps/server/src/application.ts), [workflow acceptance](../../tests/runtime/upper-run.test.ts) |
+| Failure-aware SKILL publication, explicit retrieval and provenance | [Skill library](../../harness/agent-runtime/memory/src/library.ts), [recovery decision](decisions/0004-recovery-observation-and-action-admission.md) |
+| Durable domain records and historical audit | [Store](../../harness/agent-runtime/storage/src/local-store.ts), [HTTP service](../../apps/server/src/http-server.ts) |
+| Live output, tools/results, TODO history, sensors, verdict and recovery inspection | [Console](../../apps/console/README.md), [API/restart tests](../../tests/runtime/console-server.test.ts) |
 
-| Capability | Concrete evidence | Source |
-| --- | --- | --- |
-| Runtime assembly | Seven original DSH services assembled; explicit model binding and teardown | [Host assembly](../../apps/server/src/runtime.ts) |
-| Scoped sessions | Explicit prompt/tools, independent histories, follow-up wake-up, cancellation and cleanup | [Session seam](../../harness/agent-runtime/agents/src/runtime.ts), [runtime tests](../../tests/runtime/host.test.ts) |
-| Model/tool loop | Scripted tool request is dispatched by DSH; the next model request receives the result | [Original DSH loop](../../harness/agent-runtime/agents/src/dsh/loop/index.ts) |
-| Native tool authoring | `@edh/tools.defineTool` is exactly the imported DSH function | [Public tool API](../../harness/agent-runtime/tools/src/index.ts) |
-| Tool validation and output | Invalid arguments never reach the body; invalid values never reach rendering; scalar `7` returns through the loop | [Native reuse tests](../../tests/runtime/native-tools.test.ts) |
-| Runtime observation | Running/idle and tool/result/turn events are inspectable in memory | [Integration guide](dsh-integration.md) |
+Run `pnpm demo` and select the labeled failure/recovery fixture. The observable
+sequence is native DSH calls -> synthetic execution -> formal failed verdict ->
+Planner replan/retry -> Evolver recording -> formal original-goal success -> SKILL.
+First-pass success creates no recovery skill; unknown is never accepted as success.
 
-Nine runtime tests pass. The model adapter is scripted; the tools are synthetic.
-These are tested integrations of DSH capabilities, not newly invented EDH mechanisms.
-No live model provider is mounted or evaluated. Upstream tool timeout metadata requires
-a separate enforcement plugin that is not mounted. Disk persistence is not mounted.
+## Still outside the working boundary
 
-## EDH helpers implemented but not wired into physical execution
+- Live model deployment/evaluation and multi-goal task orchestration.
+- Python transport, action admission, shared device resources and physical stop acknowledgement.
+- Actual BEHAVIOR/RoboCasa/RoboTwin, VLA/VLN, SAM/depth and hardware adapters.
+- Resumable model sessions, distributed/exactly-once delivery, scalable retention and multi-user hosting.
+- Final console layout: key state must be visible together; visual polish is deferred.
 
-| Helper | What it checks | Remaining integration |
-| --- | --- | --- |
-| Shared wire validation | Versions, scope IDs, UTC time, evidence metadata, action units and schema shape in TS/Python | Actual service boundaries and authoritative provider data |
-| Execution/verdict/recovery gates | Attempt identity, budget rules, designated verifier, fresh evidence, owner resume and original-goal recovery | Task coordinator, async verifier and robot backend |
-| Physical provider checks | Typed domain messages, tool/version binding, provider input/output, stable replay and operation identity | DSH physical-tool body, Python transport, permissions and durable job store |
-
-The [contract guide](contracts.md) and [physical boundary guide](boundaries.md) document
-these callable functions and limitations. The 230 shared test cases use synthetic data.
-The helpers do not run a robot, authenticate a caller or publish a skill. Ordinary DSH
-messages and tools do not need EDH physical envelopes.
-
-## Defined or planned, not functional yet
-
-| Area | Present artifact | What still needs to run |
-| --- | --- | --- |
-| Team and role authoring | [Team YAML](../../examples/teams/household.yaml), [role definitions](../../harness/agent-runtime/agents/roles/) | Loader, immutable bindings and assignment permissions composed onto DSH |
-| Agent-to-agent task handoff | Brief/envelope schemas and router interface | Recipient/lifetime checks and explicit handoff via DSH inbox/followup |
-| Physical jobs and policies | [Python interfaces](../../harness/physical-runtime/src/physical_harness/) | Separate worker, query/cancel/stop acknowledgement, budgets, resources and compatible policy |
-| Perception and active observation | Capture/segmentation/action contracts and tool example | Actual images, SAM/provider inference, active-view control and evidence access |
-| Verifier and retry | Role definitions and pure gates | Independent DSH verifier, bounded async monitoring, mandatory budget-end checks and owner decisions |
-| Evolver and SKILL | Role, metadata and SKILL format example | Retry-triggered recording, original-goal success gate, atomic storage and explicit retrieval |
-| Plans, private files and domain persistence | Module interfaces | Scoped file tools, versioned plans, durable task/recovery records and replay reconciliation |
-| Console | [Projection contract](../../apps/console/src/index.ts), earlier visual prototype as reference | Running UI connected to task, agent, sensor, device, tool, verdict and memory state |
-| Simulation and hardware | Adapter directories and [deployment example](../../examples/deployments/behavior.yaml) | Actual BEHAVIOR/policy binding; later RoboCasa/RoboTwin and device testing |
-| Product startup | Callable host assembly | Configured application entry, readiness, worker startup and end-to-end reproduction |
-
-Directory presence, a YAML provider name or a function signature is not implementation.
-The current project cannot yet execute a user task through a live console and simulation.
-
-## What changed in this alignment
-
-- Exposed native DSH tool authoring/types directly and verified that path.
-- Replaced generic ToolRegistry/ToolExecutor placeholders with explicitly physical
-  provider metadata/transport interfaces; no second dispatcher was implemented.
-- Renamed the standalone F1 validator to PhysicalBoundaryValidator and limited its
-  role to EDH domain/provider boundaries.
-- Updated the [reuse decision](decisions/0003-reuse-dsh-mechanisms.md), specification
-  and [foundation plan](mvp-foundation.md). The original DSH source is unchanged.
-
-Next: load Team/Role and physical permissions onto the existing DSH mechanisms, then
-connect a physical provider through native tools. Validation of that composition and
-embodied behavior replaces plans to build generic runtime mechanisms in parallel.
+The demo model and sensors are scripted/synthetic. Its upper workflow is runnable;
+it is not the requested final simulation MVP yet. See [progress](progress.md) for
+checks and [upper-runtime guide](upper-runtime.md) for extension entry points.

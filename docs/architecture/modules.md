@@ -2,12 +2,13 @@
 
 EDH is the product and repository owner. Selected runtime implementations are absorbed
 from DSH into these modules. Step 00 verifies the original loop and scoped lifecycle;
-Team, physical and experience modules still provide interfaces only.
+upper Team, planning, verification and experience services now run with CPU fixtures.
+Physical provider modules remain interfaces.
 
 ![Architecture](assets/framework-overview.svg)
 
 The diagram shows the target architecture. The minimal DSH host/session integration
-is verified; other boxes do not imply implemented capabilities. No separate upstream
+is verified; consult the [capability map](../implementation/features.md) for implemented upper services and pending providers. No separate upstream
 application is copied. See [runtime integration](../implementation/dsh-integration.md).
 
 ## One harness, two runtime responsibilities

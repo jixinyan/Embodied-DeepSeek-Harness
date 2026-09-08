@@ -1,15 +1,7 @@
-# teams
+# User-defined teams
 
-Team definitions, validation and immutable role/provider bindings.
+[loader.ts](src/loader.ts) loads team YAML and ROLE.md, checks model/tool/provider availability and role path containment, and freezes resolved bindings. Configuration is not executable provider loading; application assembly supplies native factories.
 
-**Status:** interface skeleton only. Implementation begins in Step 02 of
-[the implementation plan](../../../docs/implementation/plan.md).
-
-- Public boundary: `src/index.ts`.
-- Wire data: [contracts](../../contracts/README.md); do not maintain a second schema.
-- Concrete adapters, authorization and lifecycle enforcement are not implemented.
-- Module tests will accompany behavior as it is implemented; scaffold checks only
-  establish valid types, references and configuration examples.
-
-See [module responsibilities](../../../docs/architecture/modules.md) for dependencies,
-source provenance and the intended direction of calls.
+See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
+[current capability](../../../docs/implementation/features.md) and
+[module responsibilities](../../../docs/architecture/modules.md).

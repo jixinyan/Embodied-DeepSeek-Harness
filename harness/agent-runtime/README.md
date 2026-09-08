@@ -16,6 +16,6 @@ The [module map](../../docs/architecture/modules.md) defines each boundary.
 Shared wire definitions live in [contracts](../contracts/README.md). Real policy
 stepping and simulator/device providers belong to [physical-runtime](../physical-runtime/README.md).
 
-**Status:** selected DSH source is absorbed and the Step 00 host/session seam is
-verified. Team-level and physical capabilities are still interfaces. See the
-[integration guide](../../docs/implementation/dsh-integration.md).
+**Status:** upper roles, native tools/TODOs, explicit communication, plans/files,
+verification, recovery and storage run through DSH with a CPU fixture backend.
+Physical providers are deferred. See the [upper-runtime guide](../../docs/implementation/upper-runtime.md).

@@ -7,10 +7,10 @@ teams, explicit context handoff, replaceable tools and policies, asynchronous
 verification, and reusable recovery experience. Its agent runtime incorporates
 selected DeepSeek Harness implementations, with traceable provenance.
 
-> **Early development: DSH runtime and shared contract validation are working.**
-> Keyless tests exercise the original loop, structured tools, isolated sessions,
-> follow-up input and cancellation. Team loading, physical execution, verification,
-> experience services, simulator/device support and the console remain unimplemented.
+> **Early development: the upper workflow and local console are runnable.**
+> DSH-backed roles, native tools/TODOs, formal verification, recovery and SKILL
+> publication run with an explicitly synthetic CPU backend and scripted model.
+> Real simulation, learned policies, live VLM evaluation and hardware remain pending.
 
 [Project spec](docs/project-spec.md) ·
 [Implementation plan](docs/implementation/plan.md) ·
@@ -35,6 +35,17 @@ for the complete intended framework.
 | [tests/runtime](tests/runtime/README.md) | Keyless DSH runtime acceptance; physical fixtures remain synthetic |
 | [docs](docs/README.md) | Architecture, decisions, implementation steps and handoff |
 
+## Run the local demo
+
+```sh
+pnpm install --frozen-lockfile
+pnpm demo
+```
+
+Open `http://127.0.0.1:4317`. Inspect agent output, TODOs, native tool calls/results,
+explicit handoffs, verification and recovery. See the [upper-runtime guide](docs/implementation/upper-runtime.md).
+The fixture is an integration demo; it does not control a real or simulated robot.
+
 ## Run the checks
 
 Use Node.js 22.19+ (the bootstrap was checked on Node 25), pnpm 11.19.0 and
@@ -49,9 +60,9 @@ pnpm test:runtime
 ```
 
 These commands check generated schema types, example structure/references,
-TypeScript, documentation links and Python importability, then execute nine DSH
-runtime integration tests and shared wire/lifecycle validation cases in both languages. `test:runtime` runs that suite
-alone. No live model API, simulator, server or console is started. No GPU or key is needed.
+TypeScript, documentation links and Python importability, then execute 18 upper-runtime
+integration tests and shared wire/lifecycle validation cases in both languages. `test:runtime` runs that suite
+alone. No live model API or simulator is started. API tests start a temporary local server. No GPU or key is needed.
 Python checks prefer `.venv/bin/python`, falling back to `python3`; override
 `EDH_PYTHON` if needed. `pnpm test:contracts` runs shared TS/Python wire cases.
 
