@@ -230,3 +230,14 @@ The user has deferred further UI design. The eventual console must expose key ag
 plan, execution, sensor, verification and recovery state together in one workspace,
 without requiring page or tab switching. Current inspector tabs are provisional.
 Next work is upper-runtime robustness and extension acceptance, not visual polish.
+
+### Extension and assignment admission acceptance (2026-09-08)
+
+A user-defined ROLE.md and native perception tool now have application-level
+integration acceptance: explicit handoff reaches actual model inputs; parent
+history/files remain private; evidence grants and decision ownership are enforced.
+Custom tools retain native DSH schemas/dispatch while sharing EDH lifetime checks
+and activity events. Cancellation rejects new custom invocations. Concurrent
+creation of the same assignment now reserves admission before asynchronous setup.
+TODO state is session-local and cannot imply physical success. Runtime coverage is
+18 passing tests. Runtime data directories are excluded from public text linting.

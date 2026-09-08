@@ -1,7 +1,16 @@
 import assert from 'node:assert/strict';
 import { readFile, readdir, access } from 'node:fs/promises';
 import path from 'node:path';
-const ignored = new Set(['.git', 'node_modules', '.venv', '__pycache__', 'dist', '.cache']);
+const ignored = new Set([
+  '.git',
+  'node_modules',
+  '.venv',
+  '__pycache__',
+  'dist',
+  '.cache',
+  '.runs',
+  '.local',
+]);
 async function* files(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     if (ignored.has(entry.name)) continue;

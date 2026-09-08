@@ -371,30 +371,38 @@ export class UpperRun {
       .filter((logical) => logical !== 'todo_write')
       .map((logical) => {
         const extra = this.options.additionalTools?.[logical];
+        let native: ToolDefinition;
         if (extra) {
           if (CORE_TOOL_PARAMETERS[logical])
             throw new Error('Additional tools cannot replace core authority checks.');
-          const native = extra(structuredClone(a));
+          native = extra(structuredClone(a));
           if (native.name !== logical.replaceAll('.', '__'))
             throw new Error('Native tool name must match its logical binding.');
-          return native;
+        } else {
+          const properties = CORE_TOOL_PARAMETERS[logical];
+          if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
+          native = {
+            name: logical.replaceAll('.', '__'),
+            description: `${logical}. Operates only within this assignment and task.`,
+            parameters: {
+              type: 'object',
+              properties,
+              required: Object.keys(properties),
+              additionalProperties: false,
+            },
+            output: {
+              schema: { type: 'object', additionalProperties: true },
+              render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+            },
+            execute: (args, exec) =>
+              this.invoke(a, logical, args as Record<string, unknown>, exec.signal),
+          };
         }
-        const properties = CORE_TOOL_PARAMETERS[logical];
-        if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
+        // DSH still owns registration, schema checks, timeout and dispatch. This
+        // application guard only enforces EDH run lifetime and records domain activity.
         return {
-          name: logical.replaceAll('.', '__'),
-          description: `${logical}. Operates only within this assignment and task.`,
-          parameters: {
-            type: 'object',
-            properties,
-            required: Object.keys(properties),
-            additionalProperties: false,
-          },
-          output: {
-            schema: { type: 'object', additionalProperties: true },
-            render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
-          },
-          timeoutMs: 10_000,
+          ...native,
+          timeoutMs: native.timeoutMs ?? 10_000,
           execute: async (args, exec) => {
             exec.signal.throwIfAborted();
             const recoveryWrite =
@@ -412,12 +420,7 @@ export class UpperRun {
               args,
             });
             try {
-              const value = await this.invoke(
-                a,
-                logical,
-                args as Record<string, unknown>,
-                exec.signal,
-              );
+              const value = await native.execute(args, exec);
               exec.signal.throwIfAborted();
               this.event('tool.completed', {
                 assignmentId: a.id,
