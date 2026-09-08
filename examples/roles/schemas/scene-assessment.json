@@ -1,0 +1,10 @@
+{
+  "type": "object",
+  "properties": {
+    "target": { "type": "string", "description": "Candidate entity from the explicit task context." },
+    "confidence": { "type": "string", "enum": ["low", "high"] },
+    "observation": { "type": "string", "description": "A concise assessment grounded in cited evidence." }
+  },
+  "required": ["target", "confidence", "observation"],
+  "additionalProperties": false
+}

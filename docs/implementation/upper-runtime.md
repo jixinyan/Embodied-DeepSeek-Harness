@@ -31,7 +31,9 @@ the configured decision owner's motion authority.
    assignment. Return a native DSH ToolDefinition using `defineTool` from `@edh/tools`.
    For `scene.describe`, the model-facing name must be `scene__describe`.
 4. Preserve native parameter/output schemas and honor the execution AbortSignal.
-   DSH performs registration, validation, dispatch and cooperative timeout. EDH adds
+   DSH defineTool validates inputs; raw ToolDefinition authors must explicitly use
+   the native validator. DSH performs registration, output validation, dispatch and
+   cooperative timeout. EDH adds
    run-lifetime checks and correlated tool activity. Core authority tools cannot be replaced.
 5. Delegate using team.delegate with member, objective, context and authorized evidence
    references. Reply through team.send or request/respond for missing context.
@@ -42,11 +44,64 @@ The HTTP demo assembles only built-in tools and the fixture provider. A custom p
 requires deployment code to register the factory; listing an arbitrary name in YAML
 alone cannot load executable code. These are trusted in-process extensions, not a plugin sandbox.
 
+## Structured role reports
+
+Every role receives `agent.report` and `team.query` as framework capabilities. Domain
+permissions remain explicit. For example, see the [reporting team](../../examples/teams/reporting.yaml),
+[scene role](../../examples/roles/scene-reporter.md), and its
+[result schema](../../examples/roles/schemas/scene-assessment.json).
+
+A role calls `agent__report` with:
+
+```json
+{
+  "status": "completed",
+  "summary": "The supplied frame supports this candidate; physical success is unchecked.",
+  "result": {"target": "cup", "confidence": "low", "observation": "Candidate visible in the provided view."},
+  "evidenceRefs": ["authorized-frame-id"],
+  "requestedContext": [],
+  "expectedVersion": 0
+}
+```
+
+Replace the example evidence ID with an actual authorized reference. The framework
+fills agent/assignment/team/task identity from native tool scope and fixes the recipient
+to the brief's caller. It stores the existing AgentReport.v1 envelope, then explicitly
+hands it to the caller through DSH. No model prose is parsed to guess completion.
+
+`output_schema` is relative to ROLE.md and constrains a completed report's `result`,
+not the framework envelope. Its JSON must be an object-rooted schema in DSH's supported
+subset: properties, required fields, boolean additionalProperties, arrays/items,
+scalar types/enum/const and oneOf. Unsupported keywords (including external references,
+minimum and pattern) fail preflight; they are never silently ignored. The schema is
+frozen and hashed with the team. Omission or `builtin:AgentReport.v1` uses the default
+object result. Other built-in role-result schema aliases are not bound yet.
+
+`insufficient_context` requires a nonempty requestedContext list. It is not final:
+the caller can use context.respond with explicit evidence, then the role submits a
+later report with the returned version. `completed`, `failed` and `cancelled` are final
+for that assignment. New work needs a fresh delegation. The decision owner uses
+`tasks.finish` / `tasks.abandon` to end its task, rather than a final role report.
+An Evolver's successful recovery report can follow SKILL publication.
+
+An exact replay using the original expectedVersion returns the same accepted receipt
+without sending the report twice. Changed final results and stale attempts are rejected.
+`team__query({assignmentId})` exposes the latest report and native agent status only
+to that assignment or its direct caller. It does not expose private histories/files.
+Reports never replace formal physical verification or alter a task's success criteria.
+
+The receipt distinguishes recorded, queued, settled and failed delivery. Settled means
+native DSH quiescence, not business acceptance or exactly-once execution. Delivery
+state is durable and failures produce correlated events. A crash between writes may
+leave delivery unconfirmed; historical runs remain read-only and are not automatically
+redelivered. Distributed acknowledgements/outbox reconciliation remain follow-on work.
+
 ## State and debugging semantics
 
 | Record | Meaning |
 | --- | --- |
 | agent.output / stream | Actual assistant/provider output; concise decision notes may be requested by prompts; missing reasoning is never fabricated |
+| agent.report / report-delivery | Versioned role result, fixed caller and native delivery disposition; physical success remains separately verified |
 | agent.todos | Original DSH whole-list TODO snapshot, tied to assignment/session/turn/sequence |
 | plan.updated | Versioned task plan; done requires the relevant accepted formal verdict |
 | dsh.tool-call / result | Native call identity, arguments, model-facing result/error and turn/step |

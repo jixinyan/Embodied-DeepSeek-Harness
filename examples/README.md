@@ -7,7 +7,12 @@
    [the deployment boundary](deployments/behavior.yaml).
 5. Inspect [a recovery skill](skills/recovery-check/SKILL.md).
 
-**None of these examples starts agents, tools or robots.** Static schema and
-reference checks run in `pnpm check:contracts`. Built-in role definitions have
-one canonical location; wrappers in `roles/` link there. Provider registrations,
-model/checkpoint compatibility and runtime authorization remain unimplemented.
+[console-demo.yaml](teams/console-demo.yaml) is the running `pnpm demo` team.
+[reporting.yaml](teams/reporting.yaml) adds a [scene reporter](roles/scene-reporter.md)
+with a [custom result schema](roles/schemas/scene-assessment.json); it demonstrates
+configuration and needs a model that performs that role's report protocol. The default
+console fixture model does not generate arbitrary custom-role behavior.
+
+The household/SAM/deployment examples describe future physical bindings and do not
+install providers or start robots. Runtime role/report acceptance uses explicit CPU
+fixtures. See [the extension guide](../docs/implementation/upper-runtime.md).

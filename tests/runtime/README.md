@@ -1,6 +1,6 @@
 # Runtime acceptance
 
-Run `pnpm test:runtime` from the repository root. Eighteen tests exercise the actual
+Run `pnpm test:runtime` from the repository root. Twenty tests exercise the actual
 DSH host and native model/tool loop, isolation, cancellation, cooperative timeout,
 configuration, storage, custom-role/tool extension, recovery and HTTP/SSE history.
 The model boundary emits scripted chunks; physical observations are synthetic.

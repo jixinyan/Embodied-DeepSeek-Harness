@@ -1,6 +1,6 @@
 # Current capability map
 
-Snapshot: 2026-09-08. Working upper-runtime code through `1212ca9`.
+Snapshot: 2026-09-08. Working upper-runtime code through `c622252`.
 
 ![Implemented capabilities and remaining work](../architecture/assets/implementation-status.svg)
 
@@ -9,6 +9,7 @@ Snapshot: 2026-09-08. Working upper-runtime code through `1212ca9`.
 | Original DSH loop, tool validation, sessions, timeout and cancellation | [Host](../../apps/server/src/runtime.ts), [native tests](../../tests/runtime/native-tools.test.ts) |
 | User-defined teams and independent role assignments | [Loader](../../harness/agent-runtime/teams/src/loader.ts), [sessions](../../harness/agent-runtime/communication/src/sessions.ts) |
 | Custom native tools, explicit context, private files and permission checks | [Application](../../apps/server/src/application.ts), [extension acceptance](../../tests/runtime/team-extensions.test.ts) |
+| Typed role reports, custom result schema and caller query | [Reports](../../harness/agent-runtime/communication/src/reports.ts), [protocol guide](upper-runtime.md) |
 | Native TODO and versioned physical task plan | [DSH TODO](../../harness/agent-runtime/planning/src/dsh/todo/index.ts), [plans](../../harness/agent-runtime/planning/src/workspace.ts) |
 | Async monitor, formal verification, Planner recovery and Evolver progress | [Application](../../apps/server/src/application.ts), [workflow acceptance](../../tests/runtime/upper-run.test.ts) |
 | Failure-aware SKILL publication, explicit retrieval and provenance | [Skill library](../../harness/agent-runtime/memory/src/library.ts), [recovery decision](decisions/0004-recovery-observation-and-action-admission.md) |

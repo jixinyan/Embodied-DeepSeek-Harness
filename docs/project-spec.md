@@ -30,7 +30,7 @@ are SVG assets; include their directory when handing over this document.
 The runtime choice is settled: reuse DSH, with EDH-owned composition and embodied
 behavior. Upper Team/Role, tools, TODOs, plans/files, verification, recovery, SKILL
 storage and a console now run with a scripted model and CPU fixture backend.
-Continue upper lifecycle/configuration and multi-goal/report/retention work before
+Continue upper lifecycle/configuration and multi-goal/delivery-reconciliation/retention work before
 physical integration; do not replace the DSH loop. UI polish is deferred, and key
 state must ultimately be visible simultaneously without page/tab switching.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)
@@ -876,12 +876,14 @@ supply allowed motion and budgets in the brief; no new agent implementation is n
 Every role can report insufficient context through the framework's report protocol;
 normal handoff does not require an additional custom tool. Explicit communication
 tools are convenient entry points, not access to every member's files. The earlier
-`needs_context` wording corresponds to the skeleton's `insufficient_context`; normalize
-status vocabulary in Step 01 before runtime integration.
+`needs_context` wording maps to the implemented `insufficient_context` status; a later
+versioned report can complete the assignment after explicit context arrives.
 
-Output defaults to AgentReport.v1. A stricter role may declare
-`output_schema: ./schemas/scene-assessment.json`; loader validates that role-pack JSON
-Schema and passes it to DSH structured output. An omitted model uses the team/deployment
+Output uses the AgentReport.v1 envelope. A stricter role may declare
+`output_schema: ./schemas/scene-assessment.json`; the loader validates a role-local
+object schema in DSH's supported subset and binds it to the native reporting tool's
+result argument. Identity and routing remain framework-owned. See the
+[implemented report protocol](implementation/upper-runtime.md). An omitted model uses the team/deployment
 binding, not temporary caller-instance settings.
 
 ### 11.3 Team example
@@ -1315,3 +1317,13 @@ missing provider reasoning must never be fabricated. Agent-reported TODO complet
 is separate from verifier-accepted physical success. The final console must show
 key agent, task, sensor, execution, verification and recovery state together in one
 workspace, without page/tab switching for essential state. UI styling is deferred.
+
+### Implemented role reporting clarification
+
+Framework-provided agent.report and team.query now return versioned, identity-bound
+AgentReport records through native DSH inbox delivery. Custom role schemas constrain
+report.result using DSH-supported JSON Schema. Exact retries return the same receipt;
+final results cannot be rewritten. Native idle state is not a role result or physical
+verdict. Decision owners finish tasks through existing task tools. Native raw tool
+definitions invoke DSH input validation explicitly; schema declaration alone does
+not validate arguments. No new registry, model loop or physical middleware is added.

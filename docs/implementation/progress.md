@@ -21,7 +21,7 @@ switching for key state. Existing inspector tabs are provisional. Continue core 
 | --- | --- |
 | DSH runtime | Original loop, native tools/validation, model services, scoped sessions, inbox/followup, cancellation and cooperative timeout plugin |
 | Teams | YAML/ROLE.md preflight, frozen configuration, explicit model/tool bindings, independent assignment contexts; concurrent duplicate admission rejected |
-| Communication | Explicit briefs, authenticated caller identity from tool scope, delegation/send/context exchange, evidence grants, native DSH delivery and audit exports |
+| Communication | Versioned role reports/query, configured result schemas, explicit briefs, authenticated caller identity from tool scope, delegation/send/context exchange, evidence grants, native DSH delivery and audit exports |
 | Tools | Native tool API, role exposure and owner checks; trusted custom native tools share run lifetime and activity tracking |
 | Planning/files | Original DSH TODO plugin, session-local history; durable versioned plans and private assignment files; TODO completion cannot establish success |
 | Execution boundary | Replaceable EmbodiedBackend port, nonblocking fixture jobs, budgets, pause/confirmed fixture stop and owner-only resume |
@@ -36,7 +36,7 @@ switching for key state. Existing inspector tabs are provisional. Continue core 
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 18 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 20 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency and interrupted restart.
 - 230 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -49,7 +49,7 @@ Remaining: live VLM deployment configuration/evaluation; Python worker transport
 actual simulator, policy, perception and hardware adapters; resource arbitration;
 interruptible action-chunk admission and device acknowledgement. The upper runner
 currently coordinates one original goal/recovery chain per run. Multi-goal scheduling,
-configurable role-report schemas, distributed delivery guarantees, resumable DSH
+distributed delivery guarantees, resumable DSH
 sessions, long-horizon retention/compaction and multi-user hosting remain open.
 Native delivery completion means session quiescence, not exactly-once business execution.
 Cooperative cancellation cannot forcibly stop an uncooperative external device/tool.
@@ -59,7 +59,7 @@ Cooperative cancellation cannot forcibly stop an uncooperative external device/t
 | Step | Status in this checkout |
 | --- | --- |
 | 00–01 | DSH integration and shared contract acceptance complete |
-| 02–05 | Upper configuration, roles, explicit handoff, plans/files implemented; report-schema extensibility and distributed delivery remain open |
+| 02–05 | Upper configuration, roles, explicit handoff, plans/files implemented; role result schemas now bind to native DSH validation; distributed delivery remains open |
 | 06–07 | Upper port and CPU fixture implemented; physical worker/resources/perception providers deferred |
 | 08–10 | Upper verification/recovery/experience loop exercised with fixtures; actual provider evidence still required |
 | 11 | Recovery and custom-role CPU scenarios pass; full physical-provider replacement scenario remains open |
@@ -70,8 +70,8 @@ Cooperative cancellation cannot forcibly stop an uncooperative external device/t
    configure a live DSH model adapter only against an explicit available binding.
 2. Extend the single-goal coordinator to plan-driven multi-subgoal progression,
    preserving verifier identity, original-goal recovery and owner-only decisions.
-3. Define versioned role reports and validate configurable result handoffs without
-   replacing the native DSH inbox; exercise delivery failures and cancellation.
+3. Extend the implemented role reports with delivery reconciliation and explicit
+   business acknowledgements where required; preserve the original DSH inbox.
 4. Add bounded retention/checkpoints and recovery reconciliation appropriate to
    longer runs. Historical sessions must never silently resume physical commands.
 5. Bind the physical worker transport, action gate and resource coordination, then
@@ -111,3 +111,5 @@ Forged fields and malformed execution/report calls fail without creating physica
 Twenty runtime tests pass, including actual native report calls and caller model
 inputs, schema preflight, missing-context handoff, immutable replay and persisted
 reports across restart. No generic dispatcher or agent loop was added.
+
+- `c622252`: versioned role reports, native result schemas, query/receipts and raw-tool input validation fix.

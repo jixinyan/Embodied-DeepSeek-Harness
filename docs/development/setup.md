@@ -28,7 +28,7 @@ from the example SKILL.
 
 ## DSH runtime baseline
 
-`pnpm test:runtime` runs 18 keyless integration tests against the original DSH
+`pnpm test:runtime` runs 20 keyless integration tests against the original DSH
 loop and upper application. It is included in `pnpm check`. HTTP acceptance starts
 a temporary local server; physical observations and model responses remain fixtures.
 

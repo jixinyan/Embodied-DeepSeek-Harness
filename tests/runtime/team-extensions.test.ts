@@ -303,6 +303,12 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       );
       assert.equal(run.state.events.filter((event) => event.type === 'agent.report').length, 2);
       assert.equal(model.requests.length, 6, 'Report replay does not duplicate caller input.');
+      assert(
+        store
+          .list<{ state: string }>('report-delivery:')
+          .every((record) => record.value.state === 'settled'),
+      );
+
       assert.equal(
         (
           await invoke(analyst.id, 'agent__report', {

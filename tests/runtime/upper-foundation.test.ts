@@ -144,8 +144,28 @@ tool_bindings: {}
       await writeFile(path, JSON.stringify(schema));
       await assert.rejects(loader.inspect(teamPath), /schema|object/i);
     }
-    await writeFile(rolePath, role.replace('result.json', '../../escape.json'));
-    await assert.rejects(loader.inspect(teamPath));
+    const outside = await mkdtemp(resolve(tmpdir(), 'edh-schema-outside-'));
+    try {
+      const externalSchema = resolve(outside, 'result.json');
+      await writeFile(externalSchema, JSON.stringify({ type: 'object' }));
+      await writeFile(rolePath, role.replace('result.json', externalSchema));
+      await assert.rejects(loader.inspect(teamPath), /escapes/);
+    } finally {
+      await rm(outside, { recursive: true, force: true });
+    }
+    const published = await new FileTeamLoader({
+      validator,
+      builtinDirectory: resolve('harness/agent-runtime/agents/roles'),
+      roleRoot: resolve('examples'),
+      defaultModel: 'fixture',
+      models: ['fixture'],
+      tools: (await import('../../apps/server/src/application.js')).CORE_TOOLS,
+      providers: [],
+    }).inspect('examples/teams/reporting.yaml');
+    assert.equal(
+      published.members.scene!.outputSchema!.schema.properties!.confidence!.type,
+      'string',
+    );
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

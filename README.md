@@ -60,7 +60,7 @@ pnpm test:runtime
 ```
 
 These commands check generated schema types, example structure/references,
-TypeScript, documentation links and Python importability, then execute 18 upper-runtime
+TypeScript, documentation links and Python importability, then execute 20 upper-runtime
 integration tests and shared wire/lifecycle validation cases in both languages. `test:runtime` runs that suite
 alone. No live model API or simulator is started. API tests start a temporary local server. No GPU or key is needed.
 Python checks prefer `.venv/bin/python`, falling back to `python3`; override
