@@ -11,5 +11,8 @@
 9. [Typed boundaries](implementation/boundaries.md): F1 message/tool/operation APIs and migration.
 10. [DSH provenance](provenance/README.md): pinned source and absorption boundaries.
 
+[Current capability map](implementation/features.md) distinguishes verified DSH reuse,
+standalone physical helpers and unimplemented product features.
+
 This repository is the implementation source of truth. Prior discussion notes
 remain research history; they are not additional instructions or required inputs.

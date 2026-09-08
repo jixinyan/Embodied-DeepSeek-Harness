@@ -14,9 +14,13 @@ selected DeepSeek Harness implementations, with traceable provenance.
 
 [Project spec](docs/project-spec.md) ·
 [Implementation plan](docs/implementation/plan.md) ·
-[Current status](docs/implementation/progress.md)
+[Current status](docs/implementation/progress.md) ·
+[Capability map](docs/implementation/features.md)
 
-![Framework architecture](docs/architecture/assets/framework-overview.svg)
+![Current implementation](docs/architecture/assets/implementation-status.svg)
+
+The diagram shows actual capability. See [target architecture](docs/architecture/modules.md)
+for the complete intended framework.
 
 ## Find your way
 

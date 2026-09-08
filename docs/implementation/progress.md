@@ -11,6 +11,9 @@ then deliver a runnable simulation-to-console MVP. Read
 [foundation acceptance](mvp-foundation.md) before continuing. F1 has passed its local boundary acceptance; F2–F7 remain unimplemented. The historical
 step statuses below are unchanged because runtime integration is still outstanding.
 
+See the [current capability map](features.md) for a visual split between reused DSH,
+standalone EDH helpers and remaining implementation.
+
 ## Delivered capabilities
 
 - Original DSH loop, model/tool services, sessions and scoped lifecycle selectively

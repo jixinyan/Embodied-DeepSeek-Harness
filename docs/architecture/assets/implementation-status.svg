@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1440" viewBox="0 0 1440 1440" role="img" aria-labelledby="title desc"><title id="title">EDH current capabilities and remaining implementation</title><desc id="desc">Verified DSH runtime and native tools, standalone physical contract checks, and the unimplemented embodied workflow. Nine runtime tests and 230 shared contract cases. No live model or robot is connected.</desc><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#25735b"/></marker></defs><rect width="1440" height="1440" fill="#f5f7fa"/>
+<text x="44" y="58" font-family="Arial, sans-serif" font-size="35" font-weight="700" fill="#263a4f">Embodied DeepSeek Harness</text>
+<text x="44" y="94" font-family="Arial, sans-serif" font-size="23" font-weight="400" fill="#263a4f">Current capabilities / DSH reuse alignment</text>
+<text x="1100" y="54" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">2026-09-08</text>
+<text x="1100" y="83" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Code: abe810b</text>
+<rect x="44" y="120" width="16" height="16" rx="4" fill="#287951" stroke="#287951"/>
+<text x="71" y="135" font-family="Arial, sans-serif" font-size="19" font-weight="400" fill="#263a4f">Running DSH path</text>
+<rect x="397" y="120" width="16" height="16" rx="4" fill="#3665a5" stroke="#3665a5"/>
+<text x="424" y="135" font-family="Arial, sans-serif" font-size="19" font-weight="400" fill="#263a4f">Standalone EDH checks</text>
+<rect x="810" y="120" width="16" height="16" rx="4" fill="#aa7b31" stroke="#aa7b31"/>
+<text x="837" y="135" font-family="Arial, sans-serif" font-size="19" font-weight="400" fill="#263a4f">Defined / not implemented</text>
+<rect x="44" y="164" width="1352" height="335" rx="15" fill="#fff" stroke="#dce3eb"/>
+<text x="66" y="204" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#263a4f">01  RUNNABLE TODAY — the original DSH mechanisms</text>
+<rect x="66" y="229" width="398" height="160" rx="15" fill="#edf8f1" stroke="#b9ddc8"/>
+<text x="86" y="263" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#236447">Host + scoped sessions</text>
+<text x="86" y="296" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Model adapter binding</text>
+<text x="86" y="323" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Explicit prompt and tool injection</text>
+<text x="86" y="350" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Fresh session, follow-up, teardown</text>
+<rect x="520" y="229" width="398" height="160" rx="15" fill="#edf8f1" stroke="#b9ddc8"/>
+<text x="540" y="263" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#236447">DSH model / tool loop</text>
+<text x="540" y="296" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Scripted model streams</text>
+<text x="540" y="323" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Tool dispatch and result feedback</text>
+<text x="540" y="350" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Cancellation and running/idle events</text>
+<rect x="974" y="229" width="398" height="160" rx="15" fill="#edf8f1" stroke="#b9ddc8"/>
+<text x="994" y="263" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#236447">Native DSH tools</text>
+<text x="994" y="296" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Exact defineTool export</text>
+<text x="994" y="323" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Native input/output validation</text>
+<text x="994" y="350" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Scoped access and scalar results</text>
+<path d="M468 306 H511" stroke="#25735b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<path d="M922 306 H965" stroke="#25735b" stroke-width="2.5" marker-end="url(#arrow)"/>
+<text x="66" y="425" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#236447">Verified example: input 6 → native add_one tool → result 7 → next model request</text>
+<text x="66" y="458" font-family="Arial, sans-serif" font-size="19" font-weight="400" fill="#263a4f">9 runtime tests pass. Models are scripted; tool fixtures are synthetic. No live VLM or robot.</text>
+<rect x="44" y="521" width="1352" height="271" rx="15" fill="#fff" stroke="#dce3eb"/>
+<text x="66" y="562" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#263a4f">02  IMPLEMENTED HELPERS — callable, not connected to a physical workflow</text>
+<rect x="66" y="585" width="418" height="146" rx="15" fill="#eef4fd" stroke="#c3d6f2"/>
+<text x="86" y="619" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#2c5594">Physical wire validation</text>
+<text x="86" y="652" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">TS + Python use one schema</text>
+<text x="86" y="679" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Task, assignment, frame and time</text>
+<text x="86" y="706" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Typed physical/domain messages</text>
+<rect x="502" y="585" width="418" height="146" rx="15" fill="#eef4fd" stroke="#c3d6f2"/>
+<text x="522" y="619" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#2c5594">Execution + verification rules</text>
+<text x="522" y="652" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Attempt / boundary / evidence checks</text>
+<text x="522" y="679" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Budget and owner-resume rules</text>
+<text x="522" y="706" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Original-goal recovery validation</text>
+<rect x="938" y="585" width="434" height="146" rx="15" fill="#eef4fd" stroke="#c3d6f2"/>
+<text x="958" y="619" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#2c5594">Provider / operation rules</text>
+<text x="958" y="652" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Async operation identity and states</text>
+<text x="958" y="679" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Selected provider input/output</text>
+<text x="958" y="706" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Replay conflicts and unknown state</text>
+<text x="66" y="767" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">230 shared contract cases pass in each language. Ordinary native DSH tools bypass these envelopes.</text>
+<text x="44" y="838" font-family="Arial, sans-serif" font-size="25" font-weight="700" fill="#263a4f">03  STILL TO CONNECT OR IMPLEMENT</text>
+<rect x="44" y="861" width="437" height="174" rx="15" fill="#fff7e9" stroke="#e8d7b3"/>
+<text x="64" y="895" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#8c6426">Team / Role assembly</text>
+<text x="64" y="928" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Role files and team.yaml exist</text>
+<text x="64" y="955" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Loader and permission binding missing</text>
+<text x="64" y="982" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Use DSH sessions and inboxes</text>
+<rect x="501" y="861" width="437" height="174" rx="15" fill="#fff7e9" stroke="#e8d7b3"/>
+<text x="521" y="895" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#8c6426">Physical execution + policy</text>
+<text x="521" y="928" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Provider interfaces only</text>
+<text x="521" y="955" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">No Python job worker or live policy</text>
+<text x="521" y="982" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">No simulator moves a robot yet</text>
+<rect x="958" y="861" width="438" height="174" rx="15" fill="#fff7e9" stroke="#e8d7b3"/>
+<text x="978" y="895" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#8c6426">Verifier + Evolver services</text>
+<text x="978" y="928" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Role and SKILL examples exist</text>
+<text x="978" y="955" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">No async verifier or retry service</text>
+<text x="978" y="982" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">No automatic skill persistence/retrieval</text>
+<rect x="44" y="1054" width="437" height="174" rx="15" fill="#fff7e9" stroke="#e8d7b3"/>
+<text x="64" y="1088" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#8c6426">Sensors + perception</text>
+<text x="64" y="1121" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Observation / action contracts exist</text>
+<text x="64" y="1148" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">No live camera, SAM or active view</text>
+<text x="64" y="1175" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">No actual backend frame/action mapping</text>
+<rect x="501" y="1054" width="437" height="174" rx="15" fill="#fff7e9" stroke="#e8d7b3"/>
+<text x="521" y="1088" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#8c6426">Live control console</text>
+<text x="521" y="1121" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Projection interfaces only</text>
+<text x="521" y="1148" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">Earlier prototype is visual reference</text>
+<text x="521" y="1175" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">No task / sensor / robot connection</text>
+<rect x="958" y="1054" width="438" height="174" rx="15" fill="#fff7e9" stroke="#e8d7b3"/>
+<text x="978" y="1088" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#8c6426">Durability + deployment</text>
+<text x="978" y="1121" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">No durable domain event service</text>
+<text x="978" y="1148" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">No simulation or hardware adapter</text>
+<text x="978" y="1175" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">BEHAVIOR / RoboCasa / RoboTwin pending</text>
+<rect x="44" y="1249" width="1352" height="74" rx="15" fill="#e9edf3" stroke="#dce3eb"/>
+<text x="65" y="1278" font-family="Arial, sans-serif" font-size="19" font-weight="400" fill="#263a4f">Not mounted: live model provider, DSH timeout-policy plugin and disk persistence backend.</text>
+<text x="65" y="1307" font-family="Arial, sans-serif" font-size="18" font-weight="400" fill="#263a4f">No runnable end-to-end embodied MVP yet. Green indicates tested integration, not new EDH runtime code.</text>
+<text x="44" y="1367" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#263a4f">NEXT: bind Team / Role definitions onto DSH, then connect physical providers through native tools.</text>
+<text x="44" y="1403" font-family="Arial, sans-serif" font-size="19" font-weight="400" fill="#506176">EDH owns the product. DSH supplies the agent mechanism. EDH adds embodied behavior.</text>
+</svg>
