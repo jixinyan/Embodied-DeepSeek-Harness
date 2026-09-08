@@ -21,47 +21,8 @@ import { SkillLibrary } from '@edh/memory';
 import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
 import type { RunState } from '@edh/tasks';
 
-const str = { type: 'string', minLength: 1, maxLength: 12000 };
-const integer = { type: 'integer', minimum: 0 };
-const strings = { type: 'array', items: str, maxItems: 32 };
-const obj = { type: 'object', additionalProperties: true };
-const fields: Record<string, Record<string, unknown>> = {
-  'planning.read': {},
-  'planning.update': { plan: obj, expectedVersion: integer },
-  'files.read': { path: str },
-  'files.write': {
-    path: str,
-    content: { type: 'string', maxLength: 131072 },
-    expectedVersion: integer,
-  },
-  'files.search': { query: str },
-  'team.delegate': {
-    member: str,
-    objective: str,
-    context: { type: 'string' },
-    evidenceRefs: strings,
-  },
-  'team.send': { assignmentId: str, message: str, evidenceRefs: strings },
-  'context.request': { assignmentId: str, message: str, evidenceRefs: strings },
-  'context.respond': { assignmentId: str, message: str, evidenceRefs: strings },
-  'perception.capture': {},
-  'observation.turn_view': { direction: { enum: ['left', 'center', 'right'] } },
-  'execution.start': { instruction: str },
-  'execution.query': {},
-  'execution.pause': {},
-  'execution.resume': {},
-  'tasks.retry': { changes: strings, attemptSummary: str },
-  'tasks.replan': { reason: str, changes: strings, attemptSummary: str },
-  'tasks.finish': {},
-  'tasks.abandon': { reason: str, status: { enum: ['failed', 'unknown'] } },
-  'verification.check': {},
-  'verification.submit': { status: { enum: ['passed', 'failed', 'unknown'] }, explanation: str },
-  'skills.search': { query: str },
-  'skills.load': { skillId: str },
-  'skills.save': { markdown: str },
-  'evidence.read': { evidenceId: str },
-};
-export const CORE_TOOLS = Object.keys(fields);
+export { CORE_TOOLS } from '@edh/tools';
+import { CORE_TOOL_PARAMETERS } from '@edh/tools';
 export const terminal = (state: RunState['state']) =>
   ['succeeded', 'failed', 'cancelled', 'interrupted', 'unknown'].includes(state);
 interface CheckedBoundary {
@@ -82,6 +43,8 @@ export interface GoalBinding {
 }
 export interface ApplicationOptions {
   goal: GoalBinding;
+  /** Trusted deployment-owned additions, registered directly in the role's DSH scope. */
+  additionalTools?: Readonly<Record<string, (assignment: Assignment) => ToolDefinition>>;
   host: Context;
   team: LoadedTeam;
   validator: ContractValidator;
@@ -210,6 +173,7 @@ export class UpperRun {
       type.startsWith('tool.') && detail.assignmentId === this.state.decisionAssignmentId;
     if (
       this.recoveryContext &&
+      !terminal(this.state.state) &&
       (ownerEvent ||
         [
           'plan.updated',
@@ -244,7 +208,13 @@ export class UpperRun {
     this.pending.add(tracked);
   }
   private async fail(error: unknown): Promise<void> {
-    if (terminal(this.state.state)) return;
+    if (terminal(this.state.state)) {
+      if (this.state.state === 'succeeded') {
+        this.state.error = error instanceof Error ? error.message : String(error);
+        this.event('recovery.failed', { error: this.state.error, goalStatus: 'succeeded' });
+      }
+      return;
+    }
     this.state.state = 'failed';
     this.state.error = error instanceof Error ? error.message : String(error);
     this.event('run.failed', { error: this.state.error });
@@ -358,7 +328,16 @@ export class UpperRun {
   }
   private tools(a: Assignment): ToolDefinition[] {
     return a.brief.tools_and_limits.allowed_tools.map((logical) => {
-      const properties = fields[logical];
+      const extra = this.options.additionalTools?.[logical];
+      if (extra) {
+        if (CORE_TOOL_PARAMETERS[logical])
+          throw new Error('Additional tools cannot replace core authority checks.');
+        const native = extra(structuredClone(a));
+        if (native.name !== logical.replaceAll('.', '__'))
+          throw new Error('Native tool name must match its logical binding.');
+        return native;
+      }
+      const properties = CORE_TOOL_PARAMETERS[logical];
       if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
       return {
         name: logical.replaceAll('.', '__'),

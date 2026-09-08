@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>EDH · Mission Control</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Embodied DeepSeek Harness home"
+        ><span class="brand-symbol">e<span>d</span>h</span
+        ><span>EMBODIED<br />DEEPSEEK HARNESS</span></a
+      >
+      <p class="section-label">WORKSPACE</p>
+      <nav>
+        <a class="selected" href="#mission">◈ &nbsp; Mission control</a
+        ><a href="#team">◉ &nbsp; Agent team</a
+        ><a href="#experience">↗ &nbsp; Experience library</a
+        ><a href="#activity">≋ &nbsp; Run activity</a>
+      </nav>
+      <div class="history-title">
+        <span class="section-label">RUN HISTORY</span
+        ><button id="refresh-history" class="icon-button" aria-label="Refresh run history">
+          ↻
+        </button>
+      </div>
+      <div id="history" class="history"><p class="muted">No runs yet.</p></div>
+      <div class="sidebar-bottom">
+        <span class="connection-dot" id="connection-dot"></span
+        ><span id="connection">Connecting</span>
+        <p>Local workspace<br /><strong>CPU fixture mode</strong></p>
+        <small>No simulator or robot connected</small>
+      </div>
+    </aside>
+    <main id="mission">
+      <header>
+        <div>
+          <div class="eyebrow">WORKSPACE / OBSERVABILITY</div>
+          <h1>Mission control<span class="title-dot">.</span></h1>
+          <p class="subtitle">One task. Independent minds. A visible feedback loop.</p>
+        </div>
+        <div class="header-actions">
+          <span class="tag fixture">CPU TEST FIXTURE</span
+          ><button id="inspect-team" class="button secondary">Team definition ↗</button>
+        </div>
+      </header>
+      <div id="error" role="alert" class="error" hidden></div>
+      <section class="mission-card">
+        <div class="mission-copy">
+          <label for="instruction" class="eyebrow">BENCHMARK INSTRUCTION</label
+          ><input id="instruction" value="Place the cup inside the cabinet." readonly />
+          <div class="mission-meta">
+            <span>◈ &nbsp; <span id="team-name">console-demo</span></span
+            ><span>Ground-truth predicate</span><span>5 steps / attempt</span>
+          </div>
+        </div>
+        <div class="mission-actions">
+          <label for="scenario" class="sr-only">Fixture scenario</label
+          ><select id="scenario">
+            <option value="retry-success">Failure → recovery → success</option>
+            <option value="first-pass">First-attempt success</option>
+            <option value="unknown">Insufficient evidence</option>
+            <option value="backend-error">Backend error</option></select
+          ><button id="start" class="button primary">▶ &nbsp; Run task</button>
+        </div>
+      </section>
+      <div class="run-strip">
+        <div>
+          <span class="status-dot"></span><strong id="run-state">Ready to begin</strong
+          ><span id="run-id" class="mono muted">No active run</span>
+        </div>
+        <div class="controls">
+          <button id="pause" class="button small" disabled>Ⅱ Pause</button
+          ><button id="resume" class="button small" disabled>▶ Request resume</button
+          ><button id="stop" class="button small danger" disabled>■ Stop</button>
+        </div>
+      </div>
+      <section class="workspace-grid">
+        <article class="panel sensor-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Sensor workspace</h2>
+              <p id="sensor-subtitle">Synthetic scene · Not camera imagery</p>
+            </div>
+            <select id="sensor-view" aria-label="Choose latest sensor or agent-seen frame">
+              <option value="latest">Latest sensor</option>
+            </select>
+          </div>
+          <div class="scene">
+            <div class="scene-top">
+              <span class="scene-label">FIXTURE / FRONT VIEW</span
+              ><span class="scene-label" id="frame-number">NO FRAME</span>
+            </div>
+            <svg
+              id="sensor-svg"
+              viewBox="0 0 900 470"
+              role="img"
+              aria-label="Synthetic robot, cup and cabinet visualization"
+            >
+              <defs>
+                <linearGradient id="floor" x2="0" y2="1">
+                  <stop stop-color="#2b413d" />
+                  <stop offset="1" stop-color="#182d2a" />
+                </linearGradient>
+                <linearGradient id="cabinet" x2="1" y2="1">
+                  <stop stop-color="#748c7d" />
+                  <stop offset="1" stop-color="#435e51" />
+                </linearGradient>
+                <linearGradient id="robot" x2="1" y2="1">
+                  <stop stop-color="#c4d5c9" />
+                  <stop offset="1" stop-color="#8ba499" />
+                </linearGradient>
+                <pattern
+                  id="grid"
+                  width="55"
+                  height="55"
+                  patternUnits="userSpaceOnUse"
+                  patternTransform="matrix(1 .35 -1 .35 420 180)"
+                >
+                  <path d="M55 0H0V55" fill="none" stroke="#78998d" stroke-width="1" opacity=".2" />
+                </pattern>
+              </defs>
+              <rect width="900" height="470" fill="url(#floor)" />
+              <rect y="175" width="900" height="295" fill="url(#grid)" />
+              <ellipse cx="460" cy="356" rx="296" ry="59" fill="#0f2420" opacity=".6" />
+              <path d="M470 102L687 135V324L470 287Z" fill="#29483d" />
+              <path d="M470 102L522 76L739 107L687 135Z" fill="#809184" />
+              <path d="M687 135L739 107V296L687 324Z" fill="#3e5d4e" />
+              <path d="M484 119L674 149V298L484 271Z" fill="#142e26" />
+              <path d="M484 202L674 231L713 208L522 181Z" fill="#81967e" />
+              <path d="M484 119L424 151V306L484 271Z" fill="url(#cabinet)" stroke="#91a38e" />
+              <path d="M444 211V241" stroke="#ccd3ba" stroke-width="5" stroke-linecap="round" />
+              <path d="M150 285L369 319L505 256L286 225Z" fill="#97aa93" />
+              <path d="M150 285L369 319V331L150 298Z" fill="#6e8576" />
+              <path d="M369 319L505 256V269L369 331Z" fill="#536e5e" />
+              <path d="M174 298V386M351 328V416M475 277V349" stroke="#6d8475" stroke-width="12" />
+              <g id="cup" transform="translate(338 262)">
+                <ellipse cy="25" rx="30" ry="10" fill="#153c30" opacity=".5" />
+                <path d="M-17-20L-14 20Q0 33 15 20L18-20" fill="#e2ba78" />
+                <ellipse cy="-20" rx="18" ry="6" fill="#efcd96" />
+                <ellipse cy="-20" rx="13" ry="4" fill="#7e6846" />
+                <path d="M17-12C42-18 40 18 16 10" fill="none" stroke="#e5bd7c" stroke-width="7" />
+              </g>
+              <g id="robot-body">
+                <ellipse cx="571" cy="360" rx="55" ry="22" fill="#73958a" />
+                <path d="M520 327L574 304L622 326V358Q574 385 520 355Z" fill="#819e92" />
+                <path d="M540 319V284Q566 271 592 287V320Q568 337 540 319Z" fill="url(#robot)" />
+                <polyline
+                  id="robot-arm"
+                  points="567,289 551,239 465,198 404,231"
+                  stroke="#c1d0c3"
+                  stroke-width="22"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  fill="none"
+                />
+                <circle cx="551" cy="239" r="14" fill="#67877a" />
+                <circle cx="465" cy="198" r="12" fill="#7f9d8b" />
+                <path
+                  d="M400 220L389 234L401 244M410 225L407 242L416 247"
+                  stroke="#182b24"
+                  stroke-width="5"
+                  fill="none"
+                />
+              </g>
+              <g fill="none" stroke="#b8d9be" stroke-width="1.5" opacity=".65">
+                <path d="M288 215H274V242M398 269V287H375" />
+                <path d="M476 106V94H501M692 298V313H666" />
+              </g>
+              <g font-family="ui-monospace,monospace" font-size="11" fill="#d5e8d8">
+                <text x="274" y="204">TARGET 01 / CUP</text>
+                <text x="576" y="89">GOAL / CABINET</text>
+                <text x="617" y="385">SYNTHETIC EMBODIMENT</text>
+              </g>
+            </svg>
+            <div class="scene-bottom">
+              <div>
+                <span class="signal-bars">▂▄▆</span>
+                <span id="sensor-description">Awaiting an actual fixture observation.</span>
+              </div>
+              <span class="mono" id="sensor-age">—</span>
+            </div>
+          </div>
+          <div class="sensor-footer">
+            <div>
+              <span class="eyebrow">LATEST RECEIVED</span><strong id="latest-frame">—</strong>
+            </div>
+            <div>
+              <span class="eyebrow">DISPLAY SOURCE</span
+              ><strong id="frame-source">Latest sensor</strong>
+            </div>
+            <div>
+              <span class="eyebrow">EVIDENCE</span
+              ><button id="inspect-frame" class="text-button" disabled>Inspect reference ↗</button>
+            </div>
+          </div>
+        </article>
+        <div class="right-stack">
+          <article class="panel" id="team">
+            <div class="panel-heading">
+              <div>
+                <h2>Agent team</h2>
+                <p>Separate sessions · Explicit context</p>
+              </div>
+              <span class="tag" id="session-count">0 SESSIONS</span>
+            </div>
+            <div id="agents" class="agents">
+              <p class="empty">Roles will activate when the task requires them.</p>
+            </div>
+          </article>
+          <article class="panel device-panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Embodiment state</h2>
+                <p>CPU fixture · No device attached</p>
+              </div>
+              <span id="device-state" class="tag">IDLE</span>
+            </div>
+            <div class="device-metrics">
+              <div><span>Control steps</span><strong id="steps">0 / 5</strong></div>
+              <div><span>Policy calls</span><strong id="policy-calls">0</strong></div>
+              <div><span>Stop confirmed</span><strong id="stop-confirmed">—</strong></div>
+            </div>
+            <progress id="budget" max="5" value="0" aria-label="Execution step budget"></progress>
+            <p class="device-note" id="stop-reason">
+              Action gate integration is planned for physical providers.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section class="lower-grid">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Task plan</h2>
+              <p id="plan-version">Owned by the decision role</p>
+            </div>
+            <span class="tag" id="attempt">ATTEMPT —</span>
+          </div>
+          <div id="plan" class="plan">
+            <p class="empty">The planner will create a versioned plan.</p>
+          </div>
+          <div class="verification-box">
+            <div>
+              <span class="eyebrow">FORMAL VERIFICATION</span
+              ><strong id="verification-status">Awaiting execution boundary</strong>
+            </div>
+            <button id="inspect-verdict" class="text-button" disabled>Evidence ↗</button>
+            <p id="verification-explanation">
+              A completed policy call does not establish task success.
+            </p>
+          </div>
+        </article>
+        <article class="panel" id="experience">
+          <div class="panel-heading">
+            <div>
+              <h2>Recovery &amp; experience</h2>
+              <p>Failure knowledge + recovery guidance</p>
+            </div>
+            <span class="tag" id="skill-count">0 SKILLS</span>
+          </div>
+          <div class="recovery-phases">
+            <span id="phase-replan">01 &nbsp; Replan</span><i>→</i
+            ><span id="phase-record">02 &nbsp; Record</span><i>→</i
+            ><span id="phase-skill">03 &nbsp; Distill</span>
+          </div>
+          <p id="recovery-copy" class="recovery-copy">
+            Evolver joins when the planner decides to replan or retry after a formal failed subgoal.
+          </p>
+          <div class="experience-actions">
+            <button id="inspect-recovery" class="button small" disabled>Recovery trace ↗</button
+            ><button id="inspect-skill" class="button small" disabled>Open SKILL.md ↗</button>
+          </div>
+          <p class="footnote">Fixture experience is excluded from real runs by default.</p>
+        </article>
+      </section>
+      <section id="activity" class="panel activity-panel">
+        <div class="panel-heading">
+          <div>
+            <h2>Run activity</h2>
+            <p>Persisted domain events · Click any event for its exact payload</p>
+          </div>
+          <div class="activity-controls">
+            <span id="event-count" class="mono muted">0 events</span
+            ><select id="event-filter" aria-label="Filter run events">
+              <option value="all">All events</option>
+              <option value="tool">Tools</option>
+              <option value="message">Messages</option>
+              <option value="execution">Execution</option>
+              <option value="verification">Verification</option>
+              <option value="recovery">Recovery &amp; skills</option></select
+            ><button id="inspect-audit" class="button small" disabled>DSH session audit ↗</button>
+          </div>
+        </div>
+        <div id="timeline" class="timeline">
+          <p class="empty">Start a task to inspect agent, tool and execution events here.</p>
+        </div>
+      </section>
+      <footer>
+        <span>EDH · Upper application preview</span
+        ><span>Native DSH sessions and tool calls / Deterministic model and execution fixture</span>
+      </footer>
+    </main>
+    <dialog id="inspector">
+      <div class="dialog-heading">
+        <div>
+          <span class="eyebrow">RUN INSPECTOR</span>
+          <h2 id="inspector-title">Details</h2>
+        </div>
+        <button id="close-inspector" class="icon-button" aria-label="Close inspector">×</button>
+      </div>
+      <pre id="inspector-body"></pre>
+    </dialog>
+  </body>
+</html>

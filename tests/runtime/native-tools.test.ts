@@ -121,3 +121,44 @@ test(
     assert.equal(renders, 1);
   },
 );
+
+test('mounted upstream timeout policy aborts a cooperative tool and returns TOOL_TIMEOUT', async () => {
+  const { setTimeout } = await import('node:timers/promises');
+  const host = await createDshHost([]);
+  try {
+    const handle = await createDshSession(host, {
+      sessionId: 'timeout-fixture',
+      provider: 'unused',
+      model: 'unused',
+      instructions: 'Tool timeout test.',
+      tools: [
+        defineTool({
+          name: 'slow_fixture',
+          description: 'Cooperative timeout fixture.',
+          parameters: {},
+          output: {
+            schema: { type: 'string' },
+            render: (_args, value) => [{ type: 'text', text: value }],
+          },
+          timeoutMs: 15,
+          async execute(_args, exec) {
+            await setTimeout(1000, undefined, { signal: exec.signal });
+            return 'too late';
+          },
+        }),
+      ],
+    });
+    const result = await host.tools.execute({
+      agent: handle.agent,
+      callId: ToolCallId('timeout-call'),
+      name: 'slow_fixture',
+      arguments: {},
+      signal: new AbortController().signal,
+    });
+    assert.equal(result.isError, true);
+    assert.match(JSON.stringify(result), /TOOL_TIMEOUT/);
+    await handle.dispose();
+  } finally {
+    await host.fiber.dispose();
+  }
+});

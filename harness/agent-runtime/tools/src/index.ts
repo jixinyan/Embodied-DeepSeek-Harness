@@ -24,3 +24,5 @@ export interface PhysicalToolCatalog {
 export interface PhysicalToolProvider {
   invoke(call: ToolCall, signal: AbortSignal): Promise<ToolResult>;
 }
+
+export { CORE_TOOLS, CORE_TOOL_PARAMETERS } from './core-inputs.js';

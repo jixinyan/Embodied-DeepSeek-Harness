@@ -200,3 +200,19 @@ formal-failure replan/retry decision opens recovery, with a planner-supplied att
 summary and proposed changes. The Evolver receives persisted, explicit progress
 batches until original-goal success. Added decision 0004 with the VoLo reference and
 physical action admission requirements. The physical chunk gate remains deferred.
+
+### Console service checkpoint (2026-09-08)
+
+Added `pnpm demo`: local HTTP/SSE console with actual DSH-backed fixture runs,
+explicit fixture scenarios, pause/resume-request/stop, versioned plan display,
+role/brief inspection, latest versus agent-seen observations, verification and
+SKILL/recovery/session-audit inspectors. Historical runs are read-only. Admission
+has request-key deduplication, one active run and interrupted-start refusal.
+Restart preserves records and marks unfinished history interrupted without resubmission.
+SSE backpressure coalesces snapshots until drain instead of disconnecting a reader.
+Full checks pass with 17 runtime tests and the existing shared wire/lifecycle cases.
+
+The user's next refinement prioritizes a debugging workbench over decorative
+visualization: live agent output, detailed TODO status/history, correlated tool and
+assignment inspection, and a simpler coding-agent-style layout. The initial console
+is a verified checkpoint; that refinement is the active next action.
