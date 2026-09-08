@@ -17,6 +17,8 @@ tools:
   - execution.resume
   - tasks.retry
   - tasks.replan
+  - tasks.finish
+  - tasks.abandon
   - skills.search
   - skills.load
 ---

@@ -17,3 +17,5 @@ export interface SkillStore {
 export interface EvidenceReader {
   resolve(assignmentId: string, evidenceId: string): Promise<EvidenceRef>;
 }
+
+export { SkillLibrary } from './library.js';

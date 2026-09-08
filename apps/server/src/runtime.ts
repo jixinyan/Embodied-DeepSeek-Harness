@@ -6,6 +6,7 @@ import SessionStore from '@deepseek-ai/dsh-session';
 import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection';
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt';
 import ToolRuntime from '@deepseek-ai/dsh-tools';
+import * as TimeoutPolicy from '@deepseek-ai/dsh-tool-call-timeout-policy';
 
 export interface ModelBinding {
   readonly providers: string[];
@@ -26,6 +27,7 @@ export async function createDshHost(bindings: readonly ModelBinding[]): Promise<
     await ctx.plugin(SessionProjectionRegistry);
     await ctx.plugin(SystemPrompt);
     await ctx.plugin(ToolRuntime);
+    await ctx.plugin(TimeoutPolicy);
     await ctx.plugin(AgentRegistry);
     await ctx.plugin(AgentLoop, { agents: [] });
     for (const binding of bindings) ctx.llm.registerAdapter(binding.providers, binding.adapter);

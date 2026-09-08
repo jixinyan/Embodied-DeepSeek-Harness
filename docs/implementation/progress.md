@@ -178,3 +178,25 @@ reads, corruption refusal and recovery of an incomplete final record. Its lock
 requires explicit removal after an unclean process exit; no automatic takeover.
 This store does not replace DSH sessions or claim resumable session persistence.
 Validation: 11 runtime tests, TypeScript and workspace structure checks pass.
+
+### Runnable upper workflow checkpoint (2026-09-08)
+
+The application now composes isolated DSH role sessions and assignment-bound native
+tools. It runs explicit delegation/message delivery, versioned plans, private logical
+files, permissioned evidence reads, formal boundary verification, owner-only retry,
+and recovery skill publication. Goal criteria are deployment input, outside model
+authority. Imported the unmodified upstream cooperative tool timeout policy.
+
+A CPU fixture model emits native DSH tool-call chunks and a separate fixture backend
+emits execution/sensor records. The full retry-success path, first-pass success,
+unknown/backend-error outcomes, pause/formal-check/resume and cancellation pass 14
+runtime tests. This is not a live model, simulator, learned policy or hardware test.
+Session events are retained as read-only audit exports, not restartable DSH sessions.
+Physical transport, shared device arbitration and deployment adapters remain deferred.
+Console implementation and adversarial/restart acceptance checks follow this checkpoint.
+
+The subsequent user clarification is now reflected in the workflow: the planner's
+formal-failure replan/retry decision opens recovery, with a planner-supplied attempt
+summary and proposed changes. The Evolver receives persisted, explicit progress
+batches until original-goal success. Added decision 0004 with the VoLo reference and
+physical action admission requirements. The physical chunk gate remains deferred.

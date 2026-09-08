@@ -133,6 +133,9 @@
       ],
       "@deepseek-ai/schemastery/*": [
         "harness/agent-runtime/foundation/src/dsh/schemastery/*.ts"
+      ],
+      "@deepseek-ai/dsh-tool-call-timeout-policy": [
+        "harness/agent-runtime/tools/src/dsh/timeout-policy/index.ts"
       ]
     }
   }

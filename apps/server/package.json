@@ -12,6 +12,11 @@
     "@edh/foundation": "workspace:*",
     "@edh/models": "workspace:*",
     "@edh/tools": "workspace:*",
-    "@edh/storage": "workspace:*"
+    "@edh/storage": "workspace:*",
+    "@edh/contracts": "workspace:*",
+    "@edh/communication": "workspace:*",
+    "@edh/planning": "workspace:*",
+    "@edh/files": "workspace:*",
+    "@edh/tasks": "workspace:*"
   }
 }

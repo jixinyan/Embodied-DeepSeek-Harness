@@ -142,6 +142,9 @@
       ],
       "@deepseek-ai/schemastery/*": [
         ".cache/dsh-types/schemastery/*.d.ts"
+      ],
+      "@deepseek-ai/dsh-tool-call-timeout-policy": [
+        "harness/agent-runtime/tools/src/dsh/timeout-policy/index.ts"
       ]
     },
     "allowImportingTsExtensions": true

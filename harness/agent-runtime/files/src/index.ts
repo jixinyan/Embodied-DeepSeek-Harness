@@ -9,3 +9,5 @@ export interface AgentFiles {
   write(assignmentId: string, file: WorkspaceFile): Promise<void>;
   search(assignmentId: string, query: string): Promise<readonly WorkspaceFile[]>;
 }
+
+export { AssignmentFiles } from './workspace.js';

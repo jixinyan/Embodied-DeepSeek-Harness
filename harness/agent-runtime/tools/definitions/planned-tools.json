@@ -1,5 +1,5 @@
 {
-  "status": "not_implemented",
+  "status": "partially_implemented",
   "description": "Logical tool inventory for scaffold reference validation, not a runtime registry. Each tool needs its own callable schema during implementation.",
   "tools": [
     {
@@ -101,6 +101,14 @@
     {
       "id": "verification.submit",
       "status": "not_implemented"
+    },
+    {
+      "id": "tasks.finish",
+      "status": "upper_application"
+    },
+    {
+      "id": "tasks.abandon",
+      "status": "upper_application"
     }
   ]
 }

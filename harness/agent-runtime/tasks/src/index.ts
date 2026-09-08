@@ -12,3 +12,5 @@ export interface TaskCoordinator {
   receiveVerdict(verdict: VerificationResult): Promise<void>;
   recovery(recoveryId: string): Promise<RecoveryRecord>;
 }
+
+export type { RunState, RunEvent, RunAssignment } from './run-state.js';

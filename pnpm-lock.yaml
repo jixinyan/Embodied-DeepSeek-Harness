@@ -44,9 +44,18 @@ importers:
       '@edh/agents':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/agents
+      '@edh/communication':
+        specifier: workspace:*
+        version: link:../../harness/agent-runtime/communication
+      '@edh/contracts':
+        specifier: workspace:*
+        version: link:../../harness/contracts
       '@edh/execution':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/execution
+      '@edh/files':
+        specifier: workspace:*
+        version: link:../../harness/agent-runtime/files
       '@edh/foundation':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/foundation
@@ -56,9 +65,15 @@ importers:
       '@edh/models':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/models
+      '@edh/planning':
+        specifier: workspace:*
+        version: link:../../harness/agent-runtime/planning
       '@edh/storage':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/storage
+      '@edh/tasks':
+        specifier: workspace:*
+        version: link:../../harness/agent-runtime/tasks
       '@edh/teams':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/teams
@@ -92,9 +107,24 @@ importers:
 
   harness/agent-runtime/communication:
     dependencies:
+      '@edh/agents':
+        specifier: workspace:*
+        version: link:../agents
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      '@edh/foundation':
+        specifier: workspace:*
+        version: link:../foundation
+      '@edh/models':
+        specifier: workspace:*
+        version: link:../models
+      '@edh/teams':
+        specifier: workspace:*
+        version: link:../teams
+      '@edh/tools':
+        specifier: workspace:*
+        version: link:../tools
 
   harness/agent-runtime/execution:
     dependencies:
@@ -102,7 +132,11 @@ importers:
         specifier: workspace:*
         version: link:../../contracts
 
-  harness/agent-runtime/files: {}
+  harness/agent-runtime/files:
+    dependencies:
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../storage
 
   harness/agent-runtime/foundation:
     dependencies:
@@ -118,6 +152,9 @@ importers:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../storage
 
   harness/agent-runtime/models:
     dependencies:
@@ -148,6 +185,9 @@ importers:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../storage
 
   harness/agent-runtime/storage:
     dependencies:
@@ -172,6 +212,9 @@ importers:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      '@edh/execution':
+        specifier: workspace:*
+        version: link:../execution
 
   harness/agent-runtime/teams:
     dependencies:

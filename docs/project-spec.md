@@ -1295,3 +1295,24 @@ checks, skipped items/reasons and next steps.
 [implementation/plan.md](implementation/plan.md) is the single maintained plan.
 Skeleton Bootstrap is a separate delivery stage. Interfaces and directories do not
 complete the functional acceptance gates of Steps 00–16.
+
+## Implementation update: upper application first (2026-09-08)
+
+The current implementation order prioritizes the DSH-backed upper application and
+console before physical runtime providers. The runnable CPU fixture validates role
+isolation, native tool calls, planning/files, verification, recovery and experience
+publication. It is not evidence of model quality, simulation success or hardware
+readiness. See [progress](implementation/progress.md) for exact current capability.
+
+The recovery activation point is now explicit: **formal failed subgoal -> decision
+owner accepts replan/retry -> explicit failed-attempt handoff -> Evolver records
+planner and execution progress -> original-subgoal formal success -> SKILL**.
+The Evolver receives scoped messages rather than shared agent histories. Both
+replan and retry enter one recovery; a later retry does not duplicate the Evolver.
+See [decision 0004](implementation/decisions/0004-recovery-observation-and-action-admission.md).
+
+Physical providers must separate policy inference from action admission and device
+execution. Pause invalidates queued/late policy chunks and requires a separate
+controller acknowledgement. Resume is a decision-owner action. Device-specific
+buffering and interruption granularity remain explicit provider capabilities;
+software gate closure does not establish that physical motion has stopped.

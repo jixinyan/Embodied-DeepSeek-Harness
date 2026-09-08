@@ -9,3 +9,5 @@ export interface TeamRouter {
   send(message: MessageEnvelope): Promise<MessageReceipt>;
   subscribe(taskId: string, afterSequence?: number): AsyncIterable<MessageEnvelope>;
 }
+
+export { TeamSessions, type Assignment, type SessionHooks } from './sessions.js';

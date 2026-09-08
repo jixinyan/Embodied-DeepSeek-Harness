@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/deepseek-ai/deepseek-harness",
   "commit": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
-  "selection": "Transitive TypeScript imports, exports, type imports and module augmentations from the five audited seeds plus session-projection. Optional manifest peers not imported by this graph are excluded.",
+  "selection": "Transitive TypeScript imports, exports, type imports and module augmentations from the five audited seeds plus session-projection. Optional manifest peers not imported by this graph are excluded. The unmodified cooperative timeout policy is additionally imported for the upper application.",
   "source_discovery_correction": "The manifest audit omitted dsh-attachment, which the llm source imports. Included from source; no attachment filesystem provider is mounted.",
   "packages": [
     {
@@ -170,6 +170,14 @@
       "destination": "harness/agent-runtime/foundation/src/dsh/schemastery",
       "owner": "foundation",
       "manifest_sha256": "5f789ce810205bcfe3c5f9c6b22f5cdd3adeadc55220d57d5a903165b1e4ec38",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-call-timeout-policy",
+      "source": "packages/guard/timeout-policy",
+      "destination": "harness/agent-runtime/tools/src/dsh/timeout-policy",
+      "owner": "tools",
+      "manifest_sha256": "72fc680740ccf4b8890a517d152afe4304bca0ee9c928485cbb2f86c908600cd",
       "license": "MIT"
     }
   ],
@@ -807,6 +815,13 @@
       "source_sha256": "cf8a4de0481969a1a6d44eac390015f3494be1ce19b84d4fcfb7e93e5072cee5",
       "local_sha256": "cf8a4de0481969a1a6d44eac390015f3494be1ce19b84d4fcfb7e93e5072cee5",
       "modifications": []
+    },
+    {
+      "source": "packages/guard/timeout-policy/src/index.ts",
+      "destination": "harness/agent-runtime/tools/src/dsh/timeout-policy/index.ts",
+      "source_sha256": "d447e54cef81abc7cec4d55dad48a7b4243f107d836c04ee3078bcb36fbdb2a2",
+      "local_sha256": "d447e54cef81abc7cec4d55dad48a7b4243f107d836c04ee3078bcb36fbdb2a2",
+      "modifications": []
     }
   ],
   "aliases": {
@@ -935,6 +950,9 @@
     ],
     "@deepseek-ai/schemastery/*": [
       "harness/agent-runtime/foundation/src/dsh/schemastery/*.ts"
+    ],
+    "@deepseek-ai/dsh-tool-call-timeout-policy": [
+      "harness/agent-runtime/tools/src/dsh/timeout-policy/index.ts"
     ]
   },
   "external_imports": [
