@@ -3,13 +3,13 @@
 Spec: v1.6. Architecture: [ownership](decisions/0001-edh-owned-skeleton.md) and
 [unified harness layout](decisions/0002-unified-harness.md).
 
-**Current checkpoint: Steps 00–01 complete. Next: pre-MVP foundation F1.**
+**Current checkpoint: Steps 00–01 complete. F1 complete. Next: F2 runtime binding and communication.**
 
 The latest accepted priority is to harden all MVP-critical mechanisms (agents, tools, communication, execution,
 verification, experience, persistence and application lifecycle),
 then deliver a runnable simulation-to-console MVP. Read
-[foundation acceptance](mvp-foundation.md) before continuing. F1–F7 are new integration
-gates and remain unimplemented; the historical step statuses below are unchanged.
+[foundation acceptance](mvp-foundation.md) before continuing. F1 has passed its local boundary acceptance; F2–F7 remain unimplemented. The historical
+step statuses below are unchanged because runtime integration is still outstanding.
 
 ## Delivered capabilities
 
@@ -21,6 +21,8 @@ gates and remain unimplemented; the historical step statuses below are unchanged
   examples; English specification, SVG figures, module map and implementation plan.
 - Matching TS/Python wire validators and pure execution, verification and recovery
   gates; 77 shared wire cases and 69 shared lifecycle cases pass in both languages.
+- F1 typed message registration, shared ToolCall/ToolOperation and selected-tool
+  input/output/replay gates; 84 additional cross-language cases.
 - Per-file source hashes, original MIT notices and documented compatibility patches.
 
 Still unimplemented: Team/Role loading, validated assignment briefs, durable EDH
@@ -53,7 +55,7 @@ not yet implement the Team-level AgentFactory contract or physical execution.
 
 ## Verification evidence
 
-Local verification on 2026-09-07: Node v25.4.0, pnpm 11.19.0, Python 3.14.0.
+Local verification on 2026-09-08: Node v25.4.0, pnpm 11.19.0, Python 3.14.0.
 
 | Check | Observed result |
 | --- | --- |
@@ -63,9 +65,9 @@ Local verification on 2026-09-07: Node v25.4.0, pnpm 11.19.0, Python 3.14.0.
 | `pnpm check:contracts` | Generated types current; 6 example wire fixtures and structural rejection cases |
 | `pnpm typecheck` | Three foundation declaration builds plus strict EDH/non-foundation DSH checks |
 | `pnpm check:structure` | 18 private source workspaces; English public text and local links |
-| `pnpm check:python` | 14 CPU modules compile/import; repository SVG XML valid |
+| `pnpm check:python` | 15 CPU modules compile/import; repository SVG XML valid |
 | `pnpm test:runtime` | 6 integration tests pass; no skipped cases |
-| `pnpm test:contracts` | 146 shared wire/lifecycle cases pass in each language, plus non-JSON rejection tests |
+| `pnpm test:contracts` | 230 shared wire/lifecycle/boundary cases pass in each language, plus non-JSON rejection tests |
 
 The runtime tests are actual Step 00 acceptance, using a scripted model boundary.
 They do not prove model intelligence, task success, GT verification or robot support.
@@ -93,13 +95,16 @@ composition, acceptance tests, compiler boundaries and remaining limits.
 
 ## Handoff
 
-Continue F1 in [the foundation plan](mvp-foundation.md): register typed message
-payloads and add authoritative tool-call/async-operation contracts. Resolve envelope
-and payload identity together; preserve operation identity through completion; validate
-both selected tool input and output. Update TS/Python cases and compatibility notes.
-Then implement the minimal Team/assignment binding and runtime routing needed for F2.
-A document update does not pass these gates. The runnable MVP remains the next product
-deliverable after foundation acceptance, ahead of broad provider and UI refinement.
+Continue F2 in [the foundation plan](mvp-foundation.md): minimum Team/Role loading,
+model capability preflight, frozen assignment/tool bindings and authenticated routing
+through existing DSH sessions. Read [boundary APIs and migration](boundaries.md).
+Bind identity to the actual caller, enforce destination/assignment lifetime and make
+explicit context requests. Preserve cancellation/cleanup and inspect actual model
+inputs. Do not expose a raw arbitrary-envelope sender to model tools.
+
+F1's pure functions do not perform live authorization, deduplication, scheduling or
+network communication. F2–F7 must implement and verify the complete core coverage
+matrix before the real-simulation MVP, without marking interface declarations complete.
 
 Do not create another loop, regenerate from a full DSH clone or install robot/GPU
 dependencies for CPU work. Example YAML is not yet a working Team loader. Current
@@ -130,3 +135,15 @@ CPU dependencies are pinned in the pnpm lockfile and Python constraints. The set
 and CI create a local Python environment; no simulator, GPU or model key is required.
 See [contract APIs and exact limits](contracts.md) and the shared case corpora for
 reproduction. Schema v1 remains a pre-release draft, not a deployed compatibility claim.
+
+## F1 boundary acceptance
+
+Typed messages resolve registered payload schemas and compare version/kind, task,
+assignment, sender and correlation fields. Tools use a generated shared call schema;
+selected input/output are checked, async identity survives completion and redelivery
+cannot change the request or deadline. Unknown acceptance can be reconciled without
+inventing an operation ID or treating timeout as stop. A custom message/schema path
+is exercised in both languages. These are contract gates, not the services themselves.
+
+`be72630` records the expanded core-first MVP plan. The following implementation
+commit records F1 code, fixtures and guide. Existing source provenance is unchanged.

@@ -12,8 +12,8 @@ A checklist or document change never substitutes for execution evidence.
 ## Current delivery priority
 
 The latest accepted order is [pre-MVP foundation F1–F7](mvp-foundation.md), followed
-by one runnable real-simulation-to-console MVP, then broader refinement. F1 starts
-with typed messages, tool calls and async-operation identity. The numbered steps
+by one runnable real-simulation-to-console MVP, then broader refinement. F1 has passed typed-message/tool/async-operation contract acceptance. F2 next
+implements runtime binding and communication. The numbered steps
 below remain the architectural work breakdown; do not interpret them as requiring
 completion of every general-purpose module before an end-to-end MVP. The foundation
 plan maps its executable slices to these steps and defines the stopping criterion.

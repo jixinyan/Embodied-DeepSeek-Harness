@@ -1,6 +1,6 @@
 # Foundation acceptance before the runnable MVP
 
-Status: accepted development priority; implementation gates below are **not yet passed**.
+Status: F1 passed local contract acceptance; F2–F7 remain **not yet passed**.
 This document changes delivery order, not the confirmed product architecture. Preserve
 Steps 00–01 and the original DSH loop. Establish dependable core runtime behavior across every MVP-critical module, then
 deliver one real simulation-to-console MVP before broadening providers. Communication
@@ -98,7 +98,7 @@ A schema-only slice is not completion of the foundation as a whole.
 | F6: application lifecycle and console state | Documented startup command, bound configuration, readiness, shutdown/restart, structured diagnostics and resumable authoritative console projection | Host/worker start and stop reproducibly; reconnect reproduces task state and last-seen evidence; stop is available without waiting for an LLM | Core portions of 11/12 |
 | F7: complete foundation acceptance | Reproducible CPU scenario spanning all ten core areas above using DSH and a separate Python fixture worker | Run success, recovery and injected-failure cases; publish exact trace and limits; all F1–F6 gates pass; one later run has no leaked state | Foundation gate before real simulation MVP |
 
-F1 is the next code slice. Keep a small registered core message set and an explicit
+F1 is implemented; see [boundary APIs and acceptance](boundaries.md). F2 is next. Keep a small registered core message set and an explicit
 extension mechanism. Do not create a global closed enum of every future agent role,
 tool or perception model. Avoid implementing every planned tool before one read tool
 and one async job demonstrate the contract across the process boundary.

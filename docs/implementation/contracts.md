@@ -148,7 +148,7 @@ prerequisite cannot resolve a recovery whose original goal was storing the cup.
 ## Acceptance and remaining integration
 
 `pnpm test:contracts` runs 77 shared wire cases and 69 shared lifecycle cases in both
-languages, plus language-specific non-JSON rejection cases. Coverage includes stale
+languages, plus 84 boundary cases and language-specific non-JSON rejection cases. Coverage includes stale
 attempts/assignments/boundaries, criteria drift, old/debug/cross-clock evidence,
 unknown versus pass, mixed `all`/`any`, paused motion, budgets and prerequisite recovery.
 All cases are synthetic. See [setup](../development/setup.md) for pinned dependencies.
@@ -160,3 +160,9 @@ service work. A hostile caller can fabricate IDs or facts; schema validity is no
 proof of authority. Current gates are callable building blocks, not enforcement in a
 running physical system. Steps 04 and 06–10 must integrate them before physical claims.
 Next: [Step 02 Team/Role loading](plan.md#step-02--implement-teamrole-loading-and-the-tool-catalog).
+
+## F1 additions
+
+The subsequent [boundary guide](boundaries.md) documents typed message registration,
+shared ToolCall/ToolOperation, selected input/output validation and draft field migrations.
+Use those checks in addition to basic shape validation when integrating service boundaries.

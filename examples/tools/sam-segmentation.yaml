@@ -12,3 +12,5 @@ effect: read_observation
 required_capabilities: [rgb_observation]
 resource_policy: provider_serialized
 result_media: [json, image_ref, mask_ref]
+execution_mode: sync
+timeout_s: 30

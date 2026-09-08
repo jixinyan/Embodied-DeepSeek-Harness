@@ -8,7 +8,8 @@
 6. [Development setup](development/setup.md): commands that exist today.
 7. [DSH runtime integration](implementation/dsh-integration.md): assembly, APIs and acceptance evidence.
 8. [Shared contracts](implementation/contracts.md): cross-language validation and lifecycle gates.
-9. [DSH provenance](provenance/README.md): pinned source and absorption boundaries.
+9. [Typed boundaries](implementation/boundaries.md): F1 message/tool/operation APIs and migration.
+10. [DSH provenance](provenance/README.md): pinned source and absorption boundaries.
 
 This repository is the implementation source of truth. Prior discussion notes
 remain research history; they are not additional instructions or required inputs.

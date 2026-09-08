@@ -1,5 +1,5 @@
 // Compile-time checks: code generation must preserve essential required fields.
-import type { SuccessContract, InvocationBrief } from '@edh/contracts';
+import type { SuccessContract, InvocationBrief, ToolCall, ToolOperation } from '@edh/contracts';
 const criterion: SuccessContract = {
   id: 'inside',
   version: '1',
@@ -12,3 +12,9 @@ const missingCriterion: SuccessContract = { id: 'inside', version: '1' };
 // @ts-expect-error A fresh invocation cannot be an unstructured empty object.
 const missingBrief: InvocationBrief = {};
 export type SchemaTypeCheck = typeof id | typeof missingCriterion | typeof missingBrief;
+
+// @ts-expect-error Tool calls require explicit identity and inputs.
+const missingCall: ToolCall = {};
+// @ts-expect-error Async operations require the initiating call and state.
+const missingOperation: ToolOperation = {};
+export type BoundaryTypeCheck = typeof missingCall | typeof missingOperation;

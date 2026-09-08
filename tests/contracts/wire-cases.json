@@ -227,7 +227,8 @@
         ],
         "team_run_id": "fixture_team",
         "correlation_id": "fixture_correlation",
-        "causation_id": null
+        "causation_id": null,
+        "type_version": "1"
       }
     },
     "execution_running": {
@@ -369,7 +370,10 @@
         "resources": [],
         "status": "running",
         "evidence_refs": [],
-        "operation_id": "operation_1"
+        "operation_id": "operation_1",
+        "team_run_id": "fixture_team",
+        "provider_id": "fixture_provider",
+        "recorded_at": "2026-09-07T00:00:03Z"
       }
     },
     "tool_completed": {
@@ -392,7 +396,10 @@
         "evidence_refs": [],
         "data": {
           "observation_id": "fixture_frame"
-        }
+        },
+        "team_run_id": "fixture_team",
+        "provider_id": "fixture_provider",
+        "recorded_at": "2026-09-07T00:00:03Z"
       }
     },
     "tool_failed": {
@@ -416,7 +423,10 @@
         "error": {
           "code": "provider_unavailable",
           "message": "Synthetic test error."
-        }
+        },
+        "team_run_id": "fixture_team",
+        "provider_id": "fixture_provider",
+        "recorded_at": "2026-09-07T00:00:03Z"
       }
     },
     "tool_unknown": {
@@ -440,7 +450,10 @@
         "error": {
           "code": "provider_unavailable",
           "message": "Synthetic test error."
-        }
+        },
+        "team_run_id": "fixture_team",
+        "provider_id": "fixture_provider",
+        "recorded_at": "2026-09-07T00:00:03Z"
       }
     },
     "plan": {

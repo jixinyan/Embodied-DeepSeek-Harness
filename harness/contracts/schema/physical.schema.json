@@ -78,6 +78,15 @@
     },
     {
       "$ref": "#/$defs/ActionSpec"
+    },
+    {
+      "$ref": "#/$defs/ToolCall"
+    },
+    {
+      "$ref": "#/$defs/ToolOperation"
+    },
+    {
+      "$ref": "#/$defs/MessageTypeDefinition"
     }
   ],
   "$defs": {
@@ -86,19 +95,19 @@
       "properties": {
         "task_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "goal_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "attempt_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "recovery_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         }
       },
       "required": [
@@ -120,7 +129,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "kind": {
           "type": "string",
@@ -141,7 +150,7 @@
         "created_at": {
           "type": "string",
           "format": "date-time",
-          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
         },
         "visibility": {
           "type": "string",
@@ -156,11 +165,11 @@
         "observed_at": {
           "type": "string",
           "format": "date-time",
-          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
         },
         "clock_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         }
       },
       "required": [
@@ -181,23 +190,23 @@
       "properties": {
         "observation_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "task_scope": {
           "$ref": "#/$defs/TaskScope"
         },
         "sensor_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "captured_at": {
           "type": "string",
           "format": "date-time",
-          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
         },
         "frame_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "media": {
           "type": "array",
@@ -208,7 +217,7 @@
         },
         "coordinate_frame": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "calibration_ref": {
           "type": "string",
@@ -219,11 +228,11 @@
         },
         "device_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "stream_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "source_sequence": {
           "type": "integer",
@@ -232,7 +241,7 @@
         },
         "clock_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "source_kind": {
           "enum": [
@@ -266,7 +275,7 @@
       "properties": {
         "role_id": {
           "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$(?![\\s\\S])"
         },
         "description": {
           "type": "string",
@@ -308,7 +317,7 @@
         },
         "team_id": {
           "type": "string",
-          "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$(?![\\s\\S])"
         },
         "entrypoint": {
           "type": "string",
@@ -323,7 +332,7 @@
           "minProperties": 1,
           "propertyNames": {
             "type": "string",
-            "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+            "pattern": "^[a-z][a-z0-9_-]{0,63}$(?![\\s\\S])"
           }
         },
         "bindings": {
@@ -403,7 +412,7 @@
         },
         "tool_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "version": {
           "type": "string",
@@ -478,6 +487,16 @@
             "type": "string",
             "minLength": 1
           }
+        },
+        "execution_mode": {
+          "enum": [
+            "sync",
+            "async"
+          ]
+        },
+        "timeout_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
         }
       },
       "required": [
@@ -491,21 +510,44 @@
         "effect",
         "required_capabilities",
         "resource_policy",
-        "result_media"
+        "result_media",
+        "execution_mode",
+        "timeout_s"
       ],
       "additionalProperties": false,
-      "title": "ToolDefinition"
+      "title": "ToolDefinition",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "effect": {
+                "const": "physical_motion"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "execution_mode": {
+                "const": "async"
+              },
+              "resource_policy": {
+                "const": "exclusive_device"
+              }
+            }
+          }
+        }
+      ]
     },
     "ToolResult": {
       "type": "object",
       "properties": {
         "call_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "tool_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "status": {
           "type": "string",
@@ -557,11 +599,11 @@
         },
         "agent_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "assignment_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "task_scope": {
           "$ref": "#/$defs/TaskScope"
@@ -579,13 +621,26 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
           },
           "uniqueItems": true
         },
         "operation_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "team_run_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "provider_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
         }
       },
       "required": [
@@ -599,7 +654,10 @@
         "assignment_id",
         "task_scope",
         "effect",
-        "resources"
+        "resources",
+        "team_run_id",
+        "provider_id",
+        "recorded_at"
       ],
       "additionalProperties": false,
       "title": "ToolResult",
@@ -636,17 +694,8 @@
               "data"
             ],
             "not": {
-              "anyOf": [
-                {
-                  "required": [
-                    "error"
-                  ]
-                },
-                {
-                  "required": [
-                    "operation_id"
-                  ]
-                }
+              "required": [
+                "error"
               ]
             }
           }
@@ -689,6 +738,22 @@
               ]
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "effect": {
+                "const": "physical_motion"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "resources": {
+                "minItems": 1
+              }
+            }
+          }
         }
       ]
     },
@@ -708,7 +773,7 @@
         },
         "check_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         }
       },
       "required": [
@@ -727,7 +792,7 @@
           "properties": {
             "id": {
               "type": "string",
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
             },
             "version": {
               "type": "string",
@@ -775,7 +840,7 @@
           "properties": {
             "id": {
               "type": "string",
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
             },
             "version": {
               "type": "string",
@@ -845,11 +910,11 @@
       "properties": {
         "goal_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "attempt_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "instruction": {
           "type": "string",
@@ -887,27 +952,27 @@
         },
         "task_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "team_run_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "decision_owner_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "owner_assignment_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "idempotency_key": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "recovery_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         }
       },
       "required": [
@@ -979,7 +1044,7 @@
               "observed_at": {
                 "type": "string",
                 "format": "date-time",
-                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
               },
               "evidence_refs": {
                 "type": "array",
@@ -1046,19 +1111,19 @@
         },
         "assignment_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "caller_agent_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "caller_assignment_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "team_run_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         }
       },
       "required": [
@@ -1089,7 +1154,7 @@
         },
         "message_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "kind": {
           "type": "string",
@@ -1112,11 +1177,11 @@
               "properties": {
                 "agent_id": {
                   "type": "string",
-                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
                 },
                 "assignment_id": {
                   "type": "string",
-                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
                 }
               },
               "required": [
@@ -1130,7 +1195,7 @@
               "properties": {
                 "service_id": {
                   "type": "string",
-                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
                 }
               },
               "required": [
@@ -1147,11 +1212,11 @@
               "properties": {
                 "agent_id": {
                   "type": "string",
-                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
                 },
                 "assignment_id": {
                   "type": "string",
-                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
                 }
               },
               "required": [
@@ -1165,7 +1230,7 @@
               "properties": {
                 "service_id": {
                   "type": "string",
-                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
                 }
               },
               "required": [
@@ -1193,13 +1258,13 @@
         },
         "correlation_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "causation_id": {
           "oneOf": [
             {
               "type": "string",
-              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
             },
             {
               "type": "null"
@@ -1214,7 +1279,7 @@
         "created_at": {
           "type": "string",
           "format": "date-time",
-          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
         },
         "payload": {
           "type": "object",
@@ -1229,7 +1294,11 @@
         },
         "team_run_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "type_version": {
+          "type": "string",
+          "pattern": "\\S"
         }
       },
       "required": [
@@ -1246,7 +1315,8 @@
         "evidence_refs",
         "team_run_id",
         "correlation_id",
-        "causation_id"
+        "causation_id",
+        "type_version"
       ],
       "additionalProperties": false,
       "title": "MessageEnvelope"
@@ -1256,11 +1326,11 @@
       "properties": {
         "agent_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "assignment_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "task_scope": {
           "$ref": "#/$defs/TaskScope"
@@ -1297,7 +1367,7 @@
         },
         "team_run_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "result": {
           "type": "object",
@@ -1343,7 +1413,7 @@
       "properties": {
         "execution_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "task_scope": {
           "$ref": "#/$defs/ExecutionScope"
@@ -1408,21 +1478,21 @@
         },
         "clock_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "recorded_at": {
           "type": "string",
           "format": "date-time",
-          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
         },
         "boundary_event_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "boundary_at": {
           "type": "string",
           "format": "date-time",
-          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
         }
       },
       "required": [
@@ -1556,7 +1626,7 @@
         },
         "verifier_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "status": {
           "type": "string",
@@ -1574,7 +1644,7 @@
         },
         "boundary_event_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "checks": {
           "type": "array",
@@ -1598,32 +1668,32 @@
         },
         "verdict_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "verification_request_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "execution_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "verifier_assignment_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "goal_contract_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "observed_at": {
           "type": "string",
           "format": "date-time",
-          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$"
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
         },
         "clock_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         }
       },
       "required": [
@@ -1676,7 +1746,7 @@
       "properties": {
         "task_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "version": {
           "type": "integer",
@@ -1690,7 +1760,7 @@
             "properties": {
               "goal_id": {
                 "type": "string",
-                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
               },
               "description": {
                 "type": "string",
@@ -1710,7 +1780,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
                 },
                 "uniqueItems": true
               },
@@ -1719,7 +1789,7 @@
               },
               "last_verdict_ref": {
                 "type": "string",
-                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
               }
             },
             "required": [
@@ -1753,11 +1823,11 @@
         },
         "owner_agent_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "owner_assignment_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         }
       },
       "required": [
@@ -1776,15 +1846,15 @@
       "properties": {
         "recovery_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "task_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "original_goal_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "goal_contract_version": {
           "type": "string",
@@ -1792,7 +1862,7 @@
         },
         "failed_attempt_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "attempt_ids": {
           "type": "array",
@@ -1834,11 +1904,11 @@
         },
         "decision_owner_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "goal_contract_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         }
       },
       "required": [
@@ -1886,7 +1956,7 @@
       "properties": {
         "skill_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "version": {
           "type": "string",
@@ -1922,7 +1992,7 @@
         },
         "recovery_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "verdict_ref": {
           "type": "string",
@@ -1957,7 +2027,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
           },
           "uniqueItems": true
         }
@@ -2050,7 +2120,7 @@
                 "oneOf": [
                   {
                     "type": "string",
-                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
                   },
                   {
                     "type": "null"
@@ -2068,7 +2138,7 @@
               },
               "detection_id": {
                 "type": "string",
-                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
               },
               "label": {
                 "type": "string",
@@ -2106,7 +2176,7 @@
         },
         "provider_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "provider_version": {
           "type": "string",
@@ -2134,19 +2204,19 @@
       "properties": {
         "task_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "goal_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "attempt_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "recovery_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         }
       },
       "required": [
@@ -2170,7 +2240,7 @@
       "properties": {
         "check_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "value": {
           "type": [
@@ -2182,7 +2252,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
           },
           "uniqueItems": true
         },
@@ -2237,7 +2307,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "quantity": {
           "enum": [
@@ -2338,7 +2408,7 @@
         },
         "embodiment_id": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "version": {
           "type": "string",
@@ -2347,7 +2417,7 @@
         },
         "coordinate_frame": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "control_mode": {
           "enum": [
@@ -2424,6 +2494,292 @@
           }
         }
       ]
+    },
+    "ToolCall": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.tool_call.v1"
+        },
+        "call_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "tool_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "tool_version": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "team_run_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "agent_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "assignment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "task_scope": {
+          "$ref": "#/$defs/TaskScope"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "requested_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
+        },
+        "deadline_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
+        },
+        "input": {
+          "type": "object",
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "schema_version",
+        "call_id",
+        "tool_id",
+        "tool_version",
+        "team_run_id",
+        "agent_id",
+        "assignment_id",
+        "task_scope",
+        "idempotency_key",
+        "requested_at",
+        "deadline_at",
+        "input"
+      ],
+      "additionalProperties": false,
+      "title": "ToolCall"
+    },
+    "ToolOperation": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.tool_operation.v1"
+        },
+        "operation_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "call_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "tool_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "tool_version": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "provider_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "team_run_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "agent_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "assignment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "task_scope": {
+          "$ref": "#/$defs/TaskScope"
+        },
+        "idempotency_key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "state": {
+          "enum": [
+            "accepted",
+            "running",
+            "cancelling",
+            "completed",
+            "failed",
+            "cancelled",
+            "unknown"
+          ]
+        },
+        "state_version": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
+        },
+        "effect": {
+          "type": "string",
+          "enum": [
+            "read_observation",
+            "read_state",
+            "write_state",
+            "physical_motion"
+          ]
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+          },
+          "uniqueItems": true
+        },
+        "result": {
+          "$ref": "#/$defs/ToolResult"
+        }
+      },
+      "required": [
+        "schema_version",
+        "operation_id",
+        "call_id",
+        "tool_id",
+        "tool_version",
+        "provider_id",
+        "team_run_id",
+        "agent_id",
+        "assignment_id",
+        "task_scope",
+        "idempotency_key",
+        "state",
+        "state_version",
+        "recorded_at",
+        "effect",
+        "resources"
+      ],
+      "additionalProperties": false,
+      "title": "ToolOperation",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "completed",
+                  "failed",
+                  "cancelled",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "result"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "result"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "effect": {
+                "const": "physical_motion"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "resources": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "MessageTypeDefinition": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*(?:[.][a-z][a-z0-9_]*)+$(?![\\s\\S])"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "command",
+            "event",
+            "request",
+            "response",
+            "artifact"
+          ]
+        },
+        "payload_schema": {
+          "type": "string",
+          "pattern": "\\S"
+        },
+        "bindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "envelope_pointer": {
+                "type": "string",
+                "pattern": "^(?:/(?:[^~/]|~[01])*)+$(?![\\s\\S])"
+              },
+              "payload_pointer": {
+                "type": "string",
+                "pattern": "^(?:/(?:[^~/]|~[01])*)+$(?![\\s\\S])"
+              },
+              "optional": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "envelope_pointer",
+              "payload_pointer",
+              "optional"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "payload_constraints": {
+          "type": "object",
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "type",
+        "version",
+        "kind",
+        "payload_schema",
+        "bindings"
+      ],
+      "additionalProperties": false,
+      "title": "MessageTypeDefinition"
     }
   },
   "x-edh-lifecycle": {
@@ -2471,6 +2827,554 @@
       ],
       "resolved_success": [],
       "abandoned": []
+    },
+    "tool_operation": {
+      "accepted": [
+        "running",
+        "cancelling",
+        "completed",
+        "failed",
+        "cancelled",
+        "unknown"
+      ],
+      "running": [
+        "running",
+        "cancelling",
+        "completed",
+        "failed",
+        "cancelled",
+        "unknown"
+      ],
+      "cancelling": [
+        "cancelling",
+        "completed",
+        "failed",
+        "cancelled",
+        "unknown"
+      ],
+      "unknown": [
+        "running",
+        "cancelling",
+        "completed",
+        "failed",
+        "cancelled",
+        "unknown"
+      ],
+      "completed": [],
+      "failed": [],
+      "cancelled": []
+    }
+  },
+  "x-edh-message-types": {
+    "agent.invoke": {
+      "type": "agent.invoke",
+      "version": "1",
+      "kind": "command",
+      "payload_schema": "builtin:InvocationBrief.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/team_run_id",
+          "payload_pointer": "/team_run_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/sender/agent_id",
+          "payload_pointer": "/caller_agent_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/sender/assignment_id",
+          "payload_pointer": "/caller_assignment_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/destination/assignment_id",
+          "payload_pointer": "/assignment_id",
+          "optional": false
+        }
+      ]
+    },
+    "agent.report": {
+      "type": "agent.report",
+      "version": "1",
+      "kind": "response",
+      "payload_schema": "builtin:AgentReport.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/team_run_id",
+          "payload_pointer": "/team_run_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/sender/agent_id",
+          "payload_pointer": "/agent_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/sender/assignment_id",
+          "payload_pointer": "/assignment_id",
+          "optional": false
+        }
+      ]
+    },
+    "tool.invoke": {
+      "type": "tool.invoke",
+      "version": "1",
+      "kind": "command",
+      "payload_schema": "builtin:ToolCall.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/team_run_id",
+          "payload_pointer": "/team_run_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/sender/agent_id",
+          "payload_pointer": "/agent_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/sender/assignment_id",
+          "payload_pointer": "/assignment_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/correlation_id",
+          "payload_pointer": "/call_id",
+          "optional": false
+        }
+      ]
+    },
+    "tool.result": {
+      "type": "tool.result",
+      "version": "1",
+      "kind": "response",
+      "payload_schema": "builtin:ToolResult.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/team_run_id",
+          "payload_pointer": "/team_run_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/sender/service_id",
+          "payload_pointer": "/provider_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/correlation_id",
+          "payload_pointer": "/call_id",
+          "optional": false
+        }
+      ]
+    },
+    "tool.operation.updated": {
+      "type": "tool.operation.updated",
+      "version": "1",
+      "kind": "event",
+      "payload_schema": "builtin:ToolOperation.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/team_run_id",
+          "payload_pointer": "/team_run_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/sender/service_id",
+          "payload_pointer": "/provider_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/correlation_id",
+          "payload_pointer": "/call_id",
+          "optional": false
+        }
+      ]
+    },
+    "execution.progress": {
+      "type": "execution.progress",
+      "version": "1",
+      "kind": "event",
+      "payload_schema": "builtin:ExecutionStatus.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        }
+      ]
+    },
+    "execution.ended": {
+      "type": "execution.ended",
+      "version": "1",
+      "kind": "event",
+      "payload_schema": "builtin:ExecutionStatus.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        }
+      ],
+      "payload_constraints": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "const": "ended"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      }
+    },
+    "verification.completed": {
+      "type": "verification.completed",
+      "version": "1",
+      "kind": "event",
+      "payload_schema": "builtin:VerificationResult.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/sender/agent_id",
+          "payload_pointer": "/verifier_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/sender/assignment_id",
+          "payload_pointer": "/verifier_assignment_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/correlation_id",
+          "payload_pointer": "/verification_request_id",
+          "optional": false
+        }
+      ],
+      "payload_constraints": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "enum": [
+              "passed",
+              "failed",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      }
+    },
+    "execution.started": {
+      "type": "execution.started",
+      "version": "1",
+      "kind": "event",
+      "payload_schema": "builtin:ExecutionStatus.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        }
+      ],
+      "payload_constraints": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "const": "running"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      }
+    },
+    "execution.pause_requested": {
+      "type": "execution.pause_requested",
+      "version": "1",
+      "kind": "event",
+      "payload_schema": "builtin:ExecutionStatus.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        }
+      ],
+      "payload_constraints": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "const": "pausing"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      }
+    },
+    "execution.paused": {
+      "type": "execution.paused",
+      "version": "1",
+      "kind": "event",
+      "payload_schema": "builtin:ExecutionStatus.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        }
+      ],
+      "payload_constraints": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "const": "paused"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      }
+    },
+    "execution.budget_exhausted": {
+      "type": "execution.budget_exhausted",
+      "version": "1",
+      "kind": "event",
+      "payload_schema": "builtin:ExecutionStatus.v1",
+      "bindings": [
+        {
+          "envelope_pointer": "/scope/task_id",
+          "payload_pointer": "/task_scope/task_id",
+          "optional": false
+        },
+        {
+          "envelope_pointer": "/scope/goal_id",
+          "payload_pointer": "/task_scope/goal_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/attempt_id",
+          "payload_pointer": "/task_scope/attempt_id",
+          "optional": true
+        },
+        {
+          "envelope_pointer": "/scope/recovery_id",
+          "payload_pointer": "/task_scope/recovery_id",
+          "optional": true
+        }
+      ],
+      "payload_constraints": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "const": "ended"
+          },
+          "stop_reason": {
+            "const": "budget_exhausted"
+          }
+        },
+        "required": [
+          "state",
+          "stop_reason"
+        ]
+      }
     }
   }
 }

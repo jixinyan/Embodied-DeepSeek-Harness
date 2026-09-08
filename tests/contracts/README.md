@@ -2,7 +2,8 @@
 
 `wire-cases.json` contains shared bases and JSON-pointer patches for 77 shape/field
 cases. `lifecycle-cases.json` contains 69 state/verdict/recovery cases using the same
-pattern. Cases are synthetic; they do not represent an actual robot run or skill.
+pattern. `boundary-cases.json` adds 84 typed-message, tool, async-operation and
+registration cases. Cases are synthetic; they do not represent an actual robot run or skill.
 
 The TypeScript and Python suites consume these exact files. Expected acceptance,
 rejection codes and booleans are fixture data, not generated from the implementation.

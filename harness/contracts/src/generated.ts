@@ -28,7 +28,10 @@ export type PhysicalContract =
   | ExecutionScope
   | CheckResult
   | ActionChannel
-  | ActionSpec;
+  | ActionSpec
+  | ToolCall
+  | ToolOperation
+  | MessageTypeDefinition;
 export type SuccessContract =
   | {
       id: string;
@@ -131,6 +134,8 @@ export interface ToolDefinition {
   required_capabilities: string[];
   resource_policy: "none" | "provider_serialized" | "exclusive_device";
   result_media: string[];
+  execution_mode: "sync" | "async";
+  timeout_s: number;
 }
 export interface ToolResult {
   call_id: string;
@@ -152,6 +157,9 @@ export interface ToolResult {
   effect: "read_observation" | "read_state" | "write_state" | "physical_motion";
   resources: string[];
   operation_id?: string;
+  team_run_id: string;
+  provider_id: string;
+  recorded_at: string;
 }
 export interface SuccessCheck {
   check: string;
@@ -245,6 +253,7 @@ export interface MessageEnvelope {
   };
   evidence_refs: string[];
   team_run_id: string;
+  type_version: string;
 }
 export interface AgentReport {
   agent_id: string;
@@ -401,6 +410,55 @@ export interface ActionSpec {
    */
   channels: [ActionChannel, ...ActionChannel[]];
 }
+export interface ToolCall {
+  schema_version: "physical.tool_call.v1";
+  call_id: string;
+  tool_id: string;
+  tool_version: string;
+  team_run_id: string;
+  agent_id: string;
+  assignment_id: string;
+  task_scope: TaskScope;
+  idempotency_key: string;
+  requested_at: string;
+  deadline_at: string;
+  input: {
+    [k: string]: unknown;
+  };
+}
+export interface ToolOperation {
+  schema_version: "physical.tool_operation.v1";
+  operation_id: string;
+  call_id: string;
+  tool_id: string;
+  tool_version: string;
+  provider_id: string;
+  team_run_id: string;
+  agent_id: string;
+  assignment_id: string;
+  task_scope: TaskScope;
+  idempotency_key: string;
+  state: "accepted" | "running" | "cancelling" | "completed" | "failed" | "cancelled" | "unknown";
+  state_version: number;
+  recorded_at: string;
+  effect: "read_observation" | "read_state" | "write_state" | "physical_motion";
+  resources: string[];
+  result?: ToolResult;
+}
+export interface MessageTypeDefinition {
+  type: string;
+  version: string;
+  kind: "command" | "event" | "request" | "response" | "artifact";
+  payload_schema: string;
+  bindings: {
+    envelope_pointer: string;
+    payload_pointer: string;
+    optional: boolean;
+  }[];
+  payload_constraints?: {
+    [k: string]: unknown;
+  };
+}
 
 export interface ContractTypes {
   TaskScope: TaskScope;
@@ -428,4 +486,7 @@ export interface ContractTypes {
   CheckResult: CheckResult;
   ActionChannel: ActionChannel;
   ActionSpec: ActionSpec;
+  ToolCall: ToolCall;
+  ToolOperation: ToolOperation;
+  MessageTypeDefinition: MessageTypeDefinition;
 }

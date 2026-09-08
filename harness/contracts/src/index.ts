@@ -9,3 +9,5 @@ export {
 } from './validation.js';
 
 export { LifecycleValidator, type VerificationContext } from './lifecycle.js';
+
+export { BoundaryValidator, type BoundaryExtensions } from './boundary.js';

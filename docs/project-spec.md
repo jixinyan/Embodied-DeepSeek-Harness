@@ -29,8 +29,9 @@ are SVG assets; include their directory when handing over this document.
 
 The runtime choice is settled. Steps 00–01 provide a working original DSH loop seam,
 scoped sessions, shared wire validators and pure execution/verification/recovery gates.
-Continue F1 of [pre-MVP foundation acceptance](implementation/mvp-foundation.md):
-typed communication, tool calls and async-operation contracts. Read
+F1 typed boundary acceptance is complete. Continue F2 of
+[pre-MVP foundation acceptance](implementation/mvp-foundation.md): runtime role/model
+binding, assignment isolation and authenticated communication. Read
 [progress](implementation/progress.md), [runtime integration](implementation/dsh-integration.md)
 and [shared contracts](implementation/contracts.md) first. Do not install the entire
 simulator, GPU or robot stack for this CPU phase.

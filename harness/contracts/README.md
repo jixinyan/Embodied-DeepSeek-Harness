@@ -15,3 +15,8 @@ clock rules, evidence requirements and integration limits. Schema acceptance
 alone does not authenticate callers, authorize tools or execute a physical task.
 See [progress](../../docs/implementation/progress.md) and
 [setup](../../docs/development/setup.md).
+
+F1 adds `BoundaryValidator` for registered messages, selected tool schemas, stable
+redelivery and async operations. See [boundary APIs](../../docs/implementation/boundaries.md)
+for extension registration, migration and limits. These functions still require actual
+routing, authorization, dispatch and persistence in later foundation slices.
