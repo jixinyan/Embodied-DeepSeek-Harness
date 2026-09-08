@@ -207,6 +207,195 @@ function renderTimeline() {
     $('timeline').append(p);
   }
 }
+let feedSignature = '';
+function actor(event) {
+  const d = event.detail;
+  const id = d.assignmentId || d.recipient || d.sender;
+  return current?.assignments[id];
+}
+function renderTodos() {
+  if (!current) return;
+  const filter = $('agent-filter').value;
+  const assignments = Object.values(current.assignments);
+  const owner = assignments.find((a) => a.id === current.decisionAssignmentId);
+  const row =
+    filter === 'all' ? owner : assignments.filter((a) => a.member === filter && a.todos).at(-1);
+  text(
+    'todo-source',
+    row?.todos
+      ? `${row.member} · session event ${row.todoSequence} · turn ${row.todoTurn}${row.todoTurn !== row.turn ? ' · previous turn' : ''}`
+      : 'No checklist for the selected role.',
+  );
+  $('todos').replaceChildren();
+  for (const item of row?.todos ?? []) {
+    const div = document.createElement('div');
+    div.className = `todo ${item.status}`;
+    const badge = document.createElement('span');
+    badge.className = 'todo-icon';
+    badge.textContent =
+      item.status === 'completed' ? '✓' : item.status === 'in_progress' ? '◉' : '○';
+    const button = document.createElement('button');
+    button.textContent = item.content;
+    button.onclick = () =>
+      inspect(
+        'TODO history · Native DSH snapshots',
+        current.events.filter((e) => e.type === 'agent.todos' && e.detail.assignmentId === row.id),
+      );
+    const small = document.createElement('small');
+    small.textContent = item.status.replaceAll('_', ' ');
+    button.append(small);
+    div.append(badge, button);
+    $('todos').append(div);
+  }
+  $('inspect-todos').disabled = !assignments.some((a) => a.todos);
+}
+function renderFeed() {
+  if (!current) return;
+  const filter = $('agent-filter').value;
+  const query = $('debug-search').value.toLowerCase();
+  const signature = `${current.id}:${current.events.length}:${filter}:${query}`;
+  if (signature !== feedSignature) {
+    feedSignature = signature;
+    const nativeResults = new Map(
+      current.events
+        .filter((e) => e.type === 'dsh.tool-result')
+        .map((e) => [e.detail.data.message.source.callId, e]),
+    );
+    const entries = current.events
+      .filter((event) => {
+        const member = actor(event)?.member;
+        if (filter !== 'all' && member !== filter) return false;
+        if (query && !JSON.stringify(event).toLowerCase().includes(query)) return false;
+        if (event.type === 'agent.output')
+          return event.detail.message.content.some(
+            (b) => b.type === 'text' || b.type === 'reasoning',
+          );
+        return [
+          'dsh.tool-call',
+          'message.delivered',
+          'agent.todos',
+          'verification.completed',
+          'run.failed',
+          'run.succeeded',
+          'run.cancelled',
+          'recovery.opened',
+          'skill.saved',
+          'recovery.failed',
+        ].includes(event.type);
+      })
+      .slice(-200);
+    const feed = $('agent-feed');
+    const scroll = feed.scrollTop;
+    feed.replaceChildren();
+    for (const event of entries) {
+      const row = actor(event);
+      const d = event.detail;
+      const card = document.createElement('article');
+      card.className = 'feed-card';
+      const meta = document.createElement('div');
+      meta.className = 'feed-meta';
+      const who = document.createElement('strong');
+      who.textContent = row?.member ?? 'harness';
+      const identity = document.createElement('span');
+      identity.className = 'mono';
+      identity.textContent = `${shorten(d.assignmentId || d.recipient)}${d.turn ? ` · t${d.turn}${d.step ? `/s${d.step}` : ''}` : ''}`;
+      const button = document.createElement('button');
+      button.textContent = `#${event.sequence} ↗`;
+      button.onclick = () =>
+        inspect(`${event.type} · Correlation details`, { event, assignment: row ?? null });
+      meta.append(who, identity, button);
+      card.append(meta);
+      if (event.type === 'agent.output') {
+        for (const block of d.message.content) {
+          if (block.type === 'text') {
+            const p = document.createElement('p');
+            p.className = 'feed-text';
+            p.textContent = block.text;
+            card.append(p);
+          }
+          if (block.type === 'reasoning') {
+            const details = document.createElement('details');
+            const title = document.createElement('summary');
+            title.textContent = 'Reasoning returned by provider';
+            const p = document.createElement('p');
+            p.className = 'feed-text';
+            p.textContent = block.text;
+            details.append(title, p);
+            card.append(details);
+          }
+        }
+      } else if (event.type === 'dsh.tool-call') {
+        const result = nativeResults.get(d.data.callId);
+        const errored = result?.detail.data.message.content.some(
+          (b) => b.type === 'tool-result' && b.isError,
+        );
+        const tool = document.createElement('button');
+        tool.className = 'feed-tool';
+        const heading = document.createElement('span');
+        heading.className = 'feed-tool-title';
+        const name = document.createElement('span');
+        name.textContent = d.data.name.replaceAll('__', '.');
+        const state = document.createElement('span');
+        state.className = errored ? 'bad' : 'ok';
+        state.textContent = result ? (errored ? 'error' : 'completed') : 'running';
+        heading.append(name, state);
+        const preview = document.createElement('span');
+        preview.className = 'feed-tool-preview';
+        preview.textContent =
+          d.data.arguments.length > 190 ? d.data.arguments.slice(0, 190) + '…' : d.data.arguments;
+        tool.append(heading, preview);
+        tool.onclick = () =>
+          inspect(`Tool call · ${d.data.name}`, {
+            callId: d.data.callId,
+            assignmentId: d.assignmentId,
+            sessionId: d.sessionId,
+            turn: d.turn,
+            step: d.data.step,
+            durationMs: result ? Date.parse(result.at) - Date.parse(event.at) : null,
+            call: event,
+            result: result ?? 'Pending',
+            assignment: row,
+          });
+        card.append(tool);
+      } else {
+        const notice = document.createElement('div');
+        notice.className = 'feed-notice';
+        notice.textContent =
+          event.type === 'message.delivered'
+            ? `Context received: ${d.payload?.kind ?? 'message'} · from ${shorten(d.sender)}`
+            : event.type === 'agent.todos'
+              ? `Checklist updated · ${d.todos.filter((t) => t.status === 'completed').length}/${d.todos.length} complete`
+              : event.type === 'verification.completed'
+                ? `Formal verification: ${d.result.status} · ${d.result.task_scope.attempt_id}`
+                : event.type === 'recovery.opened'
+                  ? 'Planner opened recovery; Evolver is joining with an explicit failed-attempt brief.'
+                  : event.type === 'skill.saved'
+                    ? 'SKILL.md saved with failed and successful evidence.'
+                    : `${event.type}: ${summarize(event)}`;
+        card.append(notice);
+      }
+      feed.append(card);
+    }
+    text('feed-count', `${entries.length} entries · Provider output and native tool events`);
+    if ($('follow-output').checked) feed.scrollTop = feed.scrollHeight;
+    else feed.scrollTop = scroll;
+  }
+  const live = Object.entries(current.agentStreams ?? {}).filter(
+    ([id, s]) =>
+      s.status === 'streaming' && (filter === 'all' || current.assignments[id]?.member === filter),
+  );
+  $('live-output').hidden = !live.length;
+  text(
+    'live-output',
+    live
+      .map(
+        ([id, s]) =>
+          `${current.assignments[id]?.member ?? id} · streaming\n${s.text || s.reasoning || 'Waiting for provider output…'}`,
+      )
+      .join('\n'),
+  );
+  renderTodos();
+}
 function render() {
   if (!current) return;
   text('run-state', `${current.state}${current.readOnly ? ' · read-only' : ''}`);
@@ -280,6 +469,7 @@ function render() {
   renderAgents();
   showSensor();
   renderTimeline();
+  renderFeed();
   updateControls();
 }
 async function loadRun(id) {
@@ -314,6 +504,23 @@ async function action(callback) {
     updateControls();
   }
 }
+for (const tab of document.querySelectorAll('[data-tab]'))
+  tab.onclick = () => {
+    for (const button of document.querySelectorAll('[data-tab]'))
+      button.setAttribute('aria-selected', String(button === tab));
+    for (const pane of document.querySelectorAll('[data-pane]'))
+      pane.hidden = pane.dataset.pane !== tab.dataset.tab;
+  };
+$('agent-filter').onchange = renderFeed;
+$('debug-search').oninput = renderFeed;
+$('follow-output').onchange = () => {
+  if ($('follow-output').checked) $('agent-feed').scrollTop = $('agent-feed').scrollHeight;
+};
+$('inspect-todos').onclick = () =>
+  inspect(
+    'TODO history · Native DSH snapshots',
+    current?.events.filter((e) => e.type === 'agent.todos') ?? [],
+  );
 $('start').onclick = () =>
   action(async () => {
     const result = await api('/api/runs', {
@@ -363,6 +570,12 @@ $('inspector').addEventListener('click', (e) => {
 try {
   config = await api('/api/config');
   text('team-name', config.team.team_id);
+  for (const member of Object.keys(config.team.members)) {
+    const option = document.createElement('option');
+    option.value = member;
+    option.textContent = member;
+    $('agent-filter').append(option);
+  }
   renderAgents();
   const history = await refreshHistory();
   if (history.activeId || history.runs[0]) await loadRun(history.activeId || history.runs[0].id);

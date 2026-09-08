@@ -120,6 +120,28 @@ export class UpperRun {
       options.validator,
       {
         tools: (a) => this.tools(a),
+        stream: (id, frame) => {
+          const streams = (this.state.agentStreams ??= {});
+          if (frame.type === 'start')
+            streams[id] = {
+              attemptId: frame.attemptId,
+              revision: frame.revision,
+              text: '',
+              reasoning: '',
+              status: 'streaming',
+            };
+          const stream = streams[id];
+          if (!stream || stream.attemptId !== frame.attemptId) return;
+          stream.revision = frame.revision;
+          if (frame.type === 'chunk') {
+            if (frame.chunk.type === 'text-delta')
+              stream.text = (stream.text + frame.chunk.text).slice(-16000);
+            if (frame.chunk.type === 'reasoning-delta')
+              stream.reasoning = (stream.reasoning + frame.chunk.text).slice(-16000);
+          }
+          if (frame.type === 'end') stream.status = frame.outcome.kind;
+          this.options.onChange?.(this.snapshot());
+        },
         event: (type, detail) => {
           if (type === 'agent.created') {
             const a = detail.assignment as Assignment;
@@ -133,6 +155,16 @@ export class UpperRun {
           if (type === 'agent.status') {
             const a = this.state.assignments[String(detail.assignmentId)];
             if (a) a.status = String(detail.status);
+          }
+          const row = this.state.assignments[String(detail.assignmentId)];
+          if (row && type === 'agent.todos') {
+            row.todos = structuredClone(detail.todos) as NonNullable<typeof row.todos>;
+            row.todoSequence = Number(detail.sessionSequence);
+            row.todoTurn = Number(detail.turn);
+          }
+          if (row && type === 'agent.step-started') {
+            row.turn = Number(detail.turn);
+            row.step = Number(detail.step);
           }
           this.event(type, detail);
           if (type === 'agent.deadline' && !terminal(this.state.state))
@@ -167,10 +199,18 @@ export class UpperRun {
       type,
       detail: structuredClone(detail),
     });
-    this.version = this.options.store.put(`run:${this.state.id}`, this.state, this.version);
+    const latest = this.state.events.at(-1)!;
+    this.options.store.put(`event:${this.state.id}:${latest.sequence}`, latest, 0);
+    const { events, ...projection } = this.state;
+    this.version = this.options.store.put(
+      `run:${this.state.id}`,
+      { ...projection, events: [], eventCount: events.length },
+      this.version,
+    );
     this.options.onChange?.(this.snapshot());
     const ownerEvent =
-      type.startsWith('tool.') && detail.assignmentId === this.state.decisionAssignmentId;
+      (type.startsWith('tool.') || type === 'agent.output' || type === 'agent.todos') &&
+      detail.assignmentId === this.state.decisionAssignmentId;
     if (
       this.recoveryContext &&
       !terminal(this.state.state) &&
@@ -327,75 +367,77 @@ export class UpperRun {
     }
   }
   private tools(a: Assignment): ToolDefinition[] {
-    return a.brief.tools_and_limits.allowed_tools.map((logical) => {
-      const extra = this.options.additionalTools?.[logical];
-      if (extra) {
-        if (CORE_TOOL_PARAMETERS[logical])
-          throw new Error('Additional tools cannot replace core authority checks.');
-        const native = extra(structuredClone(a));
-        if (native.name !== logical.replaceAll('.', '__'))
-          throw new Error('Native tool name must match its logical binding.');
-        return native;
-      }
-      const properties = CORE_TOOL_PARAMETERS[logical];
-      if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
-      return {
-        name: logical.replaceAll('.', '__'),
-        description: `${logical}. Operates only within this assignment and task.`,
-        parameters: {
-          type: 'object',
-          properties,
-          required: Object.keys(properties),
-          additionalProperties: false,
-        },
-        output: {
-          schema: { type: 'object', additionalProperties: true },
-          render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
-        },
-        timeoutMs: 10_000,
-        execute: async (args, exec) => {
-          exec.signal.throwIfAborted();
-          const recoveryWrite =
-            this.state.state === 'succeeded' &&
-            a.id === this.evolverId &&
-            (logical.startsWith('files.') ||
-              logical.startsWith('skills.') ||
-              logical === 'evidence.read');
-          if (this.closed || (terminal(this.state.state) && !recoveryWrite))
-            throw new Error('Run is no longer writable.');
-          this.event('tool.started', {
-            assignmentId: a.id,
-            tool: logical,
-            callId: exec.callId,
-            args,
-          });
-          try {
-            const value = await this.invoke(
-              a,
-              logical,
-              args as Record<string, unknown>,
-              exec.signal,
-            );
+    return a.brief.tools_and_limits.allowed_tools
+      .filter((logical) => logical !== 'todo_write')
+      .map((logical) => {
+        const extra = this.options.additionalTools?.[logical];
+        if (extra) {
+          if (CORE_TOOL_PARAMETERS[logical])
+            throw new Error('Additional tools cannot replace core authority checks.');
+          const native = extra(structuredClone(a));
+          if (native.name !== logical.replaceAll('.', '__'))
+            throw new Error('Native tool name must match its logical binding.');
+          return native;
+        }
+        const properties = CORE_TOOL_PARAMETERS[logical];
+        if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
+        return {
+          name: logical.replaceAll('.', '__'),
+          description: `${logical}. Operates only within this assignment and task.`,
+          parameters: {
+            type: 'object',
+            properties,
+            required: Object.keys(properties),
+            additionalProperties: false,
+          },
+          output: {
+            schema: { type: 'object', additionalProperties: true },
+            render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+          },
+          timeoutMs: 10_000,
+          execute: async (args, exec) => {
             exec.signal.throwIfAborted();
-            this.event('tool.completed', {
+            const recoveryWrite =
+              this.state.state === 'succeeded' &&
+              a.id === this.evolverId &&
+              (logical.startsWith('files.') ||
+                logical.startsWith('skills.') ||
+                logical === 'evidence.read');
+            if (this.closed || (terminal(this.state.state) && !recoveryWrite))
+              throw new Error('Run is no longer writable.');
+            this.event('tool.started', {
               assignmentId: a.id,
               tool: logical,
               callId: exec.callId,
-              result: value,
+              args,
             });
-            return value;
-          } catch (error) {
-            this.event('tool.failed', {
-              assignmentId: a.id,
-              tool: logical,
-              callId: exec.callId,
-              error: error instanceof Error ? error.message : String(error),
-            });
-            throw error;
-          }
-        },
-      };
-    });
+            try {
+              const value = await this.invoke(
+                a,
+                logical,
+                args as Record<string, unknown>,
+                exec.signal,
+              );
+              exec.signal.throwIfAborted();
+              this.event('tool.completed', {
+                assignmentId: a.id,
+                tool: logical,
+                callId: exec.callId,
+                result: value,
+              });
+              return value;
+            } catch (error) {
+              this.event('tool.failed', {
+                assignmentId: a.id,
+                tool: logical,
+                callId: exec.callId,
+                error: error instanceof Error ? error.message : String(error),
+              });
+              throw error;
+            }
+          },
+        };
+      });
   }
   private async invoke(
     a: Assignment,

@@ -1,3 +1,4 @@
+import * as Todo from '@deepseek-ai/dsh-tool-todo';
 import type { Context } from '@deepseek-ai/cordis';
 import type { AgentHandle as DshAgentHandle } from '@deepseek-ai/dsh-agent';
 import { SessionId } from '@deepseek-ai/dsh-session';
@@ -10,6 +11,7 @@ export interface DshSessionDefinition {
   readonly instructions: string;
   readonly tools: readonly ToolDefinition[];
   readonly signal?: AbortSignal;
+  readonly todo?: boolean;
 }
 
 /**
@@ -29,7 +31,8 @@ export function createDshSession(
     sessionId: SessionId(definition.sessionId),
     agentOptions: { provider: definition.provider, model: definition.model },
     ...(definition.signal === undefined ? {} : { signal: definition.signal }),
-    setup(agentCtx) {
+    async setup(agentCtx) {
+      if (definition.todo) await agentCtx.plugin(Todo, { allowParallelInProgress: true });
       agentCtx.systemPrompt.section({
         name: 'edh:role',
         order: 0,

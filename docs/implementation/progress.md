@@ -216,3 +216,17 @@ The user's next refinement prioritizes a debugging workbench over decorative
 visualization: live agent output, detailed TODO status/history, correlated tool and
 assignment inspection, and a simpler coding-agent-style layout. The initial console
 is a verified checkpoint; that refinement is the active next action.
+
+### Native observability checkpoint (2026-09-08)
+
+Mounted the original DSH TODO plugin per authorized session and projected native
+assistant output, streaming output, tool calls/results, turn/step identity and TODO
+history into the console. TODO completion remains agent-reported progress; formal
+physical success still requires an accepted verifier result. Event records are now
+stored separately from run projections to avoid repeatedly persisting full histories.
+Full checks pass with 17 runtime tests and 93 pinned DSH source files.
+
+The user has deferred further UI design. The eventual console must expose key agent,
+plan, execution, sensor, verification and recovery state together in one workspace,
+without requiring page or tab switching. Current inspector tabs are provisional.
+Next work is upper-runtime robustness and extension acceptance, not visual polish.

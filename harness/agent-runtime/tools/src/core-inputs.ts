@@ -39,4 +39,4 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
   'skills.save': { markdown: str },
   'evidence.read': { evidenceId: str },
 };
-export const CORE_TOOLS = Object.keys(CORE_TOOL_PARAMETERS);
+export const CORE_TOOLS = [...Object.keys(CORE_TOOL_PARAMETERS), 'todo_write'];

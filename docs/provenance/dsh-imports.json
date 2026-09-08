@@ -179,6 +179,14 @@
       "owner": "tools",
       "manifest_sha256": "72fc680740ccf4b8890a517d152afe4304bca0ee9c928485cbb2f86c908600cd",
       "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-tool-todo",
+      "source": "packages/todo/tool-todo",
+      "destination": "harness/agent-runtime/planning/src/dsh/todo",
+      "owner": "planning",
+      "manifest_sha256": "2c5ad443a1b9fe6e2b4df554ea03ba7f828aece263daceb974baac8d43b0ac68",
+      "license": "MIT"
     }
   ],
   "files": [
@@ -822,6 +830,20 @@
       "source_sha256": "d447e54cef81abc7cec4d55dad48a7b4243f107d836c04ee3078bcb36fbdb2a2",
       "local_sha256": "d447e54cef81abc7cec4d55dad48a7b4243f107d836c04ee3078bcb36fbdb2a2",
       "modifications": []
+    },
+    {
+      "source": "packages/todo/tool-todo/src/index.ts",
+      "destination": "harness/agent-runtime/planning/src/dsh/todo/index.ts",
+      "source_sha256": "c4decd0e2b7a4032ee53b17cbf9a2218572646e568bf5638b983f53b0c92c0e6",
+      "local_sha256": "c4decd0e2b7a4032ee53b17cbf9a2218572646e568bf5638b983f53b0c92c0e6",
+      "modifications": []
+    },
+    {
+      "source": "packages/todo/tool-todo/src/types.ts",
+      "destination": "harness/agent-runtime/planning/src/dsh/todo/types.ts",
+      "source_sha256": "2db87c666a0fad3dbca2dbf14c0f9a9f28f78bb4a1da78ddced4a1c0e5f0ba58",
+      "local_sha256": "2db87c666a0fad3dbca2dbf14c0f9a9f28f78bb4a1da78ddced4a1c0e5f0ba58",
+      "modifications": []
     }
   ],
   "aliases": {
@@ -953,6 +975,12 @@
     ],
     "@deepseek-ai/dsh-tool-call-timeout-policy": [
       "harness/agent-runtime/tools/src/dsh/timeout-policy/index.ts"
+    ],
+    "@deepseek-ai/dsh-tool-todo": [
+      "harness/agent-runtime/planning/src/dsh/todo/index.ts"
+    ],
+    "@deepseek-ai/dsh-tool-todo/*": [
+      "harness/agent-runtime/planning/src/dsh/todo/*.ts"
     ]
   },
   "external_imports": [

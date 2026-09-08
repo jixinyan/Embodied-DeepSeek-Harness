@@ -16,6 +16,7 @@
     "@edh/teams": "workspace:*",
     "@edh/models": "workspace:*",
     "@edh/tools": "workspace:*",
-    "@edh/foundation": "workspace:*"
+    "@edh/foundation": "workspace:*",
+    "@edh/planning": "workspace:*"
   }
 }

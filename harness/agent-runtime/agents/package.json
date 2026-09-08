@@ -16,6 +16,7 @@
     "zod": "4.4.3",
     "@edh/models": "workspace:*",
     "@edh/storage": "workspace:*",
-    "@edh/tools": "workspace:*"
+    "@edh/tools": "workspace:*",
+    "@edh/planning": "workspace:*"
   }
 }

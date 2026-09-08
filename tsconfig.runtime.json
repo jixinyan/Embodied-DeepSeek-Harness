@@ -136,6 +136,12 @@
       ],
       "@deepseek-ai/dsh-tool-call-timeout-policy": [
         "harness/agent-runtime/tools/src/dsh/timeout-policy/index.ts"
+      ],
+      "@deepseek-ai/dsh-tool-todo": [
+        "harness/agent-runtime/planning/src/dsh/todo/index.ts"
+      ],
+      "@deepseek-ai/dsh-tool-todo/*": [
+        "harness/agent-runtime/planning/src/dsh/todo/*.ts"
       ]
     }
   }

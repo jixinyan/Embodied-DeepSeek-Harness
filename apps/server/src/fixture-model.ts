@@ -17,7 +17,13 @@ function readResult(
       if (block.isError)
         throw new Error(`Fixture model received a tool error: ${JSON.stringify(block.content)}`);
       for (const content of block.content)
-        if (content.type === 'text') return JSON.parse(content.text) as Record<string, unknown>;
+        if (content.type === 'text') {
+          try {
+            return JSON.parse(content.text) as Record<string, unknown>;
+          } catch {
+            return { message: content.text };
+          }
+        }
     }
   }
   return {};
@@ -67,10 +73,31 @@ export class FixtureModel extends LlmAdapter {
       name = tool.replaceAll('.', '__');
       args = input;
     };
+    const todos = (active: number, recovery = false) =>
+      call('todo_write', {
+        todos: (recovery
+          ? [
+              'Inspect the scene and failure evidence',
+              'Replan the failed subgoal',
+              'Execute the revised placement',
+              'Verify the original goal',
+            ]
+          : [
+              'Inspect scene and retrieve experience',
+              'Execute placement subgoal',
+              'Verify the final cup-container relation',
+            ]
+        ).map((content, index) => ({
+          content,
+          status: index < active ? 'completed' : index === active ? 'in_progress' : 'pending',
+        })),
+      });
     if (payload.kind === 'initial') {
-      if (step === 0) call('skills.search', { query: 'cup container access' });
-      if (step === 1) call('planning.read');
-      if (step === 2) {
+      if (step === 0) todos(0);
+      if (step === 5) todos(1);
+      if (step === 1) call('skills.search', { query: 'cup container access' });
+      if (step === 2) call('planning.read');
+      if (step === 3) {
         const plan: PlanDocument = {
           schema_version: 'physical.plan.v1',
           task_id: String(previous.taskId),
@@ -89,8 +116,8 @@ export class FixtureModel extends LlmAdapter {
         };
         call('planning.update', { plan, expectedVersion: 0 });
       }
-      if (step === 3) call('perception.capture');
-      if (step === 4) call('execution.start', { instruction: brief!.objective });
+      if (step === 4) call('perception.capture');
+      if (step === 6) call('execution.start', { instruction: brief!.objective });
     } else if (payload.kind === 'formal-verification') {
       if (step === 0) call('verification.check');
       if (step === 1) {
@@ -114,26 +141,29 @@ export class FixtureModel extends LlmAdapter {
       if (step === 0) call('perception.capture');
     } else if (payload.kind === 'verdict') {
       if (payload.result?.status === 'failed' && payload.execution?.state === 'ended') {
+        if (step === 0) todos(1, true);
+        if (step === 4) todos(2, true);
         const summary =
           'The first placement subgoal ran to its step budget; formal verification reports that the cup remains outside the cabinet.';
         const changes = [
           'Check cabinet access and request a placement subgoal with a clear final relation.',
         ];
-        if (step === 0)
+        if (step === 1)
           call('tasks.replan', {
             reason: 'Placement failed verification.',
             changes,
             attemptSummary: summary,
           });
-        if (step === 1) call('tasks.retry', { changes, attemptSummary: summary });
-        if (step === 2) call('observation.turn_view', { direction: 'center' });
-        if (step === 3)
+        if (step === 2) call('tasks.retry', { changes, attemptSummary: summary });
+        if (step === 3) call('observation.turn_view', { direction: 'center' });
+        if (step === 5)
           call('execution.start', {
             instruction: 'Ensure cabinet access, then place the cup inside the cabinet.',
           });
       } else if (payload.result?.status === 'passed') {
-        if (step === 0) call('planning.read');
-        if (step === 1) {
+        if (step === 0) todos(4);
+        if (step === 1) call('planning.read');
+        if (step === 2) {
           const plan = previous.plan as PlanDocument;
           call('planning.update', {
             plan: {
@@ -148,7 +178,7 @@ export class FixtureModel extends LlmAdapter {
             expectedVersion: plan.version,
           });
         }
-        if (step === 2) call('tasks.finish');
+        if (step === 3) call('tasks.finish');
       } else if (payload.result?.status === 'unknown' && step === 0)
         call('tasks.abandon', {
           status: 'unknown',
@@ -193,13 +223,36 @@ export class FixtureModel extends LlmAdapter {
     if (name) {
       if (!options.tools?.some((t) => t.name === name))
         throw new Error(`Fixture scenario requires unavailable tool: ${name}`);
+      const notes: Record<string, string> = {
+        todo_write: 'Update the work checklist so the next active step is visible.',
+        skills__search:
+          'Look for relevant failure and recovery knowledge before choosing the first subgoal.',
+        perception__capture: 'Inspect a current observation before judging the scene.',
+        execution__start:
+          'Submit the language subgoal with a bounded execution budget; wait for formal verification.',
+        tasks__replan:
+          'The verifier reports the original subgoal failed. Open recovery and give the Evolver the failed attempt and proposed changes.',
+        tasks__retry: 'Keep the original success criteria and authorize the next attempt.',
+        verification__check:
+          'The execution reached a stopped boundary. Read only the required ground-truth predicates using fresh evidence.',
+        verification__submit:
+          'Report the checked predicates, preserving uncertainty rather than assuming success.',
+        skills__save:
+          'Summarize observed failure signals, possible causes and the successful correction, without claiming causality or transfer.',
+        tasks__finish: 'The current original-goal verdict passed. Mark the task successful.',
+      };
+      const note =
+        notes[name] ?? `Use ${name.replaceAll('__', '.')} within the current assignment.`;
+      yield { type: 'block-start', index: 0, blockType: 'text' };
+      yield { type: 'text-delta', index: 0, text: note };
+      yield { type: 'block-end', index: 0, block: { type: 'text', text: note } };
       const id = ToolCallId(randomUUID());
       const argumentsJson = JSON.stringify(args);
-      yield { type: 'block-start', index: 0, blockType: 'tool-call' };
-      yield { type: 'tool-call-delta', index: 0, id, name, argumentsDelta: argumentsJson };
+      yield { type: 'block-start', index: 1, blockType: 'tool-call' };
+      yield { type: 'tool-call-delta', index: 1, id, name, argumentsDelta: argumentsJson };
       yield {
         type: 'block-end',
-        index: 0,
+        index: 1,
         block: { type: 'tool-call', id, name, arguments: argumentsJson },
       };
       yield { type: 'finish', reason: { kind: 'tool-calls' } };

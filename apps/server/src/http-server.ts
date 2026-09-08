@@ -8,7 +8,7 @@ import { ContractValidator } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore } from '@edh/storage';
 import { SkillLibrary } from '@edh/memory';
-import type { RunState } from '@edh/tasks';
+import type { RunState, RunEvent } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
 import { UpperRun, CORE_TOOLS, terminal } from './application.js';
 import { FixtureBackend, FIXTURE_GOAL, type FixtureScenario } from './fixture-backend.js';
@@ -72,9 +72,19 @@ export async function startDemoServer(options: DemoServerOptions) {
     );
     const skills = new SkillLibrary(store, validator);
     skills.exportAll();
+    const restoreEvents = (state: RunState): RunState => {
+      if (state.eventCount === undefined) return state;
+      state.events = store
+        .list<RunEvent>(`event:${state.id}:`)
+        .map((r) => r.value)
+        .filter((e) => e.sequence <= state.eventCount!)
+        .sort((a, b) => a.sequence - b.sequence);
+      return state;
+    };
     for (const record of store.list<RunState>('run:')) {
       if (!terminal(record.value.state)) {
-        const state = record.value;
+        const state = restoreEvents(record.value);
+        delete state.eventCount;
         state.state = 'interrupted';
         state.error =
           'The previous server stopped. History is read-only; execution is not resumed.';
@@ -114,7 +124,12 @@ export async function startDemoServer(options: DemoServerOptions) {
     >();
     const runView = (id: string) => {
       const state =
-        active?.state.id === id ? active.snapshot() : store.get<RunState>(`run:${id}`)?.value;
+        active?.state.id === id
+          ? active.snapshot()
+          : (() => {
+              const record = store.get<RunState>(`run:${id}`);
+              return record ? restoreEvents(record.value) : undefined;
+            })();
       if (!state) throw new HttpError(404, 'Run not found.');
       return {
         ...state,

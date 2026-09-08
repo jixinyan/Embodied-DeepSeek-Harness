@@ -116,6 +116,20 @@ test(
       )!.value;
       assert(trace.events.some((e) => e.type === 'execution.updated'));
       assert(app.model.requests.length > 15);
+      const lead = app.run.state.assignments[app.run.state.decisionAssignmentId]!;
+      assert(lead.todos?.every((todo) => todo.status === 'completed'));
+      assert(
+        app.run.state.events.some(
+          (e) => e.type === 'agent.output' && JSON.stringify(e.detail).includes('Open recovery'),
+        ),
+      );
+      assert(app.run.state.events.filter((e) => e.type === 'agent.todos').length >= 4);
+      assert(
+        app.run.state.events.some(
+          (e) =>
+            e.type === 'dsh.tool-call' && (e.detail.data as { name: string }).name === 'todo_write',
+        ),
+      );
     } finally {
       await app.close();
     }

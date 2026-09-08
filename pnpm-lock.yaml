@@ -95,6 +95,9 @@ importers:
       '@edh/models':
         specifier: workspace:*
         version: link:../models
+      '@edh/planning':
+        specifier: workspace:*
+        version: link:../planning
       '@edh/storage':
         specifier: workspace:*
         version: link:../storage
@@ -119,6 +122,9 @@ importers:
       '@edh/models':
         specifier: workspace:*
         version: link:../models
+      '@edh/planning':
+        specifier: workspace:*
+        version: link:../planning
       '@edh/teams':
         specifier: workspace:*
         version: link:../teams
@@ -185,9 +191,18 @@ importers:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      '@edh/foundation':
+        specifier: workspace:*
+        version: link:../foundation
       '@edh/storage':
         specifier: workspace:*
         version: link:../storage
+      '@edh/tools':
+        specifier: workspace:*
+        version: link:../tools
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   harness/agent-runtime/storage:
     dependencies:

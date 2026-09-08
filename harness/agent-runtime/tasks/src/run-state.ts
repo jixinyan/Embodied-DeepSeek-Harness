@@ -19,6 +19,11 @@ export interface RunAssignment {
   status: string;
   model: string;
   tools: string[];
+  todos?: { content: string; status: 'pending' | 'in_progress' | 'completed' }[];
+  todoSequence?: number;
+  todoTurn?: number;
+  turn?: number;
+  step?: number;
 }
 export interface RunState {
   id: string;
@@ -44,11 +49,16 @@ export interface RunState {
   retryChanges: string[];
   assignments: Record<string, RunAssignment>;
   events: RunEvent[];
+  eventCount?: number;
   executions: ExecutionStatus[];
   requests: SubgoalRequest[];
   verdicts: VerificationResult[];
   latestSensor: SensorSample | null;
   agentSeen: Record<string, SensorSample>;
+  agentStreams?: Record<
+    string,
+    { attemptId: string; revision: number; text: string; reasoning: string; status: string }
+  >;
   skillIds: string[];
   error: string | null;
 }

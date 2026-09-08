@@ -109,6 +109,10 @@
     {
       "id": "tasks.abandon",
       "status": "upper_application"
+    },
+    {
+      "id": "todo_write",
+      "status": "native_dsh"
     }
   ]
 }

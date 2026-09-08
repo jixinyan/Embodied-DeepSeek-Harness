@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
-import type { AgentHandle } from '@deepseek-ai/dsh-agent';
+import type { AgentHandle, AssistantStreamFrame } from '@deepseek-ai/dsh-agent';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools';
 import { createDshSession } from '@edh/agents';
@@ -17,6 +17,7 @@ export interface SessionHooks {
   tools(assignment: Assignment): readonly ToolDefinition[];
   event(type: string, detail: Record<string, unknown>): void;
   audit(assignmentId: string, events: unknown): void;
+  stream?(assignmentId: string, frame: AssistantStreamFrame): void;
 }
 /** Delegation creates a neutral-host DSH session; delivery uses the original inbox. */
 export class TeamSessions {
@@ -55,6 +56,7 @@ export class TeamSessions {
       ...binding,
       instructions: `${role.instructions}\n\nTools use double underscores in place of dots. Source: ${this.team.sourceDigest}.\nEvery message is explicit context. Never infer another role's hidden conversation.`,
       tools: this.hooks.tools(assignment),
+      todo: brief.tools_and_limits.allowed_tools.includes('todo_write'),
     });
     if (this.closed) {
       await handle.dispose();
@@ -73,6 +75,38 @@ export class TeamSessions {
         entry.timer.unref();
       }
       this.hooks.event('agent.status', { assignmentId: assignment.id, member, status });
+    });
+    let turn = 0;
+    handle.agent.ctx.on('agent/assistant-stream', ({ frame }) =>
+      this.hooks.stream?.(assignment.id, frame),
+    );
+    handle.agent.ctx.on('session/event', (_session, event) => {
+      if (event.type === 'turn/start') turn = event.data.turn;
+      const identity = {
+        assignmentId: assignment.id,
+        member,
+        sessionId: assignment.sessionId,
+        sessionSequence: event.seq,
+        turn,
+      };
+      if (event.type === 'todo/write')
+        this.hooks.event('agent.todos', { ...identity, todos: event.data.todos });
+      if (event.type === 'assistant/message')
+        this.hooks.event('agent.output', {
+          ...identity,
+          step: event.data.step,
+          message: event.data.message,
+          usage: event.data.usage ?? null,
+          interrupted: event.data.interrupted ?? false,
+        });
+      if (event.type === 'turn/end')
+        this.hooks.event('agent.turn-ended', { ...identity, reason: event.data.reason });
+      if (event.type === 'step/start')
+        this.hooks.event('agent.step-started', { ...identity, step: event.data.step });
+      if (event.type === 'tool/call')
+        this.hooks.event('dsh.tool-call', { ...identity, data: event.data });
+      if (event.type === 'tool/result')
+        this.hooks.event('dsh.tool-result', { ...identity, data: event.data });
     });
     this.hooks.event('agent.created', {
       assignment,
