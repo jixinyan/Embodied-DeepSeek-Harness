@@ -178,6 +178,9 @@ importers:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      yaml:
+        specifier: 2.8.1
+        version: 2.8.1
 
   harness/agent-runtime/tools:
     dependencies:

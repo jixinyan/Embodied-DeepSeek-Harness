@@ -11,6 +11,7 @@
     }
   },
   "dependencies": {
-    "@edh/contracts": "workspace:*"
+    "@edh/contracts": "workspace:*",
+    "yaml": "2.8.1"
   }
 }

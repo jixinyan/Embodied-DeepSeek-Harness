@@ -1,4 +1,3 @@
-// Architecture contract only. No runtime implementation.
 import type { RoleDefinition, TeamDefinition } from '@edh/contracts';
 export interface TeamRunSnapshot {
   readonly teamRunId: string;
@@ -9,3 +8,10 @@ export interface TeamRunSnapshot {
 export interface TeamLoader {
   inspect(file: string): Promise<TeamRunSnapshot>;
 }
+
+export {
+  FileTeamLoader,
+  type LoadedTeam,
+  type TeamLoadOptions,
+  type ResolvedRole,
+} from './loader.js';

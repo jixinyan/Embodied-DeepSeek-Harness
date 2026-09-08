@@ -8,3 +8,5 @@ export interface AssetStore {
   put(bytes: Uint8Array, contentType: string): Promise<{ readonly assetId: string }>;
   readAuthorized(assignmentId: string, assetId: string): Promise<Uint8Array>;
 }
+
+export { LocalStore } from './local-store.js';

@@ -164,3 +164,17 @@ the original loop and DSH-owned input/output rejection. No upstream source was m
 Timeout metadata is available upstream but its enforcement plugin is not mounted.
 Disk persistence has an interface but no mounted backend. Full Team routing, Python
 workers, verifier/evolver agents, simulation and console are still unimplemented.
+
+### Upper-system-first checkpoint (2026-09-08)
+
+The current user priority is to complete the upper application and a runnable
+console before implementing physical runtime providers. A clearly labeled CPU
+fixture will exercise the integration boundary; it is not simulation evidence.
+
+Implemented configuration preflight with immutable role prompts, model/tool/provider
+availability checks, duplicate YAML rejection and role path containment. Added a
+single-writer local domain store with compare-and-swap versions, fsync, detached
+reads, corruption refusal and recovery of an incomplete final record. Its lock
+requires explicit removal after an unclean process exit; no automatic takeover.
+This store does not replace DSH sessions or claim resumable session persistence.
+Validation: 11 runtime tests, TypeScript and workspace structure checks pass.
