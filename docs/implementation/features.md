@@ -1,6 +1,6 @@
 # Current capability map
 
-Snapshot: 2026-09-08. Working upper-runtime code through `c622252`.
+Snapshot: 2026-09-09. Upper runtime includes plan-selected multi-goal recovery.
 
 ![Implemented capabilities and remaining work](../architecture/assets/implementation-status.svg)
 
@@ -11,6 +11,7 @@ Snapshot: 2026-09-08. Working upper-runtime code through `c622252`.
 | Custom native tools, explicit context, private files and permission checks | [Application](../../apps/server/src/application.ts), [extension acceptance](../../tests/runtime/team-extensions.test.ts) |
 | Typed role reports, custom result schema and caller query | [Reports](../../harness/agent-runtime/communication/src/reports.ts), [protocol guide](upper-runtime.md) |
 | Native TODO and versioned physical task plan | [DSH TODO](../../harness/agent-runtime/planning/src/dsh/todo/index.ts), [plans](../../harness/agent-runtime/planning/src/workspace.ts) |
+| Registered subgoals, verified dependencies and owner-only goal selection | [Goals](../../harness/agent-runtime/tasks/src/goals.ts), [multi-goal guide](multi-goal-runtime.md) |
 | Async monitor, formal verification, Planner recovery and Evolver progress | [Application](../../apps/server/src/application.ts), [workflow acceptance](../../tests/runtime/upper-run.test.ts) |
 | Failure-aware SKILL publication, explicit retrieval and provenance | [Skill library](../../harness/agent-runtime/memory/src/library.ts), [recovery decision](decisions/0004-recovery-observation-and-action-admission.md) |
 | Durable domain records and historical audit | [Store](../../harness/agent-runtime/storage/src/local-store.ts), [HTTP service](../../apps/server/src/http-server.ts) |
@@ -20,10 +21,12 @@ Run `pnpm demo` and select the labeled failure/recovery fixture. The observable
 sequence is native DSH calls -> synthetic execution -> formal failed verdict ->
 Planner replan/retry -> Evolver recording -> formal original-goal success -> SKILL.
 First-pass success creates no recovery skill; unknown is never accepted as success.
+The multi-goal scenario adds a separately verified access prerequisite, retries placement,
+then closes the cabinet for final task success. See the [illustrated flow](multi-goal-runtime.md).
 
 ## Still outside the working boundary
 
-- Live model deployment/evaluation and multi-goal task orchestration.
+- Live model deployment/evaluation; concurrent physical goals and nested independent recovery chains.
 - Python transport, action admission, shared device resources and physical stop acknowledgement.
 - Actual BEHAVIOR/RoboCasa/RoboTwin, VLA/VLN, SAM/depth and hardware adapters.
 - Resumable model sessions, distributed/exactly-once delivery, scalable retention and multi-user hosting.

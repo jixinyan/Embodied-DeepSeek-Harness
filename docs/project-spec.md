@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.8 · 2026-09-08
+Version: v1.9 · 2026-09-09
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -30,7 +30,8 @@ are SVG assets; include their directory when handing over this document.
 The runtime choice is settled: reuse DSH, with EDH-owned composition and embodied
 behavior. Upper Team/Role, tools, TODOs, plans/files, verification, recovery, SKILL
 storage and a console now run with a scripted model and CPU fixture backend.
-Continue upper lifecycle/configuration and multi-goal/delivery-reconciliation/retention work before
+Plan-selected sequential goals and prerequisite recovery now run with CPU fixtures.
+Continue upper lifecycle/configuration, delivery reconciliation and retention work before
 physical integration; do not replace the DSH loop. UI polish is deferred, and key
 state must ultimately be visible simultaneously without page/tab switching.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)
@@ -1163,7 +1164,8 @@ Delivered: selective original DSH runtime, native tools/TODOs, immutable teams,
 independent role sessions, explicit context/evidence, versioned plans/files,
 async verification and recovery, failure-aware SKILLs, durable domain records and
 a runnable HTTP/SSE debugging console. These run with scripted model/backend
-fixtures. Live VLM deployment, multi-goal orchestration, physical transport/action
+fixtures, including sequential multi-goal recovery. Live VLM deployment, concurrent
+physical goals, nested independent recovery chains, physical transport/action
 admission, actual simulation/policies/perception and hardware remain pending.
 See [progress](implementation/progress.md) for acceptance and the next steps.
 
@@ -1327,3 +1329,19 @@ final results cannot be rewritten. Native idle state is not a role result or phy
 verdict. Decision owners finish tasks through existing task tools. Native raw tool
 definitions invoke DSH input validation explicitly; schema declaration alone does
 not validate arguments. No new registry, model loop or physical middleware is added.
+
+
+## Implementation update: plan-selected subgoals (2026-09-09)
+
+The native `tasks.select_goal` tool selects an admitted plan goal. `planning.read`
+exposes the deployment-bound check catalog; Planner may compose subgoals from those
+exact checks or use predefined bindings. The final task criteria and executed goal
+history remain immutable. Dependencies require their own latest accepted verdicts.
+Switching requires confirmed ended execution and formal verification. Returning to a
+failed goal requires explicit retry; attempt budgets apply per goal.
+
+A recovery can span a successful repair prerequisite and ends only at formal success
+of its original failed goal. SKILL publication is then allowed while later task goals
+continue. Evolver model failures remain learning failures. No new DSH loop or dispatcher
+was introduced. [Runtime guide and SVG](implementation/multi-goal-runtime.md) specify
+current tool semantics, limits and the CPU acceptance scenario.

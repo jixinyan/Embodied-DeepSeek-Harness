@@ -116,12 +116,20 @@ show important streams and states simultaneously; current tabs are provisional a
 further visual work is deferred. Native TODO resets with a new DSH turn; an older
 snapshot must remain labeled by its originating turn, never silently presented as new.
 
+## Multi-goal execution
+
+Read [multi-goal runtime](multi-goal-runtime.md) for deployment bindings, native tools,
+per-goal attempt budgets, success gates and the runnable access-repair fixture.
+The Planner chooses the sequence; EDH validates dependencies and ownership.
+
 ## Recovery and failure knowledge
 
 Formal failure alone does not start learning. The Planner's replan/retry decision
 opens one recovery and hands the failed attempt and proposed changes to the Evolver.
 Progress is delivered explicitly while execution continues. Original-goal formal
-success allows publication; prerequisite success and unknown outcomes do not.
+success allows publication, even while later task goals remain unfinished; prerequisite
+success and unknown outcomes do not. Learning failures are recorded separately and do
+not turn a verified successful task into a failed task.
 
 SKILL sections: When to use, Failure signals, Possible causes, Avoid, Planning guidance,
 Verification guidance, Limits, Source. Store observed failures separately from causal
@@ -137,7 +145,8 @@ read-only audits; restarting marks unfinished runs interrupted without resubmitt
 physical work. A stale writer lock requires confirming the old process is stopped
 before manual removal. No automatic lock takeover or journal compaction is implemented.
 
-The demo supports one active run and one original subgoal/recovery chain. SSE sends
+The demo supports one active run, sequential plan-selected goals and one observing
+recovery chain at a time. Completed recovery assignments retain their own provenance. SSE sends
 coalesced complete snapshots; reconnect resynchronizes current state rather than
 replaying each delta. Tests cover local reconnect/restart, not distributed delivery.
 The backend port and CPU fixture do not implement the physical action gate, Python

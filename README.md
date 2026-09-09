@@ -44,6 +44,9 @@ pnpm demo
 
 Open `http://127.0.0.1:4317`. Inspect agent output, TODOs, native tool calls/results,
 explicit handoffs, verification and recovery. See the [upper-runtime guide](docs/implementation/upper-runtime.md).
+The multi-goal scenario demonstrates failed placement, an access prerequisite,
+placement recovery and final cabinet closure; see [the illustrated runtime guide](docs/implementation/multi-goal-runtime.md).
+
 The fixture is an integration demo; it does not control a real or simulated robot.
 
 ## Run the checks
@@ -60,7 +63,7 @@ pnpm test:runtime
 ```
 
 These commands check generated schema types, example structure/references,
-TypeScript, documentation links and Python importability, then execute 20 upper-runtime
+TypeScript, documentation links and Python importability, then execute 26 upper-runtime
 integration tests and shared wire/lifecycle validation cases in both languages. `test:runtime` runs that suite
 alone. No live model API or simulator is started. API tests start a temporary local server. No GPU or key is needed.
 Python checks prefer `.venv/bin/python`, falling back to `python3`; override

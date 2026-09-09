@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="760" viewBox="0 0 1240 760" role="img" aria-labelledby="title desc">
+<title id="title">Plan-selected subgoals and original-goal recovery</title>
+<desc id="desc">A CPU fixture fails placement, replans, opens the cabinet, retries placement successfully and closes the cabinet. Only placement success resolves its recovery and authorizes a skill.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8Z" fill="#687987"/></marker></defs>
+<rect width="1240" height="760" fill="#f6f7f9"/>
+<text x="36" y="46" font-family="Arial, sans-serif" font-size="29" font-weight="700" fill="#172935">Multi-goal execution, one precise recovery target</text>
+<text x="36" y="76" font-family="Arial, sans-serif" font-size="16" font-weight="400" fill="#40505d">EDH domain rules + original DSH sessions / tools   •   Deterministic CPU fixture   •   2026-09-09</text>
+<rect x="36" y="102" width="1168" height="68" rx="12" fill="#eaf0f7" stroke="#d9e0e6"/>
+<text x="55" y="130" font-family="Arial, sans-serif" font-size="19" font-weight="700" fill="#294d72">FINAL TASK: cup inside the cabinet AND cabinet closed</text>
+<text x="55" y="154" font-family="Arial, sans-serif" font-size="16" font-weight="400" fill="#40505d">Planner may add repair goals. The required final success criteria remain immutable.</text>
+<rect x="36" y="208" width="216" height="170" rx="12" fill="#fbefed" stroke="#d9e0e6"/>
+<text x="49" y="238" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#9b4136">1  PLACE CUP</text>
+<text x="49" y="266" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#9b4136">Formal result: FAILED</text>
+<text x="49" y="299" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">Cup remains outside.</text>
+<text x="49" y="322" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">Failure alone does not</text>
+<text x="49" y="345" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">start the Evolver.</text>
+<path d="M254 284 H268" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="274" y="208" width="216" height="170" rx="12" fill="#eaf0f7" stroke="#d9e0e6"/>
+<text x="287" y="238" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#294d72">2  PLANNER REPLAN</text>
+<text x="287" y="266" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#294d72">Open recovery</text>
+<text x="287" y="299" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">Send failed attempt,</text>
+<text x="287" y="322" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">evidence and proposed</text>
+<text x="287" y="345" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">changes in a fresh brief.</text>
+<path d="M492 284 H506" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="512" y="208" width="216" height="170" rx="12" fill="#eaf3ee" stroke="#d9e0e6"/>
+<text x="525" y="238" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#326446">3  OPEN CABINET</text>
+<text x="525" y="266" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#326446">Formal result: PASSED</text>
+<text x="525" y="299" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">Mark this dependency</text>
+<text x="525" y="322" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">done. Placement recovery</text>
+<text x="525" y="345" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">is still observing.</text>
+<path d="M730 284 H744" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="750" y="208" width="216" height="170" rx="12" fill="#eaf3ee" stroke="#d9e0e6"/>
+<text x="763" y="238" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#326446">4  RETRY PLACEMENT</text>
+<text x="763" y="266" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#326446">Formal result: PASSED</text>
+<text x="763" y="299" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">Original failed goal</text>
+<text x="763" y="322" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">succeeds. Resolve its</text>
+<text x="763" y="345" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">recovery and allow SKILL.</text>
+<path d="M968 284 H982" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="988" y="208" width="216" height="170" rx="12" fill="#eaf3ee" stroke="#d9e0e6"/>
+<text x="1001" y="238" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#326446">5  CLOSE CABINET</text>
+<text x="1001" y="266" font-family="Arial, sans-serif" font-size="15" font-weight="700" fill="#326446">Final checks: PASSED</text>
+<text x="1001" y="299" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">Cup inside + door closed.</text>
+<text x="1001" y="322" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">Planner completes the</text>
+<text x="1001" y="345" font-family="Arial, sans-serif" font-size="15" font-weight="400" fill="#40505d">plan and the user task.</text>
+<rect x="274" y="440" width="692" height="145" rx="12" fill="#edf0f5" stroke="#d9e0e6"/>
+<text x="294" y="470" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#294d72">EVOLVER: explicit observation across the recovery</text>
+<text x="294" y="502" font-family="Arial, sans-serif" font-size="17" font-weight="400" fill="#40505d">Record Planner decisions, execution events and formal results.</text>
+<text x="294" y="529" font-family="Arial, sans-serif" font-size="17" font-weight="400" fill="#40505d">Opening succeeds → keep recording. Placement succeeds → summarize.</text>
+<text x="294" y="556" font-family="Arial, sans-serif" font-size="16" font-weight="400" fill="#40505d">Learning failure is recorded separately; task verification can continue.</text>
+<path d="M382 380 V434" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#arrow)"/>
+<path d="M620 380 V434" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="5 5"/>
+<path d="M858 380 V434" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="988" y="440" width="216" height="145" rx="12" fill="#eaf3ee" stroke="#d9e0e6"/>
+<text x="1001" y="470" font-family="Arial, sans-serif" font-size="21" font-weight="700" fill="#326446">SKILL.md</text>
+<text x="1001" y="501" font-family="Arial, sans-serif" font-size="16" font-weight="400" fill="#40505d">Failure conditions</text>
+<text x="1001" y="526" font-family="Arial, sans-serif" font-size="16" font-weight="400" fill="#40505d">Recovery guidance</text>
+<text x="1001" y="551" font-family="Arial, sans-serif" font-size="16" font-weight="400" fill="#40505d">Verification + evidence</text>
+<path d="M968 512 H982" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="36" y="622" width="1168" height="105" rx="12" fill="#ffffff" stroke="#d9e0e6"/>
+<text x="54" y="652" font-family="Arial, sans-serif" font-size="17" font-weight="700" fill="#172935">ENFORCED BY THE UPPER RUNTIME</text>
+<text x="54" y="680" font-family="Arial, sans-serif" font-size="17" font-weight="400" fill="#40505d">Owner-only selection / retry   •   Verified dependencies   •   Immutable criteria   •   Fresh verifier scope</text>
+<text x="54" y="706" font-family="Arial, sans-serif" font-size="16" font-weight="400" fill="#40505d">No simulator, VLA, live VLM or device action gate is implemented by this CPU example.</text>
+</svg>

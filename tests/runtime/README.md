@@ -8,7 +8,7 @@ The model boundary emits scripted chunks; physical observations are synthetic.
 [team-extensions.test.ts](team-extensions.test.ts) loads a custom ROLE.md and verifies
 explicit context, private files/evidence, owner-only execution, scoped TODOs, duplicate
 assignment admission and rejection of custom tool calls after cancellation.
-[upper-run.test.ts](upper-run.test.ts) checks first-pass, retry-success, unknown/error
+[upper-run.test.ts](upper-run.test.ts) checks first-pass, retry-success, multi-goal recovery, selection/retry gates, independent learning failure and unknown/error
 and pause/resume/cancel paths. [console-server.test.ts](console-server.test.ts) starts
 a temporary loopback server to exercise admission/reconnect/interrupted restart.
 No live model key, simulator, learned policy or GPU is required.

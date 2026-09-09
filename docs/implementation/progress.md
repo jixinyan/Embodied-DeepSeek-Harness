@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.8. Current checkpoint: **runnable DSH upper application and CPU console**.
+Spec: v1.9. Current checkpoint: **runnable DSH upper application and CPU console**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -23,7 +23,7 @@ switching for key state. Existing inspector tabs are provisional. Continue core 
 | Teams | YAML/ROLE.md preflight, frozen configuration, explicit model/tool bindings, independent assignment contexts; concurrent duplicate admission rejected |
 | Communication | Versioned role reports/query, configured result schemas, explicit briefs, authenticated caller identity from tool scope, delegation/send/context exchange, evidence grants, native DSH delivery and audit exports |
 | Tools | Native tool API, role exposure and owner checks; trusted custom native tools share run lifetime and activity tracking |
-| Planning/files | Original DSH TODO plugin, session-local history; durable versioned plans and private assignment files; TODO completion cannot establish success |
+| Planning/files | Original DSH TODO; versioned dependency plans, immutable executed/final criteria, registered subgoal checks, owner-selected goals and private files |
 | Execution boundary | Replaceable EmbodiedBackend port, nonblocking fixture jobs, budgets, pause/confirmed fixture stop and owner-only resume |
 | Verification | Async independent monitor sessions and mandatory formal verification at execution boundaries; unknown cannot become success |
 | Recovery | Formal failure followed by Planner replan/retry opens one recovery and Evolver; explicit progress batches continue until original-goal success |
@@ -36,7 +36,7 @@ switching for key state. Existing inspector tabs are provisional. Continue core 
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 20 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 26 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency and interrupted restart.
 - 230 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -48,9 +48,9 @@ The complete check command is `pnpm check`.
 Remaining: live VLM deployment configuration/evaluation; Python worker transport;
 actual simulator, policy, perception and hardware adapters; resource arbitration;
 interruptible action-chunk admission and device acknowledgement. The upper runner
-currently coordinates one original goal/recovery chain per run. Multi-goal scheduling,
-distributed delivery guarantees, resumable DSH
-sessions, long-horizon retention/compaction and multi-user hosting remain open.
+coordinates plan-selected subgoals and one observing recovery chain at a time.
+Concurrent physical subgoals, nested independent recovery chains, distributed delivery
+guarantees, resumable DSH sessions, long-horizon retention/compaction and multi-user hosting remain open.
 Native delivery completion means session quiescence, not exactly-once business execution.
 Cooperative cancellation cannot forcibly stop an uncooperative external device/tool.
 
@@ -68,8 +68,8 @@ Cooperative cancellation cannot forcibly stop an uncooperative external device/t
 
 1. Harden upper configuration and lifecycle at remaining deployment boundaries;
    configure a live DSH model adapter only against an explicit available binding.
-2. Extend the single-goal coordinator to plan-driven multi-subgoal progression,
-   preserving verifier identity, original-goal recovery and owner-only decisions.
+2. Extend goal/recovery acceptance to longer plans and deployment-specific evaluators.
+   Plan-selected sequential goals and prerequisite recovery now run with CPU fixtures.
 3. Extend the implemented role reports with delivery reconciliation and explicit
    business acknowledgements where required; preserve the original DSH inbox.
 4. Add bounded retention/checkpoints and recovery reconciliation appropriate to
@@ -113,6 +113,8 @@ inputs, schema preflight, missing-context handoff, immutable replay and persiste
 reports across restart. No generic dispatcher or agent loop was added.
 
 - `c622252`: versioned role reports, native result schemas, query/receipts and raw-tool input validation fix.
+- `77f6b5c`: immutable goal admission and current-verdict planning foundation.
+- `0705381`: native plan-selected execution, original-subgoal recovery and independent learning failures.
 
 ## Multi-goal foundation checkpoint (2026-09-09)
 
@@ -135,3 +137,6 @@ opening, placement retry success and final cabinet closure. Opening cannot autho
 a recovery SKILL; placement success can, even before the final task completes.
 Evolver model failures are persisted independently from task outcomes. The console
 scenario selector exposes this fixture without changing the provisional layout.
+
+Validation: `pnpm check` passes with 26 runtime tests, 230 shared TS/Python cases,
+93 pinned DSH files, strict TypeScript, formatting, Python and document checks.
