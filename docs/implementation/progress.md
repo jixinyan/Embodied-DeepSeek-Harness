@@ -113,3 +113,11 @@ inputs, schema preflight, missing-context handoff, immutable replay and persiste
 reports across restart. No generic dispatcher or agent loop was added.
 
 - `c622252`: versioned role reports, native result schemas, query/receipts and raw-tool input validation fix.
+
+## Multi-goal foundation checkpoint (2026-09-09)
+
+TaskGoals now admits Planner-authored subgoals from deployment-registered checks,
+retains immutable final task criteria and checks formally verified dependencies.
+Plan updates retain executed goals and reject stale completion references. Two new
+focused tests and strict TypeScript pass. This checkpoint supplies the domain
+foundation only; selection and multi-goal execution are not yet wired into UpperRun.

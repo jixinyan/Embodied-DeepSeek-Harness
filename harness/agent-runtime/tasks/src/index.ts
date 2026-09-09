@@ -14,3 +14,5 @@ export interface TaskCoordinator {
 }
 
 export type { RunState, RunEvent, RunAssignment } from './run-state.js';
+
+export { TaskGoals, type GoalBinding } from './goals.js';

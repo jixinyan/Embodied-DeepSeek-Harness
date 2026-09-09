@@ -1,4 +1,10 @@
-import type { ContractValidator, PlanDocument, VerificationResult } from '@edh/contracts';
+import { isDeepStrictEqual } from 'node:util';
+import type {
+  ContractValidator,
+  PlanDocument,
+  VerificationResult,
+  SubgoalRequest,
+} from '@edh/contracts';
 import type { LocalStore } from '@edh/storage';
 /** Owner-bound planning; a claimed done item must reference an accepted formal verdict. */
 export class TaskPlans {
@@ -14,11 +20,19 @@ export class TaskPlans {
     expectedVersion: number,
     owner: { agentId: string; assignmentId: string },
     verdicts: readonly VerificationResult[],
+    requests: readonly SubgoalRequest[] = [],
   ): void {
     this.validator.parse('PlanDocument', plan);
     if (plan.owner_agent_id !== owner.agentId || plan.owner_assignment_id !== owner.assignmentId)
       throw new Error('Plan requires decision owner.');
     if (plan.version !== expectedVersion + 1) throw new Error('Plan version must increase by one.');
+    if (plan.items.length > 64) throw new Error('Plan exceeds 64 goals.');
+    for (const request of requests) {
+      if (request.task_id !== plan.task_id) continue;
+      const item = plan.items.find((candidate) => candidate.goal_id === request.goal_id);
+      if (!item || !isDeepStrictEqual(item.success_contract, request.success_contract))
+        throw new Error('Executed goals and their success criteria must remain in plan history.');
+    }
     const ids = new Set(plan.items.map((item) => item.goal_id));
     if (ids.size !== plan.items.length) throw new Error('Duplicate plan goal.');
     const visited = new Set<string>();
@@ -37,19 +51,23 @@ export class TaskPlans {
     };
     for (const item of plan.items) {
       visit(item.goal_id);
-      if (
-        item.status === 'done' &&
-        !verdicts.some(
-          (v) =>
-            v.verdict_id === item.last_verdict_ref &&
-            v.status === 'passed' &&
-            v.task_scope.task_id === plan.task_id &&
-            v.task_scope.goal_id === item.goal_id &&
-            v.goal_contract_id === item.success_contract.id &&
-            v.goal_contract_version === item.success_contract.version,
+      if (item.status === 'done') {
+        const latest = verdicts.findLast(
+          (v) => v.task_scope.task_id === plan.task_id && v.task_scope.goal_id === item.goal_id,
+        );
+        const request = requests.findLast(
+          (r) => r.task_id === plan.task_id && r.goal_id === item.goal_id,
+        );
+        if (
+          !latest ||
+          latest.verdict_id !== item.last_verdict_ref ||
+          latest.status !== 'passed' ||
+          latest.goal_contract_id !== item.success_contract.id ||
+          latest.goal_contract_version !== item.success_contract.version ||
+          (request && latest.task_scope.attempt_id !== request.attempt_id)
         )
-      )
-        throw new Error('Completed plan item requires accepted goal verdict.');
+          throw new Error('Completed plan item requires latest accepted goal verdict.');
+      }
     }
     this.store.put(`plan:${plan.task_id}`, plan, expectedVersion);
   }
