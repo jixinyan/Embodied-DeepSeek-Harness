@@ -12,3 +12,7 @@ assignment admission and rejection of custom tool calls after cancellation.
 and pause/resume/cancel paths. [console-server.test.ts](console-server.test.ts) starts
 a temporary loopback server to exercise admission/reconnect/interrupted restart.
 No live model key, simulator, learned policy or GPU is required.
+
+[session-audits.test.ts](session-audits.test.ts) covers incremental native audit storage,
+aggregate histories larger than a journal record, legacy reads and interrupted append
+reconciliation. The multi-goal suite also exercises normal demo timing.

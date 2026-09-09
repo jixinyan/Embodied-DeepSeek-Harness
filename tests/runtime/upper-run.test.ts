@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { setTimeout } from 'node:timers/promises';
 import { ContractValidator, type VerificationResult, type PlanDocument } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
-import { LocalStore } from '@edh/storage';
+import { LocalStore, SessionAudits } from '@edh/storage';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 import { UpperRun, CORE_TOOLS, terminal } from '../../apps/server/src/application.js';
 import { FixtureModel } from '../../apps/server/src/fixture-model.js';
@@ -66,8 +66,8 @@ async function setup(scenario: FixtureScenario, tickMs = 15, model = new Fixture
     },
   };
 }
-async function until(predicate: () => boolean, run: UpperRun) {
-  const end = Date.now() + 16000;
+async function until(predicate: () => boolean, run: UpperRun, timeoutMs = 16000) {
+  const end = Date.now() + timeoutMs;
   while (!predicate()) {
     if (Date.now() > end) assert.fail(JSON.stringify(run.snapshot(), null, 2));
     await setTimeout(10);
@@ -520,3 +520,28 @@ test('retry budget counts actual attempts of the selected goal', { timeout: 1500
     await app.close();
   }
 });
+
+test(
+  'normal demo pacing completes multi-goal recovery, SKILL publication and readable session audits',
+  { timeout: 60000 },
+  async () => {
+    const app = await setup('multi-goal-recovery', 650, new FixtureModel(140));
+    try {
+      await app.run.start();
+      await until(() => terminal(app.run.state.state), app.run, 45000);
+      await app.run.settle();
+      assert.equal(app.run.state.state, 'succeeded');
+      assert.equal(app.run.state.skillIds.length, 1);
+      assert(!app.run.state.events.some((event) => event.type === 'recovery.failed'));
+      const evolver = Object.values(app.run.state.assignments).find(
+        (assignment) => assignment.member === 'evolver',
+      )!;
+      const audit = new SessionAudits(app.store)
+        .read(app.run.state.id)
+        .find((record) => record.key.endsWith(evolver.id));
+      assert(audit && Array.isArray(audit.value) && audit.value.length > 20);
+    } finally {
+      await app.close();
+    }
+  },
+);

@@ -2,7 +2,7 @@
 <text x="36" y="48" font-family="Arial, sans-serif" font-size="32" fill="#30434b" font-weight="700">Embodied DeepSeek Harness</text>
 <text x="36" y="80" font-family="Arial, sans-serif" font-size="21" fill="#30434b" font-weight="400">Runnable upper system / implementation boundary</text>
 <text x="1100" y="47" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">2026-09-09</text>
-<text x="1100" y="76" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Code: 0705381</text>
+<text x="1100" y="76" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Upper v1.9</text>
 <text x="36" y="120" font-family="Arial, sans-serif" font-size="19" fill="#27674b" font-weight="700">01   RUNNING UPPER APPLICATION</text>
 <rect x="36" y="138" width="406" height="155" rx="12" fill="#edf7f1" stroke="#d3dfda"/>
 <text x="54" y="169" font-family="Arial, sans-serif" font-size="21" fill="#27674b" font-weight="700">DSH mechanisms</text>
@@ -71,7 +71,7 @@
 <text x="936" y="789" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Delivery recovery and longer runs</text>
 <text x="936" y="816" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Long-run retention and reconciliation</text>
 <text x="936" y="843" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Unified layout; UI polish deferred</text>
-<text x="36" y="922" font-family="Arial, sans-serif" font-size="21" fill="#30434b" font-weight="700">26 runtime tests  ·  230 shared TS / Python cases  ·  93 pinned DSH source files</text>
+<text x="36" y="922" font-family="Arial, sans-serif" font-size="21" fill="#30434b" font-weight="700">29 runtime tests  ·  230 shared TS / Python cases  ·  93 pinned DSH source files</text>
 <text x="36" y="959" font-family="Arial, sans-serif" font-size="19" fill="#30434b" font-weight="400">TODO completion is agent-reported progress. Physical success requires accepted verification.</text>
 <text x="36" y="993" font-family="Arial, sans-serif" font-size="18" fill="#30434b" font-weight="400">pnpm demo   |   http://127.0.0.1:4317   |   All physical-looking data is explicitly synthetic.</text>
 </svg>

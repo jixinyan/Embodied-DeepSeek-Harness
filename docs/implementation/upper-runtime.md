@@ -140,7 +140,9 @@ The library excludes fixture experience from ordinary searches by default.
 ## Persistence and operational limits
 
 A single-writer append-only journal persists domain records with versions, checksums
-and fsync. Event records are separate from run projections. DSH session exports are
+and fsync. Event records are separate from run projections. Native session audit events
+are also appended separately behind a count index, with legacy array reads supported.
+Each journal record remains bounded to 8 MiB; aggregate audits may be larger. DSH session exports are
 read-only audits; restarting marks unfinished runs interrupted without resubmitting
 physical work. A stale writer lock requires confirming the old process is stopped
 before manual removal. No automatic lock takeover or journal compaction is implemented.

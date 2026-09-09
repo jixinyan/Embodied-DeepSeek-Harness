@@ -149,5 +149,5 @@ policy is mounted in the host. Native authoring and scalar output remain unchang
 
 A local EDH domain journal is mounted; native DSH sessions remain in-memory with
 read-only audit exports. This is not resumable session persistence. See
-[upper-runtime guide](upper-runtime.md) and [progress](progress.md) for 26 runtime
+[upper-runtime guide](upper-runtime.md) and [progress](progress.md) for 29 runtime
 acceptance cases and remaining physical/deployment boundaries.

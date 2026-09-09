@@ -6,7 +6,7 @@ import type { AddressInfo } from 'node:net';
 import type { Context } from '@deepseek-ai/cordis';
 import { ContractValidator } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
-import { LocalStore } from '@edh/storage';
+import { LocalStore, SessionAudits } from '@edh/storage';
 import { SkillLibrary } from '@edh/memory';
 import type { RunState, RunEvent } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
@@ -300,7 +300,7 @@ export async function startDemoServer(options: DemoServerOptions) {
           runView(id);
           if (method === 'GET' && !operation) return json(res, 200, runView(id));
           if (method === 'GET' && operation === 'audit')
-            return json(res, 200, { sessions: store.list(`session-audit:${id}:`) });
+            return json(res, 200, { sessions: new SessionAudits(store).read(id) });
           if (method === 'GET' && operation === 'recovery') {
             const state = runView(id);
             return json(res, 200, {

@@ -1,4 +1,4 @@
-// Architecture contract only. No runtime implementation.
+// Runtime exports and interfaces for future deployment boundaries.
 import type { RecoveryRecord, SubgoalRequest, TaskScope, VerificationResult } from '@edh/contracts';
 export interface PlannerDecision {
   readonly ownerAgentId: string;

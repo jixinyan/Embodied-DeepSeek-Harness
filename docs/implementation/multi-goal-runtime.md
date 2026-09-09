@@ -112,7 +112,10 @@ for the full sequence, denies premature publication and stale verifier control,
 checks dependency/switch/retry guards and per-goal budgets, and injects an Evolver
 model failure. [Planning tests](../../tests/runtime/planning.test.ts) reject criterion
 changes, dropped executed goals and stale success references. HTTP tests check the
-new scenario binding. The repository-wide command is `pnpm check`.
+new scenario binding. A regression also runs the normal demo timing (140 ms model
+delay, 650 ms backend ticks), requiring both task success and SKILL publication.
+Session audits append native events independently so total history can exceed the
+8 MiB single-record limit. The repository-wide command is `pnpm check`.
 
 Current limits: one active local run, sequential physical jobs, one observing recovery
 chain, fixed deployment-bound check arguments, bounded session/event/file budgets and

@@ -1,4 +1,4 @@
-// Architecture contract only. No runtime implementation.
+// Runtime exports and interfaces for future deployment boundaries.
 import type { MessageEnvelope } from '@edh/contracts';
 export interface EventStore {
   append(event: MessageEnvelope): Promise<void>;
@@ -10,3 +10,5 @@ export interface AssetStore {
 }
 
 export { LocalStore } from './local-store.js';
+
+export { SessionAudits } from './session-audits.js';

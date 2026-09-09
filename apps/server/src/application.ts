@@ -19,7 +19,7 @@ import {
   type Assignment,
 } from '@edh/communication';
 import type { LoadedTeam } from '@edh/teams';
-import { LocalStore } from '@edh/storage';
+import { LocalStore, SessionAudits } from '@edh/storage';
 import { AssignmentFiles } from '@edh/files';
 import { TaskPlans } from '@edh/planning';
 import { SkillLibrary } from '@edh/memory';
@@ -137,6 +137,7 @@ export class UpperRun {
     this.files = new AssignmentFiles(options.store);
     this.reports = new AssignmentReports(options.store, options.validator);
     this.skills = new SkillLibrary(options.store, options.validator);
+    const audits = new SessionAudits(options.store);
     this.sessions = new TeamSessions(
       options.host,
       team,
@@ -197,8 +198,7 @@ export class UpperRun {
           }
         },
         audit: (id, events) => {
-          const key = `session-audit:${this.state.id}:${id}`;
-          options.store.put(key, events, options.store.get(key)?.version ?? 0);
+          audits.append(this.state.id, id, events);
         },
       },
       options.model,

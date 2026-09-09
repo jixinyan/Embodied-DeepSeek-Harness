@@ -58,6 +58,8 @@ export class FixtureModel extends LlmAdapter {
       payload: {
         kind: string;
         finalGoalId?: string;
+        recoveryId?: string;
+        events?: { sequence: number; type: string; detail: Record<string, unknown> }[];
         brief?: InvocationBrief;
         result?: VerificationResult;
         execution?: { state: string };
@@ -209,7 +211,14 @@ export class FixtureModel extends LlmAdapter {
           content:
             String(previous.content) +
             '\n\n## Recovery progress\n' +
-            JSON.stringify(payload, null, 2),
+            JSON.stringify({
+              recoveryId: payload.recoveryId,
+              events: payload.events?.map((event) => ({
+                sequence: event.sequence,
+                type: event.type,
+                summary: JSON.stringify(event.detail).slice(0, 240),
+              })),
+            }),
           expectedVersion: Number(previous.version),
         });
     } else if (payload.kind === 'recovery-success') {

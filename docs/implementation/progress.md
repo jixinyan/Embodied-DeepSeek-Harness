@@ -36,7 +36,7 @@ switching for key state. Existing inspector tabs are provisional. Continue core 
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 26 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 29 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency and interrupted restart.
 - 230 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -138,5 +138,23 @@ a recovery SKILL; placement success can, even before the final task completes.
 Evolver model failures are persisted independently from task outcomes. The console
 scenario selector exposes this fixture without changing the provisional layout.
 
-Validation: `pnpm check` passes with 26 runtime tests, 230 shared TS/Python cases,
+Validation: `pnpm check` passes with 29 runtime tests, 230 shared TS/Python cases,
 93 pinned DSH files, strict TypeScript, formatting, Python and document checks.
+
+
+## Normal-speed audit regression and fix (2026-09-09)
+
+A manual run at the demo defaults (140 ms model delay, 650 ms control ticks) completed
+the physical fixture task but failed learning because a whole-session audit exceeded
+the journal's 8 MiB per-record bound. The failed run remains preserved as evidence.
+SessionAudits now appends individual native events and publishes a count index only
+after the event writes. Audit reads reconstruct the same API payload and remain
+compatible with historical array snapshots. A partially written suffix stays hidden
+until its matching index is committed. This does not resume any model or motion.
+
+The fixture Evolver also writes concise progress notes with event sequence references;
+the original handoff and full evidence remain in the run/recovery records. Tests cover
+an aggregate audit over 8 MiB, duplicate append, restart/legacy reads, conflicting
+suffixes and the exact normal-speed multi-goal scenario. The manual rerun completed
+all four verdicts, published one SKILL and returned readable audits with no learning
+error. Retention and native model-context compaction remain separate future work.
