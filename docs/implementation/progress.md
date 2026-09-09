@@ -121,3 +121,17 @@ retains immutable final task criteria and checks formally verified dependencies.
 Plan updates retain executed goals and reject stale completion references. Two new
 focused tests and strict TypeScript pass. This checkpoint supplies the domain
 foundation only; selection and multi-goal execution are not yet wired into UpperRun.
+
+## Multi-goal execution checkpoint (2026-09-09)
+
+The foundation is now connected to native DSH tools. Planner selects admitted goals,
+waits for verified dependencies, explicitly authorizes retries and retains per-goal
+attempt budgets. Fresh verifier briefs use the selected goal's immutable contract;
+stale verifier control is rejected. Final task completion requires the final goal's
+latest stopped-boundary verdict and a completed plan.
+
+The multi-goal CPU fixture runs placement failure, Planner replan, verified cabinet
+opening, placement retry success and final cabinet closure. Opening cannot authorize
+a recovery SKILL; placement success can, even before the final task completes.
+Evolver model failures are persisted independently from task outcomes. The console
+scenario selector exposes this fixture without changing the provisional layout.

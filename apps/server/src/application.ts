@@ -6,7 +6,7 @@ import {
   LifecycleValidator,
   type InvocationBrief,
   type SubgoalRequest,
-  type SuccessContract,
+  type SuccessCheck,
   type VerificationResult,
   type CheckResult,
   type EvidenceRef,
@@ -24,7 +24,8 @@ import { AssignmentFiles } from '@edh/files';
 import { TaskPlans } from '@edh/planning';
 import { SkillLibrary } from '@edh/memory';
 import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
-import type { RunState } from '@edh/tasks';
+import { TaskGoals, type GoalBinding, type RunState } from '@edh/tasks';
+export type { GoalBinding } from '@edh/tasks';
 
 export { CORE_TOOLS } from '@edh/tools';
 import {
@@ -43,17 +44,22 @@ interface CheckedBoundary {
   facts: CheckResult[];
   sample: SensorSample;
 }
-export interface GoalBinding {
+interface RecoveryObservation {
   id: string;
-  configuration: string;
-  successContract: SuccessContract;
-  entities: Record<string, string>;
-  capabilities: string[];
-  taskSemantics: string[];
-  budget: { max_control_steps: number; max_wall_time_s: number };
+  goal: GoalBinding;
+  context: Record<string, unknown>;
+  trace: { sequence: number; type: string; detail: Record<string, unknown> }[];
+  cursor: number;
+  delivery: Promise<void>;
+  timer?: ReturnType<typeof setTimeout>;
+  evolverId?: string;
+  result?: VerificationResult;
+  error?: string;
 }
 export interface ApplicationOptions {
   goal: GoalBinding;
+  allowedSubgoalChecks?: readonly SuccessCheck[];
+  predefinedGoals?: readonly GoalBinding[];
   /** Trusted deployment-owned additions, registered directly in the role's DSH scope. */
   additionalTools?: Readonly<Record<string, (assignment: Assignment) => ToolDefinition>>;
   host: Context;
@@ -86,17 +92,18 @@ export class UpperRun {
   private version = 0;
   private closed = false;
   private unsubscribe: () => void;
-  private evolverId: string | undefined;
-  private recoveryContext: Record<string, unknown> | undefined;
-  private recoveryTrace: { sequence: number; type: string; detail: Record<string, unknown> }[] = [];
-  private recoveryCursor = 0;
-  private recoveryDelivery: Promise<void> = Promise.resolve();
-  private recoveryTimer: ReturnType<typeof setTimeout> | undefined;
-  private readonly contract: SuccessContract;
+  private readonly goals: TaskGoals;
+  private goal: GoalBinding;
+  private attemptSequence = 1;
+  private readonly recoveries = new Map<string, RecoveryObservation>();
   constructor(private readonly options: ApplicationOptions) {
-    this.contract = structuredClone(
-      options.validator.parse('SuccessContract', options.goal.successContract),
+    this.goals = new TaskGoals(
+      options.validator,
+      options.goal,
+      options.allowedSubgoalChecks,
+      options.predefinedGoals,
     );
+    this.goal = this.goals.get(options.goal.id);
     const team = { ...options.team, teamRunId: randomUUID() };
     this.state = {
       id: randomUUID(),
@@ -110,6 +117,9 @@ export class UpperRun {
       teamId: team.definition.team_id,
       decisionAssignmentId: '',
       attempt: 1,
+      activeGoalId: this.goal.id,
+      finalGoalId: options.goal.id,
+      activeRecoveryId: null,
       recoveryId: null,
       retryChanges: [],
       assignments: {},
@@ -180,8 +190,11 @@ export class UpperRun {
             row.step = Number(detail.step);
           }
           this.event(type, detail);
-          if (type === 'agent.deadline' && !terminal(this.state.state))
-            this.spawn(this.fail(new Error('Assignment deadline exceeded.')));
+          if (type === 'agent.deadline' && !terminal(this.state.state)) {
+            const recovery = this.recoveryForAssignment(String(detail.assignmentId));
+            if (recovery) this.learningFailure(recovery, new Error('Evolver deadline exceeded.'));
+            else this.spawn(this.fail(new Error('Assignment deadline exceeded.')));
+          }
         },
         audit: (id, events) => {
           const key = `session-audit:${this.state.id}:${id}`;
@@ -224,36 +237,89 @@ export class UpperRun {
     const ownerEvent =
       (type.startsWith('tool.') || type === 'agent.output' || type === 'agent.todos') &&
       detail.assignmentId === this.state.decisionAssignmentId;
+    const recovery = this.activeRecovery();
     if (
-      this.recoveryContext &&
+      recovery &&
+      !recovery.result &&
       !terminal(this.state.state) &&
       (ownerEvent ||
         [
           'plan.updated',
+          'goal.selected',
           'execution.requested',
           'execution.updated',
           'verification.completed',
           'retry.accepted',
         ].includes(type))
     ) {
-      this.recoveryTrace.push({
-        sequence: this.state.events.length,
-        type,
-        detail: structuredClone(detail),
-      });
-      const key = `recovery:${this.state.recoveryId}`;
-      this.options.store.put(
-        key,
-        { context: this.recoveryContext, events: this.recoveryTrace },
-        this.options.store.get(key)?.version ?? 0,
-      );
-      if (!this.recoveryTimer)
-        this.recoveryTimer = setTimeout(() => {
-          this.recoveryTimer = undefined;
-          this.spawn(this.flushRecovery());
+      recovery.trace.push({ sequence: latest.sequence, type, detail: structuredClone(detail) });
+      this.persistRecovery(recovery);
+      if (!recovery.timer)
+        recovery.timer = setTimeout(() => {
+          delete recovery.timer;
+          this.learn(recovery, this.flushRecovery(recovery));
         }, 150);
     }
   }
+  private activeRecovery(): RecoveryObservation | undefined {
+    return this.state.activeRecoveryId
+      ? this.recoveries.get(this.state.activeRecoveryId)
+      : undefined;
+  }
+  private recoveryForAssignment(id: string): RecoveryObservation | undefined {
+    return [...this.recoveries.values()].find((r) => r.evolverId === id);
+  }
+  private persistRecovery(recovery: RecoveryObservation): void {
+    const key = `recovery:${recovery.id}`;
+    this.options.store.put(
+      key,
+      {
+        context: recovery.context,
+        events: recovery.trace,
+        result: recovery.result ?? null,
+        error: recovery.error ?? null,
+      },
+      this.options.store.get(key)?.version ?? 0,
+    );
+  }
+  private learningFailure(recovery: RecoveryObservation, error: unknown): void {
+    if (recovery.error) return;
+    recovery.error = error instanceof Error ? error.message : String(error);
+    this.persistRecovery(recovery);
+    this.event('recovery.failed', { recoveryId: recovery.id, error: recovery.error });
+  }
+  private learn(recovery: RecoveryObservation, work: Promise<void>): void {
+    const tracked = work
+      .catch((error) => this.learningFailure(recovery, error))
+      .finally(() => this.pending.delete(tracked));
+    this.pending.add(tracked);
+  }
+  private currentRequest(): SubgoalRequest | undefined {
+    return this.state.requests.findLast((r) => r.goal_id === this.goal.id);
+  }
+  private currentVerdict(): VerificationResult | undefined {
+    return this.state.verdicts.findLast((v) => v.task_scope.goal_id === this.goal.id);
+  }
+  private stoppedAndVerified(): void {
+    const execution = this.options.backend.query();
+    if (!execution) return;
+    if (execution.state !== 'ended' || !execution.device_confirmed)
+      throw new Error('Goal selection requires confirmed ended execution.');
+    if (
+      !this.state.verdicts.some(
+        (v) =>
+          v.execution_id === execution.execution_id &&
+          v.boundary_event_id === execution.boundary_event_id,
+      )
+    )
+      throw new Error('Goal selection must wait for formal verification.');
+  }
+  private readyGoal(id: string): GoalBinding {
+    const plan = this.plans.read(this.state.id);
+    if (!plan) throw new Error('Write a task plan before selecting or executing a goal.');
+    return this.goals.ready(plan, id, this.state.verdicts, this.state.requests);
+  }
+
   private spawn(work: Promise<void>): void {
     const tracked = work
       .catch((error) => this.fail(error))
@@ -281,6 +347,11 @@ export class UpperRun {
   private verifier(a: Assignment): void {
     if (a.member !== this.sessions.team.definition.bindings.final_verifier)
       throw new Error('Only the designated verifier may perform formal checks.');
+    if (
+      a.brief.task_scope.goal_id !== this.goal.id ||
+      a.brief.task_scope.attempt_id !== `attempt-${this.state.attempt}`
+    )
+      throw new Error('Verifier belongs to a stale goal or attempt.');
   }
   private permit(a: Assignment, ids: readonly string[]): SensorSample[] {
     return ids.map((id) => {
@@ -325,16 +396,16 @@ export class UpperRun {
       objective,
       task_scope: {
         task_id: this.state.id,
-        goal_id: this.options.goal.id,
+        goal_id: this.goal.id,
         attempt_id: `attempt-${this.state.attempt}`,
-        ...(this.state.recoveryId ? { recovery_id: this.state.recoveryId } : {}),
+        ...(this.state.activeRecoveryId ? { recovery_id: this.state.activeRecoveryId } : {}),
       },
       expected_output: {
         schema: role.outputSchema?.reference ?? 'builtin:AgentReport.v1',
         recipient: caller?.id ?? 'user',
       },
-      entities: structuredClone(this.options.goal.entities),
-      success_contract: structuredClone(this.contract),
+      entities: structuredClone(this.goal.entities),
+      success_contract: structuredClone(this.goal.successContract),
       known_facts: samples.map((s) => ({
         statement: s.description,
         observed_at: s.evidence.observed_at,
@@ -346,7 +417,7 @@ export class UpperRun {
       tools_and_limits: {
         allowed_tools: [...role.definition.tools],
         allowed_actions: [],
-        budget: structuredClone(this.options.goal.budget),
+        budget: structuredClone(this.goal.budget),
       },
     };
   }
@@ -445,7 +516,7 @@ export class UpperRun {
             exec.signal.throwIfAborted();
             const recoveryWrite =
               this.state.state === 'succeeded' &&
-              a.id === this.evolverId &&
+              Boolean(this.recoveryForAssignment(a.id)?.result) &&
               (logical.startsWith('files.') ||
                 logical.startsWith('skills.') ||
                 logical === 'evidence.read' ||
@@ -517,7 +588,8 @@ export class UpperRun {
       case 'agent.report': {
         const input = args as unknown as ReportInput;
         if (
-          a.id !== this.evolverId &&
+          a.id !== this.state.decisionAssignmentId &&
+          !this.recoveryForAssignment(a.id) &&
           a.brief.task_scope.attempt_id !== `attempt-${this.state.attempt}`
         )
           throw new Error('Report belongs to a stale attempt.');
@@ -599,18 +671,24 @@ export class UpperRun {
           taskId: this.state.id,
           ownerAgentId: this.sessions.get(this.state.decisionAssignmentId).sessionId,
           ownerAssignmentId: this.state.decisionAssignmentId,
-          successContract: this.contract,
+          successContract: structuredClone(this.goal.successContract),
+          activeGoalId: this.goal.id,
+          attemptId: `attempt-${this.state.attempt}`,
+          ...this.goals.catalog(),
         };
       case 'planning.update': {
         this.owner(a);
         const plan = this.options.validator.parse('PlanDocument', args.plan);
         if (plan.task_id !== this.state.id) throw new Error('Foreign plan.');
+        const admitted = this.goals.prepare(plan);
         this.plans.update(
           plan,
           Number(args.expectedVersion),
           { agentId: a.sessionId, assignmentId: a.id },
           this.state.verdicts,
+          this.state.requests,
         );
+        this.goals.admit(admitted);
         this.event('plan.updated', { plan });
         return { plan };
       }
@@ -668,24 +746,26 @@ export class UpperRun {
         return { execution: this.options.backend.query() ?? null };
       case 'execution.start': {
         this.owner(a);
+        this.readyGoal(this.goal.id);
+        this.stoppedAndVerified();
         if (this.state.requests.some((r) => r.attempt_id === `attempt-${this.state.attempt}`))
           throw new Error('Attempt already started; query its status instead of resubmitting.');
         const request: SubgoalRequest = {
           schema_version: 'physical.subgoal.v1',
           task_id: this.state.id,
           team_run_id: this.sessions.team.teamRunId,
-          goal_id: this.options.goal.id,
+          goal_id: this.goal.id,
           attempt_id: `attempt-${this.state.attempt}`,
           instruction: s('instruction'),
-          entities: structuredClone(this.options.goal.entities),
-          required_capabilities: [...this.options.goal.capabilities],
-          success_contract: structuredClone(this.contract),
-          budget: structuredClone(this.options.goal.budget),
+          entities: structuredClone(this.goal.entities),
+          required_capabilities: [...this.goal.capabilities],
+          success_contract: structuredClone(this.goal.successContract),
+          budget: structuredClone(this.goal.budget),
           context_refs: [...(this.grants.get(a.id) ?? [])],
           decision_owner_id: a.sessionId,
           owner_assignment_id: a.id,
           idempotency_key: randomUUID(),
-          ...(this.state.recoveryId ? { recovery_id: this.state.recoveryId } : {}),
+          ...(this.state.activeRecoveryId ? { recovery_id: this.state.activeRecoveryId } : {}),
         };
         this.options.validator.parse('SubgoalRequest', request);
         this.state.requests.push(request);
@@ -702,9 +782,36 @@ export class UpperRun {
         await this.options.backend.resume(a.sessionId);
         this.state.state = 'running';
         return { execution: this.options.backend.query()! };
+      case 'tasks.select_goal': {
+        this.owner(a);
+        this.stoppedAndVerified();
+        const next = this.readyGoal(s('goalId'));
+        const failed = this.currentVerdict();
+        if (next.id !== this.goal.id && failed?.status === 'failed' && !this.activeRecovery())
+          throw new Error('Replan the failed subgoal before switching to a repair goal.');
+        if (next.id !== this.goal.id) {
+          this.goal = next;
+          this.state.activeGoalId = next.id;
+          const prior = this.currentRequest();
+          this.state.attempt = prior
+            ? Number(prior.attempt_id.slice('attempt-'.length))
+            : ++this.attemptSequence;
+          this.state.retryChanges = [];
+          this.latestMonitor = undefined;
+          this.event('goal.selected', {
+            goalId: next.id,
+            attemptId: `attempt-${this.state.attempt}`,
+          });
+        }
+        return {
+          goal: structuredClone(this.goal),
+          attemptId: `attempt-${this.state.attempt}`,
+          retryRequired: this.currentRequest()?.attempt_id === `attempt-${this.state.attempt}`,
+        };
+      }
       case 'tasks.replan': {
         this.owner(a);
-        const verdict = this.state.verdicts.at(-1);
+        const verdict = this.currentVerdict();
         if (
           verdict?.status === 'failed' &&
           verdict.task_scope.attempt_id === `attempt-${this.state.attempt}`
@@ -720,21 +827,21 @@ export class UpperRun {
       }
       case 'tasks.retry': {
         this.owner(a);
-        const verdict = this.state.verdicts.at(-1);
+        const verdict = this.currentVerdict();
         if (
           !verdict ||
           verdict.status !== 'failed' ||
           verdict.task_scope.attempt_id !== `attempt-${this.state.attempt}`
         )
           throw new Error('Retry requires a current formal failed verdict.');
-        if (this.state.attempt >= 3) throw new Error('Retry budget exhausted.');
+        if (this.state.requests.filter((r) => r.goal_id === this.goal.id).length >= 3)
+          throw new Error('Retry budget exhausted for this goal.');
         const changes = args.changes as string[];
         if (!changes.length) throw new Error('Retry requires explicit changes.');
-        if (this.options.backend.query()?.state !== 'ended')
-          throw new Error('Retry requires a confirmed ended attempt.');
+        this.stoppedAndVerified();
         await this.beginRecovery(a, changes, s('attemptSummary'), 'retry');
         this.state.retryChanges = [...changes];
-        this.state.attempt++;
+        this.state.attempt = ++this.attemptSequence;
         this.event('retry.accepted', {
           ownerAssignmentId: a.id,
           failedVerdict: verdict,
@@ -754,7 +861,10 @@ export class UpperRun {
         )
           throw new Error('Stale or absent formal verification assignment.');
         const checked = this.options.backend.check(
-          ('all' in this.contract ? this.contract.all : this.contract.any).map((c) => c.check_id),
+          ('all' in a.brief.success_contract
+            ? a.brief.success_contract.all
+            : a.brief.success_contract.any
+          ).map((c) => c.check_id),
         );
         this.observe(a, checked.sample);
         context.facts = checked.facts;
@@ -782,8 +892,8 @@ export class UpperRun {
           verifier_assignment_id: a.id,
           task_scope: structuredClone(execution.task_scope),
           status: s('status') as 'passed' | 'failed' | 'unknown',
-          goal_contract_id: this.contract.id,
-          goal_contract_version: this.contract.version,
+          goal_contract_id: request.success_contract.id,
+          goal_contract_version: request.success_contract.version,
           boundary_event_id: checked.boundaryId,
           checks: structuredClone(checked.facts),
           evidence_refs: [checked.sample.evidence.id],
@@ -805,12 +915,19 @@ export class UpperRun {
           throw new Error('Verification request already settled.');
         this.state.verdicts.push(result);
         this.event('verification.completed', { result });
+        this.resolveRecovery(result);
         const lead = this.sessions.get(this.state.decisionAssignmentId);
         this.grants.get(lead.id)!.add(checked.sample.evidence.id);
         this.spawn(
           this.sessions.deliver(
             lead.id,
-            { kind: 'verdict', result, execution, brief: lead.brief },
+            {
+              kind: 'verdict',
+              result,
+              execution,
+              brief: this.brief(lead.member, this.state.instruction),
+              finalGoalId: this.options.goal.id,
+            },
             a.id,
           ),
         );
@@ -834,27 +951,25 @@ export class UpperRun {
           result.task_scope.goal_id !== this.options.goal.id
         )
           throw new Error('Finish requires original-goal current-attempt formal success.');
+        const execution = this.options.backend.query();
+        if (
+          !execution ||
+          !['paused', 'ended'].includes(execution.state) ||
+          !execution.device_confirmed ||
+          result.execution_id !== execution.execution_id ||
+          result.boundary_event_id !== execution.boundary_event_id
+        )
+          throw new Error('Finish requires the latest confirmed stopped boundary.');
+        const plan = this.plans.read(this.state.id);
+        if (
+          !plan ||
+          plan.items.some((item) => item.status !== 'done' && item.status !== 'abandoned')
+        )
+          throw new Error(
+            'Finish requires a completed plan; explicitly abandon unused optional goals.',
+          );
         this.state.state = 'succeeded';
         this.event('run.succeeded', { verdictId: result.verdict_id });
-        if (this.evolverId) {
-          this.grants.get(this.evolverId)!.add(result.evidence_refs[0]!);
-          const evolverId = this.evolverId;
-          this.spawn(
-            (async () => {
-              await this.flushRecovery();
-              await this.sessions.deliver(
-                evolverId,
-                {
-                  kind: 'recovery-success',
-                  result,
-                  changes: this.state.retryChanges,
-                  brief: this.sessions.get(evolverId).brief,
-                },
-                a.id,
-              );
-            })(),
-          );
-        }
         return { state: this.state.state };
       }
       case 'skills.search':
@@ -866,28 +981,27 @@ export class UpperRun {
         return bundle;
       }
       case 'skills.save': {
-        if (a.id !== this.evolverId || !this.state.recoveryId || this.state.state !== 'succeeded')
+        const recovery = this.recoveryForAssignment(a.id);
+        if (!recovery?.result)
           throw new Error('Only the recovery Evolver may publish after original-goal success.');
-        const verdict = this.state.verdicts.at(-1)!;
-        if (verdict.status !== 'passed' || verdict.task_scope.recovery_id !== this.state.recoveryId)
-          throw new Error('Recovery provenance mismatch.');
-        const skillId = this.state.recoveryId;
+        const verdict = recovery.result;
+        const skillId = recovery.id;
         const bundle = this.skills.save(
           {
             schema_version: 'physical.skill_metadata.v1',
             skill_id: skillId,
             version: '1',
-            task_semantics: [...this.options.goal.taskSemantics],
-            required_capabilities: [...this.options.goal.capabilities],
-            source_configurations: [this.options.goal.configuration],
+            task_semantics: [...recovery.goal.taskSemantics],
+            required_capabilities: [...recovery.goal.capabilities],
+            source_configurations: [recovery.goal.configuration],
             evidence_refs: [
               ...new Set([
-                ...((this.recoveryContext?.failedVerdict as VerificationResult | undefined)
+                ...((recovery.context.failedVerdict as VerificationResult | undefined)
                   ?.evidence_refs ?? []),
                 ...verdict.evidence_refs,
               ]),
             ],
-            recovery_id: this.state.recoveryId,
+            recovery_id: recovery.id,
             verdict_ref: verdict.verdict_id,
             origin: this.state.source,
             limitations: [
@@ -896,7 +1010,7 @@ export class UpperRun {
             validation_status:
               this.state.source === 'test_fixture' ? 'test_fixture' : 'source_validated',
             validated_configurations:
-              this.state.source === 'test_fixture' ? [] : [this.options.goal.configuration],
+              this.state.source === 'test_fixture' ? [] : [recovery.goal.configuration],
           },
           s('markdown'),
         );
@@ -919,8 +1033,8 @@ export class UpperRun {
     this.owner(a);
     if (!changes.length || !attemptSummary.trim())
       throw new Error('Recovery requires a planner-supplied attempt summary and proposed changes.');
-    const failed = this.state.verdicts.at(-1);
-    const request = this.state.requests.at(-1);
+    const failed = this.currentVerdict();
+    const request = this.currentRequest();
     if (
       !failed ||
       failed.status !== 'failed' ||
@@ -928,65 +1042,110 @@ export class UpperRun {
       !request
     )
       throw new Error('Recovery requires the current formal failed subgoal.');
-    this.state.recoveryId ??= randomUUID();
     this.state.retryChanges = [...changes];
-    if (this.recoveryContext) return;
-    this.recoveryContext = {
-      decision,
-      attemptSummary,
-      failedRequest: request,
-      failedExecution: this.options.backend.query(),
-      failedVerdict: failed,
-      changes,
-      ownerAssignmentId: a.id,
-      originalGoalId: this.options.goal.id,
+    if (this.activeRecovery()) return;
+    const recovery: RecoveryObservation = {
+      id: randomUUID(),
+      goal: structuredClone(this.goal),
+      trace: [],
+      cursor: 0,
+      delivery: Promise.resolve(),
+      context: {
+        decision,
+        attemptSummary,
+        failedRequest: request,
+        failedExecution: this.state.executions.find((e) => e.execution_id === failed.execution_id),
+        failedVerdict: failed,
+        changes,
+        ownerAssignmentId: a.id,
+        originalGoalId: this.goal.id,
+      },
     };
-    this.event('recovery.opened', {
-      recoveryId: this.state.recoveryId,
-      context: this.recoveryContext,
-    });
-    this.options.store.put(
-      `recovery:${this.state.recoveryId}`,
-      { context: this.recoveryContext, events: [] },
-      0,
-    );
+    this.recoveries.set(recovery.id, recovery);
+    this.state.recoveryId = recovery.id;
+    this.state.activeRecoveryId = recovery.id;
+    this.persistRecovery(recovery);
+    this.event('recovery.opened', { recoveryId: recovery.id, context: recovery.context });
     const role = this.sessions.team.definition.bindings.recovery_evolver;
     if (role && this.sessions.team.definition.learning_enabled !== false) {
+      // Capture the complete brief before any asynchronous creation; learning must not gate motion.
       const refs = [...(this.grants.get(a.id) ?? [])];
-      const e = await this.assignment(
+      const brief = this.brief(
         role,
-        'Record the recovery from this planner decision through original-subgoal success. Derive planning and verification knowledge.',
+        'Record the recovery through original-subgoal success. Derive planning and verification knowledge.',
         a,
-        JSON.stringify(this.recoveryContext),
+        JSON.stringify(recovery.context),
         refs,
       );
-      this.evolverId = e.id;
-      this.recoveryDelivery = this.sessions.deliver(
-        e.id,
-        { kind: 'recovery-start', brief: e.brief, context: this.recoveryContext },
-        a.id,
-      );
-      this.spawn(this.recoveryDelivery);
+      recovery.delivery = (async () => {
+        const e = await this.sessions.create(role, brief);
+        recovery.evolverId = e.id;
+        this.grants.set(e.id, new Set(refs));
+        await this.sessions.deliver(
+          e.id,
+          { kind: 'recovery-start', brief: e.brief, context: recovery.context },
+          a.id,
+        );
+      })();
+      this.learn(recovery, recovery.delivery);
     }
   }
-  private flushRecovery(): Promise<void> {
-    if (this.recoveryTimer) {
-      clearTimeout(this.recoveryTimer);
-      this.recoveryTimer = undefined;
+  private flushRecovery(recovery: RecoveryObservation): Promise<void> {
+    if (recovery.timer) {
+      clearTimeout(recovery.timer);
+      delete recovery.timer;
     }
-    if (!this.evolverId || this.recoveryCursor >= this.recoveryTrace.length)
-      return this.recoveryDelivery;
-    const events = this.recoveryTrace.slice(this.recoveryCursor);
-    this.recoveryCursor = this.recoveryTrace.length;
-    const target = this.evolverId;
-    this.recoveryDelivery = this.recoveryDelivery.then(() =>
-      this.sessions.deliver(
-        target,
-        { kind: 'recovery-progress', recoveryId: this.state.recoveryId, events },
-        this.state.decisionAssignmentId,
-      ),
+    if (recovery.cursor >= recovery.trace.length || recovery.error) return recovery.delivery;
+    const events = recovery.trace.slice(recovery.cursor);
+    recovery.cursor = recovery.trace.length;
+    recovery.delivery = recovery.delivery.then(async () => {
+      if (recovery.evolverId)
+        await this.sessions.deliver(
+          recovery.evolverId,
+          { kind: 'recovery-progress', recoveryId: recovery.id, events },
+          this.state.decisionAssignmentId,
+        );
+    });
+    return recovery.delivery;
+  }
+  private resolveRecovery(result: VerificationResult): void {
+    const recovery = this.activeRecovery();
+    if (
+      !recovery ||
+      result.status !== 'passed' ||
+      result.task_scope.goal_id !== recovery.goal.id ||
+      result.task_scope.recovery_id !== recovery.id ||
+      result.goal_contract_id !== recovery.goal.successContract.id ||
+      result.goal_contract_version !== recovery.goal.successContract.version
+    )
+      return;
+    recovery.result = structuredClone(result);
+    this.state.activeRecoveryId = null;
+    this.persistRecovery(recovery);
+    this.event('recovery.resolved', {
+      recoveryId: recovery.id,
+      goalId: recovery.goal.id,
+      verdictId: result.verdict_id,
+    });
+    const changes = [...this.state.retryChanges];
+    this.learn(
+      recovery,
+      (async () => {
+        await this.flushRecovery(recovery);
+        if (!recovery.evolverId || recovery.error) return;
+        for (const ref of result.evidence_refs) this.grants.get(recovery.evolverId)!.add(ref);
+        await this.sessions.deliver(
+          recovery.evolverId,
+          {
+            kind: 'recovery-success',
+            result,
+            changes,
+            brief: this.sessions.get(recovery.evolverId).brief,
+          },
+          this.state.decisionAssignmentId,
+        );
+      })(),
     );
-    return this.recoveryDelivery;
   }
   private backendUpdate(update: BackendUpdate): void {
     if (this.closed) return;
@@ -994,6 +1153,13 @@ export class UpperRun {
     this.options.validator.parse('EvidenceRef', update.sample.evidence);
     const request = this.state.requests.at(-1);
     if (!request) throw new Error('Unsolicited backend execution.');
+    if (
+      update.status.task_scope.task_id !== request.task_id ||
+      update.status.task_scope.goal_id !== request.goal_id ||
+      update.status.task_scope.attempt_id !== request.attempt_id ||
+      update.status.task_scope.recovery_id !== request.recovery_id
+    )
+      throw new Error('Backend update does not match the admitted current request.');
     const previous = this.state.executions.find(
       (e) => e.execution_id === update.status.execution_id,
     );
@@ -1037,7 +1203,9 @@ export class UpperRun {
       while (this.latestMonitor && !terminal(this.state.state)) {
         const update = this.latestMonitor;
         this.latestMonitor = undefined;
-        if (this.options.backend.query()?.state !== 'running') break;
+        const current = this.options.backend.query();
+        if (current?.state !== 'running') break;
+        if (current.execution_id !== update.status.execution_id) continue;
         const a = await this.assignment(
           this.sessions.team.definition.bindings.final_verifier,
           'Monitor the explicit current frame; pause if needed. Formal success is a separate round.',
@@ -1114,7 +1282,8 @@ export class UpperRun {
   async close(): Promise<void> {
     if (this.closed) return;
     if (!terminal(this.state.state)) await this.stop();
-    if (this.recoveryTimer) clearTimeout(this.recoveryTimer);
+    for (const recovery of this.recoveries.values())
+      if (recovery.timer) clearTimeout(recovery.timer);
     this.unsubscribe();
     await this.options.backend.close();
     await this.sessions.close();

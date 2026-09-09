@@ -437,7 +437,7 @@ function render() {
   text(
     'verification-status',
     verdict
-      ? `${verdict.status.toUpperCase()} · ${verdict.task_scope.attempt_id}`
+      ? `${verdict.status.toUpperCase()} · ${verdict.task_scope.goal_id} · ${verdict.task_scope.attempt_id}`
       : 'Awaiting execution boundary',
   );
   text(

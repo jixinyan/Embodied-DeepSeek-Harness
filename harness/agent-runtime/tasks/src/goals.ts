@@ -57,7 +57,8 @@ export class TaskGoals {
     };
   }
   prepare(plan: PlanDocument): GoalBinding[] {
-    if (plan.items.length > 64) throw new Error('Plan exceeds 64 goals.');
+    if (new Set([...this.goals.keys(), ...plan.items.map((item) => item.goal_id)]).size > 64)
+      throw new Error('Task exceeds 64 admitted goals, including retained history.');
     const root = plan.items.find((item) => item.goal_id === this.root.id);
     if (!root || root.status === 'abandoned')
       throw new Error('Plan must retain the required final task goal.');

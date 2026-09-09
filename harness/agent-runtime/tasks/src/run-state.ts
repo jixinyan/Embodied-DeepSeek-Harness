@@ -48,6 +48,9 @@ export interface RunState {
   teamId: string;
   decisionAssignmentId: string;
   attempt: number;
+  activeGoalId?: string;
+  finalGoalId?: string;
+  activeRecoveryId?: string | null;
   recoveryId: string | null;
   retryChanges: string[];
   assignments: Record<string, RunAssignment>;

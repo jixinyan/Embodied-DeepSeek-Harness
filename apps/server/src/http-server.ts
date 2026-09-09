@@ -11,7 +11,13 @@ import { SkillLibrary } from '@edh/memory';
 import type { RunState, RunEvent } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
 import { UpperRun, CORE_TOOLS, terminal } from './application.js';
-import { FixtureBackend, FIXTURE_GOAL, type FixtureScenario } from './fixture-backend.js';
+import {
+  FixtureBackend,
+  FIXTURE_GOAL,
+  MULTI_GOAL_FIXTURE,
+  FIXTURE_SUBGOAL_CHECKS,
+  type FixtureScenario,
+} from './fixture-backend.js';
 import { FixtureModel } from './fixture-model.js';
 
 export interface DemoServerOptions {
@@ -22,7 +28,13 @@ export interface DemoServerOptions {
   modelDelayMs?: number;
   teamFile?: string;
 }
-const scenarios: FixtureScenario[] = ['retry-success', 'first-pass', 'unknown', 'backend-error'];
+const scenarios: FixtureScenario[] = [
+  'retry-success',
+  'first-pass',
+  'unknown',
+  'backend-error',
+  'multi-goal-recovery',
+];
 class HttpError extends Error {
   constructor(
     readonly status: number,
@@ -193,6 +205,12 @@ export async function startDemoServer(options: DemoServerOptions) {
             tools: CORE_TOOLS,
             scenarios,
             goal: FIXTURE_GOAL,
+            scenarioGoals: Object.fromEntries(
+              scenarios.map((scenario) => [
+                scenario,
+                scenario === 'multi-goal-recovery' ? MULTI_GOAL_FIXTURE : FIXTURE_GOAL,
+              ]),
+            ),
             physicalRuntime: 'not_connected',
             model: 'deterministic DSH fixture adapter',
           });
@@ -250,13 +268,17 @@ export async function startDemoServer(options: DemoServerOptions) {
               team,
               validator,
               store,
-              goal: FIXTURE_GOAL,
+              goal: data.scenario === 'multi-goal-recovery' ? MULTI_GOAL_FIXTURE : FIXTURE_GOAL,
+              allowedSubgoalChecks: FIXTURE_SUBGOAL_CHECKS,
               backend: new FixtureBackend(
                 validator,
                 data.scenario as FixtureScenario,
                 options.tickMs ?? 650,
               ),
-              instruction: 'Place the cup inside the cabinet.',
+              instruction:
+                data.scenario === 'multi-goal-recovery'
+                  ? 'Store the cup inside the cabinet and close the cabinet.'
+                  : 'Place the cup inside the cabinet.',
               scenario: data.scenario as string,
               model: () => ({ provider: 'fixture', model: 'fixture' }),
               onChange: changed,

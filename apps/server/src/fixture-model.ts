@@ -1,3 +1,4 @@
+import { multiGoalChoice } from './multi-goal-fixture.js';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import {
@@ -56,6 +57,7 @@ export class FixtureModel extends LlmAdapter {
     const { payload } = JSON.parse(text.text) as {
       payload: {
         kind: string;
+        finalGoalId?: string;
         brief?: InvocationBrief;
         result?: VerificationResult;
         execution?: { state: string };
@@ -92,7 +94,10 @@ export class FixtureModel extends LlmAdapter {
           status: index < active ? 'completed' : index === active ? 'in_progress' : 'pending',
         })),
       });
-    if (payload.kind === 'initial') {
+    const multi = multiGoalChoice(payload, step, previous);
+    if (multi !== undefined) {
+      if (multi) call(multi.tool, multi.input);
+    } else if (payload.kind === 'initial') {
       if (step === 0) todos(0);
       if (step === 5) todos(1);
       if (step === 1) call('skills.search', { query: 'cup container access' });
@@ -131,9 +136,9 @@ export class FixtureModel extends LlmAdapter {
           status,
           explanation:
             status === 'passed'
-              ? 'The requested cup-inside predicate is true at the current stopped boundary.'
+              ? 'The requested predicates are true at the current stopped boundary.'
               : status === 'failed'
-                ? 'The requested cup-inside predicate is false at the current stopped boundary.'
+                ? 'At least one requested predicate is false at the current stopped boundary.'
                 : 'The provider cannot establish the requested predicate.',
         });
       }

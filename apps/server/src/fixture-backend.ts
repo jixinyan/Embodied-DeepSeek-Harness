@@ -4,7 +4,12 @@ import type { ContractValidator, SubgoalRequest, ExecutionStatus } from '@edh/co
 import { LifecycleValidator } from '@edh/contracts';
 import type { EmbodiedBackend, SensorSample, BackendUpdate } from '@edh/execution';
 
-export type FixtureScenario = 'retry-success' | 'first-pass' | 'unknown' | 'backend-error';
+export type FixtureScenario =
+  | 'retry-success'
+  | 'first-pass'
+  | 'unknown'
+  | 'backend-error'
+  | 'multi-goal-recovery';
 /** CPU test fixture, not a simulator, robot controller or learned policy. */
 export class FixtureBackend implements EmbodiedBackend {
   readonly source = 'test_fixture' as const;
@@ -15,6 +20,7 @@ export class FixtureBackend implements EmbodiedBackend {
   private sequence = 0;
   private attempt = 0;
   private inside = false;
+  private cabinetOpen = false;
   private view = 'center';
   private readonly gates: LifecycleValidator;
   constructor(
@@ -35,7 +41,7 @@ export class FixtureBackend implements EmbodiedBackend {
       throw new Error('Execution resource is busy.');
     this.request = structuredClone(request);
     this.attempt++;
-    this.inside = false;
+    if (this.scenario !== 'multi-goal-recovery') this.inside = false;
     this.status = {
       schema_version: 'physical.execution.v1',
       execution_id: randomUUID(),
@@ -104,8 +110,14 @@ export class FixtureBackend implements EmbodiedBackend {
         next >= this.request.budget.max_control_steps ||
         this.status.elapsed_wall_time_s + this.tickMs / 1000 >= this.request.budget.max_wall_time_s
       ) {
-        this.inside =
-          this.scenario === 'first-pass' || (this.scenario === 'retry-success' && this.attempt > 1);
+        if (this.scenario === 'multi-goal-recovery') {
+          if (this.request.goal_id === 'open-cabinet') this.cabinetOpen = true;
+          if (this.request.goal_id === 'place-cup') this.inside = this.cabinetOpen;
+          if (this.request.goal_id === 'store-cup') this.cabinetOpen = false;
+        } else
+          this.inside =
+            this.scenario === 'first-pass' ||
+            (this.scenario === 'retry-success' && this.attempt > 1);
         this.clearTimer();
         this.transition('ended', 'budget_exhausted', true);
       } else this.transition('running', undefined, true);
@@ -130,10 +142,11 @@ export class FixtureBackend implements EmbodiedBackend {
       },
       sequence: ++this.sequence,
       source: 'test_fixture',
-      description: `Synthetic ${this.view} view. Cup ${this.inside ? 'inside cabinet' : 'on counter'}.`,
+      description: `Synthetic ${this.view} view. Cup ${this.inside ? 'inside cabinet' : 'on counter'}. Cabinet ${this.cabinetOpen ? 'open' : 'closed'}.`,
       visualization: {
         view: this.view,
         cupInside: this.inside,
+        cabinetOpen: this.cabinetOpen,
         step: this.status?.control_steps ?? 0,
         attempt: this.attempt,
       },
@@ -170,11 +183,19 @@ export class FixtureBackend implements EmbodiedBackend {
       facts: checkIds.map((check_id) => ({
         check_id,
         value:
-          check_id === 'cup-inside' &&
-          this.scenario !== 'unknown' &&
-          this.scenario !== 'backend-error'
-            ? this.inside
-            : null,
+          this.scenario === 'multi-goal-recovery'
+            ? check_id === 'cup-inside'
+              ? this.inside
+              : check_id === 'cabinet-open'
+                ? this.cabinetOpen
+                : check_id === 'cabinet-closed'
+                  ? !this.cabinetOpen
+                  : null
+            : check_id === 'cup-inside' &&
+                this.scenario !== 'unknown' &&
+                this.scenario !== 'backend-error'
+              ? this.inside
+              : null,
         evidence_refs: [sample.evidence.id],
         reason: 'Only the requested fixture predicate is exposed; no hidden scene state.',
       })),
@@ -203,4 +224,21 @@ export const FIXTURE_GOAL: GoalBinding = {
   capabilities: ['language-subgoal'],
   taskSemantics: ['cup', 'object placement', 'container access'],
   budget: { max_control_steps: 5, max_wall_time_s: 30 },
+};
+
+export const FIXTURE_SUBGOAL_CHECKS = [
+  { check_id: 'cup-inside', check: 'inside', args: ['cup', 'cabinet'] },
+  { check_id: 'cabinet-open', check: 'open', args: ['cabinet'] },
+  { check_id: 'cabinet-closed', check: 'closed', args: ['cabinet'] },
+];
+export const MULTI_GOAL_FIXTURE: GoalBinding = {
+  ...FIXTURE_GOAL,
+  id: 'store-cup',
+  configuration: 'cpu-multi-goal-fixture-v1',
+  successContract: {
+    id: 'cup-storage',
+    version: '1',
+    source: { kind: 'benchmark', reference: 'cpu-multi-goal-fixture-v1' },
+    all: [FIXTURE_SUBGOAL_CHECKS[0]!, FIXTURE_SUBGOAL_CHECKS[2]!],
+  },
 };

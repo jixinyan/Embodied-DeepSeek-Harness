@@ -99,6 +99,10 @@
       "status": "upper_application"
     },
     {
+      "id": "tasks.select_goal",
+      "status": "upper_application"
+    },
+    {
       "id": "team.delegate",
       "status": "upper_application"
     },

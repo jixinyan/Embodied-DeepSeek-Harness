@@ -25,6 +25,8 @@ test(
       assert.equal((await fetch(server.url)).status, 200);
       const config = await (await fetch(server.url + '/api/config')).json();
       assert.equal(config.physicalRuntime, 'not_connected');
+      assert(config.scenarios.includes('multi-goal-recovery'));
+      assert.equal(config.scenarioGoals['multi-goal-recovery'].id, 'store-cup');
       assert.equal(
         (
           await post(
@@ -59,7 +61,7 @@ test(
       let state: RunState;
       do {
         state = await (await fetch(`${server.url}/api/runs/${runId}`)).json();
-        if (state.skillIds.length) break;
+        if (state.skillIds.length && state.state === 'succeeded') break;
         assert(Date.now() < deadline, JSON.stringify(state.events.slice(-8)));
         await setTimeout(20);
       } while (true);

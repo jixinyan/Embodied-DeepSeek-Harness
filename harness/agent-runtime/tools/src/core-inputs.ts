@@ -37,6 +37,7 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
   'execution.query': {},
   'execution.pause': {},
   'execution.resume': {},
+  'tasks.select_goal': { goalId: str },
   'tasks.retry': { changes: strings, attemptSummary: str },
   'tasks.replan': { reason: str, changes: strings, attemptSummary: str },
   'tasks.finish': {},
