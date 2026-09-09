@@ -1,6 +1,7 @@
 const $ = (id) => document.getElementById(id);
 let config, current, stream, displayedFrame;
 let busy = false;
+let loadRevision = 0;
 let activeRunId = null;
 let runHistory = [];
 const ended = (state) =>
@@ -45,6 +46,8 @@ async function refreshHistory() {
   for (const run of data.runs) {
     const button = document.createElement('button');
     button.classList.toggle('active', run.id === current?.id);
+    if (run.id === current?.id) button.setAttribute('aria-current', 'true');
+    button.title = `${run.id} · ${new Date(run.createdAt).toLocaleString()}`;
     const title = document.createElement('strong');
     title.textContent = run.scenario.replaceAll('-', ' ');
     const info = document.createElement('span');
@@ -92,6 +95,9 @@ function showSensor() {
   text('sensor-description', frame?.description ?? 'Awaiting an actual fixture observation.');
   text('sensor-age', frame ? new Date(frame.evidence.observed_at).toLocaleTimeString() : '—');
   $('inspect-frame').disabled = !frame;
+  const closed = frame?.visualization.cabinetOpen === false;
+  for (const id of ['open-door', 'open-handle']) $(id).style.display = closed ? 'none' : '';
+  $('closed-door').toggleAttribute('hidden', !closed);
   const inside = frame?.visualization.cupInside === true;
   $('cup').setAttribute('transform', inside ? 'translate(580 194)' : 'translate(338 262)');
   const step = Number(frame?.visualization.step ?? 0);
@@ -130,8 +136,9 @@ function renderAgents() {
       : 'Waiting for an explicit assignment';
     info.append(name, sub);
     const status = document.createElement('span');
-    status.className = `tag ${running ? 'running' : ''}`;
-    status.textContent = running ? 'RUNNING' : latest ? 'IDLE' : 'STANDBY';
+    const state = running ? 'running' : (latest?.status ?? 'standby');
+    status.className = `tag ${state}`;
+    status.textContent = state.toUpperCase();
     card.append(icon, info, status);
     card.onclick = () =>
       inspect(
@@ -186,7 +193,7 @@ function renderTimeline() {
     )
     .slice(-100)
     .reverse();
-  text('event-count', `${current?.events.length ?? 0} events`);
+  text('event-count', `${current?.eventCount ?? current?.events.length ?? 0} events`);
   $('timeline').replaceChildren();
   for (const event of events) {
     const row = document.createElement('button');
@@ -287,6 +294,8 @@ function renderFeed() {
           'run.succeeded',
           'run.cancelled',
           'recovery.opened',
+          'recovery.resolved',
+          'agent.report-acknowledged',
           'skill.saved',
           'recovery.failed',
         ].includes(event.type);
@@ -294,6 +303,9 @@ function renderFeed() {
       .slice(-200);
     const feed = $('agent-feed');
     const scroll = feed.scrollTop;
+    const expanded = new Set(
+      [...feed.querySelectorAll('details[open]')].map((node) => node.dataset.event),
+    );
     feed.replaceChildren();
     for (const event of entries) {
       const row = actor(event);
@@ -323,6 +335,8 @@ function renderFeed() {
           }
           if (block.type === 'reasoning') {
             const details = document.createElement('details');
+            details.dataset.event = String(event.sequence);
+            details.open = expanded.has(String(event.sequence));
             const title = document.createElement('summary');
             title.textContent = 'Reasoning returned by provider';
             const p = document.createElement('p');
@@ -345,7 +359,13 @@ function renderFeed() {
         name.textContent = d.data.name.replaceAll('__', '.');
         const state = document.createElement('span');
         state.className = errored ? 'bad' : 'ok';
-        state.textContent = result ? (errored ? 'error' : 'completed') : 'running';
+        state.textContent = result
+          ? errored
+            ? 'error'
+            : 'completed'
+          : ended(current.state)
+            ? 'no result'
+            : 'running';
         heading.append(name, state);
         const preview = document.createElement('span');
         preview.className = 'feed-tool-preview';
@@ -384,7 +404,16 @@ function renderFeed() {
       }
       feed.append(card);
     }
-    text('feed-count', `${entries.length} entries · Provider output and native tool events`);
+    if (!entries.length) {
+      const empty = document.createElement('div');
+      empty.className = 'feed-empty';
+      empty.textContent =
+        query || filter !== 'all'
+          ? 'No matching activity. Clear the search or choose All agents.'
+          : 'Waiting for agent output and tool calls…';
+      feed.append(empty);
+    }
+    text('feed-count', `${entries.length} entries · Native DSH events`);
     if ($('follow-output').checked) feed.scrollTop = feed.scrollHeight;
     else feed.scrollTop = scroll;
   }
@@ -408,10 +437,20 @@ function render() {
   if (!current) return;
   text('run-state', `${current.state}${current.readOnly ? ' · read-only' : ''}`);
   text('run-id', `RUN ${shorten(current.id)}`);
+  $('run-id').title = current.id;
+  $('run-dot').dataset.state = current.state;
+  $('instruction').value = current.instruction;
   text('team-name', current.teamId);
   const execution = current.executions.at(-1);
   text('device-state', execution?.state.toUpperCase() ?? 'IDLE');
-  text('steps', `${execution?.control_steps ?? 0} / 5`);
+  const request = current.requests.findLast(
+    (request) =>
+      request.attempt_id === execution?.task_scope.attempt_id &&
+      request.goal_id === execution?.task_scope.goal_id,
+  );
+  const maxSteps = request?.budget.max_control_steps;
+  text('steps', `${execution?.control_steps ?? 0} / ${maxSteps ?? '—'}`);
+  $('budget').max = maxSteps ?? 1;
   text('policy-calls', execution?.policy_calls ?? 0);
   text('stop-confirmed', execution ? (execution.device_confirmed ? 'Yes · fixture' : 'No') : '—');
   text(
@@ -426,12 +465,19 @@ function render() {
     current.plan ? `Version ${current.plan.version} · Decision-owner writes` : 'Awaiting planner',
   );
   $('plan').replaceChildren();
-  for (const item of current.plan?.items ?? []) {
-    const div = document.createElement('div');
+  for (const [index, item] of (current.plan?.items ?? []).entries()) {
+    const div = document.createElement('button');
+    div.dataset.active = String(item.goal_id === current.activeGoalId && !ended(current.state));
+    div.onclick = () =>
+      inspect(`Goal · ${item.goal_id}`, {
+        item,
+        selected: item.goal_id === current.activeGoalId,
+        verdicts: current.verdicts.filter((verdict) => verdict.task_scope.goal_id === item.goal_id),
+      });
     div.className = 'plan-item';
     const badge = document.createElement('span');
     badge.className = 'check';
-    badge.textContent = item.status === 'done' ? '✓' : '1';
+    badge.textContent = item.status === 'done' ? '✓' : String(index + 1);
     const info = document.createElement('div');
     const p = document.createElement('p');
     p.textContent = item.description;
@@ -442,6 +488,7 @@ function render() {
     $('plan').append(div);
   }
   const verdict = current.verdicts.at(-1);
+  document.querySelector('.verification-box').dataset.status = verdict?.status ?? 'pending';
   text(
     'verification-status',
     verdict
@@ -462,13 +509,24 @@ function render() {
     ),
   );
   $('phase-skill').classList.toggle('active', current.skillIds.length > 0);
+  const recoveryEvent = current.events.findLast(
+    (event) =>
+      ['recovery.opened', 'recovery.resolved', 'recovery.failed'].includes(event.type) &&
+      (!event.detail.recoveryId || event.detail.recoveryId === current.recoveryId),
+  );
   text(
     'recovery-copy',
-    current.skillIds.length
-      ? 'Recovery distilled. The skill preserves failure signals, possible causes, corrective guidance and both failed and successful evidence.'
-      : current.recoveryId
-        ? 'Evolver is receiving scoped planner, execution and verification records. Publication requires original-subgoal success.'
-        : 'Evolver joins when the planner decides to replan or retry after a formal failed subgoal.',
+    recoveryEvent?.type === 'recovery.failed'
+      ? `Experience recording failed: ${recoveryEvent.detail.error ?? 'Inspect the recovery trace.'}`
+      : current.skillIds.length
+        ? 'SKILL saved with failure signals, recovery guidance and verification evidence.'
+        : recoveryEvent?.type === 'recovery.resolved'
+          ? 'Original subgoal verified. Awaiting experience publication.'
+          : current.activeRecoveryId && !ended(current.state)
+            ? 'Recording planner and execution progress until the original subgoal is verified.'
+            : current.recoveryId
+              ? 'Run ended before experience publication. Inspect the recovery trace.'
+              : 'Waiting for a formal failure and a Planner recovery decision.',
   );
   $('inspect-recovery').disabled = !current.recoveryId;
   $('inspect-skill').disabled = !current.skills?.length;
@@ -481,17 +539,29 @@ function render() {
   updateControls();
 }
 async function loadRun(id) {
+  const revision = ++loadRevision;
   stream?.close();
   error('');
-  current = await api(`/api/runs/${id}`);
+  const loaded = await api(`/api/runs/${id}`);
+  if (revision !== loadRevision) return;
+  current = loaded;
+  $('scenario').value = current.scenario;
+  feedSignature = '';
+  $('follow-output').checked = true;
   render();
   await refreshHistory();
+  if (revision !== loadRevision) return;
   stream = new EventSource(`/api/runs/${id}/events`);
   stream.onopen = () => connected(true);
   stream.onerror = () => connected(false);
   stream.addEventListener('snapshot', (event) => {
     const next = JSON.parse(event.data);
-    if (next.id !== current.id || next.events.length < current.events.length) return;
+    if (
+      revision !== loadRevision ||
+      next.id !== current.id ||
+      next.events.length < current.events.length
+    )
+      return;
     const oldState = current.state;
     current = next;
     render();
@@ -512,14 +582,14 @@ async function action(callback) {
     updateControls();
   }
 }
-for (const tab of document.querySelectorAll('[data-tab]'))
-  tab.onclick = () => {
-    for (const button of document.querySelectorAll('[data-tab]'))
-      button.setAttribute('aria-selected', String(button === tab));
-    for (const pane of document.querySelectorAll('[data-pane]'))
-      pane.hidden = pane.dataset.pane !== tab.dataset.tab;
-  };
 $('agent-filter').onchange = renderFeed;
+$('agent-feed').addEventListener(
+  'wheel',
+  (event) => {
+    if (event.deltaY < 0) $('follow-output').checked = false;
+  },
+  { passive: true },
+);
 $('debug-search').oninput = renderFeed;
 $('follow-output').onchange = () => {
   if ($('follow-output').checked) $('agent-feed').scrollTop = $('agent-feed').scrollHeight;
@@ -573,7 +643,15 @@ $('inspect-audit').onclick = () =>
   );
 $('close-inspector').onclick = () => $('inspector').close();
 $('inspector').addEventListener('click', (e) => {
-  if (e.target === $('inspector')) $('inspector').close();
+  const rect = $('inspector').getBoundingClientRect();
+  if (
+    e.target === $('inspector') &&
+    (e.clientX < rect.left ||
+      e.clientX > rect.right ||
+      e.clientY < rect.top ||
+      e.clientY > rect.bottom)
+  )
+    $('inspector').close();
 });
 try {
   config = await api('/api/config');
