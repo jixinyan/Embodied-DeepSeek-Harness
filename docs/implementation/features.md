@@ -1,6 +1,6 @@
 # Current capability map
 
-Snapshot: 2026-09-09. Upper runtime includes plan-selected multi-goal recovery.
+Snapshot: 2026-09-09. Upper runtime includes multi-goal recovery and explicit report acknowledgement.
 
 ![Implemented capabilities and remaining work](../architecture/assets/implementation-status.svg)
 
@@ -9,7 +9,7 @@ Snapshot: 2026-09-09. Upper runtime includes plan-selected multi-goal recovery.
 | Original DSH loop, tool validation, sessions, timeout and cancellation | [Host](../../apps/server/src/runtime.ts), [native tests](../../tests/runtime/native-tools.test.ts) |
 | User-defined teams and independent role assignments | [Loader](../../harness/agent-runtime/teams/src/loader.ts), [sessions](../../harness/agent-runtime/communication/src/sessions.ts) |
 | Custom native tools, explicit context, private files and permission checks | [Application](../../apps/server/src/application.ts), [extension acceptance](../../tests/runtime/team-extensions.test.ts) |
-| Typed role reports, custom result schema and caller query | [Reports](../../harness/agent-runtime/communication/src/reports.ts), [protocol guide](upper-runtime.md) |
+| Typed reports, published history, caller acknowledgement and interrupted delivery | [Reports](../../harness/agent-runtime/communication/src/reports.ts), [protocol guide](upper-runtime.md) |
 | Native TODO and versioned physical task plan | [DSH TODO](../../harness/agent-runtime/planning/src/dsh/todo/index.ts), [plans](../../harness/agent-runtime/planning/src/workspace.ts) |
 | Registered subgoals, verified dependencies and owner-only goal selection | [Goals](../../harness/agent-runtime/tasks/src/goals.ts), [multi-goal guide](multi-goal-runtime.md) |
 | Async monitor, formal verification, Planner recovery and Evolver progress | [Application](../../apps/server/src/application.ts), [workflow acceptance](../../tests/runtime/upper-run.test.ts) |

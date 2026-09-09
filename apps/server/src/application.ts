@@ -591,7 +591,12 @@ export class UpperRun {
           summary: s('summary'),
         });
         if (!receipt.replay)
-          this.event('agent.report-acknowledged', { ...receipt.acknowledgement });
+          this.event('agent.report-acknowledged', {
+            assignmentId: a.id,
+            reportAssignmentId: s('assignmentId'),
+            reportId: s('reportId'),
+            acknowledgement: receipt.acknowledgement,
+          });
         return receipt;
       }
       case 'agent.report': {

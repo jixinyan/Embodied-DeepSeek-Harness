@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="570" viewBox="0 0 1120 570" role="img" aria-labelledby="title desc">
+<title id="title">Report persistence, native delivery and caller acknowledgement</title>
+<desc id="desc">Role report versions are published durably, delivered by DSH and independently acknowledged by the caller. Restart marks unsettled delivery interrupted without replaying actions.</desc>
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8Z" fill="#687987"/></marker></defs>
+<rect width="1120" height="570" fill="#f6f7f9"/>
+<text x="34" y="45" font-family="Arial, sans-serif" font-size="29" fill="#172935" font-weight="700">Role report: saved, delivered, assessed</text>
+<text x="34" y="74" font-family="Arial, sans-serif" font-size="17" fill="#40505d" font-weight="400">Explicit caller confirmation on the original DSH inbox   •   EDH upper runtime</text>
+<rect x="34" y="117" width="300" height="181" rx="12" fill="#edf2f7" stroke="#d9e0e6"/>
+<text x="50" y="150" font-family="Arial, sans-serif" font-size="20" fill="#294d72" font-weight="700">1  PUBLISHED REPORT</text>
+<text x="50" y="180" font-family="Arial, sans-serif" font-size="17" fill="#294d72" font-weight="400">Role → fixed caller</text>
+<text x="50" y="212" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Immutable report ID / version</text>
+<text x="50" y="239" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Result + authorized evidence</text>
+<text x="50" y="266" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Published history retained</text>
+<rect x="410" y="117" width="300" height="181" rx="12" fill="#edf2f7" stroke="#d9e0e6"/>
+<text x="426" y="150" font-family="Arial, sans-serif" font-size="20" fill="#294d72" font-weight="700">2  NATIVE DELIVERY</text>
+<text x="426" y="180" font-family="Arial, sans-serif" font-size="17" fill="#294d72" font-weight="400">Original DSH followup</text>
+<text x="426" y="212" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Queued → settled or failed</text>
+<text x="426" y="239" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Settled means session idle</text>
+<text x="426" y="266" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Caller acceptance is separate</text>
+<rect x="786" y="117" width="300" height="181" rx="12" fill="#edf2f7" stroke="#d9e0e6"/>
+<text x="802" y="150" font-family="Arial, sans-serif" font-size="20" fill="#294d72" font-weight="700">3  CALLER CONFIRMS</text>
+<text x="802" y="180" font-family="Arial, sans-serif" font-size="17" fill="#294d72" font-weight="400">team.ack_report</text>
+<text x="802" y="212" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Exact report ID + assessment</text>
+<text x="802" y="239" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Accepted / rejected + summary</text>
+<text x="802" y="266" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Immutable, replay-safe receipt</text>
+<path d="M338 209 H402" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#a)"/>
+<path d="M714 209 H778" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#a)"/>
+<rect x="410" y="363" width="676" height="112" rx="12" fill="#fff5e7" stroke="#d9e0e6"/>
+<text x="428" y="394" font-family="Arial, sans-serif" font-size="20" fill="#996316" font-weight="700">HOST RESTART</text>
+<text x="428" y="425" font-family="Arial, sans-serif" font-size="17" fill="#40505d" font-weight="400">Queued / missing delivery → interrupted. Preserve the acknowledgement.</text>
+<text x="428" y="453" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Inspect reports and audit before a fresh delegation; no automatic action replay.</text>
+<path d="M560 300 V355" fill="none" stroke="#687987" stroke-width="2" marker-end="url(#a)"/>
+<rect x="34" y="363" width="300" height="112" rx="12" fill="#ffffff" stroke="#d9e0e6"/>
+<text x="50" y="394" font-family="Arial, sans-serif" font-size="20" fill="#294d72" font-weight="700">INSPECTION</text>
+<text x="50" y="425" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">team.query + HTTP roleReports</text>
+<text x="50" y="453" font-family="Arial, sans-serif" font-size="16" fill="#40505d" font-weight="400">Report, delivery, caller receipt</text>
+<text x="34" y="528" font-family="Arial, sans-serif" font-size="18" fill="#172935" font-weight="400">Example: accepting a cup candidate helps planning. Only the Verifier can establish physical task success.</text>
+</svg>

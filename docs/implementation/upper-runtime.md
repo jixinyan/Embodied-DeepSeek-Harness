@@ -46,7 +46,7 @@ alone cannot load executable code. These are trusted in-process extensions, not 
 
 ## Structured role reports
 
-Every role receives `agent.report` and `team.query` as framework capabilities. Domain
+Every role receives `agent.report`, `team.query` and `team.ack_report` as framework capabilities. Domain
 permissions remain explicit. For example, see the [reporting team](../../examples/teams/reporting.yaml),
 [scene role](../../examples/roles/scene-reporter.md), and its
 [result schema](../../examples/roles/schemas/scene-assessment.json).
@@ -90,11 +90,12 @@ without sending the report twice. Changed final results and stale attempts are r
 to that assignment or its direct caller. It does not expose private histories/files.
 Reports never replace formal physical verification or alter a task's success criteria.
 
-The receipt distinguishes recorded, queued, settled and failed delivery. Settled means
-native DSH quiescence, not business acceptance or exactly-once execution. Delivery
-state is durable and failures produce correlated events. A crash between writes may
-leave delivery unconfirmed; historical runs remain read-only and are not automatically
-redelivered. Distributed acknowledgements/outbox reconciliation remain follow-on work.
+Delivery distinguishes recorded, queued, settled, failed and interrupted. Settled means
+native DSH quiescence. The designated caller separately confirms a specific report ID
+through `team.ack_report`; its immutable receipt is visible through team.query and
+HTTP roleReports. Startup marks unsettled published delivery interrupted while
+preserving acknowledgements. No action is replayed. See [report acknowledgement](report-acknowledgements.md)
+for the tool call, version history, crash boundaries and acceptance evidence.
 
 ## State and debugging semantics
 

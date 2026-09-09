@@ -133,7 +133,15 @@ function renderAgents() {
     status.className = `tag ${running ? 'running' : ''}`;
     status.textContent = running ? 'RUNNING' : latest ? 'IDLE' : 'STANDBY';
     card.append(icon, info, status);
-    card.onclick = () => inspect(`${member} · Independent assignments`, membersAssignments);
+    card.onclick = () =>
+      inspect(
+        `${member} · Independent assignments`,
+        membersAssignments.map((assignment) => ({
+          ...assignment,
+          reportState:
+            current.roleReports?.find((report) => report.assignmentId === assignment.id) ?? null,
+        })),
+      );
     $('agents').append(card);
   }
   const old = $('sensor-view').value;

@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.9 · 2026-09-09
+Version: v1.10 · 2026-09-09
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -1345,3 +1345,14 @@ of its original failed goal. SKILL publication is then allowed while later task 
 continue. Evolver model failures remain learning failures. No new DSH loop or dispatcher
 was introduced. [Runtime guide and SVG](implementation/multi-goal-runtime.md) specify
 current tool semantics, limits and the CPU acceptance scenario.
+
+
+## Implementation update: caller report acknowledgement (2026-09-09)
+
+Roles now have native team.ack_report. The fixed caller explicitly accepts/rejects
+an exact published report version. Acknowledgement is an immutable recorded assessment,
+separate from DSH delivery settlement and from physical verification. Report history
+retains a published version chain. Startup marks unsettled delivery interrupted while
+preserving receipts; it does not resume sessions or replay physical actions.
+The [illustrated protocol guide](implementation/report-acknowledgements.md) contains
+tool arguments, permissions, replay semantics, crash boundaries and acceptance tests.

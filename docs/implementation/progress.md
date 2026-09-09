@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.9. Current checkpoint: **runnable DSH upper application and CPU console**.
+Spec: v1.10. Current checkpoint: **runnable DSH upper application and CPU console**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -36,7 +36,7 @@ switching for key state. Existing inspector tabs are provisional. Continue core 
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 29 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 30 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency and interrupted restart.
 - 230 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -70,8 +70,8 @@ Cooperative cancellation cannot forcibly stop an uncooperative external device/t
    configure a live DSH model adapter only against an explicit available binding.
 2. Extend goal/recovery acceptance to longer plans and deployment-specific evaluators.
    Plan-selected sequential goals and prerequisite recovery now run with CPU fixtures.
-3. Extend the implemented role reports with delivery reconciliation and explicit
-   business acknowledgements where required; preserve the original DSH inbox.
+3. Extend the implemented report acknowledgements/startup reconciliation with durable
+   business transactions only where needed; preserve the original DSH inbox.
 4. Add bounded retention/checkpoints and recovery reconciliation appropriate to
    longer runs. Historical sessions must never silently resume physical commands.
 5. Bind the physical worker transport, action gate and resource coordination, then
@@ -138,7 +138,7 @@ a recovery SKILL; placement success can, even before the final task completes.
 Evolver model failures are persisted independently from task outcomes. The console
 scenario selector exposes this fixture without changing the provisional layout.
 
-Validation: `pnpm check` passes with 29 runtime tests, 230 shared TS/Python cases,
+Validation: `pnpm check` passes with 30 runtime tests, 230 shared TS/Python cases,
 93 pinned DSH files, strict TypeScript, formatting, Python and document checks.
 
 
@@ -172,3 +172,6 @@ cannot be acknowledged. On startup, queued/missing delivery receipts become
 interrupted, preserving existing caller acknowledgements and settled/failed records.
 No model turn or physical command is replayed. HTTP run projections include report
 history, delivery state and caller confirmation, including after restart.
+
+Validation: 30 runtime tests and the full shared contract/check suite pass.
+See [report acknowledgement guide](report-acknowledgements.md) for exact semantics.

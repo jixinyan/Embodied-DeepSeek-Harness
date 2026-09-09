@@ -1,0 +1,81 @@
+# Role reports, delivery and caller acknowledgement
+
+These are EDH task semantics on the original DSH sessions and inbox. They do not
+add a second message loop or establish physical success.
+
+![Report lifecycle](../architecture/assets/report-acknowledgements.svg)
+
+## Three separate facts
+
+| Record | What it establishes | Example |
+| --- | --- | --- |
+| AcceptedReport | The role's versioned result is durably published with a fixed caller | Scene Analyst reported a cup candidate |
+| ReportDelivery | The explicit DSH handoff was queued, reached quiescence, failed or was interrupted | Planner's turn settled; this alone says nothing about accepting the candidate |
+| ReportAcknowledgement | The designated caller explicitly assessed that exact report version | Planner accepted the candidate for further planning; physical success is still unchecked |
+
+`team.ack_report` is supplied to each role alongside `agent.report` and `team.query`.
+For native model calls, dots become double underscores:
+
+```json
+{
+  "assignmentId": "assignment-from-the-received-report",
+  "reportId": "exact-report-id-from-the-received-message",
+  "disposition": "accepted",
+  "summary": "Candidate assessed for planning; physical completion still requires verification."
+}
+```
+
+Pass this object to `team__ack_report`. The caller may use `rejected` with a reason.
+Acknowledging an insufficient-context report can mean the request was assessed or
+acted on; it does not complete the underlying assignment. A later completed report
+has a different ID and needs its own acknowledgement.
+
+The caller's identity is bound by the native tool scope. A report author cannot
+confirm its own delivery to another role. A receipt is immutable; identical replay
+returns the original acknowledgement and emits no duplicate event. Changing an
+accepted/rejected assessment requires new explicit work and evidence rather than
+rewriting the historical receipt. Acknowledgement is the caller's recorded statement,
+not proof that all downstream business effects executed exactly once.
+
+After task success, live sessions can still query and acknowledge reports, including
+an Evolver's late result. This narrow permission does not admit new execution work.
+Closed runs have no live role sessions and remain inspection-only.
+
+## Published versions and crash boundaries
+
+Reports retain immutable version records linked through `previousReportId`. A new
+record becomes published only when the assignment's latest-report pointer advances.
+Lookup follows that published chain: an orphan left before pointer commit is not
+eligible for acknowledgement. The current single-writer journal enforces versions.
+
+This also preserves earlier insufficient-context reports after final completion.
+Pre-upgrade history may contain only the last available report; the runtime does not
+invent missing earlier versions. Historical arrays and audit logs remain readable.
+
+On server startup, published reports with queued or missing delivery state are marked
+`interrupted` (or `recorded` for a user recipient). Existing settled/failed/interrupted
+states and caller acknowledgements remain unchanged. Reconciliation is idempotent.
+A caller may have acted before a crash, even if its delivery was still queued, so this
+operation does not replay a model turn or resend a physical action.
+
+Inspection supports deciding what to do next. A new task/delegation must supply the
+relevant saved evidence explicitly. Automatic outbox redelivery, durable business
+transactions and resumable DSH sessions remain future work.
+
+## Inspect and verify
+
+- `team.query({assignmentId})` returns native agent status, latest report, delivery,
+  caller acknowledgement and version-history receipts to the role or its direct caller.
+- HTTP run projections expose `roleReports`; the existing agent inspector includes
+  this state without a layout redesign. Restarted runs retain inspection access.
+- `agent.report-acknowledged` identifies the acknowledging caller in `assignmentId`
+  and the report author in `reportAssignmentId`, preserving actor attribution.
+- [Role tests](../../tests/runtime/role-reports.test.ts) cover immutable replay,
+  version history, orphan rejection and interrupted-delivery reconciliation.
+- [Native extension acceptance](../../tests/runtime/team-extensions.test.ts) has an
+  actual DSH Planner call `team__ack_report`; forged identity, self-confirmation and
+  conflicting acknowledgements are rejected without changing task success.
+- [HTTP restart acceptance](../../tests/runtime/console-server.test.ts) restores the
+  report as interrupted and confirms that no inbox or physical work was replayed.
+
+Run `pnpm check`. See [upper runtime](upper-runtime.md) and [progress](progress.md).

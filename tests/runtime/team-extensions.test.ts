@@ -387,6 +387,11 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
         1,
       );
       assert.equal(
+        run.state.events.find((event) => event.type === 'agent.report-acknowledged')!.detail
+          .assignmentId,
+        owner,
+      );
+      assert.equal(
         run.state.state,
         'running',
         'A completed analysis report cannot finish the robot task.',
