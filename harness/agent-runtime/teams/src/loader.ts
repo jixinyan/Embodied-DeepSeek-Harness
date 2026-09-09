@@ -93,7 +93,10 @@ export class FileTeamLoader {
         digest.update(schemaSource);
       }
       // Reporting is a framework-owned capability available to every configured role.
-      const bound = { ...role, tools: [...new Set([...role.tools, 'agent.report', 'team.query'])] };
+      const bound = {
+        ...role,
+        tools: [...new Set([...role.tools, 'agent.report', 'team.query', 'team.ack_report'])],
+      };
       roles[alias] = bound;
       members[alias] = {
         definition: bound,

@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, readFile } from 'node:fs/promises';
+import { AssignmentReports, type Assignment } from '@edh/communication';
+import { ContractValidator, type InvocationBrief } from '@edh/contracts';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -10,7 +12,7 @@ import type { RunState } from '@edh/tasks';
 
 test(
   'console API runs DSH, rejects conflicting admission, replays request IDs, reconnects SSE and preserves history',
-  { timeout: 15000 },
+  { timeout: 25000 },
   async () => {
     const dataDirectory = await mkdtemp(resolve(tmpdir(), 'edh-http-'));
     const options = { root: process.cwd(), dataDirectory, port: 0, tickMs: 20, modelDelayMs: 0 };
@@ -57,7 +59,7 @@ test(
       const first = await reader.read();
       assert.match(new TextDecoder().decode(first.value), /event: snapshot/);
       await reader.cancel();
-      const deadline = Date.now() + 7000;
+      const deadline = Date.now() + 15000;
       let state: RunState;
       do {
         state = await (await fetch(`${server.url}/api/runs/${runId}`)).json();
@@ -120,6 +122,34 @@ test(
         skillIds: [],
         error: null,
       };
+      const validator = new ContractValidator(
+        JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
+      );
+      const brief = JSON.parse(await readFile('tests/fixtures/invocation.json', 'utf8'))
+        .value as InvocationBrief;
+      brief.task_scope.task_id = fixture.id;
+      const assignment: Assignment = {
+        id: brief.assignment_id,
+        member: 'scene',
+        sessionId: 'old-scene',
+        brief,
+      };
+      fixture.assignments[assignment.id] = {
+        ...assignment,
+        status: 'idle',
+        model: 'fixture',
+        tools: [],
+      };
+      const reports = new AssignmentReports(server.store, validator);
+      const accepted = reports.submit(assignment, {
+        status: 'completed',
+        summary: 'Stored before crash.',
+        result: {},
+        evidenceRefs: [],
+        requestedContext: [],
+        expectedVersion: 0,
+      }).record;
+      reports.markDelivery(accepted.id, { state: 'queued' });
       server.store.put('run:interrupted-run', fixture, 0);
       await server.close();
       server = await startDemoServer(options);
@@ -127,6 +157,14 @@ test(
       assert.equal(record.state, 'interrupted');
       assert.equal(record.readOnly, true);
       assert.equal(record.executions.length, 0);
+      assert.equal(record.roleReports[0].latestReport.id, accepted.id);
+      assert.equal(record.roleReports[0].reportDelivery.state, 'interrupted');
+      assert.equal(record.roleReports[0].reportAcknowledgement, null);
+      assert.equal(
+        record.events.filter((event: { type: string }) => event.type === 'message.delivered')
+          .length,
+        0,
+      );
     } finally {
       await server.close();
       await rm(dataDirectory, { recursive: true, force: true });

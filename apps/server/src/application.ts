@@ -521,12 +521,16 @@ export class UpperRun {
                 logical.startsWith('skills.') ||
                 logical === 'evidence.read' ||
                 logical === 'agent.report');
-            if (this.closed || (terminal(this.state.state) && !recoveryWrite))
+            const receiptAccess =
+              this.state.state === 'succeeded' &&
+              ['team.query', 'team.ack_report'].includes(logical);
+            if (this.closed || (terminal(this.state.state) && !recoveryWrite && !receiptAccess))
               throw new Error('Run is no longer writable.');
             const priorReport = this.reports.read(a.id);
             if (
               logical !== 'agent.report' &&
               logical !== 'team.query' &&
+              logical !== 'team.ack_report' &&
               priorReport &&
               priorReport.report.status !== 'insufficient_context'
             )
@@ -574,16 +578,21 @@ export class UpperRun {
         const target = this.sessions.get(s('assignmentId'));
         if (target.id !== a.id && target.brief.expected_output.recipient !== a.id)
           throw new Error('Only the assignment or its direct caller may query its report.');
-        const latestReport = this.reports.read(target.id);
         return {
           assignmentId: target.id,
           member: target.member,
           agentStatus: this.state.assignments[target.id]!.status,
-          latestReport: latestReport ?? null,
-          reportDelivery: latestReport
-            ? (this.reports.delivery(latestReport.id) ?? { state: 'unconfirmed' })
-            : null,
+          ...this.reports.status(target.id),
         };
+      }
+      case 'team.ack_report': {
+        const receipt = this.reports.acknowledge(s('assignmentId'), s('reportId'), a.id, {
+          disposition: s('disposition') as 'accepted' | 'rejected',
+          summary: s('summary'),
+        });
+        if (!receipt.replay)
+          this.event('agent.report-acknowledged', { ...receipt.acknowledgement });
+        return receipt;
       }
       case 'agent.report': {
         const input = args as unknown as ReportInput;

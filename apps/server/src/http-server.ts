@@ -1,3 +1,4 @@
+import { AssignmentReports } from '@edh/communication';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -82,6 +83,8 @@ export async function startDemoServer(options: DemoServerOptions) {
         ),
       ),
     );
+    const reports = new AssignmentReports(store, validator);
+    reports.reconcileInterruptedDeliveries();
     const skills = new SkillLibrary(store, validator);
     skills.exportAll();
     const restoreEvents = (state: RunState): RunState => {
@@ -147,6 +150,9 @@ export async function startDemoServer(options: DemoServerOptions) {
         ...state,
         readOnly: active?.state.id !== id || terminal(state.state),
         plan: store.get(`plan:${id}`)?.value ?? null,
+        roleReports: Object.keys(state.assignments)
+          .map((assignmentId) => ({ assignmentId, ...reports.status(assignmentId) }))
+          .filter((row) => row.latestReport),
         skills: state.skillIds.map((skillId) => skills.load(skillId)),
       };
     };

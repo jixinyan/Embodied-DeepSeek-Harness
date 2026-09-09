@@ -1,4 +1,4 @@
-// Architecture contract only. No runtime implementation.
+// Runtime exports and interfaces for future deployment boundaries.
 import type { InvocationBrief, MessageEnvelope } from '@edh/contracts';
 export interface MessageReceipt {
   readonly messageId: string;
@@ -12,4 +12,10 @@ export interface TeamRouter {
 
 export { TeamSessions, type Assignment, type SessionHooks } from './sessions.js';
 
-export { AssignmentReports, type AcceptedReport, type ReportInput } from './reports.js';
+export {
+  AssignmentReports,
+  type AcceptedReport,
+  type ReportInput,
+  type ReportDelivery,
+  type ReportAcknowledgement,
+} from './reports.js';

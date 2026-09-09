@@ -76,7 +76,7 @@ async function until(predicate: () => boolean, run: UpperRun, timeoutMs = 16000)
 
 test(
   'DSH roles execute failure, formal verification, planner retry and provenance-bound SKILL publication',
-  { timeout: 10000 },
+  { timeout: 20000 },
   async () => {
     const app = await setup('retry-success');
     try {

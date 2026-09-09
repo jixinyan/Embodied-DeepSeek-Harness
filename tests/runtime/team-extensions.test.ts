@@ -39,8 +39,28 @@ test(
           expectedVersion: 1,
         })(options);
       },
-      textResponse('Structured report received or acknowledged.'),
-      textResponse('Structured report received or acknowledged.'),
+      ...Array.from(
+        { length: 3 },
+        () =>
+          async function* (options: Parameters<ReturnType<typeof textResponse>>[0]) {
+            const latest = options.messages.at(-1)!;
+            const block = latest.content.find((part) => part.type === 'text');
+            if (latest.source.kind === 'plugin' && block?.type === 'text') {
+              const { payload } = JSON.parse(block.text);
+              if (payload.kind === 'agent-report') {
+                yield* toolResponse('team__ack_report', {
+                  assignmentId: payload.report.assignment_id,
+                  reportId: payload.reportId,
+                  disposition: 'accepted',
+                  summary:
+                    'Candidate report assessed; physical success still requires verification.',
+                })(options);
+                return;
+              }
+            }
+            yield* textResponse('Report or acknowledgement turn complete.')(options);
+          },
+      ),
     ]);
     const host = await createDshHost([{ providers: ['fixture'], adapter: model }]);
     let run: UpperRun | undefined;
@@ -302,7 +322,7 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
         'Exact replay returns the durable receipt.',
       );
       assert.equal(run.state.events.filter((event) => event.type === 'agent.report').length, 2);
-      assert.equal(model.requests.length, 6, 'Report replay does not duplicate caller input.');
+      assert.equal(model.requests.length, 7, 'Report replay does not duplicate caller input.');
       assert(
         store
           .list<{ state: string }>('report-delivery:')
@@ -331,6 +351,40 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       assert.equal(
         (await invoke(owner, 'team__query', { assignmentId: analyst.id })).isError,
         false,
+      );
+      const finalRecord = store.get<{ id: string }>(`report:${analyst.id}`)!.value;
+      const ack = store.get<{ recipientAssignmentId: string; disposition: string }>(
+        `report-ack:${finalRecord.id}`,
+      )!.value;
+      assert.equal(ack.recipientAssignmentId, owner);
+      assert.equal(ack.disposition, 'accepted');
+      assert(
+        run.state.events.some(
+          (event) =>
+            event.type === 'dsh.tool-call' &&
+            (event.detail.data as { name: string }).name === 'team__ack_report',
+        ),
+      );
+      const ackArgs = {
+        assignmentId: analyst.id,
+        reportId: finalRecord.id,
+        disposition: 'accepted',
+        summary: 'Candidate report assessed; physical success still requires verification.',
+      };
+      assert.equal((await invoke(owner, 'team__ack_report', ackArgs)).isError, false);
+      assert.equal((await invoke(analyst.id, 'team__ack_report', ackArgs)).isError, true);
+      assert.equal(
+        (await invoke(owner, 'team__ack_report', { ...ackArgs, recipientAssignmentId: analyst.id }))
+          .isError,
+        true,
+      );
+      assert.equal(
+        (await invoke(owner, 'team__ack_report', { ...ackArgs, disposition: 'rejected' })).isError,
+        true,
+      );
+      assert.equal(
+        run.state.events.filter((event) => event.type === 'agent.report-acknowledged').length,
+        1,
       );
       assert.equal(
         run.state.state,

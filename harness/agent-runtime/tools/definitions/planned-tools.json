@@ -103,6 +103,10 @@
       "status": "upper_application"
     },
     {
+      "id": "team.ack_report",
+      "status": "upper_application"
+    },
+    {
       "id": "team.delegate",
       "status": "upper_application"
     },

@@ -158,3 +158,17 @@ an aggregate audit over 8 MiB, duplicate append, restart/legacy reads, conflicti
 suffixes and the exact normal-speed multi-goal scenario. The manual rerun completed
 all four verdicts, published one SKILL and returned readable audits with no learning
 error. Retention and native model-context compaction remain separate future work.
+
+## Caller acknowledgement and interrupted report delivery (2026-09-09)
+
+Every role now has team.ack_report alongside agent.report and team.query. The native
+caller explicitly accepts/rejects a particular published report ID; identity comes
+from its assignment, the receipt is immutable, and exact replay emits no duplicate
+event. This is a reported assessment, not physical verification or proof of exactly-once
+business effects. New report versions require separate acknowledgements.
+
+Report versions retain a published predecessor chain. Unpublished immutable records
+cannot be acknowledged. On startup, queued/missing delivery receipts become
+interrupted, preserving existing caller acknowledgements and settled/failed records.
+No model turn or physical command is replayed. HTTP run projections include report
+history, delivery state and caller confirmation, including after restart.

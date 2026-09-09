@@ -21,6 +21,12 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
     expectedVersion: integer,
   },
   'files.search': { query: str },
+  'team.ack_report': {
+    assignmentId: str,
+    reportId: str,
+    disposition: { type: 'string', enum: ['accepted', 'rejected'] },
+    summary: str,
+  },
   'team.query': { assignmentId: str },
   'team.delegate': {
     member: str,

@@ -68,3 +68,107 @@ test('accepted role reports survive restart, preserve identity and replay withou
     await rm(directory, { recursive: true, force: true });
   }
 });
+
+test('report acknowledgement binds published versions and restart reconciliation preserves uncertainty', async () => {
+  const directory = await mkdtemp(resolve(tmpdir(), 'edh-report-ack-'));
+  let store = new LocalStore(directory);
+  try {
+    const validator = new ContractValidator(
+      JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
+    );
+    const brief = JSON.parse(await readFile('tests/fixtures/invocation.json', 'utf8'))
+      .value as InvocationBrief;
+    const assignment: Assignment = {
+      id: brief.assignment_id,
+      member: 'scene',
+      sessionId: 'scene-session',
+      brief,
+    };
+    let reports = new AssignmentReports(store, validator);
+    const input: ReportInput = {
+      status: 'insufficient_context',
+      summary: 'Need frame.',
+      result: null,
+      evidenceRefs: [],
+      requestedContext: ['frame'],
+      expectedVersion: 0,
+    };
+    const first = reports.submit(assignment, input).record;
+    reports.markDelivery(first.id, { state: 'queued' });
+    assert.equal(
+      reports.status(assignment.id).reportAcknowledgement,
+      null,
+      'Delivery is not caller acknowledgement.',
+    );
+    const final = reports.submit(assignment, {
+      ...input,
+      status: 'completed',
+      requestedContext: [],
+      result: { object: 'cup' },
+      expectedVersion: 1,
+    }).record;
+    reports.markDelivery(final.id, { state: 'settled' });
+    assert.deepEqual(
+      reports.history(assignment.id).map((record) => record.id),
+      [first.id, final.id],
+    );
+    const accept = {
+      disposition: 'accepted' as const,
+      summary: 'The requested context was provided.',
+    };
+    const confirmed = reports.acknowledge(assignment.id, first.id, first.recipient, accept);
+    assert.equal(confirmed.replay, false);
+    assert.equal(
+      reports.acknowledge(assignment.id, first.id, first.recipient, accept).replay,
+      true,
+    );
+    assert.throws(
+      () => reports.acknowledge(assignment.id, first.id, 'foreign', accept),
+      /designated/,
+    );
+    assert.throws(
+      () =>
+        reports.acknowledge(assignment.id, first.id, first.recipient, {
+          ...accept,
+          disposition: 'rejected',
+        }),
+      /immutable/,
+    );
+    // An uncommitted immutable record is not in the published version chain.
+    store.put(
+      'report-record:orphan',
+      { ...final, id: 'orphan', version: 3, previousReportId: final.id },
+      0,
+    );
+    assert.throws(
+      () => reports.acknowledge(assignment.id, 'orphan', first.recipient, accept),
+      /published/,
+    );
+    const missingDelivery = reports.submit(
+      {
+        ...assignment,
+        id: 'missing-delivery',
+        brief: { ...brief, assignment_id: 'missing-delivery' },
+      },
+      input,
+    ).record;
+    store.close();
+    store = new LocalStore(directory);
+    reports = new AssignmentReports(store, validator);
+    assert.equal(reports.reconcileInterruptedDeliveries(), 2);
+    assert.equal(reports.delivery(first.id)?.state, 'interrupted');
+    assert.equal(reports.delivery(missingDelivery.id)?.state, 'interrupted');
+    assert.equal(reports.delivery(final.id)?.state, 'settled');
+    assert.deepEqual(reports.acknowledgement(first.id), confirmed.acknowledgement);
+    assert.equal(
+      reports.status(assignment.id).reportAcknowledgement,
+      null,
+      'A newer report needs its own acknowledgement.',
+    );
+    assert.equal(reports.reconcileInterruptedDeliveries(), 0);
+    assert.equal(reports.read(assignment.id)?.id, final.id);
+  } finally {
+    store.close();
+    await rm(directory, { recursive: true, force: true });
+  }
+});
