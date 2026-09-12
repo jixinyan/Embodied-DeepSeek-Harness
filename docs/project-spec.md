@@ -1357,3 +1357,13 @@ retains a published version chain. Startup marks unsettled delivery interrupted 
 preserving receipts; it does not resume sessions or replay physical actions.
 The [illustrated protocol guide](implementation/report-acknowledgements.md) contains
 tool arguments, permissions, replay semantics, crash boundaries and acceptance tests.
+
+## Implementation update: asynchronous provider reads (2026-09-12)
+
+Upper perception and verification calls may resolve asynchronously. Pass the native
+DSH cancellation signal into providers and reject late results before changing
+assignment evidence or checked facts. Formal check requests carry their expected
+execution and stopped boundary IDs; revalidate them after remote completion. The
+backend query method is an immediate client-side projection, refreshed before
+stream callbacks. Transport implementation and physical acknowledgement remain
+separate integration work. See [execution boundary](../harness/agent-runtime/execution/README.md).

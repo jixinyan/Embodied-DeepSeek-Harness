@@ -36,7 +36,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 30 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 33 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency and interrupted restart.
 - 230 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -200,3 +200,22 @@ loop, backend, transport or simulator integration was added.
 
 Validation: the full `pnpm check` suite passed (30 runtime tests and 230 shared
 TS/Python cases); browser interaction checks complement the existing runtime suite.
+
+## Asynchronous provider-read checkpoint (2026-09-12)
+
+The upper EmbodiedBackend port now accepts asynchronous capture and GT checks and
+forwards DSH cancellation into provider calls. Formal checks carry the expected
+execution/boundary IDs. On return, the upper runner rechecks the current scope,
+stopped boundary and device acknowledgement before storing facts or granting
+observation evidence. Late cancelled reads cannot update the assignment, and a
+late resume acknowledgement cannot resurrect a terminal run.
+
+The immediate `query` method remains a client-side status projection; the future
+transport must update it before delivering backend events. No Python worker,
+network client, action gate or physical provider was implemented by this change.
+See the [execution boundary guide](../../harness/agent-runtime/execution/README.md).
+
+Three new native DSH acceptance cases cover asynchronous successful recovery,
+late observation after stop, and stale verification after boundary replacement.
+The runtime suite now contains 33 tests. Remaining priorities include deployable
+model/backend assembly, storage retention and recovery, and real provider transport.

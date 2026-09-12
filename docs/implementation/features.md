@@ -35,3 +35,8 @@ then closes the cabinet for final task success. See the [illustrated flow](multi
 The demo model and sensors are scripted/synthetic. Its upper workflow is runnable;
 it is not the requested final simulation MVP yet. See [progress](progress.md) for
 checks and [upper-runtime guide](upper-runtime.md) for extension entry points.
+
+Asynchronous perception/GT reads now run through the upper provider port with native
+DSH cancellation and stopped-boundary revalidation. CPU acceptance covers delayed
+success, cancellation and stale GT responses; actual transport remains pending.
+See [provider call semantics](../../harness/agent-runtime/execution/README.md).
