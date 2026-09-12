@@ -170,6 +170,9 @@ function renderAgents() {
 }
 function summarize(event) {
   const d = event.detail;
+  if (event.type === 'recovery.resolved')
+    return `Original subgoal ${d.goalId} verified; experience publication authorized.`;
+  if (d.acknowledgement) return `${d.acknowledgement.disposition} · ${d.acknowledgement.summary}`;
   if (d.tool) return `${d.tool} · ${shorten(d.assignmentId)}${d.error ? ` · ${d.error}` : ''}`;
   if (d.execution)
     return `${d.execution.state} · ${d.execution.control_steps} steps · ${d.execution.stop_reason || 'in progress'}`;
@@ -280,7 +283,8 @@ function renderFeed() {
       .filter((event) => {
         const member = actor(event)?.member;
         if (filter !== 'all' && member !== filter) return false;
-        if (query && !JSON.stringify(event).toLowerCase().includes(query)) return false;
+        if (query && !JSON.stringify(event).replaceAll('__', '.').toLowerCase().includes(query))
+          return false;
         if (event.type === 'agent.output')
           return event.detail.message.content.some(
             (b) => b.type === 'text' || b.type === 'reasoning',
@@ -500,7 +504,14 @@ function render() {
     verdict?.explanation ?? 'A completed policy call does not establish task success.',
   );
   $('inspect-verdict').disabled = !verdict;
-  text('skill-count', `${current.skillIds.length} SKILLS`);
+  const recoveryState = current.skillIds.length
+    ? 'SAVED'
+    : current.activeRecoveryId && !ended(current.state)
+      ? 'RECORDING'
+      : current.recoveryId
+        ? 'PENDING'
+        : 'STANDBY';
+  text('skill-count', `${recoveryState} · ${current.skillIds.length}`);
   $('phase-replan').classList.toggle('active', Boolean(current.recoveryId));
   $('phase-record').classList.toggle(
     'active',
@@ -514,6 +525,7 @@ function render() {
       ['recovery.opened', 'recovery.resolved', 'recovery.failed'].includes(event.type) &&
       (!event.detail.recoveryId || event.detail.recoveryId === current.recoveryId),
   );
+  if (recoveryEvent?.type === 'recovery.failed') text('skill-count', 'LEARNING FAILED');
   text(
     'recovery-copy',
     recoveryEvent?.type === 'recovery.failed'

@@ -11,9 +11,9 @@ The user prioritizes the upper application before physical runtime integration.
 native DSH tool calls; a CPU fixture backend supplies labeled synthetic observations
 and execution states. This validates orchestration, not model intelligence or robotics.
 
-UI design is deferred. Its next design pass must show agent activity, TODOs, sensors,
-execution, verification and recovery together in one workspace without page/tab
-switching for key state. Existing inspector tabs are provisional. Continue core work.
+The console now uses a unified workspace for agent activity, TODOs, sensors, execution,
+verification and recovery. Desktop panels remain visible together without tabs; smaller
+screens stack sections and long content scrolls. See the [console guide](../../apps/console/README.md).
 
 ## Implemented and exercised
 
@@ -63,7 +63,7 @@ Cooperative cancellation cannot forcibly stop an uncooperative external device/t
 | 06–07 | Upper port and CPU fixture implemented; physical worker/resources/perception providers deferred |
 | 08–10 | Upper verification/recovery/experience loop exercised with fixtures; actual provider evidence still required |
 | 11 | Recovery and custom-role CPU scenarios pass; full physical-provider replacement scenario remains open |
-| 12 | Runnable debugging console; visual design deferred, simultaneous key-state visibility required |
+| 12 | Unified debugging console implemented and browser-checked with CPU fixtures |
 | 13–16 | Real simulation, release/transfer evaluation and hardware not started |
 
 1. Harden upper configuration and lifecycle at remaining deployment boundaries;
@@ -76,7 +76,7 @@ Cooperative cancellation cannot forcibly stop an uncooperative external device/t
    longer runs. Historical sessions must never silently resume physical commands.
 5. Bind the physical worker transport, action gate and resource coordination, then
    one actual simulation/policy/perception configuration. Run physical acceptance.
-6. Refine the unified console after these underlying states stabilize.
+6. Continue console usability refinement as live provider and sensor states become available.
 
 These are follow-on tasks, not claims that all upper components are complete.
 Read [extension guide](upper-runtime.md), [plan](plan.md), and decisions
@@ -175,3 +175,28 @@ history, delivery state and caller confirmation, including after restart.
 
 Validation: 30 runtime tests and the full shared contract/check suite pass.
 See [report acknowledgement guide](report-acknowledgements.md) for exact semantics.
+
+## Unified console checkpoint (2026-09-12)
+
+The tabbed inspector was replaced with a single developer workbench: history and
+agent sessions, goal plans/native TODOs, agent activity, and embodied telemetry.
+Desktop sizes of 1440 × 900 and 1280 × 800 and a 390 × 844 mobile viewport were
+inspected. Long panels scroll; mobile sections stack without page-wide overflow.
+At shorter desktop heights, recovery's header reports its state even when detail
+requires scrolling. This is a local fixture console, not a connected robot UI.
+
+Browser checks exercised a new recovery run (failed first attempt, successful retry,
+three completed TODOs, accepted verdict and one SKILL), pause/device confirmation,
+resume-request submission, stop/read-only history, native TODO history, tool-name
+search and full call/result inspection. Actual resumed motion was not separately
+asserted in the UI check; runtime acceptance covers Planner-owned resume semantics.
+Historical runs and evidence were preserved across preview server restarts.
+
+Display fixes include request-derived budgets, numbered/selectable goals, actual
+assignment status, distinct learning failures, source-correct synthetic cabinet
+geometry, search empty states and protection against stale history responses.
+Search accepts displayed dotted tool names as well as native records. No new agent
+loop, backend, transport or simulator integration was added.
+
+Validation: the full `pnpm check` suite passed (30 runtime tests and 230 shared
+TS/Python cases); browser interaction checks complement the existing runtime suite.

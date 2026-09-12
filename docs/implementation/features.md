@@ -30,7 +30,7 @@ then closes the cabinet for final task success. See the [illustrated flow](multi
 - Python transport, action admission, shared device resources and physical stop acknowledgement.
 - Actual BEHAVIOR/RoboCasa/RoboTwin, VLA/VLN, SAM/depth and hardware adapters.
 - Resumable model sessions, distributed/exactly-once delivery, scalable retention and multi-user hosting.
-- Final console layout: key state must be visible together; visual polish is deferred.
+- Further console usability and live sensor integration; the unified fixture workspace is implemented.
 
 The demo model and sensors are scripted/synthetic. Its upper workflow is runnable;
 it is not the requested final simulation MVP yet. See [progress](progress.md) for

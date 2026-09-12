@@ -32,8 +32,8 @@ behavior. Upper Team/Role, tools, TODOs, plans/files, verification, recovery, SK
 storage and a console now run with a scripted model and CPU fixture backend.
 Plan-selected sequential goals and prerequisite recovery now run with CPU fixtures.
 Continue upper lifecycle/configuration, delivery reconciliation and retention work before
-physical integration; do not replace the DSH loop. UI polish is deferred, and key
-state must ultimately be visible simultaneously without page/tab switching.
+physical integration; do not replace the DSH loop. The unified console now displays key
+state without page/tab switching; further polish follows actual provider integration.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)
 and [capability map](implementation/features.md) for concrete code, checks and limits.
 Do not install the simulator/GPU stack merely to run the upper acceptance suite.
@@ -1318,7 +1318,8 @@ identity, explicit context and TODO history. Concise decision notes are useful;
 missing provider reasoning must never be fabricated. Agent-reported TODO completion
 is separate from verifier-accepted physical success. The final console must show
 key agent, task, sensor, execution, verification and recovery state together in one
-workspace, without page/tab switching for essential state. UI styling is deferred.
+workspace, without page/tab switching for essential state. The unified console now
+implements this layout, with stacked sections on narrow screens and scrollable details.
 
 ### Implemented role reporting clarification
 

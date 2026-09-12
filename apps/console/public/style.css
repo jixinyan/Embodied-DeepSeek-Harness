@@ -1074,7 +1074,7 @@ dialog pre {
     overflow: auto;
   }
   .agent-card {
-    min-width: 125px;
+    min-width: 150px;
     width: auto;
     flex: 1;
   }
