@@ -31,7 +31,12 @@ export type PhysicalContract =
   | ActionSpec
   | ToolCall
   | ToolOperation
-  | MessageTypeDefinition;
+  | MessageTypeDefinition
+  | PolicyRequest
+  | ActionChunk
+  | ActionReceipt
+  | StopAcknowledgement
+  | ActionSegment;
 export type SuccessContract =
   | {
       id: string;
@@ -459,6 +464,66 @@ export interface MessageTypeDefinition {
     [k: string]: unknown;
   };
 }
+export interface PolicyRequest {
+  schema_version: "physical.policy_request.v1";
+  request_id: string;
+  execution_id: string;
+  task_scope: ExecutionScope;
+  generation: number;
+  observation_id: string;
+  valid_until: string;
+  action_spec: ActionSpec;
+  instruction: string;
+  observation: {
+    [k: string]: unknown;
+  };
+  max_actions: number;
+}
+export interface ActionChunk {
+  schema_version: "physical.action_chunk.v1";
+  request_id: string;
+  execution_id: string;
+  task_scope: ExecutionScope;
+  generation: number;
+  observation_id: string;
+  valid_until: string;
+  action_spec: ActionSpec;
+  /**
+   * @minItems 1
+   * @maxItems 512
+   */
+  actions: [[number, ...number[]], ...[number, ...number[]][]];
+}
+export interface ActionReceipt {
+  schema_version: "physical.action_receipt.v1";
+  execution_id: string;
+  generation: number;
+  segment_id: string;
+  executed_actions: number;
+}
+export interface StopAcknowledgement {
+  schema_version: "physical.stop_ack.v1";
+  execution_id: string;
+  generation: number;
+  device_confirmed: boolean;
+  boundary_id?: string;
+}
+export interface ActionSegment {
+  schema_version: "physical.action_segment.v1";
+  request_id: string;
+  execution_id: string;
+  task_scope: ExecutionScope;
+  generation: number;
+  observation_id: string;
+  valid_until: string;
+  action_spec: ActionSpec;
+  /**
+   * @minItems 1
+   * @maxItems 512
+   */
+  actions: [[number, ...number[]], ...[number, ...number[]][]];
+  segment_id: string;
+}
 
 export interface ContractTypes {
   TaskScope: TaskScope;
@@ -489,4 +554,9 @@ export interface ContractTypes {
   ToolCall: ToolCall;
   ToolOperation: ToolOperation;
   MessageTypeDefinition: MessageTypeDefinition;
+  PolicyRequest: PolicyRequest;
+  ActionChunk: ActionChunk;
+  ActionReceipt: ActionReceipt;
+  StopAcknowledgement: StopAcknowledgement;
+  ActionSegment: ActionSegment;
 }

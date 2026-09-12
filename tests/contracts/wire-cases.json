@@ -646,6 +646,143 @@
           "reference": "synthetic-store-object-v1"
         }
       }
+    },
+    "policy_request": {
+      "contract": "PolicyRequest",
+      "value": {
+        "schema_version": "physical.policy_request.v1",
+        "request_id": "req1",
+        "execution_id": "exec1",
+        "task_scope": {
+          "task_id": "t1",
+          "goal_id": "g1",
+          "attempt_id": "a1"
+        },
+        "generation": 0,
+        "observation_id": "obs1",
+        "valid_until": "2026-09-13T10:00:00.000Z",
+        "action_spec": {
+          "schema_version": "physical.action_spec.v1",
+          "embodiment_id": "test_arm",
+          "version": "1",
+          "coordinate_frame": "robot_base",
+          "control_mode": "joint_position",
+          "frequency_hz": 20,
+          "channels": [
+            {
+              "name": "joint_1",
+              "quantity": "angular",
+              "unit": "radian",
+              "minimum": -1,
+              "maximum": 1
+            }
+          ]
+        },
+        "instruction": "Move the joint",
+        "observation": {
+          "joints": [
+            0
+          ]
+        },
+        "max_actions": 16
+      }
+    },
+    "action_chunk": {
+      "contract": "ActionChunk",
+      "value": {
+        "schema_version": "physical.action_chunk.v1",
+        "request_id": "req1",
+        "execution_id": "exec1",
+        "task_scope": {
+          "task_id": "t1",
+          "goal_id": "g1",
+          "attempt_id": "a1"
+        },
+        "generation": 0,
+        "observation_id": "obs1",
+        "valid_until": "2026-09-13T10:00:00.000Z",
+        "action_spec": {
+          "schema_version": "physical.action_spec.v1",
+          "embodiment_id": "test_arm",
+          "version": "1",
+          "coordinate_frame": "robot_base",
+          "control_mode": "joint_position",
+          "frequency_hz": 20,
+          "channels": [
+            {
+              "name": "joint_1",
+              "quantity": "angular",
+              "unit": "radian",
+              "minimum": -1,
+              "maximum": 1
+            }
+          ]
+        },
+        "actions": [
+          [
+            0.2
+          ]
+        ]
+      }
+    },
+    "action_segment": {
+      "contract": "ActionSegment",
+      "value": {
+        "schema_version": "physical.action_segment.v1",
+        "request_id": "req1",
+        "execution_id": "exec1",
+        "task_scope": {
+          "task_id": "t1",
+          "goal_id": "g1",
+          "attempt_id": "a1"
+        },
+        "generation": 0,
+        "observation_id": "obs1",
+        "valid_until": "2026-09-13T10:00:00.000Z",
+        "action_spec": {
+          "schema_version": "physical.action_spec.v1",
+          "embodiment_id": "test_arm",
+          "version": "1",
+          "coordinate_frame": "robot_base",
+          "control_mode": "joint_position",
+          "frequency_hz": 20,
+          "channels": [
+            {
+              "name": "joint_1",
+              "quantity": "angular",
+              "unit": "radian",
+              "minimum": -1,
+              "maximum": 1
+            }
+          ]
+        },
+        "actions": [
+          [
+            0.2
+          ]
+        ],
+        "segment_id": "seg1"
+      }
+    },
+    "action_receipt": {
+      "contract": "ActionReceipt",
+      "value": {
+        "schema_version": "physical.action_receipt.v1",
+        "execution_id": "exec1",
+        "generation": 0,
+        "segment_id": "seg1",
+        "executed_actions": 1
+      }
+    },
+    "stop_ack": {
+      "contract": "StopAcknowledgement",
+      "value": {
+        "schema_version": "physical.stop_ack.v1",
+        "execution_id": "exec1",
+        "generation": 1,
+        "device_confirmed": true,
+        "boundary_id": "boundary1"
+      }
     }
   },
   "cases": [
@@ -1486,6 +1623,197 @@
           "op": "replace",
           "path": "/channels/0/unit",
           "value": "radian_per_second"
+        }
+      ]
+    },
+    {
+      "name": "PolicyRequest canonical wire",
+      "base": "policy_request",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "ActionChunk canonical wire",
+      "base": "action_chunk",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "ActionSegment canonical wire",
+      "base": "action_segment",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "ActionReceipt canonical wire",
+      "base": "action_receipt",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "StopAcknowledgement canonical wire",
+      "base": "stop_ack",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "policy request requires attempt",
+      "base": "policy_request",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/task_scope/attempt_id"
+        }
+      ]
+    },
+    {
+      "name": "policy request bounds response budget",
+      "base": "policy_request",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/max_actions",
+          "value": 513
+        }
+      ]
+    },
+    {
+      "name": "policy instruction cannot be blank",
+      "base": "policy_request",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/instruction",
+          "value": " "
+        }
+      ]
+    },
+    {
+      "name": "policy generation cannot be negative",
+      "base": "policy_request",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/generation",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "policy deadline must be UTC",
+      "base": "policy_request",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/valid_until",
+          "value": "2026-09-13T10:00:00+08:00"
+        }
+      ]
+    },
+    {
+      "name": "policy observation must be object",
+      "base": "policy_request",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/observation",
+          "value": []
+        }
+      ]
+    },
+    {
+      "name": "action chunk must contain actions",
+      "base": "action_chunk",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/actions",
+          "value": []
+        }
+      ]
+    },
+    {
+      "name": "action values must be numeric",
+      "base": "action_chunk",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/actions",
+          "value": [
+            [
+              true
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "action segment requires identity",
+      "base": "action_segment",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/segment_id"
+        }
+      ]
+    },
+    {
+      "name": "receipt count cannot be negative",
+      "base": "action_receipt",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/executed_actions",
+          "value": -1
+        }
+      ]
+    },
+    {
+      "name": "confirmed stop requires boundary",
+      "base": "stop_ack",
+      "valid": false,
+      "patches": [
+        {
+          "op": "remove",
+          "path": "/boundary_id"
+        }
+      ]
+    },
+    {
+      "name": "unconfirmed stop cannot claim boundary",
+      "base": "stop_ack",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/device_confirmed",
+          "value": false
+        }
+      ]
+    },
+    {
+      "name": "unconfirmed stop has no boundary",
+      "base": "stop_ack",
+      "valid": true,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/device_confirmed",
+          "value": false
+        },
+        {
+          "op": "remove",
+          "path": "/boundary_id"
         }
       ]
     }

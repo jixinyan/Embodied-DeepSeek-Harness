@@ -10,6 +10,7 @@ import { createDemoDeployment } from '../../apps/server/src/demo-deployment.ts';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const baseURL = process.env.EDH_MODEL_BASE_URL;
 const model = process.env.EDH_MODEL;
+const apiKey = process.env.EDH_MODEL_API_KEY;
 if (!baseURL || !model)
   throw new Error('Set EDH_MODEL_BASE_URL and EDH_MODEL to your actual deployment.');
 const validator = new ContractValidator(
@@ -21,7 +22,7 @@ const base = createDemoDeployment({ root }, validator);
 const adapter = new OpenAICompatibleAdapter({
   baseURL,
   models: [{ id: model, inputModalities: ['text', 'image'] }],
-  ...(process.env.EDH_MODEL_API_KEY ? { apiKey: () => process.env.EDH_MODEL_API_KEY } : {}),
+  ...(apiKey ? { apiKey: () => apiKey } : {}),
   // Real sensor images require a deployment-owned resolveImage callback; this backend supplies metadata only.
 });
 const server = await startServer({

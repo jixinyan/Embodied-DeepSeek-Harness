@@ -87,6 +87,21 @@
     },
     {
       "$ref": "#/$defs/MessageTypeDefinition"
+    },
+    {
+      "$ref": "#/$defs/PolicyRequest"
+    },
+    {
+      "$ref": "#/$defs/ActionChunk"
+    },
+    {
+      "$ref": "#/$defs/ActionReceipt"
+    },
+    {
+      "$ref": "#/$defs/StopAcknowledgement"
+    },
+    {
+      "$ref": "#/$defs/ActionSegment"
     }
   ],
   "$defs": {
@@ -2780,6 +2795,291 @@
       ],
       "additionalProperties": false,
       "title": "MessageTypeDefinition"
+    },
+    "PolicyRequest": {
+      "title": "PolicyRequest",
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.policy_request.v1"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "execution_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "task_scope": {
+          "$ref": "#/$defs/ExecutionScope"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "observation_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
+        },
+        "action_spec": {
+          "$ref": "#/$defs/ActionSpec"
+        },
+        "instruction": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32768,
+          "pattern": "\\S"
+        },
+        "observation": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "max_actions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512
+        }
+      },
+      "required": [
+        "schema_version",
+        "request_id",
+        "execution_id",
+        "task_scope",
+        "generation",
+        "observation_id",
+        "valid_until",
+        "action_spec",
+        "instruction",
+        "observation",
+        "max_actions"
+      ],
+      "additionalProperties": false
+    },
+    "ActionChunk": {
+      "title": "ActionChunk",
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.action_chunk.v1"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "execution_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "task_scope": {
+          "$ref": "#/$defs/ExecutionScope"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "observation_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
+        },
+        "action_spec": {
+          "$ref": "#/$defs/ActionSpec"
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 512,
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 256,
+            "items": {
+              "type": "number"
+            }
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "request_id",
+        "execution_id",
+        "task_scope",
+        "generation",
+        "observation_id",
+        "valid_until",
+        "action_spec",
+        "actions"
+      ],
+      "additionalProperties": false
+    },
+    "ActionReceipt": {
+      "title": "ActionReceipt",
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.action_receipt.v1"
+        },
+        "execution_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "segment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "executed_actions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 512
+        }
+      },
+      "required": [
+        "schema_version",
+        "execution_id",
+        "generation",
+        "segment_id",
+        "executed_actions"
+      ],
+      "additionalProperties": false
+    },
+    "StopAcknowledgement": {
+      "title": "StopAcknowledgement",
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.stop_ack.v1"
+        },
+        "execution_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "device_confirmed": {
+          "type": "boolean"
+        },
+        "boundary_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "schema_version",
+        "execution_id",
+        "generation",
+        "device_confirmed"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "device_confirmed": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "boundary_id"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "boundary_id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "ActionSegment": {
+      "title": "ActionSegment",
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "physical.action_segment.v1"
+        },
+        "request_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "execution_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "task_scope": {
+          "$ref": "#/$defs/ExecutionScope"
+        },
+        "generation": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "observation_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{3})?Z$(?![\\s\\S])"
+        },
+        "action_spec": {
+          "$ref": "#/$defs/ActionSpec"
+        },
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 512,
+          "items": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 256,
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "segment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "schema_version",
+        "request_id",
+        "execution_id",
+        "task_scope",
+        "generation",
+        "observation_id",
+        "valid_until",
+        "action_spec",
+        "actions",
+        "segment_id"
+      ],
+      "additionalProperties": false
     }
   },
   "x-edh-lifecycle": {
