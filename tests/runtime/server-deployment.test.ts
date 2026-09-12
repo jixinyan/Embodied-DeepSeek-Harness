@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import { ContractValidator } from '@edh/contracts';
+import { LocalStore, SessionAudits } from '@edh/storage';
 import { FixtureBackend } from '../../apps/server/src/fixture-backend.js';
 import { createDemoDeployment } from '../../apps/server/src/demo-deployment.js';
 import { startServer } from '../../apps/server/src/http-server.js';
@@ -224,6 +225,67 @@ test(
     } finally {
       release();
       await server.close();
+      await rm(input.dataDirectory, { recursive: true, force: true });
+    }
+  },
+);
+
+test(
+  'server releases HTTP and storage after backend stop and close both fail',
+  { timeout: 15000 },
+  async () => {
+    const input = await inputs();
+    const backend = new FixtureBackend(input.validator, 'first-pass', 1000);
+    let stops = 0,
+      closes = 0;
+    backend.stop = async () => {
+      stops++;
+      throw new Error('Device stop was not acknowledged');
+    };
+    const close = backend.close.bind(backend);
+    backend.close = async () => {
+      closes++;
+      await close();
+      throw new Error('Provider close failed');
+    };
+    const server = await startServer({
+      ...input,
+      deployment: {
+        ...input.deployment,
+        tasks: {
+          faulty: { ...input.deployment.tasks['first-pass']!, createBackend: () => backend },
+        },
+      },
+    });
+    try {
+      const response = await post(server.url, 'faulty');
+      assert.equal(response.status, 201);
+      const { runId } = await response.json();
+      await until(() => backend.query()?.state === 'running');
+      const closing = server.close();
+      assert.equal(server.close(), closing);
+      const messages = (error: unknown): string =>
+        error instanceof AggregateError ? error.errors.map(messages).join(' | ') : String(error);
+      await assert.rejects(closing, (error) => {
+        assert.match(messages(error), /Device stop was not acknowledged/);
+        assert.match(messages(error), /Provider close failed/);
+        return true;
+      });
+      assert.equal(stops, 1);
+      assert.equal(closes, 1);
+      await assert.rejects(fetch(server.url));
+      const reopened = new LocalStore(input.dataDirectory);
+      try {
+        assert.equal(reopened.get<{ state: string }>(`run:${runId}`)!.value.state, 'cancelled');
+        assert(
+          new SessionAudits(reopened).read(runId).length > 0,
+          'Session auditing must still run after provider cleanup fails.',
+        );
+      } finally {
+        reopened.close();
+      }
+    } finally {
+      await server.close().catch(() => {});
       await rm(input.dataDirectory, { recursive: true, force: true });
     }
   },

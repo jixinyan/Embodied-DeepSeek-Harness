@@ -91,6 +91,9 @@ export class UpperRun {
   private latestMonitor: BackendUpdate | undefined;
   private version = 0;
   private closed = false;
+  private closing = false;
+  private closePromise: Promise<void> | undefined;
+  private readonly lifecycleErrors: unknown[] = [];
   private unsubscribe: () => void;
   private readonly goals: TaskGoals;
   private goal: GoalBinding;
@@ -323,6 +326,9 @@ export class UpperRun {
   private spawn(work: Promise<void>): void {
     const tracked = work
       .catch((error) => this.fail(error))
+      .catch((error) => {
+        this.lifecycleErrors.push(error);
+      })
       .finally(() => this.pending.delete(tracked));
     this.pending.add(tracked);
   }
@@ -336,9 +342,7 @@ export class UpperRun {
     }
     this.state.state = 'failed';
     this.state.error = error instanceof Error ? error.message : String(error);
-    this.event('run.failed', { error: this.state.error });
-    this.sessions.cancelAll();
-    await this.options.backend.stop();
+    await this.cancelAndStop('run.failed', { error: this.state.error });
   }
   private owner(a: Assignment): void {
     if (a.id !== this.state.decisionAssignmentId)
@@ -524,7 +528,11 @@ export class UpperRun {
             const receiptAccess =
               this.state.state === 'succeeded' &&
               ['team.query', 'team.ack_report'].includes(logical);
-            if (this.closed || (terminal(this.state.state) && !recoveryWrite && !receiptAccess))
+            if (
+              this.closed ||
+              this.closing ||
+              (terminal(this.state.state) && !recoveryWrite && !receiptAccess)
+            )
               throw new Error('Run is no longer writable.');
             const priorReport = this.reports.read(a.id);
             if (
@@ -1312,23 +1320,56 @@ export class UpperRun {
   async stop(): Promise<void> {
     if (terminal(this.state.state)) return;
     this.state.state = 'cancelled';
-    this.event('run.cancelled', { source: 'user' });
-    this.sessions.cancelAll();
-    await this.options.backend.stop();
+    await this.cancelAndStop('run.cancelled', { source: 'user' });
   }
   async settle(): Promise<void> {
     while (this.pending.size) await Promise.all([...this.pending]);
   }
-  async close(): Promise<void> {
-    if (this.closed) return;
-    if (!terminal(this.state.state)) await this.stop();
-    for (const recovery of this.recoveries.values())
-      if (recovery.timer) clearTimeout(recovery.timer);
-    this.unsubscribe();
-    await this.options.backend.close();
-    await this.sessions.close();
-    await this.settle();
-    this.closed = true;
+  private async cancelAndStop(type: string, detail: Record<string, unknown>): Promise<void> {
+    const errors: unknown[] = [];
+    try {
+      this.event(type, detail);
+    } catch (error) {
+      errors.push(error);
+    }
+    try {
+      this.sessions.cancelAll();
+    } catch (error) {
+      errors.push(error);
+    }
+    try {
+      await this.options.backend.stop();
+    } catch (error) {
+      errors.push(error);
+    }
+    if (errors.length)
+      throw new AggregateError(errors, 'Task cancellation failed; stop was attempted.');
+  }
+  close(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
+    this.closing = true;
+    this.closePromise = Promise.resolve().then(async () => {
+      const errors: unknown[] = [];
+      const cleanup = async (action: () => unknown) => {
+        try {
+          await action();
+        } catch (error) {
+          errors.push(error);
+        }
+      };
+      if (!terminal(this.state.state)) await cleanup(() => this.stop());
+      for (const recovery of this.recoveries.values())
+        if (recovery.timer) clearTimeout(recovery.timer);
+      await cleanup(() => this.unsubscribe());
+      await cleanup(() => this.options.backend.close());
+      await cleanup(() => this.sessions.close());
+      await cleanup(() => this.settle());
+      this.closed = true;
+      errors.push(...this.lifecycleErrors);
+      if (errors.length)
+        throw new AggregateError(errors, 'Run shutdown failed; all cleanup stages were attempted.');
+    });
+    return this.closePromise;
   }
   plan(): PlanDocument | undefined {
     return this.plans.read(this.state.id);

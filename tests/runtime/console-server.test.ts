@@ -8,7 +8,7 @@ import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import { startDemoServer } from '../../apps/server/src/http-server.js';
-import type { RunState } from '@edh/tasks';
+import { RunHistory, type RunState } from '@edh/tasks';
 
 test(
   'console API runs DSH, rejects conflicting admission, replays request IDs, reconnects SSE and preserves history',
@@ -150,16 +150,72 @@ test(
         expectedVersion: 0,
       }).record;
       reports.markDelivery(accepted.id, { state: 'queued' });
+      // The published history exceeds the journal's per-record limit in aggregate.
+      fixture.eventCount = 9;
+      for (let sequence = 1; sequence <= 9; sequence++)
+        server.store.put(
+          `event:${fixture.id}:${sequence}`,
+          {
+            sequence,
+            at: fixture.createdAt,
+            type: 'tool.completed',
+            detail: { text: 'x'.repeat(1024 * 1024) },
+          },
+          0,
+        );
+      // A crash can leave one event durable before its run projection is published.
+      const orphan = { sequence: 10, at: fixture.createdAt, type: 'run.succeeded', detail: {} };
+      server.store.put(`event:${fixture.id}:10`, orphan, 0);
       server.store.put('run:interrupted-run', fixture, 0);
+      assert.throws(
+        () => new RunHistory(server.store).restore({ ...fixture, eventCount: 11 }),
+        /Incomplete/,
+      );
+      const legacy: RunState = {
+        ...fixture,
+        id: 'legacy-run',
+        assignments: {},
+        events: [{ sequence: 1, at: fixture.createdAt, type: 'run.created', detail: {} }],
+      };
+      delete legacy.eventCount;
+      server.store.put('run:legacy-run', legacy, 0);
+      const annotation = {
+        sequence: 2,
+        at: fixture.createdAt,
+        type: 'run.interrupted',
+        detail: { reason: 'Previous shutdown' },
+      };
+      // Crash after storing a restart annotation but before publishing interrupted state.
+      server.store.put('run-interruption:legacy-run', annotation, 0);
+
       await server.close();
       server = await startDemoServer(options);
       const record = await (await fetch(server.url + '/api/runs/interrupted-run')).json();
+      const migrated = await (await fetch(server.url + '/api/runs/legacy-run')).json();
+      assert.equal(migrated.state, 'interrupted');
+      assert.deepEqual(migrated.events, [...legacy.events, annotation]);
+      assert.equal(server.store.get('run-interruption:legacy-run')!.version, 1);
+      assert.deepEqual(server.store.get<RunState>('run:legacy-run')!.value.events, []);
       assert.equal(record.state, 'interrupted');
       assert.equal(record.readOnly, true);
       assert.equal(record.executions.length, 0);
+      assert.equal(record.events.length, 10);
+      assert.equal(record.events.at(-1).type, 'run.interrupted');
+      assert.equal(
+        record.events.some((event: { type: string }) => event.type === 'run.succeeded'),
+        false,
+      );
+      assert.deepEqual(server.store.get(`event:${fixture.id}:10`)!.value, orphan);
+      const projection = server.store.get<RunState>(`run:${fixture.id}`)!.value;
+      assert.deepEqual(projection.events, []);
+      assert.equal(projection.eventCount, 9);
       assert.equal(record.roleReports[0].latestReport.id, accepted.id);
       assert.equal(record.roleReports[0].reportDelivery.state, 'interrupted');
       assert.equal(record.roleReports[0].reportAcknowledgement, null);
+      await server.close();
+      server = await startDemoServer(options);
+      const reopened = await (await fetch(server.url + '/api/runs/interrupted-run')).json();
+      assert.deepEqual(reopened.events, record.events);
       assert.equal(
         record.events.filter((event: { type: string }) => event.type === 'message.delivered')
           .length,

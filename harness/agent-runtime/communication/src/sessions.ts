@@ -26,6 +26,9 @@ export class TeamSessions {
     { assignment: Assignment; handle: AgentHandle; timer: ReturnType<typeof setTimeout> | null }
   >();
   private closed = false;
+  private closePromise: Promise<void> | undefined;
+  private readonly pendingCreation = new Set<Promise<Assignment>>();
+  private readonly lateCleanupErrors: unknown[] = [];
   private readonly creating = new Set<string>();
   constructor(
     private readonly host: Context,
@@ -35,7 +38,16 @@ export class TeamSessions {
     private readonly model: (id: string) => { provider: string; model: string },
     private readonly lifetimeMs = 120_000,
   ) {}
-  async create(member: string, brief: InvocationBrief): Promise<Assignment> {
+  create(member: string, brief: InvocationBrief): Promise<Assignment> {
+    const pending = this.createAssignment(member, brief);
+    this.pendingCreation.add(pending);
+    void pending.then(
+      () => this.pendingCreation.delete(pending),
+      () => this.pendingCreation.delete(pending),
+    );
+    return pending;
+  }
+  private async createAssignment(member: string, brief: InvocationBrief): Promise<Assignment> {
     if (this.closed || this.live.size + this.creating.size >= 64)
       throw new Error('Assignment admission closed or limit reached.');
     this.validator.parse('InvocationBrief', brief);
@@ -63,7 +75,11 @@ export class TeamSessions {
         todo: brief.tools_and_limits.allowed_tools.includes('todo_write'),
       });
       if (this.closed) {
-        await handle.dispose();
+        try {
+          await handle.dispose();
+        } catch (error) {
+          this.lateCleanupErrors.push(error);
+        }
         throw new Error('Team closed during creation.');
       }
       const entry = { assignment, handle, timer: null as ReturnType<typeof setTimeout> | null };
@@ -151,18 +167,38 @@ export class TeamSessions {
   cancelAll(): void {
     for (const entry of this.live.values()) entry.handle.agent.cancel({ kind: 'user' });
   }
-  async close(): Promise<void> {
-    if (this.closed) return;
+  close(): Promise<void> {
+    if (this.closePromise) return this.closePromise;
     this.closed = true;
-    this.cancelAll();
-    await Promise.all(
-      [...this.live.values()].map(async (entry) => {
-        if (entry.timer) clearTimeout(entry.timer);
-        await entry.handle.agent.whenIdle();
-        this.hooks.audit(entry.assignment.id, entry.handle.agent.session.snapshotEvents());
-        await entry.handle.dispose();
-      }),
-    );
-    this.live.clear();
+    this.closePromise = Promise.resolve().then(async () => {
+      const errors: unknown[] = [];
+      const disposing = Promise.all(
+        [...this.live.values()].map(async (entry) => {
+          if (entry.timer) clearTimeout(entry.timer);
+          try {
+            entry.handle.agent.cancel({ kind: 'user' });
+            await entry.handle.agent.whenIdle();
+            this.hooks.audit(entry.assignment.id, entry.handle.agent.session.snapshotEvents());
+          } catch (error) {
+            errors.push(error);
+          }
+          try {
+            await entry.handle.dispose();
+          } catch (error) {
+            errors.push(error);
+          }
+        }),
+      );
+      // Cancel live work immediately while late creations drain and dispose themselves.
+      await Promise.all([disposing, Promise.allSettled([...this.pendingCreation])]);
+      this.live.clear();
+      errors.push(...this.lateCleanupErrors);
+      if (errors.length)
+        throw new AggregateError(
+          errors,
+          'Team shutdown failed; all sessions were disposed or attempted.',
+        );
+    });
+    return this.closePromise;
   }
 }

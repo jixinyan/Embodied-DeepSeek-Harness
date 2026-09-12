@@ -36,18 +36,23 @@ export class LocalStore {
   constructor(readonly directory: string) {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
     this.lock = resolve(directory, 'writer.lock');
-    let lockFd: number;
+    let lockFd: number | undefined;
+    let journalFd: number | undefined;
     try {
       lockFd = openSync(this.lock, 'wx', 0o600);
-    } catch {
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
       throw new Error(
         `Store already locked. After confirming the old server is stopped, remove ${this.lock}.`,
       );
     }
-    writeSync(lockFd, String(process.pid));
-    closeSync(lockFd);
-    this.fd = openSync(resolve(directory, 'records.jsonl'), 'a+', 0o600);
     try {
+      writeSync(lockFd, String(process.pid));
+      fsyncSync(lockFd);
+      closeSync(lockFd);
+      lockFd = undefined;
+      journalFd = openSync(resolve(directory, 'records.jsonl'), 'a+', 0o600);
+      this.fd = journalFd;
       const bytes = readFileSync(this.fd);
       const end = bytes.lastIndexOf(10) + 1;
       for (const line of bytes.subarray(0, end).toString('utf8').split('\n').filter(Boolean)) {
@@ -66,8 +71,22 @@ export class LocalStore {
         fsyncSync(this.fd);
       }
     } catch (error) {
-      closeSync(this.fd);
-      unlinkSync(this.lock);
+      const failures: unknown[] = [error];
+      for (const fd of [lockFd, journalFd]) {
+        if (fd === undefined) continue;
+        try {
+          closeSync(fd);
+        } catch (failure) {
+          failures.push(failure);
+        }
+      }
+      try {
+        unlinkSync(this.lock);
+      } catch (failure) {
+        failures.push(failure);
+      }
+      if (failures.length > 1)
+        throw new AggregateError(failures, 'Store startup and cleanup failed.');
       throw error;
     }
   }

@@ -9,7 +9,7 @@ import { ContractValidator } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
 import { SkillLibrary } from '@edh/memory';
-import type { RunState, RunEvent } from '@edh/tasks';
+import { RunHistory, type RunState } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
 import { UpperRun, terminal } from './application.js';
 import { prepareDeployment, type ServerDeployment } from './deployment.js';
@@ -97,32 +97,9 @@ export async function startServer(options: LocalServerOptions) {
     reports.reconcileInterruptedDeliveries();
     const skills = new SkillLibrary(store, validator);
     skills.exportAll();
-    const restoreEvents = (state: RunState): RunState => {
-      if (state.eventCount === undefined) return state;
-      state.events = store
-        .list<RunEvent>(`event:${state.id}:`)
-        .map((r) => r.value)
-        .filter((e) => e.sequence <= state.eventCount!)
-        .sort((a, b) => a.sequence - b.sequence);
-      return state;
-    };
-    for (const record of store.list<RunState>('run:')) {
-      if (!terminal(record.value.state)) {
-        const state = restoreEvents(record.value);
-        delete state.eventCount;
-        state.state = 'interrupted';
-        state.error =
-          'The previous server stopped. History is read-only; execution is not resumed.';
-        state.updatedAt = new Date().toISOString();
-        state.events.push({
-          sequence: state.events.length + 1,
-          at: state.updatedAt,
-          type: 'run.interrupted',
-          detail: { reason: state.error },
-        });
-        store.put(record.key, state, record.version);
-      }
-    }
+    const history = new RunHistory(store);
+    for (const record of store.list<RunState>('run:'))
+      history.interrupt(record.value, record.version);
     host = await createDshHost(deployment.adapters);
     const publicConfiguration = {
       mode: deployment.metadata.source,
@@ -173,7 +150,7 @@ export async function startServer(options: LocalServerOptions) {
           ? active.snapshot()
           : (() => {
               const record = store.get<RunState>(`run:${id}`);
-              return record ? restoreEvents(record.value) : undefined;
+              return record ? history.restore(record.value) : undefined;
             })();
       if (!state) throw new HttpError(404, 'Run not found.');
       return {
@@ -431,8 +408,15 @@ export async function startServer(options: LocalServerOptions) {
       close(): Promise<void> {
         if (closePromise) return closePromise;
         closing = true;
-        shutdown.abort(new Error('Server is stopping.'));
-        closePromise = (async () => {
+        closePromise = Promise.resolve().then(async () => {
+          const errors: unknown[] = [];
+          const cleanup = async (action: () => unknown) => {
+            try {
+              await action();
+            } catch (error) {
+              errors.push(error);
+            }
+          };
           clearInterval(heartbeat);
           for (const [res, entry] of streams) {
             if (entry.timer) clearTimeout(entry.timer);
@@ -440,20 +424,39 @@ export async function startServer(options: LocalServerOptions) {
           }
           streams.clear();
           await admissionDone;
-          await active?.close();
-          await dsh.fiber.dispose();
-          await new Promise<void>((done) => {
-            server.close(() => done());
-            server.closeIdleConnections();
-          });
-          store.close();
-        })();
+          await cleanup(() => active?.close());
+          await cleanup(() => dsh.fiber.dispose());
+          await cleanup(
+            () =>
+              new Promise<void>((done, reject) => {
+                server.close((error) => (error ? reject(error) : done()));
+                server.closeIdleConnections();
+              }),
+          );
+          await cleanup(() => store.close());
+          if (errors.length)
+            throw new AggregateError(
+              errors,
+              'Server shutdown failed; all cleanup stages were attempted.',
+            );
+        });
+        shutdown.abort(new Error('Server is stopping.'));
         return closePromise;
       },
     };
   } catch (error) {
-    await host?.fiber.dispose();
-    store.close();
+    const errors: unknown[] = [error];
+    try {
+      await host?.fiber.dispose();
+    } catch (failure) {
+      errors.push(failure);
+    }
+    try {
+      store.close();
+    } catch (failure) {
+      errors.push(failure);
+    }
+    if (errors.length > 1) throw new AggregateError(errors, 'Server startup and cleanup failed.');
     throw error;
   }
 }

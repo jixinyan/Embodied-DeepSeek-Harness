@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile, rm, appendFile } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm, appendFile, mkdir, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { LocalStore } from '@edh/storage';
@@ -166,6 +166,25 @@ tool_bindings: {}
       published.members.scene!.outputSchema!.schema.properties!.confidence!.type,
       'string',
     );
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('failed journal initialization releases its owned writer lock', async () => {
+  const directory = await mkdtemp(resolve(tmpdir(), 'edh-store-init-'));
+  try {
+    const journal = resolve(directory, 'records.jsonl');
+    await mkdir(journal);
+    assert.throws(() => new LocalStore(directory));
+    await assert.rejects(access(resolve(directory, 'writer.lock')), { code: 'ENOENT' });
+    await rm(journal, { recursive: true });
+    const store = new LocalStore(directory);
+    try {
+      assert.equal(store.put('recovered', { ready: true }, 0), 1);
+    } finally {
+      store.close();
+    }
   } finally {
     await rm(directory, { recursive: true, force: true });
   }

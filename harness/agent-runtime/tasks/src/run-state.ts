@@ -55,6 +55,7 @@ export interface RunState {
   retryChanges: string[];
   assignments: Record<string, RunAssignment>;
   events: RunEvent[];
+  /** Published ordinary events; a restart annotation is stored separately. */
   eventCount?: number;
   executions: ExecutionStatus[];
   requests: SubgoalRequest[];
