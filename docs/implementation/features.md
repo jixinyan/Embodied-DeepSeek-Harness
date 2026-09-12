@@ -1,6 +1,6 @@
 # Current capability map
 
-Snapshot: 2026-09-09. Upper runtime includes multi-goal recovery and explicit report acknowledgement.
+Snapshot: 2026-09-12. Upper runtime includes multi-goal recovery, explicit report acknowledgement and configurable local deployment.
 
 ![Implemented capabilities and remaining work](../architecture/assets/implementation-status.svg)
 
@@ -15,6 +15,7 @@ Snapshot: 2026-09-09. Upper runtime includes multi-goal recovery and explicit re
 | Async monitor, formal verification, Planner recovery and Evolver progress | [Application](../../apps/server/src/application.ts), [workflow acceptance](../../tests/runtime/upper-run.test.ts) |
 | Failure-aware SKILL publication, explicit retrieval and provenance | [Skill library](../../harness/agent-runtime/memory/src/library.ts), [recovery decision](decisions/0004-recovery-observation-and-action-admission.md) |
 | Durable domain records and historical audit | [Store](../../harness/agent-runtime/storage/src/local-store.ts), [HTTP service](../../apps/server/src/http-server.ts) |
+| Deployment-defined tasks, model aliases, tools, backend factories and historical configuration | [Deployment guide](deployments.md), [acceptance](../../tests/runtime/server-deployment.test.ts) |
 | Live output, tools/results, TODO history, sensors, verdict and recovery inspection | [Console](../../apps/console/README.md), [API/restart tests](../../tests/runtime/console-server.test.ts) |
 
 Run `pnpm demo` and select the labeled failure/recovery fixture. The observable

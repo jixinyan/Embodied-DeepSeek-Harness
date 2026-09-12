@@ -27,7 +27,7 @@ the physical worker decision ownership or cause agent contexts to be shared.
 
 | Module | Owns | Does not own | Main boundary / next step |
 | --- | --- | --- | --- |
-| `apps/server` | EDH application assembly, future API and startup | Agent loop implementation | ServerAssembly; Step 00/12 |
+| `apps/server` | EDH application assembly, local HTTP/SSE API and startup | Agent loop implementation | startServer + ServerDeployment; Step 00/12 |
 | `apps/console` | Sensors, team/agent/robot state, tools, verdicts and timeline | Device truth or planner decisions | ConsoleProjection; Step 12 |
 | `harness/agent-runtime/agents` | Independent assignments, DSH session lifecycle, built-in role definitions | Implicit parent context or another loop | AgentFactory; Step 03 |
 | `harness/agent-runtime/foundation` | Plugin context, schemas and selected runtime support | Another agent loop or physical policy | Pinned source and compiler boundaries; Step 00 |

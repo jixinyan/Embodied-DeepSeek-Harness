@@ -29,6 +29,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 | Recovery | Formal failure followed by Planner replan/retry opens one recovery and Evolver; explicit progress batches continue until original-goal success |
 | Experience | Versioned SKILL export/search/load; failure signals, possible causes, avoid rules, success/verification guidance and provenance; fixture skills labeled and separated |
 | Persistence | Single-writer CAS journal, fsync, integrity checks, torn-tail recovery, separate immutable events and run projections; read-only historical session audits |
+| Deployment assembly | Explicit task presets, native DSH model aliases/adapters, tools and backend factories; preflight, source checks, configuration-bound requests and historical snapshots |
 | Server/console | Local HTTP/SSE, request admission deduplication, one active run, reconnect snapshots, history/restart interruption, output/tool/TODO/brief/recovery inspection |
 
 ## Acceptance and limits
@@ -36,16 +37,16 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 33 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 37 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
-  pause/resume/cancel, HTTP/SSE/idempotency and interrupted restart.
+  pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
 - 230 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
   plus non-JSON rejection tests; generated contract types match the schema.
 - 93 pinned DSH source files and 20 referenced module bindings verified.
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Remaining: live VLM deployment configuration/evaluation; Python worker transport;
+Remaining: live VLM adapter binding/evaluation; Python worker transport;
 actual simulator, policy, perception and hardware adapters; resource arbitration;
 interruptible action-chunk admission and device acknowledgement. The upper runner
 coordinates plan-selected subgoals and one observing recovery chain at a time.
@@ -219,3 +220,32 @@ Three new native DSH acceptance cases cover asynchronous successful recovery,
 late observation after stop, and stale verification after boundary replacement.
 The runtime suite now contains 33 tests. Remaining priorities include deployable
 model/backend assembly, storage retention and recovery, and real provider transport.
+
+
+## Configurable local deployment checkpoint (2026-09-12)
+
+`startServer` now accepts explicit ServerDeployment bindings. CPU fixtures are supplied
+by a separate `createDemoDeployment` configuration, preserving `pnpm demo`. Task IDs,
+instructions, final criteria, model aliases, native adapters and additional tools are
+resolved before admission; invalid metadata/team bindings fail before opening the store.
+Backend factories receive shutdown cancellation, and late returned instances are closed
+without starting a task. A declared source must match the allocated backend.
+
+Each run stores its public deployment/team snapshot. Request IDs are bound to the
+configuration digest; changed configuration cannot silently replay an old admission.
+The console reads task presets and source labels from the API, preserves historical
+roles/configuration, and labels missing legacy snapshots explicitly. Provider imagery
+is not implemented; the synthetic cabinet remains limited to fixture sources.
+
+Validation: `pnpm check` passes with 37 runtime tests, 230 shared TS/Python cases,
+93 pinned DSH files and 20 bindings. A browser run of the custom example completed
+placement, three TODOs and formal verification. The original seven local demo histories
+were preserved and their legacy snapshot labels inspected. See the
+[deployment guide](deployments.md) and [runnable example](../../examples/deployments/local-cpu.mjs).
+Implementation commit: `6a70456`.
+
+Next: harden long-run retention/checkpoints and restart/shutdown error reconciliation;
+bind a live DSH model only when an explicit provider configuration is available.
+The server still admits configured task presets, one active run, and one observing
+recovery chain. It does not yet accept unrestricted mission text or supply live model,
+Python transport, camera rendering, policy, simulator or hardware providers.

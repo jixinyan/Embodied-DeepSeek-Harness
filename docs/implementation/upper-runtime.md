@@ -40,9 +40,11 @@ the configured decision owner's motion authority.
 6. Run [the configuration-to-role acceptance test](../../tests/runtime/team-extensions.test.ts)
    as a concrete example, then add behavior-specific provider tests.
 
-The HTTP demo assembles only built-in tools and the fixture provider. A custom provider
-requires deployment code to register the factory; listing an arbitrary name in YAML
-alone cannot load executable code. These are trusted in-process extensions, not a plugin sandbox.
+The default HTTP demo supplies built-in tools and the fixture provider through
+`createDemoDeployment`. The same `startServer` accepts a `ServerDeployment` containing
+model adapters, task presets, tools and backend factories; see the
+[deployment guide](deployments.md). Listing an arbitrary name in YAML alone cannot
+load executable code. These are trusted in-process extensions, not a plugin sandbox.
 
 ## Structured role reports
 

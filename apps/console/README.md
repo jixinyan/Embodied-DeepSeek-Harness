@@ -22,3 +22,11 @@ Provider output and concise decision notes can be inspected; absent internal rea
 must not be invented. TODO completion is distinct from formal physical success.
 See [runtime guide](../../docs/implementation/upper-runtime.md) and
 [capability map](../../docs/implementation/features.md).
+
+
+Task presets and source labels come from deployment configuration. Newly admitted runs
+retain their own public configuration for historical inspection; legacy runs explicitly
+report that configuration is unavailable and show their recorded assignments. The Next
+Run selector uses the current deployment, while the workspace shows the selected run.
+Non-fixture sources show observation metadata until real sensor rendering is connected.
+See the [deployment guide](../../docs/implementation/deployments.md).

@@ -9,5 +9,6 @@ team configuration, UpperRun, a local domain store and an explicitly synthetic b
 - [fixture-model.ts](src/fixture-model.ts) / [fixture-backend.ts](src/fixture-backend.ts): keyless test dependencies.
 
 See [extension and lifecycle guide](../../docs/implementation/upper-runtime.md).
-The public ServerAssembly interface is a target boundary; the concrete demo entry
-is startDemoServer. No real physical provider or live model is configured by default.
+Use `startServer` with explicit `ServerDeployment` bindings for tasks, native DSH
+models, tools and backend factories. `startDemoServer` supplies the CPU configuration.
+See the [deployment guide](../../docs/implementation/deployments.md) and runnable example. No real physical provider or live model is configured by default.

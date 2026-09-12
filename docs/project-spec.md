@@ -31,6 +31,9 @@ The runtime choice is settled: reuse DSH, with EDH-owned composition and embodie
 behavior. Upper Team/Role, tools, TODOs, plans/files, verification, recovery, SKILL
 storage and a console now run with a scripted model and CPU fixture backend.
 Plan-selected sequential goals and prerequisite recovery now run with CPU fixtures.
+The local server accepts explicit deployment bindings for tasks, native DSH models,
+tools and backend factories; see the [deployment guide](implementation/deployments.md).
+This provides configuration assembly, not a connected physical provider.
 Continue upper lifecycle/configuration, delivery reconciliation and retention work before
 physical integration; do not replace the DSH loop. The unified console now displays key
 state without page/tab switching; further polish follows actual provider integration.
