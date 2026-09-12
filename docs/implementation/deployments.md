@@ -97,3 +97,9 @@ A `simulation` or `hardware` declaration is not evidence that a provider is heal
 [Deployment acceptance tests](../../tests/runtime/server-deployment.test.ts) exercise
 custom tasks/models, immutable metadata/history, preflight rejection, source mismatch
 and shutdown during allocation. They use CPU fixtures only.
+
+
+Shutdown failures do not skip later cleanup stages: the run, native sessions, host,
+HTTP listener and store are drained or attempted before an aggregate error is returned.
+This guarantees cleanup attempts, not that a failing external device stopped.
+Repeated close calls share the same result.

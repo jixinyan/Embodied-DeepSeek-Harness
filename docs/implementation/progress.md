@@ -37,7 +37,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 37 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 41 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
 - 230 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -249,3 +249,28 @@ bind a live DSH model only when an explicit provider configuration is available.
 The server still admits configured task presets, one active run, and one observing
 recovery chain. It does not yet accept unrestricted mission text or supply live model,
 Python transport, camera rendering, policy, simulator or hardware providers.
+
+
+## Restart and shutdown checkpoint (2026-09-13)
+
+RunHistory restores only published event prefixes and stores restart annotations
+separately. Startup migrates legacy inline history without rewriting the full event
+array into one journal record. An ordinary event written before its projection remains
+unpublished, including an orphan success event. Restart never replays model or physical
+work. Missing published events are reported as corruption rather than silently omitted.
+
+Cleanup now attempts all owned stages even when backend stop/close, session auditing
+or host disposal fails. Repeated close calls share completion. Team shutdown drains
+late session creation; native handles are disposed even after audit failure. Failed
+journal initialization removes only the writer lock acquired by that constructor.
+Errors are retained through AggregateError rather than reported as successful cleanup.
+
+Validation: full `pnpm check`, 41 runtime tests and 230 shared TS/Python cases pass.
+Acceptance includes a 9 MiB published event history with an unpublished success suffix,
+legacy migration and interrupted annotation publication, failing stop plus close,
+failed native audits, late native creation, and journal-open failure. Commit `e16c822`.
+This fixes failure paths, not retention/compaction or automatic physical recovery.
+
+The user next explicitly prioritizes OpenAI-compatible API/vLLM model bindings and
+WebSocket policy client/server adaptation with an action gate before device execution.
+Actual simulator/policy checkpoints and hardware acceptance remain separate integrations.

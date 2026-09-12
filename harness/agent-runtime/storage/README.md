@@ -8,3 +8,10 @@ audit histories no longer need to fit one 8 MiB journal record. No resumable mod
 See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
 [module responsibilities](../../../docs/architecture/modules.md).
+
+
+RunHistory in the tasks module reconstructs published run events and appends a separate
+restart annotation. It never promotes an uncommitted suffix to successful task state.
+Journal-open failure releases only the lock acquired during that initialization.
+Session/run/server shutdown attempts all cleanup stages and reports aggregate failures.
+Long-horizon compaction and deletion policies remain pending.
