@@ -32,15 +32,15 @@
       <div class="sidebar-bottom">
         <span id="connection-dot" class="connection-dot"></span
         ><span id="connection">Connecting</span>
-        <p>DSH runtime · CPU fixture</p>
-        <small>Simulation and hardware disconnected</small>
+        <p id="deployment-runtime">DSH runtime</p>
+        <small id="deployment-description">Loading deployment configuration</small>
       </div>
     </aside>
     <main id="mission">
       <header>
         <div class="breadcrumb">Workspace <span>/</span> <strong>Mission control</strong></div>
         <div class="header-actions">
-          <span class="tag fixture">TEST FIXTURE</span
+          <span id="deployment-source" class="tag fixture">CONNECTING</span
           ><button id="inspect-team" class="button small">Team config</button>
         </div>
       </header>
@@ -48,10 +48,9 @@
       <section class="mission-card">
         <div class="mission-copy">
           <label for="instruction" class="eyebrow">TASK</label
-          ><input id="instruction" value="Place the cup inside the cabinet." readonly />
+          ><input id="instruction" value="Loading task configuration…" readonly />
           <div class="mission-meta">
-            <span id="team-name">console-demo</span
-            ><span>Fixed benchmark goal · GT verification</span>
+            <span id="team-name">console-demo</span><span>Deployment-bound success conditions</span>
           </div>
         </div>
         <div class="mission-actions">
@@ -121,7 +120,7 @@
               <span>◌</span>
               <h2>Ready for a task</h2>
               <p>Agent output, tool calls and explicit context will appear here.</p>
-              <p>Fixture notes are scripted model output. Hidden reasoning is never invented.</p>
+              <p>Only provider-supplied output is displayed; hidden reasoning is never invented.</p>
             </div>
           </div>
           <div id="live-output" class="live-output" hidden></div>
@@ -143,7 +142,7 @@
             </p>
             <div class="scene">
               <div class="scene-top">
-                <span class="scene-label">FIXTURE</span
+                <span id="scene-source" class="scene-label">FIXTURE</span
                 ><span id="frame-number" class="scene-label">NO FRAME</span>
               </div>
               <svg
@@ -336,7 +335,7 @@
       </details>
       <footer>
         <span>EDH / Native DSH runtime</span
-        ><span>Local fixture · No live VLM, simulator or robot connected</span>
+        ><span id="deployment-footer">Loading deployment metadata</span>
       </footer>
     </main>
     <dialog id="inspector" aria-labelledby="inspector-title">

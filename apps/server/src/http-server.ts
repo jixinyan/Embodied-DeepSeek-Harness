@@ -11,31 +11,34 @@ import { LocalStore, SessionAudits } from '@edh/storage';
 import { SkillLibrary } from '@edh/memory';
 import type { RunState, RunEvent } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
-import { UpperRun, CORE_TOOLS, terminal } from './application.js';
-import {
-  FixtureBackend,
-  FIXTURE_GOAL,
-  MULTI_GOAL_FIXTURE,
-  FIXTURE_SUBGOAL_CHECKS,
-  type FixtureScenario,
-} from './fixture-backend.js';
-import { FixtureModel } from './fixture-model.js';
+import { UpperRun, terminal } from './application.js';
+import { prepareDeployment, type ServerDeployment } from './deployment.js';
+import type { DemoDeploymentOptions } from './demo-deployment.js';
 
-export interface DemoServerOptions {
+export interface LocalServerOptions {
   root: string;
   dataDirectory: string;
   port?: number;
-  tickMs?: number;
-  modelDelayMs?: number;
-  teamFile?: string;
+  deployment: ServerDeployment;
 }
-const scenarios: FixtureScenario[] = [
-  'retry-success',
-  'first-pass',
-  'unknown',
-  'backend-error',
-  'multi-goal-recovery',
-];
+export interface DemoServerOptions extends DemoDeploymentOptions {
+  dataDirectory: string;
+  port?: number;
+}
+async function readValidator(root: string): Promise<ContractValidator> {
+  return new ContractValidator(
+    JSON.parse(
+      await readFile(resolve(root, 'harness/contracts/schema/physical.schema.json'), 'utf8'),
+    ),
+  );
+}
+export async function startDemoServer(options: DemoServerOptions) {
+  const { createDemoDeployment } = await import('./demo-deployment.js');
+  return startServer({
+    ...options,
+    deployment: createDemoDeployment(options, await readValidator(options.root)),
+  });
+}
 class HttpError extends Error {
   constructor(
     readonly status: number,
@@ -70,19 +73,26 @@ function json(res: ServerResponse, status: number, value: unknown): void {
   });
   res.end(JSON.stringify(value));
 }
-/** Local single-user console service. No credentials, live model or physical controller are mounted. */
-export async function startDemoServer(options: DemoServerOptions) {
+/** Local single-user console service assembled from explicit trusted deployment bindings. */
+export async function startServer(options: LocalServerOptions) {
+  const validator = await readValidator(options.root);
+  const deployment = prepareDeployment(options.deployment, validator);
+  const scenarios = Object.keys(deployment.tasks);
+  const team = await new FileTeamLoader({
+    validator,
+    builtinDirectory: resolve(options.root, 'harness/agent-runtime/agents/roles'),
+    roleRoot: deployment.roleRoot,
+    defaultModel: deployment.metadata.defaultModel,
+    models: Object.keys(deployment.metadata.models),
+    tools: deployment.metadata.tools,
+    providers: deployment.metadata.providers,
+  }).inspect(deployment.teamFile);
+  if (team.definition.entrypoint !== team.definition.bindings.decision_owner)
+    throw new Error('This application requires the entrypoint to be the decision owner.');
+  const deploymentDigest = deployment.digest + ':' + team.sourceDigest;
   const store = new LocalStore(options.dataDirectory);
   let host: Context | undefined;
   try {
-    const validator = new ContractValidator(
-      JSON.parse(
-        await readFile(
-          resolve(options.root, 'harness/contracts/schema/physical.schema.json'),
-          'utf8',
-        ),
-      ),
-    );
     const reports = new AssignmentReports(store, validator);
     reports.reconcileInterruptedDeliveries();
     const skills = new SkillLibrary(store, validator);
@@ -113,21 +123,41 @@ export async function startDemoServer(options: DemoServerOptions) {
         store.put(record.key, state, record.version);
       }
     }
-    const team = await new FileTeamLoader({
-      validator,
-      builtinDirectory: resolve(options.root, 'harness/agent-runtime/agents/roles'),
-      roleRoot: resolve(options.root, 'examples'),
-      defaultModel: 'fixture',
-      models: ['fixture'],
-      tools: CORE_TOOLS,
-      providers: [],
-    }).inspect(options.teamFile ?? resolve(options.root, 'examples/teams/console-demo.yaml'));
-    const adapter = new FixtureModel(options.modelDelayMs ?? 140);
-    host = await createDshHost([{ providers: ['fixture'], adapter }]);
+    host = await createDshHost(deployment.adapters);
+    const publicConfiguration = {
+      mode: deployment.metadata.source,
+      deploymentId: deployment.metadata.id,
+      deploymentVersion: deployment.metadata.version,
+      deploymentDigest,
+      description: deployment.metadata.description,
+      models: deployment.metadata.models,
+      taskPresets: Object.fromEntries(
+        scenarios.map((id) => [
+          id,
+          {
+            label: deployment.tasks[id]!.label,
+            instruction: deployment.tasks[id]!.instruction,
+          },
+        ]),
+      ),
+      team: team.definition,
+      roles: team.members,
+      digest: team.sourceDigest,
+      tools: deployment.metadata.tools,
+      scenarios,
+      goal: deployment.tasks[scenarios[0]!]!.goal,
+      scenarioGoals: Object.fromEntries(scenarios.map((id) => [id, deployment.tasks[id]!.goal])),
+      physicalRuntime:
+        deployment.metadata.source === 'test_fixture' ? 'not_connected' : 'deployment_bound',
+      model: deployment.metadata.defaultModel,
+    };
     const dsh = host;
     let active: UpperRun | undefined;
     let admitting = false;
     let closing = false;
+    let admissionDone: Promise<void> | undefined;
+    let closePromise: Promise<void> | undefined;
+    const shutdown = new AbortController();
     const streams = new Map<
       ServerResponse,
       {
@@ -148,6 +178,7 @@ export async function startDemoServer(options: DemoServerOptions) {
       if (!state) throw new HttpError(404, 'Run not found.');
       return {
         ...state,
+        configuration: store.get(`run-config:${id}`)?.value ?? null,
         readOnly: active?.state.id !== id || terminal(state.state),
         plan: store.get(`plan:${id}`)?.value ?? null,
         roleReports: Object.keys(state.assignments)
@@ -203,23 +234,7 @@ export async function startDemoServer(options: DemoServerOptions) {
         const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
         const method = req.method ?? 'GET';
         if (method === 'GET' && url.pathname === '/api/config')
-          return json(res, 200, {
-            mode: 'test_fixture',
-            team: team.definition,
-            roles: team.members,
-            digest: team.sourceDigest,
-            tools: CORE_TOOLS,
-            scenarios,
-            goal: FIXTURE_GOAL,
-            scenarioGoals: Object.fromEntries(
-              scenarios.map((scenario) => [
-                scenario,
-                scenario === 'multi-goal-recovery' ? MULTI_GOAL_FIXTURE : FIXTURE_GOAL,
-              ]),
-            ),
-            physicalRuntime: 'not_connected',
-            model: 'deterministic DSH fixture adapter',
-          });
+          return json(res, 200, publicConfiguration);
         if (method === 'GET' && url.pathname === '/api/runs')
           return json(res, 200, {
             runs: store
@@ -240,17 +255,26 @@ export async function startDemoServer(options: DemoServerOptions) {
           if (Object.keys(data).some((k) => !['scenario', 'requestId'].includes(k)))
             throw new HttpError(
               400,
-              'Only scenario and requestId are accepted by this fixed-goal fixture.',
+              'Only scenario and requestId are accepted; choose a deployment task preset.',
             );
           if (
-            !scenarios.includes(data.scenario as FixtureScenario) ||
+            !scenarios.includes(data.scenario as string) ||
             typeof data.requestId !== 'string' ||
             !/^[A-Za-z0-9-]{8,80}$/.test(data.requestId)
           )
             throw new HttpError(400, 'Invalid scenario or requestId.');
           const requestKey = `request:${data.requestId}`;
-          const previous = store.get<{ scenario: string; runId: string | null }>(requestKey);
+          const previous = store.get<{
+            scenario: string;
+            runId: string | null;
+            deploymentDigest?: string;
+          }>(requestKey);
           if (previous) {
+            if (previous.value.deploymentDigest !== deploymentDigest)
+              throw new HttpError(
+                409,
+                'Request belongs to another deployment configuration; inspect its history.',
+              );
             if (previous.value.scenario !== data.scenario)
               throw new HttpError(409, 'Idempotency key reused with different input.');
             if (!previous.value.runId)
@@ -260,40 +284,60 @@ export async function startDemoServer(options: DemoServerOptions) {
               );
             return json(res, 200, { runId: previous.value.runId, replayed: true });
           }
+          if (closing) throw new HttpError(503, 'Server is stopping.');
           if (admitting || (active && !terminal(active.state.state)))
             throw new HttpError(409, 'A run is already active.');
           admitting = true;
+          let completeAdmission!: () => void;
+          admissionDone = new Promise<void>((done) => {
+            completeAdmission = done;
+          });
           try {
-            store.put(requestKey, { scenario: data.scenario, runId: null }, 0);
+            store.put(requestKey, { scenario: data.scenario, runId: null, deploymentDigest }, 0);
+            const task = deployment.tasks[data.scenario as string]!;
             if (active) {
               await active.settle();
               await active.close();
             }
-            active = new UpperRun({
-              host: dsh,
-              team,
-              validator,
-              store,
-              goal: data.scenario === 'multi-goal-recovery' ? MULTI_GOAL_FIXTURE : FIXTURE_GOAL,
-              allowedSubgoalChecks: FIXTURE_SUBGOAL_CHECKS,
-              backend: new FixtureBackend(
+            const backend = await task.createBackend({ signal: shutdown.signal });
+            try {
+              if (closing) throw new HttpError(503, 'Server stopped during backend creation.');
+              if (backend.source !== deployment.metadata.source)
+                throw new Error('Backend source differs from the deployment.');
+              active = new UpperRun({
+                host: dsh,
+                team,
                 validator,
-                data.scenario as FixtureScenario,
-                options.tickMs ?? 650,
-              ),
-              instruction:
-                data.scenario === 'multi-goal-recovery'
-                  ? 'Store the cup inside the cabinet and close the cabinet.'
-                  : 'Place the cup inside the cabinet.',
-              scenario: data.scenario as string,
-              model: () => ({ provider: 'fixture', model: 'fixture' }),
-              onChange: changed,
-            });
+                store,
+                goal: task.goal,
+                allowedSubgoalChecks: task.allowedSubgoalChecks ?? [],
+                predefinedGoals: task.predefinedGoals ?? [],
+                additionalTools: deployment.additionalTools,
+                backend,
+                instruction: task.instruction,
+                scenario: data.scenario as string,
+                model: (id) => {
+                  const binding = deployment.metadata.models[id];
+                  if (!binding) throw new Error(`Unknown model binding: ${id}`);
+                  return binding;
+                },
+                onChange: changed,
+              });
+            } catch (error) {
+              await backend.close();
+              throw error;
+            }
+            store.put(`run-config:${active.state.id}`, publicConfiguration, 0);
             await active.start();
-            store.put(requestKey, { scenario: data.scenario, runId: active.state.id }, 1);
+            store.put(
+              requestKey,
+              { scenario: data.scenario, runId: active.state.id, deploymentDigest },
+              1,
+            );
             return json(res, 201, { runId: active.state.id });
           } finally {
             admitting = false;
+            completeAdmission();
           }
         }
         const match =
@@ -384,22 +428,27 @@ export async function startDemoServer(options: DemoServerOptions) {
     return {
       url: `http://127.0.0.1:${(server.address() as AddressInfo).port}`,
       store,
-      async close() {
-        if (closing) return;
+      close(): Promise<void> {
+        if (closePromise) return closePromise;
         closing = true;
-        clearInterval(heartbeat);
-        for (const [res, entry] of streams) {
-          if (entry.timer) clearTimeout(entry.timer);
-          res.end();
-        }
-        streams.clear();
-        await active?.close();
-        await dsh.fiber.dispose();
-        await new Promise<void>((done) => {
-          server.close(() => done());
-          server.closeIdleConnections();
-        });
-        store.close();
+        shutdown.abort(new Error('Server is stopping.'));
+        closePromise = (async () => {
+          clearInterval(heartbeat);
+          for (const [res, entry] of streams) {
+            if (entry.timer) clearTimeout(entry.timer);
+            res.end();
+          }
+          streams.clear();
+          await admissionDone;
+          await active?.close();
+          await dsh.fiber.dispose();
+          await new Promise<void>((done) => {
+            server.close(() => done());
+            server.closeIdleConnections();
+          });
+          store.close();
+        })();
+        return closePromise;
       },
     };
   } catch (error) {

@@ -79,6 +79,15 @@ function showSensor() {
   const selection = $('sensor-view').value;
   displayedFrame = selection === 'latest' ? current?.latestSensor : current?.agentSeen[selection];
   const frame = displayedFrame;
+  const fixture = (frame?.source ?? current?.source ?? config.mode) === 'test_fixture';
+  $('sensor-svg').toggleAttribute('hidden', !fixture);
+  text('scene-source', fixture ? 'FIXTURE' : 'PROVIDER METADATA');
+  text(
+    'sensor-subtitle',
+    fixture
+      ? 'CPU illustration · Not real camera imagery'
+      : 'Provider evidence metadata · Image renderer not connected',
+  );
   text(
     'frame-source',
     selection === 'latest'
@@ -92,7 +101,7 @@ function showSensor() {
       ? `Frame ${current.latestSensor.sequence} · ${new Date(current.latestSensor.evidence.observed_at).toLocaleTimeString()}`
       : '—',
   );
-  text('sensor-description', frame?.description ?? 'Awaiting an actual fixture observation.');
+  text('sensor-description', frame?.description ?? 'Awaiting provider observation.');
   text('sensor-age', frame ? new Date(frame.evidence.observed_at).toLocaleTimeString() : '—');
   $('inspect-frame').disabled = !frame;
   const closed = frame?.visualization.cabinetOpen === false;
@@ -106,11 +115,38 @@ function showSensor() {
     step % 2 ? '567,289 551,239 465,198 427,219' : '567,289 551,239 465,198 404,231',
   );
 }
+function renderDeployment() {
+  const view = current ? current.configuration : config;
+  const source = current?.source ?? config.mode;
+  text('deployment-source', source.replaceAll('_', ' ').toUpperCase());
+  $('deployment-source').classList.toggle('fixture', source === 'test_fixture');
+  text('deployment-runtime', `DSH runtime · ${view?.deploymentId ?? 'legacy run'}`);
+  text('deployment-description', view?.description ?? 'Historical configuration unavailable');
+  text('deployment-footer', view?.description ?? 'Historical configuration unavailable');
+  text('team-name', view?.team.team_id ?? current?.teamId ?? 'Historical team');
+}
 function renderAgents() {
   const assignments = Object.values(current?.assignments ?? {});
   text('session-count', `${assignments.length} SESSIONS`);
   $('agents').replaceChildren();
-  const members = Object.keys(config.team.members);
+  const team = (current ? current.configuration : config)?.team;
+  const members = [
+    ...new Set([...Object.keys(team?.members ?? {}), ...assignments.map((a) => a.member)]),
+  ];
+  const filter = $('agent-filter');
+  if (filter.dataset.members !== JSON.stringify(members)) {
+    const selected = filter.value;
+    filter.replaceChildren(
+      ...['all', ...members].map((member) => {
+        const option = document.createElement('option');
+        option.value = member;
+        option.textContent = member === 'all' ? 'All agents' : member;
+        return option;
+      }),
+    );
+    filter.value = members.includes(selected) ? selected : 'all';
+    filter.dataset.members = JSON.stringify(members);
+  }
   for (const member of members) {
     const membersAssignments = assignments.filter((a) => a.member === member);
     const latest = membersAssignments.at(-1);
@@ -121,9 +157,9 @@ function renderAgents() {
     const icon = document.createElement('span');
     icon.className = 'agent-icon';
     icon.textContent =
-      member === config.team.bindings.decision_owner
+      member === team?.bindings.decision_owner
         ? '◈'
-        : member === config.team.bindings.final_verifier
+        : member === team?.bindings.final_verifier
           ? '◎'
           : '↗';
     const info = document.createElement('span');
@@ -445,6 +481,7 @@ function render() {
   $('run-dot').dataset.state = current.state;
   $('instruction').value = current.instruction;
   text('team-name', current.teamId);
+  renderDeployment();
   const execution = current.executions.at(-1);
   text('device-state', execution?.state.toUpperCase() ?? 'IDLE');
   const request = current.requests.findLast(
@@ -456,7 +493,16 @@ function render() {
   text('steps', `${execution?.control_steps ?? 0} / ${maxSteps ?? '—'}`);
   $('budget').max = maxSteps ?? 1;
   text('policy-calls', execution?.policy_calls ?? 0);
-  text('stop-confirmed', execution ? (execution.device_confirmed ? 'Yes · fixture' : 'No') : '—');
+  text(
+    'stop-confirmed',
+    execution
+      ? execution.device_confirmed
+        ? current.source === 'test_fixture'
+          ? 'Yes · fixture'
+          : 'Yes · provider'
+        : 'No'
+      : '—',
+  );
   text(
     'stop-reason',
     execution?.stop_reason?.replaceAll('_', ' ') ??
@@ -516,7 +562,7 @@ function render() {
   $('phase-record').classList.toggle(
     'active',
     Object.values(current.assignments).some(
-      (a) => a.member === config.team.bindings.recovery_evolver,
+      (a) => a.member === (current?.configuration ?? config).team.bindings.recovery_evolver,
     ),
   );
   $('phase-skill').classList.toggle('active', current.skillIds.length > 0);
@@ -557,7 +603,7 @@ async function loadRun(id) {
   const loaded = await api(`/api/runs/${id}`);
   if (revision !== loadRevision) return;
   current = loaded;
-  $('scenario').value = current.scenario;
+  if (config.scenarios.includes(current.scenario)) $('scenario').value = current.scenario;
   feedSignature = '';
   $('follow-output').checked = true;
   render();
@@ -629,8 +675,21 @@ for (const command of ['pause', 'resume', 'stop'])
     });
 $('refresh-history').onclick = () => refreshHistory().catch((e) => error(e.message));
 $('sensor-view').onchange = showSensor;
+$('scenario').onchange = () => {
+  if (!current)
+    $('instruction').value = config.taskPresets?.[$('scenario').value]?.instruction ?? '';
+};
 $('event-filter').onchange = renderTimeline;
-$('inspect-team').onclick = () => inspect('Team definition & resolved bindings', config);
+$('inspect-team').onclick = () =>
+  inspect(
+    'Team definition & resolved bindings',
+    current
+      ? (current.configuration ?? {
+          note: 'Historical configuration unavailable',
+          assignments: current.assignments,
+        })
+      : config,
+  );
 $('inspect-frame').onclick = () =>
   inspect('Displayed observation · Evidence and source', displayedFrame);
 $('inspect-verdict').onclick = () =>
@@ -668,13 +727,21 @@ $('inspector').addEventListener('click', (e) => {
 try {
   config = await api('/api/config');
   text('team-name', config.team.team_id);
-  for (const member of Object.keys(config.team.members)) {
-    const option = document.createElement('option');
-    option.value = member;
-    option.textContent = member;
-    $('agent-filter').append(option);
-  }
+  $('scenario').replaceChildren(
+    ...Object.entries(
+      config.taskPresets ??
+        Object.fromEntries(config.scenarios.map((id) => [id, { label: id.replaceAll('-', ' ') }])),
+    ).map(([id, preset]) => {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = preset.label;
+      return option;
+    }),
+  );
+  $('scenario').onchange();
+  renderDeployment();
   renderAgents();
+  showSensor();
   const history = await refreshHistory();
   if (history.activeId || history.runs[0]) await loadRun(history.activeId || history.runs[0].id);
   else {
