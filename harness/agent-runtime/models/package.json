@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@edh/foundation": "workspace:*",
-    "zod": "4.4.3",
-    "@edh/storage": "workspace:*"
+    "@edh/storage": "workspace:*",
+    "eventsource-parser": "3.1.0",
+    "zod": "4.4.3"
   }
 }

@@ -13,3 +13,9 @@ export interface ModelBinding {
 export interface ModelRegistry {
   resolve(binding: string): Promise<ModelBinding>;
 }
+
+export {
+  OpenAICompatibleAdapter,
+  type OpenAICompatibleOptions,
+  type OpenAICompatibleModel,
+} from './openai-compatible.js';

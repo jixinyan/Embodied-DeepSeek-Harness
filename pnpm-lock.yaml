@@ -173,6 +173,9 @@ importers:
       '@edh/storage':
         specifier: workspace:*
         version: link:../storage
+      eventsource-parser:
+        specifier: 3.1.0
+        version: 3.1.0
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -470,6 +473,10 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  eventsource-parser@3.1.0:
+    resolution: {integrity: sha512-kJezFj9YFAMLeORyi7aCLxLbD5/qWMQnoMVlVPyHIll7lgRJCc3JVln9Vgl9nwQi0YkMnhdGTMNn7CkRRAptMg==}
+    engines: {node: '>=18.0.0'}
+
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
@@ -700,6 +707,8 @@ snapshots:
       '@esbuild/win32-arm64': 0.27.7
       '@esbuild/win32-ia32': 0.27.7
       '@esbuild/win32-x64': 0.27.7
+
+  eventsource-parser@3.1.0: {}
 
   fast-deep-equal@3.1.3: {}
 
