@@ -748,14 +748,23 @@ export class UpperRun {
         );
         return { accepted: true, recipient: target.id };
       }
-      case 'perception.capture':
-        return this.observe(a, this.options.backend.capture());
-      case 'observation.turn_view':
+      case 'perception.capture': {
+        const sample = await this.options.backend.capture({ signal });
+        signal.throwIfAborted();
+        if (this.closed || terminal(this.state.state)) throw new Error('Run ended during capture.');
+        return this.observe(a, sample);
+      }
+      case 'observation.turn_view': {
         this.owner(a);
-        return this.observe(
-          a,
-          await this.options.backend.turnView(s('direction') as 'left' | 'center' | 'right'),
+        const sample = await this.options.backend.turnView(
+          s('direction') as 'left' | 'center' | 'right',
+          { signal },
         );
+        signal.throwIfAborted();
+        if (this.closed || terminal(this.state.state))
+          throw new Error('Run ended during active observation.');
+        return this.observe(a, sample);
+      }
       case 'execution.query':
         return { execution: this.options.backend.query() ?? null };
       case 'execution.start': {
@@ -785,15 +794,17 @@ export class UpperRun {
         this.state.requests.push(request);
         this.state.state = 'running';
         this.event('execution.requested', { request });
-        return { execution: await this.options.backend.start(request) };
+        return { execution: await this.options.backend.start(request, { signal }) };
       }
       case 'execution.pause':
         this.verifier(a);
-        await this.options.backend.pause();
+        await this.options.backend.pause({ signal });
         return { execution: this.options.backend.query() ?? null };
       case 'execution.resume':
         this.owner(a);
-        await this.options.backend.resume(a.sessionId);
+        await this.options.backend.resume(a.sessionId, { signal });
+        signal.throwIfAborted();
+        if (this.closed || terminal(this.state.state)) throw new Error('Run ended during resume.');
         this.state.state = 'running';
         return { execution: this.options.backend.query()! };
       case 'tasks.select_goal': {
@@ -874,15 +885,30 @@ export class UpperRun {
           execution.boundary_event_id !== context.boundaryId
         )
           throw new Error('Stale or absent formal verification assignment.');
-        const checked = this.options.backend.check(
+        const checked = await this.options.backend.check(
           ('all' in a.brief.success_contract
             ? a.brief.success_contract.all
             : a.brief.success_contract.any
           ).map((c) => c.check_id),
+          { signal, executionId: context.executionId, boundaryId: context.boundaryId },
         );
+        signal.throwIfAborted();
+        if (this.closed || terminal(this.state.state))
+          throw new Error('Run ended during formal checks.');
+        this.verifier(a);
+        const latest = this.options.backend.query();
+        if (
+          latest?.execution_id !== context.executionId ||
+          latest.boundary_event_id !== context.boundaryId ||
+          !['paused', 'ended'].includes(latest.state) ||
+          !latest.device_confirmed
+        )
+          throw new Error('Execution boundary changed during formal checks.');
+        this.options.validator.parse('EvidenceRef', checked.sample.evidence);
+        for (const fact of checked.facts) this.options.validator.parse('CheckResult', fact);
         this.observe(a, checked.sample);
-        context.facts = checked.facts;
-        context.sample = checked.sample;
+        context.facts = structuredClone(checked.facts);
+        context.sample = structuredClone(checked.sample);
         this.event('verification.checked', {
           assignmentId: a.id,
           facts: checked.facts,

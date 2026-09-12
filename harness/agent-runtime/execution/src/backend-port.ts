@@ -11,17 +11,37 @@ export interface BackendUpdate {
   status: ExecutionStatus;
   sample: SensorSample;
 }
+export interface BackendCallOptions {
+  /** Native DSH cancellation; providers must forward it to cooperative remote work. */
+  signal?: AbortSignal;
+}
+export interface BackendCheckOptions extends BackendCallOptions {
+  /** Reject the request if the worker no longer owns this stopped boundary. */
+  executionId: string;
+  boundaryId: string;
+}
+export interface BackendCheckResult {
+  sample: SensorSample;
+  facts: CheckResult[];
+}
 /** Upper application port. Physical transports and resource arbitration remain provider responsibilities. */
 export interface EmbodiedBackend {
   readonly source: 'test_fixture' | 'simulation' | 'hardware';
-  start(request: SubgoalRequest): Promise<ExecutionStatus>;
+  start(request: SubgoalRequest, options?: BackendCallOptions): Promise<ExecutionStatus>;
+  /** Immediate local status projection; remote clients update it before notifying subscribers. */
   query(): ExecutionStatus | undefined;
-  capture(): SensorSample;
-  turnView(direction: 'left' | 'center' | 'right'): Promise<SensorSample>;
-  pause(): Promise<void>;
-  resume(ownerId: string): Promise<void>;
+  capture(options?: BackendCallOptions): SensorSample | Promise<SensorSample>;
+  turnView(
+    direction: 'left' | 'center' | 'right',
+    options?: BackendCallOptions,
+  ): Promise<SensorSample>;
+  pause(options?: BackendCallOptions): Promise<void>;
+  resume(ownerId: string, options?: BackendCallOptions): Promise<void>;
   stop(): Promise<void>;
-  check(checkIds: readonly string[]): { sample: SensorSample; facts: CheckResult[] };
+  check(
+    checkIds: readonly string[],
+    options?: BackendCheckOptions,
+  ): BackendCheckResult | Promise<BackendCheckResult>;
   subscribe(listener: (update: BackendUpdate) => void): () => void;
   close(): Promise<void>;
 }

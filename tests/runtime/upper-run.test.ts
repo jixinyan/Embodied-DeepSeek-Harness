@@ -8,6 +8,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { setTimeout } from 'node:timers/promises';
+import type { EmbodiedBackend } from '@edh/execution';
 import { ContractValidator, type VerificationResult, type PlanDocument } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
@@ -22,7 +23,12 @@ import {
   type FixtureScenario,
 } from '../../apps/server/src/fixture-backend.js';
 
-async function setup(scenario: FixtureScenario, tickMs = 15, model = new FixtureModel(0)) {
+async function setup(
+  scenario: FixtureScenario,
+  tickMs = 15,
+  model = new FixtureModel(0),
+  wrapBackend: (backend: FixtureBackend) => EmbodiedBackend = (backend) => backend,
+) {
   const directory = await mkdtemp(resolve(tmpdir(), 'edh-upper-'));
   const store = new LocalStore(directory);
   const validator = new ContractValidator(
@@ -46,7 +52,7 @@ async function setup(scenario: FixtureScenario, tickMs = 15, model = new Fixture
     team,
     validator,
     store,
-    backend,
+    backend: wrapBackend(backend),
     instruction: 'Place the cup inside the cabinet.',
     scenario,
     model: () => ({ provider: 'fixture', model: 'fixture' }),
@@ -540,6 +546,159 @@ test(
         .read(app.run.state.id)
         .find((record) => record.key.endsWith(evolver.id));
       assert(audit && Array.isArray(audit.value) && audit.value.length > 20);
+    } finally {
+      await app.close();
+    }
+  },
+);
+
+function backendPort(
+  backend: FixtureBackend,
+  overrides: Partial<EmbodiedBackend>,
+): EmbodiedBackend {
+  return {
+    source: backend.source,
+    start: backend.start.bind(backend),
+    query: backend.query.bind(backend),
+    capture: backend.capture.bind(backend),
+    turnView: backend.turnView.bind(backend),
+    pause: backend.pause.bind(backend),
+    resume: backend.resume.bind(backend),
+    stop: backend.stop.bind(backend),
+    check: backend.check.bind(backend),
+    subscribe: backend.subscribe.bind(backend),
+    close: backend.close.bind(backend),
+    ...overrides,
+  };
+}
+
+test(
+  'asynchronous provider reads run through native DSH with scoped boundary and cancellation',
+  { timeout: 20000 },
+  async () => {
+    let captures = 0;
+    let checks = 0;
+    const app = await setup('retry-success', 15, new FixtureModel(0), (backend) =>
+      backendPort(backend, {
+        async capture(options) {
+          assert.ok(options?.signal);
+          await setTimeout(5, undefined, { signal: options.signal });
+          captures++;
+          return backend.capture();
+        },
+        async check(ids, options) {
+          assert.ok(options?.signal);
+          assert.equal(options.executionId, backend.query()?.execution_id);
+          assert.equal(options.boundaryId, backend.query()?.boundary_event_id);
+          await setTimeout(5, undefined, { signal: options.signal });
+          checks++;
+          return backend.check(ids);
+        },
+      }),
+    );
+    try {
+      await app.run.start();
+      await until(() => terminal(app.run.state.state), app.run);
+      await app.run.settle();
+      assert.equal(app.run.state.state, 'succeeded');
+      assert.ok(captures > 0);
+      assert.equal(checks, 2);
+      assert.deepEqual(
+        app.run.state.verdicts.map((v) => v.status),
+        ['failed', 'passed'],
+      );
+      assert.equal(app.run.state.skillIds.length, 1);
+    } finally {
+      await app.close();
+    }
+  },
+);
+
+test(
+  'late capture after cancellation cannot grant evidence or update agent observations',
+  { timeout: 15000 },
+  async () => {
+    let release!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let signal: AbortSignal | undefined;
+    let evidenceId: string | undefined;
+    const app = await setup('first-pass', 15, new FixtureModel(0), (backend) =>
+      backendPort(backend, {
+        async capture(options) {
+          signal = options?.signal;
+          await pending; // Deliberately uncooperative remote completion.
+          const sample = backend.capture();
+          evidenceId = sample.evidence.id;
+          return sample;
+        },
+      }),
+    );
+    try {
+      await app.run.start();
+      await until(() => Boolean(signal), app.run);
+      await app.run.stop();
+      assert.equal(signal?.aborted, true);
+      release();
+      await app.run.settle();
+      assert.equal(app.run.state.state, 'cancelled');
+      assert.ok(evidenceId);
+      assert.ok(
+        !app.run.state.events.some(
+          (e) =>
+            e.type === 'observation.consumed' &&
+            (e.detail.evidence as { id?: string })?.id === evidenceId,
+        ),
+      );
+      assert.equal(Object.keys(app.run.state.agentSeen).length, 0);
+    } finally {
+      release();
+      await app.close();
+    }
+  },
+);
+
+test(
+  'formal checks returning after a boundary change cannot publish checked facts or a verdict',
+  { timeout: 15000 },
+  async () => {
+    let changed = false;
+    let rejectedEvidenceId: string | undefined;
+    const app = await setup('first-pass', 15, new FixtureModel(0), (backend) =>
+      backendPort(backend, {
+        query() {
+          const status = backend.query();
+          return status && changed
+            ? { ...status, boundary_event_id: 'replacement-boundary' }
+            : status;
+        },
+        async check(ids) {
+          const result = backend.check(ids);
+          rejectedEvidenceId = result.sample.evidence.id;
+          await setTimeout(5);
+          changed = true;
+          return result;
+        },
+      }),
+    );
+    try {
+      await app.run.start();
+      await until(() => terminal(app.run.state.state), app.run);
+      await app.run.settle();
+      assert.equal(app.run.state.state, 'failed');
+      assert.equal(app.run.state.verdicts.length, 0);
+      assert.ok(
+        app.run.state.events.some(
+          (e) => e.type === 'tool.failed' && String(e.detail.error).includes('boundary changed'),
+        ),
+      );
+      assert.ok(!app.run.state.events.some((e) => e.type === 'verification.checked'));
+      assert.ok(
+        !Object.values(app.run.state.agentSeen).some(
+          (sample) => sample.evidence.id === rejectedEvidenceId,
+        ),
+      );
     } finally {
       await app.close();
     }

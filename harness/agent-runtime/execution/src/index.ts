@@ -24,4 +24,11 @@ export interface ResourceCoordinator {
   release(lease: ResourceLease, stopConfirmationRef: string): Promise<void>;
 }
 
-export type { EmbodiedBackend, SensorSample, BackendUpdate } from './backend-port.js';
+export type {
+  EmbodiedBackend,
+  SensorSample,
+  BackendUpdate,
+  BackendCallOptions,
+  BackendCheckOptions,
+  BackendCheckResult,
+} from './backend-port.js';
