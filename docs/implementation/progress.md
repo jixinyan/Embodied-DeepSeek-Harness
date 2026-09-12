@@ -1,12 +1,13 @@
 # Implementation progress
 
-Spec: v1.10. Current checkpoint: **runnable DSH upper application and CPU console**.
+Spec: v1.11. Current checkpoint: **runnable DSH upper application and CPU console**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The user prioritizes the upper application before physical runtime integration.
+The latest delivery adds model/policy adapters and standalone action admission while
+retaining the upper-first integration baseline. See the [adapter guide](model-policy-adapters.md).
 `pnpm demo` starts a local console at `http://127.0.0.1:4317`. A scripted model emits
 native DSH tool calls; a CPU fixture backend supplies labeled synthetic observations
 and execution states. This validates orchestration, not model intelligence or robotics.
@@ -37,18 +38,20 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 41 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 44 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
-- 230 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
+- 248 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
   plus non-JSON rejection tests; generated contract types match the schema.
-- 93 pinned DSH source files and 20 referenced module bindings verified.
+- 17 Python policy/action-gate tests use real localhost WebSockets and CPU devices.
+- 97 pinned DSH source files and 20 referenced module bindings verified.
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Remaining: live VLM adapter binding/evaluation; Python worker transport;
-actual simulator, policy, perception and hardware adapters; resource arbitration;
-interruptible action-chunk admission and device acknowledgement. The upper runner
+Remaining: live VLM evaluation and sensor attachment binding; host-to-Python worker
+transport; actual simulator, learned policy, perception and hardware adapters; resource
+arbitration/watchdog and real device acknowledgement. Model HTTP transport, policy
+WebSocket transport and interruptible action admission are now locally exercised. The upper runner
 coordinates plan-selected subgoals and one observing recovery chain at a time.
 Concurrent physical subgoals, nested independent recovery chains, distributed delivery
 guarantees, resumable DSH sessions, long-horizon retention/compaction and multi-user hosting remain open.
@@ -61,22 +64,23 @@ Cooperative cancellation cannot forcibly stop an uncooperative external device/t
 | --- | --- |
 | 00–01 | DSH integration and shared contract acceptance complete |
 | 02–05 | Upper configuration, roles, explicit handoff, plans/files implemented; role result schemas now bind to native DSH validation; distributed delivery remains open |
-| 06–07 | Upper port and CPU fixture implemented; physical worker/resources/perception providers deferred |
+| 06–07 | Upper port, CPU fixture and standalone action gate implemented; worker/resources/perception providers pending |
 | 08–10 | Upper verification/recovery/experience loop exercised with fixtures; actual provider evidence still required |
 | 11 | Recovery and custom-role CPU scenarios pass; full physical-provider replacement scenario remains open |
 | 12 | Unified debugging console implemented and browser-checked with CPU fixtures |
 | 13–16 | Real simulation, release/transfer evaluation and hardware not started |
 
-1. Harden upper configuration and lifecycle at remaining deployment boundaries;
-   configure a live DSH model adapter only against an explicit available binding.
+1. Connect the implemented policy client/action gate to an owned Python worker and
+   the upper EmbodiedBackend port. Add resource/watchdog lifecycle and state events.
+   Configure/evaluate the model adapter against an actual available endpoint.
 2. Extend goal/recovery acceptance to longer plans and deployment-specific evaluators.
    Plan-selected sequential goals and prerequisite recovery now run with CPU fixtures.
 3. Extend the implemented report acknowledgements/startup reconciliation with durable
    business transactions only where needed; preserve the original DSH inbox.
 4. Add bounded retention/checkpoints and recovery reconciliation appropriate to
    longer runs. Historical sessions must never silently resume physical commands.
-5. Bind the physical worker transport, action gate and resource coordination, then
-   one actual simulation/policy/perception configuration. Run physical acceptance.
+5. Bind one actual simulation/policy/perception configuration after worker acceptance.
+   Run physical execution, interruption and formal-verification acceptance.
 6. Continue console usability refinement as live provider and sensor states become available.
 
 These are follow-on tasks, not claims that all upper components are complete.
@@ -274,3 +278,26 @@ This fixes failure paths, not retention/compaction or automatic physical recover
 The user next explicitly prioritizes OpenAI-compatible API/vLLM model bindings and
 WebSocket policy client/server adaptation with an action gate before device execution.
 Actual simulator/policy checkpoints and hardware acceptance remain separate integrations.
+
+## Model and policy adapter checkpoint (2026-09-13)
+
+- `8c5b473`: OpenAI-compatible adapter using four further pinned DSH serialization,
+  SSE and tool translation files; local vLLM and remote compatible endpoints share
+  the same native model boundary. Includes tool-result image replay and stream failure tests.
+- `ea900b7`: optional WebSocket policy client/server, canonical chunk/segment/receipt/stop
+  contracts, deterministic action admission and bounded rollout composition. Seventeen
+  Python tests cover socket failures, budgets, stale chunks and pause/resume races.
+- `e16c822` / `c11c864`: restart publication integrity and failure-tolerant shutdown
+  implementation/documentation remain part of this delivered phase.
+
+Acceptance: `pnpm check`; 44 upper/runtime tests, 248 shared contract cases, 17 additional
+Python policy/gate tests; 97 pinned files and 20 bindings. The standalone CPU example
+executes four actions, reports a confirmed budget stop and requires formal verification.
+The new SVG was rendered and inspected. Public spec is v1.11.
+
+No paid or local VLM endpoint, learned policy weights, simulator or real device was
+used. The default console physical backend remains synthetic. The optional model
+example can call an explicitly configured API but does not supply real sensor frames.
+Next action: implement the host-to-worker execution bridge, device event mapping,
+resource/watchdog lifetime and mandatory verifier wake-up using these tested components.
+Do not claim that independent adapter tests establish a full simulation MVP.

@@ -103,3 +103,10 @@ Shutdown failures do not skip later cleanup stages: the run, native sessions, ho
 HTTP listener and store are drained or attempted before an aggregate error is returned.
 This guarantees cleanup attempts, not that a failing external device stopped.
 Repeated close calls share the same result.
+
+## Configured model and policy endpoints
+
+The [model/policy adapter guide](model-policy-adapters.md) now provides an
+OpenAI-compatible model deployment example and a standalone Python WebSocket policy
+roundtrip. The latter is not yet connected to ServerDeployment's EmbodiedBackend;
+worker event/status integration is the next implementation slice.

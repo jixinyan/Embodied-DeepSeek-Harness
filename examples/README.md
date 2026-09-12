@@ -16,3 +16,12 @@ console fixture model does not generate arbitrary custom-role behavior.
 The household/SAM/deployment examples describe future physical bindings and do not
 install providers or start robots. Runtime role/report acceptance uses explicit CPU
 fixtures. See [the extension guide](../docs/implementation/upper-runtime.md).
+
+## Executable endpoint examples
+
+- [OpenAI-compatible console binding](deployments/openai-compatible.mjs): requires
+  an actual configured model endpoint; physical state remains a CPU fixture.
+- [WebSocket policy roundtrip](policies/websocket_roundtrip.py): local inference
+  callback, action gate and synthetic device; no model or simulator required.
+
+See [configuration and limits](../docs/implementation/model-policy-adapters.md).

@@ -3,7 +3,9 @@
 EDH is the product and repository owner. Selected runtime implementations are absorbed
 from DSH into these modules. Step 00 verifies the original loop and scoped lifecycle;
 upper Team, planning, verification and experience services now run with CPU fixtures.
-Physical provider modules remain interfaces.
+OpenAI-compatible model transport, WebSocket policy transport and action admission
+are executable with local protocol/CPU tests. Simulator and hardware modules remain interfaces.
+See the [adapter boundaries](../implementation/model-policy-adapters.md).
 
 ![Architecture](assets/framework-overview.svg)
 

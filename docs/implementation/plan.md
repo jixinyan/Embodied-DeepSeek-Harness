@@ -17,6 +17,25 @@ key state must ultimately be visible together. The [current progress](progress.m
 lists the exact status and next sequential actions. F1–F7 remain the full acceptance
 matrix: partial upper slices do not establish physical-provider readiness.
 
+### Immediate adapter integration sequence (v1.11)
+
+1. **Done:** reuse native DSH model serialization/streaming for OpenAI-compatible
+   endpoints; test tool calls, image results, malformed streams and cancellation.
+2. **Done:** define policy request/chunk/segment/receipt/stop wire contracts; test
+   local WebSocket inference and deterministic admission with CPU devices.
+3. **Next:** implement a nonblocking host-to-worker bridge through EmbodiedBackend.
+   Carry task/attempt/generation identity, job status and observation/evidence refs;
+   test startup, disconnection, cancellation and shutdown without replaying motion.
+4. Add owned resource leases and a worker watchdog that runs independently of policy
+   inference, including between rollout steps. Publish gate and actual device state
+   separately; budget boundaries must wake the assigned formal verifier.
+5. Validate the same path in the console with a CPU worker, then bind actual sensor
+   images, one simulator and an instruction-consuming policy server. Record separate
+   live model, robotics and stop-latency acceptance evidence.
+
+The [adapter guide](model-policy-adapters.md) supplies source entry points and the
+runnable examples. Steps 3–5 are incomplete even though transport tests pass.
+
 ## Sequence and gates
 
 | Step | Capability | Prerequisite | Work package / milestone | Enables |

@@ -6,7 +6,7 @@ They answer different questions: optional manifest peers are not necessarily run
 requirements, and the pinned LLM source references attachment types absent from its
 manifest dependency closure.
 
-The source import map pins 93 files from 23 modules. It preserves the original
+The source import map pins 97 files from 24 modules. It preserves the original
 Agent loop, session, scope, model, tool and lifecycle implementations in EDH's
 own domain directories. No upstream CLI, presets, Loader, console or full monorepo
 is copied. Supporting settings, approval, code-runtime and attachment definitions

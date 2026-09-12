@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="850" viewBox="0 0 1240 850" role="img" aria-labelledby="title desc">
+<title id="title">EDH model endpoints and gated policy execution</title>
+<desc id="desc">Local vLLM or remote compatible model endpoints feed the native DSH agent runtime. A pending worker bridge connects to an implemented WebSocket policy client, action gate and replaceable device adapter. Stop confirmation and formal verification remain distinct.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="none" stroke="#64748b"/></marker><style>text{font-family:Arial,sans-serif;fill:#18263b}.title{font-size:27px;font-weight:700}.heading{font-size:18px;font-weight:700}.body{font-size:15px}.small{font-size:13px;fill:#526176}.line{fill:none;stroke:#64748b;stroke-width:2;marker-end:url(#arrow)}.box{fill:#fff;stroke:#ccd6e2;stroke-width:1.5}.ready{fill:#edf7f2;stroke:#8ebaa6;stroke-width:1.5}.pending{fill:#fff8eb;stroke:#d8af6b;stroke-width:1.5;stroke-dasharray:6 4}</style></defs>
+<rect width="1240" height="850" fill="#f5f7fb"/>
+<text x="40" y="48" class="title">One harness. Separate model and motion boundaries.</text>
+<text x="40" y="77" class="body">Implemented adapters use local protocol tests; actual VLM, policy and simulation evaluation is pending.</text>
+<rect x="40" y="108" width="1160" height="232" rx="18" fill="#eaf0f8"/>
+<text x="62" y="140" class="heading">UPPER MODEL · native DSH loop and tools</text>
+<rect x="62" y="164" width="250" height="66" rx="10" class="box"/><text x="80" y="191" class="heading">Local vLLM VLM</text><text x="80" y="214" class="small">Deployment-owned model and endpoint</text>
+<rect x="62" y="246" width="250" height="66" rx="10" class="box"/><text x="80" y="273" class="heading">Remote model API</text><text x="80" y="296" class="small">OpenAI-compatible Chat Completions</text>
+<path d="M312 197H350V239H389M312 279H350V239" class="line"/>
+<rect x="391" y="185" width="330" height="112" rx="12" class="ready"/><text x="412" y="214" class="heading">OpenAICompatibleAdapter</text><text x="412" y="243" class="body">DSH messages · images · streaming tools</text><text x="412" y="271" class="small">Private credentials · deadlines · byte bounds</text>
+<path d="M721 240H797" class="line"/>
+<rect x="799" y="185" width="377" height="112" rx="12" class="ready"/><text x="820" y="214" class="heading">Composable agent team + console</text><text x="820" y="243" class="body">Planner · Verifier · Evolver · custom roles</text><text x="820" y="271" class="small">Independent contexts · native DSH tools</text>
+<path d="M990 297V360" class="line"/>
+<rect x="620" y="362" width="556" height="68" rx="10" class="pending"/><text x="640" y="389" class="heading">Host ↔ Python worker bridge · NEXT</text><text x="640" y="414" class="small">Job events · resource arbitration · watchdog · owner authorization</text>
+<path d="M898 430V482H481V503" class="line"/>
+<text x="62" y="464" class="heading">LOWER POLICY · inference does not grant permission to move</text>
+<rect x="62" y="505" width="248" height="124" rx="12" class="ready"/><text x="80" y="535" class="heading">Policy server wrapper</text><text x="80" y="563" class="body">Subgoal + observation → actions</text><text x="80" y="590" class="small">Plug in VLA / VLN inference</text><text x="80" y="612" class="small">CPU callback tested; no weights</text>
+<path d="M310 568H365" class="line"/><text x="319" y="550" class="small">WS</text>
+<rect x="368" y="505" width="220" height="124" rx="12" class="ready"/><text x="387" y="535" class="heading">Policy client</text><text x="387" y="563" class="body">Request-bound chunks</text><text x="387" y="590" class="small">Timeout → discard connection</text><text x="387" y="612" class="small">Codec / policy port replaceable</text>
+<path d="M588 568H639" class="line"/>
+<rect x="642" y="505" width="267" height="124" rx="12" class="ready"/><text x="662" y="535" class="heading">Action gate</text><text x="662" y="563" class="body">Generation · freshness · budget</text><text x="662" y="590" class="small">Pause closes admission immediately</text><text x="662" y="612" class="small">Bounded segments; no stale replay</text>
+<path d="M909 568H963" class="line"/>
+<rect x="966" y="505" width="210" height="124" rx="12" class="pending"/><text x="984" y="535" class="heading">Device / simulation</text><text x="984" y="563" class="body">Generation-fenced dispatch</text><text x="984" y="590" class="small">Cancel / drain / hold + receipt</text><text x="984" y="612" class="small">CPU tested; real adapter next</text>
+<path d="M1072 629V660H780V631" class="line"/><text x="805" y="682" class="small">Confirmed stopped boundary ≠ verified task success</text>
+<rect x="62" y="708" width="1114" height="100" rx="12" class="box"/><text x="82" y="739" class="heading">Example: 16 actions inferred → pause after action 5 → actions 6–16 are not issued</text><text x="82" y="768" class="body">Resume requires a confirmed, drained device boundary and fresh inference. The Planner decides what happens next.</text><text x="82" y="791" class="small">Budget expiry requires a formal Verifier round. Already committed hardware commands require controller-level fencing.</text>
+</svg>

@@ -57,17 +57,23 @@ Python 3.11+. From the repository root:
 ```sh
 pnpm install --frozen-lockfile
 python3 -m venv .venv
-.venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e harness/physical-runtime
+.venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e 'harness/physical-runtime[policy]'
 pnpm check
 pnpm test:runtime
 ```
 
 These commands check generated schema types, example structure/references,
-TypeScript, documentation links and Python importability, then execute 30 upper-runtime
+TypeScript, documentation links and Python importability, then execute 44 upper-runtime
 integration tests and shared wire/lifecycle validation cases in both languages. `test:runtime` runs that suite
-alone. No live model API or simulator is started. API tests start a temporary local server. No GPU or key is needed.
+alone. The optional policy extra enables 17 WebSocket/action-gate tests. No live model API or simulator is started. API tests start a temporary local server. No GPU or key is needed.
 Python checks prefer `.venv/bin/python`, falling back to `python3`; override
 `EDH_PYTHON` if needed. `pnpm test:contracts` runs shared TS/Python wire cases.
+
+## Configure models and policies
+
+The [adapter guide](docs/implementation/model-policy-adapters.md) includes a local vLLM /
+remote OpenAI-compatible model example and a runnable WebSocket policy-to-action-gate
+CPU example. The host-to-Python worker bridge and real provider integration remain next.
 
 ## Design commitments
 

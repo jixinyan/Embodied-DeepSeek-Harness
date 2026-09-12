@@ -1,8 +1,9 @@
 # 0004: Recovery observation and interruptible action admission
 
 Status: accepted, 2026-09-08. Recovery observation is implemented in the upper
-application. Action admission is a required physical-provider design, not a
-connected policy/controller implementation.
+application. As of 2026-09-13, standalone action admission and WebSocket policy
+transport are implemented and CPU-tested. The host worker bridge and real controller
+integration remain pending; see the [adapter guide](../model-policy-adapters.md).
 
 ## Evolver activation
 
@@ -72,8 +73,9 @@ confirmed pause or let another motion tool take over.
 4. Test cancellation acknowledgements and hold behavior against the selected simulator.
 5. Measure actual controller stop latency before making hardware guarantees.
 
-This phase implements and tests upper pause/stop/verification behavior using a CPU
-fixture. It does not claim sub-chunk interruption on a VLA or device. The console
+Upper pause/stop/verification uses a CPU fixture. Standalone gate tests additionally
+verify pause after five of sixteen actions, stale inference, resume races and unknown
+stop acknowledgement. These do not establish interruption on a learned VLA or real device. The console
 must label this distinction and later show gate state separately from device state.
 
 ## Failure knowledge in skills

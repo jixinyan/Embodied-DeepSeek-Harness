@@ -1,6 +1,6 @@
 # Current capability map
 
-Snapshot: 2026-09-12. Upper runtime includes multi-goal recovery, explicit report acknowledgement and configurable local deployment.
+Snapshot: 2026-09-13. Upper runtime, model transport and standalone policy/action admission are tested; live physical integration is pending.
 
 ![Implemented capabilities and remaining work](../architecture/assets/implementation-status.svg)
 
@@ -16,6 +16,8 @@ Snapshot: 2026-09-12. Upper runtime includes multi-goal recovery, explicit repor
 | Failure-aware SKILL publication, explicit retrieval and provenance | [Skill library](../../harness/agent-runtime/memory/src/library.ts), [recovery decision](decisions/0004-recovery-observation-and-action-admission.md) |
 | Durable domain records and historical audit | [Store](../../harness/agent-runtime/storage/src/local-store.ts), [HTTP service](../../apps/server/src/http-server.ts) |
 | Deployment-defined tasks, model aliases, tools, backend factories and historical configuration | [Deployment guide](deployments.md), [acceptance](../../tests/runtime/server-deployment.test.ts) |
+| OpenAI-compatible text/image streaming through the native DSH loop | [Model adapter and guide](model-policy-adapters.md), [HTTP acceptance](../../tests/runtime/openai-compatible.test.ts) |
+| WebSocket policy client/server and generation-fenced action gate | [Adapter guide](model-policy-adapters.md), [CPU/socket acceptance](../../harness/physical-runtime/tests/test_policy.py) |
 | Live output, tools/results, TODO history, sensors, verdict and recovery inspection | [Console](../../apps/console/README.md), [API/restart tests](../../tests/runtime/console-server.test.ts) |
 
 Run `pnpm demo` and select the labeled failure/recovery fixture. The observable
@@ -28,7 +30,7 @@ then closes the cabinet for final task success. See the [illustrated flow](multi
 ## Still outside the working boundary
 
 - Live model deployment/evaluation; concurrent physical goals and nested independent recovery chains.
-- Python transport, action admission, shared device resources and physical stop acknowledgement.
+- Host-to-Python worker transport, shared device resources/watchdog and real physical stop acknowledgement. Standalone policy transport and action admission are CPU-tested.
 - Actual BEHAVIOR/RoboCasa/RoboTwin, VLA/VLN, SAM/depth and hardware adapters.
 - Resumable model sessions, distributed/exactly-once delivery, scalable retention and multi-user hosting.
 - Further console usability and live sensor integration; the unified fixture workspace is implemented.

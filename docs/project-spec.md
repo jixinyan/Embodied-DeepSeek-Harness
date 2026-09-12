@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.10 · 2026-09-09
+Version: v1.11 · 2026-09-13
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -34,8 +34,12 @@ Plan-selected sequential goals and prerequisite recovery now run with CPU fixtur
 The local server accepts explicit deployment bindings for tasks, native DSH models,
 tools and backend factories; see the [deployment guide](implementation/deployments.md).
 This provides configuration assembly, not a connected physical provider.
-Continue upper lifecycle/configuration, delivery reconciliation and retention work before
-physical integration; do not replace the DSH loop. The unified console now displays key
+OpenAI-compatible VLM transport now reuses native DSH serialization and streaming.
+WebSocket policy transport and a deterministic action gate run independently with CPU
+acceptance. Continue with the host-to-Python worker bridge, resource/watchdog lifecycle
+and device event publication; do not replace the DSH loop. See the
+[adapter guide and SVG](implementation/model-policy-adapters.md) for exact contracts,
+commands, examples and unimplemented integration. The unified console now displays key
 state without page/tab switching; further polish follows actual provider integration.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)
 and [capability map](implementation/features.md) for concrete code, checks and limits.

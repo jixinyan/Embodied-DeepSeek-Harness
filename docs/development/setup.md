@@ -47,3 +47,10 @@ acceptance, compatibility patches and features still missing.
 Python. Python tests require the pinned environment installed above; no optional
 robotics packages are imported. See [the contract guide](../implementation/contracts.md)
 for callable APIs, state tables and limits.
+
+## Optional policy transport acceptance
+
+Install `-e 'harness/physical-runtime[policy]'` with the same constraints file to
+include the pinned WebSocket dependency. CI installs this extra. Without it, base
+contracts/imports still work but socket acceptance is skipped. The runnable
+[adapter examples](../implementation/model-policy-adapters.md) need no GPU.

@@ -1,8 +1,11 @@
 # Physical runtime
 
 The Python package owns policy execution and environment/device/provider boundaries.
-Adapters remain `typing.Protocol` declarations. No RPC server, policy, simulator,
-SAM model or hardware driver is included. Environment directories do not indicate support.
+The optional `policy` extra supplies a WebSocket inference client/server wrapper.
+Execution includes a deterministic action gate and bounded PolicyRollout composition.
+These run with CPU fixtures; no host RPC worker, learned policy, simulator, SAM model
+or hardware driver is included. Environment directories do not indicate support.
+See the [adapter guide and runnable example](../../docs/implementation/model-policy-adapters.md).
 
 Executable boundary validation now uses `jsonschema`. Follow the CPU-only
 [development setup](../../docs/development/setup.md), then run `pnpm test:contracts`

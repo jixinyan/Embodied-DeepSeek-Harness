@@ -1,4 +1,4 @@
-"""execution interfaces only; no registered provider implementation."""
+"""Worker port; standalone action admission lives in action_gate and policy_rollout."""
 from typing import Protocol
 from physical_harness.wire import WireObject
 

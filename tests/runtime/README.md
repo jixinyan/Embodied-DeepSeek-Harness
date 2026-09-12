@@ -1,6 +1,6 @@
 # Runtime acceptance
 
-Run `pnpm test:runtime` from the repository root. Twenty tests exercise the actual
+Run `pnpm test:runtime` from the repository root. Forty-four tests exercise the actual
 DSH host and native model/tool loop, isolation, cancellation, cooperative timeout,
 configuration, storage, custom-role/tool extension, recovery and HTTP/SSE history.
 The model boundary emits scripted chunks; physical observations are synthetic.
@@ -16,3 +16,7 @@ No live model key, simulator, learned policy or GPU is required.
 [session-audits.test.ts](session-audits.test.ts) covers incremental native audit storage,
 aggregate histories larger than a journal record, legacy reads and interrupted append
 reconciliation. The multi-goal suite also exercises normal demo timing.
+
+[openai-compatible.test.ts](openai-compatible.test.ts) runs native DSH calls through a
+local HTTP/SSE peer, including image results, stream errors and cancellation. This
+exercises the compatible adapter without evaluating a deployed VLM.

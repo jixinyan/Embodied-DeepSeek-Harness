@@ -11,7 +11,9 @@ requirement or deployment binding is unclear.
 - EDH owns the repository. Absorb selected DSH source into its modules with
   provenance. Do not import the entire upstream repository or write a new loop.
 - DSH-backed upper roles, tools, recovery, storage and a local console run with
-  explicitly labeled CPU fixtures. Physical providers remain unimplemented.
+  explicitly labeled CPU fixtures. HTTP model and WebSocket policy adapters plus
+  standalone action admission are CPU-tested; the host worker bridge and actual
+  simulation/hardware providers remain unimplemented.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.
 - Reuse DSH tool registration/dispatch/validation, sessions, inbox/followup, model
@@ -62,3 +64,9 @@ requirement or deployment binding is unclear.
   and any remaining local changes. Commit frequency does not imply a push per edit.
 - Preserve published history; do not force-push, reset away work or rewrite existing
   commits without explicit authorization. Keep secrets and runtime data out of Git.
+
+## Adapter integration checkpoint
+
+Read `docs/implementation/model-policy-adapters.md` for executable endpoint and
+action-gate components. Real provider acceptance and the host-to-worker bridge are
+pending. Do not replace native DSH model/tool behavior or bypass the action gate.

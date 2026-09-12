@@ -166,3 +166,11 @@ Next: [Step 02 Team/Role loading](plan.md#step-02--implement-teamrole-loading-an
 The subsequent [boundary guide](boundaries.md) documents typed message registration,
 shared ToolCall/ToolOperation, selected input/output validation and draft field migrations.
 Use those checks in addition to basic shape validation when integrating service boundaries.
+
+## Policy transport and action admission (v1.11)
+
+The schema additionally defines PolicyRequest, ActionChunk, ActionSegment,
+ActionReceipt and StopAcknowledgement. Shape checks are shared between TS/Python;
+request identity, action dimension/bounds, generation/freshness and budget checks
+are exercised by the Python policy client and action gate. Consult the
+[adapter contract guide](model-policy-adapters.md) before connecting a worker.
