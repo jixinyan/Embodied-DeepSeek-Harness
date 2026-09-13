@@ -36,3 +36,8 @@ Acceptance uses asynchronous CPU adapters through native DSH tools, including a
 successful retry/SKILL loop, a deliberately uncooperative late capture after stop,
 and a GT response arriving after a simulated boundary change. This proves the
 upper seam; it does not validate a network transport, simulator or policy service.
+
+SensorSample may include admitted immutable DSH image references in `images`. The
+Planner's perception tool result and the Verifier-to-Planner feedback use native
+image content. Return no raw bytes or arbitrary URLs in this metadata port. See the
+[image routing guide](../../../docs/implementation/model-policy-adapters.md).

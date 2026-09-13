@@ -42,11 +42,37 @@ does not make every checkpoint a capable tool-using VLM. Consult the deployment'
 and [tool-calling configuration](https://docs.vllm.ai/en/latest/features/tool_calling/).
 The wire format follows the [Chat Completions reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
 
+## Planner-owned perception and decision loop
+
+![Planner perception loop](../architecture/assets/planner-perception-loop.svg)
+
+The Planner is the perception, planning and decision-making VLM. Its native DSH
+loop follows observe -> plan/decide -> call tools or start a subgoal -> observe.
+`perception.capture` and `observation.turn_view` return images directly to the
+calling Planner. Optional scene-analysis roles do not sit between all observations
+and the Planner and do not take over its decision authority.
+
+A backend can now supply `SensorSample.images` containing admitted immutable DSH
+ImageAttachmentRefs. Native capture/active-view/evidence-read results include image
+content blocks; formal checks include checked images in the Verifier's tool result.
+A formal verdict delivers both that checked observation and its images to the Planner,
+which uses them alongside context and other agents' explicitly returned evidence.
+Async monitor assignments also receive their frame as image content, not only JSON.
+The default Planner prompt and the single-goal CPU fixture observe before planning.
+
+Explicit role handoff can carry admitted images, but never transfers the caller's
+whole conversation. An assignment cannot read evidence it was not granted. Sample
+metadata/source are bounded and validated; evidence IDs and attachment IDs cannot
+be rebound to new content/metadata within a run. Debug-only evidence is refused on
+agent-facing observation paths. Raw bytes remain outside domain state and event logs.
+The native DSH attachment reference is reused rather than adding a second media SDK.
+
 For real camera inputs, provide `resolveImage(ref, signal)` on the adapter. It must
 resolve an admitted immutable DSH image attachment into bytes and matching metadata.
 The adapter sends inline image data, including tool-result images; it does not let
 the model fetch arbitrary local paths or URLs. The current fixture supplies sensor
-metadata only, so the example does not demonstrate a live camera pipeline. Image
+metadata only, so the default example does not demonstrate a live camera pipeline. A deployment supplying
+admitted image references and the matching resolver can now exercise the upper path. Image
 resolution and credential callbacks must cooperate with cancellation.
 
 Optional settings include `systemRole`, `maxTokensField`, `timeoutMs`, image count
@@ -149,7 +175,9 @@ or a formal VerificationResult.
 ## Acceptance and next integration
 
 Local HTTP tests run the original DSH loop through tool calls, image results and
-final response, plus stream/error/cancellation cases. Seventeen Python tests exercise
+final response, plus stream/error/cancellation cases. Four additional upper tests
+cover real capture-to-model HTTP images, explicit handoff, immutable evidence and
+the Planner observe/plan/act/verdict-image loop with CPU execution. Seventeen Python tests exercise
 real local WebSockets and CPU devices, including pause during inference/dispatch,
 resume races, lost acknowledgements, budgets, expiry, lease loss, malformed/oversized
 messages and shutdown failures. Eighteen shared schema cases cover new wire shapes

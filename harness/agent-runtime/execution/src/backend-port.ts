@@ -1,6 +1,9 @@
+import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import type { CheckResult, EvidenceRef, ExecutionStatus, SubgoalRequest } from '@edh/contracts';
 
 export interface SensorSample {
+  /** Admitted immutable images; bytes stay in the deployment attachment store. */
+  images?: readonly ImageAttachmentRef[];
   evidence: EvidenceRef;
   sequence: number;
   source: 'test_fixture' | 'simulation' | 'hardware';

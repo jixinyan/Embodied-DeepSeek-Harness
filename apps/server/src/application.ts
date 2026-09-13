@@ -1,3 +1,6 @@
+import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
+import { isDeepStrictEqual } from 'node:util';
+import { admitSensorSample, sensorImages } from '@edh/perception';
 import { randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools';
@@ -83,6 +86,7 @@ export class UpperRun {
   private readonly reports: AssignmentReports;
   private readonly skills: SkillLibrary;
   private readonly evidence = new Map<string, SensorSample>();
+  private readonly imageReferences = new Map<string, ImageAttachmentRef>();
   private readonly grants = new Map<string, Set<string>>();
   private readonly checks = new Map<string, CheckedBoundary>();
   private readonly pending = new Set<Promise<void>>();
@@ -367,8 +371,25 @@ export class UpperRun {
       return sample;
     });
   }
-  private observe(a: Assignment, sample: SensorSample): SensorSample {
+  private retainSample(input: SensorSample): SensorSample {
+    const sample = admitSensorSample(this.options.validator, input, this.options.backend.source);
+    const previous = this.evidence.get(sample.evidence.id);
+    if (previous && !isDeepStrictEqual(previous, sample))
+      throw new Error('An immutable evidence ID cannot be rebound to another sensor sample.');
+    for (const image of sample.images ?? []) {
+      const previousImage = this.imageReferences.get(image.attachmentId);
+      if (previousImage && !isDeepStrictEqual(previousImage, image))
+        throw new Error('An immutable attachment ID cannot be rebound to different metadata.');
+    }
+    for (const image of sample.images ?? [])
+      this.imageReferences.set(image.attachmentId, structuredClone(image));
     this.evidence.set(sample.evidence.id, structuredClone(sample));
+    return sample;
+  }
+  private observe(a: Assignment, input: SensorSample): SensorSample {
+    if (input.evidence.visibility !== 'agent')
+      throw new Error('Sensor evidence is not agent-visible.');
+    const sample = this.retainSample(input);
     const grant = this.grants.get(a.id) ?? new Set<string>();
     grant.add(sample.evidence.id);
     this.grants.set(a.id, grant);
@@ -497,7 +518,24 @@ export class UpperRun {
             },
             output: {
               schema: { type: 'object', additionalProperties: true },
-              render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+              render: (_args, value) => {
+                const samples = [
+                  'perception.capture',
+                  'observation.turn_view',
+                  'evidence.read',
+                ].includes(logical)
+                  ? this.permit(a, [(value as unknown as SensorSample).evidence.id])
+                  : logical === 'verification.check' && this.checks.get(a.id)?.sample
+                    ? this.permit(a, [this.checks.get(a.id)!.sample.evidence.id])
+                    : [];
+                return [
+                  { type: 'text' as const, text: JSON.stringify(value) },
+                  ...sensorImages(samples).map((attachment) => ({
+                    type: 'image' as const,
+                    attachment,
+                  })),
+                ];
+              },
             },
             execute: async (args, exec) => {
               // Raw ToolDefinition owns input validation; use DSH's existing validator,
@@ -620,6 +658,7 @@ export class UpperRun {
             'Decision owner finishes the task through tasks.finish or tasks.abandon, not a role report.',
           );
         const samples = this.permit(a, input.evidenceRefs);
+        const images = sensorImages(samples);
         const recipient = a.brief.expected_output.recipient;
         if (recipient !== 'user') this.sessions.get(recipient);
         const { record, replay } = this.reports.submit(
@@ -653,6 +692,7 @@ export class UpperRun {
                   evidence: samples,
                 },
                 a.id,
+                images,
               )
               .then(
                 () => {
@@ -721,6 +761,7 @@ export class UpperRun {
       case 'files.search':
         return { files: this.files.search(a.id, s('query')) };
       case 'team.delegate': {
+        const images = sensorImages(this.permit(a, args.evidenceRefs as string[]));
         const target = await this.assignment(
           s('member'),
           s('objective'),
@@ -730,7 +771,12 @@ export class UpperRun {
         );
         signal.throwIfAborted();
         this.spawn(
-          this.sessions.deliver(target.id, { kind: 'delegated', brief: target.brief }, a.id),
+          this.sessions.deliver(
+            target.id,
+            { kind: 'delegated', brief: target.brief },
+            a.id,
+            images,
+          ),
         );
         return { assignmentId: target.id, accepted: true };
       }
@@ -743,6 +789,7 @@ export class UpperRun {
           throw new Error('Recipient assignment has finished. Delegate a fresh assignment.');
         const refs = args.evidenceRefs as string[];
         const samples = this.permit(a, refs);
+        const images = sensorImages(samples);
         if (target.id === a.id) throw new Error('Self messaging is not a delegation.');
         if (this.state.events.filter((e) => e.type === 'message.delivered').length >= 256)
           throw new Error('Message budget exceeded.');
@@ -752,6 +799,7 @@ export class UpperRun {
             target.id,
             { kind: tool, message: s('message'), evidence: samples },
             a.id,
+            images,
           ),
         );
         return { accepted: true, recipient: target.id };
@@ -965,18 +1013,20 @@ export class UpperRun {
         this.event('verification.completed', { result });
         this.resolveRecovery(result);
         const lead = this.sessions.get(this.state.decisionAssignmentId);
-        this.grants.get(lead.id)!.add(checked.sample.evidence.id);
+        this.observe(lead, checked.sample);
         this.spawn(
           this.sessions.deliver(
             lead.id,
             {
               kind: 'verdict',
               result,
+              evidence: [checked.sample],
               execution,
               brief: this.brief(lead.member, this.state.instruction),
               finalGoalId: this.options.goal.id,
             },
             a.id,
+            sensorImages([checked.sample]),
           ),
         );
         return { result };
@@ -1198,7 +1248,10 @@ export class UpperRun {
   private backendUpdate(update: BackendUpdate): void {
     if (this.closed) return;
     this.options.validator.parse('ExecutionStatus', update.status);
-    this.options.validator.parse('EvidenceRef', update.sample.evidence);
+    update = {
+      status: structuredClone(update.status),
+      sample: admitSensorSample(this.options.validator, update.sample, this.options.backend.source),
+    };
     const request = this.state.requests.at(-1);
     if (!request) throw new Error('Unsolicited backend execution.');
     if (
@@ -1220,13 +1273,13 @@ export class UpperRun {
       );
       if (errors.length) throw new Error(errors.join(', '));
     }
+    update.sample = this.retainSample(update.sample);
     const index = this.state.executions.findIndex(
       (e) => e.execution_id === update.status.execution_id,
     );
     if (index < 0) this.state.executions.push(update.status);
     else this.state.executions[index] = update.status;
-    this.state.latestSensor = update.sample;
-    this.evidence.set(update.sample.evidence.id, update.sample);
+    this.state.latestSensor = structuredClone(update.sample);
     this.event('execution.updated', {
       execution: update.status,
       sensorSequence: update.sample.sequence,
@@ -1263,6 +1316,7 @@ export class UpperRun {
           a.id,
           { kind: 'monitor', brief: a.brief, sample: update.sample },
           'execution-monitor',
+          sensorImages([update.sample]),
         );
       }
     } finally {

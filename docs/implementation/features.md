@@ -16,6 +16,7 @@ Snapshot: 2026-09-13. Upper runtime, model transport and standalone policy/actio
 | Failure-aware SKILL publication, explicit retrieval and provenance | [Skill library](../../harness/agent-runtime/memory/src/library.ts), [recovery decision](decisions/0004-recovery-observation-and-action-admission.md) |
 | Durable domain records and historical audit | [Store](../../harness/agent-runtime/storage/src/local-store.ts), [HTTP service](../../apps/server/src/http-server.ts) |
 | Deployment-defined tasks, model aliases, tools, backend factories and historical configuration | [Deployment guide](deployments.md), [acceptance](../../tests/runtime/server-deployment.test.ts) |
+| Planner-owned capture/image/plan/action loop and image-bearing verifier feedback | [Image path](model-policy-adapters.md), [native acceptance](../../tests/runtime/sensor-images.test.ts) |
 | OpenAI-compatible text/image streaming through the native DSH loop | [Model adapter and guide](model-policy-adapters.md), [HTTP acceptance](../../tests/runtime/openai-compatible.test.ts) |
 | WebSocket policy client/server and generation-fenced action gate | [Adapter guide](model-policy-adapters.md), [CPU/socket acceptance](../../harness/physical-runtime/tests/test_policy.py) |
 | Live output, tools/results, TODO history, sensors, verdict and recovery inspection | [Console](../../apps/console/README.md), [API/restart tests](../../tests/runtime/console-server.test.ts) |

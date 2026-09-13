@@ -11,6 +11,8 @@
     }
   },
   "dependencies": {
-    "@edh/contracts": "workspace:*"
+    "@edh/contracts": "workspace:*",
+    "@edh/execution": "workspace:*",
+    "@edh/storage": "workspace:*"
   }
 }

@@ -65,6 +65,9 @@ importers:
       '@edh/models':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/models
+      '@edh/perception':
+        specifier: workspace:*
+        version: link:../../harness/agent-runtime/perception
       '@edh/planning':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/planning
@@ -140,6 +143,9 @@ importers:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../storage
 
   harness/agent-runtime/files:
     dependencies:
@@ -191,6 +197,12 @@ importers:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      '@edh/execution':
+        specifier: workspace:*
+        version: link:../execution
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../storage
 
   harness/agent-runtime/planning:
     dependencies:

@@ -1,3 +1,4 @@
+import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import { randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
 import type { AgentHandle, AssistantStreamFrame } from '@deepseek-ai/dsh-agent';
@@ -138,17 +139,33 @@ export class TeamSessions {
       this.creating.delete(assignment.id);
     }
   }
-  async deliver(assignmentId: string, payload: unknown, sender: string): Promise<void> {
+  async deliver(
+    assignmentId: string,
+    payload: unknown,
+    sender: string,
+    images: readonly ImageAttachmentRef[] = [],
+  ): Promise<void> {
     if (this.closed) throw new Error('Team is closed.');
     const entry = this.live.get(assignmentId);
     if (!entry) throw new Error('Unknown destination assignment.');
+    const attachments = structuredClone(images);
+    if (attachments.length > 16) throw new Error('Message exceeds the image reference bound.');
     const before = entry.handle.agent.session.snapshotEvents().length;
     const messageId = randomUUID();
-    this.hooks.event('message.delivered', { messageId, sender, recipient: assignmentId, payload });
+    this.hooks.event('message.delivered', {
+      messageId,
+      sender,
+      recipient: assignmentId,
+      payload,
+      images: attachments,
+    });
     entry.handle.agent.followup(
       createUserMessage({
         source: { kind: 'plugin', plugin: 'edh-team', form: 'relay' },
-        content: [{ type: 'text', text: JSON.stringify({ messageId, sender, payload }) }],
+        content: [
+          { type: 'text', text: JSON.stringify({ messageId, sender, payload }) },
+          ...attachments.map((attachment) => ({ type: 'image' as const, attachment })),
+        ],
       }),
     );
     await entry.handle.agent.whenIdle();

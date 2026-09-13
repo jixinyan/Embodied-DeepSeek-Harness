@@ -38,7 +38,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 44 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 48 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
 - 248 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -301,3 +301,20 @@ example can call an explicitly configured API but does not supply real sensor fr
 Next action: implement the host-to-worker execution bridge, device event mapping,
 resource/watchdog lifetime and mandatory verifier wake-up using these tested components.
 Do not claim that independent adapter tests establish a full simulation MVP.
+
+## Planner perception and native image checkpoint (2026-09-13)
+
+The Planner directly consumes images from perception tools, plans and owns decisions.
+Verifier verdicts now carry the actual checked image references and sample metadata
+back to the Planner. Async monitors receive native images; explicit optional specialist
+handoff preserves independent contexts. Planner/verifier can read granted evidence.
+The single-goal fixture observes before planning; this is a native DSH loop, not a
+new ReAct implementation.
+
+Added bounded sensor metadata admission and immutable evidence/attachment identity
+checks. Raw bytes remain in a deployment-owned attachment store, resolved only for
+model requests. A matching resolver and admitted refs are required; no live camera or
+new console media endpoint is supplied. Four tests cover capture-to-HTTP image payload,
+role isolation, bad metadata/rebinding and Planner image/plan/action/verdict flow.
+Current acceptance is 48 runtime tests plus the preceding shared/Python suites.
+Next integration remains the host-to-worker bridge, resource/watchdog and real providers.

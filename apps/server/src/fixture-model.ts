@@ -103,8 +103,9 @@ export class FixtureModel extends LlmAdapter {
       if (step === 0) todos(0);
       if (step === 5) todos(1);
       if (step === 1) call('skills.search', { query: 'cup container access' });
-      if (step === 2) call('planning.read');
-      if (step === 3) {
+      if (step === 2) call('perception.capture');
+      if (step === 3) call('planning.read');
+      if (step === 4) {
         const plan: PlanDocument = {
           schema_version: 'physical.plan.v1',
           task_id: String(previous.taskId),
@@ -123,7 +124,6 @@ export class FixtureModel extends LlmAdapter {
         };
         call('planning.update', { plan, expectedVersion: 0 });
       }
-      if (step === 4) call('perception.capture');
       if (step === 6) call('execution.start', { instruction: brief!.objective });
     } else if (payload.kind === 'formal-verification') {
       if (step === 0) call('verification.check');

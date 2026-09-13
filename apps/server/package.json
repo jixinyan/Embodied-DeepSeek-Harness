@@ -17,6 +17,7 @@
     "@edh/communication": "workspace:*",
     "@edh/planning": "workspace:*",
     "@edh/files": "workspace:*",
-    "@edh/tasks": "workspace:*"
+    "@edh/tasks": "workspace:*",
+    "@edh/perception": "workspace:*"
   }
 }

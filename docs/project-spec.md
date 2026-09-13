@@ -198,6 +198,12 @@ explicit calls and messages.
 | Environment/hardware backends | Simulator state, connections and sensor/actuator I/O | No environment-private types in general protocols |
 | Evidence/memory providers | Run records, authorized facts, skill versions and retrieval | Stored information does not enter every agent context automatically |
 
+The Planner directly perceives images, plans and makes execution decisions in a
+ReAct-style observe/decide/act/observe loop using native DSH. Perception tool results
+return images to that Planner; optional specialist agents are helpers, not a mandatory
+visual interpretation stage. Verifier supplies checked images and authoritative results
+for the Planner's next decision. See the [illustrated loop](implementation/model-policy-adapters.md).
+
 v1 defaults to one Planner per task, owning its physical decisions. The user-facing
 coordinator and physical planner may be the same instance. An optional reception or
 task-coordination role must preserve one unambiguous execution decision owner.
