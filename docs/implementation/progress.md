@@ -26,7 +26,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 | Tools | Native tool API, role exposure and owner checks; trusted custom native tools share run lifetime and activity tracking |
 | Planning/files | Original DSH TODO; versioned dependency plans, immutable executed/final criteria, registered subgoal checks, owner-selected goals and private files |
 | Execution boundary | Replaceable EmbodiedBackend port, nonblocking fixture jobs, budgets, pause/confirmed fixture stop and owner-only resume |
-| Verification | Async independent monitor sessions and mandatory formal verification at execution boundaries; unknown cannot become success |
+| Verification | One independent monitor assignment per running segment, cancellation/retirement at pause/end and fresh mandatory formal verification at execution boundaries; unknown cannot become success |
 | Recovery | Formal failure followed by Planner replan/retry opens one recovery and Evolver; explicit progress batches continue until original-goal success |
 | Experience | Versioned SKILL export/search/load; failure signals, possible causes, avoid rules, success/verification guidance and provenance; fixture skills labeled and separated |
 | Persistence | Single-writer CAS journal, fsync, integrity checks, torn-tail recovery, separate immutable events and run projections; read-only historical session audits |
@@ -38,7 +38,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 54 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 59 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
 - 248 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -339,3 +339,34 @@ Next: the host-to-worker bridge must map resume boundary preconditions to action
 control generations, reconcile transport updates and publish actual stop state.
 Long-running monitor assignment lifetime and context retention still need refinement;
 real simulator/policy and hardware acceptance remain open.
+
+
+## Monitor lifetime checkpoint (2026-09-13)
+
+Successive frames now continue one independent monitoring assignment through native
+DSH followups. The Planner is its caller; goal, request, budget and image references
+arrive explicitly. Pending frames coalesce rather than spawning a new agent for each
+observation. Pause/end closes admission and requests native cancellation immediately;
+formal verification proceeds in a fresh assignment. Resume creates a fresh monitor.
+A monitor whose creation finishes after the boundary changes is retired without
+receiving stale frames. Final role reports also end their monitor assignment.
+
+TeamSessions retirement retains identity/audits while releasing native handles and
+preventing ID reuse. Cleanup is idempotent, attempts disposal after audit failure,
+and participates in shutdown error reporting. The console projection records retired
+status. No DSH loop or pinned upstream source was changed.
+
+Acceptance adds five tests: 70 observed frames share one monitor; pause cancels an
+in-flight model request while a fresh formal verifier runs; resumed monitoring gets a
+fresh session; late monitor creation receives no stale frame; and repeated retirement
+releases capacity across 66 assignments. The pause/resume assertions share one test. A fifth test reproduces and fixes
+self-cancellation of a Verifier-initiated stop acknowledgement: the run now owns and
+tracks accepted pause requests independently of the monitor cancellation signal.
+Providers still own bounded acknowledgement latency and actual device confirmation.
+Full acceptance: 59 runtime tests, 248 shared cases and 17 Python policy/gate tests.
+All use local CPU/transport fixtures, not a live VLM, simulator or hardware.
+
+This fixes monitor handle lifetime, not context compaction or every role's retirement.
+Long-run context/history budgets and other completed assignments still need bounded
+lifecycle work. The host-to-worker bridge, resources/watchdog and provider acceptance
+remain pending; do not infer a runnable physical MVP from this checkpoint.

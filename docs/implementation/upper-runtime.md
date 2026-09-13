@@ -14,7 +14,8 @@ Runtime records live under `.runs/console-demo` by default and are not public so
 [UpperRun](../../apps/server/src/application.ts), local store and backend.
 TeamSessions creates a neutral-host DSH session for each fresh delegation.
 Only explicit InvocationBriefs and delivered messages enter that session.
-The same role may be instantiated repeatedly without sharing histories.
+The same role may be instantiated repeatedly without sharing histories. A continuing
+assignment receives explicit DSH followup messages in its own context.
 
 For example, a scene analyst receives “inspect cabinet access” and chosen evidence
 references. It does not receive the Planner's private notes. Supplying an unknown
@@ -114,10 +115,34 @@ for the tool call, version history, crash boundaries and acceptance evidence.
 | recovery.opened / progress | Planner's failed-attempt summary and changes, followed by scoped recorded progress |
 | skill.saved | Original recovery goal succeeded and the Evolver published a provenance-bound artifact |
 
-Inspector details expose payloads and correlation IDs. The final interface should
-show important streams and states simultaneously; current tabs are provisional and
-further visual work is deferred. Native TODO resets with a new DSH turn; an older
+Inspector details expose payloads and correlation IDs. The unified console shows
+plans, activity and embodied state together; long panels scroll and narrow screens
+stack sections. Native TODO resets with a new DSH turn; an older
 snapshot must remain labeled by its originating turn, never silently presented as new.
+
+## Monitor assignment lifetime
+
+For example, 70 admitted observations of a running cup-placement attempt continue one
+Verifier assignment through native DSH followups. While a model request is active,
+pending frames coalesce to the latest sample; this is not every-frame VLM inference.
+The Planner is the monitor's explicit caller. The brief includes the goal, criteria,
+execution instruction and budget; images are explicitly delivered to that session.
+
+Pause/end closes that monitor's message and tool admission and requests native cancel.
+An accepted pause request is tracked by the run and must outlive the monitor that
+it cancels; provider acknowledgement is not cancelled with that model request.
+Audit export and handle disposal happen independently of the mandatory formal round.
+Late creation at an obsolete boundary is retired without receiving an old frame.
+Planner-authorized resume creates a fresh monitoring context. A final role report also
+ends its monitor assignment; ordinary per-frame feedback should keep it available.
+
+`monitor.started` identifies the execution segment and assignment. `agent.retired`
+records the reason and cleanup outcome; the console projection retains retired status.
+Assignment identity and audit remain readable after native handles are released.
+This prevents frame count from consuming the live-session limit, but does not implement
+context compaction, unlimited runs or retirement of every other role assignment.
+Current limits remain 64 live/creating sessions per team and 4,000 run events. Retired
+metadata and audits are retained; other completed roles may still hold native handles.
 
 ## Multi-goal execution
 

@@ -13,7 +13,7 @@ Snapshot: 2026-09-13. Upper runtime, model transport and standalone policy/actio
 | Native TODO and versioned physical task plan | [DSH TODO](../../harness/agent-runtime/planning/src/dsh/todo/index.ts), [plans](../../harness/agent-runtime/planning/src/workspace.ts) |
 | Registered subgoals, verified dependencies and owner-only goal selection | [Goals](../../harness/agent-runtime/tasks/src/goals.ts), [multi-goal guide](multi-goal-runtime.md) |
 | Verified pause and boundary-bound Planner resume with provider acknowledgement | [Execution contract](../../harness/agent-runtime/execution/README.md), [authority acceptance](../../tests/runtime/upper-run.test.ts) |
-| Async monitor, formal verification, Planner recovery and Evolver progress | [Application](../../apps/server/src/application.ts), [workflow acceptance](../../tests/runtime/upper-run.test.ts) |
+| Segment-scoped async monitor retirement, fresh formal verification, Planner recovery and Evolver progress | [Application](../../apps/server/src/application.ts), [workflow acceptance](../../tests/runtime/upper-run.test.ts) |
 | Failure-aware SKILL publication, explicit retrieval and provenance | [Skill library](../../harness/agent-runtime/memory/src/library.ts), [recovery decision](decisions/0004-recovery-observation-and-action-admission.md) |
 | Durable domain records and historical audit | [Store](../../harness/agent-runtime/storage/src/local-store.ts), [HTTP service](../../apps/server/src/http-server.ts) |
 | Deployment-defined tasks, model aliases, tools, backend factories and historical configuration | [Deployment guide](deployments.md), [acceptance](../../tests/runtime/server-deployment.test.ts) |

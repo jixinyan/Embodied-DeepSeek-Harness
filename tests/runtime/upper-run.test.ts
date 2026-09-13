@@ -2,13 +2,13 @@ import { test } from 'node:test';
 import { randomUUID } from 'node:crypto';
 import { SessionId } from '@deepseek-ai/dsh-session';
 import { ToolCallId, type GenerateOptions, type StreamChunk } from '@deepseek-ai/dsh-llm';
-import { textResponse } from './scripted-model.js';
+import { textResponse, toolResponse } from './scripted-model.js';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { setTimeout } from 'node:timers/promises';
-import type { EmbodiedBackend, BackendUpdate } from '@edh/execution';
+import type { EmbodiedBackend, BackendUpdate, BackendCallOptions } from '@edh/execution';
 import { ContractValidator, type VerificationResult, type PlanDocument } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
@@ -28,6 +28,7 @@ async function setup(
   tickMs = 15,
   model = new FixtureModel(0),
   wrapBackend: (backend: FixtureBackend) => EmbodiedBackend = (backend) => backend,
+  goalOverride?: typeof FIXTURE_GOAL,
 ) {
   const directory = await mkdtemp(resolve(tmpdir(), 'edh-upper-'));
   const store = new LocalStore(directory);
@@ -47,7 +48,7 @@ async function setup(
   const backend = new FixtureBackend(validator, scenario, tickMs);
   const run = new UpperRun({
     host,
-    goal: scenario === 'multi-goal-recovery' ? MULTI_GOAL_FIXTURE : FIXTURE_GOAL,
+    goal: goalOverride ?? (scenario === 'multi-goal-recovery' ? MULTI_GOAL_FIXTURE : FIXTURE_GOAL),
     allowedSubgoalChecks: FIXTURE_SUBGOAL_CHECKS,
     team,
     validator,
@@ -956,6 +957,256 @@ test(
         ),
       );
       assert.equal(app.backend.query()?.state, 'ended');
+    } finally {
+      await app.close();
+    }
+  },
+);
+
+/** Deterministic CPU frame driver: no wall-clock race between a timer and model latency. */
+async function monitoredFrames(
+  model = new FixtureModel(0),
+  pauseBackend?: (backend: FixtureBackend, options?: BackendCallOptions) => Promise<void>,
+) {
+  let emitFrame!: () => void;
+  const app = await setup(
+    'first-pass',
+    1_000_000,
+    model,
+    (backend) => {
+      let current: ReturnType<FixtureBackend['query']>;
+      let listener!: (update: BackendUpdate) => void;
+      emitFrame = () => {
+        assert(current?.state === 'running');
+        const sample = backend.capture();
+        current = {
+          ...current,
+          state_version: current.state_version + 1,
+          control_steps: current.control_steps + 1,
+          policy_calls: current.policy_calls + 1,
+          elapsed_wall_time_s: current.elapsed_wall_time_s + 0.01,
+          recorded_at: new Date().toISOString(),
+          observation_refs: [sample.evidence.id],
+        };
+        sample.visualization.step = current.control_steps;
+        listener({ status: structuredClone(current), sample });
+      };
+      return backendPort(backend, {
+        async start(request, options) {
+          await backend.start(request);
+          options?.signal?.throwIfAborted();
+          return structuredClone(current!);
+        },
+        query: () => (current ? structuredClone(current) : undefined),
+        subscribe(target) {
+          listener = target;
+          return backend.subscribe((update) => {
+            const status = current
+              ? {
+                  ...update.status,
+                  state_version: current.state_version + 1,
+                  control_steps: current.control_steps,
+                  policy_calls: current.policy_calls,
+                  elapsed_wall_time_s: current.elapsed_wall_time_s,
+                }
+              : update.status;
+            current = structuredClone(status);
+            listener({ status, sample: update.sample });
+          });
+        },
+        pause: (options) => (pauseBackend ? pauseBackend(backend, options) : backend.pause()),
+        async resume(owner, options) {
+          assert.equal(options.stateVersion, current?.state_version);
+          assert.equal(options.boundaryId, current?.boundary_event_id);
+          await backend.resume(owner);
+        },
+      });
+    },
+    { ...FIXTURE_GOAL, budget: { max_control_steps: 100, max_wall_time_s: 30 } },
+  );
+  return { ...app, emitFrame };
+}
+
+test(
+  'seventy monitor frames reuse one independent assignment and release it at a stop',
+  { timeout: 45000 },
+  async () => {
+    const app = await monitoredFrames();
+    try {
+      await app.run.start();
+      await app.run.settle();
+      for (let i = 0; i < 70; i++) {
+        app.emitFrame();
+        await app.run.settle();
+      }
+      const frames = app.run.state.events.filter(
+        (e) =>
+          e.type === 'message.delivered' &&
+          (e.detail.payload as { kind?: string }).kind === 'monitor',
+      );
+      assert.equal(frames.length, 70);
+      assert.equal(new Set(frames.map((e) => e.detail.recipient)).size, 1);
+      assert.equal(app.run.state.events.filter((e) => e.type === 'monitor.started').length, 1);
+      const id = String(frames[0]!.detail.recipient);
+      assert.notEqual(id, app.run.state.decisionAssignmentId);
+      assert.equal(
+        app.run.state.assignments[id]!.brief.caller_assignment_id,
+        app.run.state.decisionAssignmentId,
+      );
+      assert.equal(app.host.agents.list().length, 2);
+      await app.run.stop();
+      await app.run.settle();
+      assert.equal(app.run.state.assignments[id]!.status, 'retired');
+      assert.equal(app.run.sessions.isLive(id), false);
+      assert(app.run.sessions.get(id));
+      const audit = new SessionAudits(app.store)
+        .read(app.run.state.id)
+        .find((row) => row.key.endsWith(id));
+      assert(audit && Array.isArray(audit.value) && audit.value.length > 70);
+      assert.equal(app.host.agents.list().length, 1);
+    } finally {
+      await app.close();
+    }
+  },
+);
+
+test(
+  'pause cancels in-flight monitoring and resume creates fresh monitoring after formal verification',
+  { timeout: 15000 },
+  async () => {
+    let entered = false;
+    class SlowMonitor extends FixtureModel {
+      override async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
+        const incoming = options.messages.filter((m) => m.source.kind === 'plugin').at(-1);
+        const text = incoming?.content.find((p) => p.type === 'text');
+        if (text?.type === 'text' && JSON.parse(text.text).payload.kind === 'monitor' && !entered) {
+          entered = true;
+          await setTimeout(10000, undefined, options.signal ? { signal: options.signal } : {});
+        }
+        yield* super.stream(options);
+      }
+    }
+    const app = await monitoredFrames(new SlowMonitor(0));
+    try {
+      await app.run.start();
+      await app.run.settle();
+      app.emitFrame();
+      await until(() => entered, app.run);
+      const old = Object.values(app.run.state.assignments).find((a) => a.member === 'verifier')!;
+      await app.run.pause();
+      await until(() => app.run.state.verdicts.length === 1, app.run);
+      await app.run.settle();
+      assert.equal(app.run.state.state, 'paused');
+      assert.equal(old.status, 'retired');
+      assert.equal(app.run.sessions.isLive(old.id), false);
+      assert.notEqual(app.run.state.verdicts[0]!.verifier_assignment_id, old.id);
+      assert.equal((await nativeResume(app)).isError, false);
+      app.emitFrame();
+      await app.run.settle();
+      const starts = app.run.state.events.filter((e) => e.type === 'monitor.started');
+      assert.equal(starts.length, 2);
+      assert.notEqual(starts[0]!.detail.assignmentId, starts[1]!.detail.assignmentId);
+      const newer = app.run.state.assignments[String(starts[1]!.detail.assignmentId)]!;
+      assert.notEqual(newer.sessionId, old.sessionId);
+      assert.equal(app.run.state.state, 'running');
+    } finally {
+      await app.close();
+    }
+  },
+);
+
+test(
+  'monitor creation finishing after a stopped boundary cannot receive stale frames',
+  { timeout: 15000 },
+  async () => {
+    const app = await monitoredFrames();
+    let release!: () => void;
+    const blocked = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const create = app.host.agents.create.bind(app.host.agents);
+    let held = false;
+    try {
+      await app.run.start();
+      await app.run.settle();
+      app.host.agents.create = async (...args: Parameters<typeof create>) => {
+        const handle = await create(...args);
+        if (!held) {
+          held = true;
+          await blocked;
+        }
+        return handle;
+      };
+      app.emitFrame();
+      await until(() => held, app.run);
+      await app.run.pause();
+      await until(() => app.run.state.verdicts.length === 1, app.run);
+      release();
+      await app.run.settle();
+      assert.equal(app.run.state.state, 'paused');
+      assert.equal(app.run.state.events.filter((e) => e.type === 'monitor.started').length, 0);
+      assert.equal(
+        app.run.state.events.filter(
+          (e) =>
+            e.type === 'message.delivered' &&
+            (e.detail.payload as { kind?: string }).kind === 'monitor',
+        ).length,
+        0,
+      );
+      assert(
+        app.run.state.events.some(
+          (e) => e.type === 'agent.retired' && e.detail.reason === 'boundary-before-monitor-start',
+        ),
+      );
+    } finally {
+      release();
+      app.host.agents.create = create;
+      await app.close();
+    }
+  },
+);
+
+test(
+  'a Verifier pause retains its stop acknowledgement after its monitor is cancelled',
+  { timeout: 10000 },
+  async () => {
+    let requested = false;
+    let acknowledged = false;
+    class PausingMonitor extends FixtureModel {
+      override async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
+        const incoming = options.messages.filter((m) => m.source.kind === 'plugin').at(-1);
+        const text = incoming?.content.find((p) => p.type === 'text');
+        if (
+          text?.type === 'text' &&
+          JSON.parse(text.text).payload.kind === 'monitor' &&
+          !requested
+        ) {
+          requested = true;
+          yield* toolResponse('execution__pause', {}, 'monitor-pause')(options);
+          return;
+        }
+        yield* super.stream(options);
+      }
+    }
+    const app = await monitoredFrames(new PausingMonitor(0), async (backend, options) => {
+      await backend.pause();
+      // Remote control acknowledgements can settle after their state event retires the caller.
+      await setTimeout(30, undefined, options?.signal ? { signal: options.signal } : {});
+      acknowledged = true;
+    });
+    try {
+      await app.run.start();
+      await app.run.settle();
+      app.emitFrame();
+      await until(() => app.run.state.verdicts.length === 1, app.run);
+      await app.run.settle();
+      assert(requested);
+      assert(acknowledged, 'Monitor cancellation must not cancel its accepted stop request.');
+      const monitor = app.run.state.events.find((e) => e.type === 'monitor.started')!;
+      const id = String(monitor.detail.assignmentId);
+      assert.equal(app.run.state.assignments[id]!.status, 'retired');
+      assert.equal(app.run.state.state, 'paused');
+      assert.notEqual(app.run.state.verdicts[0]!.verifier_assignment_id, id);
     } finally {
       await app.close();
     }

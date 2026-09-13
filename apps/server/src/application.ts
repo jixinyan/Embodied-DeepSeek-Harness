@@ -101,6 +101,10 @@ export class UpperRun {
         observed: boolean;
       }
     | undefined;
+  private monitorEpoch = 0;
+  private monitorAssignment:
+    | { executionId: string; epoch: number; assignment: Assignment }
+    | undefined;
   private monitorBusy = false;
   private latestMonitor: BackendUpdate | undefined;
   private version = 0;
@@ -192,6 +196,10 @@ export class UpperRun {
               model: String(detail.model),
               tools: detail.tools as string[],
             };
+          }
+          if (type === 'agent.retired') {
+            const row = this.state.assignments[String(detail.assignmentId)];
+            if (row) row.status = detail.cleanupFailed ? 'retirement_failed' : 'retired';
           }
           if (type === 'agent.status') {
             const a = this.state.assignments[String(detail.assignmentId)];
@@ -579,6 +587,7 @@ export class UpperRun {
             if (
               this.closed ||
               this.closing ||
+              !this.sessions.isLive(a.id) ||
               (terminal(this.state.state) && !recoveryWrite && !receiptAccess)
             )
               throw new Error('Run is no longer writable.');
@@ -881,6 +890,7 @@ export class UpperRun {
       case 'context.request':
       case 'context.respond': {
         const target = this.sessions.get(s('assignmentId'));
+        if (!this.sessions.isLive(target.id)) throw new Error('Recipient assignment is retired.');
         const targetReport = this.reports.read(target.id);
         if (targetReport && targetReport.report.status !== 'insufficient_context')
           throw new Error('Recipient assignment has finished. Delegate a fresh assignment.');
@@ -951,7 +961,7 @@ export class UpperRun {
       }
       case 'execution.pause':
         this.verifier(a);
-        await this.options.backend.pause({ signal });
+        await this.pause();
         return { execution: this.options.backend.query() ?? null };
       case 'execution.resume':
         return this.resumeExecution(a, signal);
@@ -1404,6 +1414,8 @@ export class UpperRun {
       execution: update.status,
       sensorSequence: update.sample.sequence,
     });
+    if (update.status.state !== 'running')
+      this.endMonitor(update.status.stop_reason ?? update.status.state);
     if (terminal(this.state.state)) return;
     if (this.gates.requiresVerification(update.status)) {
       if (update.status.state === 'paused') this.state.state = 'paused';
@@ -1418,26 +1430,89 @@ export class UpperRun {
       if (!this.monitorBusy) this.spawn(this.monitor());
     }
   }
+  private endMonitor(reason: string): void {
+    this.monitorEpoch++;
+    this.latestMonitor = undefined;
+    const current = this.monitorAssignment;
+    this.monitorAssignment = undefined;
+    if (current) this.spawn(this.sessions.retire(current.assignment.id, reason));
+  }
   private async monitor(): Promise<void> {
     this.monitorBusy = true;
     try {
       while (this.latestMonitor && !terminal(this.state.state)) {
-        const update = this.latestMonitor;
+        let update = this.latestMonitor;
+        const epoch = this.monitorEpoch;
         this.latestMonitor = undefined;
         const current = this.options.backend.query();
         if (current?.state !== 'running') break;
         if (current.execution_id !== update.status.execution_id) continue;
-        const a = await this.assignment(
-          this.sessions.team.definition.bindings.final_verifier,
-          'Monitor the explicit current frame; pause if needed. Formal success is a separate round.',
-        );
+        let monitoring = this.monitorAssignment;
+        if (
+          !monitoring ||
+          monitoring.executionId !== current.execution_id ||
+          monitoring.epoch !== epoch
+        ) {
+          const request = this.currentRequest()!;
+          const owner = this.sessions.get(this.state.decisionAssignmentId);
+          const assignment = await this.assignment(
+            this.sessions.team.definition.bindings.final_verifier,
+            'Monitor this running execution assignment across explicit frame updates. Pause and report concerns; formal success is a separate assignment at a stopped boundary. Remain available between frames.',
+            owner,
+            JSON.stringify({
+              executionId: current.execution_id,
+              instruction: request.instruction,
+              budget: request.budget,
+              controlSteps: current.control_steps,
+              monitoringPhase: epoch,
+            }),
+          );
+          const latest = this.options.backend.query();
+          if (
+            epoch !== this.monitorEpoch ||
+            terminal(this.state.state) ||
+            this.closing ||
+            latest?.state !== 'running' ||
+            latest.execution_id !== current.execution_id
+          ) {
+            this.spawn(this.sessions.retire(assignment.id, 'boundary-before-monitor-start'));
+            continue;
+          }
+          monitoring = { executionId: current.execution_id, epoch, assignment };
+          this.monitorAssignment = monitoring;
+          this.event('monitor.started', {
+            assignmentId: assignment.id,
+            executionId: current.execution_id,
+            epoch,
+          });
+        }
+        const newer = this.latestMonitor as BackendUpdate | undefined;
+        if (newer?.status.execution_id === current.execution_id) {
+          update = newer;
+          this.latestMonitor = undefined;
+        }
+        const a = monitoring.assignment;
         this.observe(a, update.sample);
-        await this.sessions.deliver(
-          a.id,
-          { kind: 'monitor', brief: a.brief, sample: update.sample },
-          'execution-monitor',
-          sensorImages([update.sample]),
-        );
+        try {
+          await this.sessions.deliver(
+            a.id,
+            { kind: 'monitor', brief: a.brief, sample: update.sample },
+            'execution-monitor',
+            sensorImages([update.sample]),
+          );
+        } catch (error) {
+          // Retirement at a control boundary cancels old observation work. Its audit is retained.
+          if (epoch === this.monitorEpoch && !terminal(this.state.state)) throw error;
+        }
+        const report = this.reports.read(a.id)?.report;
+        if (
+          report &&
+          report.status !== 'insufficient_context' &&
+          this.monitorAssignment?.assignment.id === a.id
+        ) {
+          this.monitorAssignment = undefined;
+          this.spawn(this.sessions.retire(a.id, 'monitor-reported-final'));
+        }
       }
     } finally {
       this.monitorBusy = false;
@@ -1474,7 +1549,10 @@ export class UpperRun {
   }
   async pause(): Promise<void> {
     if (terminal(this.state.state)) throw new Error('Run has ended.');
-    await this.options.backend.pause();
+    // An accepted pause outlives the monitor it retires. Track its acknowledgement at run scope.
+    const stopping = this.options.backend.pause();
+    this.spawn(stopping);
+    await stopping;
   }
   async requestResume(): Promise<void> {
     if (terminal(this.state.state) || this.options.backend.query()?.state !== 'paused')
@@ -1500,6 +1578,7 @@ export class UpperRun {
     while (this.pending.size) await Promise.all([...this.pending]);
   }
   private async cancelAndStop(type: string, detail: Record<string, unknown>): Promise<void> {
+    this.endMonitor(type);
     const errors: unknown[] = [];
     try {
       this.event(type, detail);

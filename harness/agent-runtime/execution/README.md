@@ -9,11 +9,18 @@ See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 
 ## Asynchronous provider calls
 
-`capture` and `check` may return either a value or a Promise. Active observation,
-start and pause receive optional `BackendCallOptions` containing the native DSH
-`AbortSignal`. Resume requires `BackendResumeOptions`, described below. Implementations should forward it into network requests
-and cooperative provider work. Stop/close remain cleanup operations independent of
-an aborted model call. Cancellation does not establish that hardware stopped.
+`capture` and `check` may return either a value or a Promise. Active observation and
+start receive optional `BackendCallOptions` containing the native DSH `AbortSignal`.
+Resume requires `BackendResumeOptions`, described below. Implementations should forward
+these signals into network requests and cooperative provider work.
+
+An admitted pause is owned and tracked by the run, without the retiring monitor's
+cancellation signal. For example, a Verifier calls pause; the provider publishes
+pausing, which cancels that monitor, but the stop acknowledgement must still complete.
+A pause failure fails the run and requests stop. Providers must bound acknowledgement
+latency and publish confirmed state; a settled Promise alone is not a device-stop
+confirmation. Stop/close also remain independent of an aborted model call. Cancellation
+does not establish that hardware stopped. An independent device watchdog remains pending.
 
 `query()` deliberately reads the client's immediate status projection. A future
 transport client must update that projection before notifying `subscribe` listeners;

@@ -240,10 +240,11 @@ and caller relationship. Section 11 defines authoring.
 | Verifier | Goal/criteria, current attempt, observation entry point, relevant skills and check permissions | Monitor feedback, pause requests, formal verdict and necessary facts | Retry, replan or autonomous resume |
 | Evolver | Original failure, recovery goal, upper-level changes, related records/events | Evidenced skill bundle, version and summary | Robot control or changing task criteria |
 
-Planner provides the complete verifier brief and registers its monitoring association
-before execution. Budget events wake that assigned verifier. If a new instance must
-be created, the trigger uses a previously supplied complete brief, not inherited
-Planner history.
+The host builds an explicit verifier brief from the Planner-selected goal, admitted
+execution request, criteria and current attempt. The monitor names the Planner as its
+caller and receives explicit sensor updates. A stopped boundary creates a separate
+formal-verification assignment with its own brief and boundary record; it does not
+inherit either the Planner conversation or the monitor history.
 
 Before retry, Planner prepares the Evolver handoff and recovery record. Starting the
 experience agent must not block execution: durable events can be read later through
@@ -446,17 +447,25 @@ or unknown verification rather than fabricated success.
 
 ## 7. Verifier: asynchronous monitoring and formal verification
 
-Each new verifier assignment receives a fresh context with goal, criteria, stream,
-execution configuration, necessary history and readable skills. One assignment may
-continue from monitoring through formal verification; changing instances requires
-an explicit handoff.
+Each new verifier assignment receives a fresh context with goal, criteria, execution
+configuration, necessary history and authorized evidence. The current upper runner
+continues one monitor assignment across explicit frame messages during a continuous
+running segment. Pause/end cancels and retires that monitor. Formal verification is
+a separate fresh assignment with an explicit stopped-boundary brief; resumed execution
+creates a fresh monitor. No conversation history is implicitly shared. An accepted
+pause request belongs to the run and outlives monitor cancellation; the provider must
+bound its acknowledgement latency and report actual confirmed stop state.
 
 ### 7.1 Monitoring during execution
 
 Support latest-frame, short-clip and execution-event triggers. v1 permits at most
 one in-flight model request per verifier; merge subsequent frames into the next fresh
-observation while retaining critical events. Configure and display interval, allowed
-observation lag and model budget.
+observation while retaining critical events. The current upper runner coalesces
+pending frames to the latest available sample and rejects monitoring work whose
+creation completes after its execution boundary has changed. It retires native handles
+while preserving assignment identity and audits. Long-run context compaction remains
+pending. Configurable intervals, observation-lag policies and model-budget displays
+remain targets beyond this lifecycle implementation.
 
 Feedback is progress/deviation/possibly_complete/insufficient_evidence with frame or
 event references. Possible completion or clear deviation may trigger pause; formal

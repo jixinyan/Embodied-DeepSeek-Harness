@@ -24,8 +24,15 @@ export interface SessionHooks {
 export class TeamSessions {
   private readonly live = new Map<
     string,
-    { assignment: Assignment; handle: AgentHandle; timer: ReturnType<typeof setTimeout> | null }
+    {
+      assignment: Assignment;
+      handle: AgentHandle;
+      timer: ReturnType<typeof setTimeout> | null;
+      retiring: boolean;
+    }
   >();
+  private readonly assignments = new Map<string, Assignment>();
+  private readonly retirements = new Map<string, Promise<void>>();
   private closed = false;
   private closePromise: Promise<void> | undefined;
   private readonly pendingCreation = new Set<Promise<Assignment>>();
@@ -55,7 +62,7 @@ export class TeamSessions {
     const role = this.team.members[member];
     if (!role || brief.team_run_id !== this.team.teamRunId)
       throw new Error('Unknown member or foreign team.');
-    if (this.live.has(brief.assignment_id) || this.creating.has(brief.assignment_id))
+    if (this.assignments.has(brief.assignment_id) || this.creating.has(brief.assignment_id))
       throw new Error('Assignment already exists.');
     if (brief.tools_and_limits.allowed_tools.some((name) => !role.definition.tools.includes(name)))
       throw new Error('Brief exceeds role tool authority.');
@@ -83,12 +90,18 @@ export class TeamSessions {
         }
         throw new Error('Team closed during creation.');
       }
-      const entry = { assignment, handle, timer: null as ReturnType<typeof setTimeout> | null };
+      const entry = {
+        assignment,
+        handle,
+        timer: null as ReturnType<typeof setTimeout> | null,
+        retiring: false,
+      };
+      this.assignments.set(assignment.id, assignment);
       this.live.set(assignment.id, entry);
       handle.agent.ctx.on('agent/status', ({ status }) => {
         if (entry.timer) clearTimeout(entry.timer);
         entry.timer = null;
-        if (status === 'running') {
+        if (status === 'running' && !entry.retiring) {
           entry.timer = setTimeout(() => {
             handle.agent.cancel({ kind: 'user' });
             this.hooks.event('agent.deadline', { assignmentId: assignment.id, member });
@@ -147,7 +160,7 @@ export class TeamSessions {
   ): Promise<void> {
     if (this.closed) throw new Error('Team is closed.');
     const entry = this.live.get(assignmentId);
-    if (!entry) throw new Error('Unknown destination assignment.');
+    if (!entry || entry.retiring) throw new Error('Destination assignment is unknown or retired.');
     const attachments = structuredClone(images);
     if (attachments.length > 16) throw new Error('Message exceeds the image reference bound.');
     const before = entry.handle.agent.session.snapshotEvents().length;
@@ -177,9 +190,57 @@ export class TeamSessions {
     }
   }
   get(id: string): Assignment {
+    const assignment = this.assignments.get(id);
+    if (!assignment) throw new Error('Unknown assignment.');
+    return structuredClone(assignment);
+  }
+  isLive(id: string): boolean {
     const entry = this.live.get(id);
-    if (!entry) throw new Error('Unknown assignment.');
-    return structuredClone(entry.assignment);
+    return !this.closed && Boolean(entry && !entry.retiring);
+  }
+  retire(id: string, reason: string): Promise<void> {
+    const existing = this.retirements.get(id);
+    if (existing) return existing;
+    const entry = this.live.get(id);
+    if (!entry) return Promise.reject(new Error('Unknown assignment.'));
+    // Close admission and request native cancellation synchronously, before waiting for cleanup.
+    entry.retiring = true;
+    if (entry.timer) clearTimeout(entry.timer);
+    entry.timer = null;
+    const errors: unknown[] = [];
+    const completion = Promise.resolve().then(async () => {
+      try {
+        await entry.handle.agent.whenIdle();
+        this.hooks.audit(id, entry.handle.agent.session.snapshotEvents());
+      } catch (error) {
+        errors.push(error);
+      }
+      try {
+        await entry.handle.dispose();
+      } catch (error) {
+        errors.push(error);
+      }
+      this.live.delete(id);
+      try {
+        this.hooks.event('agent.retired', {
+          assignmentId: id,
+          member: entry.assignment.member,
+          reason,
+          cleanupFailed: errors.length > 0,
+        });
+      } catch (error) {
+        errors.push(error);
+      }
+      if (errors.length)
+        throw new AggregateError(errors, 'Assignment retirement failed after cleanup attempts.');
+    });
+    this.retirements.set(id, completion);
+    try {
+      entry.handle.agent.cancel({ kind: 'user' });
+    } catch (error) {
+      errors.push(error);
+    }
+    return completion;
   }
   cancelAll(): void {
     for (const entry of this.live.values()) entry.handle.agent.cancel({ kind: 'user' });
@@ -189,25 +250,18 @@ export class TeamSessions {
     this.closed = true;
     this.closePromise = Promise.resolve().then(async () => {
       const errors: unknown[] = [];
-      const disposing = Promise.all(
-        [...this.live.values()].map(async (entry) => {
-          if (entry.timer) clearTimeout(entry.timer);
-          try {
-            entry.handle.agent.cancel({ kind: 'user' });
-            await entry.handle.agent.whenIdle();
-            this.hooks.audit(entry.assignment.id, entry.handle.agent.session.snapshotEvents());
-          } catch (error) {
-            errors.push(error);
-          }
-          try {
-            await entry.handle.dispose();
-          } catch (error) {
-            errors.push(error);
-          }
-        }),
-      );
+      for (const id of this.live.keys())
+        void this.retire(id, 'team-shutdown').catch(() => undefined);
       // Cancel live work immediately while late creations drain and dispose themselves.
-      await Promise.all([disposing, Promise.allSettled([...this.pendingCreation])]);
+      const [retired] = await Promise.all([
+        Promise.allSettled([...this.retirements.values()]),
+        Promise.allSettled([...this.pendingCreation]),
+      ]);
+      for (const result of retired)
+        if (result.status === 'rejected')
+          errors.push(
+            ...(result.reason instanceof AggregateError ? result.reason.errors : [result.reason]),
+          );
       this.live.clear();
       errors.push(...this.lateCleanupErrors);
       if (errors.length)

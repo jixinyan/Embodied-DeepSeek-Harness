@@ -44,6 +44,7 @@ export interface EmbodiedBackend {
     direction: 'left' | 'center' | 'right',
     options?: BackendCallOptions,
   ): Promise<SensorSample>;
+  /** Accepted stop requests outlive monitor cancellation; providers own a bounded acknowledgement. */
   pause(options?: BackendCallOptions): Promise<void>;
   resume(ownerId: string, options: BackendResumeOptions): Promise<void>;
   stop(): Promise<void>;

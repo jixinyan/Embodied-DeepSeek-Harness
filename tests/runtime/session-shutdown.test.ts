@@ -106,3 +106,32 @@ test('team close drains a native session created after shutdown began', async ()
     await host.fiber.dispose();
   }
 });
+
+test('retirement releases native capacity while retaining assignment identity and audit', async () => {
+  let audits = 0;
+  const { host, sessions, brief } = await setup(() => {
+    audits++;
+  });
+  try {
+    const first = await sessions.create('lead', brief);
+    const retirement = sessions.retire(first.id, 'execution-paused');
+    assert.equal(sessions.isLive(first.id), false);
+    assert.equal(sessions.retire(first.id, 'duplicate'), retirement);
+    await assert.rejects(sessions.deliver(first.id, {}, 'user'), /retired/);
+    await retirement;
+    assert.deepEqual(sessions.get(first.id), first);
+    assert.equal(host.agents.list().length, 0);
+    await assert.rejects(sessions.create('lead', brief), /Assignment already exists/);
+    for (let i = 0; i < 65; i++) {
+      const next = await sessions.create('lead', { ...brief, assignment_id: randomUUID() });
+      await sessions.retire(next.id, 'completed');
+    }
+    assert.equal(host.agents.list().length, 0);
+    assert.equal(audits, 66);
+    await sessions.close();
+    assert.equal(audits, 66, 'Already retired sessions are not audited or disposed twice.');
+  } finally {
+    await sessions.close();
+    await host.fiber.dispose();
+  }
+});
