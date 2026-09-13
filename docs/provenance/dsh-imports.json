@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/deepseek-ai/deepseek-harness",
   "commit": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
-  "selection": "Transitive TypeScript imports, exports, type imports and module augmentations from the five audited seeds plus session-projection. Optional manifest peers not imported by this graph are excluded. The unmodified cooperative timeout policy is additionally imported for the upper application.",
+  "selection": "Transitive TypeScript imports, exports, type imports and module augmentations from the five audited seeds plus session-projection. Optional manifest peers not imported by this graph are excluded. The unmodified cooperative timeout policy is additionally imported for the upper application. Context integration additionally imports the unchanged compaction services and replay-aware token meter, plus command identity and retry event types only (no command/retry service).",
   "source_discovery_correction": "The manifest audit omitted dsh-attachment, which the llm source imports. Included from source; no attachment filesystem provider is mounted.",
   "packages": [
     {
@@ -194,6 +194,54 @@
       "destination": "harness/agent-runtime/models/src/dsh/chat-completions",
       "owner": "models",
       "manifest_sha256": "a7054949c76a57a7ea22f333257e355901917c7ff30a03b5ad85c6a4e67ec1f0",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-compaction",
+      "source": "packages/compaction/compaction",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction",
+      "owner": "memory",
+      "manifest_sha256": "734dad8a1042b83767346823f5058864b6f8cd51718c97149dbc849cb2cf7477",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-compaction-basic",
+      "source": "packages/compaction/compaction-basic",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction-basic",
+      "owner": "memory",
+      "manifest_sha256": "5cc8358d3f1c14a74c38b4be6a016775cbcf719a22840b470b69ac454db3ec75",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-compaction-tool-result-pruner",
+      "source": "packages/compaction/compaction-tool-result-pruner",
+      "destination": "harness/agent-runtime/memory/src/dsh/tool-result-pruner",
+      "owner": "memory",
+      "manifest_sha256": "74815f7ba38dea46f584e767ba1b64cc1d218a2e60fd2c2bb7d2ce01c196ed3c",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-token-meter",
+      "source": "packages/llm/token-meter",
+      "destination": "harness/agent-runtime/models/src/dsh/token-meter",
+      "owner": "models",
+      "manifest_sha256": "a32f5d9fe72c3dbbb6c8a9f111d3caea6eb94816ff212774a958766ec4499562",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-commands",
+      "source": "packages/interaction/commands",
+      "destination": "harness/agent-runtime/foundation/src/dsh/commands",
+      "owner": "foundation",
+      "manifest_sha256": "ac56ff73148bbd1f4d8a34cdcd15cdcba2d0a4c74842916c09a3163614700b18",
+      "license": "MIT"
+    },
+    {
+      "name": "@deepseek-ai/dsh-llm-retry",
+      "source": "packages/llm/llm-retry",
+      "destination": "harness/agent-runtime/models/src/dsh/retry-types",
+      "owner": "models",
+      "manifest_sha256": "e978a3658fb40364c09c1d41890c3350e255600966380c1123c8e305f40414cd",
       "license": "MIT"
     }
   ],
@@ -882,6 +930,181 @@
       "source_sha256": "aa481d7bdf68e1f22f36286ae64ef6eb522afe3010545872d1d05899d825ad1e",
       "local_sha256": "aa481d7bdf68e1f22f36286ae64ef6eb522afe3010545872d1d05899d825ad1e",
       "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction/src/brand.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction/brand.ts",
+      "source_sha256": "f27af81196216a6a50faf5e15da75cdb0935e47e2e78dc3d3fc7ce2dd6733a82",
+      "local_sha256": "f27af81196216a6a50faf5e15da75cdb0935e47e2e78dc3d3fc7ce2dd6733a82",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction/src/types.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction/types.ts",
+      "source_sha256": "72859150e72a6f75bd97a637f12c2488132f039eefa1ebd4294561b21ac918ef",
+      "local_sha256": "72859150e72a6f75bd97a637f12c2488132f039eefa1ebd4294561b21ac918ef",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction/src/tool-pairing.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction/tool-pairing.ts",
+      "source_sha256": "c90e0db1ace2e138a94d0418629081bd448d6a472fcc1ec1beb7f2972ec7c235",
+      "local_sha256": "c90e0db1ace2e138a94d0418629081bd448d6a472fcc1ec1beb7f2972ec7c235",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction/src/checkpoint.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction/checkpoint.ts",
+      "source_sha256": "0f3fd9feb3e20049769b4642229c24d1b57179ed37311f4b416bd19dd28c4deb",
+      "local_sha256": "0f3fd9feb3e20049769b4642229c24d1b57179ed37311f4b416bd19dd28c4deb",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction/src/index.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction/index.ts",
+      "source_sha256": "7263872dbe301193e3200a95594c32e3cad881ac264ab082e46d00c624f05f7c",
+      "local_sha256": "7263872dbe301193e3200a95594c32e3cad881ac264ab082e46d00c624f05f7c",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction-basic/src/types.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction-basic/types.ts",
+      "source_sha256": "0b2c6dc3839bb43544b1dd9dbf678918578ff88ea00100eac1c0c2e7153ce0b4",
+      "local_sha256": "0b2c6dc3839bb43544b1dd9dbf678918578ff88ea00100eac1c0c2e7153ce0b4",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction-basic/src/config.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction-basic/config.ts",
+      "source_sha256": "d4d63fe3a6e7b3d00c91aafcba86cf5a9f5417739c406b26d87dac470f738681",
+      "local_sha256": "d4d63fe3a6e7b3d00c91aafcba86cf5a9f5417739c406b26d87dac470f738681",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction-basic/src/summarizer.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction-basic/summarizer.ts",
+      "source_sha256": "3589f95a1b63d882d3907752d369c641a1f473b49e538a071f8a3604dda9789c",
+      "local_sha256": "3589f95a1b63d882d3907752d369c641a1f473b49e538a071f8a3604dda9789c",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction-basic/src/region.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction-basic/region.ts",
+      "source_sha256": "79debc14a677e42a952407e58a0134ee003bbef3a85809d17ae399b003a44573",
+      "local_sha256": "79debc14a677e42a952407e58a0134ee003bbef3a85809d17ae399b003a44573",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction-basic/src/index.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/compaction-basic/index.ts",
+      "source_sha256": "f824fc6f586c6ec7ae26442656d789accd0b5124924886e91b480bc587b1491d",
+      "local_sha256": "f824fc6f586c6ec7ae26442656d789accd0b5124924886e91b480bc587b1491d",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction-tool-result-pruner/src/types.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/tool-result-pruner/types.ts",
+      "source_sha256": "7f2604d2ca5ac6d8b7b2a4cf5d87a98356a7565bcde37e70c69eb4cfcb138956",
+      "local_sha256": "7f2604d2ca5ac6d8b7b2a4cf5d87a98356a7565bcde37e70c69eb4cfcb138956",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction-tool-result-pruner/src/config.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/tool-result-pruner/config.ts",
+      "source_sha256": "8538c8b2b3bd7b2b085a86119b694f7934e308a5c4b7f4406e963b190b6eaa98",
+      "local_sha256": "8538c8b2b3bd7b2b085a86119b694f7934e308a5c4b7f4406e963b190b6eaa98",
+      "modifications": []
+    },
+    {
+      "source": "packages/compaction/compaction-tool-result-pruner/src/index.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/tool-result-pruner/index.ts",
+      "source_sha256": "f39bfdd135c9d22c82c426c276eda1d467035c316bb88e7b76145bfec0a1dd25",
+      "local_sha256": "f39bfdd135c9d22c82c426c276eda1d467035c316bb88e7b76145bfec0a1dd25",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/token-meter/src/projection.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/token-meter/projection.ts",
+      "source_sha256": "60f84d29ef7a9d701fa769aafdddd705d25692d0d0db973fbf168c748ca522fd",
+      "local_sha256": "60f84d29ef7a9d701fa769aafdddd705d25692d0d0db973fbf168c748ca522fd",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/token-meter/src/types.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/token-meter/types.ts",
+      "source_sha256": "d0c153b4ff135839c072b1c57056366003028fb2f5ba7ea745845580c5fcb08f",
+      "local_sha256": "d0c153b4ff135839c072b1c57056366003028fb2f5ba7ea745845580c5fcb08f",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/token-meter/src/estimate.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/token-meter/estimate.ts",
+      "source_sha256": "002d8cf11416228ba2be76ac2ac81f57c204a2f200c75aaae57cbff1c6e87272",
+      "local_sha256": "002d8cf11416228ba2be76ac2ac81f57c204a2f200c75aaae57cbff1c6e87272",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/token-meter/src/surface-projection.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/token-meter/surface-projection.ts",
+      "source_sha256": "05381f4d2b373dab8144ba2a11fdb77ccd1c98a819224c35885322b28a075ec0",
+      "local_sha256": "05381f4d2b373dab8144ba2a11fdb77ccd1c98a819224c35885322b28a075ec0",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/token-meter/src/breakdown-projection.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/token-meter/breakdown-projection.ts",
+      "source_sha256": "c5643c037e8c87b7f1acc6e6ce523af6ec7f8cdf2b566be039edf538a1997af0",
+      "local_sha256": "c5643c037e8c87b7f1acc6e6ce523af6ec7f8cdf2b566be039edf538a1997af0",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/token-meter/src/usage-projection.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/token-meter/usage-projection.ts",
+      "source_sha256": "d1b4d2402430c50536fb328b0e4390e0359d21b05fd80b085462c74d83bbc87c",
+      "local_sha256": "d1b4d2402430c50536fb328b0e4390e0359d21b05fd80b085462c74d83bbc87c",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/token-meter/src/surface-fold.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/token-meter/surface-fold.ts",
+      "source_sha256": "d4fa98bcce6be27a26455dbfbd08b107418948670565d3c437df9053d6730080",
+      "local_sha256": "d4fa98bcce6be27a26455dbfbd08b107418948670565d3c437df9053d6730080",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/token-meter/src/route-pricing.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/token-meter/route-pricing.ts",
+      "source_sha256": "4201c430b66e12fd40dcf264034bbc517cb73867f4b31a68b90c8a3ff3210840",
+      "local_sha256": "4201c430b66e12fd40dcf264034bbc517cb73867f4b31a68b90c8a3ff3210840",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/token-meter/src/index.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/token-meter/index.ts",
+      "source_sha256": "98cb7763e71be7cbe47f50bf3b9b4dd0a4ba6094d6a7efbe321d7ef0d9a1a527",
+      "local_sha256": "98cb7763e71be7cbe47f50bf3b9b4dd0a4ba6094d6a7efbe321d7ef0d9a1a527",
+      "modifications": []
+    },
+    {
+      "source": "packages/interaction/commands/src/brand.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/commands/brand.ts",
+      "source_sha256": "0794077f32bc816c52bdb3eb3af43b4d3da4834173552ddca4666a56cbfcf30e",
+      "local_sha256": "0794077f32bc816c52bdb3eb3af43b4d3da4834173552ddca4666a56cbfcf30e",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm-retry/src/brand.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/retry-types/brand.ts",
+      "source_sha256": "3c30dc58c1ea674128a5ed98a6158fba654147c06b245522ccb1b1b08d45d721",
+      "local_sha256": "3c30dc58c1ea674128a5ed98a6158fba654147c06b245522ccb1b1b08d45d721",
+      "modifications": []
+    },
+    {
+      "source": "packages/llm/llm-retry/src/types.ts",
+      "destination": "harness/agent-runtime/models/src/dsh/retry-types/types.ts",
+      "source_sha256": "9c377ed575053427da1f0cef97c056aee0f6c4a80d413dea0f70086bbd05fb0b",
+      "local_sha256": "9c377ed575053427da1f0cef97c056aee0f6c4a80d413dea0f70086bbd05fb0b",
+      "modifications": []
     }
   ],
   "aliases": {
@@ -1019,6 +1242,24 @@
     ],
     "@deepseek-ai/dsh-tool-todo/*": [
       "harness/agent-runtime/planning/src/dsh/todo/*.ts"
+    ],
+    "@deepseek-ai/dsh-compaction": [
+      "harness/agent-runtime/memory/src/dsh/compaction/index.ts"
+    ],
+    "@deepseek-ai/dsh-compaction-basic": [
+      "harness/agent-runtime/memory/src/dsh/compaction-basic/index.ts"
+    ],
+    "@deepseek-ai/dsh-compaction-tool-result-pruner": [
+      "harness/agent-runtime/memory/src/dsh/tool-result-pruner/index.ts"
+    ],
+    "@deepseek-ai/dsh-token-meter": [
+      "harness/agent-runtime/models/src/dsh/token-meter/index.ts"
+    ],
+    "@deepseek-ai/dsh-commands": [
+      "harness/agent-runtime/foundation/src/dsh/commands/brand.ts"
+    ],
+    "@deepseek-ai/dsh-llm-retry": [
+      "harness/agent-runtime/models/src/dsh/retry-types/types.ts"
     ]
   },
   "external_imports": [

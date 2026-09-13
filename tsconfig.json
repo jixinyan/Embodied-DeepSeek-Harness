@@ -151,6 +151,42 @@
       ],
       "@deepseek-ai/dsh-tool-todo/*": [
         "harness/agent-runtime/planning/src/dsh/todo/*.ts"
+      ],
+      "@deepseek-ai/dsh-compaction": [
+        "harness/agent-runtime/memory/src/dsh/compaction/index.ts"
+      ],
+      "@deepseek-ai/dsh-compaction/*": [
+        "harness/agent-runtime/memory/src/dsh/compaction/*.ts"
+      ],
+      "@deepseek-ai/dsh-compaction-basic": [
+        "harness/agent-runtime/memory/src/dsh/compaction-basic/index.ts"
+      ],
+      "@deepseek-ai/dsh-compaction-basic/*": [
+        "harness/agent-runtime/memory/src/dsh/compaction-basic/*.ts"
+      ],
+      "@deepseek-ai/dsh-compaction-tool-result-pruner": [
+        "harness/agent-runtime/memory/src/dsh/tool-result-pruner/index.ts"
+      ],
+      "@deepseek-ai/dsh-compaction-tool-result-pruner/*": [
+        "harness/agent-runtime/memory/src/dsh/tool-result-pruner/*.ts"
+      ],
+      "@deepseek-ai/dsh-token-meter": [
+        "harness/agent-runtime/models/src/dsh/token-meter/index.ts"
+      ],
+      "@deepseek-ai/dsh-token-meter/*": [
+        "harness/agent-runtime/models/src/dsh/token-meter/*.ts"
+      ],
+      "@deepseek-ai/dsh-commands": [
+        "harness/agent-runtime/foundation/src/dsh/commands/brand.ts"
+      ],
+      "@deepseek-ai/dsh-commands/*": [
+        "harness/agent-runtime/foundation/src/dsh/commands/*.ts"
+      ],
+      "@deepseek-ai/dsh-llm-retry": [
+        "harness/agent-runtime/models/src/dsh/retry-types/types.ts"
+      ],
+      "@deepseek-ai/dsh-llm-retry/*": [
+        "harness/agent-runtime/models/src/dsh/retry-types/*.ts"
       ]
     },
     "allowImportingTsExtensions": true
