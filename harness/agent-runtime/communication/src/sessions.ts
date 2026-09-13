@@ -33,6 +33,7 @@ export class TeamSessions {
   >();
   private readonly assignments = new Map<string, Assignment>();
   private readonly retirements = new Map<string, Promise<void>>();
+  private readonly completions = new Map<string, Promise<void>>();
   private closed = false;
   private closePromise: Promise<void> | undefined;
   private readonly pendingCreation = new Set<Promise<Assignment>>();
@@ -160,7 +161,8 @@ export class TeamSessions {
   ): Promise<void> {
     if (this.closed) throw new Error('Team is closed.');
     const entry = this.live.get(assignmentId);
-    if (!entry || entry.retiring) throw new Error('Destination assignment is unknown or retired.');
+    if (!entry || !this.acceptsMessages(assignmentId))
+      throw new Error('Destination assignment is unknown, finishing or retired.');
     const attachments = structuredClone(images);
     if (attachments.length > 16) throw new Error('Message exceeds the image reference bound.');
     const before = entry.handle.agent.session.snapshotEvents().length;
@@ -197,6 +199,25 @@ export class TeamSessions {
   isLive(id: string): boolean {
     const entry = this.live.get(id);
     return !this.closed && Boolean(entry && !entry.retiring);
+  }
+  acceptsMessages(id: string): boolean {
+    return this.isLive(id) && !this.completions.has(id);
+  }
+  /** Close new work, then let the current native turn retain its receipt and final output. */
+  finish(id: string, reason: string): Promise<void> {
+    const existing = this.completions.get(id) ?? this.retirements.get(id);
+    if (existing) return existing;
+    const entry = this.live.get(id);
+    if (!entry) return Promise.reject(new Error('Unknown assignment.'));
+    const completion = Promise.resolve().then(async () => {
+      try {
+        await entry.handle.agent.whenIdle();
+      } finally {
+        await this.retire(id, reason);
+      }
+    });
+    this.completions.set(id, completion);
+    return completion;
   }
   retire(id: string, reason: string): Promise<void> {
     const existing = this.retirements.get(id);
@@ -254,7 +275,9 @@ export class TeamSessions {
         void this.retire(id, 'team-shutdown').catch(() => undefined);
       // Cancel live work immediately while late creations drain and dispose themselves.
       const [retired] = await Promise.all([
-        Promise.allSettled([...this.retirements.values()]),
+        Promise.allSettled([
+          ...new Set([...this.retirements.values(), ...this.completions.values()]),
+        ]),
         Promise.allSettled([...this.pendingCreation]),
       ]);
       for (const result of retired)
@@ -266,7 +289,7 @@ export class TeamSessions {
       errors.push(...this.lateCleanupErrors);
       if (errors.length)
         throw new AggregateError(
-          errors,
+          [...new Set(errors)],
           'Team shutdown failed; all sessions were disposed or attempted.',
         );
     });

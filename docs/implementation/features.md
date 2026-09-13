@@ -7,7 +7,7 @@ Snapshot: 2026-09-13. Upper runtime, model transport and standalone policy/actio
 | Working capability | Inspect the implementation / evidence |
 | --- | --- |
 | Original DSH loop, tool validation, sessions, timeout and cancellation | [Host](../../apps/server/src/runtime.ts), [native tests](../../tests/runtime/native-tools.test.ts) |
-| User-defined teams and independent role assignments | [Loader](../../harness/agent-runtime/teams/src/loader.ts), [sessions](../../harness/agent-runtime/communication/src/sessions.ts) |
+| User-defined teams, independent roles and completion with retained audits/reports | [Loader](../../harness/agent-runtime/teams/src/loader.ts), [sessions](../../harness/agent-runtime/communication/src/sessions.ts) |
 | Custom native tools, explicit context, private files and permission checks | [Application](../../apps/server/src/application.ts), [extension acceptance](../../tests/runtime/team-extensions.test.ts) |
 | Typed reports, published history, caller acknowledgement and interrupted delivery | [Reports](../../harness/agent-runtime/communication/src/reports.ts), [protocol guide](upper-runtime.md) |
 | Native TODO and versioned physical task plan | [DSH TODO](../../harness/agent-runtime/planning/src/dsh/todo/index.ts), [plans](../../harness/agent-runtime/planning/src/workspace.ts) |

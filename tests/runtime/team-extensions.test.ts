@@ -10,6 +10,7 @@ import { defineTool } from '@edh/tools';
 import { ContractValidator } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore } from '@edh/storage';
+import { AssignmentReports, type ReportInput } from '@edh/communication';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 import { UpperRun, CORE_TOOLS } from '../../apps/server/src/application.js';
 import { FixtureBackend, FIXTURE_GOAL } from '../../apps/server/src/fixture-backend.js';
@@ -21,6 +22,7 @@ test(
   async () => {
     const directory = await mkdtemp(resolve(tmpdir(), 'edh-extension-'));
     const store = new LocalStore(directory);
+    let replayed = false;
     const model = new ScriptedModel([
       textResponse('Planner ready.'),
       textResponse('Analyst received explicit context.'),
@@ -40,7 +42,7 @@ test(
         })(options);
       },
       ...Array.from(
-        { length: 3 },
+        { length: 4 },
         () =>
           async function* (options: Parameters<ReturnType<typeof textResponse>>[0]) {
             const latest = options.messages.at(-1)!;
@@ -58,9 +60,36 @@ test(
                 return;
               }
             }
+            if (!replayed && options.tools?.some((tool) => tool.name === 'scene__describe')) {
+              const call = options.messages
+                .flatMap((message) => message.content)
+                .findLast((part) => part.type === 'tool-call' && part.name === 'agent__report');
+              assert(call?.type === 'tool-call');
+              const result = latest.content.find((part) => part.type === 'tool-result');
+              assert(
+                result?.type === 'tool-result' && !result.isError,
+                'Final report receipt reaches its author before retirement.',
+              );
+              replayed = true;
+              yield* toolResponse(
+                'agent__report',
+                JSON.parse(call.arguments),
+                'replay-before-idle',
+              )(options);
+              return;
+            }
             yield* textResponse('Report or acknowledgement turn complete.')(options);
           },
       ),
+      toolResponse('agent__report', {
+        status: 'completed',
+        summary: 'Late child report.',
+        result: { target: 'cup', confidence: 'high' },
+        evidenceRefs: [],
+        requestedContext: [],
+        expectedVersion: 0,
+      }),
+      textResponse('Child report retained.'),
     ]);
     const host = await createDshHost([{ providers: ['fixture'], adapter: model }]);
     let run: UpperRun | undefined;
@@ -226,7 +255,7 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       assert.equal(run.state.state, 'running', 'Completed TODOs cannot finish the physical task.');
       assert.equal(run.state.verdicts.length, 0);
 
-      const report = {
+      const report: ReportInput = {
         status: 'completed',
         summary: 'Target identified.',
         result: { target: 'cup', confidence: 'high' },
@@ -285,6 +314,14 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       await run.settle();
       assert.match(JSON.stringify(model.requests[2]?.messages), /insufficient_context/);
       assert.equal(run.state.assignments[analyst.id]!.reportVersion, 1);
+      assert.equal(run.sessions.acceptsMessages(analyst.id), true, 'Missing context is not final.');
+      const lateChild = await run.sessions.create('analyst', {
+        ...analyst.brief,
+        assignment_id: randomUUID(),
+        caller_assignment_id: analyst.id,
+        caller_agent_id: analyst.sessionId,
+        expected_output: { ...analyst.brief.expected_output, recipient: analyst.id },
+      });
       await invoke(owner, 'perception__capture');
       const evidenceId = run.state.latestSensor!.evidence.id;
       assert.equal(
@@ -300,8 +337,9 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       await run.settle();
       assert.match(JSON.stringify(model.requests[3]?.messages), new RegExp(evidenceId));
       const completed = { ...report, evidenceRefs: [evidenceId], expectedVersion: 1 };
-      assert.equal((await invoke(analyst.id, 'agent__report', completed)).isError, false);
-      await run.settle();
+      assert.equal(run.sessions.isLive(analyst.id), false);
+      assert.equal(host.agents.get(SessionId(analyst.sessionId)), undefined);
+      assert.equal(run.state.assignments[analyst.id]!.status, 'retired');
       const callerInput = model.requests
         .slice(4)
         .find((request) => JSON.stringify(request.messages).includes('agent-report'));
@@ -316,37 +354,32 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       );
       assert.equal(run.state.assignments[analyst.id]!.report?.agent_id, analyst.sessionId);
       assert.equal(run.state.assignments[analyst.id]!.reportVersion, 2);
-      assert.equal(
-        (await invoke(analyst.id, 'agent__report', completed)).isError,
-        false,
-        'Exact replay returns the durable receipt.',
-      );
+      assert(replayed, 'Exact replay in the final native turn returns the durable receipt.');
+      const reports = new AssignmentReports(store, validator);
+      assert.equal(reports.submit(run.sessions.get(analyst.id), completed).replay, true);
       assert.equal(run.state.events.filter((event) => event.type === 'agent.report').length, 2);
-      assert.equal(model.requests.length, 7, 'Report replay does not duplicate caller input.');
+      assert.equal(
+        model.requests.length,
+        8,
+        'Report replay adds only an author turn, not another caller message.',
+      );
       assert(
         store
           .list<{ state: string }>('report-delivery:')
           .every((record) => record.value.state === 'settled'),
       );
 
-      assert.equal(
-        (
-          await invoke(analyst.id, 'agent__report', {
+      assert.throws(
+        () =>
+          reports.submit(run!.sessions.get(analyst.id), {
             ...completed,
             summary: 'Changed final result.',
-          })
-        ).isError,
-        true,
+          }),
+        /final report/,
       );
-      assert.equal(
-        (
-          await invoke(analyst.id, 'files__write', {
-            path: 'late.md',
-            content: 'late',
-            expectedVersion: 0,
-          })
-        ).isError,
-        true,
+      await assert.rejects(
+        run.sessions.deliver(analyst.id, { work: 'Write a late file.' }, owner),
+        /finishing or retired/,
       );
       assert.equal(
         (await invoke(owner, 'team__query', { assignmentId: analyst.id })).isError,
@@ -368,11 +401,14 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       const ackArgs = {
         assignmentId: analyst.id,
         reportId: finalRecord.id,
-        disposition: 'accepted',
+        disposition: 'accepted' as const,
         summary: 'Candidate report assessed; physical success still requires verification.',
       };
       assert.equal((await invoke(owner, 'team__ack_report', ackArgs)).isError, false);
-      assert.equal((await invoke(analyst.id, 'team__ack_report', ackArgs)).isError, true);
+      assert.throws(
+        () => reports.acknowledge(analyst.id, finalRecord.id, analyst.id, ackArgs),
+        /designated/,
+      );
       assert.equal(
         (await invoke(owner, 'team__ack_report', { ...ackArgs, recipientAssignmentId: analyst.id }))
           .isError,
@@ -398,6 +434,31 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       );
       assert.equal(run.state.verdicts.length, 0);
 
+      await run.sessions.deliver(
+        lateChild.id,
+        { kind: 'delegated', brief: lateChild.brief },
+        analyst.id,
+      );
+      await run.settle();
+      assert.equal(
+        run.state.state,
+        'running',
+        'Late reports must not reopen the caller or fail the task.',
+      );
+      assert.equal(run.sessions.isLive(lateChild.id), false);
+      assert.equal(reports.status(lateChild.id).reportDelivery?.state, 'failed');
+      assert.match(
+        reports.delivery(reports.read(lateChild.id)!.id)?.error ?? '',
+        /Recipient assignment has finished/,
+      );
+      assert.equal(reports.read(lateChild.id)?.report.summary, 'Late child report.');
+      assert.equal(
+        run.state.events.filter(
+          (event) => event.type === 'message.delivered' && event.detail.recipient === analyst.id,
+        ).length,
+        2,
+        'No third message is delivered to the retired parent.',
+      );
       const duplicateBrief = { ...analyst.brief, assignment_id: randomUUID() };
       const attempts = await Promise.allSettled([
         run.sessions.create('analyst', duplicateBrief),

@@ -5,13 +5,15 @@ import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import { TeamSessions } from '@edh/communication';
+import type { LlmAdapter } from '@deepseek-ai/dsh-llm';
+import { ScriptedModel, textResponse } from './scripted-model.js';
 import { ContractValidator, type InvocationBrief } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 import { CORE_TOOLS } from '../../apps/server/src/application.js';
 import { FixtureModel } from '../../apps/server/src/fixture-model.js';
 
-async function setup(audit: () => void) {
+async function setup(audit: () => void, model: LlmAdapter = new FixtureModel(0)) {
   const validator = new ContractValidator(
     JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
   );
@@ -25,7 +27,7 @@ async function setup(audit: () => void) {
     providers: [],
   }).inspect('examples/teams/console-demo.yaml');
   const team = { ...loaded, teamRunId: randomUUID() };
-  const host = await createDshHost([{ providers: ['fixture'], adapter: new FixtureModel(0) }]);
+  const host = await createDshHost([{ providers: ['fixture'], adapter: model }]);
   const sessions = new TeamSessions(
     host,
     team,
@@ -135,3 +137,101 @@ test('retirement releases native capacity while retaining assignment identity an
     await host.fiber.dispose();
   }
 });
+
+test(
+  'completion closes new messages but preserves the final native turn before releasing capacity',
+  { timeout: 10000 },
+  async () => {
+    let entered!: () => void, release!: () => void;
+    const ready = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let finalOutput = false;
+    const model = new ScriptedModel([
+      async function* (options) {
+        entered();
+        await gate;
+        assert.equal(
+          options.signal?.aborted,
+          false,
+          'Normal completion must not cancel final output.',
+        );
+        finalOutput = true;
+        yield* textResponse('The accepted report is complete.')(options);
+      },
+    ]);
+    const { host, sessions, brief } = await setup(() => {}, model);
+    try {
+      const assignment = await sessions.create('lead', brief);
+      const delivery = sessions.deliver(assignment.id, {}, 'user');
+      await ready;
+      const completing = sessions.finish(assignment.id, 'final-report');
+      assert.equal(sessions.finish(assignment.id, 'duplicate'), completing);
+      assert.equal(sessions.isLive(assignment.id), true);
+      assert.equal(sessions.acceptsMessages(assignment.id), false);
+      await assert.rejects(sessions.deliver(assignment.id, {}, 'user'), /finishing/);
+      assert.equal(host.agents.list().length, 1);
+      release();
+      await Promise.all([delivery, completing]);
+      assert(finalOutput);
+      assert.equal(host.agents.list().length, 0);
+      assert.deepEqual(sessions.get(assignment.id), assignment);
+      for (let i = 0; i < 65; i++) {
+        const next = await sessions.create('lead', { ...brief, assignment_id: randomUUID() });
+        await sessions.finish(next.id, 'done');
+      }
+      assert.equal(host.agents.list().length, 0);
+    } finally {
+      release();
+      await sessions.close();
+      await host.fiber.dispose();
+    }
+  },
+);
+
+test(
+  'shutdown cancels a draining turn and reports retirement audit failure once',
+  { timeout: 10000 },
+  async () => {
+    let entered!: () => void;
+    const ready = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    const model = new ScriptedModel([
+      async function* (options) {
+        entered();
+        await setTimeout(10000, undefined, options.signal ? { signal: options.signal } : {});
+        yield* textResponse('Must be cancelled by shutdown.')(options);
+      },
+    ]);
+    const { host, sessions, brief } = await setup(() => {
+      throw new Error('Final audit failed.');
+    }, model);
+    try {
+      const assignment = await sessions.create('lead', brief);
+      const delivery = assert.rejects(
+        sessions.deliver(assignment.id, {}, 'user'),
+        /Final audit failed/,
+      );
+      await ready;
+      const finishing = assert.rejects(sessions.finish(assignment.id, 'done'), AggregateError);
+      await assert.rejects(sessions.close(), (error) => {
+        assert(error instanceof AggregateError);
+        assert.equal(
+          error.errors.length,
+          1,
+          'Retirement and completion share the same cleanup failure.',
+        );
+        assert.match(error.errors[0].message, /Final audit failed/);
+        return true;
+      });
+      await Promise.all([delivery, finishing]);
+      assert.equal(host.agents.list().length, 0);
+    } finally {
+      await host.fiber.dispose();
+    }
+  },
+);

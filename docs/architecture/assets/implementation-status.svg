@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="1030" viewBox="0 0 1360 1030" role="img" aria-labelledby="title desc"><title id="title">EDH upper runtime and remaining physical integration</title><desc id="desc">Running DSH upper services, the verified recovery sequence, synthetic backend boundary, and pending physical integration. Fifty-nine runtime tests and standalone policy/gate acceptance. Unified console layout implemented.</desc><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#588578"/></marker></defs><rect width="1360" height="1030" fill="#f5f7f8"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="1030" viewBox="0 0 1360 1030" role="img" aria-labelledby="title desc"><title id="title">EDH upper runtime and remaining physical integration</title><desc id="desc">Running DSH upper services, the verified recovery sequence, synthetic backend boundary, and pending physical integration. Sixty-one runtime tests and standalone policy/gate acceptance. Unified console layout implemented.</desc><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#588578"/></marker></defs><rect width="1360" height="1030" fill="#f5f7f8"/>
 <text x="36" y="48" font-family="Arial, sans-serif" font-size="32" fill="#30434b" font-weight="700">Embodied DeepSeek Harness</text>
 <text x="36" y="80" font-family="Arial, sans-serif" font-size="21" fill="#30434b" font-weight="400">Runnable upper system / implementation boundary</text>
 <text x="1100" y="47" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">2026-09-13</text>
@@ -71,7 +71,7 @@
 <text x="936" y="789" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Delivery recovery and longer runs</text>
 <text x="936" y="816" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Long-run retention and reconciliation</text>
 <text x="936" y="843" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Unified console; fixture data</text>
-<text x="36" y="922" font-family="Arial, sans-serif" font-size="21" fill="#30434b" font-weight="700">59 runtime tests  ·  248 shared cases  ·  17 policy/gate tests  ·  97 pinned DSH files</text>
+<text x="36" y="922" font-family="Arial, sans-serif" font-size="21" fill="#30434b" font-weight="700">61 runtime tests  ·  248 shared cases  ·  17 policy/gate tests  ·  97 pinned DSH files</text>
 <text x="36" y="959" font-family="Arial, sans-serif" font-size="19" fill="#30434b" font-weight="400">TODO completion is agent-reported progress. Physical success requires accepted verification.</text>
 <text x="36" y="993" font-family="Arial, sans-serif" font-size="18" fill="#30434b" font-weight="400">pnpm demo   |   http://127.0.0.1:4317   |   All physical-looking data is explicitly synthetic.</text>
 </svg>

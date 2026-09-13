@@ -261,6 +261,15 @@ test(
         (e) => e.type === 'tool.started' && e.detail.tool === 'tasks.replan',
       )!;
       assert(replan.sequence < opened.sequence);
+      for (const role of Object.values(state.assignments).filter((a) => a.member !== 'lead')) {
+        assert.equal(role.status, 'retired');
+        assert.equal(app.host.agents.get(SessionId(role.sessionId)), undefined);
+      }
+      assert.equal(
+        app.host.agents.list().length,
+        1,
+        'Only the decision owner remains after recovery settles.',
+      );
       const lastSucceeded = state.events.find((e) => e.type === 'run.succeeded')!;
       assert(resolved[0]!.sequence < lastSucceeded.sequence);
     } finally {
@@ -371,8 +380,16 @@ test(
       await ok('planning.update', { plan, expectedVersion: 1 });
       await ok('tasks.select_goal', { goalId: 'open-cabinet' });
       await ok('execution.start', { instruction: 'Open cabinet.' });
-      await rejected('execution.pause', {}, oldVerifier);
-      await rejected('verification.check', {}, oldVerifier);
+      assert.equal(run.sessions.isLive(oldVerifier), false);
+      await assert.rejects(run.sessions.deliver(oldVerifier, {}, 'test'), /retired/);
+      // A newly created handle with an obsolete scope also lacks current-attempt authority.
+      const stale = await run.sessions.create('verifier', {
+        ...run.sessions.get(oldVerifier).brief,
+        assignment_id: randomUUID(),
+      });
+      await rejected('execution.pause', {}, stale.id);
+      await rejected('verification.check', {}, stale.id);
+      await run.sessions.retire(stale.id, 'stale-test-assignment');
       await rejected(
         'verification.submit',
         { status: 'passed', explanation: 'Stale result.' },
@@ -443,6 +460,9 @@ test(
       assert.equal(app.run.state.skillIds.length, 0);
       assert(app.run.state.events.some((e) => e.type === 'recovery.failed'));
       assert(app.store.get<{ error: string }>(`recovery:${app.run.state.recoveryId}`)!.value.error);
+      const evolver = Object.values(app.run.state.assignments).find((a) => a.member === 'evolver')!;
+      assert.equal(evolver.status, 'retired');
+      assert.equal(app.run.sessions.isLive(evolver.id), false);
     } finally {
       await app.close();
     }

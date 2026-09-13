@@ -22,3 +22,23 @@ Repeated retirement shares its completion. Identity and historical audit remain
 available; retired IDs cannot be reused or receive new work. Audit failure does not
 skip disposal, and shutdown collects cleanup errors from already retired sessions.
 This releases active session capacity, not retained history or model-context memory.
+
+
+Normal completion uses `TeamSessions.finish`: reject new messages immediately, allow
+the current native turn to receive its final tool receipt and produce final output,
+then retire at quiescence. The original turn deadline remains active while draining;
+shutdown may still cancel it. Repeated finish shares completion, including cleanup
+errors. `isLive` describes the native handle; `acceptsMessages` also excludes finishing
+assignments. Application tools permit only report receipt/replay and report inspection
+while finishing, not new domain work.
+
+Final role reports, accepted formal verdicts and settled recovery-success delivery
+with a published SKILL finish their assignments. An Evolver model failure retires its
+handle while preserving the separate learning failure. Missing-context reports and
+ordinary idle turns remain available for explicitly supplied followup context.
+
+The caller can still query and acknowledge a retired role's durable report. A final
+report arriving after its caller finishes is saved with failed delivery and no new
+recipient evidence grant; it does not reopen that caller or fail the whole task.
+Its actual final native turn may replay the report before quiescence. After disposal,
+use durable report inspection, not another native call through a retired handle.

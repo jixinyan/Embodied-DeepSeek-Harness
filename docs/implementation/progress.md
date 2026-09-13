@@ -21,7 +21,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 | Area | Current behavior |
 | --- | --- |
 | DSH runtime | Original loop, native tools/validation, model services, scoped sessions, inbox/followup, cancellation and cooperative timeout plugin |
-| Teams | YAML/ROLE.md preflight, frozen configuration, explicit model/tool bindings, independent assignment contexts; concurrent duplicate admission rejected |
+| Teams | YAML/ROLE.md preflight, frozen configuration, explicit model/tool bindings, independent assignment contexts, completion at quiescence and retained report identity; concurrent duplicate admission rejected |
 | Communication | Versioned role reports/query, configured result schemas, explicit briefs, authenticated caller identity from tool scope, delegation/send/context exchange, evidence grants, native DSH delivery and audit exports |
 | Tools | Native tool API, role exposure and owner checks; trusted custom native tools share run lifetime and activity tracking |
 | Planning/files | Original DSH TODO; versioned dependency plans, immutable executed/final criteria, registered subgoal checks, owner-selected goals and private files |
@@ -38,7 +38,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 59 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 61 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
 - 248 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -370,3 +370,36 @@ This fixes monitor handle lifetime, not context compaction or every role's retir
 Long-run context/history budgets and other completed assignments still need bounded
 lifecycle work. The host-to-worker bridge, resources/watchdog and provider acceptance
 remain pending; do not infer a runnable physical MVP from this checkpoint.
+
+
+## Completed assignment checkpoint (2026-09-13)
+
+Normal completion now closes new message/domain-tool admission without cancelling
+the final native turn. DSH can return the final receipt and output, then the existing
+retirement path exports the audit and releases the handle. Shutdown still cancels
+in-flight draining work; repeated completion/retirement share cleanup outcomes.
+The native turn deadline remains active. No replacement loop or DSH source change.
+
+Final role reports and accepted formal verdicts use this path. Recovery Evolvers
+release after a settled success delivery with a published SKILL; failed learning
+also retires its session without failing verified task completion. Missing-context
+reports remain available, and the Planner stays live for report inspection until
+shutdown. Caller query includes whether the assignment still accepts messages.
+
+A late child report to a finished parent remains stored with failed delivery; it
+neither reactivates the parent nor grants new evidence. Exact report replay is tested
+inside the author's final native turn. The caller can query and acknowledge the
+persisted report after handle disposal, and report storage remains idempotent.
+
+Acceptance: 61 runtime tests, 248 shared cases and 17 Python policy/gate tests under
+`pnpm check`. Two new tests cover normal final-output draining, repeated completion
+across 66 assignments, and shutdown/audit failure while draining. Expanded native
+role tests exercise missing context, final receipt/replay, late child reporting and
+retired-parent inspection. Multi-goal recovery verifies all non-Planner handles are
+released; obsolete live scopes still fail current-attempt authority checks.
+
+Remaining upper work: model-context budgets/compaction, bounded long-run event and
+evidence retention, abandoned/idle role policies and terminal task cleanup. The 64
+live-session and 4,000-event limits remain. Model requests, adapters and all execution
+in this acceptance are fixtures/local protocol tests; real provider integration is
+still pending. Keep the physical-worker bridge and watchdog as separate integration work.

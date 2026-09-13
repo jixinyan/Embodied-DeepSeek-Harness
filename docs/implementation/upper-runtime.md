@@ -83,15 +83,22 @@ object result. Other built-in role-result schema aliases are not bound yet.
 `insufficient_context` requires a nonempty requestedContext list. It is not final:
 the caller can use context.respond with explicit evidence, then the role submits a
 later report with the returned version. `completed`, `failed` and `cancelled` are final
-for that assignment. New work needs a fresh delegation. The decision owner uses
+for that assignment. They immediately close new message/domain-tool admission, let
+the current native turn retain its receipt and final output, then dispose the handle
+at quiescence. New work needs a fresh delegation. The decision owner uses
 `tasks.finish` / `tasks.abandon` to end its task, rather than a final role report.
 An Evolver's successful recovery report can follow SKILL publication.
 
 An exact replay using the original expectedVersion returns the same accepted receipt
-without sending the report twice. Changed final results and stale attempts are rejected.
+without sending the report twice. The author may do this in its final native turn;
+after disposal, inspect the durable report through the caller rather than invoking
+a retired handle. Changed final results and stale attempts are rejected.
 `team__query({assignmentId})` exposes the latest report and native agent status only
-to that assignment or its direct caller. It does not expose private histories/files.
+to that assignment or its direct caller. It does not expose private histories/files. `acceptingMessages` is false during
+completion and after retirement, even while a final output turn is still running.
 Reports never replace formal physical verification or alter a task's success criteria.
+A late child report to a finished caller remains durable with failed delivery. It
+neither reopens the caller nor grants new evidence into that completed assignment.
 
 Delivery distinguishes recorded, queued, settled, failed and interrupted. Settled means
 native DSH quiescence. The designated caller separately confirms a specific report ID
@@ -140,9 +147,13 @@ ends its monitor assignment; ordinary per-frame feedback should keep it availabl
 records the reason and cleanup outcome; the console projection retains retired status.
 Assignment identity and audit remain readable after native handles are released.
 This prevents frame count from consuming the live-session limit, but does not implement
-context compaction, unlimited runs or retirement of every other role assignment.
+context compaction or unlimited runs.
 Current limits remain 64 live/creating sessions per team and 4,000 run events. Retired
-metadata and audits are retained; other completed roles may still hold native handles.
+metadata and audits are retained. Final role reports and accepted formal verdicts now
+finish at quiescence. A successful Evolver is released after its recovery-success
+delivery settles and a SKILL is present; failed learning retires it separately.
+Ordinary idle roles or roles awaiting context retain their handles. The decision owner
+remains available for report inspection/acknowledgement until run shutdown.
 
 ## Multi-goal execution
 

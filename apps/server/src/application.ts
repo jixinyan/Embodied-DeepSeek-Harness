@@ -312,12 +312,20 @@ export class UpperRun {
     recovery.error = error instanceof Error ? error.message : String(error);
     this.persistRecovery(recovery);
     this.event('recovery.failed', { recoveryId: recovery.id, error: recovery.error });
+    if (recovery.evolverId && this.sessions.isLive(recovery.evolverId))
+      this.learn(recovery, this.sessions.retire(recovery.evolverId, 'learning-failed'));
   }
   private learn(recovery: RecoveryObservation, work: Promise<void>): void {
     const tracked = work
       .catch((error) => this.learningFailure(recovery, error))
       .finally(() => this.pending.delete(tracked));
     this.pending.add(tracked);
+  }
+  private finishAssignment(assignment: Assignment, reason: string): void {
+    const completion = this.sessions.finish(assignment.id, reason);
+    const recovery = this.recoveryForAssignment(assignment.id);
+    if (recovery) this.learn(recovery, completion);
+    else this.spawn(completion);
   }
   private currentRequest(): SubgoalRequest | undefined {
     return this.state.requests.findLast((r) => r.goal_id === this.goal.id);
@@ -596,8 +604,8 @@ export class UpperRun {
               logical !== 'agent.report' &&
               logical !== 'team.query' &&
               logical !== 'team.ack_report' &&
-              priorReport &&
-              priorReport.report.status !== 'insufficient_context'
+              (!this.sessions.acceptsMessages(a.id) ||
+                (priorReport && priorReport.report.status !== 'insufficient_context'))
             )
               throw new Error(
                 'Assignment has finished; delegate a fresh assignment for more work.',
@@ -734,6 +742,7 @@ export class UpperRun {
           assignmentId: target.id,
           member: target.member,
           agentStatus: this.state.assignments[target.id]!.status,
+          acceptingMessages: this.sessions.acceptsMessages(target.id),
           ...this.reports.status(target.id),
         };
       }
@@ -785,7 +794,7 @@ export class UpperRun {
           this.reports.markDelivery(record.id, {
             state: recipient === 'user' ? 'recorded' : 'queued',
           });
-          if (recipient !== 'user') {
+          if (recipient !== 'user' && this.sessions.acceptsMessages(recipient)) {
             for (const sample of samples) this.grants.get(recipient)!.add(sample.evidence.id);
             const delivery = this.sessions
               .deliver(
@@ -822,8 +831,21 @@ export class UpperRun {
                 },
               );
             this.spawn(delivery);
+          } else if (recipient !== 'user') {
+            this.reports.markDelivery(record.id, {
+              state: 'failed',
+              error: 'Recipient assignment has finished; report retained for inspection.',
+            });
+            this.event('agent.report-delivery', {
+              reportId: record.id,
+              recipient,
+              state: 'failed',
+              error: 'Recipient assignment has finished; report retained for inspection.',
+            });
           }
         }
+        if (record.report.status !== 'insufficient_context')
+          this.finishAssignment(a, 'final-role-report');
         return {
           accepted: true,
           reportId: record.id,
@@ -890,7 +912,8 @@ export class UpperRun {
       case 'context.request':
       case 'context.respond': {
         const target = this.sessions.get(s('assignmentId'));
-        if (!this.sessions.isLive(target.id)) throw new Error('Recipient assignment is retired.');
+        if (!this.sessions.acceptsMessages(target.id))
+          throw new Error('Recipient assignment is finishing or retired.');
         const targetReport = this.reports.read(target.id);
         if (targetReport && targetReport.report.status !== 'insufficient_context')
           throw new Error('Recipient assignment has finished. Delegate a fresh assignment.');
@@ -1131,6 +1154,7 @@ export class UpperRun {
             sensorImages([checked.sample]),
           ),
         );
+        this.finishAssignment(a, 'formal-verdict-submitted');
         return { result };
       }
       case 'tasks.abandon': {
@@ -1344,6 +1368,8 @@ export class UpperRun {
           },
           this.state.decisionAssignmentId,
         );
+        if (this.state.skillIds.includes(recovery.id))
+          await this.sessions.finish(recovery.evolverId, 'recovery-skill-published');
       })(),
     );
   }

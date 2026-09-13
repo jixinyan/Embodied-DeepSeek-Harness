@@ -246,6 +246,17 @@ caller and receives explicit sensor updates. A stopped boundary creates a separa
 formal-verification assignment with its own brief and boundary record; it does not
 inherit either the Planner conversation or the monitor history.
 
+A final role report closes new work admission and retires the native handle after
+its current turn reaches quiescence, preserving the receipt, output, audit and report.
+Accepted formal-verification assignments use the same completion path. Missing-context
+reports remain open. An Evolver with a published SKILL is released after its final
+success delivery settles; learning failures release the handle independently of task
+success. The decision owner remains available through run shutdown for report inspection.
+
+Retired identities are not reusable. Callers may query/acknowledge durable reports
+after native disposal. A late child report to a finished caller is retained with
+failed delivery, without reopening the caller or implicitly transferring new context.
+
 Before retry, Planner prepares the Evolver handoff and recovery record. Starting the
 experience agent must not block execution: durable events can be read later through
 explicit authorized references if the model is slow.
