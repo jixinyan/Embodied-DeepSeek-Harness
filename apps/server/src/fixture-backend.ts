@@ -2,7 +2,12 @@ import { randomUUID } from 'node:crypto';
 import type { GoalBinding } from './application.js';
 import type { ContractValidator, SubgoalRequest, ExecutionStatus } from '@edh/contracts';
 import { LifecycleValidator } from '@edh/contracts';
-import type { EmbodiedBackend, SensorSample, BackendUpdate } from '@edh/execution';
+import type {
+  EmbodiedBackend,
+  SensorSample,
+  BackendUpdate,
+  BackendResumeOptions,
+} from '@edh/execution';
 
 export type FixtureScenario =
   | 'retry-success'
@@ -164,7 +169,15 @@ export class FixtureBackend implements EmbodiedBackend {
     this.transition('pausing');
     this.transition('paused', 'verifier_pause');
   }
-  async resume(ownerId: string): Promise<void> {
+  async resume(ownerId: string, options?: BackendResumeOptions): Promise<void> {
+    options?.signal?.throwIfAborted();
+    if (
+      options &&
+      (options.executionId !== this.status?.execution_id ||
+        options.boundaryId !== this.status?.boundary_event_id ||
+        options.stateVersion !== this.status?.state_version)
+    )
+      throw new Error('Resume command targets a stale execution boundary.');
     if (this.status?.state !== 'paused' || this.request?.decision_owner_id !== ownerId)
       throw new Error('Resume requires paused execution and decision owner.');
     this.transition('running');

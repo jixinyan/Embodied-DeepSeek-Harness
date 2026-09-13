@@ -1,6 +1,7 @@
 # Upper execution boundary
 
-[backend-port.ts](src/backend-port.ts) defines the currently used EmbodiedBackend port. The server composes a nonblocking CPU fixture for job/query/budget/pause/resume/check acceptance. Python transport, action-chunk gate and shared device resource arbitration remain unimplemented.
+[backend-port.ts](src/backend-port.ts) defines the currently used EmbodiedBackend port. The server composes a nonblocking CPU fixture for job/query/budget/pause/resume/check acceptance. The standalone Python policy transport/action gate is CPU-tested. The host-to-worker
+bridge and shared device resource arbitration remain unimplemented.
 
 See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
@@ -9,8 +10,8 @@ See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 ## Asynchronous provider calls
 
 `capture` and `check` may return either a value or a Promise. Active observation,
-start, pause and resume also receive optional `BackendCallOptions` containing the
-native DSH `AbortSignal`. Implementations should forward it into network requests
+start and pause receive optional `BackendCallOptions` containing the native DSH
+`AbortSignal`. Resume requires `BackendResumeOptions`, described below. Implementations should forward it into network requests
 and cooperative provider work. Stop/close remain cleanup operations independent of
 an aborted model call. Cancellation does not establish that hardware stopped.
 
@@ -41,3 +42,49 @@ SensorSample may include admitted immutable DSH image references in `images`. Th
 Planner's perception tool result and the Verifier-to-Planner feedback use native
 image content. Return no raw bytes or arbitrary URLs in this metadata port. See the
 [image routing guide](../../../docs/implementation/model-policy-adapters.md).
+
+## Bound resume decisions
+
+The native `execution.resume` tool admits one in-flight resume decision at a time.
+It requires the current attempt, an admitted `paused` state, device confirmation,
+remaining budget and a formal result for that exact execution/boundary. A formal
+`unknown` remains unknown: the Planner may decide to continue a confirmed stopped
+job, but the harness does not convert uncertainty into success or make that decision.
+
+The provider receives `executionId`, `boundaryId`, `stateVersion` and the native
+cancellation signal in `BackendResumeOptions`, alongside the authenticated owner's
+ID. It must check that boundary before motion, reject stale requests and publish
+the resulting status before resolving. Mapping this binding to the Python action
+gate's control generation is the future worker bridge's responsibility; a state
+version is not itself a robot controller generation.
+
+The upper host records `execution.resume-requested` and accepts a `paused -> running`
+transition only while the matching decision is outstanding. Copying the owner ID
+from an earlier SubgoalRequest does not constitute a new decision. A second resume
+call cannot dispatch another command. If the command was sent but its acknowledgement
+is missing or invalid, the run fails and cleanup requests device stop. It does not
+replay the command. Actual device stop still depends on the provider acknowledgement.
+
+Example: the Verifier is checking paused boundary A while the Planner calls resume.
+The tool rejects it before contacting the backend. After A's formal result arrives,
+the Planner may explicitly call again. If the job resumes and pauses at B before the
+resume Promise resolves, B stays paused and receives its own verification round;
+a late response cannot change the host state back to running.
+
+## Provider status admission
+
+One admitted attempt binds to one execution ID. Each BackendUpdate observation must
+have the same task/goal/attempt/recovery scope as its execution. The first status is
+budget-checked even when no previous state exists. Later updates pass the shared
+lifecycle validator, using actual outstanding resume authority rather than inferring
+it from the subgoal's stored owner ID.
+
+Transport clients must reconcile ordering and duplicate versions before notifying
+this strict update port. Protocol violations fail the run and request stop; the
+last accepted status is historical evidence, not proof of current hardware state
+following a connection or protocol failure. Device/resource recovery is still a
+worker integration responsibility.
+
+Six additional upper tests cover pending formal checks, unsolicited resume, missing
+acknowledgement, concurrent commands, a newer pause during acknowledgement,
+execution/image identity and first-state budget rejection. All use CPU providers.

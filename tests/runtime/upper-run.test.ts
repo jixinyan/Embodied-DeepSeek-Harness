@@ -8,7 +8,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { setTimeout } from 'node:timers/promises';
-import type { EmbodiedBackend } from '@edh/execution';
+import type { EmbodiedBackend, BackendUpdate } from '@edh/execution';
 import { ContractValidator, type VerificationResult, type PlanDocument } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
@@ -699,6 +699,263 @@ test(
           (sample) => sample.evidence.id === rejectedEvidenceId,
         ),
       );
+    } finally {
+      await app.close();
+    }
+  },
+);
+
+async function nativeResume(app: Awaited<ReturnType<typeof setup>>) {
+  const owner = app.run.state.assignments[app.run.state.decisionAssignmentId]!;
+  return app.host.tools.execute({
+    agent: app.host.agents.get(SessionId(owner.sessionId))!,
+    callId: ToolCallId(randomUUID()),
+    name: 'execution__resume',
+    arguments: {},
+    signal: new AbortController().signal,
+  });
+}
+
+test(
+  'resume cannot reach the provider before the current paused boundary is formally checked',
+  { timeout: 15000 },
+  async () => {
+    let release!: () => void;
+    const blocked = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let checking = false;
+    let resumeCalls = 0;
+    const app = await setup('first-pass', 100, new FixtureModel(0), (backend) =>
+      backendPort(backend, {
+        async check(ids, options) {
+          if (backend.query()?.state === 'paused') {
+            checking = true;
+            await blocked;
+            options?.signal?.throwIfAborted();
+          }
+          return backend.check(ids);
+        },
+        async resume(owner, options) {
+          resumeCalls++;
+          assert.equal(options.executionId, backend.query()?.execution_id);
+          assert.equal(options.boundaryId, backend.query()?.boundary_event_id);
+          assert.equal(options.stateVersion, backend.query()?.state_version);
+          await backend.resume(owner, options);
+        },
+      }),
+    );
+    try {
+      await app.run.start();
+      await until(() => app.backend.query()?.control_steps === 1, app.run);
+      await app.run.pause();
+      await until(() => checking, app.run);
+      assert.equal((await nativeResume(app)).isError, true);
+      assert.equal(resumeCalls, 0);
+      assert.equal(app.backend.query()?.state, 'paused');
+      release();
+      await until(() => app.run.state.verdicts.length === 1, app.run);
+      await app.run.settle();
+      assert.equal((await nativeResume(app)).isError, false);
+      assert.equal(resumeCalls, 1);
+      assert.equal(app.backend.query()?.state, 'running');
+      assert.equal(
+        app.run.state.events.filter((e) => e.type === 'execution.resume-requested').length,
+        1,
+      );
+      await app.run.stop();
+    } finally {
+      release();
+      await app.close();
+    }
+  },
+);
+
+test(
+  'an unsolicited backend resume cannot borrow Planner identity from the subgoal request',
+  { timeout: 15000 },
+  async () => {
+    const app = await setup('first-pass', 100);
+    try {
+      await app.run.start();
+      await until(() => app.backend.query()?.control_steps === 1, app.run);
+      await app.run.pause();
+      await until(() => app.run.state.verdicts.length === 1, app.run);
+      await app.run.settle();
+      const pausedIndex = app.run.state.events.length;
+      // A provider knows the owner ID from the request; this is not a new Planner decision.
+      await app.backend.resume(app.run.state.requests[0]!.decision_owner_id);
+      await app.run.settle();
+      assert.equal(app.run.state.state, 'failed');
+      assert.match(app.run.state.error!, /resume_requires_owner/);
+      assert.equal(app.backend.query()?.state, 'ended');
+      assert.equal(
+        app.run.state.events
+          .slice(pausedIndex)
+          .some(
+            (e) =>
+              e.type === 'execution.updated' &&
+              (e.detail.execution as { state: string }).state === 'running',
+          ),
+        false,
+      );
+    } finally {
+      await app.close();
+    }
+  },
+);
+
+test(
+  'missing resume acknowledgement stops the run and a concurrent resume is not sent twice',
+  { timeout: 15000 },
+  async () => {
+    let release!: () => void;
+    const blocked = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let calls = 0;
+    const app = await setup('first-pass', 100, new FixtureModel(0), (backend) =>
+      backendPort(backend, {
+        async resume() {
+          calls++;
+          await blocked; /* Deliberately return without a state acknowledgement. */
+        },
+      }),
+    );
+    try {
+      await app.run.start();
+      await until(() => app.backend.query()?.control_steps === 1, app.run);
+      await app.run.pause();
+      await until(() => app.run.state.verdicts.length === 1, app.run);
+      await app.run.settle();
+      const first = nativeResume(app);
+      await until(() => calls === 1, app.run);
+      assert.equal((await nativeResume(app)).isError, true);
+      assert.equal(calls, 1);
+      release();
+      assert.equal((await first).isError, true);
+      await app.run.settle();
+      assert.equal(app.run.state.state, 'failed');
+      assert.match(app.run.state.error!, /without an admitted matching state update/);
+      assert.equal(app.backend.query()?.state, 'ended');
+    } finally {
+      release();
+      await app.close();
+    }
+  },
+);
+
+test(
+  'a pause arriving during resume acknowledgement remains paused and needs its own formal result',
+  { timeout: 15000 },
+  async () => {
+    const app = await setup('first-pass', 100, new FixtureModel(0), (backend) =>
+      backendPort(backend, {
+        async resume(owner, options) {
+          await backend.resume(owner, options);
+          await backend.pause();
+        },
+      }),
+    );
+    try {
+      await app.run.start();
+      await until(() => app.backend.query()?.control_steps === 1, app.run);
+      await app.run.pause();
+      await until(() => app.run.state.verdicts.length === 1, app.run);
+      await app.run.settle();
+      assert.equal((await nativeResume(app)).isError, false);
+      await until(() => app.run.state.verdicts.length === 2, app.run);
+      await app.run.settle();
+      assert.equal(app.backend.query()?.state, 'paused');
+      assert.equal(app.run.state.state, 'paused');
+      assert.notEqual(
+        app.run.state.verdicts[0]!.boundary_event_id,
+        app.run.state.verdicts[1]!.boundary_event_id,
+      );
+    } finally {
+      await app.close();
+    }
+  },
+);
+
+test(
+  'backend updates cannot replace an attempt execution or pair it with another task image',
+  { timeout: 15000 },
+  async () => {
+    for (const variant of ['execution', 'observation'] as const) {
+      let emit!: (update: BackendUpdate) => void;
+      let latest!: BackendUpdate;
+      const app = await setup('first-pass', 100, new FixtureModel(0), (backend) =>
+        backendPort(backend, {
+          subscribe(listener) {
+            emit = listener;
+            return backend.subscribe((update) => {
+              latest = structuredClone(update);
+              listener(update);
+            });
+          },
+        }),
+      );
+      try {
+        await app.run.start();
+        await until(() => app.backend.query()?.control_steps === 1, app.run);
+        await app.run.pause();
+        await until(() => app.run.state.verdicts.length === 1, app.run);
+        await app.run.settle();
+        const forged = structuredClone(latest);
+        if (variant === 'execution') forged.status.execution_id = randomUUID();
+        else forged.sample.evidence.task_scope.task_id = 'another-task';
+        emit(forged);
+        await app.run.settle();
+        assert.equal(app.run.state.state, 'failed');
+        assert.match(
+          app.run.state.error!,
+          variant === 'execution' ? /another execution ID/ : /observation does not belong/,
+        );
+        assert.equal(app.run.state.executions.length, 1);
+        assert.equal(app.backend.query()?.state, 'ended');
+      } finally {
+        await app.close();
+      }
+    }
+  },
+);
+
+test(
+  'the first backend status is budget-checked before it can become an accepted projection',
+  { timeout: 10000 },
+  async () => {
+    let first = true;
+    const app = await setup('first-pass', 100, new FixtureModel(0), (backend) =>
+      backendPort(backend, {
+        subscribe(listener) {
+          return backend.subscribe((update) => {
+            if (first) {
+              first = false;
+              listener({
+                ...update,
+                status: {
+                  ...update.status,
+                  control_steps: FIXTURE_GOAL.budget.max_control_steps + 1,
+                },
+              });
+            } else listener(update);
+          });
+        },
+      }),
+    );
+    try {
+      await app.run.start();
+      await until(() => terminal(app.run.state.state), app.run);
+      await app.run.settle();
+      assert.equal(app.run.state.state, 'failed');
+      assert.match(app.run.state.error!, /Initial backend state violates/);
+      assert(
+        app.run.state.executions.every(
+          (status) => status.control_steps <= FIXTURE_GOAL.budget.max_control_steps,
+        ),
+      );
+      assert.equal(app.backend.query()?.state, 'ended');
     } finally {
       await app.close();
     }

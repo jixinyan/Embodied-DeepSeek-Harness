@@ -18,6 +18,12 @@ export interface BackendCallOptions {
   /** Native DSH cancellation; providers must forward it to cooperative remote work. */
   signal?: AbortSignal;
 }
+export interface BackendResumeOptions extends BackendCallOptions {
+  /** Resume only this confirmed and formally checked control boundary. */
+  executionId: string;
+  boundaryId: string;
+  stateVersion: number;
+}
 export interface BackendCheckOptions extends BackendCallOptions {
   /** Reject the request if the worker no longer owns this stopped boundary. */
   executionId: string;
@@ -39,7 +45,7 @@ export interface EmbodiedBackend {
     options?: BackendCallOptions,
   ): Promise<SensorSample>;
   pause(options?: BackendCallOptions): Promise<void>;
-  resume(ownerId: string, options?: BackendCallOptions): Promise<void>;
+  resume(ownerId: string, options: BackendResumeOptions): Promise<void>;
   stop(): Promise<void>;
   check(
     checkIds: readonly string[],

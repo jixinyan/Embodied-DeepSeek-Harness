@@ -12,6 +12,7 @@ Snapshot: 2026-09-13. Upper runtime, model transport and standalone policy/actio
 | Typed reports, published history, caller acknowledgement and interrupted delivery | [Reports](../../harness/agent-runtime/communication/src/reports.ts), [protocol guide](upper-runtime.md) |
 | Native TODO and versioned physical task plan | [DSH TODO](../../harness/agent-runtime/planning/src/dsh/todo/index.ts), [plans](../../harness/agent-runtime/planning/src/workspace.ts) |
 | Registered subgoals, verified dependencies and owner-only goal selection | [Goals](../../harness/agent-runtime/tasks/src/goals.ts), [multi-goal guide](multi-goal-runtime.md) |
+| Verified pause and boundary-bound Planner resume with provider acknowledgement | [Execution contract](../../harness/agent-runtime/execution/README.md), [authority acceptance](../../tests/runtime/upper-run.test.ts) |
 | Async monitor, formal verification, Planner recovery and Evolver progress | [Application](../../apps/server/src/application.ts), [workflow acceptance](../../tests/runtime/upper-run.test.ts) |
 | Failure-aware SKILL publication, explicit retrieval and provenance | [Skill library](../../harness/agent-runtime/memory/src/library.ts), [recovery decision](decisions/0004-recovery-observation-and-action-admission.md) |
 | Durable domain records and historical audit | [Store](../../harness/agent-runtime/storage/src/local-store.ts), [HTTP service](../../apps/server/src/http-server.ts) |

@@ -38,7 +38,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 48 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 54 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
 - 248 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -318,3 +318,24 @@ new console media endpoint is supplied. Four tests cover capture-to-HTTP image p
 role isolation, bad metadata/rebinding and Planner image/plan/action/verdict flow.
 Current acceptance is 48 runtime tests plus the preceding shared/Python suites.
 Next integration remains the host-to-worker bridge, resource/watchdog and real providers.
+
+## Execution authority checkpoint (2026-09-13)
+
+Upper resume now requires a confirmed, admitted pause, a formal result for the exact
+boundary and the Planner's native tool call. BackendResumeOptions carry execution,
+boundary and state version. An ephemeral matching decision authorizes the transition;
+the host no longer treats a backend's knowledge of the request owner ID as permission.
+Concurrent resume calls are rejected before dispatch. Missing state acknowledgement
+fails the run and requests stop. A newer pause during acknowledgement is preserved.
+
+Provider admission also rejects a replacement execution ID for the same attempt,
+foreign observation scope and an over-budget initial status. Six new upper tests
+exercise these cases. `pnpm check` passes 54 runtime tests, the existing 248 shared
+cases and 17 Python policy/gate cases. See the
+[execution provider contract](../../harness/agent-runtime/execution/README.md).
+The preceding image-loop checkpoint `02e2fe5` also passed GitHub CI.
+
+Next: the host-to-worker bridge must map resume boundary preconditions to action-gate
+control generations, reconcile transport updates and publish actual stop state.
+Long-running monitor assignment lifetime and context retention still need refinement;
+real simulator/policy and hardware acceptance remain open.

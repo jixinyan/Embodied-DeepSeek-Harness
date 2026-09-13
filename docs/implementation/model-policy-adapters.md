@@ -187,3 +187,12 @@ Next: implement the host-to-worker bridge and resource/watchdog lifecycle, publi
 actual gate/device events to the console, then bind a chosen simulation and policy
 server. Validate real sensor attachments and live VLM tool use. Preserve mandatory
 Verifier rounds at budget boundaries and Planner-only retry/replan/resume.
+
+## Upper resume authority
+
+Before the worker bridge is connected, its upper port now checks an exact formally
+verified pause and records an explicit Planner resume decision. Providers receive
+execution/boundary/state-version preconditions and must publish the matching update
+before acknowledging. An unsolicited `running` update cannot borrow the owner ID
+from an old subgoal. See the [execution contract](../../harness/agent-runtime/execution/README.md)
+for failure, concurrency and late-acknowledgement semantics.

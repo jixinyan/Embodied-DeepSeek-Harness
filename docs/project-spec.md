@@ -39,7 +39,11 @@ WebSocket policy transport and a deterministic action gate run independently wit
 acceptance. Continue with the host-to-Python worker bridge, resource/watchdog lifecycle
 and device event publication; do not replace the DSH loop. See the
 [adapter guide and SVG](implementation/model-policy-adapters.md) for exact contracts,
-commands, examples and unimplemented integration. The unified console now displays key
+commands, examples and unimplemented integration. The execution port requires a formally checked pause and explicit Planner resume,
+with execution/boundary/state-version preconditions and a matching published backend
+update. An owner ID in a prior subgoal is not a new authorization. See the
+[execution contract](../harness/agent-runtime/execution/README.md).
+The unified console now displays key
 state without page/tab switching; further polish follows actual provider integration.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)
 and [capability map](implementation/features.md) for concrete code, checks and limits.

@@ -1,6 +1,6 @@
 # Runtime acceptance
 
-Run `pnpm test:runtime` from the repository root. Forty-eight tests exercise the actual
+Run `pnpm test:runtime` from the repository root. Fifty-four tests exercise the actual
 DSH host and native model/tool loop, isolation, cancellation, cooperative timeout,
 configuration, storage, custom-role/tool extension, recovery and HTTP/SSE history.
 The model boundary emits scripted chunks; physical observations are synthetic.
@@ -24,3 +24,8 @@ exercises the compatible adapter without evaluating a deployed VLM.
 [sensor-images.test.ts](sensor-images.test.ts) verifies that the Planner directly
 receives native capture images, plans/acts, and receives checked images with verifier
 feedback; optional role handoff remains explicit and evidence identities immutable.
+
+Upper execution acceptance also rejects resume before formal verification, unsolicited
+provider resume, missing acknowledgements, concurrent resume, execution/image identity
+mismatch and an over-budget first status. A newer paused boundary survives a late
+resume acknowledgement. These are upper authority tests with CPU providers.

@@ -91,6 +91,16 @@ export class UpperRun {
   private readonly checks = new Map<string, CheckedBoundary>();
   private readonly pending = new Set<Promise<void>>();
   private readonly formalBoundaries = new Set<string>();
+  private resumePermit:
+    | {
+        executionId: string;
+        boundaryId: string;
+        stateVersion: number;
+        ownerId: string;
+        sent: boolean;
+        observed: boolean;
+      }
+    | undefined;
   private monitorBusy = false;
   private latestMonitor: BackendUpdate | undefined;
   private version = 0;
@@ -612,6 +622,93 @@ export class UpperRun {
         };
       });
   }
+  private async resumeExecution(a: Assignment, signal: AbortSignal): Promise<object> {
+    this.owner(a);
+    if (this.resumePermit) throw new Error('A resume decision is already in flight.');
+    const request = this.currentRequest();
+    const execution = this.options.backend.query();
+    if (!request || !execution) throw new Error('No execution is available to resume.');
+    this.options.validator.parse('ExecutionStatus', execution);
+    const admitted = this.state.executions.find(
+      (row) => row.execution_id === execution.execution_id,
+    );
+    if (!admitted || !isDeepStrictEqual(admitted, execution))
+      throw new Error('Resume requires the currently admitted backend state.');
+    if (
+      execution.state !== 'paused' ||
+      !execution.device_confirmed ||
+      !execution.boundary_event_id ||
+      execution.task_scope.task_id !== request.task_id ||
+      execution.task_scope.goal_id !== request.goal_id ||
+      execution.task_scope.attempt_id !== request.attempt_id ||
+      execution.task_scope.recovery_id !== request.recovery_id
+    )
+      throw new Error('Resume requires the current attempt at a confirmed paused boundary.');
+    if (
+      !this.state.verdicts.some(
+        (result) =>
+          result.execution_id === execution.execution_id &&
+          result.boundary_event_id === execution.boundary_event_id &&
+          result.task_scope.attempt_id === request.attempt_id &&
+          ['passed', 'failed', 'unknown'].includes(result.status),
+      )
+    )
+      throw new Error('Resume must wait for formal verification of the current paused boundary.');
+    if (
+      execution.control_steps >= request.budget.max_control_steps ||
+      execution.elapsed_wall_time_s >= request.budget.max_wall_time_s
+    )
+      throw new Error('An exhausted execution budget cannot be resumed.');
+    const permit = {
+      executionId: execution.execution_id,
+      boundaryId: execution.boundary_event_id,
+      stateVersion: execution.state_version,
+      ownerId: a.sessionId,
+      sent: false,
+      observed: false,
+    };
+    this.resumePermit = permit;
+    try {
+      this.event('execution.resume-requested', {
+        assignmentId: a.id,
+        executionId: permit.executionId,
+        boundaryId: permit.boundaryId,
+        stateVersion: permit.stateVersion,
+      });
+      signal.throwIfAborted();
+      if (
+        this.closing ||
+        terminal(this.state.state) ||
+        !isDeepStrictEqual(this.options.backend.query(), execution)
+      )
+        throw new Error('Execution boundary changed before resume dispatch.');
+      permit.sent = true;
+      await this.options.backend.resume(a.sessionId, {
+        signal,
+        executionId: permit.executionId,
+        boundaryId: permit.boundaryId,
+        stateVersion: permit.stateVersion,
+      });
+      signal.throwIfAborted();
+      const current = this.options.backend.query();
+      const accepted = this.state.executions.find((row) => row.execution_id === permit.executionId);
+      if (
+        !permit.observed ||
+        !current ||
+        current.execution_id !== permit.executionId ||
+        !isDeepStrictEqual(current, accepted)
+      )
+        throw new Error('Backend resume returned without an admitted matching state update.');
+      // The backend may already have paused or ended again while its acknowledgement was in flight.
+      if (!terminal(this.state.state) && current.state === 'running') this.state.state = 'running';
+      return { execution: current };
+    } catch (error) {
+      if (permit.sent && !terminal(this.state.state)) await this.fail(error);
+      throw error;
+    } finally {
+      if (this.resumePermit === permit) this.resumePermit = undefined;
+    }
+  }
   private async invoke(
     a: Assignment,
     tool: string,
@@ -857,12 +954,7 @@ export class UpperRun {
         await this.options.backend.pause({ signal });
         return { execution: this.options.backend.query() ?? null };
       case 'execution.resume':
-        this.owner(a);
-        await this.options.backend.resume(a.sessionId, { signal });
-        signal.throwIfAborted();
-        if (this.closed || terminal(this.state.state)) throw new Error('Run ended during resume.');
-        this.state.state = 'running';
-        return { execution: this.options.backend.query()! };
+        return this.resumeExecution(a, signal);
       case 'tasks.select_goal': {
         this.owner(a);
         this.stoppedAndVerified();
@@ -1254,6 +1346,8 @@ export class UpperRun {
     };
     const request = this.state.requests.at(-1);
     if (!request) throw new Error('Unsolicited backend execution.');
+    if (!isDeepStrictEqual(update.sample.evidence.task_scope, update.status.task_scope))
+      throw new Error('Backend observation does not belong to the reported execution scope.');
     if (
       update.status.task_scope.task_id !== request.task_id ||
       update.status.task_scope.goal_id !== request.goal_id ||
@@ -1261,19 +1355,45 @@ export class UpperRun {
       update.status.task_scope.recovery_id !== request.recovery_id
     )
       throw new Error('Backend update does not match the admitted current request.');
+    const attemptExecution = this.state.executions.find(
+      (row) =>
+        row.task_scope.task_id === request.task_id &&
+        row.task_scope.attempt_id === request.attempt_id,
+    );
+    if (attemptExecution && attemptExecution.execution_id !== update.status.execution_id)
+      throw new Error('An admitted attempt is already bound to another execution ID.');
     const previous = this.state.executions.find(
       (e) => e.execution_id === update.status.execution_id,
     );
+    if (!previous) {
+      const exhausted =
+        update.status.control_steps >= request.budget.max_control_steps ||
+        update.status.elapsed_wall_time_s >= request.budget.max_wall_time_s;
+      if (
+        update.status.control_steps > request.budget.max_control_steps ||
+        (exhausted && update.status.state !== 'ended') ||
+        (!exhausted && update.status.stop_reason === 'budget_exhausted')
+      )
+        throw new Error('Initial backend state violates the admitted execution budget.');
+    }
     if (previous) {
       const errors = this.gates.execution(
         request,
         previous,
         update.status,
-        request.decision_owner_id,
+        this.resumePermit?.sent &&
+          !this.resumePermit.observed &&
+          this.resumePermit.executionId === previous.execution_id &&
+          this.resumePermit.boundaryId === previous.boundary_event_id &&
+          this.resumePermit.stateVersion === previous.state_version
+          ? this.resumePermit.ownerId
+          : undefined,
       );
       if (errors.length) throw new Error(errors.join(', '));
     }
     update.sample = this.retainSample(update.sample);
+    if (previous?.state === 'paused' && update.status.state === 'running' && this.resumePermit)
+      this.resumePermit.observed = true;
     const index = this.state.executions.findIndex(
       (e) => e.execution_id === update.status.execution_id,
     );

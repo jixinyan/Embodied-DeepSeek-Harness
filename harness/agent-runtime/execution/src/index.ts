@@ -29,6 +29,7 @@ export type {
   SensorSample,
   BackendUpdate,
   BackendCallOptions,
+  BackendResumeOptions,
   BackendCheckOptions,
   BackendCheckResult,
 } from './backend-port.js';
