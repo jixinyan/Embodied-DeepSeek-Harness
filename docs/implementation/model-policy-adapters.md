@@ -1,9 +1,10 @@
 # Model endpoints, policy transport and action admission
 
-Status: 2026-09-13. Both adapters and the action gate are executable and tested with
+Status: 2026-09-19. Both adapters and the action gate are executable and tested with
 local HTTP/WebSocket peers. No live VLM, learned VLA/VLN, simulator or hardware has
 been evaluated. The existing console still uses a CPU physical fixture. A host-to-
-Python execution worker bridge remains the next integration step.
+Python execution worker bridge remains the next integration step. Profile selection and
+compatibility preflight are documented in [physical stack profiles](physical-profiles.md).
 
 ![Model and policy boundaries](../architecture/assets/model-policy-adapters.svg)
 
@@ -28,12 +29,12 @@ from the repository root after supplying actual endpoint/model environment value
 pnpm exec tsx --tsconfig tsconfig.runtime.json examples/deployments/openai-compatible.mjs
 ```
 
-| Binding | Configuration |
-| --- | --- |
-| Local vLLM | `EDH_MODEL_BASE_URL=http://127.0.0.1:8000/v1`; `EDH_MODEL` must match the served model name |
-| Remote compatible service | `EDH_MODEL_BASE_URL` is its documented HTTPS API root; use its actual `EDH_MODEL` |
-| Authentication | Optional `EDH_MODEL_API_KEY`, loaded privately from the environment; never put keys in team YAML or commit them |
-| Console | Port 4319; starting a task makes model requests; physical execution remains synthetic |
+| Binding                   | Configuration                                                                                                   |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Local vLLM                | `EDH_MODEL_BASE_URL=http://127.0.0.1:8000/v1`; `EDH_MODEL` must match the served model name                     |
+| Remote compatible service | `EDH_MODEL_BASE_URL` is its documented HTTPS API root; use its actual `EDH_MODEL`                               |
+| Authentication            | Optional `EDH_MODEL_API_KEY`, loaded privately from the environment; never put keys in team YAML or commit them |
+| Console                   | Port 4319; starting a task makes model requests; physical execution remains synthetic                           |
 
 The endpoint must support streaming Chat Completions and function tool calls. A
 vLLM model needs its appropriate chat template and tool parser; protocol compatibility
@@ -128,13 +129,13 @@ The base contracts package imports without loading this dependency.
 is deterministic. [PolicyRollout](../../harness/physical-runtime/src/physical_harness/execution/policy_rollout.py)
 composes inference and gated dispatch. Policies never receive the device object.
 
-| Contract | Meaning |
-| --- | --- |
-| `PolicyRequest` | Subgoal instruction, observation payload/reference, execution/task/attempt identity, generation, expiry, ActionSpec and maximum actions |
-| `ActionChunk` | Actions echoing the exact request identity, observation, expiry and action-space binding |
-| `ActionSegment` | A bounded part of that chunk with its own segment ID |
-| `ActionReceipt` | Device acknowledgement of how many issued actions actually executed |
-| `StopAcknowledgement` | Generation-bound device confirmation; a confirmed stop requires a boundary ID |
+| Contract              | Meaning                                                                                                                                 |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `PolicyRequest`       | Subgoal instruction, observation payload/reference, execution/task/attempt identity, generation, expiry, ActionSpec and maximum actions |
+| `ActionChunk`         | Actions echoing the exact request identity, observation, expiry and action-space binding                                                |
+| `ActionSegment`       | A bounded part of that chunk with its own segment ID                                                                                    |
+| `ActionReceipt`       | Device acknowledgement of how many issued actions actually executed                                                                     |
+| `StopAcknowledgement` | Generation-bound device confirmation; a confirmed stop requires a boundary ID                                                           |
 
 The gate uses local monotonic time for admission. Wire UTC expiry is echoed for
 correlation; it does not rely on a remote policy server's clock. Deployment code
@@ -196,3 +197,11 @@ execution/boundary/state-version preconditions and must publish the matching upd
 before acknowledging. An unsolicited `running` update cannot borrow the owner ID
 from an old subgoal. See the [execution contract](../../harness/agent-runtime/execution/README.md)
 for failure, concurrency and late-acknowledgement semantics.
+
+## Provider profiles
+
+Use a [physical stack profile](physical-profiles.md) to bind a simulator, embodiment
+and policy without changing the DSH upper loop. The profile carries the embodiment
+observation/action contract, role-specific prompt context and policy preprocessing
+metadata. openpi's WebSocket and GR00T's ZMQ transports remain separate provider
+adapters behind the same canonical PolicyRequest/ActionChunk boundary.

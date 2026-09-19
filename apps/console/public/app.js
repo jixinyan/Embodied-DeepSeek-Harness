@@ -336,6 +336,8 @@ function renderFeed() {
           'recovery.opened',
           'recovery.resolved',
           'agent.report-acknowledged',
+          'agent.context',
+          'agent.context-usage',
           'skill.saved',
           'recovery.failed',
         ].includes(event.type);

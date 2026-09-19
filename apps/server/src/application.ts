@@ -165,6 +165,43 @@ export class UpperRun {
       options.validator,
       {
         tools: (a) => this.tools(a),
+        context: (a) => {
+          const owner = a.id === this.state.decisionAssignmentId;
+          const scope = owner
+            ? { goal_id: this.goal.id, attempt_id: `attempt-${this.state.attempt}` }
+            : a.brief.task_scope;
+          const execution = this.state.executions.findLast(
+            (e) =>
+              e.task_scope.goal_id === scope.goal_id &&
+              e.task_scope.attempt_id === scope.attempt_id,
+          );
+          // Only admitted operational state in this assignment's scope. No sensor
+          // payloads, ground truth, evidence grants or another role's conversation.
+          return {
+            scope,
+            ...(owner
+              ? {
+                  runState: this.state.state,
+                  selectedGoal: {
+                    id: this.goal.id,
+                    successContract: this.goal.successContract,
+                    budget: this.goal.budget,
+                  },
+                }
+              : {}),
+            execution: execution
+              ? {
+                  id: execution.execution_id,
+                  state: execution.state,
+                  version: execution.state_version,
+                  boundaryId: execution.boundary_event_id ?? null,
+                  deviceConfirmed: execution.device_confirmed,
+                  controlSteps: execution.control_steps,
+                  stopReason: execution.stop_reason ?? null,
+                }
+              : null,
+          };
+        },
         stream: (id, frame) => {
           const streams = (this.state.agentStreams ??= {});
           if (frame.type === 'start')

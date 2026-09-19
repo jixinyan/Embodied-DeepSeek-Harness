@@ -31,6 +31,8 @@ The executable contract is
 | `source` | `test_fixture`, `simulation` or `hardware`; each created backend must report the same source |
 | `teamFile`, `roleRoot` | Team YAML and allowed role-file root; roles and result schemas are resolved during preflight |
 | `models`, `defaultModel` | Named aliases such as `brain: { provider: 'fixture', model: 'fixture' }`; roles select an alias |
+| `physicalProfile`, `physicalProviders` | Immutable stack configuration and installed adapter validators; see [physical profiles](physical-profiles.md) |
+| `contextManagement` | Optional native DSH compaction/measurement policy; automatic mode requires adapter-declared model capacity; see [context management](context-management.md) |
 | `adapters` | Original DSH `LlmAdapter` bindings, registered by provider name; keep credentials inside trusted adapter setup |
 | `tasks` | Task IDs mapped to public labels/instructions, immutable final goals, optional allowed subgoal checks/predefined goals, and backend factories |
 | `additionalTools` | Logical tool IDs mapped to native DSH tool factories; roles opt in through their tool lists |

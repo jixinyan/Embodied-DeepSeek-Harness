@@ -13,7 +13,10 @@ Runtime records live under `.runs/console-demo` by default and are not public so
 [team](../../harness/agent-runtime/teams/src/loader.ts),
 [UpperRun](../../apps/server/src/application.ts), local store and backend.
 TeamSessions creates a neutral-host DSH session for each fresh delegation.
-Only explicit InvocationBriefs and delivered messages enter that session.
+Explicit InvocationBriefs, delivered messages and scoped tool results enter that session.
+When [context management](context-management.md) is enabled, a native DSH contributor
+also refreshes scoped authoritative assignment and operational facts; it shares no
+other role conversation, private files or implicit evidence.
 The same role may be instantiated repeatedly without sharing histories. A continuing
 assignment receives explicit DSH followup messages in its own context.
 

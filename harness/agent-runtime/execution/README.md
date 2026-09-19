@@ -95,3 +95,10 @@ worker integration responsibility.
 Six additional upper tests cover pending formal checks, unsolicited resume, missing
 acknowledgement, concurrent commands, a newer pause during acknowledgement,
 execution/image identity and first-state budget rejection. All use CPU providers.
+
+
+Profile configuration is resolved before provider allocation. The shared schema and
+[profile guide](../../../docs/implementation/physical-profiles.md) define the exact
+embodiment action/observation and checkpoint mapping boundary. Config-only switching
+requires installed adapters with synchronous validation; it does not imply a running
+simulator or checkpoint compatibility.

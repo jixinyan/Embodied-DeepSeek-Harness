@@ -10,7 +10,7 @@ import { LocalStore, SessionAudits } from '@edh/storage';
 import { FixtureBackend } from '../../apps/server/src/fixture-backend.js';
 import { createDemoDeployment } from '../../apps/server/src/demo-deployment.js';
 import { startServer } from '../../apps/server/src/http-server.js';
-import type { ServerDeployment } from '../../apps/server/src/deployment.js';
+import { prepareDeployment, type ServerDeployment } from '../../apps/server/src/deployment.js';
 
 async function inputs() {
   const validator = new ContractValidator(
@@ -290,3 +290,190 @@ test(
     }
   },
 );
+
+test('context policy is frozen into deployment identity and native validation rejects invalid budgets', async () => {
+  const input = await inputs();
+  try {
+    const policy = { compaction: { auto: false, thresholdRatio: 0.7 } };
+    const original = prepareDeployment(input.deployment, input.validator);
+    const prepared = prepareDeployment(
+      { ...input.deployment, contextManagement: policy },
+      input.validator,
+    );
+    policy.compaction.thresholdRatio = 0.9;
+    assert.equal(prepared.contextManagement?.compaction?.thresholdRatio, 0.7);
+    assert.notEqual(prepared.digest, original.digest);
+    assert(Object.isFrozen(prepared.contextManagement));
+    assert.throws(
+      () =>
+        prepareDeployment(
+          {
+            ...input.deployment,
+            contextManagement: { compaction: { thresholdRatio: 0.1, retainRatio: 0.5 } },
+          },
+          input.validator,
+        ),
+      /retain|threshold/,
+    );
+  } finally {
+    await rm(input.dataDirectory, { recursive: true, force: true });
+  }
+});
+
+test('automatic compaction requires declared model capacity before opening run history', async () => {
+  const input = await inputs();
+  try {
+    await assert.rejects(
+      startServer({
+        ...input,
+        deployment: {
+          ...input.deployment,
+          contextManagement: {},
+        },
+      }),
+      /requires contextWindow/,
+    );
+    assert.deepEqual(await readdir(input.dataDirectory), []);
+    const server = await startServer({
+      ...input,
+      deployment: {
+        ...input.deployment,
+        contextManagement: { compaction: { auto: false } },
+      },
+    });
+    try {
+      const config = await (await fetch(server.url + '/api/config')).json();
+      assert.equal(config.contextManagement.compaction.auto, false);
+      const response = await post(server.url, 'first-pass');
+      assert.equal(response.status, 201);
+      const { runId } = await response.json();
+      await until(
+        async () =>
+          (await (await fetch(`${server.url}/api/runs/${runId}`)).json()).state === 'succeeded',
+      );
+      await until(async () =>
+        (await (await fetch(`${server.url}/api/runs/${runId}`)).json()).events.some(
+          (event: { type: string }) => event.type === 'agent.context-usage',
+        ),
+      );
+      const run = await (await fetch(`${server.url}/api/runs/${runId}`)).json();
+      assert.equal(run.verdicts.at(-1).status, 'passed');
+      const usage = run.events.find(
+        (event: { type: string }) => event.type === 'agent.context-usage',
+      );
+      assert(usage.detail.estimatedTokens > 0);
+      assert.equal(usage.detail.contextWindow, null);
+    } finally {
+      await server.close();
+    }
+  } finally {
+    await rm(input.dataDirectory, { recursive: true, force: true });
+  }
+});
+
+test(
+  'physical profiles reach scoped prompts, backend factories and historical config without changing the Agent loop',
+  { timeout: 20000 },
+  async () => {
+    const { fixtureProfile } = await import('./profile-fixture.js');
+    const input = await inputs();
+    let priorDigest: string | undefined;
+    try {
+      for (const id of ['fixture-arm', 'fixture-mobile']) {
+        const profile = fixtureProfile(id);
+        profile.rolePromptAdditions = { lead: 'Use fixture evidence only.' };
+        let received: unknown;
+        const physicalProviders = {
+          simulations: { 'fixture-sim': () => {} },
+          policies: { 'fixture-policy': () => {} },
+        };
+        const server = await startServer({
+          ...input,
+          deployment: {
+            ...input.deployment,
+            physicalProfile: profile,
+            physicalProviders,
+            tasks: {
+              'first-pass': {
+                ...input.deployment.tasks['first-pass']!,
+                createBackend: (options) => {
+                  received = options.profile;
+                  assert(Object.isFrozen(options.profile));
+                  return new FixtureBackend(input.validator, 'first-pass', 20);
+                },
+              },
+            },
+          },
+        });
+        try {
+          profile.embodiment.promptContext = 'Mutated after startup';
+          const config = await (await fetch(server.url + '/api/config')).json();
+          assert.equal(config.physicalProfile.embodiment.id, id);
+          assert.match(config.roles.lead.instructions, new RegExp(id));
+          assert.doesNotMatch(config.roles.verifier.instructions, /Use fixture evidence only/);
+          assert(!JSON.stringify(config).includes('physicalProviders'));
+          if (priorDigest) assert.notEqual(config.deploymentDigest, priorDigest);
+          priorDigest = config.deploymentDigest;
+          const response = await post(server.url, 'first-pass');
+          assert.equal(response.status, 201);
+          const { runId } = await response.json();
+          await until(
+            async () =>
+              (await (await fetch(`${server.url}/api/runs/${runId}`)).json()).state === 'succeeded',
+          );
+          const state = await (await fetch(`${server.url}/api/runs/${runId}`)).json();
+          assert.deepEqual(received, config.physicalProfile);
+          assert.deepEqual(state.configuration.physicalProfile, config.physicalProfile);
+          assert.equal(state.verdicts.at(-1).status, 'passed');
+        } finally {
+          await server.close();
+        }
+      }
+    } finally {
+      await rm(input.dataDirectory, { recursive: true, force: true });
+    }
+  },
+);
+
+test('missing or incompatible physical provider bindings reject before opening history or allocating a backend', async () => {
+  const { fixtureProfile } = await import('./profile-fixture.js');
+  const input = await inputs();
+  let created = false;
+  const deployment = {
+    ...input.deployment,
+    physicalProfile: fixtureProfile(),
+    tasks: {
+      'first-pass': {
+        ...input.deployment.tasks['first-pass']!,
+        createBackend: () => {
+          created = true;
+          return new FixtureBackend(input.validator, 'first-pass');
+        },
+      },
+    },
+  };
+  try {
+    await assert.rejects(startServer({ ...input, deployment }), /registered simulation and policy/);
+    await assert.rejects(
+      startServer({
+        ...input,
+        deployment: {
+          ...deployment,
+          physicalProviders: {
+            simulations: { 'fixture-sim': () => {} },
+            policies: {
+              'fixture-policy': () => {
+                throw new Error('Unsupported checkpoint transform');
+              },
+            },
+          },
+        },
+      }),
+      /Unsupported checkpoint transform/,
+    );
+    assert.equal(created, false);
+    assert.deepEqual(await readdir(input.dataDirectory), []);
+  } finally {
+    await rm(input.dataDirectory, { recursive: true, force: true });
+  }
+});

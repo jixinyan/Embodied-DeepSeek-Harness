@@ -783,6 +783,89 @@
         "device_confirmed": true,
         "boundary_id": "boundary1"
       }
+    },
+    "physical_profile": {
+      "contract": "PhysicalRuntimeProfile",
+      "value": {
+        "schemaVersion": "edh.physical-profile.v1",
+        "simulation": {
+          "repository": "https://example.invalid/fixture",
+          "release": "test",
+          "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "supportedEmbodiments": [
+            "fixture-arm"
+          ],
+          "config": {},
+          "id": "scene",
+          "provider": "fixture-sim",
+          "taskAdapters": [
+            "cup"
+          ]
+        },
+        "embodiment": {
+          "id": "fixture-arm",
+          "family": "robot_arm",
+          "actionSpec": {
+            "schema_version": "physical.action_spec.v1",
+            "embodiment_id": "fixture-arm",
+            "version": "v1",
+            "coordinate_frame": "joint",
+            "control_mode": "joint_position",
+            "frequency_hz": 10,
+            "channels": [
+              {
+                "name": "joint",
+                "quantity": "angular",
+                "unit": "radian",
+                "minimum": -1,
+                "maximum": 1
+              }
+            ]
+          },
+          "observationChannels": [
+            "front-rgb"
+          ],
+          "requiredTools": [],
+          "promptContext": "Synthetic fixture only"
+        },
+        "policy": {
+          "repository": "https://example.invalid/fixture",
+          "release": "test",
+          "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "supportedEmbodiments": [
+            "fixture-arm"
+          ],
+          "config": {},
+          "id": "policy",
+          "provider": "fixture-policy",
+          "modelFamily": "synthetic",
+          "transport": "custom",
+          "acceptedInstruction": "subgoal",
+          "actionSpec": {
+            "schema_version": "physical.action_spec.v1",
+            "embodiment_id": "fixture-arm",
+            "version": "v1",
+            "coordinate_frame": "joint",
+            "control_mode": "joint_position",
+            "frequency_hz": 10,
+            "channels": [
+              {
+                "name": "joint",
+                "quantity": "angular",
+                "unit": "radian",
+                "minimum": -1,
+                "maximum": 1
+              }
+            ]
+          },
+          "checkpointRef": "fixture://script",
+          "normalizationRef": "none",
+          "observationMapping": {
+            "image": "front-rgb"
+          },
+          "actionTransform": "identity-v1"
+        }
+      }
     }
   },
   "cases": [
@@ -1814,6 +1897,96 @@
         {
           "op": "remove",
           "path": "/boundary_id"
+        }
+      ]
+    },
+    {
+      "name": "synthetic profile wire shape valid",
+      "base": "physical_profile",
+      "valid": true,
+      "patches": []
+    },
+    {
+      "name": "profile rejects checkpoint placeholder",
+      "base": "physical_profile",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/policy/checkpointRef",
+          "value": "REQUIRED"
+        }
+      ]
+    },
+    {
+      "name": "profile rejects missing normalization",
+      "base": "physical_profile",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/policy/normalizationRef",
+          "value": ""
+        }
+      ]
+    },
+    {
+      "name": "profile rejects mutable source branch",
+      "base": "physical_profile",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/simulation/revision",
+          "value": "main"
+        }
+      ]
+    },
+    {
+      "name": "profile rejects task-only instruction",
+      "base": "physical_profile",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/policy/acceptedInstruction",
+          "value": "task"
+        }
+      ]
+    },
+    {
+      "name": "profile rejects zero action frequency",
+      "base": "physical_profile",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/policy/actionSpec/frequency_hz",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "name": "profile rejects empty observation mapping",
+      "base": "physical_profile",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/policy/observationMapping",
+          "value": {}
+        }
+      ]
+    },
+    {
+      "name": "profile rejects unknown profile field",
+      "base": "physical_profile",
+      "valid": false,
+      "patches": [
+        {
+          "op": "add",
+          "path": "/unknown",
+          "value": true
         }
       ]
     }

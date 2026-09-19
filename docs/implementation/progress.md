@@ -18,33 +18,34 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 
 ## Implemented and exercised
 
-| Area | Current behavior |
-| --- | --- |
-| DSH runtime | Original loop, native tools/validation, model services, scoped sessions, inbox/followup, cancellation and cooperative timeout plugin |
-| Teams | YAML/ROLE.md preflight, frozen configuration, explicit model/tool bindings, independent assignment contexts, completion at quiescence and retained report identity; concurrent duplicate admission rejected |
-| Communication | Versioned role reports/query, configured result schemas, explicit briefs, authenticated caller identity from tool scope, delegation/send/context exchange, evidence grants, native DSH delivery and audit exports |
-| Tools | Native tool API, role exposure and owner checks; trusted custom native tools share run lifetime and activity tracking |
-| Planning/files | Original DSH TODO; versioned dependency plans, immutable executed/final criteria, registered subgoal checks, owner-selected goals and private files |
-| Execution boundary | Replaceable EmbodiedBackend port, nonblocking fixture jobs, budgets, pause/confirmed fixture stop and owner-only resume |
-| Verification | One independent monitor assignment per running segment, cancellation/retirement at pause/end and fresh mandatory formal verification at execution boundaries; unknown cannot become success |
-| Recovery | Formal failure followed by Planner replan/retry opens one recovery and Evolver; explicit progress batches continue until original-goal success |
-| Experience | Versioned SKILL export/search/load; failure signals, possible causes, avoid rules, success/verification guidance and provenance; fixture skills labeled and separated |
-| Persistence | Single-writer CAS journal, fsync, integrity checks, torn-tail recovery, separate immutable events and run projections; read-only historical session audits |
-| Deployment assembly | Explicit task presets, native DSH model aliases/adapters, tools and backend factories; preflight, source checks, configuration-bound requests and historical snapshots |
-| Server/console | Local HTTP/SSE, request admission deduplication, one active run, reconnect snapshots, history/restart interruption, output/tool/TODO/brief/recovery inspection |
+| Area                | Current behavior                                                                                                                                                                                                  |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Context management  | Opt-in native compaction/token estimates, embodied summaries, scoped authoritative context and audited maintenance                                                                                                |
+| DSH runtime         | Original loop, native tools/validation, model services, scoped sessions, inbox/followup, cancellation and cooperative timeout plugin                                                                              |
+| Teams               | YAML/ROLE.md preflight, frozen configuration, explicit model/tool bindings, independent assignment contexts, completion at quiescence and retained report identity; concurrent duplicate admission rejected       |
+| Communication       | Versioned role reports/query, configured result schemas, explicit briefs, authenticated caller identity from tool scope, delegation/send/context exchange, evidence grants, native DSH delivery and audit exports |
+| Tools               | Native tool API, role exposure and owner checks; trusted custom native tools share run lifetime and activity tracking                                                                                             |
+| Planning/files      | Original DSH TODO; versioned dependency plans, immutable executed/final criteria, registered subgoal checks, owner-selected goals and private files                                                               |
+| Execution boundary  | Replaceable EmbodiedBackend port, nonblocking fixture jobs, budgets, pause/confirmed fixture stop and owner-only resume                                                                                           |
+| Verification        | One independent monitor assignment per running segment, cancellation/retirement at pause/end and fresh mandatory formal verification at execution boundaries; unknown cannot become success                       |
+| Recovery            | Formal failure followed by Planner replan/retry opens one recovery and Evolver; explicit progress batches continue until original-goal success                                                                    |
+| Experience          | Versioned SKILL export/search/load; failure signals, possible causes, avoid rules, success/verification guidance and provenance; fixture skills labeled and separated                                             |
+| Persistence         | Single-writer CAS journal, fsync, integrity checks, torn-tail recovery, separate immutable events and run projections; read-only historical session audits                                                        |
+| Deployment assembly | Explicit task presets, native DSH model aliases/adapters, tools and backend factories; preflight, source checks, configuration-bound requests and historical snapshots                                            |
+| Server/console      | Local HTTP/SSE, request admission deduplication, one active run, reconnect snapshots, history/restart interruption, output/tool/TODO/brief/recovery inspection                                                    |
 
 ## Acceptance and limits
 
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 61 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 72 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
-- 248 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
+- 256 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
   plus non-JSON rejection tests; generated contract types match the schema.
 - 17 Python policy/action-gate tests use real localhost WebSockets and CPU devices.
-- 97 pinned DSH source files and 20 referenced module bindings verified.
+- 122 pinned DSH source files and 25 referenced module bindings verified.
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
@@ -54,21 +55,22 @@ arbitration/watchdog and real device acknowledgement. Model HTTP transport, poli
 WebSocket transport and interruptible action admission are now locally exercised. The upper runner
 coordinates plan-selected subgoals and one observing recovery chain at a time.
 Concurrent physical subgoals, nested independent recovery chains, distributed delivery
-guarantees, resumable DSH sessions, long-horizon retention/compaction and multi-user hosting remain open.
+guarantees, resumable DSH sessions, long-horizon evidence/event retention and multi-user hosting remain open. Native model-context
+compaction is opt-in; image selection, HTTP overflow classification and live summary evaluation remain open.
 Native delivery completion means session quiescence, not exactly-once business execution.
 Cooperative cancellation cannot forcibly stop an uncooperative external device/tool.
 
 ## Step status and next implementation sequence
 
-| Step | Status in this checkout |
-| --- | --- |
-| 00–01 | DSH integration and shared contract acceptance complete |
+| Step  | Status in this checkout                                                                                                                                         |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 00–01 | DSH integration and shared contract acceptance complete                                                                                                         |
 | 02–05 | Upper configuration, roles, explicit handoff, plans/files implemented; role result schemas now bind to native DSH validation; distributed delivery remains open |
-| 06–07 | Upper port, CPU fixture and standalone action gate implemented; worker/resources/perception providers pending |
-| 08–10 | Upper verification/recovery/experience loop exercised with fixtures; actual provider evidence still required |
-| 11 | Recovery and custom-role CPU scenarios pass; full physical-provider replacement scenario remains open |
-| 12 | Unified debugging console implemented and browser-checked with CPU fixtures |
-| 13–16 | Real simulation, release/transfer evaluation and hardware not started |
+| 06–07 | Upper port, CPU fixture and standalone action gate implemented; worker/resources/perception providers pending                                                   |
+| 08–10 | Upper verification/recovery/experience loop exercised with fixtures; actual provider evidence still required                                                    |
+| 11    | Recovery and custom-role CPU scenarios pass; full physical-provider replacement scenario remains open                                                           |
+| 12    | Unified debugging console implemented and browser-checked with CPU fixtures                                                                                     |
+| 13–16 | Real simulation, release/transfer evaluation and hardware not started                                                                                           |
 
 1. Connect the implemented policy client/action gate to an owned Python worker and
    the upper EmbodiedBackend port. Add resource/watchdog lifecycle and state events.
@@ -145,7 +147,6 @@ scenario selector exposes this fixture without changing the provisional layout.
 
 Validation: `pnpm check` passes with 30 runtime tests, 230 shared TS/Python cases,
 93 pinned DSH files, strict TypeScript, formatting, Python and document checks.
-
 
 ## Normal-speed audit regression and fix (2026-09-09)
 
@@ -225,7 +226,6 @@ late observation after stop, and stale verification after boundary replacement.
 The runtime suite now contains 33 tests. Remaining priorities include deployable
 model/backend assembly, storage retention and recovery, and real provider transport.
 
-
 ## Configurable local deployment checkpoint (2026-09-12)
 
 `startServer` now accepts explicit ServerDeployment bindings. CPU fixtures are supplied
@@ -253,7 +253,6 @@ bind a live DSH model only when an explicit provider configuration is available.
 The server still admits configured task presets, one active run, and one observing
 recovery chain. It does not yet accept unrestricted mission text or supply live model,
 Python transport, camera rendering, policy, simulator or hardware providers.
-
 
 ## Restart and shutdown checkpoint (2026-09-13)
 
@@ -340,7 +339,6 @@ control generations, reconcile transport updates and publish actual stop state.
 Long-running monitor assignment lifetime and context retention still need refinement;
 real simulator/policy and hardware acceptance remain open.
 
-
 ## Monitor lifetime checkpoint (2026-09-13)
 
 Successive frames now continue one independent monitoring assignment through native
@@ -370,7 +368,6 @@ This fixes monitor handle lifetime, not context compaction or every role's retir
 Long-run context/history budgets and other completed assignments still need bounded
 lifecycle work. The host-to-worker bridge, resources/watchdog and provider acceptance
 remain pending; do not infer a runnable physical MVP from this checkpoint.
-
 
 ## Completed assignment checkpoint (2026-09-13)
 
@@ -403,3 +400,70 @@ evidence retention, abandoned/idle role policies and terminal task cleanup. The 
 live-session and 4,000-event limits remain. Model requests, adapters and all execution
 in this acceptance are fixtures/local protocol tests; real provider integration is
 still pending. Keep the physical-worker bridge and watchdog as separate integration work.
+
+## Native context management checkpoint (2026-09-14)
+
+The host now optionally mounts absorbed DSH token measurement, basic compaction and
+text pruning. The sole native behavior patch is the embodied summary instruction;
+loop, transactional replacement, span balancing and cancellation remain upstream.
+Deployment policy is immutable and public; automatic mode preflights model capacity
+before opening run history. Compaction/usage events appear in the existing console feed.
+
+Native dynamic context refresh restores assignment criteria/limits and scoped admitted
+execution state after lossy summaries. Only the decision owner gets the selected goal
+and current run state. No other role's conversation, private file or implicit evidence
+is shared. Six added tests cover compaction failures/cancellation/continuation, dynamic
+context restoration, configuration identity and a completed metered CPU server run.
+See [context management](context-management.md) for exact configuration and limits.
+
+An initial full run exposed an SSE connection reset under concurrent test load.
+Socket tracing established that fetch reused a pooled connection after the server
+idle timeout; no SSE request reached the route. The test now owns a dedicated event
+stream connection and drains ordinary responses. It does not retry an uncertain
+command. The full 72-test runtime suite passes with the regular concurrency setting.
+Remaining work includes HTTP overflow classification, bounded visual/context/evidence
+retention, idle/terminal role cleanup and live VLM evaluation. Physical workers and
+providers are still pending.
+
+## Provider configuration requirements (2026-09-19)
+
+The upper system is now provider-independent at the profile boundary. `resolvePhysicalRuntimeProfile` validates immutable simulator, embodiment and policy metadata before allocation; role prompt context is injected during team preflight. See [physical profiles](physical-profiles.md). Upcoming simulation profiles target the
+latest stable BEHAVIOR-1K, RoboCasa and RoboTwin releases, pinned to immutable source
+revisions after an official release audit. R1Pro and arm-focused configurations are
+separate embodiment selections, with capability-specific role context and tools.
+Do not infer embodiment from simulator name or silently enable navigation tools.
+
+Policy profiles prioritize pi0.5/openpi and GR00T, including fine-tuned checkpoints.
+Checkpoint, normalization, camera/state mapping and action conventions must travel
+together. Native transports are adapter-specific; arbitrary policy support means an
+extensible adapter interface, not that one WebSocket JSON protocol fits every server.
+All resulting actions must continue through the interruptible action-admission layer.
+Configuration-only switching applies to installed compatible adapters and validated
+profiles; it must reject missing providers or incompatible embodiment/action bindings.
+
+
+## Profile acceptance checkpoint (2026-09-19)
+
+Simulation/embodiment/policy profile schemas now share the contract source. Resolution
+rejects placeholders, missing normalization or mappings, unsupported declared
+embodiments and differing canonical ActionSpecs. Installed provider validators must
+accept SDK-specific settings before any backend allocation or history mutation. No
+real robot action dimensions or model compatibility are guessed from release names.
+
+The snapshot reaches scoped role prompt additions, the backend factory and public/
+historical deployment identity. Three profile tests and two server tests prove
+mismatch rejection, member isolation, immutable snapshots and two synthetic config
+selections through a completed DSH task. Eight new shared shape cases pass in both
+languages. Official release references and actual remaining integrations are in the
+[profile guide](physical-profiles.md); no real provider is marked supported.
+
+Acceptance: full `pnpm check` passes with 72 runtime tests, followed by a passing
+shared-contract rerun after adding the profile shape fixtures (256 shared cases total,
+plus non-JSON cases and 17 Python policy/gate tests). 122 pinned DSH source files and
+25 referenced module bindings pass provenance checks. SVGs are English; the profile
+diagram was rendered and visually checked. No live VLM or robot was evaluated.
+
+Next upper work: canonical HTTP context-overflow handling and bounded image history,
+then long-run evidence/events, idle-role and terminal-run cleanup. Real providers
+remain a separate implementation gate, with Action Gate mandatory between policy
+inference and execution. The main goal is still open.

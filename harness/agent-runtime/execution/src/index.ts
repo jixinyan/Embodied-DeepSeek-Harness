@@ -33,3 +33,14 @@ export type {
   BackendCheckOptions,
   BackendCheckResult,
 } from './backend-port.js';
+
+export {
+  resolvePhysicalRuntimeProfile,
+  validatePhysicalProviderBindings,
+  type PhysicalProfileValidators,
+  type PhysicalRuntimeProfile,
+  type ResolvedPhysicalRuntimeProfile,
+  type SimulationProfile,
+  type EmbodimentProfile,
+  type PolicyProfile,
+} from './profiles.js';

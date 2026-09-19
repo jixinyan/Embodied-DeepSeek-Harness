@@ -45,6 +45,10 @@ update. An owner ID in a prior subgoal is not a new authorization. See the
 [execution contract](../harness/agent-runtime/execution/README.md).
 The unified console now displays key
 state without page/tab switching; further polish follows actual provider integration.
+Native DSH [context management](implementation/context-management.md) is available
+by explicit deployment policy, with scoped authoritative state after compaction.
+[Physical profiles](implementation/physical-profiles.md) bind declared simulator,
+embodiment, policy mappings and role context; installed adapter validation is required.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)
 and [capability map](implementation/features.md) for concrete code, checks and limits.
 Do not install the simulator/GPU stack merely to run the upper acceptance suite.

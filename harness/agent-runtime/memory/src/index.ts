@@ -1,4 +1,4 @@
-// Architecture contract only. No runtime implementation.
+// Runtime memory exports and interfaces for provider extensions.
 import type { EvidenceRef, SkillMetadata } from '@edh/contracts';
 export interface SkillBundle {
   readonly metadata: SkillMetadata;
@@ -19,3 +19,9 @@ export interface EvidenceReader {
 }
 
 export { SkillLibrary } from './library.js';
+
+export {
+  installContextManagement,
+  contextManagementOptions,
+  type ContextManagementOptions,
+} from './context.js';

@@ -36,7 +36,11 @@ export type PhysicalContract =
   | ActionChunk
   | ActionReceipt
   | StopAcknowledgement
-  | ActionSegment;
+  | ActionSegment
+  | SimulationProfile
+  | EmbodimentProfile
+  | PolicyProfile
+  | PhysicalRuntimeProfile;
 export type SuccessContract =
   | {
       id: string;
@@ -524,6 +528,76 @@ export interface ActionSegment {
   actions: [[number, ...number[]], ...[number, ...number[]][]];
   segment_id: string;
 }
+export interface SimulationProfile {
+  id: string;
+  provider: string;
+  repository: string;
+  release: string;
+  revision: string;
+  /**
+   * @minItems 1
+   * @maxItems 256
+   */
+  supportedEmbodiments: [string, ...string[]];
+  /**
+   * @minItems 1
+   * @maxItems 256
+   */
+  taskAdapters: [string, ...string[]];
+  config: {
+    [k: string]: unknown;
+  };
+}
+export interface EmbodimentProfile {
+  id: string;
+  family: "mobile_manipulator" | "robot_arm" | "humanoid" | "custom";
+  actionSpec: ActionSpec;
+  /**
+   * @minItems 1
+   * @maxItems 256
+   */
+  observationChannels: [string, ...string[]];
+  /**
+   * @minItems 0
+   * @maxItems 256
+   */
+  requiredTools: string[];
+  promptContext: string;
+}
+export interface PolicyProfile {
+  id: string;
+  provider: string;
+  repository: string;
+  release: string;
+  revision: string;
+  modelFamily: string;
+  transport: string;
+  /**
+   * @minItems 1
+   * @maxItems 256
+   */
+  supportedEmbodiments: [string, ...string[]];
+  acceptedInstruction: "subgoal";
+  actionSpec: ActionSpec;
+  checkpointRef: string;
+  normalizationRef: string;
+  observationMapping: {
+    [k: string]: string;
+  };
+  actionTransform: string;
+  config: {
+    [k: string]: unknown;
+  };
+}
+export interface PhysicalRuntimeProfile {
+  schemaVersion: "edh.physical-profile.v1";
+  simulation: SimulationProfile;
+  embodiment: EmbodimentProfile;
+  policy: PolicyProfile;
+  rolePromptAdditions?: {
+    [k: string]: string;
+  };
+}
 
 export interface ContractTypes {
   TaskScope: TaskScope;
@@ -559,4 +633,8 @@ export interface ContractTypes {
   ActionReceipt: ActionReceipt;
   StopAcknowledgement: StopAcknowledgement;
   ActionSegment: ActionSegment;
+  SimulationProfile: SimulationProfile;
+  EmbodimentProfile: EmbodimentProfile;
+  PolicyProfile: PolicyProfile;
+  PhysicalRuntimeProfile: PhysicalRuntimeProfile;
 }

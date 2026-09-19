@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { get, type IncomingMessage } from 'node:http';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { AssignmentReports, type Assignment } from '@edh/communication';
@@ -9,6 +10,12 @@ import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import { startDemoServer } from '../../apps/server/src/http-server.js';
 import { RunHistory, type RunState } from '@edh/tasks';
+
+async function responseStatus(response: Response): Promise<number> {
+  // Drain even rejected responses before asking the pool for a persistent SSE socket.
+  await response.arrayBuffer();
+  return response.status;
+}
 
 test(
   'console API runs DSH, rejects conflicting admission, replays request IDs, reconnects SSE and preserves history',
@@ -24,19 +31,19 @@ test(
         body: JSON.stringify(data),
       });
     try {
-      assert.equal((await fetch(server.url)).status, 200);
+      assert.equal(await responseStatus(await fetch(server.url)), 200);
       const config = await (await fetch(server.url + '/api/config')).json();
       assert.equal(config.physicalRuntime, 'not_connected');
       assert(config.scenarios.includes('multi-goal-recovery'));
       assert.equal(config.scenarioGoals['multi-goal-recovery'].id, 'store-cup');
       assert.equal(
-        (
+        await responseStatus(
           await post(
             '/api/runs',
             { scenario: 'retry-success', requestId: randomUUID() },
             { Origin: 'http://foreign.invalid' },
-          )
-        ).status,
+          ),
+        ),
         403,
       );
       const requestId = randomUUID();
@@ -47,18 +54,40 @@ test(
         await post('/api/runs', { scenario: 'retry-success', requestId })
       ).json();
       assert.equal(replay.runId, runId);
-      assert.equal((await post('/api/runs', { scenario: 'unknown', requestId })).status, 409);
       assert.equal(
-        (await post('/api/runs', { scenario: 'first-pass', requestId: randomUUID() })).status,
+        await responseStatus(await post('/api/runs', { scenario: 'unknown', requestId })),
         409,
       );
-      const events = await fetch(`${server.url}/api/runs/${runId}/events`, {
-        headers: { 'Last-Event-ID': '1' },
+      assert.equal(
+        await responseStatus(
+          await post('/api/runs', { scenario: 'first-pass', requestId: randomUUID() }),
+        ),
+        409,
+      );
+      // Event streams own a connection. Avoid racing a pooled idle HTTP socket's
+      // expiry while synchronous fixture persistence stalls the test event loop.
+      const events = await new Promise<IncomingMessage>((accept, reject) => {
+        const request = get(
+          `${server.url}/api/runs/${runId}/events`,
+          {
+            agent: false,
+            headers: { 'Last-Event-ID': '1' },
+          },
+          accept,
+        );
+        request.on('error', reject);
       });
-      const reader = events.body!.getReader();
-      const first = await reader.read();
-      assert.match(new TextDecoder().decode(first.value), /event: snapshot/);
-      await reader.cancel();
+      try {
+        assert.equal(events.statusCode, 200);
+        let first = '';
+        for await (const chunk of events) {
+          first += chunk.toString();
+          if (first.includes('\n\n')) break;
+        }
+        assert.match(first, /event: snapshot/);
+      } finally {
+        events.destroy();
+      }
       const deadline = Date.now() + 15000;
       let state: RunState;
       do {
@@ -70,7 +99,7 @@ test(
       assert.equal(state.state, 'succeeded');
       const trace = await (await fetch(`${server.url}/api/runs/${runId}/recovery`)).json();
       assert(trace.recovery.events.length > 0);
-      assert.equal((await post(`/api/runs/${runId}/resume`, {})).status, 409);
+      assert.equal(await responseStatus(await post(`/api/runs/${runId}/resume`, {})), 409);
       await server.close();
       server = await startDemoServer(options);
       const history = await (await fetch(`${server.url}/api/runs/${runId}`)).json();

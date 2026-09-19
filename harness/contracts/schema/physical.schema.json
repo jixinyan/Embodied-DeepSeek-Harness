@@ -102,6 +102,18 @@
     },
     {
       "$ref": "#/$defs/ActionSegment"
+    },
+    {
+      "$ref": "#/$defs/SimulationProfile"
+    },
+    {
+      "$ref": "#/$defs/EmbodimentProfile"
+    },
+    {
+      "$ref": "#/$defs/PolicyProfile"
+    },
+    {
+      "$ref": "#/$defs/PhysicalRuntimeProfile"
     }
   ],
   "$defs": {
@@ -3080,6 +3092,280 @@
         "segment_id"
       ],
       "additionalProperties": false
+    },
+    "SimulationProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "repository": {
+          "type": "string",
+          "pattern": "^https://",
+          "maxLength": 2048
+        },
+        "release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "supportedEmbodiments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "taskAdapters": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "id",
+        "provider",
+        "repository",
+        "release",
+        "revision",
+        "supportedEmbodiments",
+        "taskAdapters",
+        "config"
+      ]
+    },
+    "EmbodimentProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "family": {
+          "enum": [
+            "mobile_manipulator",
+            "robot_arm",
+            "humanoid",
+            "custom"
+          ]
+        },
+        "actionSpec": {
+          "$ref": "#/$defs/ActionSpec"
+        },
+        "observationChannels": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "requiredTools": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "promptContext": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        }
+      },
+      "required": [
+        "id",
+        "family",
+        "actionSpec",
+        "observationChannels",
+        "requiredTools",
+        "promptContext"
+      ]
+    },
+    "PolicyProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "repository": {
+          "type": "string",
+          "pattern": "^https://",
+          "maxLength": 2048
+        },
+        "release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "modelFamily": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "transport": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "supportedEmbodiments": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "acceptedInstruction": {
+          "const": "subgoal"
+        },
+        "actionSpec": {
+          "$ref": "#/$defs/ActionSpec"
+        },
+        "checkpointRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "normalizationRef": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "observationMapping": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 256,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+          }
+        },
+        "actionTransform": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": [
+        "id",
+        "provider",
+        "repository",
+        "release",
+        "revision",
+        "modelFamily",
+        "transport",
+        "supportedEmbodiments",
+        "acceptedInstruction",
+        "actionSpec",
+        "checkpointRef",
+        "normalizationRef",
+        "observationMapping",
+        "actionTransform",
+        "config"
+      ]
+    },
+    "PhysicalRuntimeProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "edh.physical-profile.v1"
+        },
+        "simulation": {
+          "$ref": "#/$defs/SimulationProfile"
+        },
+        "embodiment": {
+          "$ref": "#/$defs/EmbodimentProfile"
+        },
+        "policy": {
+          "$ref": "#/$defs/PolicyProfile"
+        },
+        "rolePromptAdditions": {
+          "type": "object",
+          "maxProperties": 64,
+          "additionalProperties": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "pattern": "^(?!\\s*$)(?!REQUIRED$).+"
+          }
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "simulation",
+        "embodiment",
+        "policy"
+      ]
     }
   },
   "x-edh-lifecycle": {

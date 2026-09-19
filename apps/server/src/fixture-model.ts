@@ -29,6 +29,9 @@ function readResult(
   }
   return {};
 }
+function isInvocation(source: GenerateOptions['messages'][number]['source']): boolean {
+  return source.kind === 'user' || (source.kind === 'plugin' && source.plugin === 'edh-team');
+}
 /** Deterministic test model. It emits native model chunks; DSH owns all tool execution. */
 export class FixtureModel extends LlmAdapter {
   readonly requests: { sessionId: string; toolNames: string[]; messageCount: number }[] = [];
@@ -45,12 +48,7 @@ export class FixtureModel extends LlmAdapter {
       messageCount: options.messages.length,
     });
     let cursor = options.messages.length - 1;
-    while (
-      cursor >= 0 &&
-      options.messages[cursor]!.source.kind !== 'plugin' &&
-      options.messages[cursor]!.source.kind !== 'user'
-    )
-      cursor--;
+    while (cursor >= 0 && !isInvocation(options.messages[cursor]!.source)) cursor--;
     const incoming = options.messages[cursor];
     const text = incoming?.content.find((c) => c.type === 'text');
     if (text?.type !== 'text') throw new Error('Missing explicit fixture invocation.');

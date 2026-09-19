@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="650" viewBox="0 0 1280 650" role="img" aria-labelledby="title desc">
+<title id="title">Configurable physical stack profile</title>
+<desc id="desc">A deployment profile selects a simulator, embodiment and policy adapter, then routes canonical actions through the EDH action gate.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#557a72"/></marker></defs>
+<rect width="1280" height="650" fill="#f7f8f8"/>
+<text x="42" y="52" font-family="Arial,sans-serif" font-size="30" font-weight="700" fill="#263b42">EDH physical stack profile</text>
+<text x="42" y="84" font-family="Arial,sans-serif" font-size="17" fill="#52656b">Immutable configuration + installed adapter validation; DSH owns the Agent loop</text>
+<rect x="42" y="130" width="250" height="210" rx="14" fill="#e9f4ef" stroke="#c6d9d1"/>
+<text x="64" y="168" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#28624d">Simulation adapter</text>
+<text x="64" y="204" font-family="Arial,sans-serif" font-size="17" fill="#31484e">BEHAVIOR-1K (planned)</text><text x="64" y="232" font-family="Arial,sans-serif" font-size="17" fill="#31484e">RoboCasa (planned)</text><text x="64" y="260" font-family="Arial,sans-serif" font-size="17" fill="#31484e">RoboTwin (planned)</text><text x="64" y="300" font-family="Arial,sans-serif" font-size="15" fill="#52656b">Pinned release + task config</text>
+<rect x="332" y="130" width="250" height="210" rx="14" fill="#e9f4ef" stroke="#c6d9d1"/>
+<text x="354" y="168" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#28624d">Embodiment</text>
+<text x="354" y="204" font-family="Arial,sans-serif" font-size="17" fill="#31484e">R1Pro mobile manipulator</text><text x="354" y="232" font-family="Arial,sans-serif" font-size="17" fill="#31484e">Fixed robot arm</text><text x="354" y="274" font-family="Arial,sans-serif" font-size="15" fill="#52656b">Sensors · ActionSpec</text><text x="354" y="300" font-family="Arial,sans-serif" font-size="15" fill="#52656b">Role prompt context</text>
+<rect x="622" y="130" width="250" height="210" rx="14" fill="#e9f4ef" stroke="#c6d9d1"/>
+<text x="644" y="168" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#28624d">Policy adapter</text>
+<text x="644" y="204" font-family="Arial,sans-serif" font-size="17" fill="#31484e">π0.5 · WS (planned)</text><text x="644" y="232" font-family="Arial,sans-serif" font-size="17" fill="#31484e">GR00T · ZMQ (planned)</text><text x="644" y="274" font-family="Arial,sans-serif" font-size="15" fill="#52656b">Checkpoint + preprocessing</text><text x="644" y="300" font-family="Arial,sans-serif" font-size="15" fill="#52656b">Subgoal instruction contract</text>
+<rect x="912" y="130" width="326" height="210" rx="14" fill="#fff2df" stroke="#e3d1ae"/>
+<text x="934" y="168" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#8b6129">Preflight compatibility</text>
+<text x="934" y="204" font-family="Arial,sans-serif" font-size="16" fill="#4d4a42">Release / revision pins</text><text x="934" y="231" font-family="Arial,sans-serif" font-size="16" fill="#4d4a42">Declared embodiment binding</text><text x="934" y="258" font-family="Arial,sans-serif" font-size="16" fill="#4d4a42">Exact canonical ActionSpec</text><text x="934" y="285" font-family="Arial,sans-serif" font-size="16" fill="#4d4a42">Installed adapter checks</text>
+<path d="M296 235 L326 235" stroke="#557a72" stroke-width="3" fill="none" marker-end="url(#arrow)"/><path d="M586 235 L616 235" stroke="#557a72" stroke-width="3" fill="none" marker-end="url(#arrow)"/><path d="M876 235 L906 235" stroke="#557a72" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+<rect x="178" y="426" width="924" height="130" rx="16" fill="#304b52"/>
+<text x="208" y="466" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#ffffff">Canonical EDH boundary</text>
+<text x="208" y="500" font-family="Arial,sans-serif" font-size="17" fill="#dce8e5">PolicyRequest → ActionChunk → interruptible Action Gate → backend/device</text>
+<text x="208" y="530" font-family="Arial,sans-serif" font-size="15" fill="#b7cbc6">Planner, Verifier, Evolver, memory and console remain unchanged across profiles</text>
+<path d="M742 342 L742 418" stroke="#557a72" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+</svg>

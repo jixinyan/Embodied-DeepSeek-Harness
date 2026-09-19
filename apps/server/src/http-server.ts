@@ -86,13 +86,35 @@ export async function startServer(options: LocalServerOptions) {
     models: Object.keys(deployment.metadata.models),
     tools: deployment.metadata.tools,
     providers: deployment.metadata.providers,
+    ...(deployment.physicalProfile
+      ? {
+          promptContext: deployment.physicalProfile.embodiment.promptContext,
+          ...(deployment.physicalProfile.rolePromptAdditions
+            ? { rolePromptAdditions: deployment.physicalProfile.rolePromptAdditions }
+            : {}),
+        }
+      : {}),
   }).inspect(deployment.teamFile);
+  for (const tool of deployment.physicalProfile?.embodiment.requiredTools ?? [])
+    if (!deployment.metadata.tools.includes(tool))
+      throw new Error(`Physical profile requires unavailable tool: ${tool}`);
   if (team.definition.entrypoint !== team.definition.bindings.decision_owner)
     throw new Error('This application requires the entrypoint to be the decision owner.');
   const deploymentDigest = deployment.digest + ':' + team.sourceDigest;
-  const store = new LocalStore(options.dataDirectory);
+  let ownedStore: LocalStore | undefined;
   let host: Context | undefined;
   try {
+    host = await createDshHost(deployment.adapters, deployment.contextManagement);
+    if (deployment.contextManagement && deployment.contextManagement.compaction?.auto !== false) {
+      for (const route of Object.values(deployment.metadata.models)) {
+        const model = await host.llm.resolveModelInfo(route.provider, route.model);
+        if (!model.context?.contextWindow)
+          throw new Error(
+            `Automatic compaction requires contextWindow for ${route.provider}/${route.model}.`,
+          );
+      }
+    }
+    const store = (ownedStore = new LocalStore(options.dataDirectory));
     const reports = new AssignmentReports(store, validator);
     reports.reconcileInterruptedDeliveries();
     const skills = new SkillLibrary(store, validator);
@@ -100,7 +122,6 @@ export async function startServer(options: LocalServerOptions) {
     const history = new RunHistory(store);
     for (const record of store.list<RunState>('run:'))
       history.interrupt(record.value, record.version);
-    host = await createDshHost(deployment.adapters);
     const publicConfiguration = {
       mode: deployment.metadata.source,
       deploymentId: deployment.metadata.id,
@@ -108,6 +129,10 @@ export async function startServer(options: LocalServerOptions) {
       deploymentDigest,
       description: deployment.metadata.description,
       models: deployment.metadata.models,
+      ...(deployment.contextManagement ? { contextManagement: deployment.contextManagement } : {}),
+      ...(deployment.metadata.physicalProfile
+        ? { physicalProfile: deployment.metadata.physicalProfile }
+        : {}),
       taskPresets: Object.fromEntries(
         scenarios.map((id) => [
           id,
@@ -276,7 +301,10 @@ export async function startServer(options: LocalServerOptions) {
               await active.settle();
               await active.close();
             }
-            const backend = await task.createBackend({ signal: shutdown.signal });
+            const backend = await task.createBackend({
+              signal: shutdown.signal,
+              ...(deployment.physicalProfile ? { profile: deployment.physicalProfile } : {}),
+            });
             try {
               if (closing) throw new HttpError(503, 'Server stopped during backend creation.');
               if (backend.source !== deployment.metadata.source)
@@ -452,7 +480,7 @@ export async function startServer(options: LocalServerOptions) {
       errors.push(failure);
     }
     try {
-      store.close();
+      ownedStore?.close();
     } catch (failure) {
       errors.push(failure);
     }

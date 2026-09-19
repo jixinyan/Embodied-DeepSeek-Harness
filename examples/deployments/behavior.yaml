@@ -1,6 +1,7 @@
 # Illustrative deployment boundary. No loader/provider implementation exists.
 schema_version: edh.deployment.draft.v1
 status: not_implemented
+# Supply a validated profile and installed adapters; see docs/implementation/physical-profiles.md.
 team: ../teams/household.yaml
 models:
   planner: {provider: REQUIRED, model: REQUIRED}

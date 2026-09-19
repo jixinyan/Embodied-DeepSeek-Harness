@@ -1,5 +1,13 @@
 import { createHash } from 'node:crypto';
-import type { EmbodiedBackend } from '@edh/execution';
+import { contextManagementOptions, type ContextManagementOptions } from '@edh/memory';
+import {
+  resolvePhysicalRuntimeProfile,
+  validatePhysicalProviderBindings,
+  type PhysicalProfileValidators,
+  type EmbodiedBackend,
+  type PhysicalRuntimeProfile,
+  type ResolvedPhysicalRuntimeProfile,
+} from '@edh/execution';
 import type { ContractValidator, SuccessCheck } from '@edh/contracts';
 import { TaskGoals, type GoalBinding } from '@edh/tasks';
 import type { ApplicationOptions } from './application.js';
@@ -15,6 +23,7 @@ export interface TaskPreset {
   /** A fresh backend per admitted run. Startup preflight never calls this factory. */
   readonly createBackend: (options: {
     signal: AbortSignal;
+    profile?: ResolvedPhysicalRuntimeProfile;
   }) => EmbodiedBackend | Promise<EmbodiedBackend>;
 }
 /** Trusted deployment composition; executable factories and credentials are never served over HTTP. */
@@ -32,6 +41,10 @@ export interface ServerDeployment {
   readonly tasks: Readonly<Record<string, TaskPreset>>;
   readonly additionalTools?: ApplicationOptions['additionalTools'];
   readonly providers?: readonly string[];
+  readonly contextManagement?: ContextManagementOptions;
+  /** Optional version-pinned simulation/embodiment/policy stack. */
+  readonly physicalProfile?: PhysicalRuntimeProfile;
+  readonly physicalProviders?: PhysicalProfileValidators;
 }
 function freeze<T>(value: T): T {
   if (value && typeof value === 'object') {
@@ -95,12 +108,23 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     taskMetadata[id] = data;
     tasks[id] = Object.freeze({ ...data, createBackend });
   }
+  const physicalProfile =
+    input.physicalProfile === undefined
+      ? undefined
+      : resolvePhysicalRuntimeProfile(input.physicalProfile, validator);
+  if (physicalProfile) validatePhysicalProviderBindings(physicalProfile, input.physicalProviders);
+  const contextManagement =
+    input.contextManagement === undefined
+      ? undefined
+      : contextManagementOptions(input.contextManagement);
   const metadata = freeze({
     id: input.id,
     version: input.version,
     source: input.source,
     description: input.description,
     defaultModel: input.defaultModel,
+    ...(contextManagement === undefined ? {} : { contextManagement }),
+    ...(physicalProfile === undefined ? {} : { physicalProfile }),
     models,
     tasks: taskMetadata,
     tools: [...CORE_TOOLS, ...Object.keys(additionalTools)],
@@ -111,6 +135,8 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     tasks: Object.freeze(tasks),
     adapters,
     additionalTools,
+    ...(contextManagement === undefined ? {} : { contextManagement }),
+    ...(physicalProfile === undefined ? {} : { physicalProfile }),
     teamFile: input.teamFile,
     roleRoot: input.roleRoot,
     digest: createHash('sha256').update(JSON.stringify(metadata)).digest('hex'),

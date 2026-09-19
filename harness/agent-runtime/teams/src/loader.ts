@@ -23,6 +23,9 @@ export interface TeamLoadOptions {
   readonly models: readonly string[];
   readonly tools: readonly string[];
   readonly providers: readonly string[];
+  /** Physical profile context is explicit prompt input, never inferred from a simulator name. */
+  readonly promptContext?: string;
+  readonly rolePromptAdditions?: Readonly<Record<string, string>>;
 }
 function yaml(text: string, label: string): unknown {
   const doc = parseDocument(text, { uniqueKeys: true });
@@ -51,6 +54,9 @@ export class FileTeamLoader {
     const o = this.options;
     const source = await readFile(file, 'utf8');
     const definition = o.validator.parse('TeamDefinition', yaml(source, file));
+    for (const alias of Object.keys(o.rolePromptAdditions ?? {}))
+      if (!Object.hasOwn(definition.members, alias))
+        throw new Error(`Unknown prompt member: ${alias}`);
     const builtins = JSON.parse(
       await readFile(resolve(o.builtinDirectory, 'builtins.json'), 'utf8'),
     ) as Record<string, string>;
@@ -93,6 +99,11 @@ export class FileTeamLoader {
         digest.update(schemaSource);
       }
       // Reporting is a framework-owned capability available to every configured role.
+      const profileContext = [o.promptContext, o.rolePromptAdditions?.[alias]].filter(
+        (value): value is string => Boolean(value?.trim()),
+      );
+      const instructions = [match[2]!.trim(), ...profileContext].join('\n\n');
+      if (profileContext.length) digest.update(profileContext.join('\n'));
       const bound = {
         ...role,
         tools: [...new Set([...role.tools, 'agent.report', 'team.query', 'team.ack_report'])],
@@ -100,7 +111,7 @@ export class FileTeamLoader {
       roles[alias] = bound;
       members[alias] = {
         definition: bound,
-        instructions: match[2]!.trim(),
+        instructions,
         model,
         ...(outputSchema ? { outputSchema } : {}),
       };

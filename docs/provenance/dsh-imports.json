@@ -984,8 +984,10 @@
       "source": "packages/compaction/compaction-basic/src/summarizer.ts",
       "destination": "harness/agent-runtime/memory/src/dsh/compaction-basic/summarizer.ts",
       "source_sha256": "3589f95a1b63d882d3907752d369c641a1f473b49e538a071f8a3604dda9789c",
-      "local_sha256": "3589f95a1b63d882d3907752d369c641a1f473b49e538a071f8a3604dda9789c",
-      "modifications": []
+      "local_sha256": "444dcc3c32fa52c5790376bd5760ab13f56c026f1a06b71cb9aa8763a39d3cff",
+      "modifications": [
+        "Replace coding-oriented summary instructions and checkpoint framing with embodied-role evidence, task, execution and uncertainty requirements. Summarization transport and compaction algorithm are unchanged."
+      ]
     },
     {
       "source": "packages/compaction/compaction-basic/src/region.ts",

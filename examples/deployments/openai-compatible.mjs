@@ -11,6 +11,9 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const baseURL = process.env.EDH_MODEL_BASE_URL;
 const model = process.env.EDH_MODEL;
 const apiKey = process.env.EDH_MODEL_API_KEY;
+const contextWindow = process.env.EDH_MODEL_CONTEXT_WINDOW
+  ? Number(process.env.EDH_MODEL_CONTEXT_WINDOW)
+  : undefined;
 if (!baseURL || !model)
   throw new Error('Set EDH_MODEL_BASE_URL and EDH_MODEL to your actual deployment.');
 const validator = new ContractValidator(
@@ -21,7 +24,13 @@ const validator = new ContractValidator(
 const base = createDemoDeployment({ root }, validator);
 const adapter = new OpenAICompatibleAdapter({
   baseURL,
-  models: [{ id: model, inputModalities: ['text', 'image'] }],
+  models: [
+    {
+      id: model,
+      inputModalities: ['text', 'image'],
+      ...(contextWindow === undefined ? {} : { contextWindow }),
+    },
+  ],
   ...(apiKey ? { apiKey: () => apiKey } : {}),
   // Real sensor images require a deployment-owned resolveImage callback; this backend supplies metadata only.
 });
@@ -35,6 +44,9 @@ const server = await startServer({
     version: '1',
     description: 'Configured HTTP model · CPU physical fixture only',
     defaultModel: 'brain',
+    ...(contextWindow === undefined
+      ? {}
+      : { contextManagement: { compaction: { thresholdRatio: 0.7, retainRatio: 0.15 } } }),
     models: { brain: { provider: 'http-model', model } },
     adapters: [{ providers: ['http-model'], adapter }],
   },

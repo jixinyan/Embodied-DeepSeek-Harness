@@ -12,6 +12,8 @@ export interface DshSessionDefinition {
   readonly tools: readonly ToolDefinition[];
   readonly signal?: AbortSignal;
   readonly todo?: boolean;
+  /** Scoped host facts, refreshed by the native DSH context contributor. */
+  readonly runtimeContext?: () => string;
 }
 
 /**
@@ -38,6 +40,12 @@ export function createDshSession(
         order: 0,
         text: definition.instructions,
       });
+      if (definition.runtimeContext)
+        agentCtx.systemPrompt.context({
+          name: 'edh:assignment-state',
+          order: 0,
+          text: definition.runtimeContext,
+        });
       for (const tool of definition.tools) agentCtx.tools.register(tool);
     },
   });

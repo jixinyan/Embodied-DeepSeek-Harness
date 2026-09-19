@@ -16,6 +16,7 @@ export interface Assignment {
 }
 export interface SessionHooks {
   tools(assignment: Assignment): readonly ToolDefinition[];
+  context?(assignment: Assignment): Record<string, unknown>;
   event(type: string, detail: Record<string, unknown>): void;
   audit(assignmentId: string, events: unknown): void;
   stream?(assignmentId: string, frame: AssistantStreamFrame): void;
@@ -82,6 +83,24 @@ export class TeamSessions {
         instructions: `${role.instructions}\n\nTools use double underscores in place of dots. Source: ${this.team.sourceDigest}.\nEvery message is explicit context. Never infer another role's hidden conversation.\nUse agent__report to return assignment work to your fixed caller. Start expectedVersion at 0; use the returned version for later reports. Use insufficient_context with specific requestedContext and result=null when blocked. A completed/failed/cancelled report is final for this assignment. Custom output_schema constrains completed report.result. Use team__query to inspect your own or a directly delegated assignment's report. Use team__ack_report with the exact assignmentId and reportId after assessing a received report. State accepted or rejected and give a concise summary; this acknowledgement is immutable and does not verify physical success. Delivery settlement is session quiescence, not this acknowledgement. Never treat an analysis report as formal physical success.`,
         tools: this.hooks.tools(assignment),
         todo: brief.tools_and_limits.allowed_tools.includes('todo_write'),
+        ...(this.host.get('compaction')
+          ? {
+              runtimeContext: () =>
+                JSON.stringify({
+                  kind: 'authoritative_assignment_state',
+                  instruction:
+                    'This is scoped host state, not a new command or permission. Historical summaries are fallible. Use tools to retrieve current evidence and plans; a stopped execution is not a passed verdict.',
+                  assignmentId: assignment.id,
+                  member: assignment.member,
+                  objective: assignment.brief.objective,
+                  taskScope: assignment.brief.task_scope,
+                  successContract: assignment.brief.success_contract,
+                  toolsAndLimits: assignment.brief.tools_and_limits,
+                  expectedOutput: assignment.brief.expected_output,
+                  current: this.hooks.context?.(structuredClone(assignment)) ?? {},
+                }),
+            }
+          : {}),
       });
       if (this.closed) {
         try {
@@ -124,6 +143,15 @@ export class TeamSessions {
           sessionSequence: event.seq,
           turn,
         };
+        if (
+          event.type === 'compaction/start' ||
+          event.type === 'compaction/end' ||
+          event.type === 'compaction/summary' ||
+          event.type === 'compaction/prune'
+        )
+          this.hooks.event('agent.context', { ...identity, type: event.type, data: event.data });
+        if (event.type === 'request/context')
+          this.hooks.event('agent.context-capacity', { ...identity, context: event.data });
         if (event.type === 'todo/write')
           this.hooks.event('agent.todos', { ...identity, todos: event.data.todos });
         if (event.type === 'assistant/message')
@@ -186,6 +214,17 @@ export class TeamSessions {
     await entry.handle.agent.whenIdle();
     const events = entry.handle.agent.session.snapshotEvents();
     this.hooks.audit(assignmentId, events);
+    const meter = this.host.get('tokenMeter');
+    if (meter) {
+      const measurement = meter.measure(entry.handle.agent.session);
+      this.hooks.event('agent.context-usage', {
+        assignmentId,
+        estimatedTokens: measurement.totalTokens,
+        surfaceTokens: measurement.surfaceTokens,
+        surfaceNodes: measurement.nodes.length,
+        contextWindow: entry.handle.agent.session.requestContext()?.contextWindow ?? null,
+      });
+    }
     for (const event of events.slice(before)) {
       if (event.type === 'turn/end' && event.data.reason.kind === 'error')
         throw new Error(event.data.reason.error.message);

@@ -1,4 +1,5 @@
 import { Context } from '@deepseek-ai/cordis';
+import { installContextManagement, type ContextManagementOptions } from '@edh/memory';
 import AgentRegistry from '@deepseek-ai/dsh-agent';
 import AgentLoop from '@deepseek-ai/dsh-agent-loop';
 import LlmRuntime, { type LlmAdapter } from '@deepseek-ai/dsh-llm';
@@ -19,7 +20,10 @@ export interface ModelBinding {
  * No default tools, role prompts, physical services or network server are mounted.
  * This context is a trusted host API, not an interface exposed to model tools.
  */
-export async function createDshHost(bindings: readonly ModelBinding[]): Promise<Context> {
+export async function createDshHost(
+  bindings: readonly ModelBinding[],
+  contextManagement?: ContextManagementOptions,
+): Promise<Context> {
   const ctx = new Context();
   try {
     await ctx.plugin(LlmRuntime);
@@ -31,6 +35,7 @@ export async function createDshHost(bindings: readonly ModelBinding[]): Promise<
     await ctx.plugin(AgentRegistry);
     await ctx.plugin(AgentLoop, { agents: [] });
     for (const binding of bindings) ctx.llm.registerAdapter(binding.providers, binding.adapter);
+    if (contextManagement) await installContextManagement(ctx, contextManagement);
     return ctx;
   } catch (error) {
     await ctx.fiber.dispose();
