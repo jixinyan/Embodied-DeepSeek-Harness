@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.11. Current checkpoint: **runnable DSH upper application and CPU console**.
+Spec: v1.12. Current checkpoint: **runnable DSH upper application and CPU console**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -39,7 +39,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 83 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 89 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
 - 256 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -524,3 +524,38 @@ evidence retention, idle/terminal cleanup, live VLM evaluation, and later the ph
 worker/provider bridge. This is recency-based whole-message retention, not semantic
 frame selection or evidence-store garbage collection. Real simulators and policies
 remain unconnected; runtime-native persistence/resume remains a separate gate.
+
+## User-session environment ownership checkpoint (2026-09-19)
+
+User sessions now own a retained environment and multiple independent task runs.
+Installed launch profiles are preflighted/frozen with role prompts, model bindings and
+configuration identity. Native DSH continues to own agent execution. Each task receives
+its own backend control scope; normal terminal cleanup drains Evolver publication and
+role receipts before releasing that scope. Ending the session cancels active work and
+releases the environment. Failed release is recorded as unknown; restart never replays
+physical work. Legacy task admission cannot bypass an active session allocation.
+
+Six new acceptance cases cover two-task CPU world continuity and recovery persistence,
+rejected second-task port cleanup, active-task session cancellation, late allocation at shutdown, failed-release/restart state and launch preflight/immutable
+configuration. The launcher/session guide distinguishes actual behavior from pending
+free-form conversation, independent compatible selectors, desktop/service bootstrap and
+real simulator/hardware ownership. See [user sessions](user-sessions.md) and the
+[legacy migration audit](legacy-migration.md). CPU evidence does not establish robotics
+or cross-embodiment transfer performance.
+
+
+The console now groups runs beneath user sessions and displays the installed profile's
+environment, embodiment, policy/checkpoint, model and resource state. New session,
+Run task and End session are distinct controls. Workspace experience inspection retains
+origin run/session links. Browser acceptance on the CPU preview exercised recovery,
+a second task in the same session, session end and experience inspection without browser
+errors. Configuration bundles remain the selectable unit; independent selectors are pending.
+Implementation ownership checkpoint: `c57106f`.
+
+
+Validation: full `pnpm check` passes with 89 runtime tests, 256 shared cases and 17
+standalone Python policy/action-gate tests (plus the shared Python acceptance classes).
+Type checking, 122-file DSH provenance, public language/local links and SVG XML pass.
+The new SVG was rendered and visually inspected. No live VLM, simulator, learned policy
+or hardware was used. The temporary UI review uses its own data directory and preserves
+the existing console history.

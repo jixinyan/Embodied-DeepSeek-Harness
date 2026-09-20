@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.11 · 2026-09-13
+Version: v1.12 · 2026-09-19
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -54,6 +54,18 @@ embodiment, policy mappings and role context; installed adapter validation is re
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)
 and [capability map](implementation/features.md) for concrete code, checks and limits.
 Do not install the simulator/GPU stack merely to run the upper acceptance suite.
+
+### User-session and launcher clarification (v1.12)
+
+A user conversation is a **User Session** containing multiple sequential task runs
+on one retained environment. DSH role sessions remain independent assignment contexts.
+Ending a task releases its control scope; ending the user session releases the environment.
+The console is the primary launcher and status surface. CLI-free server bootstrap is a
+separate packaging requirement. Launch selections must resolve installed environment,
+embodiment, policy/checkpoint, upper model and role/tool configurations before allocation.
+Experience is workspace-wide and explicitly retrieved across sessions, with source and
+transfer-validation limits retained. Read the [session lifecycle and remaining steps](implementation/user-sessions.md)
+and [legacy design migration audit](implementation/legacy-migration.md).
 
 ### 0.2 Repository and workspace
 

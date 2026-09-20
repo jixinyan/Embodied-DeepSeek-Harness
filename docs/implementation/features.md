@@ -48,3 +48,15 @@ Asynchronous perception/GT reads now run through the upper provider port with na
 DSH cancellation and stopped-boundary revalidation. CPU acceptance covers delayed
 success, cancellation and stale GT responses; actual transport remains pending.
 See [provider call semantics](../../harness/agent-runtime/execution/README.md).
+
+
+## User session and launcher addition
+
+Implemented with CPU acceptance: a retained environment across task runs; frozen
+launch-profile selections; independent task/role scopes; task drain before environment
+reuse; explicit session end; failed-release/restart state; grouped console history and
+workspace experience inspection. [Session guide and SVG](user-sessions.md).
+
+Still pending: actual simulator/hardware allocation, general conversational task admission,
+independent compatible provider/checkpoint fields, and CLI-free server bootstrap.
+[Legacy design migration audit](legacy-migration.md) lists retained and missing designs.

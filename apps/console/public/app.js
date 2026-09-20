@@ -4,6 +4,13 @@ let busy = false;
 let loadRevision = 0;
 let activeRunId = null;
 let runHistory = [];
+let userSessions = [];
+let activeUserSessionId = null;
+let historyRevision = 0;
+let historySignature = '';
+let historyTimer;
+const activeUserSession = () => userSessions.find((s) => s.id === activeUserSessionId);
+const hasLauncher = () => Object.keys(config?.launchProfiles ?? {}).length > 0;
 const ended = (state) =>
   ['succeeded', 'failed', 'cancelled', 'interrupted', 'unknown'].includes(state);
 const text = (id, value) => {
@@ -38,12 +45,68 @@ function connected(value) {
   text('connection', value ? 'Event stream connected' : 'Reconnecting to server');
   $('connection-dot').classList.toggle('offline', !value);
 }
+function renderLauncher() {
+  const session = activeUserSession();
+  const profile =
+    session?.configuration.launchProfile ?? config.launchProfiles?.[$('launch-profile').value];
+  text(
+    'user-session-state',
+    session ? `${session.state} / ${session.resources}`.toUpperCase() : 'NO ACTIVE SESSION',
+  );
+  $('launch-details').replaceChildren();
+  const model =
+    session?.configuration.models?.[profile?.defaultModel] ??
+    config.models?.[profile?.defaultModel];
+  for (const [label, value] of Object.entries({
+    Environment: profile?.environment,
+    Embodiment: profile?.embodiment,
+    Policy: profile?.policy,
+    Checkpoint: profile?.checkpoint,
+    'Upper model': model ? `${model.provider} / ${model.model}` : undefined,
+  })) {
+    const item = document.createElement('div');
+    const name = document.createElement('span');
+    name.textContent = label;
+    const content = document.createElement('strong');
+    content.textContent = value ?? 'Not configured';
+    item.append(name, content);
+    $('launch-details').append(item);
+  }
+  text(
+    'session-target',
+    session
+      ? `Tasks target session ${shorten(session.id)}. Environment is retained between tasks.${session.error ? ' ' + session.error : ''}`
+      : hasLauncher()
+        ? 'New session allocates the selected environment. Only installed configuration bundles are available.'
+        : 'This deployment has no session launcher. The task button uses the legacy single-run API.',
+  );
+  for (const option of $('scenario').options)
+    option.disabled = Boolean(profile && !profile.tasks.includes(option.value));
+  if ($('scenario').selectedOptions[0]?.disabled) $('scenario').value = profile.tasks[0];
+  $('create-session').disabled =
+    busy ||
+    Boolean(activeUserSessionId) ||
+    Boolean(activeRunId && !ended(runHistory.find((r) => r.id === activeRunId)?.state)) ||
+    !hasLauncher();
+  $('end-session').disabled = busy || !session || ['opening', 'closing'].includes(session.state);
+  $('launch-profile').disabled = busy || Boolean(activeUserSessionId);
+}
 async function refreshHistory() {
-  const data = await api('/api/runs');
+  const revision = ++historyRevision;
+  const [data, sessions] = await Promise.all([api('/api/runs'), api('/api/sessions')]);
+  if (revision !== historyRevision) return data;
   runHistory = data.runs;
   activeRunId = data.activeId;
+  userSessions = sessions.sessions;
+  activeUserSessionId = sessions.activeId;
+  const signature = JSON.stringify([data, sessions, current?.id]);
+  if (signature === historySignature) {
+    updateControls();
+    return data;
+  }
+  historySignature = signature;
   $('history').replaceChildren();
-  for (const run of data.runs) {
+  const addRun = (run) => {
     const button = document.createElement('button');
     button.classList.toggle('active', run.id === current?.id);
     if (run.id === current?.id) button.setAttribute('aria-current', 'true');
@@ -55,20 +118,47 @@ async function refreshHistory() {
     button.append(title, info);
     button.onclick = () => loadRun(run.id).catch((e) => error(e.message));
     $('history').append(button);
+  };
+  for (const session of userSessions) {
+    const heading = document.createElement('button');
+    heading.className = 'user-session-heading';
+    const title = document.createElement('strong');
+    title.textContent = `Session ${shorten(session.id)} · ${session.state}`;
+    const detail = document.createElement('span');
+    const profile = session.configuration.launchProfile;
+    detail.textContent = `${profile?.environment ?? 'Unknown environment'} · ${profile?.embodiment ?? 'Unknown embodiment'}`;
+    heading.append(title, detail);
+    heading.onclick = () =>
+      inspect('User session · Environment, tasks and resource ownership', session);
+    $('history').append(heading);
+    data.runs.filter((r) => r.userSessionId === session.id).forEach(addRun);
   }
-  if (!data.runs.length) {
+  const legacy = data.runs.filter((r) => !r.userSessionId);
+  if (legacy.length) {
+    const label = document.createElement('p');
+    label.className = 'section-label';
+    label.textContent = 'STANDALONE TASK HISTORY';
+    $('history').append(label);
+    legacy.forEach(addRun);
+  }
+  if (!data.runs.length && !userSessions.length) {
     const p = document.createElement('p');
     p.className = 'muted';
-    p.textContent = 'No runs yet.';
+    p.textContent = 'No sessions yet.';
     $('history').append(p);
   }
+  renderLauncher();
   updateControls();
   return data;
 }
 function updateControls() {
   const active = runHistory.find((r) => r.id === activeRunId);
-  $('start').disabled = busy || Boolean(active && !ended(active.state));
+  $('start').disabled =
+    busy ||
+    Boolean(active && !ended(active.state)) ||
+    (hasLauncher() && activeUserSession()?.state !== 'ready');
   $('scenario').disabled = $('start').disabled;
+  renderLauncher();
   const writable = current && !current.readOnly && !ended(current.state) && !busy;
   const execution = current?.executions.at(-1);
   $('pause').disabled = !writable || execution?.state !== 'running';
@@ -127,7 +217,7 @@ function renderDeployment() {
 }
 function renderAgents() {
   const assignments = Object.values(current?.assignments ?? {});
-  text('session-count', `${assignments.length} SESSIONS`);
+  text('session-count', `${assignments.length} ASSIGNMENTS`);
   $('agents').replaceChildren();
   const team = (current ? current.configuration : config)?.team;
   const members = [
@@ -663,11 +753,39 @@ $('inspect-todos').onclick = () =>
   );
 $('start').onclick = () =>
   action(async () => {
-    const result = await api('/api/runs', {
+    const target = hasLauncher() ? `/api/sessions/${activeUserSessionId}/tasks` : '/api/runs';
+    const result = await api(target, {
       scenario: $('scenario').value,
       requestId: crypto.randomUUID(),
     });
     await loadRun(result.runId);
+  });
+$('launch-profile').onchange = () => {
+  renderLauncher();
+  updateControls();
+};
+$('create-session').onclick = () =>
+  action(async () => {
+    await api('/api/sessions', {
+      profileId: $('launch-profile').value,
+      requestId: crypto.randomUUID(),
+    });
+    await refreshHistory();
+  });
+$('end-session').onclick = () =>
+  action(async () => {
+    await api(`/api/sessions/${activeUserSessionId}/close`, {});
+    await refreshHistory();
+  });
+$('workspace-skills').onclick = () =>
+  action(async () => {
+    const library = await api('/api/skills');
+    inspect(
+      'Workspace experience · Cross-session SKILL library',
+      library.skills.length
+        ? library
+        : 'No experience yet. A formally failed subgoal followed by Planner recovery and verified success can publish a SKILL. Skills retain source, applicability and validation limits.',
+    );
   });
 for (const command of ['pause', 'resume', 'stop'])
   $(command).onclick = () =>
@@ -730,6 +848,14 @@ $('inspector').addEventListener('click', (e) => {
 });
 try {
   config = await api('/api/config');
+  $('launch-profile').replaceChildren(
+    ...Object.entries(config.launchProfiles ?? {}).map(([id, profile]) => {
+      const option = document.createElement('option');
+      option.value = id;
+      option.textContent = profile.label;
+      return option;
+    }),
+  );
   text('team-name', config.team.team_id);
   $('scenario').replaceChildren(
     ...Object.entries(
@@ -757,4 +883,10 @@ try {
   connected(false);
   $('start').disabled = true;
 }
-window.addEventListener('pagehide', () => stream?.close());
+historyTimer = setInterval(() => {
+  if (!busy && !document.hidden) refreshHistory().catch((e) => error(e.message));
+}, 2000);
+window.addEventListener('pagehide', () => {
+  stream?.close();
+  clearInterval(historyTimer);
+});

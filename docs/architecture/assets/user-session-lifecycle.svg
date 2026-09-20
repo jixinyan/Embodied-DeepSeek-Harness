@@ -26,7 +26,7 @@
 <text x="490" y="451" class="small">Sees the scene left by Task Run 1</text>
 <path d="M386 409H464" class="arrow"/>
 <text x="401" y="393" class="small">next</text>
-<path d="M225 482V530M628 482V530" class="arrow"/>
+<path d="M225 482V530" class="arrow"/><path d="M628 482V530" class="arrow"/>
 <rect x="66" y="536" width="724" height="118" rx="10" class="box"/>
 <text x="87" y="568" class="heading">Retained environment + replaceable physical providers</text>
 <text x="87" y="596" class="body">Task-scoped backend → Policy client → Action gate → Embodiment</text>

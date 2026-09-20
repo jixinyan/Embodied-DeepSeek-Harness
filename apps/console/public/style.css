@@ -1172,3 +1172,59 @@ dialog pre {
     margin-bottom: 10px;
   }
 }
+
+.session-launcher {
+  margin: 0 22px 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+}
+.launcher-heading,
+.launcher-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.launcher-heading {
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+.launcher-controls label {
+  font-size: 10px;
+  color: var(--muted);
+}
+.launch-details {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.launch-details span {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.launch-details strong {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.history .user-session-heading {
+  margin-top: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+.history .user-session-heading span {
+  white-space: normal;
+}
+@media (max-width: 900px) {
+  .launch-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

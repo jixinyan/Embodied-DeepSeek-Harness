@@ -83,3 +83,12 @@ lineage. See [contract integration](../implementation/contracts.md). Semantic co
 sufficiency, authentication, event payload registration, evidence authorization and
 runtime enforcement remain service work in Steps 02–10. Generated TypeScript and
 Python Protocol annotations alone do not validate runtime data.
+
+
+## User-session ownership
+
+`apps/server/src/user-sessions.ts` owns the product conversation/environment lifecycle,
+not an agent loop. A retained `SessionEnvironment` creates one fresh backend control
+scope per task. `UpperRun` and the native DSH services continue to own task execution
+and independent role contexts. Workspace SKILL storage outlives all three scopes.
+See the [session guide and SVG](../implementation/user-sessions.md).

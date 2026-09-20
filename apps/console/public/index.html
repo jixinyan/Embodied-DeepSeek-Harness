@@ -14,16 +14,20 @@
       >
       <div class="workspace-label">Embodied DeepSeek Harness<span>Local workspace</span></div>
       <div class="history-title">
-        <span class="section-label">RUNS</span
-        ><button id="refresh-history" class="icon-button" aria-label="Refresh run history">
+        <span class="section-label">SESSIONS &amp; TASKS</span
+        ><button
+          id="refresh-history"
+          class="icon-button"
+          aria-label="Refresh session and task history"
+        >
           ↻
         </button>
       </div>
       <div id="history" class="history"><p class="muted">No runs yet.</p></div>
       <section class="team-section" id="team">
         <div class="panel-heading">
-          <h2>Agent sessions</h2>
-          <span id="session-count" class="tag">0 SESSIONS</span>
+          <h2>Agent assignments</h2>
+          <span id="session-count" class="tag">0 ASSIGNMENTS</span>
         </div>
 
         <div id="agents" class="agents"></div>
@@ -45,6 +49,25 @@
         </div>
       </header>
       <div id="error" class="error" role="alert" hidden></div>
+      <section class="session-launcher" aria-label="User session launcher">
+        <div class="launcher-heading">
+          <strong>User session</strong><span id="user-session-state" class="tag">NO SESSION</span>
+        </div>
+        <div class="launcher-controls">
+          <label for="launch-profile">Configuration</label>
+          <select
+            id="launch-profile"
+            aria-label="Environment, embodiment, policy and model configuration"
+          ></select>
+          <button id="create-session" class="button primary">New session</button>
+          <button id="end-session" class="button small" disabled>End session</button>
+          <button id="workspace-skills" class="button small">Experience library</button>
+        </div>
+        <div id="launch-details" class="launch-details"></div>
+        <p id="session-target" class="section-note">
+          Select an installed configuration to allocate an environment.
+        </p>
+      </section>
       <section class="mission-card">
         <div class="mission-copy">
           <label for="instruction" class="eyebrow">TASK</label
@@ -54,7 +77,7 @@
           </div>
         </div>
         <div class="mission-actions">
-          <label for="scenario" class="eyebrow">NEXT RUN</label
+          <label for="scenario" class="eyebrow">NEXT TASK</label
           ><select id="scenario">
             <option value="retry-success">Failure → recovery → success</option>
             <option value="multi-goal-recovery">Placement → access repair → storage</option>
