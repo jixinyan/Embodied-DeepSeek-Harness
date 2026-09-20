@@ -144,6 +144,7 @@ export class TeamSessions {
           turn,
         };
         if (
+          event.type === 'edh/visual-history' ||
           event.type === 'compaction/start' ||
           event.type === 'compaction/end' ||
           event.type === 'compaction/summary' ||
@@ -168,7 +169,7 @@ export class TeamSessions {
           this.hooks.event('agent.step-started', { ...identity, step: event.data.step });
         if (event.type === 'tool/call')
           this.hooks.event('dsh.tool-call', { ...identity, data: event.data });
-        if (event.type === 'tool/result')
+        if (event.type === 'tool/result' && event.surfaceOp === 'append')
           this.hooks.event('dsh.tool-result', { ...identity, data: event.data });
       });
       this.hooks.event('agent.created', {

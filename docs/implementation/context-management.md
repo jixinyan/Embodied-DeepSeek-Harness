@@ -13,6 +13,7 @@ const deployment = {
   // Existing models, adapters, tasks, team and provider bindings...
   contextManagement: {
     compaction: { thresholdRatio: 0.7, retainRatio: 0.15, maxTokens: 4096 },
+    visualHistory: { maxImages: 12 }, // Optional; keep below the adapter request limit.
     // pruneToolResults: { ... } // Optional native pruning configuration.
   },
 };
@@ -37,6 +38,37 @@ model's actual capacity, not a guessed maximum. Native policy types and optional
 per-provider/model overrides are exported from the absorbed compaction modules.
 Summarization uses the conversation model unless an explicit summarization target
 is configured. These auxiliary model requests incur their own latency and cost.
+
+## Bound visual history
+
+`visualHistory.maxImages` is an explicit image-block budget (integer 1–1024).
+It counts repeated references as repeated blocks, matching transport admission.
+With no visual policy, image retention is unchanged. For image retention without
+automatic text summaries, use `compaction: { auto: false }` with `visualHistory`.
+
+The EDH visual service uses DSH's original pre-step hook, logged surface replacement
+and token-meter shadow-price protocol. It reserves space for the incoming batch and
+for tool images that have not yet reached a model. Remaining space retains complete
+image-bearing messages, newest first; once a group does not fit, older groups are
+omitted as well. A message is the atomic group: adapters should put synchronized
+camera views in one tool result or handoff. A fresh batch that exceeds the budget
+fails before inference; it is never silently reduced to a partial observation.
+
+For example, with `maxImages: 6`, each capture containing a head view and two wrist
+views leaves room for two complete captures. The third capture shadows the oldest
+three image blocks with explicit omission markers. Text, tool-call/result identity,
+image IDs and original audit events remain intact. An authorized `evidence.read`
+returns the admitted image reference again as fresh tool input; the deployment resolver
+must still retain its bytes. Pruning grants no new evidence access.
+A text-only followup retains the latest available image-bearing group.
+
+The policy runs before native pressure compaction and rechecks the actual admitted
+input after other pre-step contributors. Native summaries may still condense older
+visual history; the policy is not semantic keyframe selection or a permanent pin.
+Image count does not bound image bytes or tokens. Configure it at or below the
+selected adapter's image-count limit (the HTTP adapter defaults to 16), and retain
+that adapter's independent byte/deadline checks. Per-role/per-provider visual budgets,
+reference-image pinning and learned frame selection remain future extensions.
 
 ## Preserve authority and role isolation
 
@@ -64,7 +96,10 @@ not an authorization to execute; existing goal, owner and verifier gates remain 
 
 Original native events remain intact. Only the model-visible surface changes.
 `agent.context` forwards native start, summary, end and optional prune events, including
-failure details, assignment identity and native event sequence. `agent.context-capacity`
+failure details, assignment identity and native event sequence. EDH visual retention
+adds `edh/visual-history` with retained/incoming counts, source/replacement sequences
+and omitted attachment IDs. The console presents these as visual-context maintenance,
+not new tool execution. Original tool results remain the tool-card source. `agent.context-capacity`
 records model capacity. `agent.context-usage` records estimated total/surface tokens and
 surface-node count after delivery settles. The console's activity feed and event inspector
 include compaction and usage events; these estimates are not billed token usage.
@@ -78,7 +113,9 @@ Server acceptance exercises policy identity, missing-capacity preflight and a co
 fixture task with context measurement. Real localhost HTTP acceptance also exercises
 compaction followed by a successful request, repeated overflow and a non-shrinking
 summary, preserving the once-executed tool and original audit. These tests do not
-assess real summary quality.
+assess real summary quality. Visual tests cover forty complete observation batches,
+native image tools, isolated roles, surface/meter replay, explicit oversize failures,
+automatic compaction, twenty real localhost HTTP requests and upper console events.
 
 - Automatic summarization failures preserve the original surface and follow DSH's
   warning/continue policy. Thresholds are proactive heuristics, not a hard token ceiling.
@@ -92,8 +129,8 @@ assess real summary quality.
   repeated overflow stops at the retry bound. The adapter never retries requests.
 - Image token estimates are approximate without provider-specific pricing metadata.
   The optional pruner targets tool text; it is not a visual frame-selection policy.
-  Existing per-request image count/byte bounds can still be reached before pressure
-  triggers. Long video/image history needs explicit selection and live VLM evaluation.
+  Without `visualHistory`, per-request image count/byte bounds can be reached before pressure
+  triggers. Semantic keyframes, long-video handling and live VLM evaluation remain open.
 - Summaries may omit or misstate facts. They cannot substitute for fresh perception,
   formal verification, immutable contracts, or stored evidence.
 - Raw evidence, run events and disk history are not compacted. The 4,000-event limit,
@@ -102,3 +139,9 @@ assess real summary quality.
 
 See [provenance](../provenance/README.md), [runtime integration](upper-runtime.md)
 and [deployment bindings](deployments.md) for source and extension entry points.
+
+
+Visual-selection events are stored in EDH's existing append-only session audits and
+run events. This is not a resumable upstream persistence backend. Any future DSH
+persistence provider must explicitly account for EDH's added event vocabulary; do
+not silently skip unknown required events or resume physical commands from history.

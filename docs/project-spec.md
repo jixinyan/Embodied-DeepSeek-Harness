@@ -47,6 +47,8 @@ The unified console now displays key
 state without page/tab switching; further polish follows actual provider integration.
 Native DSH [context management](implementation/context-management.md) is available
 by explicit deployment policy, with scoped authoritative state after compaction.
+Optional whole-message visual retention bounds historical image blocks while preserving
+fresh observations and original evidence audits; oversized fresh batches fail explicitly.
 [Physical profiles](implementation/physical-profiles.md) bind declared simulator,
 embodiment, policy mappings and role context; installed adapter validation is required.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)

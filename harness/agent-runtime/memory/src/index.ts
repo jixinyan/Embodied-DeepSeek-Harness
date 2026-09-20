@@ -25,3 +25,5 @@ export {
   contextManagementOptions,
   type ContextManagementOptions,
 } from './context.js';
+
+export type { VisualHistoryOptions } from './visual-history.js';

@@ -46,7 +46,12 @@ const server = await startServer({
     defaultModel: 'brain',
     ...(contextWindow === undefined
       ? {}
-      : { contextManagement: { compaction: { thresholdRatio: 0.7, retainRatio: 0.15 } } }),
+      : {
+          contextManagement: {
+            compaction: { thresholdRatio: 0.7, retainRatio: 0.15 },
+            visualHistory: { maxImages: 12 },
+          },
+        }),
     models: { brain: { provider: 'http-model', model } },
     adapters: [{ providers: ['http-model'], adapter }],
   },

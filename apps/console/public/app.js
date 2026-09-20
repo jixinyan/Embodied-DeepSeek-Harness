@@ -431,17 +431,19 @@ function renderFeed() {
         const notice = document.createElement('div');
         notice.className = 'feed-notice';
         notice.textContent =
-          event.type === 'message.delivered'
-            ? `Context received: ${d.payload?.kind ?? 'message'} · from ${shorten(d.sender)}`
-            : event.type === 'agent.todos'
-              ? `Checklist updated · ${d.todos.filter((t) => t.status === 'completed').length}/${d.todos.length} complete`
-              : event.type === 'verification.completed'
-                ? `Formal verification: ${d.result.status} · ${d.result.task_scope.attempt_id}`
-                : event.type === 'recovery.opened'
-                  ? 'Planner opened recovery; Evolver is joining with an explicit failed-attempt brief.'
-                  : event.type === 'skill.saved'
-                    ? 'SKILL.md saved with failed and successful evidence.'
-                    : `${event.type}: ${summarize(event)}`;
+          event.type === 'agent.context' && d.type === 'edh/visual-history'
+            ? `Visual context: ${d.data.retainedImages}/${d.data.maxImages} image blocks retained · ${d.data.omitted.length} historical groups omitted`
+            : event.type === 'message.delivered'
+              ? `Context received: ${d.payload?.kind ?? 'message'} · from ${shorten(d.sender)}`
+              : event.type === 'agent.todos'
+                ? `Checklist updated · ${d.todos.filter((t) => t.status === 'completed').length}/${d.todos.length} complete`
+                : event.type === 'verification.completed'
+                  ? `Formal verification: ${d.result.status} · ${d.result.task_scope.attempt_id}`
+                  : event.type === 'recovery.opened'
+                    ? 'Planner opened recovery; Evolver is joining with an explicit failed-attempt brief.'
+                    : event.type === 'skill.saved'
+                      ? 'SKILL.md saved with failed and successful evidence.'
+                      : `${event.type}: ${summarize(event)}`;
         card.append(notice);
       }
       feed.append(card);

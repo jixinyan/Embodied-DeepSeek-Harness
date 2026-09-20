@@ -23,7 +23,9 @@ import type { SensorSample } from '@edh/execution';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 import { UpperRun, CORE_TOOLS } from '../../apps/server/src/application.js';
 import { FixtureBackend, FIXTURE_GOAL } from '../../apps/server/src/fixture-backend.js';
-import { ScriptedModel, textResponse } from './scripted-model.js';
+import type { ContextManagementOptions } from '@edh/memory';
+import { imageReferences } from '../../harness/agent-runtime/memory/src/visual-history.js';
+import { ScriptedModel, textResponse, toolResponse } from './scripted-model.js';
 
 const attachment: ImageAttachmentRef = {
   attachmentId: AttachmentId('sensor-fixture'),
@@ -49,13 +51,13 @@ const image: RequestImageAttachment = {
   hasAlpha: true,
 };
 
-async function setup(adapter: LlmAdapter) {
+async function setup(adapter: LlmAdapter, contextManagement?: ContextManagementOptions) {
   const directory = await mkdtemp(resolve(tmpdir(), 'edh-sensor-'));
   const store = new LocalStore(directory);
   const validator = new ContractValidator(
     JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
   );
-  const host = await createDshHost([{ providers: ['sensor-test'], adapter }]);
+  const host = await createDshHost([{ providers: ['sensor-test'], adapter }], contextManagement);
   await writeFile(
     resolve(directory, 'team.yaml'),
     `schema_version: physical.team.v1
@@ -407,3 +409,32 @@ test(
     }
   },
 );
+
+test('upper visual maintenance is visible in console events without duplicating tool executions', async () => {
+  const model = new ScriptedModel([
+    ...Array.from({ length: 6 }, (_, i) => toolResponse('perception__capture', {}, `view-${i}`)),
+    textResponse('Six observations received.'),
+  ]);
+  const f = await setup(model, { compaction: { auto: false }, visualHistory: { maxImages: 2 } });
+  try {
+    await f.run.start();
+    await f.run.settle();
+    assert.equal(model.requests.length, 7);
+    assert(
+      model.requests.every(
+        (r) => r.messages.flatMap((m) => imageReferences(m.content)).length <= 2,
+      ),
+    );
+    const events = f.run.snapshot().events;
+    assert.equal(events.filter((e) => e.type === 'dsh.tool-result').length, 6);
+    const visual = events.filter(
+      (e) => e.type === 'agent.context' && e.detail.type === 'edh/visual-history',
+    );
+    assert.equal(visual.length, 4);
+    assert(visual.every((e) => e.detail.assignmentId === f.run.state.decisionAssignmentId));
+    assert.match(JSON.stringify(visual), /attachmentIds/);
+    assert.doesNotMatch(JSON.stringify(visual), /data:image|iVBOR/);
+  } finally {
+    await f.close();
+  }
+});

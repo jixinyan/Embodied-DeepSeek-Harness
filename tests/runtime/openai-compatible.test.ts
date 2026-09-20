@@ -539,3 +539,71 @@ test('bounded error parsing honors cancellation while waiting for a structured b
     await service.close();
   }
 });
+
+test('bounded visual history sends recent image batches through real HTTP serialization', async () => {
+  const received: unknown[] = [];
+  const resolved: string[] = [];
+  const service = await endpoint(async (req, res) => {
+    received.push(await body(req));
+    sse(res, textFinish);
+  });
+  const host = await createDshHost(
+    [
+      {
+        providers: ['fixture'],
+        adapter: new OpenAICompatibleAdapter({
+          baseURL: service.baseURL,
+          models: [],
+          maxImagesPerRequest: 4,
+          resolveImage: async (attachment) => {
+            resolved.push(attachment.attachmentId);
+            return { ...image, attachment };
+          },
+        }),
+      },
+    ],
+    { compaction: { auto: false }, visualHistory: { maxImages: 4 } },
+  );
+  try {
+    const handle = await createDshSession(host, {
+      sessionId: 'bounded-http-images',
+      provider: 'fixture',
+      model: 'fixture',
+      instructions: 'Inspect explicitly supplied views.',
+      tools: [],
+    });
+    for (let i = 0; i < 20; i++) {
+      resolved.length = 0;
+      handle.agent.followup(
+        createUserMessage({
+          source: { kind: 'user' },
+          content: [0, 1].map((camera) => ({
+            type: 'image',
+            attachment: {
+              ...image.attachment,
+              attachmentId: AttachmentId(`frame-${i}-camera-${camera}`),
+            },
+          })),
+        }),
+      );
+      await handle.agent.whenIdle();
+      const end = handle.agent.session
+        .snapshotEvents()
+        .filter((e) => e.type === 'turn/end')
+        .at(-1)!;
+      assert.notEqual(end.data.reason.kind, 'error', JSON.stringify(end));
+      assert.deepEqual(
+        resolved,
+        (i ? [i - 1, i] : [i]).flatMap((frame) =>
+          [0, 1].map((camera) => `frame-${frame}-camera-${camera}`),
+        ),
+      );
+      const serialized = JSON.stringify(received.at(-1));
+      assert.equal((serialized.match(/data:image\/png;base64,/g) ?? []).length, i ? 4 : 2);
+    }
+    assert.equal(received.length, 20);
+  } finally {
+    await host.fiber.dispose();
+    await service.close();
+  }
+});

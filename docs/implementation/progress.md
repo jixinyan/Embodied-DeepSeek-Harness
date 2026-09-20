@@ -39,7 +39,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 76 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 83 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
 - 256 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -56,7 +56,7 @@ WebSocket transport and interruptible action admission are now locally exercised
 coordinates plan-selected subgoals and one observing recovery chain at a time.
 Concurrent physical subgoals, nested independent recovery chains, distributed delivery
 guarantees, resumable DSH sessions, long-horizon evidence/event retention and multi-user hosting remain open. Native model-context
-compaction and structured HTTP overflow recovery are opt-in; image selection and live summary evaluation remain open.
+compaction, structured HTTP overflow recovery and whole-message visual retention are opt-in; semantic frame selection and live summary evaluation remain open.
 Native delivery completion means session quiescence, not exactly-once business execution.
 Cooperative cancellation cannot forcibly stop an uncooperative external device/tool.
 
@@ -72,8 +72,8 @@ Cooperative cancellation cannot forcibly stop an uncooperative external device/t
 | 12    | Unified debugging console implemented and browser-checked with CPU fixtures                                                                                     |
 | 13–16 | Real simulation, release/transfer evaluation and hardware not started                                                                                           |
 
-1. Complete explicit visual history selection, bounded evidence/events and idle/terminal
-   cleanup for the upper runtime. Evaluate model behavior against an available live
+1. Complete bounded evidence/events and idle/terminal cleanup for the upper runtime.
+   Whole-message visual retention now runs through native DSH surface replacement. Evaluate model behavior against an available live
    endpoint; localhost protocol fixtures do not establish VLM task performance.
 2. Extend goal/recovery acceptance to longer plans and deployment-specific evaluators.
    Plan-selected sequential goals and prerequisite recovery now run with CPU fixtures.
@@ -497,3 +497,30 @@ Acceptance: full `pnpm check` passes with 76 runtime tests, 256 shared cases and
 work begins with explicit visual history selection, followed by bounded evidence/run
 retention and idle/terminal cleanup. Physical providers remain separate. The previous
 `ec072b8` checkpoint's GitHub CI is confirmed successful (run 35460671025).
+
+
+## Visual history checkpoint (2026-09-19)
+
+Optional `contextManagement.visualHistory.maxImages` now bounds incoming model image
+blocks through the native pre-step and surface seams. Fresh input and unconsumed tool
+images are protected; recent history keeps complete message groups. Older image blocks
+become explicit reference markers without changing text, tool identities, evidence grants
+or original audit events. Oversized fresh batches fail explicitly before inference.
+Configuration is frozen into deployment identity; no upstream loop/source patch.
+
+For a three-camera capture and six-image budget, the Planner receives the two most
+recent complete captures. Repeated references still count as separate image blocks.
+The console receives correlated visual-maintenance events and keeps original tool
+results; replacement copies no longer overwrite tool execution cards.
+
+Seven new runtime tests cover opt-in validation, forty observation batches, isolated
+roles, native audit/meter replay, tool images without repeated execution, fresh-batch
+failure, native pressure compaction, twenty localhost HTTP requests and upper console
+projection. Deployment identity tests also verify the detached frozen visual policy.
+Full `pnpm check` passes: 83 runtime tests, 256 shared cases and 17 Python policy/gate
+tests. 122 pinned DSH files and 25 bindings still pass provenance validation. No live
+VLM, learned policy or simulator was evaluated. Remaining work: bounded events and
+evidence retention, idle/terminal cleanup, live VLM evaluation, and later the physical
+worker/provider bridge. This is recency-based whole-message retention, not semantic
+frame selection or evidence-store garbage collection. Real simulators and policies
+remain unconnected; runtime-native persistence/resume remains a separate gate.

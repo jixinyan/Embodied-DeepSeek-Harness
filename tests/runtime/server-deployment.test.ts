@@ -294,13 +294,19 @@ test(
 test('context policy is frozen into deployment identity and native validation rejects invalid budgets', async () => {
   const input = await inputs();
   try {
-    const policy = { compaction: { auto: false, thresholdRatio: 0.7 } };
+    const policy = {
+      compaction: { auto: false, thresholdRatio: 0.7 },
+      visualHistory: { maxImages: 8 },
+    };
     const original = prepareDeployment(input.deployment, input.validator);
     const prepared = prepareDeployment(
       { ...input.deployment, contextManagement: policy },
       input.validator,
     );
     policy.compaction.thresholdRatio = 0.9;
+    policy.visualHistory.maxImages = 3;
+    assert.equal(prepared.contextManagement?.visualHistory?.maxImages, 8);
+    assert(Object.isFrozen(prepared.contextManagement?.visualHistory));
     assert.equal(prepared.contextManagement?.compaction?.thresholdRatio, 0.7);
     assert.notEqual(prepared.digest, original.digest);
     assert(Object.isFrozen(prepared.contextManagement));
