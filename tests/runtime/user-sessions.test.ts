@@ -319,3 +319,86 @@ test(
     }
   },
 );
+
+test(
+  'a rejected second task port is closed without reusing the previous retired run',
+  { timeout: 20000 },
+  async () => {
+    const dataDirectory = await mkdtemp(resolve(tmpdir(), 'edh-session-port-reject-'));
+    const validator = new ContractValidator(
+      JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
+    );
+    const base = createDemoDeployment(
+      { root: process.cwd(), tickMs: 20, modelDelayMs: 0 },
+      validator,
+    );
+    const profile = createDemoLaunchProfiles(validator, 20)['persistent-cup-fixture']!;
+    let allocations = 0;
+    let closes = 0;
+    const server = await startServer({
+      root: process.cwd(),
+      dataDirectory,
+      port: 0,
+      deployment: {
+        ...base,
+        launchProfiles: {
+          cpu: {
+            ...profile,
+            createEnvironment: async (options) => {
+              const environment = await profile.createEnvironment(options);
+              return {
+                ...environment,
+                createTaskBackend: async (taskId, options) => {
+                  const backend = await environment.createTaskBackend(taskId, options);
+                  const close = backend.close.bind(backend);
+                  backend.close = async () => {
+                    closes++;
+                    await close();
+                  };
+                  if (++allocations === 2)
+                    Object.defineProperty(backend, 'source', { value: 'hardware' });
+                  return backend;
+                },
+              };
+            },
+          },
+        },
+      },
+    });
+    try {
+      const opened = await post(server.url, '/api/sessions', {
+        profileId: 'cpu',
+        requestId: randomUUID(),
+      });
+      const id = opened.body.id;
+      assert.equal(
+        (
+          await post(server.url, `/api/sessions/${id}/tasks`, {
+            scenario: 'first-pass',
+            requestId: randomUUID(),
+          })
+        ).status,
+        201,
+      );
+      await until(
+        async () =>
+          (await (await fetch(`${server.url}/api/sessions/${id}`)).json()).state === 'ready',
+      );
+      assert.equal(closes, 1);
+      const rejected = await post(server.url, `/api/sessions/${id}/tasks`, {
+        scenario: 'first-pass',
+        requestId: randomUUID(),
+      });
+      assert.equal(rejected.status, 400);
+      assert.match(rejected.body.error, /source differs/);
+      assert.equal(closes, 2, 'The rejected new port must be closed exactly once.');
+      assert.equal(
+        (await post(server.url, `/api/sessions/${id}/close`, {})).body.resources,
+        'released',
+      );
+    } finally {
+      await server.close();
+      await rm(dataDirectory, { recursive: true, force: true });
+    }
+  },
+);

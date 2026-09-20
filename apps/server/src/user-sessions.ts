@@ -153,6 +153,8 @@ export class UserSessions {
       if (current?.record.id !== id || !current.environment || current.record.state !== 'ready')
         throw new SessionConflict('Session is not ready for another task.');
       if (current.drain) await current.drain;
+      // A failed new allocation must close its own port, not the prior retired run.
+      delete current.run;
       this.store.put(key, { taskId, runId: null }, 0);
       current.record.state = 'running';
       this.save(current.record);
