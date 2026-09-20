@@ -39,7 +39,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 72 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+- 76 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
 - 256 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
@@ -56,7 +56,7 @@ WebSocket transport and interruptible action admission are now locally exercised
 coordinates plan-selected subgoals and one observing recovery chain at a time.
 Concurrent physical subgoals, nested independent recovery chains, distributed delivery
 guarantees, resumable DSH sessions, long-horizon evidence/event retention and multi-user hosting remain open. Native model-context
-compaction is opt-in; image selection, HTTP overflow classification and live summary evaluation remain open.
+compaction and structured HTTP overflow recovery are opt-in; image selection and live summary evaluation remain open.
 Native delivery completion means session quiescence, not exactly-once business execution.
 Cooperative cancellation cannot forcibly stop an uncooperative external device/tool.
 
@@ -72,15 +72,16 @@ Cooperative cancellation cannot forcibly stop an uncooperative external device/t
 | 12    | Unified debugging console implemented and browser-checked with CPU fixtures                                                                                     |
 | 13–16 | Real simulation, release/transfer evaluation and hardware not started                                                                                           |
 
-1. Connect the implemented policy client/action gate to an owned Python worker and
-   the upper EmbodiedBackend port. Add resource/watchdog lifecycle and state events.
-   Configure/evaluate the model adapter against an actual available endpoint.
+1. Complete explicit visual history selection, bounded evidence/events and idle/terminal
+   cleanup for the upper runtime. Evaluate model behavior against an available live
+   endpoint; localhost protocol fixtures do not establish VLM task performance.
 2. Extend goal/recovery acceptance to longer plans and deployment-specific evaluators.
    Plan-selected sequential goals and prerequisite recovery now run with CPU fixtures.
 3. Extend the implemented report acknowledgements/startup reconciliation with durable
    business transactions only where needed; preserve the original DSH inbox.
-4. Add bounded retention/checkpoints and recovery reconciliation appropriate to
-   longer runs. Historical sessions must never silently resume physical commands.
+4. After upper acceptance, connect the policy client/action gate to an owned Python
+   worker and the upper EmbodiedBackend port; add resource/watchdog lifecycle and
+   state events. Historical sessions must never silently resume physical commands.
 5. Bind one actual simulation/policy/perception configuration after worker acceptance.
    Run physical execution, interruption and formal-verification acceptance.
 6. Continue console usability refinement as live provider and sensor states become available.
@@ -467,3 +468,32 @@ Next upper work: canonical HTTP context-overflow handling and bounded image hist
 then long-run evidence/events, idle-role and terminal-run cleanup. Real providers
 remain a separate implementation gate, with Action Gate mandatory between policy
 inference and execution. The main goal is still open.
+
+
+## HTTP context-overflow checkpoint (2026-09-19)
+
+The OpenAI-compatible adapter now classifies explicit bounded JSON context overflow
+and passes DSH its canonical error code. It reads at most 64 KiB (or the smaller
+configured response bound), retains HTTP status/request identity and never includes
+provider error-body text. Malformed/oversized bodies, prose-only matches, ordinary
+400/413, auth, rate-limit and server failures do not become context overflow.
+Cancellation and deadline remain active during error-body reads.
+
+Three added local HTTP tests cover classification, cancellation/deadline, and the
+native loop's success/repeated-error/no-reduction paths. The successful path executes
+its scene tool once, summarizes historical context, retries the model request and
+retains the original tool audit. A repeated overflow is bounded; a non-shrinking
+summary cannot authorize a retry. No new retry loop or upstream source patch.
+
+The console workflow test now uses explicit short-lived HTTP connections and a
+dedicated SSE connection. This avoids a same-process test artifact where synchronous
+journal writes delay idle-socket handling. A separate test asserts that sequential
+API requests reuse the exact same keep-alive socket. No server timeout, production
+retry or reduced test concurrency was introduced.
+
+Acceptance: full `pnpm check` passes with 76 runtime tests, 256 shared cases and
+17 Python policy/gate tests. Provenance still verifies 122 DSH source files and
+25 referenced module bindings. No live model or simulator was evaluated. Remaining upper
+work begins with explicit visual history selection, followed by bounded evidence/run
+retention and idle/terminal cleanup. Physical providers remain separate. The previous
+`ec072b8` checkpoint's GitHub CI is confirmed successful (run 35460671025).

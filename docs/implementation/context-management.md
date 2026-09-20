@@ -75,13 +75,21 @@ CPU tests exercise manual and automatic pressure reduction, continued native too
 role isolation, original audit retention, dynamic authoritative context restoration,
 rejected empty/oversized/truncated summaries, cancellation and subsequent maintenance.
 Server acceptance exercises policy identity, missing-capacity preflight and a completed
-fixture task with context measurement. These tests do not assess real summary quality.
+fixture task with context measurement. Real localhost HTTP acceptance also exercises
+compaction followed by a successful request, repeated overflow and a non-shrinking
+summary, preserving the once-executed tool and original audit. These tests do not
+assess real summary quality.
 
 - Automatic summarization failures preserve the original surface and follow DSH's
   warning/continue policy. Thresholds are proactive heuristics, not a hard token ceiling.
-- Native overflow recovery requires an adapter's canonical context-window-exceeded
-  error. The current OpenAI-compatible HTTP adapter does not yet classify those errors;
-  pressure management is supported, HTTP overflow recovery remains a follow-on item.
+- Native overflow recovery now receives the canonical error from the HTTP adapter
+  when status 400/413 contains a bounded JSON body with the exact
+  `error.code: "context_length_exceeded"`. Ordinary bad requests, status-only 413,
+  auth/rate-limit errors, prose matches and malformed/oversized bodies do not trigger
+  compaction. No compatibility with every vLLM/provider error dialect is implied.
+  DSH retries only after durable surface reduction and within `maxOverflowRetries`.
+  If there is no useful reduction, summary failure preserves the original overflow;
+  repeated overflow stops at the retry bound. The adapter never retries requests.
 - Image token estimates are approximate without provider-specific pricing metadata.
   The optional pruner targets tool text; it is not a visual frame-selection policy.
   Existing per-request image count/byte bounds can still be reached before pressure

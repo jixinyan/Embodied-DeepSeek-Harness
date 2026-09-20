@@ -1,5 +1,5 @@
 import { test } from 'node:test';
-import { get, type IncomingMessage } from 'node:http';
+import { Agent, get, type IncomingMessage } from 'node:http';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { AssignmentReports, type Assignment } from '@edh/communication';
@@ -24,15 +24,19 @@ test(
     const dataDirectory = await mkdtemp(resolve(tmpdir(), 'edh-http-'));
     const options = { root: process.cwd(), dataDirectory, port: 0, tickMs: 20, modelDelayMs: 0 };
     let server = await startDemoServer(options);
+    // Client and server share an event loop here. Sync fsync can delay both idle
+    // timers past the pool's expiry; workflow assertions do not test Undici's pool.
+    const workflowFetch = (url: string, init?: RequestInit) =>
+      fetch(url, { ...init, headers: { ...init?.headers, Connection: 'close' } });
     const post = (path: string, data: unknown, headers: Record<string, string> = {}) =>
-      fetch(server.url + path, {
+      workflowFetch(server.url + path, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify(data),
       });
     try {
-      assert.equal(await responseStatus(await fetch(server.url)), 200);
-      const config = await (await fetch(server.url + '/api/config')).json();
+      assert.equal(await responseStatus(await workflowFetch(server.url)), 200);
+      const config = await (await workflowFetch(server.url + '/api/config')).json();
       assert.equal(config.physicalRuntime, 'not_connected');
       assert(config.scenarios.includes('multi-goal-recovery'));
       assert.equal(config.scenarioGoals['multi-goal-recovery'].id, 'store-cup');
@@ -91,25 +95,25 @@ test(
       const deadline = Date.now() + 15000;
       let state: RunState;
       do {
-        state = await (await fetch(`${server.url}/api/runs/${runId}`)).json();
+        state = await (await workflowFetch(`${server.url}/api/runs/${runId}`)).json();
         if (state.skillIds.length && state.state === 'succeeded') break;
         assert(Date.now() < deadline, JSON.stringify(state.events.slice(-8)));
         await setTimeout(20);
       } while (true);
       assert.equal(state.state, 'succeeded');
-      const trace = await (await fetch(`${server.url}/api/runs/${runId}/recovery`)).json();
+      const trace = await (await workflowFetch(`${server.url}/api/runs/${runId}/recovery`)).json();
       assert(trace.recovery.events.length > 0);
       assert.equal(await responseStatus(await post(`/api/runs/${runId}/resume`, {})), 409);
       await server.close();
       server = await startDemoServer(options);
-      const history = await (await fetch(`${server.url}/api/runs/${runId}`)).json();
+      const history = await (await workflowFetch(`${server.url}/api/runs/${runId}`)).json();
       assert.equal(history.readOnly, true);
       assert.equal(history.skills.length, 1);
       const second = await (
         await post('/api/runs', { scenario: 'first-pass', requestId: randomUUID() })
       ).json();
       assert.notEqual(second.runId, runId);
-      const old = await (await fetch(`${server.url}/api/runs/${runId}`)).json();
+      const old = await (await workflowFetch(`${server.url}/api/runs/${runId}`)).json();
       assert.equal(old.state, 'succeeded');
     } finally {
       await server.close();
@@ -256,3 +260,35 @@ test(
     }
   },
 );
+
+test('console HTTP serves repeated requests over the same keep-alive connection', async () => {
+  const dataDirectory = await mkdtemp(resolve(tmpdir(), 'edh-http-pool-'));
+  const server = await startDemoServer({ root: process.cwd(), dataDirectory, port: 0 });
+  const agent = new Agent({ keepAlive: true, maxSockets: 1 });
+  let previousSocket: unknown;
+  try {
+    for (const path of ['/api/config', '/api/runs', '/api/config']) {
+      const result = await new Promise<{ data: string; socket: unknown }>((accept, reject) => {
+        const req = get(server.url + path, { agent }, async (res) => {
+          const socket = res.socket;
+          try {
+            assert.equal(res.statusCode, 200);
+            let data = '';
+            for await (const chunk of res) data += chunk.toString();
+            accept({ data, socket });
+          } catch (error) {
+            reject(error);
+          }
+        });
+        req.on('error', reject);
+      });
+      if (previousSocket) assert.equal(result.socket, previousSocket);
+      previousSocket = result.socket;
+      assert(JSON.parse(result.data));
+    }
+  } finally {
+    agent.destroy();
+    await server.close();
+    await rm(dataDirectory, { recursive: true, force: true });
+  }
+});

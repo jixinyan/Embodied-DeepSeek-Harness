@@ -292,3 +292,250 @@ test('local model transport permits no credential and honors cancellation and re
     await service.close();
   }
 });
+
+test('structured context overflow is classified narrowly without leaking provider text', async () => {
+  let status = 400;
+  let contentType = 'application/json';
+  let payload = JSON.stringify({
+    error: { code: 'context_length_exceeded', message: 'private body' },
+  });
+  let count = 0;
+  const service = await endpoint(async (req, res) => {
+    await body(req);
+    count++;
+    res.writeHead(status, { 'Content-Type': contentType, 'x-request-id': 'overflow-request' });
+    res.end(payload);
+  });
+  try {
+    const adapter = new OpenAICompatibleAdapter({
+      baseURL: service.baseURL,
+      models: [],
+      maxResponseBytes: 512,
+    });
+    for (const row of [
+      [400, 'application/json', payload, 'CONTEXT_WINDOW_EXCEEDED'],
+      [413, 'application/problem+json; charset=utf-8', payload, 'CONTEXT_WINDOW_EXCEEDED'],
+      [401, 'application/json', payload, 'AUTH'],
+      [429, 'application/json', payload, 'RATE_LIMIT'],
+      [500, 'application/json', payload, 'HTTP_ERROR'],
+      [400, 'text/html', payload, 'HTTP_ERROR'],
+      [
+        400,
+        'application/json',
+        JSON.stringify({ error: { message: 'context_length_exceeded private body', code: null } }),
+        'HTTP_ERROR',
+      ],
+      [400, 'application/json', 'null', 'HTTP_ERROR'],
+      [400, 'application/json', '{malformed private body', 'HTTP_ERROR'],
+      [
+        413,
+        'application/json',
+        JSON.stringify({
+          error: { code: 'context_length_exceeded', message: 'private body'.repeat(100) },
+        }),
+        'HTTP_ERROR',
+      ],
+    ] as const) {
+      [status, contentType, payload] = [row[0], row[1], row[2]];
+      const before = count;
+      await assert.rejects(
+        async () => {
+          for await (const _ of adapter.stream(request)) {
+          }
+        },
+        (error) => {
+          assert(error instanceof LlmError);
+          assert.equal(error.code, row[3]);
+          assert.equal(error.failure.status, status);
+          assert.equal(error.failure.requestId, 'overflow-request');
+          assert.doesNotMatch(JSON.stringify(error), /private body|malformed/);
+          return true;
+        },
+      );
+      assert.equal(count, before + 1, 'Transport must never retry internally.');
+    }
+  } finally {
+    await service.close();
+  }
+});
+
+test('HTTP overflow invokes native DSH compaction and bounded retry without repeating a completed tool', async () => {
+  for (const recovery of ['success', 'overflow-again', 'no-progress'] as const) {
+    const repeatOverflow = recovery === 'overflow-again';
+    const hasHistory = recovery !== 'no-progress';
+    let normalRequests = 0;
+    let summaries = 0;
+    let executions = 0;
+    let beforeBytes = 0;
+    let afterBytes = 0;
+    const service = await endpoint(async (req, res) => {
+      const input = await body(req);
+      if (JSON.stringify(input.messages.at(-1)).includes('Goal and Authoritative Conditions')) {
+        summaries++;
+        sse(res, [
+          {
+            choices: [
+              {
+                index: 0,
+                delta: {
+                  content:
+                    'Scene was inspected once. Original criterion: cup inside cabinet. Current status remains unverified. Do not repeat the completed inspection.',
+                },
+                finish_reason: 'stop',
+              },
+            ],
+          },
+        ]);
+        return;
+      }
+      normalRequests++;
+      if (normalRequests === 1) {
+        sse(res, [
+          {
+            choices: [
+              {
+                index: 0,
+                delta: {
+                  tool_calls: [
+                    {
+                      index: 0,
+                      id: 'inspect-once',
+                      type: 'function',
+                      function: { name: 'inspect_scene', arguments: '{}' },
+                    },
+                  ],
+                },
+                finish_reason: 'tool_calls',
+              },
+            ],
+          },
+        ]);
+      } else if (normalRequests === 2 || repeatOverflow) {
+        beforeBytes ||= JSON.stringify(input.messages).length;
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(
+          JSON.stringify({
+            error: { code: 'context_length_exceeded', message: 'Private prompt omitted' },
+          }),
+        );
+      } else {
+        afterBytes = JSON.stringify(input.messages).length;
+        sse(res, textFinish);
+      }
+    });
+    const host = await createDshHost(
+      [
+        {
+          providers: ['fixture'],
+          adapter: new OpenAICompatibleAdapter({
+            baseURL: service.baseURL,
+            models: [{ id: 'fixture', contextWindow: 1000000 }],
+          }),
+        },
+      ],
+      { compaction: { maxOverflowRetries: 1, compactionRetries: 0 } },
+    );
+    try {
+      const session = await createDshSession(host, {
+        sessionId: `http-overflow-${recovery}`,
+        provider: 'fixture',
+        model: 'fixture',
+        instructions: 'Inspect once and report evidence.',
+        tools: [
+          defineTool({
+            name: 'inspect_scene',
+            description: 'Synthetic scene inspection.',
+            parameters: {},
+            output: {
+              schema: { type: 'string' },
+              render: (_args, value) => [{ type: 'text', text: value }],
+            },
+            async execute() {
+              executions++;
+              return 'historical observation '.repeat(3000);
+            },
+          }),
+        ],
+      });
+      session.agent.followup(
+        createUserMessage({
+          source: { kind: 'user' },
+          content: [
+            {
+              type: 'text',
+              text:
+                'Inspect the cup. Success criterion is inside cabinet. ' +
+                'historical note '.repeat(hasHistory ? 2000 : 0),
+            },
+          ],
+        }),
+      );
+      await session.agent.whenIdle();
+      const events = session.agent.session.snapshotEvents();
+      assert.equal(executions, 1);
+      assert.equal(
+        normalRequests,
+        hasHistory ? 3 : 2,
+        JSON.stringify(
+          events.filter((e) => e.type.startsWith('compaction/') || e.type === 'turn/end'),
+        ),
+      );
+      assert.equal(summaries, 1);
+      assert(
+        events.some((e) => e.type === 'compaction/end' && Boolean(e.data.error) === !hasHistory),
+      );
+      const end = events.filter((e) => e.type === 'turn/end').at(-1)!;
+      if (recovery !== 'success') assert.equal(end.data.reason.kind, 'error');
+      else {
+        assert.notEqual(end.data.reason.kind, 'error');
+        assert(afterBytes < beforeBytes);
+      }
+      assert(
+        events.some((e) => e.type === 'tool/result'),
+        'Original tool evidence remains in the audit.',
+      );
+    } finally {
+      await host.fiber.dispose();
+      await service.close();
+    }
+  }
+});
+
+test('bounded error parsing honors cancellation while waiting for a structured body', async () => {
+  let started!: () => void;
+  const seen = new Promise<void>((resolve) => {
+    started = resolve;
+  });
+  const service = await endpoint(async (req, res) => {
+    await body(req);
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.write('{"error":');
+    started();
+  });
+  const controller = new AbortController();
+  const adapter = new OpenAICompatibleAdapter({ baseURL: service.baseURL, models: [] });
+  try {
+    const pending = (async () => {
+      for await (const _ of adapter.stream({ ...request, signal: controller.signal })) {
+      }
+    })();
+    const rejected = assert.rejects(pending, /Cancel error-body read/);
+    await seen;
+    controller.abort(new Error('Cancel error-body read'));
+    await rejected;
+    const timed = new OpenAICompatibleAdapter({
+      baseURL: service.baseURL,
+      models: [],
+      timeoutMs: 30,
+    });
+    await assert.rejects(
+      async () => {
+        for await (const _ of timed.stream(request)) {
+        }
+      },
+      (error) => error instanceof LlmError && error.code === 'TIMEOUT',
+    );
+  } finally {
+    await service.close();
+  }
+});

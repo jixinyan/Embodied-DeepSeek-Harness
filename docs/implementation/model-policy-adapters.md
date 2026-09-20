@@ -87,6 +87,20 @@ error bodies. Redirects are rejected. Truncated streams, missing finish reasons,
 oversized responses and deadlines fail explicitly rather than becoming successful
 answers. No automatic transport retry is added beneath DSH.
 
+The HTTP adapter reads at most the smaller of 64 KiB and `maxResponseBytes` from
+candidate 400/413 JSON errors. EDH's narrow compatibility rule maps exact
+`error.code: "context_length_exceeded"` to DSH's canonical context error. It does
+not classify arbitrary request-size failures or search error prose. The original
+HTTP status/request ID remain available; provider body text is never copied into
+errors or audit records. Reads retain the request deadline and cancellation signal.
+With automatic context management enabled, native DSH owns bounded compaction and
+retry. Without useful reduction, the original error terminates the turn. See the
+[context guide](context-management.md). This is an adapter convention tested with
+local peers, not a claim that every compatible endpoint uses the same error code.
+OpenAI's [error guide](https://developers.openai.com/api/docs/guides/error-codes)
+distinguishes bad requests, authentication, rate limits and internal failures; the
+adapter preserves those distinctions rather than applying compaction to all errors.
+
 ## Lower policy: an independent inference server
 
 Install the optional transport dependency:
