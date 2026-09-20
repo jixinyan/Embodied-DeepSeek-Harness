@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="860" viewBox="0 0 1280 860" role="img" aria-labelledby="title desc">
+<title id="title">EDH user sessions, task scopes and shared experience</title>
+<desc id="desc">The console selects an installed configuration. A user session holds one environment across independent task runs and DSH role assignments. Recovery skills persist in a shared workspace library. Actual simulation and hardware providers remain pending.</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#577668"/></marker>
+<style>text{font-family:Arial,sans-serif;fill:#233c32}.title{font-size:28px;font-weight:700}.heading{font-size:20px;font-weight:700}.body{font-size:16px}.small{font-size:14px;fill:#52675e}.box{fill:#fff;stroke:#b6c8bf;stroke-width:1.5}.arrow{fill:none;stroke:#577668;stroke-width:2;marker-end:url(#arrow)}</style></defs>
+<rect width="1280" height="860" fill="#f5f7f3"/>
+<text x="42" y="50" class="title">One conversation, one retained environment, many tasks</text>
+<text x="42" y="79" class="small">EDH / User Session is distinct from Task Run and native DSH Agent Session</text>
+<rect x="42" y="105" width="1196" height="110" rx="14" class="box"/>
+<text x="64" y="140" class="heading">Control panel + installed launch profiles</text>
+<text x="64" y="169" class="body">Environment · Embodiment · Policy / checkpoint · Upper model · Team / tools</text>
+<text x="64" y="195" class="small">Snapshot configuration before allocation. Observe session resources, task state, sensors, evidence and experience.</text>
+<path d="M430 215V251" class="arrow"/>
+<rect x="42" y="255" width="774" height="424" rx="16" fill="#e9f0ea" stroke="#7c9a88" stroke-width="2"/>
+<text x="66" y="290" class="heading">User Session A</text>
+<text x="66" y="317" class="small">One environment allocation. Configuration stays fixed until session end.</text>
+<rect x="66" y="340" width="320" height="142" rx="10" class="box"/>
+<text x="85" y="371" class="heading">Task Run 1</text>
+<text x="85" y="398" class="body">Observe → Plan → Act → Verify</text>
+<text x="85" y="425" class="small">Fresh DSH role assignments</text>
+<text x="85" y="451" class="small">Explicit briefs, reports and evidence</text>
+<rect x="470" y="340" width="320" height="142" rx="10" class="box"/>
+<text x="490" y="371" class="heading">Task Run 2</text>
+<text x="490" y="398" class="body">Observe → Plan → Act → Verify</text>
+<text x="490" y="425" class="small">New task context / control scope</text>
+<text x="490" y="451" class="small">Sees the scene left by Task Run 1</text>
+<path d="M386 409H464" class="arrow"/>
+<text x="401" y="393" class="small">next</text>
+<path d="M225 482V530M628 482V530" class="arrow"/>
+<rect x="66" y="536" width="724" height="118" rx="10" class="box"/>
+<text x="87" y="568" class="heading">Retained environment + replaceable physical providers</text>
+<text x="87" y="596" class="body">Task-scoped backend → Policy client → Action gate → Embodiment</text>
+<text x="87" y="624" class="small">Task end: drain roles / release task scope. Session end: release environment.</text>
+<rect x="860" y="255" width="378" height="265" rx="14" class="box"/>
+<text x="880" y="289" class="heading">Workspace SKILL library</text>
+<text x="880" y="321" class="body">Failure conditions + recovery guidance</text>
+<text x="880" y="350" class="body">Planning and verification knowledge</text>
+<text x="880" y="381" class="small">Formal failure + Planner recovery</text>
+<text x="880" y="405" class="small">→ Evolver records the attempt chain</text>
+<text x="880" y="429" class="small">→ Original-goal success permits publish</text>
+<text x="880" y="462" class="small">Explicit retrieval across user sessions</text>
+<text x="880" y="489" class="small">Source / applicability / validation retained</text>
+<path d="M790 375H853" class="arrow"/>
+<path d="M860 445H797" class="arrow"/>
+<rect x="860" y="559" width="378" height="120" rx="14" class="box"/>
+<text x="880" y="591" class="heading">User Session B, C, ...</text>
+<text x="880" y="620" class="body">New environment / embodiment binding</text>
+<text x="880" y="648" class="small">Shared knowledge; independent contexts</text>
+<path d="M1049 559V527" class="arrow"/>
+<rect x="42" y="715" width="1196" height="107" rx="12" fill="#fffaf0" stroke="#c9ae73" stroke-dasharray="7 5"/>
+<text x="64" y="745" class="heading">Implementation boundary</text>
+<text x="64" y="773" class="body">Working: CPU session continuity, native DSH tasks, profile selection, resource state and shared SKILL history.</text>
+<text x="64" y="800" class="small">Pending: real simulators / hardware, media providers, independent compatible selectors and CLI-free server bootstrap.</text>
+</svg>

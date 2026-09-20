@@ -6,9 +6,11 @@ import { randomUUID } from 'node:crypto';
 import type { AddressInfo } from 'node:net';
 import type { Context } from '@deepseek-ai/cordis';
 import { ContractValidator } from '@edh/contracts';
+import type { ResolvedPhysicalRuntimeProfile } from '@edh/execution';
+import { UserSessions, SessionConflict } from './user-sessions.js';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
-import { SkillLibrary } from '@edh/memory';
+import { SkillLibrary, type SkillBundle } from '@edh/memory';
 import { RunHistory, type RunState } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
 import { UpperRun, terminal } from './application.js';
@@ -33,10 +35,14 @@ async function readValidator(root: string): Promise<ContractValidator> {
   );
 }
 export async function startDemoServer(options: DemoServerOptions) {
-  const { createDemoDeployment } = await import('./demo-deployment.js');
+  const { createDemoDeployment, createDemoLaunchProfiles } = await import('./demo-deployment.js');
+  const validator = await readValidator(options.root);
   return startServer({
     ...options,
-    deployment: createDemoDeployment(options, await readValidator(options.root)),
+    deployment: {
+      ...createDemoDeployment(options, validator),
+      launchProfiles: createDemoLaunchProfiles(validator, options.tickMs),
+    },
   });
 }
 class HttpError extends Error {
@@ -78,29 +84,45 @@ export async function startServer(options: LocalServerOptions) {
   const validator = await readValidator(options.root);
   const deployment = prepareDeployment(options.deployment, validator);
   const scenarios = Object.keys(deployment.tasks);
-  const team = await new FileTeamLoader({
-    validator,
-    builtinDirectory: resolve(options.root, 'harness/agent-runtime/agents/roles'),
-    roleRoot: deployment.roleRoot,
-    defaultModel: deployment.metadata.defaultModel,
-    models: Object.keys(deployment.metadata.models),
-    tools: deployment.metadata.tools,
-    providers: deployment.metadata.providers,
-    ...(deployment.physicalProfile
-      ? {
-          promptContext: deployment.physicalProfile.embodiment.promptContext,
-          ...(deployment.physicalProfile.rolePromptAdditions
-            ? { rolePromptAdditions: deployment.physicalProfile.rolePromptAdditions }
-            : {}),
-        }
-      : {}),
-  }).inspect(deployment.teamFile);
+  const loadTeam = (defaultModel: string, physicalProfile?: ResolvedPhysicalRuntimeProfile) =>
+    new FileTeamLoader({
+      validator,
+      builtinDirectory: resolve(options.root, 'harness/agent-runtime/agents/roles'),
+      roleRoot: deployment.roleRoot,
+      defaultModel,
+      models: Object.keys(deployment.metadata.models),
+      tools: deployment.metadata.tools,
+      providers: deployment.metadata.providers,
+      ...(physicalProfile
+        ? {
+            promptContext: physicalProfile.embodiment.promptContext,
+            ...(physicalProfile.rolePromptAdditions
+              ? { rolePromptAdditions: physicalProfile.rolePromptAdditions }
+              : {}),
+          }
+        : {}),
+    }).inspect(deployment.teamFile);
+  const team = await loadTeam(deployment.metadata.defaultModel, deployment.physicalProfile);
   for (const tool of deployment.physicalProfile?.embodiment.requiredTools ?? [])
     if (!deployment.metadata.tools.includes(tool))
       throw new Error(`Physical profile requires unavailable tool: ${tool}`);
   if (team.definition.entrypoint !== team.definition.bindings.decision_owner)
     throw new Error('This application requires the entrypoint to be the decision owner.');
-  const deploymentDigest = deployment.digest + ':' + team.sourceDigest;
+  const launchTeams = new Map<string, typeof team>();
+  for (const [id, profile] of Object.entries(deployment.launchProfiles)) {
+    for (const tool of profile.physicalProfile?.embodiment.requiredTools ?? [])
+      if (!deployment.metadata.tools.includes(tool))
+        throw new Error(`Launch profile requires unavailable tool: ${tool}`);
+    const selected = await loadTeam(profile.defaultModel, profile.physicalProfile);
+    if (selected.definition.entrypoint !== selected.definition.bindings.decision_owner)
+      throw new Error('Launch team entrypoint must be decision owner.');
+    launchTeams.set(id, selected);
+  }
+  const deploymentDigest =
+    deployment.digest +
+    ':' +
+    team.sourceDigest +
+    [...launchTeams].map(([id, t]) => `:${id}:${t.sourceDigest}`).join('');
   let ownedStore: LocalStore | undefined;
   let host: Context | undefined;
   try {
@@ -115,6 +137,7 @@ export async function startServer(options: LocalServerOptions) {
       }
     }
     const store = (ownedStore = new LocalStore(options.dataDirectory));
+    const userSessions = new UserSessions(store);
     const reports = new AssignmentReports(store, validator);
     reports.reconcileInterruptedDeliveries();
     const skills = new SkillLibrary(store, validator);
@@ -129,6 +152,7 @@ export async function startServer(options: LocalServerOptions) {
       deploymentDigest,
       description: deployment.metadata.description,
       models: deployment.metadata.models,
+      launchProfiles: deployment.metadata.launchProfiles,
       ...(deployment.contextManagement ? { contextManagement: deployment.contextManagement } : {}),
       ...(deployment.metadata.physicalProfile
         ? { physicalProfile: deployment.metadata.physicalProfile }
@@ -181,6 +205,8 @@ export async function startServer(options: LocalServerOptions) {
       return {
         ...state,
         configuration: store.get(`run-config:${id}`)?.value ?? null,
+        userSessionId:
+          store.get<{ sessionId: string }>(`run-user-session:${id}`)?.value.sessionId ?? null,
         readOnly: active?.state.id !== id || terminal(state.state),
         plan: store.get(`plan:${id}`)?.value ?? null,
         roleReports: Object.keys(state.assignments)
@@ -211,6 +237,7 @@ export async function startServer(options: LocalServerOptions) {
       }
     };
     const changed = (state: RunState) => {
+      if (active?.state.id === state.id) userSessions.changed(active);
       for (const [res, entry] of streams)
         if (entry.runId === state.id && !entry.timer) {
           entry.timer = setTimeout(() => {
@@ -237,6 +264,140 @@ export async function startServer(options: LocalServerOptions) {
         const method = req.method ?? 'GET';
         if (method === 'GET' && url.pathname === '/api/config')
           return json(res, 200, publicConfiguration);
+        if (method === 'GET' && url.pathname === '/api/skills')
+          return json(res, 200, {
+            skills: store
+              .list<SkillBundle>('skill:')
+              .map((row) => {
+                const run = store
+                  .list<RunState>('run:')
+                  .find((r) => r.value.skillIds.includes(row.value.metadata.skill_id));
+                return {
+                  ...row.value,
+                  runId: run?.value.id ?? null,
+                  userSessionId: run
+                    ? (store.get<{ sessionId: string }>(`run-user-session:${run.value.id}`)?.value
+                        .sessionId ?? null)
+                    : null,
+                };
+              })
+              .slice(-100),
+          });
+        if (method === 'GET' && url.pathname === '/api/sessions')
+          return json(res, 200, { sessions: userSessions.list(), activeId: userSessions.activeId });
+        if (method === 'POST' && url.pathname === '/api/sessions') {
+          const data = await body(req);
+          if (
+            Object.keys(data).some((k) => !['profileId', 'requestId'].includes(k)) ||
+            typeof data.profileId !== 'string' ||
+            !Object.hasOwn(deployment.launchProfiles, data.profileId) ||
+            typeof data.requestId !== 'string' ||
+            !/^[A-Za-z0-9-]{8,80}$/.test(data.requestId)
+          )
+            throw new HttpError(400, 'Choose an installed launch profile and a valid request ID.');
+          if (admitting || (!userSessions.activeId && active && !terminal(active.state.state)))
+            throw new HttpError(409, 'A task is active.');
+          const profile = deployment.launchProfiles[data.profileId]!;
+          const selected = launchTeams.get(data.profileId)!;
+          const configuration = {
+            ...publicConfiguration,
+            mode: profile.source ?? deployment.metadata.source,
+            physicalRuntime:
+              (profile.source ?? deployment.metadata.source) === 'test_fixture'
+                ? 'not_connected'
+                : 'deployment_bound',
+            physicalProfile: profile.physicalProfile ?? null,
+            launchProfile: deployment.metadata.launchProfiles[data.profileId],
+            profileId: data.profileId,
+            team: selected.definition,
+            roles: selected.members,
+            digest: selected.sourceDigest,
+            model: profile.defaultModel,
+          };
+          const record = await userSessions.open(
+            {
+              profileId: data.profileId,
+              requestId: data.requestId,
+              deploymentDigest,
+              configuration,
+            },
+            async (signal) => {
+              if (active) {
+                await active.settle();
+                await active.close();
+                active = undefined;
+              }
+              signal.throwIfAborted();
+              return profile.createEnvironment({
+                signal,
+                ...(profile.physicalProfile ? { profile: profile.physicalProfile } : {}),
+              });
+            },
+          );
+          return json(res, 201, record);
+        }
+        const userSessionRoute = /^\/api\/sessions\/([A-Za-z0-9-]+)(?:\/(tasks|close))?$/.exec(
+          url.pathname,
+        );
+        if (userSessionRoute) {
+          const id = userSessionRoute[1]!;
+          const operation = userSessionRoute[2];
+          const record = userSessions.get(id);
+          if (method === 'GET' && !operation) return json(res, 200, record);
+          if (method === 'POST' && operation === 'close') {
+            const data = await body(req);
+            if (Object.keys(data).length)
+              throw new HttpError(400, 'Session close accepts an empty object.');
+            return json(res, 200, await userSessions.end(id));
+          }
+          if (method === 'POST' && operation === 'tasks') {
+            const data = await body(req);
+            const profile = deployment.launchProfiles[record.profileId];
+            if (
+              Object.keys(data).some((k) => !['scenario', 'requestId'].includes(k)) ||
+              typeof data.scenario !== 'string' ||
+              !profile?.tasks.includes(data.scenario) ||
+              typeof data.requestId !== 'string' ||
+              !/^[A-Za-z0-9-]{8,80}$/.test(data.requestId)
+            )
+              throw new HttpError(400, 'Invalid task preset or request ID for this session.');
+            if (admitting) throw new HttpError(409, 'A task is being admitted.');
+            const taskId = data.scenario;
+            const task = deployment.tasks[taskId]!;
+            const result = await userSessions.task(
+              id,
+              taskId,
+              data.requestId,
+              (backend, session) => {
+                if (backend.source !== (profile.source ?? deployment.metadata.source))
+                  throw new Error('Backend source differs from launch profile.');
+                const run = new UpperRun({
+                  host: dsh,
+                  team: launchTeams.get(record.profileId)!,
+                  validator,
+                  store,
+                  goal: task.goal,
+                  allowedSubgoalChecks: task.allowedSubgoalChecks ?? [],
+                  predefinedGoals: task.predefinedGoals ?? [],
+                  additionalTools: deployment.additionalTools,
+                  backend,
+                  instruction: task.instruction,
+                  scenario: taskId,
+                  model: (alias) => {
+                    const binding = deployment.metadata.models[alias];
+                    if (!binding) throw new Error(`Unknown model: ${alias}`);
+                    return binding;
+                  },
+                  onChange: changed,
+                });
+                store.put(`run-config:${run.state.id}`, session.configuration, 0);
+                active = run;
+                return run;
+              },
+            );
+            return json(res, result.replayed ? 200 : 201, result);
+          }
+        }
         if (method === 'GET' && url.pathname === '/api/runs')
           return json(res, 200, {
             runs: store
@@ -247,6 +408,9 @@ export async function startServer(options: LocalServerOptions) {
                 scenario: r.value.scenario,
                 createdAt: r.value.createdAt,
                 instruction: r.value.instruction,
+                userSessionId:
+                  store.get<{ sessionId: string }>(`run-user-session:${r.value.id}`)?.value
+                    .sessionId ?? null,
               }))
               .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
               .slice(0, 100),
@@ -287,7 +451,12 @@ export async function startServer(options: LocalServerOptions) {
             return json(res, 200, { runId: previous.value.runId, replayed: true });
           }
           if (closing) throw new HttpError(503, 'Server is stopping.');
-          if (admitting || (active && !terminal(active.state.state)))
+          if (
+            userSessions.activeId ||
+            userSessions.busy ||
+            admitting ||
+            (active && !terminal(active.state.state))
+          )
             throw new HttpError(409, 'A run is already active.');
           admitting = true;
           let completeAdmission!: () => void;
@@ -410,9 +579,17 @@ export async function startServer(options: LocalServerOptions) {
         throw new HttpError(404, 'Route not found.');
       })().catch((error) => {
         if (!res.headersSent)
-          json(res, error instanceof HttpError ? error.status : 400, {
-            error: error instanceof Error ? error.message : String(error),
-          });
+          json(
+            res,
+            error instanceof HttpError
+              ? error.status
+              : error instanceof SessionConflict
+                ? 409
+                : 400,
+            {
+              error: error instanceof Error ? error.message : String(error),
+            },
+          );
         else res.end();
       });
     });
@@ -451,8 +628,12 @@ export async function startServer(options: LocalServerOptions) {
             res.end();
           }
           streams.clear();
+          const sessionClose = userSessions.close();
+          // Observe rejection immediately while a legacy admission may still be unwinding.
+          void sessionClose.catch(() => undefined);
           await admissionDone;
           await cleanup(() => active?.close());
+          await cleanup(() => sessionClose);
           await cleanup(() => dsh.fiber.dispose());
           await cleanup(
             () =>

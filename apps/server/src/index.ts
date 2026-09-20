@@ -6,5 +6,10 @@ export {
   type LocalServerOptions,
   type DemoServerOptions,
 } from './http-server.js';
-export type { ServerDeployment, TaskPreset } from './deployment.js';
+export type {
+  ServerDeployment,
+  TaskPreset,
+  LaunchProfile,
+  SessionEnvironment,
+} from './deployment.js';
 export { UpperRun, type ApplicationOptions } from './application.js';

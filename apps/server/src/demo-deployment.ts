@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import type { ContractValidator } from '@edh/contracts';
-import type { ServerDeployment } from './deployment.js';
+import type { ServerDeployment, LaunchProfile } from './deployment.js';
 import { FixtureModel } from './fixture-model.js';
 import {
   FixtureBackend,
@@ -53,5 +53,55 @@ export function createDemoDeployment(
         },
       ]),
     ),
+  };
+}
+
+/** CPU-only environment continuity fixture. Each task gets a fresh control scope. */
+export function createDemoLaunchProfiles(
+  validator: ContractValidator,
+  tickMs = 650,
+): Record<string, LaunchProfile> {
+  return {
+    'persistent-cup-fixture': {
+      label: 'Persistent cup workspace',
+      environment: 'CPU cup fixture',
+      embodiment: 'Synthetic robot',
+      policy: 'Scripted CPU policy',
+      checkpoint: 'none (test fixture)',
+      defaultModel: 'fixture',
+      tasks: ['first-pass', 'retry-success', 'multi-goal-recovery', 'unknown', 'backend-error'],
+      createEnvironment: () => {
+        const world = { inside: false, cabinetOpen: false, view: 'center' };
+        let closed = false;
+        const ports = new Set<FixtureBackend>();
+        return {
+          createTaskBackend: (taskId, { signal }) => {
+            signal.throwIfAborted();
+            if (closed) throw new Error('Fixture environment is closed.');
+            const port = new FixtureBackend(
+              validator,
+              taskId as FixtureScenario,
+              tickMs,
+              world,
+              true,
+            );
+            ports.add(port);
+            const close = port.close.bind(port);
+            port.close = async () => {
+              await close();
+              ports.delete(port);
+            };
+            return port;
+          },
+          close: async () => {
+            closed = true;
+            for (const port of ports) {
+              await port.stop();
+              await port.close();
+            }
+          },
+        };
+      },
+    },
   };
 }

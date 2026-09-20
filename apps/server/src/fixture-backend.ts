@@ -15,6 +15,11 @@ export type FixtureScenario =
   | 'unknown'
   | 'backend-error'
   | 'multi-goal-recovery';
+export interface FixtureWorld {
+  inside: boolean;
+  cabinetOpen: boolean;
+  view: string;
+}
 /** CPU test fixture, not a simulator, robot controller or learned policy. */
 export class FixtureBackend implements EmbodiedBackend {
   readonly source = 'test_fixture' as const;
@@ -24,14 +29,31 @@ export class FixtureBackend implements EmbodiedBackend {
   private readonly listeners = new Set<(update: BackendUpdate) => void>();
   private sequence = 0;
   private attempt = 0;
-  private inside = false;
-  private cabinetOpen = false;
-  private view = 'center';
+  private get inside() {
+    return this.world.inside;
+  }
+  private set inside(value: boolean) {
+    this.world.inside = value;
+  }
+  private get cabinetOpen() {
+    return this.world.cabinetOpen;
+  }
+  private set cabinetOpen(value: boolean) {
+    this.world.cabinetOpen = value;
+  }
+  private get view() {
+    return this.world.view;
+  }
+  private set view(value: string) {
+    this.world.view = value;
+  }
   private readonly gates: LifecycleValidator;
   constructor(
     private readonly validator: ContractValidator,
     private readonly scenario: FixtureScenario,
     private readonly tickMs = 650,
+    private readonly world: FixtureWorld = { inside: false, cabinetOpen: false, view: 'center' },
+    private readonly preserveWorld = false,
   ) {
     this.gates = new LifecycleValidator(validator);
   }
@@ -46,7 +68,7 @@ export class FixtureBackend implements EmbodiedBackend {
       throw new Error('Execution resource is busy.');
     this.request = structuredClone(request);
     this.attempt++;
-    if (this.scenario !== 'multi-goal-recovery') this.inside = false;
+    if (!this.preserveWorld && this.scenario !== 'multi-goal-recovery') this.inside = false;
     this.status = {
       schema_version: 'physical.execution.v1',
       execution_id: randomUUID(),

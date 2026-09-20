@@ -14,6 +14,33 @@ import type { ApplicationOptions } from './application.js';
 import { CORE_TOOLS } from './application.js';
 import type { ModelBinding } from './runtime.js';
 
+/** One environment allocation, retained across independent task backends. */
+export interface SessionEnvironment {
+  /** Fresh task control scope; closing this port must not destroy the environment. */
+  createTaskBackend(
+    taskId: string,
+    options: { signal: AbortSignal },
+  ): Promise<EmbodiedBackend> | EmbodiedBackend;
+  /** Stop/release the environment, even after a task-port cleanup error. */
+  close(): Promise<void>;
+}
+export interface LaunchProfile {
+  readonly source?: EmbodiedBackend['source'];
+  readonly label: string;
+  readonly environment: string;
+  readonly embodiment: string;
+  readonly policy: string;
+  readonly checkpoint: string;
+  /** Default for roles without an explicit model binding. */
+  readonly defaultModel: string;
+  readonly tasks: readonly string[];
+  readonly physicalProfile?: PhysicalRuntimeProfile;
+  readonly physicalProviders?: PhysicalProfileValidators;
+  readonly createEnvironment: (options: {
+    signal: AbortSignal;
+    profile?: ResolvedPhysicalRuntimeProfile;
+  }) => SessionEnvironment | Promise<SessionEnvironment>;
+}
 export interface TaskPreset {
   readonly label: string;
   readonly instruction: string;
@@ -45,6 +72,7 @@ export interface ServerDeployment {
   /** Optional version-pinned simulation/embodiment/policy stack. */
   readonly physicalProfile?: PhysicalRuntimeProfile;
   readonly physicalProviders?: PhysicalProfileValidators;
+  readonly launchProfiles?: Readonly<Record<string, LaunchProfile>>;
 }
 function freeze<T>(value: T): T {
   if (value && typeof value === 'object') {
@@ -113,6 +141,57 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
       ? undefined
       : resolvePhysicalRuntimeProfile(input.physicalProfile, validator);
   if (physicalProfile) validatePhysicalProviderBindings(physicalProfile, input.physicalProviders);
+  const launchProfiles: Record<
+    string,
+    LaunchProfile & { physicalProfile?: ResolvedPhysicalRuntimeProfile }
+  > = Object.create(null);
+  const launchMetadata: Record<
+    string,
+    Omit<LaunchProfile, 'createEnvironment' | 'physicalProviders'>
+  > = Object.create(null);
+  for (const [id, profile] of Object.entries(input.launchProfiles ?? {})) {
+    if (
+      !validId(id) ||
+      !profile ||
+      (profile.source !== undefined &&
+        !['test_fixture', 'simulation', 'hardware'].includes(profile.source)) ||
+      [
+        profile.label,
+        profile.environment,
+        profile.embodiment,
+        profile.policy,
+        profile.checkpoint,
+      ].some((value) => typeof value !== 'string' || !value.trim()) ||
+      !Object.hasOwn(models, profile.defaultModel) ||
+      typeof profile.createEnvironment !== 'function' ||
+      !Array.isArray(profile.tasks) ||
+      !profile.tasks.length ||
+      new Set(profile.tasks).size !== profile.tasks.length ||
+      profile.tasks.some((id) => !Object.hasOwn(tasks, id))
+    )
+      throw new Error(`Invalid launch profile: ${id}`);
+    const resolved =
+      profile.physicalProfile === undefined
+        ? undefined
+        : resolvePhysicalRuntimeProfile(profile.physicalProfile, validator);
+    if (resolved) validatePhysicalProviderBindings(resolved, profile.physicalProviders);
+    // Whitelist public metadata: executable factories and credentials stay private.
+    const data = freeze(
+      structuredClone({
+        source: profile.source ?? input.source,
+        label: profile.label,
+        environment: profile.environment,
+        embodiment: profile.embodiment,
+        policy: profile.policy,
+        checkpoint: profile.checkpoint,
+        defaultModel: profile.defaultModel,
+        tasks: [...profile.tasks],
+        ...(resolved ? { physicalProfile: resolved } : {}),
+      }),
+    );
+    launchMetadata[id] = data;
+    launchProfiles[id] = Object.freeze({ ...data, createEnvironment: profile.createEnvironment });
+  }
   const contextManagement =
     input.contextManagement === undefined
       ? undefined
@@ -126,6 +205,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     ...(contextManagement === undefined ? {} : { contextManagement }),
     ...(physicalProfile === undefined ? {} : { physicalProfile }),
     models,
+    launchProfiles: launchMetadata,
     tasks: taskMetadata,
     tools: [...CORE_TOOLS, ...Object.keys(additionalTools)],
     providers: [...(input.providers ?? [])],
@@ -133,6 +213,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
   return Object.freeze({
     metadata,
     tasks: Object.freeze(tasks),
+    launchProfiles: Object.freeze(launchProfiles),
     adapters,
     additionalTools,
     ...(contextManagement === undefined ? {} : { contextManagement }),
