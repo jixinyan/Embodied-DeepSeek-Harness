@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { promisify } from 'node:util';
+import { execFile } from 'node:child_process';
 import { LocalStore } from '@edh/storage';
 import { RunHistory, type RunEvent, type RunState } from '@edh/tasks';
 import {
@@ -55,6 +57,87 @@ async function withStore(run: (store: LocalStore) => void | Promise<void>) {
     await rm(directory, { recursive: true, force: true });
   }
 }
+
+test('event publication advances the projection only after both durable writes', async () => {
+  await withStore((store) => {
+    const state = { ...record(), state: 'running' as const };
+    const history = new RunHistory(store);
+    const detail = { text: 'Published document', tags: ['history'] };
+    const first = history.append(state, 0, 'user.note', detail);
+    assert.equal(first.version, 1);
+    assert.equal(first.event.sequence, 1);
+    assert.equal(state.eventCount, 1);
+    assert.equal(state.updatedAt, first.event.at);
+    assert.deepEqual(state.events, []);
+    assert.deepEqual(store.get<RunState>(`run:${state.id}`)!.value, state);
+    detail.tags.push('changed');
+    first.event.detail.text = 'Changed returned document';
+    assert.deepEqual(history.page(state, 0).events[0]!.detail, {
+      text: 'Published document',
+      tags: ['history'],
+    });
+    const snapshot = history.restore(state);
+    assert.equal(snapshot.events.length, 1);
+    snapshot.events[0]!.detail.text = 'Changed snapshot';
+    assert.equal(history.restore(state).events[0]!.detail.text, 'Published document');
+    const published = structuredClone(state);
+    assert.throws(() => history.append(state, 0, 'user.note', {}), /Version conflict/);
+    assert.deepEqual(state, published);
+    assert.deepEqual(store.get<RunState>(`run:${state.id}`)!.value, published);
+    assert.equal(store.get<RunEvent>(`event:${state.id}:2`)!.value.sequence, 2);
+    assert.equal(history.total(state), 1);
+    assert.equal(history.restore(state).events.length, 1);
+    assert.throws(() => history.append(state, 1, 'user.note', {}), /Version conflict/);
+  });
+});
+
+test('invalid publication state cannot create an event record', async () => {
+  await withStore((store) => {
+    const history = new RunHistory(store);
+    const legacy = record();
+    delete legacy.eventCount;
+    assert.throws(() => history.append(legacy, 0, 'user.note', {}), /run projection/);
+    assert.throws(
+      () => history.append({ ...record(), events: [note(1)] }, 0, 'user.note', {}),
+      /run projection/,
+    );
+    assert.throws(
+      () => history.append({ ...record(), eventCount: -1 }, 0, 'user.note', {}),
+      /Invalid run event count/,
+    );
+    assert.throws(
+      () =>
+        history.append({ ...record(), eventCount: Number.MAX_SAFE_INTEGER }, 0, 'user.note', {}),
+      /sequence exhausted/,
+    );
+    assert.throws(() => history.append(record(), 0, ' ', {}), /type is required/);
+    assert.deepEqual(store.list(''), []);
+  });
+});
+
+test(
+  'active publication exceeds 4000 events within a 64 MiB old-space limit',
+  { timeout: 60000 },
+  async () => {
+    await withStore(async (store) => {
+      store.close();
+      const result = await promisify(execFile)(
+        process.execPath,
+        [
+          '--max-old-space-size=64',
+          '--import',
+          'tsx',
+          'tests/runtime/support/run-history-memory.ts',
+          store.directory,
+        ],
+        { cwd: process.cwd(), env: { ...process.env, TMPDIR: resolve('.local/work') } },
+      );
+      const report = JSON.parse(result.stdout) as { count: number; journalBytes: number };
+      assert.equal(report.count, 4097);
+      assert.ok(report.journalBytes > 64 * 1024 * 1024);
+    });
+  },
+);
 
 test('journal pages retain a fixed published frontier while later events are appended', async () => {
   await withStore((store) => {

@@ -29,6 +29,7 @@ import { SkillLibrary } from '@edh/memory';
 import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
 import {
   TaskGoals,
+  RunHistory,
   taskContextSummary,
   type TaskContextSummary,
   type GoalBinding,
@@ -93,6 +94,8 @@ export class UpperRun {
   private readonly files: AssignmentFiles;
   private readonly reports: AssignmentReports;
   private readonly skills: SkillLibrary;
+  private readonly history: RunHistory;
+  private deliveredMessages = 0;
   private readonly evidence = new Map<string, SensorSample>();
   private readonly imageReferences = new Map<string, ImageAttachmentRef>();
   private readonly grants = new Map<string, Set<string>>();
@@ -155,6 +158,7 @@ export class UpperRun {
       retryChanges: [],
       assignments: {},
       events: [],
+      eventCount: 0,
       executions: [],
       requests: [],
       verdicts: [],
@@ -168,6 +172,7 @@ export class UpperRun {
     this.files = new AssignmentFiles(options.store);
     this.reports = new AssignmentReports(options.store, options.validator);
     this.skills = new SkillLibrary(options.store, options.validator);
+    this.history = new RunHistory(options.store);
     const audits = new SessionAudits(options.store);
     this.sessions = new TeamSessions(
       options.host,
@@ -285,11 +290,10 @@ export class UpperRun {
     });
   }
   snapshot(): RunState {
-    return structuredClone(this.state);
+    return this.history.restore(this.state);
   }
   projection(): RunState {
-    const { events, ...state } = this.state;
-    return structuredClone({ ...state, events: [], eventCount: events.length });
+    return structuredClone(this.state);
   }
   private notifyChange(): void {
     const { id, state, updatedAt } = this.state;
@@ -297,22 +301,9 @@ export class UpperRun {
   }
   private event(type: string, detail: Record<string, unknown>): void {
     if (this.closed) return;
-    if (this.state.events.length >= 4000) throw new Error('Run event budget exceeded.');
-    this.state.updatedAt = new Date().toISOString();
-    this.state.events.push({
-      sequence: this.state.events.length + 1,
-      at: this.state.updatedAt,
-      type,
-      detail: structuredClone(detail),
-    });
-    const latest = this.state.events.at(-1)!;
-    this.options.store.put(`event:${this.state.id}:${latest.sequence}`, latest, 0);
-    const { events, ...projection } = this.state;
-    this.version = this.options.store.put(
-      `run:${this.state.id}`,
-      { ...projection, events: [], eventCount: events.length },
-      this.version,
-    );
+    const { event: latest, version } = this.history.append(this.state, this.version, type, detail);
+    this.version = version;
+    if (type === 'message.delivered') this.deliveredMessages++;
     this.notifyChange();
     const ownerEvent =
       (type.startsWith('tool.') || type === 'agent.output' || type === 'agent.todos') &&
@@ -985,8 +976,7 @@ export class UpperRun {
         const samples = this.permit(a, refs);
         const images = sensorImages(samples);
         if (target.id === a.id) throw new Error('Self messaging is not a delegation.');
-        if (this.state.events.filter((e) => e.type === 'message.delivered').length >= 256)
-          throw new Error('Message budget exceeded.');
+        if (this.deliveredMessages >= 256) throw new Error('Message budget exceeded.');
         for (const ref of refs) this.grants.get(target.id)!.add(ref);
         this.spawn(
           this.sessions.deliver(

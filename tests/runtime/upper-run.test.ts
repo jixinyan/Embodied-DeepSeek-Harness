@@ -93,7 +93,7 @@ test(
       assert.equal(
         app.run.state.state,
         'succeeded',
-        JSON.stringify(app.run.state.events.slice(-10)),
+        JSON.stringify(app.run.snapshot().events.slice(-10)),
       );
       assert.equal(app.run.state.attempt, 2);
       assert.equal(app.run.state.skillIds.length, 1);
@@ -104,12 +104,14 @@ test(
       assert.equal(app.run.plan()?.items[0]?.status, 'done');
       const identities = Object.values(app.run.state.assignments);
       assert.equal(new Set(identities.map((a) => a.sessionId)).size, identities.length);
-      const created = app.run.state.events.findIndex((e) => e.type === 'recovery.opened');
-      const evolved = app.run.state.events.findIndex(
-        (e) =>
-          e.type === 'agent.created' &&
-          (e.detail.assignment as { member: string }).member === 'evolver',
-      );
+      const created = app.run.snapshot().events.findIndex((e) => e.type === 'recovery.opened');
+      const evolved = app.run
+        .snapshot()
+        .events.findIndex(
+          (e) =>
+            e.type === 'agent.created' &&
+            (e.detail.assignment as { member: string }).member === 'evolver',
+        );
       assert(created < evolved);
       const artifact = await readFile(
         resolve(app.store.directory, 'skills', app.run.state.skillIds[0]!, 'SKILL.md'),
@@ -119,11 +121,13 @@ test(
       assert.match(artifact, /Verification guidance/);
       assert.match(artifact, /Failure signals/);
       assert.match(artifact, /Hypothesis/);
-      const progress = app.run.state.events.filter(
-        (e) =>
-          e.type === 'message.delivered' &&
-          (e.detail.payload as { kind?: string }).kind === 'recovery-progress',
-      );
+      const progress = app.run
+        .snapshot()
+        .events.filter(
+          (e) =>
+            e.type === 'message.delivered' &&
+            (e.detail.payload as { kind?: string }).kind === 'recovery-progress',
+        );
       assert(progress.length > 0, 'Evolver must receive progress before success');
       const trace = app.store.get<{ events: { type: string }[] }>(
         `recovery:${app.run.state.recoveryId}`,
@@ -133,16 +137,21 @@ test(
       const lead = app.run.state.assignments[app.run.state.decisionAssignmentId]!;
       assert(lead.todos?.every((todo) => todo.status === 'completed'));
       assert(
-        app.run.state.events.some(
-          (e) => e.type === 'agent.output' && JSON.stringify(e.detail).includes('Open recovery'),
-        ),
+        app.run
+          .snapshot()
+          .events.some(
+            (e) => e.type === 'agent.output' && JSON.stringify(e.detail).includes('Open recovery'),
+          ),
       );
-      assert(app.run.state.events.filter((e) => e.type === 'agent.todos').length >= 4);
+      assert(app.run.snapshot().events.filter((e) => e.type === 'agent.todos').length >= 4);
       assert(
-        app.run.state.events.some(
-          (e) =>
-            e.type === 'dsh.tool-call' && (e.detail.data as { name: string }).name === 'todo_write',
-        ),
+        app.run
+          .snapshot()
+          .events.some(
+            (e) =>
+              e.type === 'dsh.tool-call' &&
+              (e.detail.data as { name: string }).name === 'todo_write',
+          ),
       );
     } finally {
       await app.close();
@@ -163,7 +172,7 @@ test(
         assert.equal(app.run.state.state, scenario === 'first-pass' ? 'succeeded' : 'unknown');
         assert.equal(app.run.state.skillIds.length, 0);
         assert.equal(
-          app.run.state.events.filter((e) => e.type === 'verification.requested').length,
+          app.run.snapshot().events.filter((e) => e.type === 'verification.requested').length,
           1,
         );
       } finally {
@@ -458,7 +467,7 @@ test(
       await app.run.settle();
       assert.equal(app.run.state.state, 'succeeded');
       assert.equal(app.run.state.skillIds.length, 0);
-      assert(app.run.state.events.some((e) => e.type === 'recovery.failed'));
+      assert(app.run.snapshot().events.some((e) => e.type === 'recovery.failed'));
       assert(app.store.get<{ error: string }>(`recovery:${app.run.state.recoveryId}`)!.value.error);
       const evolver = Object.values(app.run.state.assignments).find((a) => a.member === 'evolver')!;
       assert.equal(evolver.status, 'retired');
@@ -559,7 +568,7 @@ test(
       await app.run.settle();
       assert.equal(app.run.state.state, 'succeeded');
       assert.equal(app.run.state.skillIds.length, 1);
-      assert(!app.run.state.events.some((event) => event.type === 'recovery.failed'));
+      assert(!app.run.snapshot().events.some((event) => event.type === 'recovery.failed'));
       const evolver = Object.values(app.run.state.assignments).find(
         (assignment) => assignment.member === 'evolver',
       )!;
@@ -666,11 +675,13 @@ test(
       assert.equal(app.run.state.state, 'cancelled');
       assert.ok(evidenceId);
       assert.ok(
-        !app.run.state.events.some(
-          (e) =>
-            e.type === 'observation.consumed' &&
-            (e.detail.evidence as { id?: string })?.id === evidenceId,
-        ),
+        !app.run
+          .snapshot()
+          .events.some(
+            (e) =>
+              e.type === 'observation.consumed' &&
+              (e.detail.evidence as { id?: string })?.id === evidenceId,
+          ),
       );
       assert.equal(Object.keys(app.run.state.agentSeen).length, 0);
     } finally {
@@ -710,11 +721,13 @@ test(
       assert.equal(app.run.state.state, 'failed');
       assert.equal(app.run.state.verdicts.length, 0);
       assert.ok(
-        app.run.state.events.some(
-          (e) => e.type === 'tool.failed' && String(e.detail.error).includes('boundary changed'),
-        ),
+        app.run
+          .snapshot()
+          .events.some(
+            (e) => e.type === 'tool.failed' && String(e.detail.error).includes('boundary changed'),
+          ),
       );
-      assert.ok(!app.run.state.events.some((e) => e.type === 'verification.checked'));
+      assert.ok(!app.run.snapshot().events.some((e) => e.type === 'verification.checked'));
       assert.ok(
         !Object.values(app.run.state.agentSeen).some(
           (sample) => sample.evidence.id === rejectedEvidenceId,
@@ -781,7 +794,7 @@ test(
       assert.equal(resumeCalls, 1);
       assert.equal(app.backend.query()?.state, 'running');
       assert.equal(
-        app.run.state.events.filter((e) => e.type === 'execution.resume-requested').length,
+        app.run.snapshot().events.filter((e) => e.type === 'execution.resume-requested').length,
         1,
       );
       await app.run.stop();
@@ -803,7 +816,7 @@ test(
       await app.run.pause();
       await until(() => app.run.state.verdicts.length === 1, app.run);
       await app.run.settle();
-      const pausedIndex = app.run.state.events.length;
+      const pausedIndex = app.run.state.eventCount!;
       // A provider knows the owner ID from the request; this is not a new Planner decision.
       await app.backend.resume(app.run.state.requests[0]!.decision_owner_id);
       await app.run.settle();
@@ -811,8 +824,9 @@ test(
       assert.match(app.run.state.error!, /resume_requires_owner/);
       assert.equal(app.backend.query()?.state, 'ended');
       assert.equal(
-        app.run.state.events
-          .slice(pausedIndex)
+        app.run
+          .snapshot()
+          .events.slice(pausedIndex)
           .some(
             (e) =>
               e.type === 'execution.updated' &&
@@ -1059,14 +1073,16 @@ test(
         app.emitFrame();
         await app.run.settle();
       }
-      const frames = app.run.state.events.filter(
-        (e) =>
-          e.type === 'message.delivered' &&
-          (e.detail.payload as { kind?: string }).kind === 'monitor',
-      );
+      const frames = app.run
+        .snapshot()
+        .events.filter(
+          (e) =>
+            e.type === 'message.delivered' &&
+            (e.detail.payload as { kind?: string }).kind === 'monitor',
+        );
       assert.equal(frames.length, 70);
       assert.equal(new Set(frames.map((e) => e.detail.recipient)).size, 1);
-      assert.equal(app.run.state.events.filter((e) => e.type === 'monitor.started').length, 1);
+      assert.equal(app.run.snapshot().events.filter((e) => e.type === 'monitor.started').length, 1);
       const id = String(frames[0]!.detail.recipient);
       assert.notEqual(id, app.run.state.decisionAssignmentId);
       assert.equal(
@@ -1123,7 +1139,7 @@ test(
       assert.equal((await nativeResume(app)).isError, false);
       app.emitFrame();
       await app.run.settle();
-      const starts = app.run.state.events.filter((e) => e.type === 'monitor.started');
+      const starts = app.run.snapshot().events.filter((e) => e.type === 'monitor.started');
       assert.equal(starts.length, 2);
       assert.notEqual(starts[0]!.detail.assignmentId, starts[1]!.detail.assignmentId);
       const newer = app.run.state.assignments[String(starts[1]!.detail.assignmentId)]!;
@@ -1164,19 +1180,24 @@ test(
       release();
       await app.run.settle();
       assert.equal(app.run.state.state, 'paused');
-      assert.equal(app.run.state.events.filter((e) => e.type === 'monitor.started').length, 0);
+      assert.equal(app.run.snapshot().events.filter((e) => e.type === 'monitor.started').length, 0);
       assert.equal(
-        app.run.state.events.filter(
-          (e) =>
-            e.type === 'message.delivered' &&
-            (e.detail.payload as { kind?: string }).kind === 'monitor',
-        ).length,
+        app.run
+          .snapshot()
+          .events.filter(
+            (e) =>
+              e.type === 'message.delivered' &&
+              (e.detail.payload as { kind?: string }).kind === 'monitor',
+          ).length,
         0,
       );
       assert(
-        app.run.state.events.some(
-          (e) => e.type === 'agent.retired' && e.detail.reason === 'boundary-before-monitor-start',
-        ),
+        app.run
+          .snapshot()
+          .events.some(
+            (e) =>
+              e.type === 'agent.retired' && e.detail.reason === 'boundary-before-monitor-start',
+          ),
       );
     } finally {
       release();
@@ -1222,7 +1243,7 @@ test(
       await app.run.settle();
       assert(requested);
       assert(acknowledged, 'Monitor cancellation must not cancel its accepted stop request.');
-      const monitor = app.run.state.events.find((e) => e.type === 'monitor.started')!;
+      const monitor = app.run.snapshot().events.find((e) => e.type === 'monitor.started')!;
       const id = String(monitor.detail.assignmentId);
       assert.equal(app.run.state.assignments[id]!.status, 'retired');
       assert.equal(app.run.state.state, 'paused');

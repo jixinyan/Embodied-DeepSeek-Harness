@@ -187,7 +187,7 @@ test(
       assert.match(JSON.stringify(requests[1].messages), /data:image\/png;base64,/);
       assert.equal(f.run.state.latestSensor?.images?.[0]?.attachmentId, attachment.attachmentId);
       assert.doesNotMatch(JSON.stringify(f.run.snapshot()), /iVBORw0KGgo|data:image/);
-      assert(f.run.state.events.some((e) => e.type === 'observation.consumed'));
+      assert(f.run.snapshot().events.some((e) => e.type === 'observation.consumed'));
     } finally {
       await f.close();
       await new Promise<void>((done) => {
@@ -392,8 +392,9 @@ test(
       assert(plannerObserved);
       assert(plannerReceivedVerdictImage);
       assert(monitorObserved);
-      const tools = f.run.state.events
-        .filter(
+      const tools = f.run
+        .snapshot()
+        .events.filter(
           (e) =>
             e.type === 'tool.started' && e.detail.assignmentId === f.run.state.decisionAssignmentId,
         )

@@ -299,7 +299,10 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
         ).isError,
         true,
       );
-      assert.equal(run.state.events.filter((event) => event.type === 'agent.report').length, 0);
+      assert.equal(
+        run.snapshot().events.filter((event) => event.type === 'agent.report').length,
+        0,
+      );
       assert.equal(
         (
           await invoke(analyst.id, 'agent__report', {
@@ -346,18 +349,23 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       assert(callerInput, 'Actual caller input must include the accepted structured report.');
       assert.match(JSON.stringify(callerInput.messages), /confidence/);
       assert(
-        run.state.events.some(
-          (event) =>
-            event.type === 'dsh.tool-call' &&
-            (event.detail.data as { name: string }).name === 'agent__report',
-        ),
+        run
+          .snapshot()
+          .events.some(
+            (event) =>
+              event.type === 'dsh.tool-call' &&
+              (event.detail.data as { name: string }).name === 'agent__report',
+          ),
       );
       assert.equal(run.state.assignments[analyst.id]!.report?.agent_id, analyst.sessionId);
       assert.equal(run.state.assignments[analyst.id]!.reportVersion, 2);
       assert(replayed, 'Exact replay in the final native turn returns the durable receipt.');
       const reports = new AssignmentReports(store, validator);
       assert.equal(reports.submit(run.sessions.get(analyst.id), completed).replay, true);
-      assert.equal(run.state.events.filter((event) => event.type === 'agent.report').length, 2);
+      assert.equal(
+        run.snapshot().events.filter((event) => event.type === 'agent.report').length,
+        2,
+      );
       assert.equal(
         model.requests.length,
         8,
@@ -392,11 +400,13 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       assert.equal(ack.recipientAssignmentId, owner);
       assert.equal(ack.disposition, 'accepted');
       assert(
-        run.state.events.some(
-          (event) =>
-            event.type === 'dsh.tool-call' &&
-            (event.detail.data as { name: string }).name === 'team__ack_report',
-        ),
+        run
+          .snapshot()
+          .events.some(
+            (event) =>
+              event.type === 'dsh.tool-call' &&
+              (event.detail.data as { name: string }).name === 'team__ack_report',
+          ),
       );
       const ackArgs = {
         assignmentId: analyst.id,
@@ -419,11 +429,11 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
         true,
       );
       assert.equal(
-        run.state.events.filter((event) => event.type === 'agent.report-acknowledged').length,
+        run.snapshot().events.filter((event) => event.type === 'agent.report-acknowledged').length,
         1,
       );
       assert.equal(
-        run.state.events.find((event) => event.type === 'agent.report-acknowledged')!.detail
+        run.snapshot().events.find((event) => event.type === 'agent.report-acknowledged')!.detail
           .assignmentId,
         owner,
       );
@@ -453,9 +463,11 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       );
       assert.equal(reports.read(lateChild.id)?.report.summary, 'Late child report.');
       assert.equal(
-        run.state.events.filter(
-          (event) => event.type === 'message.delivered' && event.detail.recipient === analyst.id,
-        ).length,
+        run
+          .snapshot()
+          .events.filter(
+            (event) => event.type === 'message.delivered' && event.detail.recipient === analyst.id,
+          ).length,
         2,
         'No third message is delivered to the retired parent.',
       );
@@ -474,9 +486,11 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
       );
       assert.equal(calls, 1);
       assert(
-        run.state.events.some(
-          (event) => event.type === 'tool.completed' && event.detail.tool === 'scene.describe',
-        ),
+        run
+          .snapshot()
+          .events.some(
+            (event) => event.type === 'tool.completed' && event.detail.tool === 'scene.describe',
+          ),
       );
     } finally {
       await run?.close();

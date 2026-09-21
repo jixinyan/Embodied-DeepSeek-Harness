@@ -942,6 +942,13 @@ projection is displayed after its preceding event batches have arrived. Text-onl
 model updates carry no repeated event history. Native run-change notifications carry
 identity/state/timestamp; consumers request a full snapshot when needed.
 
+The active UpperRun retains its projection and published event count. Event bodies
+are written individually and loaded through history reads. Publication writes the
+event before the versioned projection and advances the in-memory count only after
+both writes succeed. Unpublished suffixes remain outside visible history. Event
+volume has no fixed task-lifetime cutoff; agent-authored message admission uses a
+separate delivery counter. Explicit full snapshots reconstruct the complete history.
+
 Event batches are limited to 128 entries and a 256 KiB encoded-body target. A larger
 single event remains atomic. The server reads only the requested event page for an
 incremental update. Projection size and cumulative server/browser storage require

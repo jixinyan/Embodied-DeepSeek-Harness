@@ -11,6 +11,12 @@ original-goal verdict authorizes its SKILL. Learning failures do not fail the ta
 Concurrent physical goals and nested independent recovery chains are not implemented.
 The coordinator interfaces in src/index.ts also describe future deployment boundaries.
 
+[history.ts](src/history.ts) publishes immutable events and versioned run projections,
+reads bounded event pages and reconstructs full history on request. Active UpperRun
+state contains an empty event array and its published count. Full event inspection
+uses `snapshot()` or the paginated HTTP history endpoint. Event publication does not
+impose a task-lifetime event count limit. See the [event guide](../../../docs/implementation/run-stream.md).
+
 See [multi-goal runtime](../../../docs/implementation/multi-goal-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
 [module responsibilities](../../../docs/architecture/modules.md).

@@ -398,7 +398,7 @@ released; obsolete live scopes still fail current-attempt authority checks.
 
 Remaining upper work: model-context budgets/compaction, bounded long-run event and
 evidence retention, abandoned/idle role policies and terminal task cleanup. The 64
-live-session and 4,000-event limits remain. Model requests, adapters and all execution
+live-session limit remains. Model requests, adapters and all execution
 in this acceptance are fixtures/local protocol tests; real provider integration is
 still pending. Keep the physical-worker bridge and watchdog as separate integration work.
 
@@ -662,8 +662,7 @@ suite was not rerun. [Protocol and limits](run-stream.md).
 
 Remaining: bounded journal/browser retention, paginated initial history, retained media
 cleanup, provider-backed criteria discovery, active-task clarification, live VLM
-evaluation and local-server bootstrap. The 4,000-event run limit and full projection
-construction remain in place. Physical integration retains its separate acceptance.
+evaluation and local-server bootstrap. Physical integration retains its separate acceptance.
 
 ## Bounded history reads (2026-09-20)
 
@@ -688,8 +687,8 @@ Five task-admission checks, TypeScript, formatting, JavaScript syntax, DSH prove
 documentation links and whitespace checks pass. No model or physical provider was
 executed; the existing scripted runtime suite was not rerun.
 
-Remaining: cumulative journal/browser retention, media cleanup, the 4,000-event run
-budget, provider-backed criteria discovery, active-task clarification, live VLM
+Remaining: cumulative journal/browser retention, media cleanup,
+provider-backed criteria discovery, active-task clarification, live VLM
 evaluation and local-server bootstrap. Physical provider integration remains separate.
 
 ## Indexed journal bodies (2026-09-20)
@@ -711,8 +710,31 @@ also pass, for 38 relevant checks. TypeScript, formatting, DSH provenance, struc
 and whitespace checks pass. Test data stays under the ignored repository work directory.
 No model or physical provider was executed; the scripted runtime suite was not rerun.
 
-Remaining: key-index growth, journal/disk retention, browser history limits, active-run
-event retention and budget handling, media cleanup, provider-backed criteria discovery,
+Remaining: key-index growth, journal/disk retention, browser history limits, recovery
+trace retention, media cleanup, provider-backed criteria discovery,
 active-task clarification, live VLM evaluation and local-server bootstrap. Caller-owned
 full list/audit results retain their own memory costs. The storage test does not bound
 whole-process RSS or the memory of all application consumers.
+
+## Active event publication (2026-09-20)
+
+UpperRun retains an empty event array and its published count. RunHistory publishes
+immutable event records followed by a versioned projection, then advances in-memory
+publication state. Complete snapshots reconstruct persisted history; incremental
+HTTP/SSE reads retain their bounded page semantics. Event volume has no fixed
+task-lifetime cutoff. The agent-authored message admission check uses a separate
+delivery counter. Existing runtime history assertions use the explicit snapshot API.
+
+Validation: nine history checks pass against real LocalStore files. Publication failure
+leaves the previous count visible, returned bodies are detached, invalid counters fail
+before writing, and immutable unpublished records cannot be overwritten. A child with
+a 64 MiB V8 old-space limit publishes 4,097 events into a journal larger than 64 MiB,
+reopens it and validates every event in pages. Seventeen console checks, TypeScript,
+formatting, provenance, structure and whitespace checks pass. These checks execute
+storage and transport code; they do not run a model or physical provider. Scripted
+runtime tests were updated for explicit snapshot reads and were not executed.
+
+Remaining: recovery trace retention and delivery batching, browser history limits,
+key-index/disk retention, media cleanup, provider-backed criteria discovery, active-task
+clarification, live VLM evaluation and local-server bootstrap. Full snapshot callers
+still allocate their requested history. Physical integration keeps its separate scope.

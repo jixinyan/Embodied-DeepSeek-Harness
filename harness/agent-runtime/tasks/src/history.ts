@@ -13,6 +13,33 @@ export interface RunEventPage {
 /** Published run events plus an explicit restart annotation; never resumes sessions or motion. */
 export class RunHistory {
   constructor(private readonly store: LocalStore) {}
+  append(
+    state: RunState,
+    expectedVersion: number,
+    type: string,
+    detail: Record<string, unknown>,
+  ): { event: RunEvent; version: number } {
+    if (state.eventCount === undefined || state.events.length)
+      throw new Error('Event publication requires a run projection.');
+    const sequence = this.publishedCount(state) + 1;
+    if (!Number.isSafeInteger(sequence)) throw new Error('Run event sequence exhausted.');
+    if (!type.trim()) throw new Error('Run event type is required.');
+    const event: RunEvent = {
+      sequence,
+      at: new Date().toISOString(),
+      type,
+      detail: structuredClone(detail),
+    };
+    this.store.put(`event:${state.id}:${sequence}`, event, 0);
+    const version = this.store.put(
+      `run:${state.id}`,
+      { ...state, updatedAt: event.at, eventCount: sequence },
+      expectedVersion,
+    );
+    state.updatedAt = event.at;
+    state.eventCount = sequence;
+    return { event, version };
+  }
   private publishedCount(state: RunState): number {
     const count = state.eventCount ?? state.events.length;
     if (!Number.isSafeInteger(count) || count < 0) throw new Error('Invalid run event count.');

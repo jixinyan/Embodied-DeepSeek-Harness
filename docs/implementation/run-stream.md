@@ -81,6 +81,21 @@ published count. Incremental server views read only the event page following the
 subscriber's cursor. A text-only update reads no historical event bodies. Complete
 `snapshot()` and full-history API reads remain explicit operations.
 
+## Active event publication
+
+`UpperRun.state` retains the current projection with `events: []` and `eventCount`.
+`RunHistory.append` writes the immutable event, publishes the versioned run projection,
+then advances the in-memory count and timestamp. Notifications and recovery observation
+follow publication. A failed projection write leaves an unpublished event that history
+readers exclude; it cannot be overwritten by a later append. Storage errors propagate.
+
+The active task has no fixed event-count cutoff. Its journal index still grows with
+the number of distinct records. Event bodies are read by page, or reconstructed by
+an explicit `snapshot()` call. Consumers inspecting `state.events` must use history
+pages or `snapshot()` to obtain event bodies. Domain state, TODOs and live output
+remain available directly in the projection. Message delivery has its own counter
+for the existing 256-delivery admission limit on agent-authored messages.
+
 ## Validation and remaining limits
 
 [Transport checks](../../tests/console/run-update.test.mjs) exercise the production
@@ -97,9 +112,15 @@ detached results, unpublished suffixes, restart annotations, legacy data, journa
 reopening and invalid boundaries. The HTTP stream test also uses partial event windows
 to exercise absolute cursors across reconnection and projection-only updates.
 
-LocalStore retains a byte-position index and reads journal bodies on demand. The active
-run and browser still retain complete task histories. Journal compaction, key-index
-growth, browser history eviction, media retention and the 4,000-event run budget
-require separate work. Current projections still contain assignment and task data,
+The publication checks exercise durable writes, projection publication failure,
+immutable event bodies, detached snapshots and invalid counters. A child process with
+a 64 MiB V8 old-space limit publishes 4,097 events totaling more than 64 MiB, reopens
+the journal and validates every event through bounded pages. This constrains the
+JavaScript old-space heap, not total process memory, and does not execute an agent.
+
+LocalStore retains a byte-position index and reads journal bodies on demand. The browser
+still retains complete task histories, and recovery observation retains its selected
+trace. Journal compaction, key-index growth, recovery trace retention, browser history
+eviction and media retention require separate work. Current projections contain assignment and task data,
 and a single large event remains atomic. Bounded event reads and transfer do not
 establish bounded lifetime storage or live-model performance.
