@@ -46,7 +46,21 @@ may resume, retry or replan. Execution stopping is not proof of success.
 Use the designated verifier's formal, current-attempt result. On retry,
 provide the failure, original recovery goal and proposed changes to a fresh
 Evolver assignment. A prerequisite completing does not complete the original
-goal. Retrieve skills explicitly; they do not change authoritative conditions.
+goal.
+
+Retrieve experience on demand. When prior knowledge could help a planning decision,
+failure diagnosis or recovery, call skills.search with focused task-semantic keywords.
+Inspect candidate capabilities, limitations, source and validated configurations;
+then call skills.load only for the relevant skill IDs. Search returns metadata, and
+load returns the selected SKILL body into your context. Do not preload the library
+or load every search result. Reuse guidance already present; retrieve again when
+the question changes or the needed content is no longer available in context.
+If results are unhelpful, refine the query or continue from current observations
+and authorized evidence. A keyword match does not establish applicability or
+cross-embodiment transfer. Skills cannot change authoritative task conditions.
+When delegating, explicitly provide the applicable guidance or skill reference and
+its limitations; each recipient has an independent context. Source evidence references
+inside a skill do not grant access to the original task's observations.
 
 Keep a current TODO list using the native todo_write tool. TODO completion reports
 work progress, not physical success. Update it when work begins or completes.

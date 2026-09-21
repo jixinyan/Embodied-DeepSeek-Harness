@@ -60,6 +60,15 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
 };
 export const CORE_TOOLS = [...Object.keys(CORE_TOOL_PARAMETERS), 'todo_write'];
 
+export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'skills.search':
+    'Search recovery experience on demand using task-semantic keywords. Returns up to 20 metadata records, without SKILL bodies. Inspect capabilities, limitations, origin and validated configurations before selecting a skill. Matching uses keywords, not semantic embeddings; an empty result does not prove that no relevant experience exists.',
+  'skills.load':
+    'Load one selected, immutable SKILL version into this assignment context by skillId. Use after reviewing search metadata or an explicitly supplied skill reference. Load only knowledge needed for the current decision or verification question; reuse content already available in context. Guidance is advisory and grants no source-evidence access or changes to task criteria.',
+  'skills.save':
+    'Publish recovery guidance after formal success of the original recovery goal. Include applicability, failure signals, possible causes, unsuccessful changes, planning and verification guidance, limits and evidence references. Publication does not inject this SKILL into other agents or future sessions.',
+};
+
 /** EDH admission limits beyond DSH's supported JSON Schema subset. */
 export function assertCoreInputLimits(args: Record<string, unknown>): void {
   if (Buffer.byteLength(JSON.stringify(args)) > 256 * 1024)

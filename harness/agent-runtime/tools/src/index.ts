@@ -29,4 +29,9 @@ export interface PhysicalToolProvider {
   invoke(call: ToolCall, signal: AbortSignal): Promise<ToolResult>;
 }
 
-export { CORE_TOOLS, CORE_TOOL_PARAMETERS, assertCoreInputLimits } from './core-inputs.js';
+export {
+  CORE_TOOLS,
+  CORE_TOOL_PARAMETERS,
+  CORE_TOOL_DESCRIPTIONS,
+  assertCoreInputLimits,
+} from './core-inputs.js';

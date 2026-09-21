@@ -622,3 +622,20 @@ acknowledgement ordering. No model or environment execution was performed in thi
 Remaining: provider-backed discovery of new criteria, active-task user clarification,
 bounded event/media retention, live VLM evaluation and local-server bootstrap. These
 remain required upper-system work; physical provider integration has separate acceptance.
+
+## On-demand SKILL context (2026-09-20)
+
+Planner and Verifier prompts now specify agent-directed search, applicability review,
+selective loading, reuse of available guidance and explicit cross-role handoff. Native
+DSH tool definitions describe the distinct search/load/save effects and their limits.
+Search continues to return metadata only; load returns the selected immutable SKILL.
+Publication persists knowledge without inserting it into other role contexts. The
+memory guide and specification Section 8.6 document this context lifecycle.
+
+Validation: the real FileTeamLoader resolves the repository Team and all three role
+definitions; the native DSH schema validator accepts all three skill-tool schemas.
+TypeScript, formatting, provenance, structure and whitespace checks pass. The existing
+five admission and nine console checks pass. No model or physical environment was
+executed. Retrieval quality and context savings require live-model evaluation. The
+retriever still uses task-semantic keyword matching with a 20-result limit; semantic
+ranking, embedding retrieval and section-level loading remain unimplemented.

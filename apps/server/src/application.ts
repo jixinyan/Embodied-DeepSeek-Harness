@@ -39,6 +39,7 @@ export type { GoalBinding } from '@edh/tasks';
 export { CORE_TOOLS } from '@edh/tools';
 import {
   CORE_TOOL_PARAMETERS,
+  CORE_TOOL_DESCRIPTIONS,
   assertObjectJsonSchema,
   validateJsonSchemaValue,
   ToolArgsError,
@@ -574,7 +575,9 @@ export class UpperRun {
           if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
           native = {
             name: logical.replaceAll('.', '__'),
-            description: `${logical}. Operates only within this assignment and task.`,
+            description:
+              CORE_TOOL_DESCRIPTIONS[logical] ??
+              `${logical}. Operates only within this assignment and task.`,
             parameters: {
               type: 'object',
               properties:

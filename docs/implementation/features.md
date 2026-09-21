@@ -70,3 +70,12 @@ See [admission](../../apps/server/src/task-admission.ts) and
 Still pending: actual simulator/hardware allocation, discovery of new task criteria,
 active-task clarification and CLI-free server bootstrap.
 [Legacy design migration audit](legacy-migration.md) lists retained and missing designs.
+
+## On-demand experience context
+
+Planner and Verifier have explicit search/select/load instructions and descriptive
+native tools. Search returns metadata; selected SKILL bodies enter only the calling
+assignment's context. Cross-session persistence does not preload future role contexts.
+Current retrieval uses task-semantic keywords with a 20-result bound; embedding search,
+semantic ranking and section loading remain unimplemented. See the
+[memory guide](../../harness/agent-runtime/memory/README.md).
