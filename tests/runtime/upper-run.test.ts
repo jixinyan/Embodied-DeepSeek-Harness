@@ -12,6 +12,7 @@ import type { EmbodiedBackend, BackendUpdate, BackendCallOptions } from '@edh/ex
 import { ContractValidator, type VerificationResult, type PlanDocument } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
+import { RecoveryHistory } from '@edh/tasks';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 import { UpperRun, CORE_TOOLS, terminal } from '../../apps/server/src/application.js';
 import { FixtureModel } from '../../apps/server/src/fixture-model.js';
@@ -129,9 +130,7 @@ test(
             (e.detail.payload as { kind?: string }).kind === 'recovery-progress',
         );
       assert(progress.length > 0, 'Evolver must receive progress before success');
-      const trace = app.store.get<{ events: { type: string }[] }>(
-        `recovery:${app.run.state.recoveryId}`,
-      )!.value;
+      const trace = new RecoveryHistory(app.store).restore(app.run.state.recoveryId!);
       assert(trace.events.some((e) => e.type === 'execution.updated'));
       assert(app.model.requests.length > 15);
       const lead = app.run.state.assignments[app.run.state.decisionAssignmentId]!;
@@ -251,13 +250,9 @@ test(
         'utf8',
       );
       assert.match(artifact, new RegExp(placementSuccess.verdict_id));
-      const context = app.store.get<{
-        context: { originalGoalId: string };
-        events: { detail: unknown }[];
-        result: VerificationResult;
-      }>(`recovery:${state.recoveryId}`)!.value;
+      const context = new RecoveryHistory(app.store).restore(state.recoveryId!);
       assert.equal(context.context.originalGoalId, 'place-cup');
-      assert.equal(context.result.verdict_id, placementSuccess.verdict_id);
+      assert.equal(context.result!.verdict_id, placementSuccess.verdict_id);
       assert(JSON.stringify(context.events).includes('open-cabinet'));
       for (const verdict of state.verdicts) {
         const verifier = state.assignments[verdict.verifier_assignment_id]!;

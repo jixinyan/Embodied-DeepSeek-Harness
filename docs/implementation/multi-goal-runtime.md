@@ -105,6 +105,39 @@ uses the recovery's captured success, not whichever unrelated verdict is now las
 A failed Evolver model writes `recovery.failed` and a durable error; the Planner and
 Verifier can still complete the physical task. No success skill is fabricated.
 
+## Recovery progress storage and delivery
+
+RecoveryHistory stores the explicit failed-attempt context, result, learning error
+and published trace count under `recovery:<id>`. Each `recovery-event:<id>:<index>`
+stores an immutable reference to an already published run event. The recovery record
+contains no accumulated event bodies. Failed learning can retain subsequent progress
+for later inspection. A resolved recovery accepts no additional events.
+
+Readers use recovery indices because selected run sequences can contain gaps. Pages
+contain at most 32 events and target 64 KiB of encoded event bodies. An oversized
+individual event remains intact in its own batch. Page reads validate reference order,
+the published run boundary and the referenced event. Unpublished references stay
+outside the recovery count. Legacy inline traces remain readable.
+
+UpperRun starts one progress drain after the Evolver's start message has completed.
+It reads each batch when ready to send and advances its cursor after native DSH
+delivery settles. Incoming progress grows the durable trace without queuing arrays
+of event bodies. Concurrent flush requests await the active drain and check for
+remaining progress. The original-goal success message waits for progress delivery.
+Errors propagate to the existing learning-failure handler and preserve the stored
+trace; restarting the server never resumes an Evolver or replays task actions.
+
+The existing recovery HTTP endpoint explicitly reconstructs a complete trace for
+inspection. This response and legacy inline records can allocate the requested
+history. Agent session context, indexed reference count, journal disk usage and
+working-file limits have separate lifecycles. Delivery settlement means native
+session quiescence; it does not prove the quality of learned guidance.
+
+`pnpm test:history` includes actual journal checks for ordered selection, stable page
+boundaries, detached bodies, UTF-8 byte sizes, large individual records, legacy reads,
+reopening, invalid references and traces exceeding the 8 MiB record limit. These
+checks use authored history documents and do not simulate model or physical behavior.
+
 ## Acceptance and next work
 
 [Runtime acceptance](../../tests/runtime/upper-run.test.ts) executes native DSH calls

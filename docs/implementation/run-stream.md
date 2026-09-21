@@ -119,8 +119,8 @@ the journal and validates every event through bounded pages. This constrains the
 JavaScript old-space heap, not total process memory, and does not execute an agent.
 
 LocalStore retains a byte-position index and reads journal bodies on demand. The browser
-still retains complete task histories, and recovery observation retains its selected
-trace. Journal compaction, key-index growth, recovery trace retention, browser history
-eviction and media retention require separate work. Current projections contain assignment and task data,
+still retains complete task histories. Recovery observation stores selected event
+references and reads bounded progress batches. Journal compaction, key-index growth,
+browser history eviction and media retention require separate work. Current projections contain assignment and task data,
 and a single large event remains atomic. Bounded event reads and transfer do not
 establish bounded lifetime storage or live-model performance.

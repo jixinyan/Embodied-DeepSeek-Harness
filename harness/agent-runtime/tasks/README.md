@@ -17,6 +17,11 @@ state contains an empty event array and its published count. Full event inspecti
 uses `snapshot()` or the paginated HTTP history endpoint. Event publication does not
 impose a task-lifetime event count limit. See the [event guide](../../../docs/implementation/run-stream.md).
 
+[recovery-history.ts](src/recovery-history.ts) persists selected event references,
+reads recovery progress in bounded pages, and reconstructs complete recovery traces
+for explicit inspection. Original run events remain the authoritative bodies.
+See [recovery delivery](../../../docs/implementation/multi-goal-runtime.md#recovery-progress-storage-and-delivery).
+
 See [multi-goal runtime](../../../docs/implementation/multi-goal-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
 [module responsibilities](../../../docs/architecture/modules.md).

@@ -1431,6 +1431,11 @@ owner accepts replan/retry -> explicit failed-attempt handoff -> Evolver records
 planner and execution progress -> original-subgoal formal success -> SKILL**.
 The Evolver receives scoped messages rather than shared agent histories. Both
 replan and retry enter one recovery; a later retry does not duplicate the Evolver.
+Recovery traces persist references to published run events. Progress delivery reads
+ordered pages of at most 32 events with a 64 KiB encoded-body target; a larger event
+is delivered alone. Native delivery of each batch settles before the next batch,
+and original-goal success follows all preceding progress. Explicit inspection can
+reconstruct the complete trace. See [recovery storage and delivery](implementation/multi-goal-runtime.md#recovery-progress-storage-and-delivery).
 See [decision 0004](implementation/decisions/0004-recovery-observation-and-action-admission.md).
 
 Physical providers must separate policy inference from action admission and device

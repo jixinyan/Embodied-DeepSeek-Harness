@@ -30,6 +30,7 @@ import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/executio
 import {
   TaskGoals,
   RunHistory,
+  RecoveryHistory,
   taskContextSummary,
   type TaskContextSummary,
   type GoalBinding,
@@ -59,9 +60,10 @@ interface RecoveryObservation {
   id: string;
   goal: GoalBinding;
   context: Record<string, unknown>;
-  trace: { sequence: number; type: string; detail: Record<string, unknown> }[];
+  eventCount: number;
   cursor: number;
   delivery: Promise<void>;
+  flushing?: boolean;
   timer?: ReturnType<typeof setTimeout>;
   evolverId?: string;
   result?: VerificationResult;
@@ -95,6 +97,7 @@ export class UpperRun {
   private readonly reports: AssignmentReports;
   private readonly skills: SkillLibrary;
   private readonly history: RunHistory;
+  private readonly recoveryHistory: RecoveryHistory;
   private deliveredMessages = 0;
   private readonly evidence = new Map<string, SensorSample>();
   private readonly imageReferences = new Map<string, ImageAttachmentRef>();
@@ -173,6 +176,7 @@ export class UpperRun {
     this.reports = new AssignmentReports(options.store, options.validator);
     this.skills = new SkillLibrary(options.store, options.validator);
     this.history = new RunHistory(options.store);
+    this.recoveryHistory = new RecoveryHistory(options.store);
     const audits = new SessionAudits(options.store);
     this.sessions = new TeamSessions(
       options.host,
@@ -323,13 +327,12 @@ export class UpperRun {
           'retry.accepted',
         ].includes(type))
     ) {
-      recovery.trace.push({ sequence: latest.sequence, type, detail: structuredClone(detail) });
-      this.persistRecovery(recovery);
-      if (!recovery.timer)
-        recovery.timer = setTimeout(() => {
-          delete recovery.timer;
-          this.learn(recovery, this.flushRecovery(recovery));
-        }, 150);
+      recovery.eventCount = this.recoveryHistory.append(
+        recovery.id,
+        this.state.id,
+        latest.sequence,
+      );
+      this.scheduleRecovery(recovery);
     }
   }
   private activeRecovery(): RecoveryObservation | undefined {
@@ -341,17 +344,7 @@ export class UpperRun {
     return [...this.recoveries.values()].find((r) => r.evolverId === id);
   }
   private persistRecovery(recovery: RecoveryObservation): void {
-    const key = `recovery:${recovery.id}`;
-    this.options.store.put(
-      key,
-      {
-        context: recovery.context,
-        events: recovery.trace,
-        result: recovery.result ?? null,
-        error: recovery.error ?? null,
-      },
-      this.options.store.get(key)?.version ?? 0,
-    );
+    this.recoveryHistory.update(recovery.id, recovery.result ?? null, recovery.error ?? null);
   }
   private learningFailure(recovery: RecoveryObservation, error: unknown): void {
     if (recovery.error) return;
@@ -1325,7 +1318,7 @@ export class UpperRun {
     const recovery: RecoveryObservation = {
       id: randomUUID(),
       goal: structuredClone(this.goal),
-      trace: [],
+      eventCount: 0,
       cursor: 0,
       delivery: Promise.resolve(),
       context: {
@@ -1342,7 +1335,7 @@ export class UpperRun {
     this.recoveries.set(recovery.id, recovery);
     this.state.recoveryId = recovery.id;
     this.state.activeRecoveryId = recovery.id;
-    this.persistRecovery(recovery);
+    this.recoveryHistory.create(recovery.id, this.state.id, recovery.context);
     this.event('recovery.opened', { recoveryId: recovery.id, context: recovery.context });
     const role = this.sessions.team.definition.bindings.recovery_evolver;
     if (role && this.sessions.team.definition.learning_enabled !== false) {
@@ -1368,22 +1361,54 @@ export class UpperRun {
       this.learn(recovery, recovery.delivery);
     }
   }
+  private scheduleRecovery(recovery: RecoveryObservation): void {
+    if (
+      !this.closing &&
+      !this.closed &&
+      !recovery.error &&
+      !recovery.timer &&
+      !recovery.flushing &&
+      recovery.cursor < recovery.eventCount
+    )
+      recovery.timer = setTimeout(() => {
+        delete recovery.timer;
+        this.learn(recovery, this.flushRecovery(recovery));
+      }, 150);
+  }
   private flushRecovery(recovery: RecoveryObservation): Promise<void> {
     if (recovery.timer) {
       clearTimeout(recovery.timer);
       delete recovery.timer;
     }
-    if (recovery.cursor >= recovery.trace.length || recovery.error) return recovery.delivery;
-    const events = recovery.trace.slice(recovery.cursor);
-    recovery.cursor = recovery.trace.length;
-    recovery.delivery = recovery.delivery.then(async () => {
-      if (recovery.evolverId)
-        await this.sessions.deliver(
-          recovery.evolverId,
-          { kind: 'recovery-progress', recoveryId: recovery.id, events },
-          this.state.decisionAssignmentId,
-        );
-    });
+    if (recovery.cursor >= recovery.eventCount || recovery.error) return recovery.delivery;
+    if (recovery.flushing) return recovery.delivery.then(() => this.flushRecovery(recovery));
+    recovery.flushing = true;
+    recovery.delivery = recovery.delivery
+      .then(async () => {
+        while (recovery.cursor < recovery.eventCount && !recovery.error) {
+          if (!recovery.evolverId) {
+            recovery.cursor = recovery.eventCount;
+            return;
+          }
+          const page = this.recoveryHistory.page(recovery.id, recovery.cursor);
+          await this.sessions.deliver(
+            recovery.evolverId,
+            {
+              kind: 'recovery-progress',
+              recoveryId: recovery.id,
+              afterIndex: page.afterIndex,
+              throughIndex: page.throughIndex,
+              events: page.events,
+            },
+            this.state.decisionAssignmentId,
+          );
+          recovery.cursor = page.throughIndex;
+        }
+      })
+      .finally(() => {
+        recovery.flushing = false;
+      })
+      .then(() => this.scheduleRecovery(recovery));
     return recovery.delivery;
   }
   private resolveRecovery(result: VerificationResult): void {

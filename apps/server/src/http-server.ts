@@ -20,7 +20,7 @@ import {
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
 import { SkillLibrary, type SkillBundle } from '@edh/memory';
-import { RunHistory, type RunState } from '@edh/tasks';
+import { RunHistory, RecoveryHistory, type RunState } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
 import { UpperRun, terminal } from './application.js';
 import { prepareDeployment, type ServerDeployment } from './deployment.js';
@@ -546,7 +546,7 @@ export async function startServer(options: LocalServerOptions) {
           if (method === 'GET' && operation === 'recovery') {
             return json(res, 200, {
               recovery: record.recoveryId
-                ? (store.get(`recovery:${record.recoveryId}`)?.value ?? null)
+                ? new RecoveryHistory(store).restore(record.recoveryId)
                 : null,
             });
           }

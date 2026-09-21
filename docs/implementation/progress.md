@@ -710,8 +710,8 @@ also pass, for 38 relevant checks. TypeScript, formatting, DSH provenance, struc
 and whitespace checks pass. Test data stays under the ignored repository work directory.
 No model or physical provider was executed; the scripted runtime suite was not rerun.
 
-Remaining: key-index growth, journal/disk retention, browser history limits, recovery
-trace retention, media cleanup, provider-backed criteria discovery,
+Remaining: key-index growth, journal/disk retention, browser history limits,
+media cleanup, provider-backed criteria discovery,
 active-task clarification, live VLM evaluation and local-server bootstrap. Caller-owned
 full list/audit results retain their own memory costs. The storage test does not bound
 whole-process RSS or the memory of all application consumers.
@@ -734,7 +734,36 @@ formatting, provenance, structure and whitespace checks pass. These checks execu
 storage and transport code; they do not run a model or physical provider. Scripted
 runtime tests were updated for explicit snapshot reads and were not executed.
 
-Remaining: recovery trace retention and delivery batching, browser history limits,
+Remaining: browser history limits,
 key-index/disk retention, media cleanup, provider-backed criteria discovery, active-task
 clarification, live VLM evaluation and local-server bootstrap. Full snapshot callers
 still allocate their requested history. Physical integration keeps its separate scope.
+
+## Recovery event references and delivery pages (2026-09-20)
+
+RecoveryHistory persists ordered references to published run events and a separate
+projection containing the explicit failed-attempt context, result and learning error.
+Active recovery observations keep counts and a delivery cursor. Progress pages carry
+at most 32 events with a 64 KiB encoded-body target; a larger single event is preserved.
+UpperRun reads one batch when native DSH delivery is ready, advances the cursor after
+delivery settles, and orders the success notification after pending progress. Incoming
+events do not enqueue arrays of event bodies. Learning errors retain the stored trace.
+
+The existing recovery inspection endpoint reconstructs complete history on request,
+including legacy inline traces. Evolver instructions describe batch indices, original
+run sequences and concise working notes. The multi-goal guide documents storage,
+publication, delivery and remaining resource boundaries.
+
+Validation: all 13 history checks and 17 console checks pass. Four new recovery checks
+use actual LocalStore journals and authored history documents to cover ordered selection,
+fixed read boundaries, detached results, UTF-8 size targets, oversized events, legacy
+records, reopening, invalid references, unpublished suffixes and recovery bodies totaling
+more than the 8 MiB record limit. TypeScript, formatting, DSH provenance, structure and
+whitespace checks pass. Existing scripted runtime assertions now use explicit recovery
+restoration and were not executed. Live model delivery, guidance quality and physical
+behavior remain unverified by this checkpoint.
+
+Remaining: browser history limits, journal/index retention, media cleanup, provider-backed
+criteria discovery, active-task clarification, live VLM evaluation and local-server
+bootstrap. Complete inspection responses, native session audits/context and agent working
+files retain their own memory/storage costs. No physical provider was added.
