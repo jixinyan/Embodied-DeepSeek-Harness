@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.34 · 2026-09-21
+Version: v1.35 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -49,7 +49,9 @@ update. An owner ID in a prior subgoal is not a new authorization. See the
 [execution contract](../harness/agent-runtime/execution/README.md).
 Formal-check contexts persist request/boundary identities, scoped facts and evidence
 references. Only active assignment identities and accepted versions remain resident;
-native retirement releases them while historical records remain inspectable. See
+native retirement releases them while historical records remain inspectable. The
+Assignment inspector exposes saved check facts and accepted verdicts separately,
+validating their task, execution, boundary, criteria and evidence identities. See
 [verification lifetime](../harness/agent-runtime/verification/README.md).
 The unified console now displays key
 state without page/tab switching; further polish follows actual provider integration.

@@ -18,6 +18,10 @@ sample or contain duplicate check IDs. Shared lifecycle gates still decide wheth
 the facts justify the submitted outcome.
 UpperRun validates and publishes the scoped check context before extending the
 Verifier's observation permissions or publishing its consumed-observation event.
+Formal assignment publication retains a `verificationContextStored` marker in its
+current and archived details. Once a verdict is accepted, further checks reject before
+calling the provider; checks already awaiting the provider recheck settlement before
+publishing their response.
 
 `open` publishes the source record before activating its assignment. `update` advances
 the active version only after a successful journal write. Active reads reject changes
@@ -31,6 +35,13 @@ source observations, verdicts and native audits remain available for inspection.
 `inspect` is a host-side historical reader; it grants no agent evidence access and
 has no automatic model-context delivery. Opening a new `VerificationContexts` instance
 does not reactivate stored assignments or resume verification.
+
+The Assignment inspector resolves this record alongside its source observation and
+accepted verdict. Waiting for facts, saved facts with a pending verdict, and a settled
+verdict have separate statuses. An accepted `unknown` result remains unknown. The
+reader validates identities, scope, criteria, fact values and evidence references;
+missing published records and conflicts fail. See the
+[inspection API](../../../docs/implementation/assignment-history.md#read-api-and-console).
 
 `pnpm test:verification-contexts` exercises actual journals and authored project
 documents: detached/reopened reads, repeated assignment retirement, unavailable and

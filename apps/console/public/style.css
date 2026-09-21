@@ -1253,6 +1253,34 @@ dialog pre {
   border-radius: 8px;
   background: var(--paper);
 }
+.assignment-verification {
+  margin: 12px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.assignment-verification h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+.assignment-verification dl {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 4px 12px;
+  font-size: 11px;
+}
+.assignment-verification dt {
+  color: var(--muted);
+}
+.assignment-verification dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.assignment-verification li {
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
 .launcher-heading,
 .launcher-controls {
   display: flex;

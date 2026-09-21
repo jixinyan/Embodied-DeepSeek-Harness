@@ -15,6 +15,7 @@ const assignmentSchema = z
     status: z.enum(['retired', 'retirement_failed']),
     model: z.string().min(1),
     tools: z.array(z.string()),
+    verificationContextStored: z.boolean().optional(),
     todos: z
       .array(
         z
@@ -100,6 +101,9 @@ export class AssignmentHistory {
         status: fields.status,
         model: fields.model,
         tools: fields.tools,
+        ...(fields.verificationContextStored === undefined
+          ? {}
+          : { verificationContextStored: fields.verificationContextStored }),
         brief,
         ...(report === undefined ? {} : { report }),
         ...(fields.todos === undefined ? {} : { todos: fields.todos }),
@@ -155,6 +159,9 @@ export class AssignmentHistory {
       model: assignment.model,
       tools: [...assignment.tools],
       detailsStored: true,
+      ...(assignment.verificationContextStored === undefined
+        ? {}
+        : { verificationContextStored: assignment.verificationContextStored }),
       callerAssignmentId: value.assignment.brief.caller_assignment_id,
       ...(value.lastObservationId ? { lastObservationId: value.lastObservationId } : {}),
       ...(assignment.todos ? { todoCount: assignment.todos.length } : {}),

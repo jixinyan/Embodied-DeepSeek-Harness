@@ -1202,6 +1202,8 @@ export class UpperRun {
           execution.boundary_event_id !== context.boundaryId
         )
           throw new Error('Stale or absent formal verification assignment.');
+        if (this.state.verdicts.some((v) => v.verification_request_id === context.requestId))
+          throw new Error('Verification request already settled.');
         const checked = await this.options.backend.check(
           ('all' in a.brief.success_contract
             ? a.brief.success_contract.all
@@ -1213,6 +1215,8 @@ export class UpperRun {
         if (this.closed || terminal(this.state.state))
           throw new Error('Run ended during formal checks.');
         this.verifier(a);
+        if (this.state.verdicts.some((v) => v.verification_request_id === context.requestId))
+          throw new Error('Verification request already settled.');
         const latest = this.options.backend.query();
         if (
           latest?.execution_id !== context.executionId ||
@@ -1726,6 +1730,7 @@ export class UpperRun {
       scope: a.brief.task_scope,
       evidenceId: update.sample.evidence.id,
     });
+    this.state.assignments[a.id]!.verificationContextStored = true;
     this.event('verification.requested', {
       assignmentId: a.id,
       executionId: update.status.execution_id,

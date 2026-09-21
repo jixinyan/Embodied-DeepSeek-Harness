@@ -10,6 +10,7 @@ import { AssignmentReports } from '@edh/communication';
 import { LocalStore } from '@edh/storage';
 import { AssignmentHistory } from '@edh/tasks';
 import { SensorSamples } from '@edh/perception';
+import { VerificationContexts } from '@edh/verification';
 import { readAssignmentDetails } from '../../apps/server/src/assignment-view.js';
 import { readRoleReports } from '../../apps/server/src/report-view.js';
 import { HttpError } from '../../apps/server/src/local-http.js';
@@ -221,6 +222,7 @@ test('archived HTTP reads reject conflicting published summaries', async () => {
       { tools: ['another-tool'] },
       { callerAssignmentId: 'another-caller' },
       { lastObservationId: 'another-observation' },
+      { verificationContextStored: true },
     ]) {
       store.put(
         `run:${state.id}`,
@@ -232,6 +234,159 @@ test('archived HTTP reads reject conflicting published summaries', async () => {
         /conflict with the published run/,
       );
     }
+  });
+});
+
+test('assignment inspection distinguishes saved checks from a submitted unknown verdict', async () => {
+  await withHistory(async ({ store, validator, history, state, assignment }) => {
+    const samples = new SensorSamples(store, validator, state.id, state.source);
+    const sample = samples.retain({
+      evidence: {
+        id: 'verification-document',
+        kind: 'event',
+        source: 'authored-project-document',
+        created_at: state.createdAt,
+        observed_at: state.createdAt,
+        clock_id: 'document-clock',
+        visibility: 'agent',
+        task_scope: assignment.brief.task_scope,
+      },
+      sequence: 0,
+      source: state.source,
+      description: await readFile('README.md', 'utf8'),
+      visualization: {},
+    });
+    const contexts = new VerificationContexts(store, validator, samples, state.id);
+    contexts.open(assignment.id, {
+      requestId: 'document-request',
+      executionId: 'document-execution-reference',
+      boundaryId: 'document-boundary-reference',
+      scope: assignment.brief.task_scope,
+      evidenceId: sample.evidence.id,
+    });
+    state.assignments[assignment.id]!.verificationContextStored = true;
+    store.put(`run:${state.id}`, state, 0);
+    const params = new URLSearchParams({ assignment: assignment.id });
+    let detail = readAssignmentDetails(store, validator, state.id, params);
+    assert.equal(detail.verification!.status, 'awaiting_checks');
+    assert.equal(detail.verification!.verdict, null);
+    const facts = [
+      {
+        check_id: 'review',
+        value: null,
+        reason: 'Physical provider evidence is unavailable in this authored document.',
+        evidence_refs: [sample.evidence.id],
+      },
+    ];
+    contexts.update(assignment.id, facts, sample.evidence.id);
+    detail = readAssignmentDetails(store, validator, state.id, params);
+    assert.equal(detail.verification!.status, 'checked');
+    assert.deepEqual(detail.verification!.context.facts, facts);
+    assert.equal(detail.verification!.verdict, null);
+    const verdict = validator.parse('VerificationResult', {
+      schema_version: 'physical.verification.v1',
+      verdict_id: 'document-unknown-verdict',
+      verification_request_id: 'document-request',
+      execution_id: 'document-execution-reference',
+      boundary_event_id: 'document-boundary-reference',
+      verifier_id: assignment.sessionId,
+      verifier_assignment_id: assignment.id,
+      task_scope: assignment.brief.task_scope,
+      status: 'unknown',
+      goal_contract_id: assignment.brief.success_contract.id,
+      goal_contract_version: assignment.brief.success_contract.version,
+      checks: facts,
+      evidence_refs: [sample.evidence.id],
+      explanation: 'An authored unknown-result document; no model or device was executed.',
+      observed_at: state.createdAt,
+      clock_id: 'document-clock',
+    });
+    state.verdicts.push(verdict);
+    history.retain(state, assignment.id);
+    contexts.release(assignment.id);
+    store.put(`run:${state.id}`, state, 1);
+    detail = readAssignmentDetails(store, validator, state.id, params);
+    assert.equal(detail.archived, true);
+    assert.equal(detail.assignment.verificationContextStored, true);
+    assert.equal(detail.verification!.status, 'settled');
+    assert.equal(detail.verification!.verdict!.status, 'unknown');
+    assert.deepEqual(detail.verification!.observation, sample);
+    for (const change of [
+      { verification_request_id: 'foreign' },
+      { execution_id: 'foreign' },
+      { boundary_event_id: 'foreign' },
+      { verifier_id: 'foreign' },
+      { verifier_assignment_id: 'foreign' },
+      { task_scope: { ...assignment.brief.task_scope, attempt_id: 'foreign' } },
+      { goal_contract_id: 'foreign' },
+      { goal_contract_version: '2' },
+      { checks: [{ ...facts[0], reason: 'Unrelated recorded reason' }] },
+      { evidence_refs: ['foreign'] },
+    ]) {
+      const current = store.get(`run:${state.id}`)!;
+      store.put(
+        `run:${state.id}`,
+        { ...state, verdicts: [{ ...verdict, ...change }] },
+        current.version,
+      );
+      assert.throws(() => readAssignmentDetails(store, validator, state.id, params), /conflicts/);
+    }
+    const current = store.get(`run:${state.id}`)!;
+    store.put(`run:${state.id}`, { ...state, verdicts: [verdict, verdict] }, current.version);
+    assert.throws(
+      () => readAssignmentDetails(store, validator, state.id, params),
+      /multiple accepted formal verdicts/,
+    );
+    contexts.close();
+  });
+});
+
+test('assignment inspection rejects missing published contexts and restricted verification evidence', async () => {
+  await withHistory(async ({ store, validator, state, assignment }) => {
+    state.assignments[assignment.id]!.verificationContextStored = true;
+    store.put(`run:${state.id}`, state, 0);
+    const params = new URLSearchParams({ assignment: assignment.id });
+    assert.throws(
+      () => readAssignmentDetails(store, validator, state.id, params),
+      /context is missing/,
+    );
+    const samples = new SensorSamples(store, validator, state.id, state.source);
+    samples.retain({
+      evidence: {
+        id: 'private-document',
+        kind: 'event',
+        source: 'authored-private-document',
+        created_at: state.createdAt,
+        observed_at: state.createdAt,
+        clock_id: 'document-clock',
+        visibility: 'debug_only',
+        task_scope: assignment.brief.task_scope,
+      },
+      sequence: 0,
+      source: state.source,
+      description: 'Restricted document metadata.',
+      visualization: {},
+    });
+    const contexts = new VerificationContexts(store, validator, samples, state.id);
+    contexts.open(assignment.id, {
+      requestId: 'document-request',
+      executionId: 'document-execution-reference',
+      boundaryId: 'document-boundary-reference',
+      scope: assignment.brief.task_scope,
+      evidenceId: 'private-document',
+    });
+    assert.throws(
+      () => readAssignmentDetails(store, validator, state.id, params),
+      (error: unknown) => error instanceof HttpError && error.status === 403,
+    );
+    const key = `verification-context:${JSON.stringify([state.id, assignment.id])}`;
+    const context = contexts.inspect(assignment.id)!;
+    contexts.close();
+    store.put(key, { ...context, scope: { ...context.scope, attempt_id: 'other-attempt' } }, 1);
+    assert.throws(
+      () => readAssignmentDetails(store, validator, state.id, params),
+      /context conflicts/,
+    );
   });
 });
 

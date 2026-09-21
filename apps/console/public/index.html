@@ -588,6 +588,12 @@
         ></label>
         <button data-assignment="refresh" class="button small">Refresh details</button>
         <p data-assignment="status" role="status"></p>
+        <section data-assignment="verification" class="assignment-verification" hidden>
+          <h3>Formal verification</h3>
+          <p data-assignment="verification-status" role="status"></p>
+          <dl data-assignment="verification-identity"></dl>
+          <ul data-assignment="verification-facts" aria-label="Verification facts"></ul>
+        </section>
       </div>
       <pre id="inspector-body"></pre>
     </dialog>

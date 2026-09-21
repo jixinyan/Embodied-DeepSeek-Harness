@@ -1,10 +1,24 @@
 # Implementation progress
 
-Spec: v1.34. Current checkpoint: **durable verification contexts with native assignment lifetime**.
+Spec: v1.35. Current checkpoint: **formal verification inspection with source consistency**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+The Assignment inspector reads formal-check contexts, source observations and accepted
+verdicts together. Waiting for facts, saved checks and settled verdicts have distinct
+statuses; an accepted unknown result remains unknown. Scope, request, execution,
+boundary, criteria, native role identity, facts and evidence references must agree.
+A published-context marker survives assignment archival and makes missing records
+explicit. UpperRun rejects further check publication after a formal verdict settles.
+Nine actual assignment journal/HTTP/process checks, four context checks and ten native
+lifecycle checks pass, alongside 24 console checks. TypeScript, formatting, source
+provenance and 478 documentation-link checks pass. Browser DOM acceptance through
+the production reader covers waiting/checked/unknown states, literal text, role changes,
+missing-context errors, refresh, empty selection and close. These checks use authored
+documents; live model/provider verification remains required.
+[Inspection API](assignment-history.md#read-api-and-console).
 
 VerificationContexts stores check identities, scopes, facts and evidence references in
 versioned records. Its active registry retains only assignment IDs and record versions;

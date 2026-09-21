@@ -59,6 +59,39 @@ export function createAssignmentSelection(api, changed, failed) {
 
 export function bindAssignmentDetails(container, body, api, action) {
   const find = (name) => container.querySelector(`[data-assignment="${name}"]`);
+  const verification = (value) => {
+    find('verification').hidden = !value;
+    find('verification-status').textContent = '';
+    find('verification-identity').replaceChildren();
+    find('verification-facts').replaceChildren();
+    if (!value) return;
+    const labels = {
+      awaiting_checks: 'Waiting for check results',
+      checked: 'Check results saved · Formal verdict pending',
+      settled: `Formal verdict: ${value.verdict?.status ?? 'unavailable'}`,
+    };
+    find('verification-status').textContent = labels[value.status];
+    for (const [label, text] of [
+      ['Execution', value.context.executionId],
+      ['Boundary', value.context.boundaryId],
+      ['Request', value.context.requestId],
+      ['Goal', value.context.scope.goal_id ?? 'Unspecified'],
+      ['Attempt', value.context.scope.attempt_id ?? 'Unspecified'],
+      ['Evidence', value.context.evidenceId],
+    ]) {
+      const term = document.createElement('dt');
+      const detail = document.createElement('dd');
+      term.textContent = label;
+      detail.textContent = text;
+      find('verification-identity').append(term, detail);
+    }
+    for (const fact of value.context.facts) {
+      const item = document.createElement('li');
+      const result = fact.value === null ? 'Unknown' : fact.value ? 'True' : 'False';
+      item.textContent = `${fact.check_id}: ${result}${fact.reason ? ` · ${fact.reason}` : ''}`;
+      find('verification-facts').append(item);
+    }
+  };
   let revision = 0;
   let runId;
   let loading = false;
@@ -69,6 +102,7 @@ export function bindAssignmentDetails(container, body, api, action) {
     controller = new AbortController();
     const assignment = find('selection').value;
     body.textContent = '';
+    verification(null);
     loading = Boolean(assignment);
     find('selection').disabled = loading || !assignment;
     find('refresh').disabled = loading || !assignment;
@@ -82,6 +116,7 @@ export function bindAssignmentDetails(container, body, api, action) {
         controller.signal,
       );
       if (requestRevision !== revision) return;
+      verification(result.verification);
       body.textContent = JSON.stringify(result, null, 2);
       body.scrollTop = 0;
       find('status').textContent =
@@ -123,6 +158,7 @@ export function bindAssignmentDetails(container, body, api, action) {
       loading = false;
       container.hidden = true;
       body.textContent = '';
+      verification(null);
       find('selection').replaceChildren();
     },
   };

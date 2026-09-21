@@ -130,6 +130,14 @@ cancelling superseded requests. Compact retired rows preserve Team caller edges.
 Loading, empty and failure states remain visible. See
 [assignment history](../../docs/implementation/assignment-history.md).
 
+Formal assignments also expose a **Formal verification** section with check status,
+execution/boundary/request identities, goal/attempt, evidence and individual facts.
+Saved checks remain pending until an accepted verdict exists. An accepted unknown
+verdict displays as unknown. Refresh details reads the selected record again; selection,
+loading, failure and close clear the previous verification display. Source conflicts
+and missing published contexts appear as read errors. Document-based browser checks
+exercise these states without a model or physical provider.
+
 The **Role reports** inspector reads one assignment's published reports in bounded
 pages. It exposes report bodies, delivery status and caller acknowledgements, with
 earlier/latest navigation and explicit empty/error states. Opening another inspector

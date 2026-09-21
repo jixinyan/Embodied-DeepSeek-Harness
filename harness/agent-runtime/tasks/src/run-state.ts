@@ -19,6 +19,7 @@ export interface RunAssignment {
   sessionId: string;
   brief?: InvocationBrief;
   detailsStored?: boolean;
+  verificationContextStored?: boolean;
   callerAssignmentId?: string;
   lastObservationId?: string;
   todoCount?: number;
