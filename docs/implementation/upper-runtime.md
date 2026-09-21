@@ -190,8 +190,10 @@ physical work. A stale writer lock requires confirming the old process is stoppe
 before manual removal. No automatic lock takeover or journal compaction is implemented.
 
 The demo supports one active run, sequential plan-selected goals and one observing
-recovery chain at a time. Completed recovery assignments retain their own provenance. SSE sends
-coalesced complete snapshots; reconnect resynchronizes current state rather than
-replaying each delta. Tests cover local reconnect/restart, not distributed delivery.
+recovery chain at a time. Completed recovery assignments retain their own provenance.
+The console uses bounded event batches and current-state projections, with cursor-based
+SSE reconnect. Snapshot clients remain supported. See the [stream protocol](run-stream.md)
+for transfer limits and the remaining lifetime-retention work. Tests cover local
+reconnect/restart, not distributed delivery.
 The backend port and CPU fixture do not implement the physical action gate, Python
 worker or device-specific stop guarantees. See [progress](progress.md) for next steps.

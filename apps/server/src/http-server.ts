@@ -11,6 +11,8 @@ import { UserSessions, SessionConflict } from './user-sessions.js';
 import { validateLaunchSelection } from '../../console/public/launch-selection.js';
 import { consoleContentSecurityPolicy, readConsoleAsset } from './console-assets.js';
 import { admitSessionTask } from './task-admission.js';
+import { RunEventStream } from './run-event-stream.js';
+import { runEventCursor } from '../../console/public/run-update.js';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
 import { SkillLibrary, type SkillBundle } from '@edh/memory';
@@ -193,15 +195,7 @@ export async function startServer(options: LocalServerOptions) {
     let admissionDone: Promise<void> | undefined;
     let closePromise: Promise<void> | undefined;
     const shutdown = new AbortController();
-    const streams = new Map<
-      ServerResponse,
-      {
-        runId: string;
-        timer: ReturnType<typeof setTimeout> | null;
-        blocked: boolean;
-        dirty: boolean;
-      }
-    >();
+    const streams = new Map<ServerResponse, RunEventStream<RunState>>();
     const runView = (id: string) => {
       const state =
         active?.state.id === id
@@ -213,6 +207,7 @@ export async function startServer(options: LocalServerOptions) {
       if (!state) throw new HttpError(404, 'Run not found.');
       return {
         ...state,
+        eventCount: state.events.length,
         configuration: store.get(`run-config:${id}`)?.value ?? null,
         submission: store.get(`run-submission:${id}`)?.value ?? null,
         userSessionId:
@@ -225,36 +220,9 @@ export async function startServer(options: LocalServerOptions) {
         skills: state.skillIds.map((skillId) => skills.load(skillId)),
       };
     };
-    const send = (res: ServerResponse, id: string) => {
-      if (res.destroyed) return;
-      const entry = streams.get(res);
-      if (!entry) return;
-      if (entry.blocked) {
-        entry.dirty = true;
-        return;
-      }
-      const state = runView(id);
-      const bytes = `id: ${state.events.length}\nevent: snapshot\ndata: ${JSON.stringify(state)}\n\n`;
-      if (!res.write(bytes)) {
-        entry.blocked = true;
-        res.once('drain', () => {
-          entry.blocked = false;
-          if (entry.dirty) {
-            entry.dirty = false;
-            send(res, id);
-          }
-        });
-      }
-    };
-    const changed = (state: RunState) => {
+    const changed = (state: Pick<RunState, 'id' | 'state' | 'updatedAt'>) => {
       if (active?.state.id === state.id) userSessions.changed(active);
-      for (const [res, entry] of streams)
-        if (entry.runId === state.id && !entry.timer) {
-          entry.timer = setTimeout(() => {
-            entry.timer = null;
-            send(res, entry.runId);
-          }, 60);
-        }
+      for (const entry of streams.values()) if (entry.runId === state.id) entry.notify();
     };
     const server = createServer((req, res) => {
       res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -543,8 +511,8 @@ export async function startServer(options: LocalServerOptions) {
         if (match) {
           const id = match[1]!;
           const operation = match[2];
-          runView(id);
-          if (method === 'GET' && !operation) return json(res, 200, runView(id));
+          const view = runView(id);
+          if (method === 'GET' && !operation) return json(res, 200, view);
           if (method === 'GET' && operation === 'audit')
             return json(res, 200, { sessions: new SessionAudits(store).read(id) });
           if (method === 'GET' && operation === 'recovery') {
@@ -557,18 +525,27 @@ export async function startServer(options: LocalServerOptions) {
           }
           if (method === 'GET' && operation === 'events') {
             if (streams.size >= 16) throw new HttpError(429, 'Too many event streams.');
+            const format = url.searchParams.get('format') ?? 'snapshot';
+            if (format !== 'delta' && format !== 'snapshot')
+              throw new HttpError(400, 'Unsupported run stream format.');
+            const resume = req.headers['last-event-id'] ?? url.searchParams.get('after') ?? '0';
+            if (typeof resume !== 'string') throw new HttpError(400, 'Invalid run event cursor.');
+            const cursor = format === 'delta' ? runEventCursor(resume, view.events.length) : 0;
             res.writeHead(200, {
               'Content-Type': 'text/event-stream',
               'Cache-Control': 'no-cache',
               Connection: 'keep-alive',
             });
-            streams.set(res, { runId: id, timer: null, blocked: false, dirty: false });
-            send(res, id);
-            req.on('close', () => {
-              const entry = streams.get(res);
-              if (entry?.timer) clearTimeout(entry.timer);
-              streams.delete(res);
-            });
+            const entry = new RunEventStream(
+              id,
+              res,
+              () => runView(id),
+              format,
+              cursor,
+              () => streams.delete(res),
+            );
+            streams.set(res, entry);
+            entry.start();
             return;
           }
           if (method === 'POST' && ['pause', 'resume', 'stop'].includes(operation ?? '')) {
@@ -619,8 +596,7 @@ export async function startServer(options: LocalServerOptions) {
       });
     });
     const heartbeat = setInterval(() => {
-      for (const [res, entry] of streams)
-        if (!entry.blocked && !res.destroyed) res.write(': heartbeat\n\n');
+      for (const entry of streams.values()) entry.heartbeat();
     }, 15_000);
     heartbeat.unref();
     return {
@@ -639,10 +615,7 @@ export async function startServer(options: LocalServerOptions) {
             }
           };
           clearInterval(heartbeat);
-          for (const [res, entry] of streams) {
-            if (entry.timer) clearTimeout(entry.timer);
-            res.end();
-          }
+          for (const entry of streams.values()) entry.close();
           streams.clear();
           const sessionClose = userSessions.close();
           // Observe rejection immediately while a legacy admission may still be unwinding.

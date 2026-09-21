@@ -77,3 +77,12 @@ unconfirmed submission IDs in native browser session storage so retrying the sam
 does not allocate another task. The pending identity is released after the accepted run
 loads. Sidebar task labels use the actual submitted instruction. See the
 [session admission guide](../../docs/implementation/user-sessions.md).
+
+## Incremental run updates
+
+After loading a run, the console subscribes from its current event cursor. It appends
+contiguous batches and renders the current projection when catch-up completes. Native
+EventSource resumes accepted batches after a connection loss. Model text updates with
+no new domain events reuse local history without receiving it again. Invalid updates
+close the subscription and display the protocol error. See the
+[stream protocol and limits](../../docs/implementation/run-stream.md).

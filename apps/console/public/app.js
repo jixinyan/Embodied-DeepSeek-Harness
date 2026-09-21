@@ -8,6 +8,7 @@ import { renderLaunchControls } from './launch-controls.js';
 import { renderCoordination } from './coordination.js';
 import { renderTaskComposer } from './task-composer.js';
 import { taskRequest, completeTaskRequest } from './task-request.js';
+import { mergeRunUpdate } from './run-update.js';
 
 const $ = (id) => document.getElementById(id);
 let selection = {};
@@ -756,19 +757,27 @@ async function loadRun(id) {
   render();
   await refreshHistory();
   if (revision !== loadRevision) return;
-  stream = new EventSource(`/api/runs/${id}/events`);
+  stream = new EventSource(`/api/runs/${id}/events?format=delta&after=${current.events.length}`);
   stream.onopen = () => connected(true);
   stream.onerror = () => connected(false);
-  stream.addEventListener('snapshot', (event) => {
-    const next = JSON.parse(event.data);
-    if (
-      revision !== loadRevision ||
-      next.id !== current.id ||
-      next.events.length < current.events.length
-    )
-      return;
+  stream.addEventListener('run-update', (event) => {
+    if (revision !== loadRevision) return;
+    let update;
+    let next;
+    try {
+      update = JSON.parse(event.data);
+      next = mergeRunUpdate(current, update);
+      if (event.lastEventId !== String(next.events.length))
+        throw new Error('Run stream cursor does not match the received events.');
+    } catch (failure) {
+      stream.close();
+      connected(false);
+      error(failure.message);
+      throw failure;
+    }
     const oldState = current.state;
     current = next;
+    if (update.projection === null) return;
     render();
     if (oldState !== next.state) refreshHistory().catch((e) => error(e.message));
   });

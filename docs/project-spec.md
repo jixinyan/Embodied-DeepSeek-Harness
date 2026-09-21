@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.15 · 2026-09-20
+Version: v1.16 · 2026-09-20
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -931,6 +931,20 @@ decision explanations, tool calls and evidence, not inferred private model reaso
 v1 supports file-configured teams and dynamically created instances. A drag-and-drop
 workflow editor is optional. Video uses stream/asset channels and refreshes independently
 of model replies.
+
+### 10.3 Incremental event delivery
+
+The console obtains a complete run view, then receives contiguous event batches and
+current projections through SSE. Batch admission and client merging validate the run
+identity, cursor and event order. Last-Event-ID supports connection resumption; a
+projection is displayed after its preceding event batches have arrived. Text-only
+model updates carry no repeated event history. Native run-change notifications carry
+identity/state/timestamp; consumers request a full snapshot when needed.
+
+Event batches are limited to 128 entries and a 256 KiB encoded-body target. A larger
+single event remains atomic. Complete initial history, projection size and cumulative
+storage require separate retention limits. See the implemented
+[stream protocol and acceptance](implementation/run-stream.md).
 
 ## 11. User-defined teams and roles
 

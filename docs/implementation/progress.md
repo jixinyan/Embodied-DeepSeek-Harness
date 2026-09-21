@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.12. Current checkpoint: **runnable DSH upper application and CPU console**.
+Spec: v1.16. Current checkpoint: **runnable DSH upper application and CPU console**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -639,3 +639,28 @@ five admission and nine console checks pass. No model or physical environment wa
 executed. Retrieval quality and context savings require live-model evaluation. The
 retriever still uses task-semantic keyword matching with a 20-result limit; semantic
 ranking, embedding retrieval and section-level loading remain unimplemented.
+
+## Incremental console delivery (2026-09-20)
+
+The console uses an explicit SSE cursor and bounded contiguous event batches. Each
+batch has at most 128 events and targets 256 KiB of encoded event bodies; larger
+individual events remain atomic. Current projections are delivered when catch-up
+completes. Text-only updates reuse browser history and transmit no historical bodies.
+The server honors Last-Event-ID, writable backpressure, queued changes and connection
+cleanup. Client validation rejects missing/duplicate sequences and conflicting run
+identities. Default snapshot subscriptions remain available. Visible event counts
+include restart annotations. UpperRun change notifications carry identity/state/time,
+removing full-history clones solely for each notification.
+
+Validation: 16 console checks pass, including seven incremental transport cases.
+Native Node EventSource reads real HTTP from the production RunEventStream, reconnects
+after connection closure and exercises actual write backpressure. Five task-admission
+checks pass. TypeScript, formatting, JavaScript syntax, DSH provenance, documentation
+links and whitespace checks pass. These checks use authored event documents and real
+transport; they invoke no model or physical backend. The existing scripted runtime
+suite was not rerun. [Protocol and limits](run-stream.md).
+
+Remaining: bounded journal/browser retention, paginated initial history, retained media
+cleanup, provider-backed criteria discovery, active-task clarification, live VLM
+evaluation and local-server bootstrap. The 4,000-event run limit and full projection
+construction remain in place. Physical integration retains its separate acceptance.

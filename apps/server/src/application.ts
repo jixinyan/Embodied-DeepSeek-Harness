@@ -81,7 +81,7 @@ export interface ApplicationOptions {
   taskContext?: readonly TaskContextSummary[];
   scenario: string;
   model: (id: string) => { provider: string; model: string };
-  onChange?: (state: RunState) => void;
+  onChange?: (state: Pick<RunState, 'id' | 'state' | 'updatedAt'>) => void;
   assignmentLifetimeMs?: number;
 }
 /** EDH task coordination and native tool bodies. Agent turns and dispatch remain DSH-owned. */
@@ -232,7 +232,7 @@ export class UpperRun {
               stream.reasoning = (stream.reasoning + frame.chunk.text).slice(-16000);
           }
           if (frame.type === 'end') stream.status = frame.outcome.kind;
-          this.options.onChange?.(this.snapshot());
+          this.notifyChange();
         },
         event: (type, detail) => {
           if (type === 'agent.created') {
@@ -287,6 +287,10 @@ export class UpperRun {
   snapshot(): RunState {
     return structuredClone(this.state);
   }
+  private notifyChange(): void {
+    const { id, state, updatedAt } = this.state;
+    this.options.onChange?.({ id, state, updatedAt });
+  }
   private event(type: string, detail: Record<string, unknown>): void {
     if (this.closed) return;
     if (this.state.events.length >= 4000) throw new Error('Run event budget exceeded.');
@@ -305,7 +309,7 @@ export class UpperRun {
       { ...projection, events: [], eventCount: events.length },
       this.version,
     );
-    this.options.onChange?.(this.snapshot());
+    this.notifyChange();
     const ownerEvent =
       (type.startsWith('tool.') || type === 'agent.output' || type === 'agent.todos') &&
       detail.assignmentId === this.state.decisionAssignmentId;

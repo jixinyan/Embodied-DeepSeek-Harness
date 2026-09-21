@@ -17,6 +17,7 @@ test('console assets and the installed Mermaid module load with correct MIME typ
     ['/coordination.js', 'text/javascript'],
     ['/task-composer.js', 'text/javascript'],
     ['/task-request.js', 'text/javascript'],
+    ['/run-update.js', 'text/javascript'],
     ['/ocean.css', 'text/css'],
     ['/logo.png', 'image/png'],
     ['/vendor/mermaid/mermaid.esm.min.mjs', 'text/javascript'],

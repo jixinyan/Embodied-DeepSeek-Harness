@@ -14,6 +14,7 @@ const publicFiles: Record<string, string> = {
   'coordination.js': 'text/javascript; charset=utf-8',
   'task-composer.js': 'text/javascript; charset=utf-8',
   'task-request.js': 'text/javascript; charset=utf-8',
+  'run-update.js': 'text/javascript; charset=utf-8',
   'logo.png': 'image/png',
 };
 

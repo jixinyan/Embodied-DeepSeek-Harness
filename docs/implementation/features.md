@@ -79,3 +79,10 @@ assignment's context. Cross-session persistence does not preload future role con
 Current retrieval uses task-semantic keywords with a 20-result bound; embedding search,
 semantic ranking and section loading remain unimplemented. See the
 [memory guide](../../harness/agent-runtime/memory/README.md).
+
+## Incremental console transport
+
+Implemented: cursor-based SSE event batches, projection-only text updates, native
+reconnection, strict client continuity checks and write backpressure. UpperRun emits
+lightweight change notifications. Full initial history and cumulative store/browser
+memory still require retention work. [Protocol and checks](run-stream.md).
