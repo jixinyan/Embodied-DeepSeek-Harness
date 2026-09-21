@@ -14,9 +14,11 @@ import {
   inspectImageFiles,
   clearRequestImageFiles,
   clearUnreferencedImageFiles,
+  inspectRetainedImageFiles,
   type ImageStorageInspection,
   type ImageCacheCleanup,
   type ImageObjectCleanup,
+  type ImageObjectInspection,
 } from './image-maintenance.js';
 import { CompressionLimiter } from './dsh/attachment-local/compression-limiter.ts';
 import { readRequestImageFile } from './dsh/attachment-local/request-image.ts';
@@ -46,6 +48,12 @@ const optionsSchema = z
   .strict();
 
 export type LocalImageOptions = z.input<typeof optionsSchema>;
+const retainedIds = z.array(
+  z
+    .string()
+    .length(71)
+    .regex(/^sha256:[a-f0-9]{64}$/),
+);
 
 export class LocalImageStore extends AttachmentStore {
   readonly root: string;
@@ -69,7 +77,7 @@ export class LocalImageStore extends AttachmentStore {
   private async mutation<T>(run: () => Promise<T>): Promise<T> {
     if (this.closed) throw new Error('Image storage is closed.');
     if (this.maintaining)
-      throw new ImageMaintenanceConflict('Image cache maintenance is in progress.');
+      throw new ImageMaintenanceConflict('Image storage maintenance is in progress.');
     this.writers++;
     this.revision++;
     try {
@@ -248,16 +256,7 @@ export class LocalImageStore extends AttachmentStore {
   ): Promise<ImageObjectCleanup> {
     if (this.closed) throw new Error('Image storage is closed.');
     signal?.throwIfAborted();
-    const retained = new Set(
-      z
-        .array(
-          z
-            .string()
-            .length(71)
-            .regex(/^sha256:[a-f0-9]{64}$/),
-        )
-        .parse(retainedAttachmentIds),
-    );
+    const retained = new Set(retainedIds.parse(retainedAttachmentIds));
     if (this.maintaining || this.pending.size || this.writers || this.inspections)
       throw new ImageMaintenanceConflict('Image operations are still in progress.');
     if (revision !== this.revisionToken())
@@ -280,6 +279,26 @@ export class LocalImageStore extends AttachmentStore {
       });
     } finally {
       this.collectingObjects = false;
+      this.maintaining = false;
+    }
+  }
+
+  async inspectObjectRetention(
+    retainedAttachmentIds: readonly string[],
+    signal?: AbortSignal,
+  ): Promise<ImageObjectInspection> {
+    if (this.closed) throw new Error('Image storage is closed.');
+    signal?.throwIfAborted();
+    const retained = new Set(retainedIds.parse(retainedAttachmentIds));
+    if (this.maintaining || this.writers || this.inspections)
+      throw new ImageMaintenanceConflict('Image operations are still in progress.');
+    this.maintaining = true;
+    try {
+      return await this.operation(async () => ({
+        ...(await inspectImageFiles(this.root, this.revisionToken(), signal)),
+        ...(await inspectRetainedImageFiles(this.root, retained, signal)),
+      }));
+    } finally {
       this.maintaining = false;
     }
   }

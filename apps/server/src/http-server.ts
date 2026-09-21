@@ -16,9 +16,11 @@ import { HttpError, assertLocalRequest } from './local-http.js';
 import { serveEvidenceImage } from './evidence-images.js';
 import { readSessionAudit } from './session-audit-view.js';
 import { readWorkspaceSkills } from './skill-provenance.js';
+import { ImageRetention, type ImageRetentionPolicy } from './image-retention.js';
 import {
   admitStorageCompaction,
   admitImageCacheCleanup,
+  admitOriginalImageMaintenance,
   maintenanceBlocker,
 } from './storage-maintenance.js';
 import {
@@ -49,6 +51,7 @@ export interface LocalServerOptions {
     | ServerDeployment
     | ((services: DeploymentServices) => ServerDeployment | Promise<ServerDeployment>);
   imageStorage?: Omit<LocalImageOptions, 'directory'>;
+  imageRetention?: ImageRetentionPolicy;
   mountImages?: (
     context: Context,
     directory: string,
@@ -70,6 +73,7 @@ export async function startDemoServer(options: DemoServerOptions) {
   const validator = await readValidator(options.root);
   return startServer({
     ...options,
+    imageRetention: { version: 'journal-v1', sources: [] },
     deployment: {
       ...createDemoDeployment(options, validator),
       launchProfiles: createDemoLaunchProfiles(validator, options.tickMs),
@@ -119,6 +123,12 @@ export async function startServer(options: LocalServerOptions) {
           typeof mounted.clearRequestCache !== 'function'
         )
           throw new Error('Image maintenance requires inspect and clearRequestCache methods.');
+        if (
+          mounted.objects &&
+          (typeof mounted.objects.inspectObjectRetention !== 'function' ||
+            typeof mounted.objects.collectUnreferencedObjects !== 'function')
+        )
+          throw new Error('Original-image maintenance requires inspection and collection methods.');
         imageMaintenance = mounted;
       }
     } else {
@@ -127,6 +137,11 @@ export async function startServer(options: LocalServerOptions) {
       imageMaintenance = {
         inspect: (signal) => images.inspectStorage(signal),
         clearRequestCache: (revision, signal) => images.clearRequestCache(revision, signal),
+        objects: {
+          inspectObjectRetention: (ids, signal) => images.inspectObjectRetention(ids, signal),
+          collectUnreferencedObjects: (revision, ids, signal) =>
+            images.collectUnreferencedObjects(revision, ids, signal),
+        },
       };
     }
     if (!imageContext.attachments) throw new Error('Image provider did not mount attachments.');
@@ -221,6 +236,15 @@ async function startApplication(
     const history = new RunHistory(store);
     for (const record of store.scan<RunState>('run:'))
       history.interrupt(record.value, record.version);
+    if (options.imageRetention && !imageMaintenance?.objects)
+      throw new Error('The configured image provider does not support original-image collection.');
+    const imageRetention = options.imageRetention
+      ? new ImageRetention(store, validator, imageMaintenance!.objects!, options.imageRetention)
+      : undefined;
+    const originalCollection = () =>
+      imageRetention
+        ? { available: true, sourceIds: imageRetention.sourceIds }
+        : { available: false, reason: 'Original-image retention ownership is not configured.' };
     const publicConfiguration = {
       mode: deployment.metadata.source,
       deploymentId: deployment.metadata.id,
@@ -232,6 +256,7 @@ async function startApplication(
         available: true,
         limits: services.images.imageLimits,
         maintenance: Boolean(imageMaintenance),
+        originalCollection: originalCollection(),
       },
       launchProfiles: deployment.metadata.launchProfiles,
       launchTeams: Object.fromEntries(
@@ -283,7 +308,12 @@ async function startApplication(
       const images = imageMaintenance
         ? { available: true, inspection: await imageMaintenance.inspect(shutdown.signal) }
         : { available: false };
-      return { statistics: store.statistics(), blockedBy: storageBlocker(), images };
+      return {
+        statistics: store.statistics(),
+        blockedBy: storageBlocker(),
+        images,
+        originalCollection: originalCollection(),
+      };
     };
     const streams = new Map<ServerResponse, RunEventStream<RunState>>();
     const runRecord = (id: string) => {
@@ -353,12 +383,28 @@ async function startApplication(
           return json(res, 200, await storageView());
         if (
           method === 'POST' &&
-          ['/api/storage/compact', '/api/storage/clear-request-cache'].includes(url.pathname)
+          [
+            '/api/storage/compact',
+            '/api/storage/clear-request-cache',
+            '/api/storage/inspect-originals',
+            '/api/storage/collect-originals',
+          ].includes(url.pathname)
         ) {
           const input = await body(req);
           const clearImages = url.pathname === '/api/storage/clear-request-cache';
+          const inspectOriginals = url.pathname === '/api/storage/inspect-originals';
+          const collectOriginals = url.pathname === '/api/storage/collect-originals';
           let imageRevision: string | undefined;
-          if (clearImages) {
+          let collectionToken: string | undefined;
+          if (inspectOriginals || collectOriginals) {
+            if (!imageRetention)
+              throw new HttpError(501, 'Original-image retention ownership is not configured.');
+            collectionToken = admitOriginalImageMaintenance(
+              input,
+              collectOriginals,
+              storageBlocker(),
+            );
+          } else if (clearImages) {
             if (!imageMaintenance)
               throw new HttpError(501, 'This image provider does not expose cache maintenance.');
             imageRevision = admitImageCacheCleanup(input, storageBlocker());
@@ -375,6 +421,25 @@ async function startApplication(
               active = undefined;
             }
             shutdown.signal.throwIfAborted();
+            if (inspectOriginals) {
+              const preview = await imageRetention!.inspect(shutdown.signal);
+              return json(res, 200, {
+                statistics: store.statistics(),
+                blockedBy: null,
+                images: { available: true, inspection: preview.inspection },
+                originalCollection: { ...originalCollection(), preview },
+              });
+            }
+            if (collectOriginals) {
+              const result = await imageRetention!.collect(collectionToken!, shutdown.signal);
+              return json(res, 200, {
+                statistics: store.statistics(),
+                blockedBy: null,
+                images: { available: true, inspection: result.after },
+                originalCollection: originalCollection(),
+                result: { ...result, operation: 'original_image_collection' },
+              });
+            }
             if (clearImages) {
               const result = await imageMaintenance!.clearRequestCache(
                 imageRevision!,
@@ -384,6 +449,7 @@ async function startApplication(
                 statistics: store.statistics(),
                 blockedBy: null,
                 images: { available: true, inspection: result.after },
+                originalCollection: originalCollection(),
                 result: { ...result, operation: 'request_cache_clear' },
               });
             }
@@ -391,6 +457,7 @@ async function startApplication(
             return json(res, 200, {
               statistics: store.statistics(),
               blockedBy: null,
+              originalCollection: originalCollection(),
               result: { ...result, operation: 'journal_compaction' },
             });
           } catch (failure) {

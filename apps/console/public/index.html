@@ -81,6 +81,14 @@
             <dt>Model request cache</dt>
             <dd data-storage="image-cache">Not loaded</dd>
           </div>
+          <div>
+            <dt>Referenced originals</dt>
+            <dd data-storage="image-retained">Not inspected</dd>
+          </div>
+          <div>
+            <dt>Unreferenced originals</dt>
+            <dd data-storage="image-unreferenced">Not inspected</dd>
+          </div>
         </dl>
         <div class="storage-actions">
           <button id="refresh-storage" class="button small">Refresh storage</button>
@@ -88,9 +96,18 @@
           <button id="clear-image-cache" class="button small" disabled>
             Clear model image cache
           </button>
+          <button id="inspect-originals" class="button small" disabled>
+            Inspect image references
+          </button>
+          <button id="collect-originals" class="button small" disabled>
+            Delete unreferenced originals
+          </button>
         </div>
         <p data-storage="status" role="status">Open to inspect storage.</p>
         <p data-storage="image-status" role="status">Image usage has not been inspected.</p>
+        <p data-storage="collection-status" role="status">
+          Inspect references to preview original-image cleanup.
+        </p>
       </details>
       <section class="session-launcher" aria-label="User session launcher">
         <div class="launcher-heading">

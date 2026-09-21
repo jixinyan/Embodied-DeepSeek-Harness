@@ -14,5 +14,6 @@ __pycache__/
 !.env.example
 .runs/
 .local/
+.playwright-cli/
 
 .cache/

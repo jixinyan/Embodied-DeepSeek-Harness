@@ -12,8 +12,9 @@ concurrent image mutations. Custom providers can expose the optional maintenance
 complete caller-supplied retained-ID set. It excludes active readers/writers and checks
 all retained objects before deletion. `inspectStoredImageReferences` inventories nested
 structured attachment IDs across current journal documents, with bounded example keys.
-External/prose-only references require additional owner declarations. The server has
-not exposed original collection; complete retention admission remains required. See
+External/prose-only references require additional owner declarations. The server's
+configured retention controller uses source leases and journal write holds for
+preview and collection through idle admission. See
 the [collection semantics](../../../docs/implementation/image-storage.md#original-object-collection-and-recorded-references).
 
 [local-store.ts](src/local-store.ts) implements a single-writer CAS journal with checksum validation, fsync and incomplete-tail recovery. The application stores events, plans, files, recovery, skills and read-only DSH audits.
@@ -58,8 +59,13 @@ Session/run/server shutdown attempts all cleanup stages and reports aggregate fa
 `statistics()` exposes current/superseded byte counts. `compact()` atomically publishes
 all latest records with unchanged versions, ordering and global write sequence. It
 retains independent event/evidence/history keys. The console admits this operation only
-in an idle workspace with a fresh inspected sequence. Distinct-key deletion and media
-retention admission policies remain pending.
+in an idle workspace with a fresh inspected sequence. Distinct-key deletion and
+automated retention scheduling remain pending.
+
+`holdWrites()` returns a sequence-bound read hold and idempotent release. Nested holds
+reject `put` and `compact` until all releases complete. The retention controller uses
+this guard while image-reference snapshots and collection are active. It does not
+replace the store writer lock or coordinate external filesystem changes.
 
 `pnpm test:storage` exercises real journal files and checks write/reopen/scan behavior
 in a child process with a 64 MiB V8 old-space limit and more than 64 MiB of journal

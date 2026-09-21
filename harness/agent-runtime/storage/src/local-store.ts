@@ -78,6 +78,7 @@ export class LocalStore {
   private readonly lock: string;
   private closed = false;
   private poisoned = false;
+  private writeHolds = 0;
   constructor(readonly directory: string) {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
     this.lock = resolve(directory, 'writer.lock');
@@ -220,6 +221,7 @@ export class LocalStore {
   }
   put<T>(key: string, value: T, expectedVersion: number): number {
     if (this.closed || this.poisoned) throw new Error('Store is not writable.');
+    if (this.writeHolds) throw new Error('Store writes are suspended for reference inspection.');
     if (!key || key.length > 512) throw new Error('Invalid record key.');
     const version = this.records.get(key)?.version ?? 0;
     if (version !== expectedVersion)
@@ -271,7 +273,21 @@ export class LocalStore {
       supersededBytes: this.journalBytes - currentRecordBytes - this.checkpointBytes,
     };
   }
+  holdWrites(): { sequence: number; release(): void } {
+    const sequence = this.statistics().sequence;
+    this.writeHolds++;
+    let released = false;
+    return {
+      sequence,
+      release: () => {
+        if (released) return;
+        released = true;
+        this.writeHolds--;
+      },
+    };
+  }
   compact(): StoreCompaction {
+    if (this.writeHolds) throw new Error('Store writes are suspended for reference inspection.');
     const before = this.statistics();
     if (!before.supersededBytes)
       return { compacted: false, before, after: before, reclaimedBytes: 0 };

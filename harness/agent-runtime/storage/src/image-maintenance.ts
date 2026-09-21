@@ -21,9 +21,25 @@ export interface ImageCacheCleanup {
 export interface ImageObjectCleanup extends ImageCacheCleanup {
   retainedObjects: number;
 }
+export interface ImageObjectInspection extends ReadyImageInspection {
+  retainedObjects: ImageFileUsage;
+  unreferencedObjects: ImageFileUsage;
+}
+export interface ImageObjectMaintenance {
+  inspectObjectRetention(
+    retainedAttachmentIds: readonly string[],
+    signal?: AbortSignal,
+  ): Promise<ImageObjectInspection>;
+  collectUnreferencedObjects(
+    revision: string,
+    retainedAttachmentIds: readonly string[],
+    signal?: AbortSignal,
+  ): Promise<ImageObjectCleanup>;
+}
 export interface ImageStorageMaintenance {
   inspect(signal?: AbortSignal): Promise<ImageStorageInspection>;
   clearRequestCache(revision: string, signal?: AbortSignal): Promise<ImageCacheCleanup>;
+  objects?: ImageObjectMaintenance;
 }
 export class ImageMaintenanceConflict extends Error {}
 
@@ -128,10 +144,7 @@ export async function clearUnreferencedImageFiles(
   retained: ReadonlySet<string>,
   signal?: AbortSignal,
 ): Promise<ImageFileUsage> {
-  const remaining = new Set(retained);
-  for await (const file of imageFiles(root, 'objects', signal))
-    remaining.delete(`sha256:${file.name}`);
-  if (remaining.size) throw new Error('Referenced original images are missing from storage.');
+  await inspectRetainedImageFiles(root, retained, signal);
   signal?.throwIfAborted();
   const removed = { files: 0, bytes: 0 };
   const directories = new Set<string>();
@@ -152,4 +165,26 @@ export async function clearUnreferencedImageFiles(
     }
   }
   return removed;
+}
+
+export async function inspectRetainedImageFiles(
+  root: string,
+  retained: ReadonlySet<string>,
+  signal?: AbortSignal,
+): Promise<Pick<ImageObjectInspection, 'retainedObjects' | 'unreferencedObjects'>> {
+  const remaining = new Set(retained);
+  const retainedObjects = { files: 0, bytes: 0 };
+  const unreferencedObjects = { files: 0, bytes: 0 };
+  for await (const file of imageFiles(root, 'objects', signal)) {
+    const id = `sha256:${file.name}`;
+    const usage = retained.has(id) ? retainedObjects : unreferencedObjects;
+    usage.files++;
+    usage.bytes += file.bytes;
+    if (!Number.isSafeInteger(usage.bytes))
+      throw new Error('Image storage usage exceeds the supported range.');
+    remaining.delete(id);
+  }
+  if (remaining.size) throw new Error('Referenced original images are missing from storage.');
+  signal?.throwIfAborted();
+  return { retainedObjects, unreferencedObjects };
 }

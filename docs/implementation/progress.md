@@ -1,14 +1,16 @@
 # Implementation progress
 
-Spec: v1.24. Current checkpoint: **DSH upper application with local image collection primitives and inspected SKILL provenance**.
+Spec: v1.25. Current checkpoint: **DSH upper application with configured image retention and console collection previews**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The latest delivery adds trusted local original-image collection from an explicit
-retained-ID set and structured journal image-reference inspection. Complete application
-reference ownership and original-deletion HTTP/UI admission remain pending.
+The latest delivery connects original-image reference inspection and collection to
+idle server admission and the console. Configured reference sources hold their own
+images, journal writes pause during inspection/deletion, and every SKILL source and
+stored session resource state is checked. Complete external ownership is a deployment
+responsibility; unresolved resources or source records block collection.
 SKILL source inspection uses recorded recovery ownership,
 accepted failure/success verdicts and run/session/evidence/image references. Missing
 source records are explicit; conflicting records fail. Bounded assignment/event audit browsing, image inventory,
@@ -63,9 +65,10 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: nine original-image collection/reference checks, nine SKILL
-provenance file/HTTP checks and 23 image/lifetime/HTTP checks pass. Prior maintenance checkpoints passed eight evidence-storage, nine audit,
-22 console logic/transport, 16 storage/admission and 16 history tests. Browser component DOM checks cover audit
+Current focused checks: eight retention/admission checks, nine original-image collection
+checks, 23 image/lifetime/HTTP checks, 16 storage/admission checks and 22 console tests
+pass. Prior checkpoints passed nine SKILL provenance, eight evidence-storage, nine audit
+and 16 history tests. Browser component DOM checks cover audit
 assignment selection, event navigation and empty history; previous checks cover actual
 image loading, cache cleanup and journal compaction. TypeScript, formatting, provenance
 and structure checks pass. Scripted runtime tests were not executed for this checkpoint.
@@ -1080,3 +1083,39 @@ Next: connect those ownership/lifecycle requirements to retention admission, pre
 SKILL sources during domain-record retention, and continue active-session/grant
 lifetime, active-task clarification, criteria discovery, live VLM acceptance and
 CLI-free bootstrap. The full upper-runtime objective remains incomplete.
+
+## Configured image retention and console preview (2026-09-21)
+
+LocalServerOptions accepts an explicit versioned image-ownership policy. Journal
+references are combined with registered sources that acquire stable reference leases.
+The controller checks every SKILL source and requires stored sessions to have confirmed
+resource release. Journal write holds prevent new or changed roots during provider
+inspection and collection. All acquired leases are released on success and failure.
+Custom image providers can expose optional original-object inspection/collection methods.
+
+Idle HTTP admission settles and closes retained task scopes before retention work.
+Inspection returns retained/unreferenced file counts and bytes with a detached preview
+token. Collection consumes that token and rechecks journal, image and source revisions.
+The browser submits no root list or path. Local request checks apply. Scoped image reads
+during original collection receive an explicit maintenance conflict. The console exposes
+inspection and deletion controls, clears old previews on operations/failures and leaves
+deletion disabled for unconfigured ownership or empty candidate sets.
+
+Validation: eight `pnpm test:image-retention` checks pass with actual journals, original
+PNG-derived files, external reference files held under filesystem locks and local HTTP.
+They cover nested write holds, leased ownership, preview isolation, changed revisions,
+single-use tokens, unresolved sessions, incomplete SKILL sources, acquisition/validation
+failure cleanup, cancellation and idle/origin/input admission. Nine original-collection,
+23 image/lifetime/HTTP, 16 storage/admission and 22 console tests pass. TypeScript and
+formatting, pinned-source and structure/link checks pass. Browser component DOM
+acceptance uses production markup/controller code, actual image/document files and
+reference leases. It verifies retained/unreferenced counts, stale-preview rejection,
+disabled controls after rejection, refreshed collection, unchanged hashes for both
+retained originals and actual removal of the unreferenced file. No scripted
+model/backend tests were run.
+
+HTTP acceptance invokes production controller/admission functions in a component server.
+Live application drain, provider-specific reference coverage and hardware resource
+reconciliation remain separate acceptance requirements. Domain-record archival/deletion,
+active-session/grant lifetime, active-task clarification, criteria discovery, live VLM
+acceptance and CLI-free bootstrap remain open. [Retention guide](image-retention.md).

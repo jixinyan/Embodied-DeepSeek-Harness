@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.24 · 2026-09-21
+Version: v1.25 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -682,10 +682,12 @@ The local image provider can collect original objects outside an explicit comple
 retained-ID set, with image-revision checks and exclusive reader/writer admission.
 Structured journal reference inspection includes current historical and extension
 records and bounds example ownership keys. External and prose-only references need
-their own declarations. Application-wide root coverage, idle coordination and the
-original-deletion HTTP/UI operation remain unimplemented; the console only clears
-derived request images. See the
-[collection responsibilities](implementation/image-storage.md#original-object-collection-and-recorded-references).
+their own declarations. Configured reference sources pin their images through explicit
+leases. The server checks all SKILL sources and closed/released sessions, holds journal
+writes, previews retained/unreferenced counts and revalidates versions before collection.
+The console exposes inspection and deletion through a single-use preview token. Complete
+external ownership remains a deployment responsibility; unresolved provider resources
+block collection. See the [retention API and responsibilities](implementation/image-retention.md).
 
 ### 8.5 Complete recovery sequence
 

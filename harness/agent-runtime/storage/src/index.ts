@@ -25,4 +25,6 @@ export {
   type ImageStorageInspection,
   type ImageCacheCleanup,
   type ImageObjectCleanup,
+  type ImageObjectInspection,
+  type ImageObjectMaintenance,
 } from './image-maintenance.js';

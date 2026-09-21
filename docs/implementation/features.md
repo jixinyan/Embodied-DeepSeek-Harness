@@ -146,6 +146,8 @@ image integrity checks and domain retention have separate responsibilities.
 The local image provider accepts a complete retained-ID set and collects unreferenced
 originals while excluding readers/writers. Structured journal reference inspection
 finds nested attachment identities across all current namespaces. Nine real-file tests
-cover the collector and reference inventory. Application-wide reference ownership,
-server admission and an original-deletion console operation remain pending. Current
-console maintenance preserves all originals. [Collection boundary](image-storage.md#original-object-collection-and-recorded-references).
+cover the collector and reference inventory. Configured source leases, journal write
+holds and server idle admission now support console preview and token-bound original
+collection. Unresolved session resources, incomplete SKILL sources and changed versions
+block deletion. Deployment authors remain responsible for complete external ownership.
+[Collection admission and source responsibilities](image-retention.md).

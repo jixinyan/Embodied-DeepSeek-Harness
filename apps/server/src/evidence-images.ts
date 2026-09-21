@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { isDeepStrictEqual } from 'node:util';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
 import type { ContractValidator } from '@edh/contracts';
-import type { LocalStore } from '@edh/storage';
+import { ImageMaintenanceConflict, type LocalStore } from '@edh/storage';
 import type { RunState } from '@edh/tasks';
 import { SensorSamples } from '@edh/perception';
 import { HttpError } from './local-http.js';
@@ -77,6 +77,8 @@ export async function serveEvidenceImage(
     return true;
   } catch (error) {
     signal.throwIfAborted();
+    if (error instanceof ImageMaintenanceConflict)
+      throw new HttpError(409, 'Image maintenance is in progress. Retry the image read afterward.');
     if (error instanceof Error && 'code' in error && error.code === 'ATTACHMENT_NOT_FOUND')
       throw new HttpError(410, 'The image object is unavailable.');
     throw new HttpError(500, 'Image integrity or storage read failed.');

@@ -218,14 +218,16 @@ they use structured image references; it scans all current namespaces.
 
 This inventory describes structured journal references. Prose, private extension
 files, external indexes and live consumers require their own ownership declarations.
-A retention coordinator must combine all owners, protect SKILL sources, stop volatile
-consumers, freeze admissions and validate both journal and image revisions before
-calling collection. The journal inventory alone is not a complete root-set guarantee.
+The application retention controller combines journal references with declared source
+leases, checks every SKILL source, holds journal writes and validates journal/image
+revisions. A complete deployment ownership declaration is required; journal inspection
+alone does not account for external references.
 
-The original-object collector is a trusted local service method. It is not exposed by
-the HTTP maintenance API or invoked automatically. The console currently offers
-request-cache cleanup. Application retention admission, extension reference providers,
-domain-record deletion and end-to-end collection remain integration work.
+Configured deployments expose original-image inspection and token-bound collection
+through idle server admission and the console. The collector remains a trusted service;
+HTTP clients cannot supply the retained-ID set. No collection runs automatically.
+Domain-record deletion and live-provider maintenance acceptance remain required. See
+[retention configuration, source leases and the console API](image-retention.md).
 
 ## Acceptance
 

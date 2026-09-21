@@ -134,3 +134,11 @@ nonempty cache and an idle workspace. Busy and unsupported providers have explic
 status messages. Cache cleanup uses the inspected revision; refreshing updates that
 revision after image activity. See the
 [maintenance format, lifecycle and acceptance](../../docs/implementation/storage-maintenance.md).
+
+Configured original-image retention adds **Inspect image references** and **Delete
+unreferenced originals**. The preview shows retained/unreferenced file counts and bytes,
+checked reference sources and SKILL-source count. Deletion sends only the preview token;
+the server rechecks journal/image/source versions and reference ownership. Refresh,
+another operation or failure clears the preview. Missing ownership configuration and
+empty candidate sets keep deletion disabled. See the
+[retention API and source responsibilities](../../docs/implementation/image-retention.md).

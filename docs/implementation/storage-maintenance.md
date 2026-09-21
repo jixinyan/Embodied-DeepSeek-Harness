@@ -109,8 +109,10 @@ Distinct-key retention, run/session archival, application-wide original-image re
 ownership, native context/audit lifetime, and automated retention scheduling remain
 separate upper-runtime work. Compaction alone does not impose a total disk quota.
 
-The local image service now has explicit original-object collection and a structured
-journal reference inventory. Application-wide root ownership and idle collection
-admission remain required before an original-deletion HTTP operation can be exposed.
-The current maintenance endpoints continue to preserve all original objects. See
-[local collection and ownership requirements](image-storage.md#original-object-collection-and-recorded-references).
+Configured deployments expose original-object inspection and collection through idle
+admission. The controller combines journal references and declared source leases,
+checks all SKILL sources and closed/released sessions, holds journal writes and
+revalidates the preview's journal/image/source versions. The console shows retained
+and unreferenced counts before an explicit deletion request. Cache cleanup preserves
+all originals; original collection preserves the complete declared root set. See
+[ownership configuration and the collection API](image-retention.md).

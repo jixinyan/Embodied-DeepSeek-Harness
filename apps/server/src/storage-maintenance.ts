@@ -1,4 +1,5 @@
 import type { StoreStatistics } from '@edh/storage';
+import { z } from 'zod';
 import { HttpError } from './local-http.js';
 
 export function maintenanceBlocker(activity: {
@@ -47,4 +48,21 @@ export function admitStorageCompaction(
   if (blockedBy) throw new HttpError(409, blockedBy);
   if (input.expectedSequence !== statistics.sequence)
     throw new HttpError(409, 'Storage changed. Refresh storage information before compaction.');
+}
+
+export function admitOriginalImageMaintenance(
+  input: Record<string, unknown>,
+  collect: boolean,
+  blockedBy: string | null,
+): string | undefined {
+  const parsed = (
+    collect ? z.object({ token: z.uuid() }).strict() : z.object({}).strict()
+  ).safeParse(input);
+  if (!parsed.success)
+    throw new HttpError(
+      400,
+      'Expected an original-image inspection request or its collection token.',
+    );
+  if (blockedBy) throw new HttpError(409, blockedBy);
+  return 'token' in parsed.data ? parsed.data.token : undefined;
 }
