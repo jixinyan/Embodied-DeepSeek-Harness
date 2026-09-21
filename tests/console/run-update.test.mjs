@@ -8,6 +8,11 @@ import {
   runEventCursor,
   maxEventBatch,
   maxEventBatchBytes,
+  receivedRunSequence,
+  retainRunEvents,
+  maxRetainedEvents,
+  maxRetainedEventBytes,
+  appendRunHistory,
 } from '../../apps/console/public/run-update.js';
 import { RunEventStream } from '../../apps/server/src/run-event-stream.ts';
 
@@ -19,6 +24,69 @@ function notes(count) {
     detail: { text: `Inspection note ${index + 1}` },
   }));
 }
+
+test('retained event windows advance absolute cursors across eviction and projection updates', () => {
+  const state = {
+    id: 'window-check',
+    events: notes(2000),
+    status: 'ready',
+    recoveryStatus: { id: 'history-recovery', resolved: false, error: 'Recorded learning error.' },
+  };
+  let current = { ...state, events: [], status: 'loading' };
+  while (receivedRunSequence(current) < state.events.length) {
+    current = retainRunEvents(
+      mergeRunUpdate(current, createRunUpdate(state, receivedRunSequence(current))),
+    );
+    assert.ok(current.events.length <= maxRetainedEvents);
+    assert.equal(current.events.at(-1).sequence, receivedRunSequence(current));
+  }
+  assert.equal(current.eventOffset, 1500);
+  assert.deepEqual(current.events, state.events.slice(1500));
+  const unchanged = retainRunEvents(mergeRunUpdate(current, createRunUpdate(state, 2000)));
+  assert.equal(unchanged.events, current.events);
+  assert.equal(unchanged.eventOffset, 1500);
+  assert.equal(unchanged.status, 'ready');
+  assert.deepEqual(unchanged.recoveryStatus, state.recoveryStatus);
+  const more = { ...state, events: notes(2001) };
+  const next = retainRunEvents(mergeRunUpdate(current, createRunUpdate(more, 2000)));
+  assert.equal(next.eventOffset, 1501);
+  assert.equal(receivedRunSequence(next), 2001);
+  assert.throws(() => mergeRunUpdate(next, createRunUpdate(more, 2000)), /discontinuous/);
+});
+
+test('byte retention preserves one oversized event and supports detached history windows', () => {
+  const events = notes(4);
+  events[0].detail.text = 'x'.repeat(maxRetainedEventBytes + 1);
+  events[1].detail.text = 'é'.repeat(maxRetainedEventBytes / 3);
+  events[2].detail.text = 'é'.repeat(maxRetainedEventBytes / 3);
+  const initial = { id: 'window-check', events: events.slice(0, 1), eventCount: 1 };
+  assert.equal(retainRunEvents(initial).events.length, 1);
+  const current = retainRunEvents({ ...initial, events, eventCount: 4 });
+  assert.equal(current.eventOffset, 2);
+  assert.equal(receivedRunSequence(current), 4);
+  assert.deepEqual(current.events, events.slice(2));
+  const page = {
+    runId: current.id,
+    afterSequence: 1,
+    throughSequence: 2,
+    eventTotal: 2,
+    events: [events[1]],
+  };
+  const view = appendRunHistory(
+    { id: current.id, events: [], eventOffset: 1, eventCount: 2 },
+    page,
+  );
+  assert.equal(receivedRunSequence(view), 2);
+  assert.equal(view.eventOffset, 1);
+  assert.equal(receivedRunSequence(current), 4);
+  for (const bad of [
+    { ...current, eventOffset: -1 },
+    { ...current, eventOffset: 0 },
+    { ...current, eventCount: 3 },
+    { ...current, eventCount: NaN },
+  ])
+    assert.throws(() => retainRunEvents(bad), /Invalid retained/);
+});
 
 test('incremental updates retain complete ordered history and publish state at the final batch', () => {
   const state = { id: 'transport-check', events: notes(300), status: 'ready' };
@@ -164,7 +232,7 @@ test(
   'native EventSource resumes real HTTP batches after disconnect and handles writable backpressure',
   { timeout: 15000 },
   async (t) => {
-    const state = { id: 'transport-check', events: notes(300), status: 'ready', output: '' };
+    const state = { id: 'transport-check', events: notes(900), status: 'ready', output: '' };
     for (const event of state.events) event.detail.text += 'a'.repeat(4096);
     const initialCursor = createRunUpdate(state, 0).throughSequence;
     let connections = 0;
@@ -216,9 +284,10 @@ test(
     let received = 0;
     for await (const [event] of on(source, 'run-update', { signal: t.signal })) {
       const update = JSON.parse(event.data);
-      current = mergeRunUpdate(current, update);
+      current = retainRunEvents(mergeRunUpdate(current, update));
       received++;
-      assert.equal(event.lastEventId, String(current.events.length));
+      assert.equal(event.lastEventId, String(receivedRunSequence(current)));
+      assert.ok(current.events.length <= maxRetainedEvents);
       assert.ok(update.events.length <= maxEventBatch);
       if (current.output === 'Updated without a new event') break;
       if (update.projection && !current.output) {
@@ -232,10 +301,11 @@ test(
     assert.equal(lastEventId, String(initialCursor));
     assert.equal(readCursors[0], 0);
     assert.ok(readCursors.includes(initialCursor));
-    assert.equal(readCursors.at(-1), 300);
+    assert.equal(readCursors.at(-1), 900);
     assert.ok(received > 2);
     assert.equal(backpressureObserved, true);
-    assert.deepEqual(current.events, state.events);
+    assert.ok(current.eventOffset > 0);
+    assert.deepEqual(current.events, state.events.slice(current.eventOffset));
     assert.equal(current.status, 'ready');
   },
 );

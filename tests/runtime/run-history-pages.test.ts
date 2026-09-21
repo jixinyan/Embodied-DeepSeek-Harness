@@ -275,3 +275,53 @@ test('history boundaries and restart metadata fail at the invalid record', async
     );
   });
 });
+
+test('backward pages traverse every event without gaps and retain fixed boundaries', async () => {
+  await withStore((store) => {
+    const state = { ...record(), eventCount: 300 };
+    const history = new RunHistory(store);
+    for (let sequence = 1; sequence <= 300; sequence++)
+      store.put(`event:${state.id}:${sequence}`, note(sequence), 0);
+    const latest = history.before(state, 300);
+    assert.equal(latest.afterSequence, 172);
+    assert.equal(latest.throughSequence, 300);
+    assert.equal(latest.eventTotal, 300);
+    store.put(`event:${state.id}:301`, note(301), 0);
+    state.eventCount = 301;
+    const middle = history.before(state, latest.afterSequence);
+    const first = history.before(state, middle.afterSequence);
+    assert.deepEqual(
+      [...first.events, ...middle.events, ...latest.events],
+      Array.from({ length: 300 }, (_, index) => note(index + 1)),
+    );
+    assert.deepEqual(history.before(state, 0).events, []);
+    assert.deepEqual(
+      history.page(state, first.throughSequence, middle.throughSequence).events,
+      middle.events,
+    );
+    for (const before of [-1, NaN, 302])
+      assert.throws(() => history.before(state, before), /Invalid run history/);
+    assert.throws(() => history.before(state, 1, 0), /Invalid run history/);
+  });
+});
+
+test('backward pages read only requested bodies and preserve oversized events and restart annotations', async () => {
+  await withStore((store) => {
+    const state = { ...record(), eventCount: 4 };
+    const history = new RunHistory(store);
+    const events = [note(2, 'é'.repeat(150_000)), note(3, 'é'.repeat(70_000)), note(4)];
+    for (const event of events) store.put(`event:${state.id}:${event.sequence}`, event, 0);
+    assert.deepEqual(history.before(state, 4).events, events.slice(1));
+    assert.deepEqual(history.before(state, 2).events, events.slice(0, 1));
+    assert.throws(() => history.before(state, 1), /Incomplete published/);
+    const annotation = { ...note(5), type: 'run.interrupted' };
+    store.put(`run-interruption:${state.id}`, annotation, 0);
+    assert.deepEqual(history.before({ ...state, state: 'interrupted' }, 5).events, [
+      ...events.slice(1),
+      annotation,
+    ]);
+    const legacy = { ...record(), events: [note(1), note(2)] };
+    delete legacy.eventCount;
+    assert.deepEqual(history.before(legacy, 2).events, legacy.events);
+  });
+});

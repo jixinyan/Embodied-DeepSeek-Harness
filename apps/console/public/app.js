@@ -8,7 +8,12 @@ import { renderLaunchControls } from './launch-controls.js';
 import { renderCoordination } from './coordination.js';
 import { renderTaskComposer } from './task-composer.js';
 import { taskRequest, completeTaskRequest } from './task-request.js';
-import { appendRunHistory, mergeRunUpdate } from './run-update.js';
+import {
+  appendRunHistory,
+  mergeRunUpdate,
+  receivedRunSequence,
+  retainRunEvents,
+} from './run-update.js';
 
 const $ = (id) => document.getElementById(id);
 let selection = {};
@@ -22,6 +27,9 @@ let activeUserSessionId = null;
 let historyRevision = 0;
 let historySignature = '';
 let historyTimer;
+let inspectedHistory = null;
+let eventPageRevision = 0;
+let eventPageLoading = false;
 const activeUserSession = () => userSessions.find((s) => s.id === activeUserSessionId);
 const hasLauncher = () => Object.keys(config?.launchProfiles ?? {}).length > 0;
 const ended = (state) =>
@@ -367,7 +375,8 @@ function summarize(event) {
 }
 function renderTimeline() {
   const filter = $('event-filter').value;
-  const events = (current?.events ?? [])
+  const view = inspectedHistory ?? current;
+  const events = (view?.events ?? [])
     .filter(
       (e) =>
         filter === 'all' ||
@@ -375,9 +384,19 @@ function renderTimeline() {
           ? /^(recovery|retry|skill)/.test(e.type)
           : e.type.startsWith(filter)),
     )
-    .slice(-100)
     .reverse();
   text('event-count', `${current?.eventCount ?? current?.events.length ?? 0} events`);
+  const first = view?.events[0]?.sequence ?? 0;
+  const last = view?.events.at(-1)?.sequence ?? 0;
+  text(
+    'event-range',
+    eventPageLoading
+      ? 'Loading event history'
+      : `${inspectedHistory ? 'History' : 'Recent'} · ${first}–${last} / ${current?.eventCount ?? 0} · Filters apply to this range`,
+  );
+  $('events-older').disabled = eventPageLoading || first <= 1;
+  $('events-newer').disabled = eventPageLoading || !inspectedHistory || last >= current.eventCount;
+  $('events-live').disabled = !inspectedHistory && !eventPageLoading;
   $('timeline').replaceChildren();
   for (const event of events) {
     const row = document.createElement('button');
@@ -404,6 +423,37 @@ function renderTimeline() {
     p.className = 'empty';
     p.textContent = 'No events in this view.';
     $('timeline').append(p);
+  }
+}
+async function browseEvents(direction) {
+  if (!current || eventPageLoading) return;
+  const id = current.id;
+  const revision = ++eventPageRevision;
+  const selectedRun = loadRevision;
+  const view = inspectedHistory ?? current;
+  const through = direction === 'older' ? (view.events[0]?.sequence ?? 1) - 1 : current.eventCount;
+  const after = view.events.at(-1)?.sequence ?? 0;
+  eventPageLoading = true;
+  renderTimeline();
+  try {
+    const range = direction === 'older' ? `before=${through}` : `after=${after}&through=${through}`;
+    const page = await api(`/api/runs/${id}/history?${range}`);
+    if (revision !== eventPageRevision || selectedRun !== loadRevision) return;
+    if (direction === 'older' && page.throughSequence !== through)
+      throw new Error('Backward history did not reach the selected boundary.');
+    const base = {
+      id,
+      events: [],
+      eventOffset: direction === 'older' ? page.afterSequence : after,
+      eventCount: through,
+    };
+    const loaded = retainRunEvents(appendRunHistory(base, page));
+    inspectedHistory = loaded;
+  } finally {
+    if (revision === eventPageRevision && selectedRun === loadRevision) {
+      eventPageLoading = false;
+      renderTimeline();
+    }
   }
 }
 let feedSignature = '';
@@ -437,7 +487,7 @@ function renderTodos() {
     button.textContent = item.content;
     button.onclick = () =>
       inspect(
-        'TODO history · Native DSH snapshots',
+        'Recent TODO history · Browse Event log for earlier snapshots',
         current.events.filter((e) => e.type === 'agent.todos' && e.detail.assignmentId === row.id),
       );
     const small = document.createElement('small');
@@ -452,7 +502,7 @@ function renderFeed() {
   if (!current) return;
   const filter = $('agent-filter').value;
   const query = $('debug-search').value.toLowerCase();
-  const signature = `${current.id}:${current.events.length}:${filter}:${query}`;
+  const signature = `${current.id}:${receivedRunSequence(current)}:${filter}:${query}`;
   if (signature !== feedSignature) {
     feedSignature = signature;
     const nativeResults = new Map(
@@ -602,7 +652,7 @@ function renderFeed() {
           : 'Waiting for agent output and tool calls…';
       feed.append(empty);
     }
-    text('feed-count', `${entries.length} entries · Native DSH events`);
+    text('feed-count', `${entries.length} recent entries · Earlier records in Event log`);
     if ($('follow-output').checked) feed.scrollTop = feed.scrollHeight;
     else feed.scrollTop = scroll;
   }
@@ -699,7 +749,8 @@ function render() {
     verdict?.explanation ?? 'A completed policy call does not establish task success.',
   );
   $('inspect-verdict').disabled = !verdict;
-  const recoveryState = current.skillIds.length
+  const recoverySaved = current.skillIds.includes(current.recoveryId);
+  const recoveryState = recoverySaved
     ? 'SAVED'
     : current.activeRecoveryId && !ended(current.state)
       ? 'RECORDING'
@@ -714,20 +765,16 @@ function render() {
       (a) => a.member === (current?.configuration ?? config).team.bindings.recovery_evolver,
     ),
   );
-  $('phase-skill').classList.toggle('active', current.skillIds.length > 0);
-  const recoveryEvent = current.events.findLast(
-    (event) =>
-      ['recovery.opened', 'recovery.resolved', 'recovery.failed'].includes(event.type) &&
-      (!event.detail.recoveryId || event.detail.recoveryId === current.recoveryId),
-  );
-  if (recoveryEvent?.type === 'recovery.failed') text('skill-count', 'LEARNING FAILED');
+  $('phase-skill').classList.toggle('active', recoverySaved);
+  const recovery = current.recoveryStatus;
+  if (recovery?.error) text('skill-count', 'LEARNING FAILED');
   text(
     'recovery-copy',
-    recoveryEvent?.type === 'recovery.failed'
-      ? `Experience recording failed: ${recoveryEvent.detail.error ?? 'Inspect the recovery trace.'}`
-      : current.skillIds.length
+    recovery?.error
+      ? `Experience recording failed: ${recovery.error}`
+      : recoverySaved
         ? 'SKILL saved with failure signals, recovery guidance and verification evidence.'
-        : recoveryEvent?.type === 'recovery.resolved'
+        : recovery?.resolved
           ? 'Original subgoal verified. Awaiting experience publication.'
           : current.activeRecoveryId && !ended(current.state)
             ? 'Recording planner and execution progress until the original subgoal is verified.'
@@ -747,6 +794,9 @@ function render() {
 }
 async function loadRun(id) {
   const revision = ++loadRevision;
+  eventPageRevision++;
+  inspectedHistory = null;
+  eventPageLoading = false;
   stream?.close();
   error('');
   let loaded = await api(`/api/runs/${id}?events=none`);
@@ -759,21 +809,25 @@ async function loadRun(id) {
     loaded.eventCount < 0
   )
     throw new Error('Invalid run history projection.');
-  while (loaded.events.length < loaded.eventCount) {
-    text('connection', `Loading history ${loaded.events.length} / ${loaded.eventCount}`);
-    const page = await api(
-      `/api/runs/${id}/history?after=${loaded.events.length}&through=${loaded.eventCount}`,
-    );
-    if (revision !== loadRevision) return;
-    loaded = appendRunHistory(loaded, page);
-  }
+  text('connection', 'Loading recent history');
+  const page = await api(`/api/runs/${id}/history?before=${loaded.eventCount}`);
+  if (revision !== loadRevision) return;
+  if (page.throughSequence !== loaded.eventCount)
+    throw new Error('Recent history did not reach the selected boundary.');
+  loaded.eventOffset = page.afterSequence;
+  loaded = retainRunEvents(appendRunHistory(loaded, page));
+  eventPageRevision++;
+  inspectedHistory = null;
+  eventPageLoading = false;
   current = loaded;
   feedSignature = '';
   $('follow-output').checked = true;
   render();
   await refreshHistory();
   if (revision !== loadRevision) return;
-  stream = new EventSource(`/api/runs/${id}/events?format=delta&after=${current.events.length}`);
+  stream = new EventSource(
+    `/api/runs/${id}/events?format=delta&after=${receivedRunSequence(current)}`,
+  );
   stream.onopen = () => connected(true);
   stream.onerror = () => connected(false);
   stream.addEventListener('run-update', (event) => {
@@ -782,8 +836,8 @@ async function loadRun(id) {
     let next;
     try {
       update = JSON.parse(event.data);
-      next = mergeRunUpdate(current, update);
-      if (event.lastEventId !== String(next.events.length))
+      next = retainRunEvents(mergeRunUpdate(current, update));
+      if (event.lastEventId !== String(receivedRunSequence(next)))
         throw new Error('Run stream cursor does not match the received events.');
     } catch (failure) {
       stream.close();
@@ -826,9 +880,17 @@ $('follow-output').onchange = () => {
 };
 $('inspect-todos').onclick = () =>
   inspect(
-    'TODO history · Native DSH snapshots',
+    'Recent TODO history · Browse Event log for earlier snapshots',
     current?.events.filter((e) => e.type === 'agent.todos') ?? [],
   );
+$('events-older').onclick = () => browseEvents('older').catch((e) => error(e.message));
+$('events-newer').onclick = () => browseEvents('newer').catch((e) => error(e.message));
+$('events-live').onclick = () => {
+  eventPageRevision++;
+  eventPageLoading = false;
+  inspectedHistory = null;
+  renderTimeline();
+};
 $('start').onclick = () => {
   if (
     hasLauncher() &&

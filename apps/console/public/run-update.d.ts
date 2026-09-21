@@ -1,6 +1,8 @@
 export const runUpdateProtocol: 'edh.run-update.v1';
 export const maxEventBatch: 128;
 export const maxEventBatchBytes: number;
+export const maxRetainedEvents: 500;
+export const maxRetainedEventBytes: number;
 export interface EventState {
   id: string;
   events: { sequence: number }[];
@@ -14,9 +16,11 @@ export interface RunUpdate<T extends EventState> {
   throughSequence: number;
   eventTotal: number;
   events: T['events'];
-  projection: (Omit<T, 'events'> & { eventCount: number }) | null;
+  projection: (Omit<T, 'events' | 'eventOffset'> & { eventCount: number }) | null;
 }
 export function runEventCursor(value: string, total: number): number;
+export function receivedRunSequence(state: EventState): number;
+export function retainRunEvents<T extends EventState>(state: T): T & { eventOffset: number };
 export function createRunUpdate<T extends EventState>(
   state: T,
   afterSequence: number,

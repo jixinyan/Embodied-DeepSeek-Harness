@@ -208,6 +208,7 @@ export async function startServer(options: LocalServerOptions) {
     };
     const runView = (id: string, eventSelection: 'all' | 'none' | number = 'all') => {
       const state = runRecord(id);
+      const recovery = state.recoveryId ? new RecoveryHistory(store).read(state.recoveryId) : null;
       const eventCount = history.total(state);
       const events =
         eventSelection === 'all'
@@ -220,6 +221,9 @@ export async function startServer(options: LocalServerOptions) {
         ...state,
         events,
         eventCount,
+        recoveryStatus: recovery
+          ? { id: state.recoveryId, resolved: Boolean(recovery.result), error: recovery.error }
+          : null,
         ...(typeof eventSelection === 'number' ? { eventOffset: eventSelection } : {}),
         configuration: store.get(`run-config:${id}`)?.value ?? null,
         submission: store.get(`run-submission:${id}`)?.value ?? null,
@@ -532,6 +536,16 @@ export async function startServer(options: LocalServerOptions) {
             return json(res, 200, runView(id, events));
           }
           if (method === 'GET' && operation === 'history') {
+            if (url.searchParams.has('before')) {
+              if (url.searchParams.has('after') || url.searchParams.has('through'))
+                throw new HttpError(400, 'Choose a forward or backward history range.');
+              const before = runEventCursor(url.searchParams.get('before')!, history.total(record));
+              return json(
+                res,
+                200,
+                history.before(record, before, maxEventBatch, maxEventBatchBytes),
+              );
+            }
             const total = history.total(record);
             const through = runEventCursor(url.searchParams.get('through') ?? String(total), total);
             const after = runEventCursor(url.searchParams.get('after') ?? '0', through);

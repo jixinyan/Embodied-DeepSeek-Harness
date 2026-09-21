@@ -207,8 +207,8 @@
             ><input
               id="debug-search"
               type="search"
-              aria-label="Search agent activity"
-              placeholder="Search tools, assignment IDs, events…"
+              aria-label="Search recent agent activity"
+              placeholder="Search recent tools, assignment IDs, events…"
             /><label class="follow-label"
               ><input id="follow-output" type="checkbox" checked /> Follow</label
             >
@@ -427,7 +427,12 @@
             <option value="execution">Execution</option>
             <option value="verification">Verification</option>
             <option value="recovery">Recovery &amp; skills</option>
+            <option value="agent.todos">TODO updates</option>
           </select>
+          <button id="events-older" class="button small" disabled>Earlier events</button>
+          <button id="events-newer" class="button small" disabled>Later events</button>
+          <button id="events-live" class="button small" disabled>Recent events</button>
+          <span id="event-range" class="muted" aria-live="polite">No events</span>
         </div>
         <div id="timeline" class="timeline"></div>
       </details>

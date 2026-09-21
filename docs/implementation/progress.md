@@ -734,8 +734,7 @@ formatting, provenance, structure and whitespace checks pass. These checks execu
 storage and transport code; they do not run a model or physical provider. Scripted
 runtime tests were updated for explicit snapshot reads and were not executed.
 
-Remaining: browser history limits,
-key-index/disk retention, media cleanup, provider-backed criteria discovery, active-task
+Remaining: key-index/disk retention, media cleanup, provider-backed criteria discovery, active-task
 clarification, live VLM evaluation and local-server bootstrap. Full snapshot callers
 still allocate their requested history. Physical integration keeps its separate scope.
 
@@ -763,7 +762,41 @@ whitespace checks pass. Existing scripted runtime assertions now use explicit re
 restoration and were not executed. Live model delivery, guidance quality and physical
 behavior remain unverified by this checkpoint.
 
-Remaining: browser history limits, journal/index retention, media cleanup, provider-backed
+Remaining: journal/index retention, media cleanup, provider-backed
 criteria discovery, active-task clarification, live VLM evaluation and local-server
 bootstrap. Complete inspection responses, native session audits/context and agent working
 files retain their own memory/storage costs. No physical provider was added.
+
+## Browser history windows (2026-09-20)
+
+The console initially requests the newest bounded history page at a fixed event count.
+Live retention keeps at most 500 events with a 2 MiB encoded-body target and preserves
+a single oversized latest event. The absolute received sequence survives eviction and
+EventSource reconnects. Projection-only updates preserve the retained array and cursor.
+
+Event log has Earlier events, Later events and Recent events controls, a visible sequence
+range and a TODO-updates filter. Historical browsing keeps one bounded page separate
+from live activity. Switching tasks or returning to recent events invalidates pending
+history responses. Current TODOs, plans and verdicts use projections; recovery status
+reads its durable record and remains visible after its events leave the recent window.
+The saved-experience indicator follows the selected recovery's skill identity.
+
+RunHistory supports bounded backward reads through `history?before=N`. Forward/backward
+parameters are mutually exclusive. Reverse traversal returns ascending sequences,
+preserves oversized events and restart annotations, and retains the selected boundary
+while later events are published. Recent activity search and TODO shortcuts identify
+their scope; earlier records remain available through the event log.
+
+Validation: 15 real-journal history checks and 19 console logic/transport checks pass.
+Retention checks cover count and byte limits, absolute cursors, detached history views,
+projection updates, invalid windows, and real HTTP/EventSource reconnection with 900
+events. Backward history checks cover contiguous traversal, concurrent append, byte
+limits, invalid boundaries, missing records, legacy history and restart annotations.
+TypeScript, JavaScript syntax, formatting, provenance, structure and whitespace checks
+pass. No browser interaction, live model or physical provider execution was performed
+in this checkpoint; scripted runtime tests were not run.
+
+Remaining: journal/index retention, media cleanup, provider-backed criteria discovery,
+active-task clarification, live VLM evaluation and local-server bootstrap. Event-body
+targets do not bound total browser memory, current projection size, full audit/recovery
+inspection responses, or oversized individual records.

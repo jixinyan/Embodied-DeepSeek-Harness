@@ -84,6 +84,7 @@ export class RunHistory {
     let bytes = 0;
     const end = Math.min(afterSequence + limit, throughSequence);
     for (let sequence = afterSequence + 1; sequence <= end; sequence++) {
+      if (events.length && bytes >= maxBytes) break;
       const event =
         sequence > published
           ? interruption
@@ -111,6 +112,35 @@ export class RunHistory {
     while (result.events.length < total)
       result.events.push(...this.page(state, result.events.length, total).events);
     return result;
+  }
+  before(
+    state: RunState,
+    beforeSequence: number,
+    limit = 128,
+    maxBytes = 256 * 1024,
+  ): RunEventPage {
+    this.page(state, beforeSequence, beforeSequence, limit, maxBytes);
+    const events: RunEvent[] = [];
+    let bytes = 0;
+    for (
+      let sequence = beforeSequence;
+      sequence > Math.max(0, beforeSequence - limit);
+      sequence--
+    ) {
+      if (events.length && bytes >= maxBytes) break;
+      const event = this.page(state, sequence - 1, sequence, 1).events[0]!;
+      const size = Buffer.byteLength(JSON.stringify(event));
+      if (events.length && bytes + size > maxBytes) break;
+      events.push(event);
+      bytes += size;
+    }
+    return {
+      runId: state.id,
+      afterSequence: beforeSequence - events.length,
+      throughSequence: beforeSequence,
+      eventTotal: beforeSequence,
+      events: events.reverse(),
+    };
   }
   interrupt(state: RunState, expectedVersion: number): void {
     if (!['running', 'paused', 'verifying'].includes(state.state)) return;

@@ -80,10 +80,17 @@ loads. Sidebar task labels use the actual submitted instruction. See the
 
 ## Incremental run updates
 
-The console reads a projection and bounded history pages through a fixed event count,
-then subscribes from that cursor. It appends
+The console reads a projection and the newest bounded history page at a fixed event count,
+then subscribes from that absolute cursor. It appends
 contiguous batches and renders the current projection when catch-up completes. Native
 EventSource resumes accepted batches after a connection loss. Model text updates with
 no new domain events reuse local history without receiving it again. Invalid updates
 close the subscription and display the protocol error. See the
 [stream protocol and limits](../../docs/implementation/run-stream.md).
+
+Live event retention uses a 500-event and 2 MiB encoded-body target, preserving a single
+oversized event. Event log provides Earlier events, Later events and Recent events;
+each historical view holds one page and shows its sequence range. Filters apply to
+that range, with a dedicated TODO-updates filter. Agent activity search and TODO-history
+shortcuts cover recent events. Current TODOs, plans, verdicts and recovery status remain
+independent of event eviction. Browsing history keeps live state updates connected.

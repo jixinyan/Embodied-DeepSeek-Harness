@@ -848,6 +848,10 @@ progress::-moz-progress-bar {
   color: var(--muted);
 }
 .activity-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   padding: 0 22px 8px;
 }
 .timeline {

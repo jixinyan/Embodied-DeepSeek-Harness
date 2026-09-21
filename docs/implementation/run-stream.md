@@ -1,25 +1,27 @@
 # Run event streaming
 
 The console loads the run projection through `GET /api/runs/:id?events=none`, reads
-its history in bounded pages, then subscribes to
-`GET /api/runs/:id/events?format=delta&after=N`. `N` is the number of contiguous
-events already held by that client. The server validates the cursor before sending
+the most recent history page, then subscribes to
+`GET /api/runs/:id/events?format=delta&after=N`. `N` is the absolute sequence through
+which the client has received events. The server validates the cursor before sending
 stream headers. Negative, malformed, unsafe or future cursors are rejected.
 
 ## Initial history
 
 The projection returns an empty `events` array and the visible `eventCount` at that
 instant. The console fixes this count as its initial history boundary and requests
-`GET /api/runs/:id/history?after=A&through=N` until every event through `N` is loaded.
+`GET /api/runs/:id/history?before=N` for the bounded suffix ending at that count.
+Forward readers use `GET /api/runs/:id/history?after=A&through=N`.
 Each response contains `runId`, `afterSequence`, `throughSequence`, `eventTotal` and
 `events`. `eventTotal` is the requested boundary, and `throughSequence` is the last
 event in that page. Pages use the same 128-entry and 256 KiB body targets as SSE.
 An empty page is valid only at the selected boundary.
 
+Backward pages read from the selected sequence toward earlier events, then return
+them in ascending sequence order. `before` cannot be combined with `after` or `through`.
 Concurrent events do not change the selected initial boundary. SSE catches up from
 that boundary after loading. The console checks page identity, sequence and boundary;
-switching runs stops further reads for the previous selection. The connection label
-shows history-loading progress. The original GET without `events=none` still returns
+switching runs invalidates pending history responses. The original GET without `events=none` still returns
 complete history for explicit full-history clients.
 
 RunHistory reads only the requested immutable event records. A record written beyond
@@ -50,7 +52,7 @@ total stream-byte limit or discard stored events.
 While catching up, the client appends batches without rendering a new state. The
 final batch supplies the current projection and makes the completed view visible.
 Projection-only updates carry an empty event list; live model text can change without
-creating a domain event. Client merging reuses the existing history array in this case.
+creating a domain event. Client merging reuses the retained history array in this case.
 It rejects discontinuities, duplicate batches, another run's identity, a shrinking
 published total, and projections that do not match their event boundary. A protocol
 violation closes the console subscription and displays the error.
@@ -58,8 +60,9 @@ violation closes the console subscription and displays the error.
 ## Connection and lifecycle
 
 The SSE `id` is `throughSequence`. Native EventSource reconnects with `Last-Event-ID`,
-which takes precedence over the original `after` query. The client retains previously
-accepted batches across reconnects. A new page load reads the initial history again in pages.
+which takes precedence over the original `after` query. The client retains its absolute
+cursor across reconnects even after evicting earlier event bodies. A new page load
+reads the newest bounded page.
 Restart annotations participate in the visible cursor even though their durable
 records have a separate namespace. No physical commands are replayed by this stream.
 
@@ -80,6 +83,27 @@ cloning on every model text chunk solely to announce that the run changed.
 published count. Incremental server views read only the event page following the
 subscriber's cursor. A text-only update reads no historical event bodies. Complete
 `snapshot()` and full-history API reads remain explicit operations.
+
+## Browser event retention and inspection
+
+The console retains at most 500 recent events with a 2 MiB encoded-body target. One
+larger event remains intact when it is the latest event. `eventOffset` counts the
+evicted prefix; the received cursor is `eventOffset + events.length`. Server projections
+cannot replace that local offset. Retention changes neither the stream cursor nor
+the durable journal. The shared merger still supports full-history callers that do
+not request retention.
+
+Event log offers Earlier events, Later events and Recent events on the same page.
+Historical inspection holds one bounded page independently of live activity. It shows
+the current sequence range and applies filters to that range, including TODO updates.
+Agent activity search and TODO-history shortcuts explicitly cover recent events.
+Current TODOs, plans and verdicts come from the projection. Recovery status comes
+from its durable record, so eviction of a recovery event cannot erase its status.
+
+Changing tasks or returning to recent events invalidates pending inspection requests.
+Complete audits, recovery inspection and full-history API calls remain explicit and
+can allocate larger results. Encoded-body targets do not bound all browser memory,
+DOM content, projection size or inspector content.
 
 ## Active event publication
 
@@ -119,8 +143,8 @@ the journal and validates every event through bounded pages. This constrains the
 JavaScript old-space heap, not total process memory, and does not execute an agent.
 
 LocalStore retains a byte-position index and reads journal bodies on demand. The browser
-still retains complete task histories. Recovery observation stores selected event
+retains a recent event window and one inspection page. Recovery observation stores selected event
 references and reads bounded progress batches. Journal compaction, key-index growth,
-browser history eviction and media retention require separate work. Current projections contain assignment and task data,
+media retention require separate work. Current projections contain assignment and task data,
 and a single large event remains atomic. Bounded event reads and transfer do not
 establish bounded lifetime storage or live-model performance.

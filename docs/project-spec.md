@@ -934,8 +934,8 @@ of model replies.
 
 ### 10.3 Incremental event delivery
 
-The console obtains current state and reads history through a fixed event boundary in
-bounded pages, then receives contiguous event batches and current projections through
+The console obtains current state and reads the latest bounded history page at a fixed
+event boundary, then receives contiguous event batches and current projections through
 SSE. Batch admission and client merging validate the run
 identity, cursor and event order. Last-Event-ID supports connection resumption; a
 projection is displayed after its preceding event batches have arrived. Text-only
@@ -948,6 +948,12 @@ event before the versioned projection and advances the in-memory count only afte
 both writes succeed. Unpublished suffixes remain outside visible history. Event
 volume has no fixed task-lifetime cutoff; agent-authored message admission uses a
 separate delivery counter. Explicit full snapshots reconstruct the complete history.
+
+The browser retains up to 500 recent events with a 2 MiB encoded-body target, preserving
+one oversized latest event. Its absolute stream cursor survives event eviction. Event
+log provides bounded backward/forward inspection on the same page while live state
+continues updating. Range-local filtering and recent-activity search identify their
+scope. Current TODOs, plans, verdicts and recovery status use explicit projections.
 
 Event batches are limited to 128 entries and a 256 KiB encoded-body target. A larger
 single event remains atomic. The server reads only the requested event page for an
