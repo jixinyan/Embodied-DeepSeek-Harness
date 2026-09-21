@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="244" height="20" viewBox="0 0 244 20" role="img" aria-labelledby="title">
+  <title id="title">Physical runtime: integration pending</title>
+  <clipPath id="shape"><rect width="244" height="20" rx="4" /></clipPath>
+  <g clip-path="url(#shape)">
+    <path fill="#12356c" d="M0 0h104v20H0z" />
+    <path fill="#7a5200" d="M104 0h140v20H104z" />
+  </g>
+  <g fill="#fff" font-family="Verdana,DejaVu Sans,sans-serif" font-size="11" text-anchor="middle">
+    <text x="52" y="14">physical runtime</text>
+    <text x="174" y="14">integration pending</text>
+  </g>
+</svg>

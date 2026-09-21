@@ -1,6 +1,25 @@
-# Embodied DeepSeek Harness
+<p align="center">
+  <img src="apps/console/public/logo.png" alt="Embodied DeepSeek Harness logo" width="300" />
+</p>
 
-**Composable agent teams for embodied intelligence.**
+<h1 align="center">Embodied DeepSeek Harness</h1>
+
+<p align="center"><strong>Everything is a plugin.</strong><br />Composable agent teams for embodied intelligence.</p>
+
+<p align="center">
+  <a href="https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/workflows/scaffold.yml"><img src="https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/workflows/scaffold.yml/badge.svg?branch=main" alt="Framework checks on main" /></a>
+  <a href="docs/implementation/progress.md"><img src="docs/assets/badges/development.svg" alt="Stage: active development" /></a>
+  <a href="docs/implementation/model-configuration.md"><img src="docs/assets/badges/models.svg" alt="Model adapters: cloud API and vLLM" /></a>
+  <a href="docs/implementation/features.md"><img src="docs/assets/badges/physical-runtime.svg" alt="Physical runtime: integration pending" /></a>
+</p>
+
+<p align="center">
+  <a href="docs/project-spec.md">Project spec</a> ·
+  <a href="docs/implementation/plan.md">Implementation plan</a> ·
+  <a href="docs/implementation/progress.md">Current status</a> ·
+  <a href="docs/implementation/features.md">Capability map</a> ·
+  <a href="LICENSE">MIT License</a>
+</p>
 
 EDH is an independent physical-agent framework designed around user-defined
 teams, explicit context handoff, replaceable tools and policies, asynchronous
@@ -11,11 +30,6 @@ selected DeepSeek Harness implementations, with traceable provenance.
 > DSH-backed roles, native tools/TODOs, formal verification, recovery and SKILL
 > publication run with an explicitly synthetic CPU backend and scripted model.
 > Real simulation, learned policies, live VLM evaluation and hardware remain pending.
-
-[Project spec](docs/project-spec.md) ·
-[Implementation plan](docs/implementation/plan.md) ·
-[Current status](docs/implementation/progress.md) ·
-[Capability map](docs/implementation/features.md)
 
 ![Current implementation](docs/architecture/assets/implementation-status.svg)
 
@@ -72,8 +86,8 @@ pnpm test:runtime
 ```
 
 These commands check generated schema types, example structure/references,
-TypeScript, documentation links and Python importability, then execute 54 upper-runtime
-integration tests and shared wire/lifecycle validation cases in both languages. `test:runtime` runs that suite
+TypeScript, documentation links and Python importability, then execute upper-runtime
+integration tests and shared wire/lifecycle validation cases in both languages. `test:runtime` runs the runtime suite
 alone. The optional policy extra enables 17 WebSocket/action-gate tests. No live model API or simulator is started. API tests start a temporary local server. No GPU or key is needed.
 Python checks prefer `.venv/bin/python`, falling back to `python3`; override
 `EDH_PYTHON` if needed. `pnpm test:contracts` runs shared TS/Python wire cases.
