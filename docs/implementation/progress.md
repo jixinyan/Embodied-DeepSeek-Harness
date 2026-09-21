@@ -6,6 +6,12 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## Current delivery boundary
 
+Tool inventory validation compares all implemented logical IDs against `CORE_TOOLS`,
+including `user.ask`, before checking role references. Generated-schema equality and
+all six authored wire documents, roles/team/tool references and rejection checks pass
+through `pnpm check:contracts`. This establishes structural consistency; live runtime
+acceptance remains separate.
+
 LocalStore now supports explicit batch retirement under a current global sequence.
 It validates the selected keys, preserves retained values/CAS versions/order, and
 publishes one synchronized checkpoint atomically. Retirement advances the global

@@ -24,3 +24,9 @@ native supported subset. EDH separately enforces input-size and version limits.
 stopped execution boundary. It stores a question and signals native turn conclusion;
 the accepted answer returns through DSH followup to the same assignment. See the
 [interaction protocol and acceptance](../../../docs/implementation/user-clarification.md).
+
+The [logical inventory](definitions/planned-tools.json) records implementation status
+for the core tool pack and planned provider tools. `pnpm check:contracts` requires its
+implemented IDs to match `CORE_TOOLS` exactly, checks unique IDs and validates role
+references. This check reads schemas and authored definitions; it invokes no model or
+physical provider. Runtime tool registration and validation remain native DSH services.

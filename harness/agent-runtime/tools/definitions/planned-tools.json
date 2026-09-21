@@ -123,6 +123,10 @@
       "status": "native_dsh"
     },
     {
+      "id": "user.ask",
+      "status": "upper_application"
+    },
+    {
       "id": "verification.check",
       "status": "upper_with_fixture_backend"
     },

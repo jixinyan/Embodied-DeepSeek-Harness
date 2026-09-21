@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { ContractValidator } from '../harness/contracts/src/validation.ts';
+import { CORE_TOOLS } from '../harness/agent-runtime/tools/src/core-inputs.ts';
 import { parse } from 'yaml';
 const json = async (p) => JSON.parse(await readFile(p, 'utf8'));
 const yaml = async (p) => parse(await readFile(p, 'utf8'));
@@ -31,6 +32,14 @@ const builtins = await json('harness/agent-runtime/agents/roles/builtins.json');
 const inventory = await json('harness/agent-runtime/tools/definitions/planned-tools.json');
 const toolIds = new Set(inventory.tools.map((t) => t.id));
 assert.equal(toolIds.size, inventory.tools.length, 'Duplicate logical tool ID');
+assert.deepEqual(
+  inventory.tools
+    .filter((tool) => tool.status !== 'not_implemented')
+    .map((tool) => tool.id)
+    .sort(),
+  [...CORE_TOOLS].sort(),
+  'Implemented tool inventory must match the native upper tool pack.',
+);
 for (const [member, reference] of Object.entries(team.members)) {
   let rolePath;
   if (reference.startsWith('builtin:')) {
