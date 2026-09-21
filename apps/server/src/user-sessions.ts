@@ -5,8 +5,13 @@ import type { LocalStore } from '@edh/storage';
 import type { EmbodiedBackend } from '@edh/execution';
 import { UpperRun, terminal } from './application.js';
 import type { SessionEnvironment } from './deployment.js';
+import {
+  SessionTaskHistory,
+  emptySessionTaskHistory,
+  type SessionTaskFields,
+} from './session-task-history.js';
 
-export interface UserSessionRecord {
+export type UserSessionRecord = SessionTaskFields & {
   id: string;
   profileId: string;
   requestId: string;
@@ -24,9 +29,8 @@ export interface UserSessionRecord {
     | 'interrupted';
   resources: 'allocating' | 'held' | 'released' | 'unknown';
   configuration: Record<string, unknown>;
-  runIds: string[];
   error?: string;
-}
+};
 export class SessionConflict extends Error {}
 type SessionOpenInput = Pick<
   UserSessionRecord,
@@ -55,14 +59,17 @@ export class UserSessions {
   private stopping = false;
   private shutdown = new AbortController();
   private closePromise?: Promise<void>;
+  private readonly tasks: SessionTaskHistory;
   constructor(private readonly store: LocalStore) {
+    this.tasks = new SessionTaskHistory(store);
     for (const row of store.scan<UserSessionRecord>('user-session:')) {
       if (row.key !== `user-session:${requestIdentity.parse(row.value.id)}`)
         throw new Error('User session identity conflicts with its record key.');
       this.retainRequest(row.value);
-      if (row.value.state === 'closed' || row.value.state === 'interrupted') continue;
+      const record = this.tasks.migrate(row.value, row.version);
+      if (record.state === 'closed' || record.state === 'interrupted') continue;
       this.save({
-        ...row.value,
+        ...record,
         state: 'interrupted',
         resources: 'unknown',
         error:
@@ -103,6 +110,7 @@ export class UserSessions {
     const source = this.store.get<UserSessionRecord>(`user-session:${request.sessionId}`)?.value;
     if (!source || source.id !== request.sessionId || source.requestId !== requestId)
       throw new Error('Session request source is missing or conflicting.');
+    this.tasks.validate(source);
     return source;
   }
   replaySession(input: SessionOpenInput): UserSessionRecord | undefined {
@@ -136,6 +144,8 @@ export class UserSessions {
   get(id: string): UserSessionRecord {
     const value = this.store.get<UserSessionRecord>(`user-session:${id}`)?.value;
     if (!value) throw new SessionConflict('User session not found.');
+    if (value.id !== id) throw new Error('User session identity conflicts with its record key.');
+    this.tasks.validate(value);
     return value;
   }
   private exclusive<T>(action: () => Promise<T>): Promise<T> {
@@ -164,7 +174,7 @@ export class UserSessions {
         updatedAt: new Date().toISOString(),
         state: 'opening',
         resources: 'allocating',
-        runIds: [],
+        taskHistory: emptySessionTaskHistory(),
       };
       this.save(record);
       this.retainRequest(record);
@@ -187,7 +197,7 @@ export class UserSessions {
     });
   }
   replayTask(id: string, taskId: string, requestId: string, inputIdentity = taskId) {
-    this.get(id);
+    const record = this.get(id);
     const prior = this.store.get<{
       taskId: string;
       runId: string | null;
@@ -202,6 +212,7 @@ export class UserSessions {
     const runId = prior.value.runId;
     if (
       !runId ||
+      !this.tasks.has(record, runId) ||
       !this.store.get(`run:${runId}`) ||
       this.store.get<{ sessionId: string }>(`run-user-session:${runId}`)?.value.sessionId !== id
     )
@@ -237,8 +248,7 @@ export class UserSessions {
         this.shutdown.signal.throwIfAborted();
         const run = create(backend, record);
         current.run = run;
-        current.record.runIds.push(run.state.id);
-        this.save(current.record);
+        current.record = this.tasks.append(current.record, run.state.id);
         this.store.put(`run-user-session:${run.state.id}`, { sessionId: id }, 0);
         this.store.put(key, { taskId, inputIdentity, runId: run.state.id }, 1);
         await run.start();

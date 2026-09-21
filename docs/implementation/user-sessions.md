@@ -44,7 +44,9 @@ cannot allocate while a user session owns the environment.
   active-session configuration. Omit `before` for the latest page.
 - `GET /api/runs?session={id}&before={runId}`: bounded task summaries for a session;
   omit filters for all tasks or use `session=standalone` for independent tasks.
-- `GET /api/sessions/:id`: state, resource disposition and task IDs.
+- `GET /api/sessions/:id`: state, resource disposition, configuration and a compact
+  `taskHistory` containing format, task count and latest task ID. Read task IDs through
+  the session-scoped `/api/runs` pages.
 - `POST /api/sessions/:id/tasks`: `{scenario, requestId, instruction?, contextRunIds?}`
   starts a task using an allowed criteria preset and an optional user instruction.
 - `POST /api/sessions/:id/close`: `{}` ends the session and releases the environment.
@@ -88,7 +90,8 @@ then applies current-session and lifecycle admission rules.
 
 Request metadata contains no copies of model configuration, role definitions or task
 history. Startup reconciliation still traverses historical sources individually;
-request/source key metadata and per-session task ID lists retain lifetime growth.
+request/source key metadata retains lifetime growth. Session task membership uses the
+compact representation described below.
 Source-aware retention must preserve or explicitly retire request ownership together
 with its session. Journal compaction preserves both records and their versions.
 
@@ -98,6 +101,46 @@ duplicate IDs, rewritten records and missing/conflicting sources. The workspace
 pressure check stores over 100 MiB of project documents, performs 32 old/new request
 lookups and traverses history under a 64 MiB V8 old-space limit. These checks do not
 allocate a simulator, device or model. Live provider lifecycle acceptance remains open.
+
+## Task membership history
+
+`SessionTaskHistory` owns immutable `session-task-member:` records keyed by the JSON
+array `[sessionId, runId]`. Each version-1 record declares format
+`edh.session-task-member.v1`, session/task identity and its positive admission position.
+The session holds `taskHistory: { format: "edh.session-task-history.v1", count,
+lastRunId }`. Empty sessions have count zero and a null latest-task reference. These
+fields describe recorded task admissions; outcomes remain in each task's run record.
+
+After creating the task control scope, UserSessions publishes membership, advances the
+session history with the expected source version, publishes run ownership and the task
+request identity, then starts the native run. Each journal write is independently
+durable. A membership outside the session's published count cannot be used for task
+context or replay. Partial admission remains an error/interrupted session and never
+resumes physical work automatically. Duplicate task IDs, rewritten membership records,
+changed source versions and inconsistent latest-task references fail explicitly.
+
+Startup converts legacy `runIds` arrays into membership records in the original order,
+then replaces the array with the compact history. Configuration, timestamps, request
+identity and resource state are preserved by this conversion; normal interruption
+handling subsequently updates unfinished sessions. Existing identical membership
+records are reused after an interrupted migration. Source arrays remain present until
+all memberships have been saved. Migration performs no model or provider calls.
+
+Task context selection checks the requested membership plus `run-user-session`
+ownership and the terminal run. Request replay applies the same membership boundary.
+SKILL source inspection includes the relevant membership key/version and reports an
+absent referenced membership as incomplete. SQLite summaries continue to expose
+`runCount`; the console reads full task history through its existing paged route.
+Session detail responses expose `taskHistory` after startup migration.
+
+`pnpm test:session-tasks` exercises real journal/SQLite documents: migration and
+compaction/reopen, append order, stale/duplicate requests, partial publication under
+actual journal write holds, resuming migration, record/head conflicts, indexed history
+and task replay. A single-session check appends 2,000 independent document memberships
+while retaining a fixed set of history fields. Task-admission and SKILL-provenance
+checks cover selected context and missing/conflicting ownership. No environment,
+policy or model executes. Distinct journal keys, task records and disk history still
+require source-aware retention; this change bounds the session's task-history fields.
 
 ## Task instructions and explicit history
 

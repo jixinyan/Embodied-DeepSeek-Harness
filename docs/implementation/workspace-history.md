@@ -91,6 +91,9 @@ and **Recent sessions/tasks** replace the current page. Selecting a session filt
 the task list; **All tasks** and **Standalone tasks** are explicit selections.
 **Inspect session** reads the complete stored record only when requested. Task controls
 use the separately returned active record, even while an older page is displayed.
+Stored session details use a compact task count/latest-task reference with separately
+persisted membership. The `runCount` summary and paged task response remain unchanged.
+See [task membership](user-sessions.md#task-membership-history).
 
 The task composer pages outcomes from the active session independently of the sidebar.
 Up to four selected outcomes survive page changes and are retained alongside the

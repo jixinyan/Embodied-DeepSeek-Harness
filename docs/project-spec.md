@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.36 · 2026-09-21
+Version: v1.37 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -94,6 +94,10 @@ configuration. Startup reconciles source-only admissions and interrupts unfinish
 sessions without allocating an environment. See the
 [request publication rules](implementation/user-sessions.md#session-open-request-identity).
 Ending a task releases its control scope; ending the user session releases the environment.
+Session records retain a task-history count and latest-task reference. Immutable
+per-task memberships preserve ownership without expanding the session document on
+each admission. Startup migrates legacy task arrays, and existing paged task routes
+provide full history. See [membership publication](implementation/user-sessions.md#task-membership-history).
 The console is the primary launcher and status surface. CLI-free server bootstrap is a
 separate packaging requirement. Launch selections must resolve installed environment,
 embodiment, policy/checkpoint, upper model and role/tool configurations before allocation.

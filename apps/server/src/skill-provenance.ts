@@ -5,10 +5,10 @@ import type { SkillBundle } from '@edh/memory';
 import { SensorSamples } from '@edh/perception';
 import { RecoveryHistory, type RunState } from '@edh/tasks';
 import type { LocalStore } from '@edh/storage';
+import { SessionTaskHistory, sessionTaskKey, readSessionTasks } from './session-task-history.js';
 
 const identifier = z.string().min(1).max(128);
 const ownerSchema = z.object({ sessionId: identifier });
-const sessionSchema = z.object({ id: identifier, runIds: z.array(identifier) });
 const runSchema = z.object({
   id: identifier,
   source: z.enum(['test_fixture', 'simulation', 'hardware']),
@@ -131,8 +131,12 @@ function resolveProvenance(
     const sessionKey = `user-session:${result.userSessionId}`;
     const session = read(sessionKey);
     if (session !== undefined) {
-      const checked = sessionSchema.parse(session);
-      if (checked.id !== result.userSessionId || !checked.runIds.includes(result.runId))
+      const history = new SessionTaskHistory(store);
+      const checked = readSessionTasks(session);
+      if (checked.id !== result.userSessionId)
+        throw new Error('Skill source session does not own its run.');
+      const member = checked.taskHistory ? read(sessionTaskKey(checked.id, result.runId)) : session;
+      if (member !== undefined && !history.has(checked, result.runId))
         throw new Error('Skill source session does not own its run.');
     }
   }

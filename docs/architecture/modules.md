@@ -91,6 +91,10 @@ Python Protocol annotations alone do not validate runtime data.
 not an agent loop. A retained `SessionEnvironment` creates one fresh backend control
 scope per task. `UpperRun` and the native DSH services continue to own task execution
 and independent role contexts. Workspace SKILL storage outlives all three scopes.
+`SessionTaskHistory` owns immutable task membership and the compact session history
+count/latest reference. UserSessions admits tasks and invokes that publication before
+run ownership and request completion. Startup migrates legacy inline task arrays;
+task-context and SKILL-source readers resolve individual memberships explicitly.
 See the [session guide and SVG](../implementation/user-sessions.md).
 
 `apps/server/src/clarifications.ts` owns durable user questions and accepted responses.

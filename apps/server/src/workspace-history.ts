@@ -3,6 +3,7 @@ import type { RunState } from '@edh/tasks';
 import type { UserSessionRecord } from './user-sessions.js';
 import { HttpError } from './local-http.js';
 import type { WorkspaceHistoryIndex } from './workspace-history-index.js';
+import { sessionTaskCount } from './session-task-history.js';
 
 export const workspacePageLimits = Object.freeze({ records: 32, bytes: 256 * 1024 });
 const identity = z.object({
@@ -43,7 +44,7 @@ export function sessionSummary(record: UserSessionRecord) {
     updatedAt: record.updatedAt,
     state: record.state,
     resources: record.resources,
-    runCount: record.runIds.length,
+    runCount: sessionTaskCount(record),
     environment: profile?.environment ?? null,
     embodiment: profile?.embodiment ?? null,
     checkpoint: profile?.checkpoint ?? null,

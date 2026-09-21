@@ -1,10 +1,24 @@
 # Implementation progress
 
-Spec: v1.36. Current checkpoint: **durable session-open request identity and direct lookup**.
+Spec: v1.37. Current checkpoint: **compact session task history and immutable membership**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Session records hold task count/latest identity and publish immutable per-task
+membership records. Startup migrates legacy arrays while preserving their order and
+configuration. Task admission/replay and SKILL source inspection read selected
+memberships; missing SKILL membership is incomplete and conflicting records fail.
+Seven actual journal/SQLite checks cover migration/reopen, publication order,
+interrupted writes, stale source/head conflicts, indexed history/replay and 2,000
+memberships in one compact session record. Six task-admission, ten SKILL-provenance,
+seven session-request and twelve workspace checks cover the connected source paths.
+The workspace pressure case still traverses over 100 MiB under a 64 MiB V8 old-space
+limit. Twenty-four console checks, TypeScript, formatting, provenance and 490 local
+documentation-link checks pass. No model or physical provider executes. Distinct-key/disk retention, cumulative
+active run metadata and real provider lifecycle acceptance remain open.
+[Task membership semantics](user-sessions.md#task-membership-history).
 
 Session opening resolves repeated request IDs through immutable journal identities
 and reads only the matching source session. Profile, deployment digest and the full
@@ -15,7 +29,7 @@ activating resources. Seven actual journal/document checks and five task-admissi
 checks pass. Twelve workspace checks include more than 100 MiB of authored documents,
 32 repeated old/new request lookups and full history traversal under a 64 MiB V8
 old-space limit. No model or physical provider executes in these checks. Startup
-source traversal, per-session task ID growth and provider-backed lifecycle acceptance
+source traversal, distinct request-key growth and provider-backed lifecycle acceptance
 remain open. [Session request semantics](user-sessions.md#session-open-request-identity).
 
 The Assignment inspector reads formal-check contexts, source observations and accepted

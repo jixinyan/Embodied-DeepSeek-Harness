@@ -17,6 +17,7 @@ import {
   skillSourceLimitations,
 } from '../../apps/server/src/skill-provenance.js';
 import { assertLocalRequest, HttpError } from '../../apps/server/src/local-http.js';
+import { SessionTaskHistory, sessionTaskKey } from '../../apps/server/src/session-task-history.js';
 
 const validator = new ContractValidator(
   JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
@@ -215,6 +216,37 @@ test('missing source records are reported explicitly and retain every known owne
         );
     });
   }
+});
+
+test('skill sources retain compact session membership identity and report absent membership documents', async () => {
+  await withStore((store) => {
+    documents(store, { session: true });
+    const row = store.get<{ id: string; runIds: string[] }>('user-session:conversation')!;
+    new SessionTaskHistory(store).migrate(row.value, row.version);
+    const result = inspectSkillProvenance(store, validator, 'skill');
+    const key = sessionTaskKey('conversation', 'run');
+    assert.equal(result.state, 'available');
+    assert(result.records.some((record) => record.key === key && record.version === 1));
+    store.put(key, store.get(key)!.value, 1);
+    assert.throws(
+      () => inspectSkillProvenance(store, validator, 'skill'),
+      /membership identity or version/,
+    );
+  });
+  await withStore((store) => {
+    documents(store, { session: true });
+    store.put(
+      'user-session:conversation',
+      {
+        id: 'conversation',
+        taskHistory: { format: 'edh.session-task-history.v1', count: 1, lastRunId: 'run' },
+      },
+      1,
+    );
+    const result = inspectSkillProvenance(store, validator, 'skill');
+    assert.equal(result.state, 'incomplete');
+    assert(result.missing.some((record) => record.key === sessionTaskKey('conversation', 'run')));
+  });
 });
 
 test('legacy recovery records expose missing explicit ownership without guessing another run', async () => {

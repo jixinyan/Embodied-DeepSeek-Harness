@@ -37,7 +37,7 @@ are validated by the image service when read. Source inspection only checks thei
 persisted attachment metadata through SensorSamples.
 
 An `incomplete` result preserves known identities and reports absent recovery, run,
-configuration, session or sensor-sample records. A legacy recovery without explicit
+configuration, session, session-task membership or sensor-sample records. A legacy recovery without explicit
 run ownership remains incomplete. Existing malformed or conflicting records fail
 the request. A sensor sample whose required attachment metadata is absent or
 inconsistent also fails through the sensor catalog's integrity checks.
@@ -51,7 +51,11 @@ inconsistent also fails through the sensor catalog's integrity checks.
 - SKILL evidence references exactly match the unique union of failure and success
   evidence references.
 - The source run has the same origin and retains both exact accepted verdicts.
-- A recorded user-session association points to a session that lists this run.
+- A recorded user-session association points to a session that owns this run through
+  its compact history and immutable membership record, or a legacy inline task list.
+  Compact membership must fall within the published admission count and agree with
+  the latest-task identity when it occupies the final position. Its key/version is
+  included in `records`.
 - Referenced sensor samples belong to the source run, preserve its origin and are
   agent-visible. SensorSamples validates immutable sample and attachment metadata.
 

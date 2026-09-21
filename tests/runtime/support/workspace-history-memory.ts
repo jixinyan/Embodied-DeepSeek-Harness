@@ -59,10 +59,11 @@ try {
   let runsRead = 0;
   let sessionsRead = 0;
   const lifecycle = new UserSessions(store);
+  const firstSession = lifecycle.get(sessions[0]!.id);
   const lastSession = lifecycle.get(lastSessionId);
   let replayedRequests = 0;
   for (let i = 0; i < 16; i++) {
-    assert.deepEqual(lifecycle.replaySession(sessions[0]!), sessions[0]);
+    assert.deepEqual(lifecycle.replaySession(firstSession), firstSession);
     assert.deepEqual(lifecycle.replaySession(lastSession), lastSession);
     replayedRequests += 2;
   }

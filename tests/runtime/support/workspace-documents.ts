@@ -5,7 +5,7 @@ import { assignmentDocuments } from './assignment-documents.js';
 export async function workspaceDocuments(store: LocalStore, count = 75) {
   const { state } = await assignmentDocuments();
   const runs = [];
-  const sessions: UserSessionRecord[] = [];
+  const sessions: (UserSessionRecord & { runIds: string[] })[] = [];
   for (let index = 0; index < count; index++) {
     const id = `document-${String(index).padStart(5, '0')}`;
     const session: UserSessionRecord = {

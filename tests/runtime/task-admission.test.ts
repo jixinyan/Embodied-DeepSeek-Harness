@@ -8,6 +8,7 @@ import { LocalStore } from '@edh/storage';
 import { TaskGoals, taskContextSummary, type GoalBinding, type RunState } from '@edh/tasks';
 import { admitSessionTask } from '../../apps/server/src/task-admission.js';
 import { UserSessions, type UserSessionRecord } from '../../apps/server/src/user-sessions.js';
+import { SessionTaskHistory } from '../../apps/server/src/session-task-history.js';
 
 const goal: GoalBinding = {
   id: 'store-cup',
@@ -25,7 +26,7 @@ const goal: GoalBinding = {
 };
 const tasks = { cup: { instruction: 'Put the cup in the cabinet.', goal } };
 
-function userSession(): UserSessionRecord {
+function userSession(): UserSessionRecord & { runIds: string[] } {
   return {
     id: randomUUID(),
     profileId: 'selected-profile',
@@ -188,6 +189,27 @@ test('context admission rejects active, missing and oversized history', async ()
     run.instruction = 'x'.repeat(17000);
     store.put(`run:${run.id}`, run, 1);
     assert.throws(() => admitSessionTask(request, options), /exceeds 16 KiB/);
+  });
+});
+
+test('task context selection reads compact session membership with the existing run ownership check', async () => {
+  await withStore((store) => {
+    const session = userSession();
+    const run = cancelledRecord();
+    session.runIds.push(run.id);
+    store.put(`user-session:${session.id}`, session, 0);
+    store.put(`run:${run.id}`, run, 0);
+    store.put(`run-user-session:${run.id}`, { sessionId: session.id }, 0);
+    const compact = new SessionTaskHistory(store).migrate(session, 1);
+    const options = { session: compact, allowedTasks: ['cup'], tasks, store };
+    const request = { scenario: 'cup', requestId: randomUUID(), contextRunIds: [run.id] };
+    assert.equal(admitSessionTask(request, options).context[0]!.runId, run.id);
+    assert.throws(
+      () => admitSessionTask({ ...request, contextRunIds: ['foreign'] }, options),
+      /this user session/,
+    );
+    store.put(`run-user-session:${run.id}`, { sessionId: 'foreign' }, 1);
+    assert.throws(() => admitSessionTask(request, options), /ownership/);
   });
 });
 

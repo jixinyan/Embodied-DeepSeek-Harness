@@ -113,7 +113,11 @@ test(
         native.includes(firstRun.skillIds[0]),
         'Cross-task skill search must use the shared workspace library.',
       );
-      assert.deepEqual((await getSession()).runIds, [first.body.runId, second.body.runId]);
+      assert.deepEqual((await getSession()).taskHistory, {
+        format: 'edh.session-task-history.v1',
+        count: 2,
+        lastRunId: second.body.runId,
+      });
       const ended = await post(server.url, `/api/sessions/${id}/close`, {});
       assert.equal(ended.body.resources, 'released');
       assert.equal((await post(server.url, `/api/sessions/${id}/close`, {})).status, 200);

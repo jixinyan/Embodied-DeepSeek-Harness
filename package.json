@@ -21,6 +21,7 @@
     "test:runtime": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/*.test.ts",
     "test:admission": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/task-admission.test.ts",
     "test:session-requests": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-requests.test.ts",
+    "test:session-tasks": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-task-history.test.ts",
     "test:history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/run-history-pages.test.ts tests/runtime/recovery-history.test.ts",
     "test:storage": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/store-index.test.ts tests/runtime/store-observers.test.ts tests/runtime/store-compaction.test.ts tests/runtime/storage-maintenance.test.ts",
     "test:evidence": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/sensor-samples.test.ts",

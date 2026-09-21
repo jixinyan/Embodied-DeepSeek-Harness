@@ -3,6 +3,7 @@ import { taskContextSummary, type RunState, type TaskContextSummary } from '@edh
 import type { LocalStore } from '@edh/storage';
 import type { TaskPreset } from './deployment.js';
 import type { UserSessionRecord } from './user-sessions.js';
+import { SessionTaskHistory } from './session-task-history.js';
 
 const ended = new Set(['succeeded', 'failed', 'cancelled', 'interrupted', 'unknown']);
 
@@ -47,7 +48,7 @@ export function admitSessionTask(
   )
     throw new Error('Select up to four distinct historical task IDs.');
   const context: TaskContextSummary[] = contextRunIds.map((runId: string) => {
-    if (!options.session.runIds.includes(runId))
+    if (!new SessionTaskHistory(options.store).has(options.session, runId))
       throw new Error('Context must come from a task in this user session.');
     const owner = options.store.get<{ sessionId: string }>(`run-user-session:${runId}`);
     const record = options.store.get<RunState>(`run:${runId}`);

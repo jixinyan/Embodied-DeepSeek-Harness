@@ -22,14 +22,15 @@ test('session request lookup preserves source documents across repeated reads, c
   await withStore(async (store, directory) => {
     const { sessions } = await workspaceDocuments(store, 12);
     const lifecycle = new UserSessions(store);
+    const retained = new Map(sessions.map((source) => [source.id, lifecycle.get(source.id)]));
     const sequence = store.statistics().sequence;
     for (const source of sessions) {
       const key = `session-open-request:${source.requestId}`;
       assert.equal(store.get(key)!.version, 1);
-      assert.deepEqual(lifecycle.replaySession(source), source);
+      assert.deepEqual(lifecycle.replaySession(source), retained.get(source.id));
       const edited = lifecycle.replaySession(source)!;
       edited.configuration.callerEdit = true;
-      assert.deepEqual(lifecycle.replaySession(source), source);
+      assert.deepEqual(lifecycle.replaySession(source), retained.get(source.id));
     }
     assert.equal(store.statistics().sequence, sequence);
     assert.equal(lifecycle.activeId, null);
@@ -44,7 +45,8 @@ test('session request lookup preserves source documents across repeated reads, c
     try {
       const before = reopened.statistics().sequence;
       const reader = new UserSessions(reopened);
-      for (const source of sessions) assert.deepEqual(reader.replaySession(source), source);
+      for (const source of sessions)
+        assert.deepEqual(reader.replaySession(source), retained.get(source.id));
       assert.equal(reopened.statistics().sequence, before);
       await reader.close();
     } finally {
@@ -73,7 +75,7 @@ test('session replay binds the full serialized configuration and profile identit
         ...source!,
         configuration: { ...source!.configuration, absent: undefined },
       }),
-      source,
+      lifecycle.get(source!.id),
     );
     assert.throws(() => lifecycle.replaySession({ ...source!, requestId: '../invalid' }));
     await lifecycle.close();
@@ -114,7 +116,7 @@ test('request publication obeys journal write exclusion and leaves source docume
       hold.release();
     }
     const lifecycle = new UserSessions(store);
-    assert.deepEqual(lifecycle.replaySession(source!), source);
+    assert.deepEqual(lifecycle.replaySession(source!), lifecycle.get(source!.id));
     await lifecycle.close();
   });
 });
