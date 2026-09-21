@@ -113,6 +113,11 @@ export class TeamSessions {
       };
       this.assignments.set(assignment.id, assignment);
       this.live.set(assignment.id, entry);
+      handle.agent.ctx.on('agent/pre-step', async ({ agent, signal }, next) => {
+        signal.throwIfAborted();
+        this.hooks.audit(assignment.id, agent.session);
+        return next();
+      });
       handle.agent.ctx.on('agent/status', ({ status }) => {
         if (entry.timer) clearTimeout(entry.timer);
         entry.timer = null;

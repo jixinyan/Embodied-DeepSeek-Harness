@@ -1,6 +1,12 @@
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
-import { SessionSeq, type Session } from '@deepseek-ai/dsh-session';
+import {
+  SessionSeq,
+  type Session,
+  type SessionEvent,
+  type SessionEventArchive,
+  type SessionId,
+} from '@deepseek-ai/dsh-session';
 import type { LocalStore } from './local-store.js';
 
 const auditIndexSchema = z.discriminatedUnion('format', [
@@ -45,6 +51,27 @@ function countOf(value: AuditIndex | unknown[]): number {
 /** Append native DSH audit events separately; this is not a resumable session backend. */
 export class SessionAudits {
   constructor(private readonly store: LocalStore) {}
+  archive(runId: string, assignmentId: string, sessionId: SessionId): SessionEventArchive {
+    identity.parse(runId);
+    identity.parse(assignmentId);
+    return Object.freeze({
+      sessionId,
+      read: (seq: SessionSeq) => {
+        const record = this.store.get(`session-audit:${runId}:${assignmentId}`);
+        if (!record) throw new Error('Native session archive is unavailable.');
+        const index = auditIndexSchema.parse(record.value);
+        if (index.format !== 'edh.session-audit.v2' || index.sessionId !== sessionId)
+          throw new Error('Native session archive identity changed.');
+        if (seq >= index.count) return undefined;
+        const event = this.store.get<SessionEvent>(
+          `session-audit-event:${runId}:${assignmentId}:${seq}`,
+        );
+        if (!event || event.version !== 1)
+          throw new Error('Native session archive event is missing or has been rewritten.');
+        return event.value;
+      },
+    });
+  }
   append(runId: string, assignmentId: string, events: unknown): void {
     if (!Array.isArray(events)) throw new Error('Expected a native session event array.');
     this.appendRange(runId, assignmentId, events.length, (index) => events[index]);

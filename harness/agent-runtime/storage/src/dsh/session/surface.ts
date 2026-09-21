@@ -18,6 +18,8 @@ import type {
   SurfaceOp,
 } from './types.ts'
 
+type EventLogView = Pick<readonly SessionEvent[], 'length' | 'at'>
+
 /** Runtime counterpart of the message-producing event union. */
 const SURFACE_EVENT_TYPES = new Set<string>([
   'user/message',
@@ -300,7 +302,7 @@ function isDeepEqualJson(a: unknown, b: unknown): boolean {
 function assertToolResultRewrite(
   event: SessionEvent,
   shadowedSeqs: readonly SessionSeq[],
-  events: readonly SessionEvent[],
+  events: EventLogView,
   baseSeq: SessionLogOffset,
 ): void {
   if (event.type !== 'tool/result') return
@@ -308,7 +310,7 @@ function assertToolResultRewrite(
     throw new Error('tool/result surface replacement must rewrite exactly one current node')
   }
   for (const originalSeq of shadowedSeqs) {
-    const original = events[originalSeq - baseSeq]
+    const original = events.at(originalSeq - baseSeq)
     if (original?.type !== 'tool/result') {
       throw new Error('tool/result surface replacement must target a current tool/result')
     }
@@ -335,7 +337,7 @@ function planSurfaceEvent(
   state: SurfaceFoldState,
   event: SessionEvent,
   expectedSeq: SessionSeq,
-  events: readonly SessionEvent[],
+  events: EventLogView,
   baseSeq: SessionLogOffset,
 ): SurfacePlan | undefined {
   if (event.seq !== expectedSeq) {
@@ -364,7 +366,7 @@ function applySurfaceEvent(
   state: SurfaceFoldState,
   event: SessionEvent,
   expectedSeq: SessionSeq,
-  events: readonly SessionEvent[],
+  events: EventLogView,
   baseSeq: SessionLogOffset,
 ): SurfaceFoldReplacement | undefined {
   const plan = planSurfaceEvent(state, event, expectedSeq, events, baseSeq)
@@ -427,7 +429,7 @@ export class SurfaceManager implements SessionSurface {
    * @param baseSeq - Absolute sequence of the window's first event.
    */
   constructor(
-    private log: readonly SessionEvent[],
+    private log: EventLogView,
     private readonly baseSeq: SessionLogOffset = SessionLogOffset(0),
   ) {
     this._lastProcessedSeq = baseSeq === 0 ? -1 : SessionSeq(baseSeq - 1)
@@ -465,7 +467,7 @@ export class SurfaceManager implements SessionSurface {
     for (let seq = this._lastProcessedSeq + 1; seq <= tailSeq; seq++) {
       const index = seq - this.baseSeq
       // oxlint-disable-next-line typescript/no-non-null-assertion -- bounded by the loop condition
-      const event = this.log[index]!
+      const event = this.log.at(index)!
       const pending = this._pendingPlan
       if (pending?.event === event && pending.expectedSeq === seq) {
         applySurfacePlan(this._state, pending.plan)

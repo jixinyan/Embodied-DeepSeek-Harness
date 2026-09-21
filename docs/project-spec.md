@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.28 · 2026-09-21
+Version: v1.29 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -53,6 +53,10 @@ Native DSH [context management](implementation/context-management.md) is availab
 by explicit deployment policy, with scoped authoritative state after compaction.
 Optional whole-message visual retention bounds historical image blocks while preserving
 fresh observations and original evidence audits; oversized fresh batches fail explicitly.
+Native [event residency](implementation/session-history.md) publishes and validates older
+Session events before releasing their resident bodies. Deployment defaults retain at
+most 256 events and 8 MiB of encoded event bodies at audit checkpoints. Logical history
+remains readable; active model context and application projections have separate limits.
 [Physical profiles](implementation/physical-profiles.md) bind declared simulator,
 embodiment, policy mappings and role context; installed adapter validation is required.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)

@@ -611,16 +611,11 @@ export class SessionProjectionRegistry extends Service {
     return { state, observedSeq: (events.at(-1)?.seq ?? -1), views: [undefined, undefined] }
   }
 
-  /** Read (or lazily build, folding the full in-memory log) one unit's cell. */
   private cellFor(registration: Registration, session: Session): UnitCell {
     let cell = registration.cells.get(session)
     if (cell === undefined) {
-      cell = this.buildCell(
-        registration.def,
-        session.header,
-        session.inheritedEventCount,
-        session.snapshotEvents(),
-      )
+      cell = this.buildCell(registration.def, session.header, session.inheritedEventCount, [])
+      this.advanceCell(registration.def, cell, session, cursorBefore(session.seq))
       registration.cells.set(session, cell)
     } else {
       this.advanceCell(registration.def, cell, session, cursorBefore(session.seq))
@@ -657,14 +652,8 @@ export class SessionProjectionRegistry extends Service {
       let cell = registration.cells.get(session)
       if (cell !== undefined && cell.observedSeq >= event.seq) continue
       if (cell === undefined) {
-        // Late build mid-stream: fold history before this event (seq = log
-        // index, so the prefix slice is exact), then take the normal gate.
-        cell = this.buildCell(
-          registration.def,
-          session.header,
-          session.inheritedEventCount,
-          session.snapshotEvents(SessionLogOffset(0), SessionLogOffset(event.seq)),
-        )
+        cell = this.buildCell(registration.def, session.header, session.inheritedEventCount, [])
+        this.advanceCell(registration.def, cell, session, event.seq === 0 ? -1 : SessionSeq(event.seq - 1))
         registration.cells.set(session, cell)
       } else {
         this.advanceCell(

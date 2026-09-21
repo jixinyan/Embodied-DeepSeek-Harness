@@ -21,7 +21,7 @@ import {
   type Assignment,
 } from '@edh/communication';
 import type { LoadedTeam } from '@edh/teams';
-import { LocalStore, SessionAudits } from '@edh/storage';
+import { LocalStore, SessionHistory, type SessionHistoryOptions } from '@edh/storage';
 import { AssignmentFiles } from '@edh/files';
 import { TaskPlans } from '@edh/planning';
 import { AssignmentEvidenceGrants, SkillLibrary } from '@edh/memory';
@@ -71,6 +71,7 @@ interface RecoveryObservation {
   error?: string;
 }
 export interface ApplicationOptions {
+  sessionHistory?: SessionHistoryOptions;
   goal: GoalBinding;
   allowedSubgoalChecks?: readonly SuccessCheck[];
   predefinedGoals?: readonly GoalBinding[];
@@ -194,7 +195,7 @@ export class UpperRun {
       this.state.id,
       options.backend.source,
     );
-    const audits = new SessionAudits(options.store);
+    const sessionHistory = new SessionHistory(options.store, options.sessionHistory);
     this.sessions = new TeamSessions(
       options.host,
       team,
@@ -303,7 +304,9 @@ export class UpperRun {
           }
         },
         audit: (id, session) => {
-          audits.appendNative(this.state.id, id, session);
+          const history = sessionHistory.retain(this.state.id, id, session);
+          if (history.releasedEvents)
+            this.event('agent.history-retained', { assignmentId: id, ...history });
         },
       },
       options.model,

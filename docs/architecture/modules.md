@@ -124,6 +124,12 @@ console owns statistics and operation status. Compaction preserves all current k
 and independent evidence/event records; it does not grant record access or set domain
 retention policy. [Maintenance guide](../implementation/storage-maintenance.md).
 
+SessionHistory owns publication and resident event-body budgets; native Session owns
+the logical sequence and verifies archived values before release. TeamSessions supplies
+pre-step, delivery and retirement checkpoints. Deployment policy records the count/byte
+limits, and UpperRun emits release statistics. Active model context and application
+projections remain separate owners. See [native history](../implementation/session-history.md).
+
 LocalImageStore owns streamed image inventory, its mutation revision and exclusive
 request-cache cleanup. The server owns idle admission and exposes an optional
 maintenance controller for custom native image providers. Original objects remain

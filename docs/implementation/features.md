@@ -11,6 +11,7 @@ Snapshot: 2026-09-21. Upper runtime, model transport and standalone policy/actio
 | User-defined teams, independent roles and completion with retained audits/reports                         | [Loader](../../harness/agent-runtime/teams/src/loader.ts), [sessions](../../harness/agent-runtime/communication/src/sessions.ts)                     |
 | Retired assignment grant release, native disposal and final cleanup-event audit | [Lifecycle and native/file checks](assignment-lifetime.md) |
 | Incremental native audit publication with Session identity and validated historical adoption | [Publication API and checks](session-audits.md#native-publication) |
+| Native event-body residency limits with verified durable history and unchanged sequence identities | [Policy and native/file/process checks](session-history.md) |
 | Whole-message visual history budgets with scoped audit and console maintenance events | [Visual policy](context-management.md), [visual tests](../../tests/runtime/visual-history.test.ts) |
 | Custom native tools, explicit context, private files and permission checks                                | [Application](../../apps/server/src/application.ts), [extension acceptance](../../tests/runtime/team-extensions.test.ts)                             |
 | Typed reports, published history, caller acknowledgement and interrupted delivery                         | [Reports](../../harness/agent-runtime/communication/src/reports.ts), [protocol guide](upper-runtime.md)                                              |
@@ -136,7 +137,8 @@ The audit HTTP route and console select one assignment and a bounded page of nat
 events. A fixed published event count supports navigation while later events arrive.
 Assignment indexes are also paged. Real-file, HTTP and constrained-heap process tests
 cover retained values, task scope, legacy arrays and publication boundaries. Domain
-retention and native active-session lifetime remain open. [Audit guide](session-audits.md).
+retention and active model-context lifetime remain open. Native event-body residency is
+handled by the [history policy](session-history.md). [Audit guide](session-audits.md).
 
 ## SKILL source inspection
 

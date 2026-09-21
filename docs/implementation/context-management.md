@@ -150,5 +150,7 @@ not silently skip unknown required events or resume physical commands from histo
 
 Native audit publication uses fixed sequence boundaries and individual event reads.
 Delivery error inspection uses the same native sequence API. Both paths preserve the
-active log and avoid materializing a complete audit array. Native log/surface retention
-and live summary evaluation remain independent requirements.
+logical history and avoid materializing a complete audit array. Native event-body
+[residency](session-history.md) releases older bodies after verified publication.
+Active model-context and application-projection lifetime, plus live summary evaluation,
+remain independent requirements.

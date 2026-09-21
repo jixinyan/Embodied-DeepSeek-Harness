@@ -50,6 +50,13 @@ that count while navigating a growing audit. Legacy arrays remain readable. Comp
 in-process `read` retains its explicit full-history allocation cost. See the
 [audit API and limits](../../../docs/implementation/session-audits.md).
 
+[session-history.ts](src/session-history.ts) publishes native events and verifies the
+durable prefix before releasing older resident bodies. Deployment-defined count and
+encoded-byte budgets retain a recent suffix; archived reads preserve native sequence,
+surface and projection behavior. Keep the store open through native assignment cleanup.
+Current model context, caller snapshots, key indexes and application projections have
+separate costs. See [policy and acceptance](../../../docs/implementation/session-history.md).
+
 See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
 [module responsibilities](../../../docs/architecture/modules.md).

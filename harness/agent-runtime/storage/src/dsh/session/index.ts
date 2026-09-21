@@ -440,6 +440,11 @@ interface SessionEntry {
 /** Store attachment for the append path; module-private to keep Session store-agnostic publicly. */
 const attachments = new WeakMap<Session, SessionEntry>()
 
+export interface SessionEventArchive {
+  readonly sessionId: SessionId
+  read(seq: SessionSeq): SessionEvent | undefined
+}
+
 /**
  * An event-sourced session: an append-only log of {@link SessionEvent}s.
  *
@@ -450,8 +455,57 @@ const attachments = new WeakMap<Session, SessionEntry>()
  */
 export class Session {
   private log: SessionEvent[] = []
+  private logStart = SessionLogOffset(0)
+  private archive: SessionEventArchive | undefined
+  private releasing = false
   /** Single incremental owner of surface acceptance and projection state. */
-  private readonly surfaceManager = new SurfaceManager(this.log)
+  private readonly surfaceManager = new SurfaceManager(this.eventSource())
+
+  private eventSource(): Pick<readonly SessionEvent[], 'length' | 'at'> {
+    const session = this
+    return {
+      get length() { return session.seq },
+      at(index) {
+        const position = index < 0 ? session.seq + index : index
+        return position < 0 ? undefined : session.eventAt(SessionSeq(position))
+      },
+    }
+  }
+
+  get residentStartSeq(): SessionLogOffset {
+    return this.logStart
+  }
+
+  releaseEvents(beforeSeq: SessionLogOffset, archive: SessionEventArchive): void {
+    SessionLogOffset(beforeSeq)
+    if (this.releasing || attachments.get(this)?.appending)
+      throw new Error('Session events cannot be released during event publication or release')
+    if (archive.sessionId !== this.id || (this.archive && this.archive !== archive))
+      throw new Error('Session archive identity cannot change')
+    if (beforeSeq < this.logStart || beforeSeq > this.seq)
+      throw new Error('Invalid session event release boundary')
+    this.releasing = true
+    try {
+      const count = beforeSeq - this.logStart
+      for (let index = 0; index < count; index++) {
+        const original = this.log[index]!
+        if (!deepEqualJson(archive.read(original.seq), original))
+          throw new Error(`Session archive does not preserve event ${original.seq}`)
+      }
+      void this.surfaceManager.nodes
+      this.requestHeader()
+      this.requestContext()
+      this.archive = archive
+      this.log = this.log.slice(count)
+      this.logStart = beforeSeq
+      this.eventsSnapshot = undefined
+      this.derived = []
+      this.derivedNodes = 0
+      this.derivedGeneration = this.surfaceManager.replaceGeneration
+    } finally {
+      this.releasing = false
+    }
+  }
 
   /** The ordered surface over this session's event log. */
   get surface(): SessionSurface {
@@ -616,13 +670,17 @@ export class Session {
    * @returns the accepted event, or undefined when the log does not contain it.
    */
   eventAt(seq: SessionSeq): SessionEvent | undefined {
-    return this.log[seq]
+    if (seq >= this.logStart) return this.log[seq - this.logStart]
+    const event = snapshotJsonValue(this.archive?.read(seq))
+    if (event === undefined) throw new Error(`Session archive is missing event ${seq}`)
+    assertSessionEventEnvelope(event, seq)
+    if (event.seq !== seq) throw new Error(`Session archive returned a different event for ${seq}`)
+    return freezeRestoredObject(event)
   }
 
   /**
    * Materialize an immutable snapshot of a half-open event sequence range.
-   * A full current snapshot is reused until the next append; every previously
-   * returned snapshot remains stable after later appends.
+   * Every previously returned snapshot remains stable after later appends.
    * @param fromSeq - non-negative inclusive sequence number; defaults to the log start.
    * @param toSeqExclusive - non-negative exclusive sequence number; defaults to the current end.
    * @returns a frozen array of the selected deeply frozen events.
@@ -631,11 +689,14 @@ export class Session {
     fromSeq: SessionLogOffset = SessionLogOffset(0),
     toSeqExclusive: SessionLogOffset = this.seq,
   ): readonly SessionEvent[] {
-    if (fromSeq === 0 && toSeqExclusive === this.log.length) {
+    if (!this.archive && fromSeq === 0 && toSeqExclusive === this.seq) {
       this.eventsSnapshot ??= Object.freeze([...this.log])
       return this.eventsSnapshot
     }
-    return Object.freeze(this.log.slice(fromSeq, toSeqExclusive))
+    const events: SessionEvent[] = []
+    for (let seq = fromSeq; seq < Math.min(toSeqExclusive, this.seq); seq++)
+      events.push(this.eventAt(SessionSeq(seq))!)
+    return Object.freeze(events)
   }
 
   /**
@@ -655,15 +716,13 @@ export class Session {
     return seq >= this.inheritedEventCount && seq < this.seq
   }
 
-  /** The next event's sequence number — always the log length (the `seq = log.length` contiguity contract). */
   get seq(): SessionLogOffset {
-    return SessionLogOffset(this.log.length)
+    return SessionLogOffset(this.logStart + this.log.length)
   }
 
   /**
    * Append one typed event to the log and synchronously notify observers via
-   * the store-owned, module-private publication hooks. The hot path never blocks
-   * on I/O — persistence plugins buffer asynchronously. Once the event enters
+   * the store-owned, module-private publication hooks. Once the event enters
    * the log, the append is committed: observer failures are logged and
    * contained per listener, so they do not change the return value or prevent
    * later listeners from observing the same accepted event.
@@ -701,6 +760,7 @@ export class Session {
     data: SessionEventMap[T],
     ...opts: T extends SurfaceEventType ? [opts: SurfaceIntent<T>] : []
   ): SessionEvent<T> {
+    if (this.releasing) throw new Error('Session append cannot reenter event release')
     const surfaceOpts: SurfaceIntent | undefined = opts[0]
     const surfaceMetadata = {
       ...surfaceOpts?.sourceEventSeqs === undefined ? {} : { sourceEventSeqs: surfaceOpts.sourceEventSeqs },
@@ -720,7 +780,7 @@ export class Session {
     }
     const event = deepFreeze({
       type,
-      seq: SessionSeq(this.log.length),
+      seq: SessionSeq(this.seq),
       time: Date.now(),
       data: dataSnapshot,
       ...(surfaceMetadataSnapshot as { surfaceOp?: unknown; sourceEventSeqs?: unknown }),
@@ -762,13 +822,14 @@ export class Session {
    * @returns the folded header, or undefined when no header event exists yet.
    */
   requestHeader(): EpochHeader | undefined {
-    if (this.headerFoldSeq < this.log.length) {
+    if (this.headerFoldSeq < this.seq) {
       // Frozen on update: the fold is session state exposed by reference — a
       // consumer mutating it in place (instead of building a replacement)
       // would desync every later comparison against the log, so mutation
       // throws instead.
-      this.headerFold = deepFreeze(foldRequestHeader(this.log.slice(this.headerFoldSeq), this.headerFold))
-      this.headerFoldSeq = this.log.length
+      for (let seq = this.headerFoldSeq; seq < this.seq; seq++)
+        this.headerFold = deepFreeze(foldRequestHeader([this.eventAt(SessionSeq(seq))!], this.headerFold))
+      this.headerFoldSeq = this.seq
     }
     return this.headerFold
   }
@@ -783,11 +844,12 @@ export class Session {
    * @returns the latest immutable route metadata.
    */
   requestContext(): RequestContext | undefined {
-    if (this.contextFoldSeq < this.log.length) {
-      for (const event of this.log.slice(this.contextFoldSeq)) {
+    if (this.contextFoldSeq < this.seq) {
+      for (let seq = this.contextFoldSeq; seq < this.seq; seq++) {
+        const event = this.eventAt(SessionSeq(seq))!
         if (event.type === 'request/context') this.contextFold = deepFreeze({ ...event.data })
       }
-      this.contextFoldSeq = this.log.length
+      this.contextFoldSeq = this.seq
     }
     return this.contextFold
   }
@@ -827,10 +889,8 @@ export class Session {
       this.derivedGeneration = generation
     }
     for (const seq of nodes.slice(this.derivedNodes)) {
-      // Surface sequences are built from this.log — seq is always a valid
-      // index by construction. The non-null assertion expresses that invariant.
       // oxlint-disable-next-line typescript/no-non-null-assertion
-      const msg = this.deriveEventMessage(this.log[seq]!)
+      const msg = this.deriveEventMessage(this.eventAt(seq)!)
       // A surface node is one of the five message-producing types, but an
       // empty-content assistant/message (a max-tokens step that hosts only
       // usage) derives to null and must not enter the transcript.
@@ -1191,7 +1251,7 @@ export class SessionStore extends Service {
   }
 
   private _forkSeed(session: Session, requestedBoundary: SessionSeq | undefined): readonly SessionEvent[] {
-    const lastEvent = session.snapshotEvents().at(-1)
+    const lastEvent = session.seq === 0 ? undefined : session.eventAt(SessionSeq(session.seq - 1))
     let boundary: SessionSeq
     if (requestedBoundary !== undefined) {
       boundary = requestedBoundary

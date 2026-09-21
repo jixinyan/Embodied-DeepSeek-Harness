@@ -33,6 +33,7 @@ The executable contract is
 | `models`, `defaultModel` | Named aliases such as `brain: { provider: 'fixture', model: 'fixture' }`; roles select an alias |
 | `physicalProfile`, `physicalProviders` | Immutable stack configuration and installed adapter validators; see [physical profiles](physical-profiles.md) |
 | `contextManagement` | Optional native DSH compaction/measurement policy; automatic mode requires adapter-declared model capacity; see [context management](context-management.md) |
+| `sessionHistory` | Native event-body residency policy; defaults to 256 events and 8 MiB at audit checkpoints; see [history management](session-history.md) |
 | `adapters` | Original DSH `LlmAdapter` bindings, registered by provider name; keep credentials inside trusted adapter setup |
 | `tasks` | Task IDs mapped to public labels/instructions, immutable final goals, optional allowed subgoal checks/predefined goals, and backend factories |
 | `additionalTools` | Logical tool IDs mapped to native DSH tool factories; roles opt in through their tool lists |

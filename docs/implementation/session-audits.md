@@ -104,11 +104,12 @@ immutable event records retain their versions. Readers must support v2 for works
 containing native audit indexes written by this version.
 
 `SessionHooks.audit` receives `(assignmentId, session)` synchronously. Application
-hooks call `appendNative` directly. TeamSessions records native sequence boundaries
+hooks publish through SessionHistory before releasing older resident bodies. TeamSessions records native sequence boundaries
 around delivery and reads that range for turn errors. Audit publication and delivery
 inspection do not request a full event-array snapshot or clone the native log.
 
-The native Session remains the owner of its active log, surface and derived context.
+The native Session remains the owner of its logical log, surface and derived context.
+Its [residency policy](session-history.md) validates durable event values before release.
 This publication path holds individual event bodies and fixed counters; legacy inline
 adoption also loads its existing single journal record. Native history, stored key
 indexes, assignment projections and explicitly requested full-history reads retain
@@ -132,8 +133,9 @@ prefix validation on adoption, partial-publication reconciliation, malformed ind
 record-limit failure and reopening after compaction. Assignment lifecycle acceptance
 also runs a native delivery with an unavailable adapter and checks that its actual
 error events are published before the caller receives the failure. Successful live
-model delivery and bounded active-log memory remain separate acceptance requirements.
+model delivery remains a separate acceptance requirement. Native event residency has
+eleven additional file/process checks described in the [history guide](session-history.md).
 
 Disk retention, original-media reference accounting, distinct-key index growth and
-native active-session event lifetime still require domain-specific lifecycle work.
+active-context and application-projection lifetime still require domain-specific lifecycle work.
 Audit paging does not delete history or establish live model/provider acceptance.

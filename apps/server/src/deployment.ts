@@ -14,6 +14,11 @@ import type { ApplicationOptions } from './application.js';
 import { CORE_TOOLS } from './application.js';
 import type { ModelBinding } from './runtime.js';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
+import {
+  defaultSessionHistory,
+  sessionHistoryOptions,
+  type SessionHistoryOptions,
+} from '@edh/storage';
 
 export interface DeploymentServices {
   readonly images: AttachmentStore;
@@ -76,6 +81,7 @@ export interface ServerDeployment {
   readonly additionalTools?: ApplicationOptions['additionalTools'];
   readonly providers?: readonly string[];
   readonly contextManagement?: ContextManagementOptions;
+  readonly sessionHistory?: SessionHistoryOptions;
   /** Optional version-pinned simulation/embodiment/policy stack. */
   readonly physicalProfile?: PhysicalRuntimeProfile;
   readonly physicalProviders?: PhysicalProfileValidators;
@@ -203,12 +209,16 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     input.contextManagement === undefined
       ? undefined
       : contextManagementOptions(input.contextManagement);
+  const sessionHistory = Object.freeze(
+    sessionHistoryOptions(input.sessionHistory ?? defaultSessionHistory),
+  );
   const metadata = freeze({
     id: input.id,
     version: input.version,
     source: input.source,
     description: input.description,
     defaultModel: input.defaultModel,
+    sessionHistory,
     ...(contextManagement === undefined ? {} : { contextManagement }),
     ...(physicalProfile === undefined ? {} : { physicalProfile }),
     models,
@@ -223,6 +233,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     launchProfiles: Object.freeze(launchProfiles),
     adapters,
     additionalTools,
+    sessionHistory,
     ...(contextManagement === undefined ? {} : { contextManagement }),
     ...(physicalProfile === undefined ? {} : { physicalProfile }),
     teamFile: input.teamFile,

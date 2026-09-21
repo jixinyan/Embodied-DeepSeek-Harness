@@ -254,6 +254,7 @@ async function startApplication(
         ]),
       ),
       ...(deployment.contextManagement ? { contextManagement: deployment.contextManagement } : {}),
+      sessionHistory: deployment.sessionHistory,
       ...(deployment.metadata.physicalProfile
         ? { physicalProfile: deployment.metadata.physicalProfile }
         : {}),
@@ -579,6 +580,7 @@ async function startApplication(
                   allowedSubgoalChecks: submission.allowedSubgoalChecks,
                   predefinedGoals: submission.predefinedGoals,
                   additionalTools: deployment.additionalTools,
+                  sessionHistory: deployment.sessionHistory,
                   backend,
                   instruction: submission.instruction,
                   taskContext: submission.context,
@@ -690,6 +692,7 @@ async function startApplication(
                 allowedSubgoalChecks: task.allowedSubgoalChecks ?? [],
                 predefinedGoals: task.predefinedGoals ?? [],
                 additionalTools: deployment.additionalTools,
+                sessionHistory: deployment.sessionHistory,
                 backend,
                 instruction: task.instruction,
                 scenario: data.scenario as string,

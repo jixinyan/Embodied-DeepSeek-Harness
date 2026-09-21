@@ -10,6 +10,13 @@ export interface AssetStore {
 }
 
 export { LocalStore, type StoreStatistics, type StoreCompaction } from './local-store.js';
+export {
+  SessionHistory,
+  defaultSessionHistory,
+  sessionHistoryOptions,
+  type SessionHistoryOptions,
+  type SessionHistoryStatus,
+} from './session-history.js';
 
 export {
   SessionAudits,

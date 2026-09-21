@@ -8,7 +8,7 @@ import { createUserMessage } from '@deepseek-ai/dsh-llm';
 import { ContractValidator, type InvocationBrief } from '@edh/contracts';
 import { TeamSessions, type Assignment } from '@edh/communication';
 import { AssignmentEvidenceGrants } from '@edh/memory';
-import { LocalStore, SessionAudits } from '@edh/storage';
+import { LocalStore, SessionAudits, SessionHistory } from '@edh/storage';
 import { FileTeamLoader } from '@edh/teams';
 import { CORE_TOOLS } from '@edh/tools';
 import { createDshHost } from '../../apps/server/src/runtime.js';
@@ -32,6 +32,7 @@ async function openTeam() {
   const host = await createDshHost([]);
   const grants = new AssignmentEvidenceGrants();
   const audits = new SessionAudits(store);
+  const history = new SessionHistory(store, { maxResidentEvents: 2, maxResidentBytes: 1024 });
   const runId = randomUUID();
   const sessions = new TeamSessions(
     host,
@@ -48,7 +49,7 @@ async function openTeam() {
         store.put(`lifecycle:${randomUUID()}`, { type, detail }, 0);
       },
       audit(id, session) {
-        audits.appendNative(runId, id, session);
+        history.retain(runId, id, session);
       },
     },
     () => ({ provider: 'openai-compatible', model: 'deployment-model' }),
@@ -233,12 +234,23 @@ test('native delivery publishes its error events when the selected model adapter
   const t = await openTeam();
   try {
     const assignment = await t.sessions.create('lead', t.brief());
+    const session = t.host.sessions.get(SessionId(assignment.sessionId))!;
+    for (let index = 0; index < 12; index++)
+      session.append(
+        'user/message',
+        createUserMessage({
+          source: { kind: 'plugin', plugin: 'documentation', form: 'relay' },
+          content: [{ type: 'text', text: await readFile('README.md', 'utf8') }],
+        }),
+        { surfaceOp: 'append' },
+      );
     await assert.rejects(
       t.sessions.deliver(assignment.id, { instruction: 'Review the document.' }, 'user'),
       /no adapter registered/,
     );
-    const session = t.host.sessions.get(SessionId(assignment.sessionId))!;
     const events = session.snapshotEvents();
+    assert(session.residentStartSeq > 0);
+    assert(session.seq - session.residentStartSeq <= 2);
     assert(events.some((event) => event.type === 'turn/end' && event.data.reason.kind === 'error'));
     assert.deepEqual(t.audits.read(t.runId)[0]!.value, events);
     assert.deepEqual(t.store.get(`session-audit:${t.runId}:${assignment.id}`)?.value, {

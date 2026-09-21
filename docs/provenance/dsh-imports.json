@@ -472,8 +472,8 @@
       "source": "packages/core/session/src/index.ts",
       "destination": "harness/agent-runtime/storage/src/dsh/session/index.ts",
       "source_sha256": "7244f6180d85306a58e16a6bf1cfe1b7a655a4968afb570198c4a1f08b1f4c7a",
-      "local_sha256": "7244f6180d85306a58e16a6bf1cfe1b7a655a4968afb570198c4a1f08b1f4c7a",
-      "modifications": []
+      "local_sha256": "036fa0ffcbd2cd2af8574dd30cda2f38e1c5d1ef32618692f87b6c9136a96949",
+      "modifications": ["Add verified resident-prefix release with an identity-bound synchronous archive reader; preserve absolute sequence, surface, request metadata and immutable reads, and avoid caching full archived snapshots."]
     },
     {
       "source": "packages/core/session/src/known-event-types.ts",
@@ -514,8 +514,8 @@
       "source": "packages/core/session/src/surface.ts",
       "destination": "harness/agent-runtime/storage/src/dsh/session/surface.ts",
       "source_sha256": "aa75a34df001b33d3b1e4dd5c24a0391d00bc457e0a83f25757d3358b12b684f",
-      "local_sha256": "aa75a34df001b33d3b1e4dd5c24a0391d00bc457e0a83f25757d3358b12b684f",
-      "modifications": []
+      "local_sha256": "56440130b1ed1e1371ef320145d37fb1729f25ab09c1bc33de640ca581ddd0d2",
+      "modifications": ["Accept an array-compatible event reader so canonical surface folding and tool-result replacement validation can resolve archived original events."]
     },
     {
       "source": "packages/core/session/src/types.ts",
@@ -742,8 +742,8 @@
       "source": "packages/session/session-projection/src/index.ts",
       "destination": "harness/agent-runtime/storage/src/dsh/projection/index.ts",
       "source_sha256": "84859250fee641df58b386446dfeffef6dac11a40f7785fdf700e54d8df2572a",
-      "local_sha256": "84859250fee641df58b386446dfeffef6dac11a40f7785fdf700e54d8df2572a",
-      "modifications": []
+      "local_sha256": "6986dea3b8a4c059565cc6cb344fbf1f335c86e0062cb8b2a21cf96d48dfa749",
+      "modifications": ["Initialize late projection cells through the original incremental advance path instead of allocating a full historical event-array snapshot."]
     },
     {
       "source": "packages/session/session-projection/src/types.ts",

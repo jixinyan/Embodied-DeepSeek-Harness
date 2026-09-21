@@ -32,3 +32,9 @@ revision. Filename sanitization preserves printable names; cached request-image 
 fully decode and propagate invalid-cache errors. Both patches retain source and local
 hashes. EDH's LocalImageStore mounts the native attachment service with explicit storage,
 resource limits and disposal. See the [image provider guide](../implementation/image-storage.md).
+
+Native event residency patches Session, SurfaceManager and SessionProjectionRegistry.
+Session releases verified published bodies through an identity-bound archive reader;
+surface and projection folds retain absolute sequences and read individual archived
+events. The model loop, tool dispatcher and fold rules remain native. All three patches
+record original and local hashes. See [semantics and checks](../implementation/session-history.md).

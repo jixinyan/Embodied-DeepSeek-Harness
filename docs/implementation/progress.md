@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.28. Current checkpoint: **active-task user clarification with native DSH followup**.
+Spec: v1.29. Current checkpoint: **durable native Session event residency**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -17,14 +17,19 @@ remains required. [Interaction guide](user-clarification.md).
 Native audit publication and delivery-error inspection read the original DSH event
 sequence directly. Published audits bind their native Session identity, and adopting
 older unbound histories validates every published event. Audit export holds individual
-event bodies; active native log/surface retention remains open.
+event bodies. Native Session history now releases older resident event bodies after
+verified publication, retaining absolute event identities and archived reads. Default
+checkpoint limits are 256 events and 8 MiB of encoded bodies. Eleven native/file/process
+checks cover this path, including an active Session storing over 100 MiB under a 64 MiB
+V8 old-space limit. Active model surface and application projections have separate costs.
+[Residency policy and acceptance](session-history.md).
 [Publication semantics](session-audits.md#native-publication).
 
 Native role retirement removes Agent/Session registry entries, includes scoped-cleanup
 events in the final audit, and releases assignment evidence permissions. Creation
 publication failures also dispose acquired handles. Late grant extensions fail, and
 cleanup errors remain observable at shutdown. Eight native/file lifecycle checks
-exercise this behavior without a model or physical backend. Active-session and retained
+exercise this behavior without a model or physical backend. Active-context and retained
 application-history limits remain open. [Lifecycle guide](assignment-lifetime.md).
 
 Configured image retention connects original-image reference inspection and collection to
@@ -86,8 +91,9 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: nine clarification checks, sixteen native audit checks, eight
-assignment-lifecycle checks and 23 console tests pass (56 total). Prior checkpoints passed eight retention/admission checks,
+Current focused checks: eleven native history checks, nine clarification checks,
+sixteen native audit checks, eight assignment-lifecycle checks and 23 console tests pass
+(67 total). Prior checkpoints passed eight retention/admission checks,
 nine original-image collection checks, 23 image/lifetime/HTTP checks, 16 storage/admission
 checks, nine SKILL provenance checks, eight evidence-storage checks and 16 history tests.
 Browser component DOM checks cover audit
