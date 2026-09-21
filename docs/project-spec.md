@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.27 · 2026-09-21
+Version: v1.28 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -36,8 +36,10 @@ tools and backend factories; see the [deployment guide](implementation/deploymen
 This provides configuration assembly, not a connected physical provider.
 OpenAI-compatible VLM transport now reuses native DSH serialization and streaming.
 WebSocket policy transport and a deterministic action gate run independently with CPU
-acceptance. Current work prioritizes upper-runtime retention and lifecycle, task
-clarification, criteria discovery, live VLM acceptance and console bootstrap. Physical
+acceptance. Current work prioritizes upper-runtime retention and lifecycle,
+criteria discovery, live VLM acceptance and console bootstrap. Active-task clarification
+has native/file/HTTP and console component acceptance; live task continuation remains
+required. Physical
 integration requires the host-to-Python worker bridge, resource/watchdog lifecycle
 and device event publication. See the
 [adapter guide and SVG](implementation/model-policy-adapters.md) for exact contracts,
@@ -84,7 +86,13 @@ identity are checked before allocation. A saved submission records the criteria 
 context snapshot. The entry Planner receives this context through its InvocationBrief;
 delegated agents retain independent caller-provided briefs. Browser drafts survive
 status refreshes, and unconfirmed submissions retain their request identity for retry.
-Provider-backed discovery of new criteria and active-task user clarification remain open.
+Active-task clarification uses Planner `user.ask`, durable question/answer records,
+native DSH turn conclusion and followup delivery, plus a console response panel.
+Answer acceptance retains current criteria and execution permissions; resumed execution
+requires an explicit Planner decision. Restart interrupts unfinished interactions.
+See [clarification behavior and acceptance](implementation/user-clarification.md).
+Provider-backed discovery of new criteria and live clarification/pause/resume acceptance
+remain open.
 
 ### 0.2 Repository and workspace
 

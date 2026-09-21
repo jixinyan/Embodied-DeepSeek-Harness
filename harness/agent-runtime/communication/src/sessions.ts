@@ -256,6 +256,12 @@ export class TeamSessions {
   acceptsMessages(id: string): boolean {
     return this.isLive(id) && !this.completions.has(id);
   }
+  whenIdle(id: string): Promise<void> {
+    const entry = this.live.get(id);
+    if (!entry || !this.acceptsMessages(id))
+      return Promise.reject(new Error('Assignment is no longer accepting work.'));
+    return entry.handle.agent.whenIdle();
+  }
   /** Close new work, then let the current native turn retain its receipt and final output. */
   finish(id: string, reason: string): Promise<void> {
     const existing = this.completions.get(id) ?? this.retirements.get(id);

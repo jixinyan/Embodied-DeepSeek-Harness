@@ -1,10 +1,18 @@
 # Implementation progress
 
-Spec: v1.27. Current checkpoint: **incremental native audit publication with Session identity**.
+Spec: v1.28. Current checkpoint: **active-task user clarification with native DSH followup**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Planner `user.ask` persists a scoped question and concludes its native DSH turn.
+Accepted answers are immutable, retain retry identity, and return to the same Planner
+through native followup after the asking turn becomes idle. Execution must be absent
+or confirmed stopped before asking; continued motion requires an explicit Planner
+decision. The console preserves drafts and shows response/delivery status. Native/file,
+HTTP and browser component acceptance is available; live-model/provider continuation
+remains required. [Interaction guide](user-clarification.md).
 
 Native audit publication and delivery-error inspection read the original DSH event
 sequence directly. Published audits bind their native Session identity, and adopting
@@ -78,8 +86,8 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: sixteen native audit checks, eight assignment-lifecycle checks
-and 22 console tests pass. Prior checkpoints passed eight retention/admission checks,
+Current focused checks: nine clarification checks, sixteen native audit checks, eight
+assignment-lifecycle checks and 23 console tests pass (56 total). Prior checkpoints passed eight retention/admission checks,
 nine original-image collection checks, 23 image/lifetime/HTTP checks, 16 storage/admission
 checks, nine SKILL provenance checks, eight evidence-storage checks and 16 history tests.
 Browser component DOM checks cover audit
@@ -1190,3 +1198,37 @@ archival remain required. Continue those alongside active-task clarification,
 provider-backed criteria discovery, live VLM acceptance and CLI-free bootstrap.
 Physical worker/provider integration retains its separate scope. The upper-runtime
 objective remains incomplete. [Audit publication guide](session-audits.md#native-publication).
+
+## Active-task user clarification (2026-09-21)
+
+UserClarifications records the requesting assignment, native call, goal and attempt,
+permits one unanswered question per run, and stores immutable accepted response IDs.
+Exact retries return the existing receipt. Question and delivery states distinguish
+pending, cancellation, native quiescence, failure and restart interruption. The HTTP
+reader resolves durable question state for both current and historical projections.
+
+UpperRun exposes user.ask only through configured native tools and requires the decision
+owner and a matching confirmed stopped execution. Native concludeTurn closes the asking
+turn. Domain changes remain blocked until the answer is accepted and the original turn
+drains. Native followup returns the answer to the requesting Planner. The built-in Planner
+can request execution.pause; continuation retains all existing criteria and resume checks.
+
+The console question panel provides suggestions, free text, persistent drafts and stable
+retry identity. JSON transport is shared by console components. Response requests permit
+96 KiB before field validation to support escaped/multibyte text; other routes retain
+their existing default. Late/stale display updates preserve accepted response state.
+
+Validation: nine native/file clarification checks and one actual HTTP check pass.
+Together with assignment lifecycle, native audits and console regression checks, 56
+checks pass. Strict TypeScript, formatting, 128 pinned source files, 25 module bindings
+and 433 local documentation links pass verification.
+Browser component DOM checks cover suggestion selection, literal content, refresh,
+read-only input, actual journal write exclusion, preserved retry identity, accepted
+response storage and stale pending updates. The component has no connected model or
+device; delivery remains queued. A live VLM/provider clarification and pause/resume
+scenario remains required. No scripted model/backend acceptance was run.
+
+Continue active native log/surface retention, retained assignment projections,
+domain-record archival preserving SKILL provenance, provider-backed criteria discovery,
+live VLM acceptance and CLI-free bootstrap. Physical worker/provider integration remains
+separate. The upper-runtime objective remains incomplete.

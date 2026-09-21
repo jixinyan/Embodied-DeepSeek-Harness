@@ -1,5 +1,5 @@
 import { AssignmentReports } from '@edh/communication';
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { createServer, type ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -12,9 +12,15 @@ import { validateLaunchSelection } from '../../console/public/launch-selection.j
 import { consoleContentSecurityPolicy, readConsoleAsset } from './console-assets.js';
 import { admitSessionTask } from './task-admission.js';
 import { RunEventStream } from './run-event-stream.js';
-import { HttpError, assertLocalRequest } from './local-http.js';
+import { HttpError, assertLocalRequest, readJsonBody as body } from './local-http.js';
 import { serveEvidenceImage } from './evidence-images.js';
 import { readSessionAudit } from './session-audit-view.js';
+import {
+  ClarificationConflict,
+  interruptClarifications,
+  readClarification,
+  replayClarificationResponse,
+} from './clarifications.js';
 import { readWorkspaceSkills } from './skill-provenance.js';
 import { ImageRetention, type ImageRetentionPolicy } from './image-retention.js';
 import {
@@ -79,25 +85,6 @@ export async function startDemoServer(options: DemoServerOptions) {
       launchProfiles: createDemoLaunchProfiles(validator, options.tickMs),
     },
   });
-}
-async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
-  if (!req.headers['content-type']?.startsWith('application/json'))
-    throw new HttpError(415, 'Expected application/json.');
-  const chunks: Buffer[] = [];
-  let size = 0;
-  for await (const chunk of req) {
-    const buffer = Buffer.from(chunk);
-    size += buffer.length;
-    if (size > 16384) throw new HttpError(413, 'Request exceeds 16 KiB.');
-    chunks.push(buffer);
-  }
-  try {
-    const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-    if (!data || Array.isArray(data) || typeof data !== 'object') throw new Error();
-    return data as Record<string, unknown>;
-  } catch {
-    throw new HttpError(400, 'Expected a JSON object.');
-  }
 }
 function json(res: ServerResponse, status: number, value: unknown): void {
   res.writeHead(status, {
@@ -231,6 +218,7 @@ async function startApplication(
     const userSessions = new UserSessions(store);
     const reports = new AssignmentReports(store, validator);
     reports.reconcileInterruptedDeliveries();
+    interruptClarifications(store);
     const skills = new SkillLibrary(store, validator);
     skills.exportAll();
     const history = new RunHistory(store);
@@ -324,6 +312,10 @@ async function startApplication(
     };
     const runView = (id: string, eventSelection: 'all' | 'none' | number = 'all') => {
       const state = runRecord(id);
+      const clarification = state.clarification
+        ? readClarification(store, id, state.clarification.id)
+        : null;
+      if (clarification === undefined) throw new Error('Run clarification record is missing.');
       const recovery = state.recoveryId ? new RecoveryHistory(store).read(state.recoveryId) : null;
       const eventCount = history.total(state);
       const events =
@@ -335,6 +327,7 @@ async function startApplication(
                 .events;
       return {
         ...state,
+        clarification,
         events,
         eventCount,
         recoveryStatus: recovery
@@ -724,6 +717,26 @@ async function startApplication(
             completeAdmission();
           }
         }
+        const clarificationRoute =
+          /^\/api\/runs\/([A-Za-z0-9-]+)\/clarifications\/([a-f0-9]{64})$/.exec(url.pathname);
+        if (clarificationRoute) {
+          const runId = clarificationRoute[1]!;
+          const questionId = clarificationRoute[2]!;
+          runRecord(runId);
+          const question = readClarification(store, runId, questionId);
+          if (!question) throw new HttpError(404, 'Question not found.');
+          if (method === 'GET') return json(res, 200, { clarification: question });
+          if (method === 'POST') {
+            const input = await body(req, 96 * 1024);
+            const currentQuestion = readClarification(store, runId, questionId);
+            if (!currentQuestion) throw new HttpError(404, 'Question not found.');
+            const replay = replayClarificationResponse(currentQuestion, input);
+            if (replay) return json(res, 202, { record: replay, replay: true });
+            if (active?.state.id !== runId || terminal(active.state.state))
+              throw new HttpError(409, 'The task is no longer accepting responses.');
+            return json(res, 202, active.answerClarification(questionId, input));
+          }
+        }
         const match =
           /^\/api\/runs\/([A-Za-z0-9-]+)(?:\/(events|history|pause|resume|stop|audit|recovery))?$/.exec(
             url.pathname,
@@ -820,7 +833,7 @@ async function startApplication(
             res,
             error instanceof HttpError
               ? error.status
-              : error instanceof SessionConflict
+              : error instanceof SessionConflict || error instanceof ClarificationConflict
                 ? 409
                 : 400,
             {

@@ -129,6 +129,7 @@ test('native assignment retirement releases registries and grants while retainin
   try {
     const brief = t.brief(['readme']);
     const assignment = await t.sessions.create('lead', brief);
+    await t.sessions.whenIdle(assignment.id);
     const sessionId = SessionId(assignment.sessionId);
     const session = t.host.sessions.get(sessionId)!;
     assert(t.host.agents.get(sessionId));
@@ -154,6 +155,7 @@ test('native assignment retirement releases registries and grants while retainin
     assert.deepEqual(t.sessions.get(assignment.id), assignment);
     await assert.rejects(t.sessions.create('lead', brief), /already exists/);
     await assert.rejects(t.sessions.deliver(assignment.id, {}, 'user'), /retired/);
+    await assert.rejects(t.sessions.whenIdle(assignment.id), /no longer accepting/);
     assert.deepEqual(t.audits.read(t.runId)[0]!.value, events);
     t.store.close();
     const reopened = new LocalStore(t.directory);

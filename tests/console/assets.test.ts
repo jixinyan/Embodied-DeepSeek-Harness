@@ -12,10 +12,12 @@ test('console assets and the installed Mermaid module load with correct MIME typ
   for (const [path, type] of [
     ['/', 'text/html'],
     ['/app.js', 'text/javascript'],
+    ['/api.js', 'text/javascript'],
     ['/launch-selection.js', 'text/javascript'],
     ['/launch-controls.js', 'text/javascript'],
     ['/coordination.js', 'text/javascript'],
     ['/task-composer.js', 'text/javascript'],
+    ['/clarification.js', 'text/javascript'],
     ['/task-request.js', 'text/javascript'],
     ['/run-update.js', 'text/javascript'],
     ['/sensor-images.js', 'text/javascript'],

@@ -395,3 +395,35 @@ select {
     height: auto;
   }
 }
+
+.clarification-panel {
+  margin: 12px 24px;
+  padding: 18px;
+  border: 1px solid #98bafb;
+  border-radius: 14px;
+  background: #f3f8ff;
+}
+.clarification-panel[hidden] {
+  display: none;
+}
+.clarification-panel h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+.clarification-panel textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 8px 0 12px;
+  padding: 10px;
+  resize: vertical;
+  font: inherit;
+  border: 1px solid #b3c9ec;
+  border-radius: 8px;
+}
+.clarification-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}

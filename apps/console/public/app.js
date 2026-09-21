@@ -7,6 +7,8 @@ import {
 import { renderLaunchControls } from './launch-controls.js';
 import { renderCoordination } from './coordination.js';
 import { renderTaskComposer } from './task-composer.js';
+import { bindClarification } from './clarification.js';
+import { api } from './api.js';
 import { taskRequest, completeTaskRequest } from './task-request.js';
 import { renderSensorImages } from './sensor-images.js';
 import { bindStorageMaintenance } from './storage-maintenance.js';
@@ -44,21 +46,6 @@ const shorten = (id) => (id ? id.slice(0, 8) : '—');
 function error(message) {
   $('error').hidden = !message;
   text('error', message || '');
-}
-async function api(path, data) {
-  const response = await fetch(
-    path,
-    data === undefined
-      ? {}
-      : {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        },
-  );
-  const result = await response.json();
-  if (!response.ok) throw new Error(result.error || `Request failed: ${response.status}`);
-  return result;
 }
 function inspect(title, value) {
   auditBrowser.close();
@@ -217,7 +204,8 @@ function updateControls() {
   const writable = current && !current.readOnly && !ended(current.state) && !busy;
   const execution = current?.executions.at(-1);
   $('pause').disabled = !writable || execution?.state !== 'running';
-  $('resume').disabled = !writable || execution?.state !== 'paused';
+  $('resume').disabled =
+    !writable || execution?.state !== 'paused' || current?.clarification?.state === 'pending';
   $('stop').disabled = !writable;
 }
 function updateTaskComposer() {
@@ -692,6 +680,7 @@ function renderFeed() {
 }
 function render() {
   if (!current) return;
+  renderClarification(current);
   text('run-state', `${current.state}${current.readOnly ? ' · read-only' : ''}`);
   text('run-id', `RUN ${shorten(current.id)}`);
   $('run-id').title = current.id;
@@ -964,6 +953,7 @@ $('workspace-skills').onclick = () =>
     );
   });
 bindStorageMaintenance($('storage-maintenance'), api, action);
+const renderClarification = bindClarification($('user-clarification'), api, action);
 for (const command of ['pause', 'resume', 'stop'])
   $(command).onclick = () =>
     action(async () => {

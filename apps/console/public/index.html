@@ -229,6 +229,28 @@
           ><button id="stop" class="button small danger" disabled>Stop</button>
         </div>
       </div>
+      <section
+        id="user-clarification"
+        class="clarification-panel"
+        aria-labelledby="clarification-title"
+        hidden
+      >
+        <h2 id="clarification-title">Planner needs your input</h2>
+        <p data-clarification="question"></p>
+        <p data-clarification="reason" class="section-note"></p>
+        <div
+          data-clarification="options"
+          class="clarification-options"
+          role="group"
+          aria-label="Suggested responses"
+        ></div>
+        <label for="clarification-response">Your response</label>
+        <textarea id="clarification-response" rows="3" maxlength="12000"></textarea>
+        <button data-clarification="submit" class="button primary" type="button">
+          Send response
+        </button>
+        <p data-clarification="status" class="section-note" role="status"></p>
+      </section>
       <div class="workbench">
         <aside class="planning-panel" aria-label="Plan and agent checklists">
           <section class="tasks-section">

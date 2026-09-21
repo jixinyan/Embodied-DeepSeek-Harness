@@ -69,8 +69,13 @@ with immutable registered criteria, persisted input snapshots and complete reque
 See [admission](../../apps/server/src/task-admission.ts) and
 [journal/input checks](../../tests/runtime/task-admission.test.ts).
 
+Active-task clarification includes durable questions/answers, native DSH turn conclusion
+and followup delivery, task/assignment admission and an inline response panel. Native/file,
+HTTP and browser component checks pass; live-model continuation with a real provider
+remains unverified. [Interaction guide](user-clarification.md).
+
 Still pending: actual simulator/hardware allocation, discovery of new task criteria,
-active-task clarification and CLI-free server bootstrap.
+live end-to-end clarification acceptance and CLI-free server bootstrap.
 [Legacy design migration audit](legacy-migration.md) lists retained and missing designs.
 
 ## On-demand experience context

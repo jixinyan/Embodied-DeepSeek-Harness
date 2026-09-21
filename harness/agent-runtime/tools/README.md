@@ -19,3 +19,8 @@ Upper tool definitions use the original DSH validator explicitly before domain
 effects. Raw ToolDefinition does not acquire argument validation merely by declaring
 parameters; defineTool wraps this automatically. Role result schemas use the same
 native supported subset. EDH separately enforces input-size and version limits.
+
+`user.ask` lets the decision owner request missing user information at a confirmed
+stopped execution boundary. It stores a question and signals native turn conclusion;
+the accepted answer returns through DSH followup to the same assignment. See the
+[interaction protocol and acceptance](../../../docs/implementation/user-clarification.md).

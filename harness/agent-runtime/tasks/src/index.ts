@@ -13,7 +13,7 @@ export interface TaskCoordinator {
   recovery(recoveryId: string): Promise<RecoveryRecord>;
 }
 
-export type { RunState, RunEvent, RunAssignment } from './run-state.js';
+export type { RunState, RunEvent, RunAssignment, UserClarification } from './run-state.js';
 
 export { TaskGoals, type GoalBinding } from './goals.js';
 

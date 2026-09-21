@@ -93,6 +93,12 @@ scope per task. `UpperRun` and the native DSH services continue to own task exec
 and independent role contexts. Workspace SKILL storage outlives all three scopes.
 See the [session guide and SVG](../implementation/user-sessions.md).
 
+`apps/server/src/clarifications.ts` owns durable user questions and accepted responses.
+UpperRun supplies assignment/goal/execution admission and delivers the answer through
+native TeamSessions after the asking turn settles. The console owns drafts, explicit
+submission and delivery-state presentation. Existing task criteria and device permissions
+remain authoritative. See the [interaction guide](../implementation/user-clarification.md).
+
 ## Sensor metadata ownership
 
 `perception/SensorSamples` owns validation and immutable, run-scoped sensor metadata

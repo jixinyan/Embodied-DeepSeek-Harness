@@ -4,6 +4,7 @@ const integer = { type: 'integer' };
 const strings = { type: 'array', items: str };
 const obj = { type: 'object', additionalProperties: true };
 export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
+  'user.ask': { question: str, reason: str, options: strings },
   'agent.report': {
     status: { type: 'string', enum: ['completed', 'failed', 'insufficient_context', 'cancelled'] },
     summary: str,
@@ -61,6 +62,8 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
 export const CORE_TOOLS = [...Object.keys(CORE_TOOL_PARAMETERS), 'todo_write'];
 
 export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'user.ask':
+    'Ask the user for information needed by the current task. Supply a question, its reason, and zero to eight suggested responses. Only the decision owner may ask, with confirmed stopped execution. This tool records the question and concludes the current native turn. Wait for the explicit user response; task criteria and evidence permissions remain unchanged.',
   'skills.search':
     'Search recovery experience on demand using task-semantic keywords. Returns up to 20 metadata records, without SKILL bodies. Inspect capabilities, limitations, origin and validated configurations before selecting a skill. Matching uses keywords, not semantic embeddings; an empty result does not prove that no relevant experience exists.',
   'skills.load':

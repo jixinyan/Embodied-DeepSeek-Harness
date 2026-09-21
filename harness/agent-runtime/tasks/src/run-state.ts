@@ -29,6 +29,24 @@ export interface RunAssignment {
   turn?: number;
   step?: number;
 }
+export interface UserClarification {
+  format: 'edh.clarification.v1';
+  id: string;
+  runId: string;
+  assignmentId: string;
+  callId: string;
+  goalId: string;
+  attemptId: string;
+  question: string;
+  reason: string;
+  options: string[];
+  createdAt: string;
+  updatedAt: string;
+  state: 'pending' | 'answered' | 'cancelled' | 'interrupted';
+  response: { requestId: string; text: string } | null;
+  delivery: 'none' | 'queued' | 'settled' | 'failed' | 'interrupted';
+  error: string | null;
+}
 export interface RunState {
   id: string;
   instruction: string;
@@ -70,4 +88,5 @@ export interface RunState {
   >;
   skillIds: string[];
   error: string | null;
+  clarification?: UserClarification | null;
 }

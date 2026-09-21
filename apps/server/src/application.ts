@@ -26,6 +26,7 @@ import { AssignmentFiles } from '@edh/files';
 import { TaskPlans } from '@edh/planning';
 import { AssignmentEvidenceGrants, SkillLibrary } from '@edh/memory';
 import { skillSourceLimitations } from './skill-provenance.js';
+import { UserClarifications, ClarificationConflict, readClarification } from './clarifications.js';
 import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
 import {
   TaskGoals,
@@ -97,6 +98,8 @@ export class UpperRun {
   private readonly reports: AssignmentReports;
   private readonly skills: SkillLibrary;
   private readonly history: RunHistory;
+  private readonly clarifications: UserClarifications;
+  private clarificationTurnBlocked = false;
   private readonly recoveryHistory: RecoveryHistory;
   private deliveredMessages = 0;
   private readonly evidence: SensorSamples;
@@ -175,6 +178,15 @@ export class UpperRun {
     this.reports = new AssignmentReports(options.store, options.validator);
     this.skills = new SkillLibrary(options.store, options.validator);
     this.history = new RunHistory(options.store);
+    this.clarifications = new UserClarifications(options.store, this.state.id, (record) => {
+      if (
+        record.state === 'pending' ||
+        !this.state.clarification ||
+        this.state.clarification.id === record.id
+      )
+        this.state.clarification = record;
+      this.event('user.clarification', { clarification: record });
+    });
     this.recoveryHistory = new RecoveryHistory(options.store);
     this.evidence = new SensorSamples(
       options.store,
@@ -206,6 +218,7 @@ export class UpperRun {
             ...(owner
               ? {
                   runState: this.state.state,
+                  clarification: this.state.clarification ?? null,
                   selectedGoal: {
                     id: this.goal.id,
                     successContract: this.goal.successContract,
@@ -261,6 +274,10 @@ export class UpperRun {
           }
           if (type === 'agent.retired') {
             this.grants.release(String(detail.assignmentId));
+            this.clarifications.cancel(
+              'The requesting assignment ended.',
+              String(detail.assignmentId),
+            );
             const row = this.state.assignments[String(detail.assignmentId)];
             if (row) row.status = detail.cleanupFailed ? 'retirement_failed' : 'retired';
           }
@@ -610,7 +627,15 @@ export class UpperRun {
               const violations = validateJsonSchemaValue(parameters, args, 'arguments');
               if (violations.length) throw new ToolArgsError(violations);
               assertCoreInputLimits(args as Record<string, unknown>);
-              return this.invoke(a, logical, args as Record<string, unknown>, exec.signal);
+              const result = await this.invoke(
+                a,
+                logical,
+                args as Record<string, unknown>,
+                exec.signal,
+                exec.callId,
+              );
+              if (logical === 'user.ask') exec.concludeTurn();
+              return result;
             },
           };
         }
@@ -639,6 +664,25 @@ export class UpperRun {
             )
               throw new Error('Run is no longer writable.');
             const priorReport = this.reports.read(a.id);
+            if (
+              a.id === this.state.decisionAssignmentId &&
+              this.waitingForUser() &&
+              !(logical === 'user.ask' && this.state.clarification?.state === 'pending') &&
+              ![
+                'planning.read',
+                'files.read',
+                'files.search',
+                'team.query',
+                'team.ack_report',
+                'execution.query',
+                'evidence.read',
+                'skills.search',
+                'skills.load',
+              ].includes(logical)
+            )
+              throw new ClarificationConflict(
+                'The decision owner is waiting for the user response.',
+              );
             if (
               logical !== 'agent.report' &&
               logical !== 'team.query' &&
@@ -770,9 +814,38 @@ export class UpperRun {
     tool: string,
     args: Record<string, unknown>,
     signal: AbortSignal,
+    callId: string,
   ): Promise<object> {
     const s = (key: string) => String(args[key]);
     switch (tool) {
+      case 'user.ask': {
+        this.owner(a);
+        const execution = this.options.backend.query();
+        if (execution) {
+          this.options.validator.parse('ExecutionStatus', execution);
+          const observed = this.state.executions.find(
+            (row) => row.execution_id === execution.execution_id,
+          );
+          if (
+            !observed ||
+            !isDeepStrictEqual(observed, execution) ||
+            !execution.device_confirmed ||
+            !['paused', 'ended'].includes(execution.state)
+          )
+            throw new ClarificationConflict(
+              'User clarification requires confirmed stopped execution.',
+            );
+        }
+        return {
+          clarification: this.clarifications.request({
+            ...args,
+            assignmentId: a.id,
+            callId,
+            goalId: this.goal.id,
+            attemptId: `attempt-${this.state.attempt}`,
+          }),
+        };
+      }
       case 'team.query': {
         const target = this.sessions.get(s('assignmentId'));
         if (target.id !== a.id && target.brief.expected_output.recipient !== a.id)
@@ -1024,7 +1097,7 @@ export class UpperRun {
         return { execution: await this.options.backend.start(request, { signal }) };
       }
       case 'execution.pause':
-        this.verifier(a);
+        if (a.id !== this.state.decisionAssignmentId) this.verifier(a);
         await this.pause();
         return { execution: this.options.backend.query() ?? null };
       case 'execution.resume':
@@ -1651,6 +1724,10 @@ export class UpperRun {
     await stopping;
   }
   async requestResume(): Promise<void> {
+    if (this.waitingForUser())
+      throw new ClarificationConflict(
+        'Answer the pending question before requesting continuation.',
+      );
     if (terminal(this.state.state) || this.options.backend.query()?.state !== 'paused')
       throw new Error('No paused execution.');
     this.spawn(
@@ -1677,6 +1754,7 @@ export class UpperRun {
     this.endMonitor(type);
     const errors: unknown[] = [];
     try {
+      this.clarifications.cancel('The task ended.');
       this.event(type, detail);
     } catch (error) {
       errors.push(error);
@@ -1707,6 +1785,7 @@ export class UpperRun {
         }
       };
       if (!terminal(this.state.state)) await cleanup(() => this.stop());
+      await cleanup(() => this.clarifications.cancel('The task scope closed.'));
       for (const recovery of this.recoveries.values())
         if (recovery.timer) clearTimeout(recovery.timer);
       await cleanup(() => this.unsubscribe());
@@ -1723,5 +1802,62 @@ export class UpperRun {
   }
   plan(): PlanDocument | undefined {
     return this.plans.read(this.state.id);
+  }
+  answerClarification(id: string, input: unknown): object {
+    const question = readClarification(this.options.store, this.state.id, id);
+    if (!question) throw new ClarificationConflict('Question not found.');
+    if (
+      this.closed ||
+      this.closing ||
+      terminal(this.state.state) ||
+      question.assignmentId !== this.state.decisionAssignmentId ||
+      question.goalId !== this.goal.id ||
+      question.attemptId !== `attempt-${this.state.attempt}` ||
+      !this.sessions.acceptsMessages(question.assignmentId)
+    )
+      throw new ClarificationConflict(
+        'The requesting assignment is no longer accepting responses.',
+      );
+    const accepted = this.clarifications.answer(id, input);
+    if (!accepted.replay) {
+      this.clarificationTurnBlocked = true;
+      const delivery = (async () => {
+        await this.sessions.whenIdle(question.assignmentId);
+        if (
+          this.closing ||
+          this.closed ||
+          terminal(this.state.state) ||
+          !this.sessions.acceptsMessages(question.assignmentId) ||
+          this.state.clarification?.id !== id
+        )
+          throw new ClarificationConflict(
+            'The requesting assignment ended before response delivery.',
+          );
+        this.clarificationTurnBlocked = false;
+        await this.sessions.deliver(
+          question.assignmentId,
+          {
+            kind: 'user-clarification',
+            clarification: accepted.record,
+            instruction:
+              'The user supplied this answer. Reassess the current task and observations. Existing success criteria remain authoritative; resume requires an explicit Planner decision.',
+          },
+          'user',
+        );
+      })().then(
+        () => {
+          this.clarifications.delivered(id);
+        },
+        (error: unknown) => {
+          this.clarifications.delivered(id, error instanceof Error ? error.message : String(error));
+          throw error;
+        },
+      );
+      this.spawn(delivery);
+    }
+    return accepted;
+  }
+  private waitingForUser(): boolean {
+    return this.clarificationTurnBlocked || this.state.clarification?.state === 'pending';
   }
 }

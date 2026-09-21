@@ -141,9 +141,11 @@ overrides are disabled.
 
 1. Connect actual simulation/hardware allocations, owned workers, action admission and
    device resource reconciliation. No real provider is bundled in the CPU demo.
-2. Add provider-backed discovery and confirmation of new task criteria, plus user
-   clarification during an active task. Editable instructions and scoped prior-task
-   context are implemented against deployment-registered criteria.
+2. Add provider-backed discovery and confirmation of new task criteria. Editable
+   instructions and scoped prior-task context use deployment-registered criteria.
+   [Active-task clarification](user-clarification.md) now has durable question/answer
+   records, native DSH followups and console component acceptance; live-model and
+   provider-confirmed pause/resume acceptance remains required.
 3. Package a desktop/service bootstrap so opening the panel can start its local server.
    The panel controls sessions once the server is running; a browser cannot start its
    own unavailable HTTP server. CLI-free bootstrap is not yet implemented.
