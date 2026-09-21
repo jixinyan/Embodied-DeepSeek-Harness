@@ -116,6 +116,12 @@ DOM checks. Camera streaming, live VLM behavior and physical execution remain un
 
 ## Native session audits
 
+The **Role reports** inspector reads one assignment's published reports in bounded
+pages. It exposes report bodies, delivery status and caller acknowledgements, with
+earlier/latest navigation and explicit empty/error states. Opening another inspector
+or closing the dialog invalidates pending report results. The current assignment list
+still comes from the run projection. See [report inspection](../../docs/implementation/report-acknowledgements.md#bounded-history-reads).
+
 Native DSH audit inspection has assignment selection and earlier/later/latest event
 controls. Assignment indexes and event bodies are paged; the inspector retains one
 page of each, renders document contents as text and excludes late responses after

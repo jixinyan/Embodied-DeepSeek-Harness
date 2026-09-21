@@ -301,7 +301,8 @@
           <div id="live-output" class="live-output" hidden></div>
           <div class="feed-footer">
             <span id="feed-count">No messages yet</span
-            ><button id="inspect-audit" class="text-button" disabled>Native DSH audit ↗</button>
+            ><button id="inspect-reports" class="text-button" disabled>Role reports ↗</button>
+            <button id="inspect-audit" class="text-button" disabled>Native DSH audit ↗</button>
           </div>
         </section>
         <aside class="telemetry-panel" aria-label="Embodiment and recovery">
@@ -545,6 +546,17 @@
           <button data-audit="latest" class="button small">Latest events</button>
         </div>
         <p data-audit="status" role="status"></p>
+      </div>
+      <div id="report-controls" hidden>
+        <label
+          >Assignment
+          <select data-reports="assignment" aria-label="Report assignment"></select
+        ></label>
+        <div class="storage-actions">
+          <button data-reports="earlier" class="button small">Earlier versions</button>
+          <button data-reports="latest" class="button small">Latest versions</button>
+        </div>
+        <p data-reports="status" role="status"></p>
       </div>
       <pre id="inspector-body"></pre>
     </dialog>

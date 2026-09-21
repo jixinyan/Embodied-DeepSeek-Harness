@@ -65,9 +65,13 @@ transactions and resumable DSH sessions remain future work.
 ## Inspect and verify
 
 - `team.query({assignmentId})` returns native agent status, latest report, delivery,
-  caller acknowledgement and version-history receipts to the role or its direct caller.
-- HTTP run projections expose `roleReports`; the existing agent inspector includes
-  this state without a layout redesign. Restarted runs retain inspection access.
+  caller acknowledgement and a bounded page of version-history receipts to the role
+  or its direct caller. Optional `beforeReportId` selects earlier versions and
+  `includeBodies: true` includes the selected report contents.
+- HTTP run projections expose `roleReports` with bounded receipt pages per assignment.
+  The console's **Role reports** inspector selects an assignment, displays report
+  bodies and supports **Earlier versions** and **Latest versions**. Restarted runs
+  retain inspection access.
 - `agent.report-acknowledged` identifies the acknowledging caller in `assignmentId`
   and the report author in `reportAssignmentId`, preserving actor attribution.
 - [Role tests](../../tests/runtime/role-reports.test.ts) cover immutable replay,
@@ -78,4 +82,55 @@ transactions and resumable DSH sessions remain future work.
 - [HTTP restart acceptance](../../tests/runtime/console-server.test.ts) restores the
   report as interrupted and confirms that no inbox or physical work was replayed.
 
-Run `pnpm check`. See [upper runtime](upper-runtime.md) and [progress](progress.md).
+## Bounded history reads
+
+`AssignmentReports.iterate` traverses the published chain newest first, holding the
+current record and its predecessor. Each link must preserve report ID, assignment,
+agent, Team, task scope and recipient while decreasing the version by exactly one.
+An invalid or missing predecessor fails where it is encountered. Legacy histories
+without a predecessor link end at their earliest available record.
+
+`page(assignmentId, beforeReportId?)` returns at most sixteen reports with a 256 KiB
+encoded receipt/body target. It includes one individually oversized record to ensure
+progress. Page records are ordered oldest to newest. The response includes the
+current `latestReport` and `nextBeforeReportId`; the latter identifies the earliest
+record in the page when older published records exist. Pass that value back as
+`beforeReportId`. A cursor is exclusive and must occur in the assignment's published
+chain. Appending a new report preserves an earlier cursor and its remaining history.
+
+`status` exposes those records as `reportHistory` receipts, with optional bodies and
+`reportHistoryPage` cursor metadata. The latest report is returned independently of the
+selected history page. Its body and current delivery/acknowledgement add to the page
+budget. Each receipt retains its own delivery and acknowledgement state. Returned
+objects are detached from stored records.
+
+```text
+GET /api/runs/{runId}/reports?assignment={assignmentId}
+GET /api/runs/{runId}/reports?assignment={assignmentId}&before={nextBeforeReportId}
+```
+
+The HTTP reader requires that the selected assignment belongs to the stored run and
+that its report has the same task scope. Unknown, duplicate or malformed query fields
+fail. The console reads this endpoint through its existing JSON transport and displays
+report text as text content. Changing assignments starts at their latest page; closing
+the inspector invalidates pending results.
+
+Acknowledgement locates the exact report through the same published-chain iterator,
+retaining recipient and immutable-replay checks. Startup scans latest-report pointers
+one at a time and reconciles each chain incrementally. Explicit `history()` remains
+available for callers that intentionally request a complete array.
+
+Cursor admission currently traverses the published prefix to prove membership; deep
+historical pages and acknowledgements have linear read cost. The service keeps no
+complete-history cache. Run projections still contain assignment metadata and a latest
+report per assignment, so their total size needs separate lifecycle work.
+
+`pnpm test:report-history` runs seven actual journal/HTTP/process checks for page
+continuity, byte budgets, detached reads, unpublished/foreign cursors, predecessor
+integrity, immutable acknowledgement and interrupted-delivery reconciliation. A child
+process writes more than 100 MiB of actual project-document reports under a 64 MiB V8
+old-space limit, visits all pages, acknowledges the earliest report and reconciles
+delivery state. This measures report-history memory behavior; live model task behavior
+and whole-application memory remain separate acceptance requirements.
+
+See [upper runtime](upper-runtime.md) and [progress](progress.md).

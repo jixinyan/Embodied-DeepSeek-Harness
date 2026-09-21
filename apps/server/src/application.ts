@@ -42,6 +42,7 @@ export type { GoalBinding } from '@edh/tasks';
 export { CORE_TOOLS } from '@edh/tools';
 import {
   CORE_TOOL_PARAMETERS,
+  CORE_TOOL_OPTIONAL_PARAMETERS,
   CORE_TOOL_DESCRIPTIONS,
   assertObjectJsonSchema,
   validateJsonSchemaValue,
@@ -598,7 +599,9 @@ export class UpperRun {
                       },
                     }
                   : properties,
-              required: Object.keys(properties),
+              required: Object.keys(properties).filter(
+                (key) => !CORE_TOOL_OPTIONAL_PARAMETERS[logical]?.includes(key),
+              ),
               additionalProperties: false,
             },
             output: {
@@ -858,7 +861,11 @@ export class UpperRun {
           member: target.member,
           agentStatus: this.state.assignments[target.id]!.status,
           acceptingMessages: this.sessions.acceptsMessages(target.id),
-          ...this.reports.status(target.id),
+          ...this.reports.status(
+            target.id,
+            args.beforeReportId as string | undefined,
+            args.includeBodies === true,
+          ),
         };
       }
       case 'team.ack_report': {

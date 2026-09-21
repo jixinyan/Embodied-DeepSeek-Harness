@@ -13,6 +13,7 @@ import { taskRequest, completeTaskRequest } from './task-request.js';
 import { renderSensorImages } from './sensor-images.js';
 import { bindStorageMaintenance } from './storage-maintenance.js';
 import { bindSessionAudit } from './session-audit.js';
+import { bindReportHistory } from './report-history.js';
 import {
   appendRunHistory,
   mergeRunUpdate,
@@ -49,6 +50,7 @@ function error(message) {
 }
 function inspect(title, value) {
   auditBrowser.close();
+  reportBrowser.close();
   text('inspector-title', title);
   text('inspector-body', typeof value === 'string' ? value : JSON.stringify(value, null, 2));
   if (!$('inspector').open) $('inspector').showModal();
@@ -792,6 +794,7 @@ function render() {
   $('inspect-recovery').disabled = !current.recoveryId;
   $('inspect-skill').disabled = !current.skills?.length;
   $('inspect-audit').disabled = false;
+  $('inspect-reports').disabled = false;
   if (current.error) error(current.error);
   renderAgents();
   showSensor();
@@ -1003,12 +1006,21 @@ $('inspect-recovery').onclick = () =>
     ),
   );
 const auditBrowser = bindSessionAudit($('audit-controls'), $('inspector-body'), api, action);
+const reportBrowser = bindReportHistory($('report-controls'), $('inspector-body'), api, action);
+$('inspect-reports').onclick = () =>
+  action(async () => {
+    inspect('Role reports · Published versions and caller receipts', '');
+    await reportBrowser.open(current.id, Object.values(current.assignments));
+  });
 $('inspect-audit').onclick = () =>
   action(async () => {
     inspect('Native DSH session audit · Read-only', '');
     await auditBrowser.open(current.id);
   });
-$('inspector').addEventListener('close', () => auditBrowser.close());
+$('inspector').addEventListener('close', () => {
+  auditBrowser.close();
+  reportBrowser.close();
+});
 $('close-inspector').onclick = () => $('inspector').close();
 $('inspector').addEventListener('click', (e) => {
   const rect = $('inspector').getBoundingClientRect();

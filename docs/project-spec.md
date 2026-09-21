@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.29 · 2026-09-21
+Version: v1.30 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -57,6 +57,10 @@ Native [event residency](implementation/session-history.md) publishes and valida
 Session events before releasing their resident bodies. Deployment defaults retain at
 most 256 events and 8 MiB of encoded event bodies at audit checkpoints. Logical history
 remains readable; active model context and application projections have separate limits.
+Role report queries return bounded history pages with explicit earlier-version cursors.
+Agents request earlier report bodies when needed; the console provides the same
+read-only navigation. Acknowledgement and startup reconciliation traverse published
+versions individually. See [report inspection](implementation/report-acknowledgements.md).
 [Physical profiles](implementation/physical-profiles.md) bind declared simulator,
 embodiment, policy mappings and role context; installed adapter validation is required.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)

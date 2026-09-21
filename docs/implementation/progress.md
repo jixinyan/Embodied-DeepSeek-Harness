@@ -1,10 +1,19 @@
 # Implementation progress
 
-Spec: v1.29. Current checkpoint: **durable native Session event residency**.
+Spec: v1.30. Current checkpoint: **paged role-report inspection and incremental reconciliation**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Role-report queries and the console inspector read bounded published-version pages.
+Agents select earlier receipts and optionally load their report bodies through
+`team.query`; native input validation keeps those controls optional. Acknowledgement
+and startup reconciliation traverse stored reports individually. Seven actual
+journal/HTTP/process checks pass, including report history exceeding 100 MiB under a
+64 MiB V8 old-space limit. Assignment briefs, last observations and cumulative run
+projections still require independent retention work.
+[Report API and remaining costs](report-acknowledgements.md#bounded-history-reads).
 
 Planner `user.ask` persists a scoped question and concludes its native DSH turn.
 Accepted answers are immutable, retain retry identity, and return to the same Planner
@@ -91,12 +100,14 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: eleven native history checks, nine clarification checks,
-sixteen native audit checks, eight assignment-lifecycle checks and 23 console tests pass
+Current focused checks: seven report-history checks and 23 console tests pass (30 total).
+The preceding checkpoint passed eleven native history checks, nine clarification checks,
+sixteen native audit checks, eight assignment-lifecycle checks and 23 console tests
 (67 total). Prior checkpoints passed eight retention/admission checks,
 nine original-image collection checks, 23 image/lifetime/HTTP checks, 16 storage/admission
 checks, nine SKILL provenance checks, eight evidence-storage checks and 16 history tests.
-Browser component DOM checks cover audit
+Browser component DOM checks cover report-version paging, latest navigation, assignment
+selection and empty report history. Earlier checks cover audit
 assignment selection, event navigation and empty history; previous checks cover actual
 image loading, cache cleanup and journal compaction. TypeScript, formatting, provenance
 and structure checks pass. Scripted runtime tests were not executed for this checkpoint.

@@ -15,6 +15,7 @@ import { RunEventStream } from './run-event-stream.js';
 import { HttpError, assertLocalRequest, readJsonBody as body } from './local-http.js';
 import { serveEvidenceImage } from './evidence-images.js';
 import { readSessionAudit } from './session-audit-view.js';
+import { readRoleReports } from './report-view.js';
 import {
   ClarificationConflict,
   interruptClarifications,
@@ -741,7 +742,7 @@ async function startApplication(
           }
         }
         const match =
-          /^\/api\/runs\/([A-Za-z0-9-]+)(?:\/(events|history|pause|resume|stop|audit|recovery))?$/.exec(
+          /^\/api\/runs\/([A-Za-z0-9-]+)(?:\/(events|history|pause|resume|stop|audit|reports|recovery))?$/.exec(
             url.pathname,
           );
         if (match) {
@@ -776,6 +777,8 @@ async function startApplication(
           }
           if (method === 'GET' && operation === 'audit')
             return json(res, 200, readSessionAudit(store, id, url.searchParams));
+          if (method === 'GET' && operation === 'reports')
+            return json(res, 200, readRoleReports(store, validator, id, url.searchParams));
           if (method === 'GET' && operation === 'recovery') {
             return json(res, 200, {
               recovery: record.recoveryId

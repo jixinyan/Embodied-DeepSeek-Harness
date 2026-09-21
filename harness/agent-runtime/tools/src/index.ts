@@ -32,6 +32,7 @@ export interface PhysicalToolProvider {
 export {
   CORE_TOOLS,
   CORE_TOOL_PARAMETERS,
+  CORE_TOOL_OPTIONAL_PARAMETERS,
   CORE_TOOL_DESCRIPTIONS,
   assertCoreInputLimits,
 } from './core-inputs.js';

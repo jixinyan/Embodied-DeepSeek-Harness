@@ -59,6 +59,8 @@ The tests cover:
 
 These checks establish idle native lifecycle, native delivery failure and local authority behavior. They do
 not establish in-flight live VLM/provider shutdown, cooperative external cancellation,
-garbage-collector timing or a bound on process memory. Active-session event history,
-retained assignment/projection growth and domain-record archival remain required
-upper-runtime work. Full recovery/receipt behavior needs live model acceptance.
+garbage-collector timing or a bound on process memory. Native event-body history uses
+the [residency policy](session-history.md), and report histories have
+[bounded inspection](report-acknowledgements.md#bounded-history-reads).
+Active model context, retained assignment/projection growth and domain-record archival
+remain required upper-runtime work. Full recovery/receipt behavior needs live model acceptance.

@@ -32,6 +32,13 @@ export interface ReportAcknowledgement {
   summary: string;
   acknowledgedAt: string;
 }
+export const reportPageLimits = Object.freeze({ reports: 16, bytes: 256 * 1024 });
+export interface ReportPage {
+  latestReport: AcceptedReport | null;
+  reports: AcceptedReport[];
+  beforeReportId: string | null;
+  nextBeforeReportId: string | null;
+}
 /** Assignment identity comes from the authenticated native tool scope, never model fields. */
 export class AssignmentReports {
   constructor(
@@ -48,27 +55,84 @@ export class AssignmentReports {
     const key = `report-delivery:${reportId}`;
     this.store.put(key, delivery, this.store.get(key)?.version ?? 0);
   }
-  history(assignmentId: string): AcceptedReport[] {
-    const records: AcceptedReport[] = [];
+  *iterate(assignmentId: string): Generator<AcceptedReport> {
     let current = this.read(assignmentId);
-    const seen = new Set<string>();
     while (current) {
-      if (seen.has(current.id)) throw new Error('Report history cycle.');
-      seen.add(current.id);
-      records.push(current);
+      if (
+        current.report.assignment_id !== assignmentId ||
+        !Number.isSafeInteger(current.version) ||
+        current.version < 1
+      )
+        throw new Error('Invalid published report identity or version.');
+      yield current;
       if (!current.previousReportId) break;
       const previous = this.store.get<AcceptedReport>(
         `report-record:${current.previousReportId}`,
       )?.value;
       if (
         !previous ||
+        previous.id !== current.previousReportId ||
         previous.report.assignment_id !== assignmentId ||
-        previous.version !== current.version - 1
+        previous.version !== current.version - 1 ||
+        previous.recipient !== current.recipient ||
+        previous.report.agent_id !== current.report.agent_id ||
+        previous.report.team_run_id !== current.report.team_run_id ||
+        !isDeepStrictEqual(previous.report.task_scope, current.report.task_scope)
       )
         throw new Error('Incomplete published report history.');
       current = previous;
     }
-    return records.reverse();
+  }
+  history(assignmentId: string): AcceptedReport[] {
+    return [...this.iterate(assignmentId)].reverse();
+  }
+  page(assignmentId: string, beforeReportId?: string): ReportPage {
+    if (beforeReportId !== undefined && !/^[A-Za-z0-9-]{1,128}$/.test(beforeReportId))
+      throw new Error('Invalid report cursor.');
+    const records: AcceptedReport[] = [];
+    let latestReport: AcceptedReport | null = null;
+    let reached = beforeReportId === undefined;
+    let bytes = 2;
+    let nextBeforeReportId: string | null = null;
+    for (const record of this.iterate(assignmentId)) {
+      latestReport ??= record;
+      if (!reached) {
+        reached = record.id === beforeReportId;
+        continue;
+      }
+      const size =
+        Buffer.byteLength(JSON.stringify(this.receipt(record, true))) + (records.length ? 1 : 0);
+      if (
+        records.length >= reportPageLimits.reports ||
+        (records.length > 0 && bytes + size > reportPageLimits.bytes)
+      ) {
+        nextBeforeReportId = records.at(-1)!.id;
+        break;
+      }
+      records.push(record);
+      bytes += size;
+    }
+    if (!reached) throw new Error('Report cursor is not in the published assignment history.');
+    return {
+      latestReport,
+      reports: records.reverse(),
+      beforeReportId: beforeReportId ?? null,
+      nextBeforeReportId,
+    };
+  }
+  private published(assignmentId: string, reportId: string): AcceptedReport | undefined {
+    for (const record of this.iterate(assignmentId)) if (record.id === reportId) return record;
+    return undefined;
+  }
+  private receipt(record: AcceptedReport, includeBody: boolean) {
+    return {
+      reportId: record.id,
+      version: record.version,
+      status: record.report.status,
+      delivery: this.delivery(record.id) ?? { state: 'unconfirmed' },
+      acknowledgement: this.acknowledgement(record.id) ?? null,
+      ...(includeBody ? { record } : {}),
+    };
   }
   acknowledgement(reportId: string): ReportAcknowledgement | undefined {
     return this.store.get<ReportAcknowledgement>(`report-ack:${reportId}`)?.value;
@@ -79,7 +143,7 @@ export class AssignmentReports {
     recipientAssignmentId: string,
     input: Pick<ReportAcknowledgement, 'disposition' | 'summary'>,
   ): { acknowledgement: ReportAcknowledgement; replay: boolean } {
-    const report = this.history(assignmentId).find((record) => record.id === reportId);
+    const report = this.published(assignmentId, reportId);
     if (!report || report.recipient !== recipientAssignmentId)
       throw new Error('Only the designated report recipient may acknowledge a published report.');
     if (
@@ -105,29 +169,30 @@ export class AssignmentReports {
     this.store.put(`report-ack:${reportId}`, acknowledgement, 0);
     return { acknowledgement, replay: false };
   }
-  status(assignmentId: string) {
-    const history = this.history(assignmentId);
-    const latestReport = history.at(-1) ?? null;
+  status(assignmentId: string, beforeReportId?: string, includeBodies = false) {
+    const page = this.page(assignmentId, beforeReportId);
+    const { latestReport } = page;
     return {
       latestReport,
       reportDelivery: latestReport
         ? (this.delivery(latestReport.id) ?? { state: 'unconfirmed' })
         : null,
       reportAcknowledgement: latestReport ? (this.acknowledgement(latestReport.id) ?? null) : null,
-      reportHistory: history.map((record) => ({
-        reportId: record.id,
-        version: record.version,
-        status: record.report.status,
-        delivery: this.delivery(record.id) ?? { state: 'unconfirmed' },
-        acknowledgement: this.acknowledgement(record.id) ?? null,
-      })),
+      reportHistoryPage: {
+        beforeReportId: page.beforeReportId,
+        nextBeforeReportId: page.nextBeforeReportId,
+        latestVersion: latestReport?.version ?? 0,
+      },
+      reportHistory: page.reports.map((record) => this.receipt(record, includeBodies)),
     };
   }
   /** Startup-only reconciliation: preserve uncertainty without replaying a caller turn. */
   reconcileInterruptedDeliveries(): number {
     let changed = 0;
-    for (const entry of this.store.list<AcceptedReport>('report:')) {
-      for (const report of this.history(entry.value.report.assignment_id)) {
+    for (const entry of this.store.scan<AcceptedReport>('report:')) {
+      if (entry.key !== `report:${entry.value.report.assignment_id}`)
+        throw new Error('Published report key does not match its assignment.');
+      for (const report of this.iterate(entry.value.report.assignment_id)) {
         const delivery = this.delivery(report.id);
         if (delivery && delivery.state !== 'queued') continue;
         this.markDelivery(

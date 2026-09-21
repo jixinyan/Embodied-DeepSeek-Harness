@@ -28,7 +28,7 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
     disposition: { type: 'string', enum: ['accepted', 'rejected'] },
     summary: str,
   },
-  'team.query': { assignmentId: str },
+  'team.query': { assignmentId: str, beforeReportId: str, includeBodies: { type: 'boolean' } },
   'team.delegate': {
     member: str,
     objective: str,
@@ -60,8 +60,13 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
   'evidence.read': { evidenceId: str },
 };
 export const CORE_TOOLS = [...Object.keys(CORE_TOOL_PARAMETERS), 'todo_write'];
+export const CORE_TOOL_OPTIONAL_PARAMETERS: Readonly<Record<string, readonly string[]>> = {
+  'team.query': ['beforeReportId', 'includeBodies'],
+};
 
 export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'team.query':
+    'Inspect your own assignment or one directly delegated by you. Returns current agent status, the latest report and a bounded page of report receipts. Use reportHistoryPage.nextBeforeReportId as beforeReportId to read earlier published versions. Set includeBodies=true when earlier report contents are needed. Acknowledgement and delivery status do not establish physical success.',
   'user.ask':
     'Ask the user for information needed by the current task. Supply a question, its reason, and zero to eight suggested responses. Only the decision owner may ask, with confirmed stopped execution. This tool records the question and concludes the current native turn. Wait for the explicit user response; task criteria and evidence permissions remain unchanged.',
   'skills.search':

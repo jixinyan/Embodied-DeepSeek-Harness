@@ -14,6 +14,8 @@ export { TeamSessions, type Assignment, type SessionHooks } from './sessions.js'
 
 export {
   AssignmentReports,
+  reportPageLimits,
+  type ReportPage,
   type AcceptedReport,
   type ReportInput,
   type ReportDelivery,
