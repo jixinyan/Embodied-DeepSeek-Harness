@@ -27,7 +27,13 @@ import { AssignmentFiles } from '@edh/files';
 import { TaskPlans } from '@edh/planning';
 import { SkillLibrary } from '@edh/memory';
 import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
-import { TaskGoals, type GoalBinding, type RunState } from '@edh/tasks';
+import {
+  TaskGoals,
+  taskContextSummary,
+  type TaskContextSummary,
+  type GoalBinding,
+  type RunState,
+} from '@edh/tasks';
 export type { GoalBinding } from '@edh/tasks';
 
 export { CORE_TOOLS } from '@edh/tools';
@@ -71,6 +77,7 @@ export interface ApplicationOptions {
   store: LocalStore;
   backend: EmbodiedBackend;
   instruction: string;
+  taskContext?: readonly TaskContextSummary[];
   scenario: string;
   model: (id: string) => { provider: string; model: string };
   onChange?: (state: RunState) => void;
@@ -118,6 +125,7 @@ export class UpperRun {
   private attemptSequence = 1;
   private readonly recoveries = new Map<string, RecoveryObservation>();
   constructor(private readonly options: ApplicationOptions) {
+    taskContextSummary(options.taskContext ?? []);
     this.goals = new TaskGoals(
       options.validator,
       options.goal,
@@ -129,6 +137,7 @@ export class UpperRun {
     this.state = {
       id: randomUUID(),
       instruction: options.instruction,
+      ...(options.taskContext ? { taskContext: structuredClone([...options.taskContext]) } : {}),
       scenario: options.scenario,
       source: options.backend.source,
       state: 'running',
@@ -499,7 +508,14 @@ export class UpperRun {
         observed_at: s.evidence.observed_at,
         evidence_refs: [s.evidence.id],
       })),
-      history_summary: context,
+      history_summary: [
+        !caller && member === this.sessions.team.definition.entrypoint
+          ? taskContextSummary(this.state.taskContext ?? [])
+          : '',
+        context,
+      ]
+        .filter(Boolean)
+        .join('\n\n'),
       changes: [...this.state.retryChanges],
       evidence_refs: refs,
       tools_and_limits: {

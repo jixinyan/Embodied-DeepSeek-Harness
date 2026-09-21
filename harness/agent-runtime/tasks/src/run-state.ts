@@ -6,6 +6,7 @@ import type {
   VerificationResult,
 } from '@edh/contracts';
 import type { SensorSample } from '@edh/execution';
+import type { TaskContextSummary } from './task-context.js';
 export interface RunEvent {
   sequence: number;
   at: string;
@@ -31,6 +32,7 @@ export interface RunAssignment {
 export interface RunState {
   id: string;
   instruction: string;
+  taskContext?: TaskContextSummary[];
   scenario: string;
   source: 'test_fixture' | 'simulation' | 'hardware';
   state:

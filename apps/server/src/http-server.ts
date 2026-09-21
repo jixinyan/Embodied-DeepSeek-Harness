@@ -10,6 +10,7 @@ import type { ResolvedPhysicalRuntimeProfile } from '@edh/execution';
 import { UserSessions, SessionConflict } from './user-sessions.js';
 import { validateLaunchSelection } from '../../console/public/launch-selection.js';
 import { consoleContentSecurityPolicy, readConsoleAsset } from './console-assets.js';
+import { admitSessionTask } from './task-admission.js';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
 import { SkillLibrary, type SkillBundle } from '@edh/memory';
@@ -213,6 +214,7 @@ export async function startServer(options: LocalServerOptions) {
       return {
         ...state,
         configuration: store.get(`run-config:${id}`)?.value ?? null,
+        submission: store.get(`run-submission:${id}`)?.value ?? null,
         userSessionId:
           store.get<{ sessionId: string }>(`run-user-session:${id}`)?.value.sessionId ?? null,
         readOnly: active?.state.id !== id || terminal(state.state),
@@ -372,21 +374,19 @@ export async function startServer(options: LocalServerOptions) {
           if (method === 'POST' && operation === 'tasks') {
             const data = await body(req);
             const profile = deployment.launchProfiles[record.profileId];
-            if (
-              Object.keys(data).some((k) => !['scenario', 'requestId'].includes(k)) ||
-              typeof data.scenario !== 'string' ||
-              !profile?.tasks.includes(data.scenario) ||
-              typeof data.requestId !== 'string' ||
-              !/^[A-Za-z0-9-]{8,80}$/.test(data.requestId)
-            )
-              throw new HttpError(400, 'Invalid task preset or request ID for this session.');
+            if (!profile) throw new HttpError(400, 'The session launch profile is unavailable.');
+            const submission = admitSessionTask(data, {
+              session: record,
+              allowedTasks: profile.tasks,
+              tasks: deployment.tasks,
+              store,
+            });
             if (admitting) throw new HttpError(409, 'A task is being admitted.');
-            const taskId = data.scenario;
-            const task = deployment.tasks[taskId]!;
+            const taskId = submission.scenario;
             const result = await userSessions.task(
               id,
               taskId,
-              data.requestId,
+              submission.requestId,
               (backend, session) => {
                 if (backend.source !== (profile.source ?? deployment.metadata.source))
                   throw new Error('Backend source differs from launch profile.');
@@ -395,12 +395,13 @@ export async function startServer(options: LocalServerOptions) {
                   team: launchTeams.get(record.profileId)!,
                   validator,
                   store,
-                  goal: task.goal,
-                  allowedSubgoalChecks: task.allowedSubgoalChecks ?? [],
-                  predefinedGoals: task.predefinedGoals ?? [],
+                  goal: submission.goal,
+                  allowedSubgoalChecks: submission.allowedSubgoalChecks,
+                  predefinedGoals: submission.predefinedGoals,
                   additionalTools: deployment.additionalTools,
                   backend,
-                  instruction: task.instruction,
+                  instruction: submission.instruction,
+                  taskContext: submission.context,
                   scenario: taskId,
                   model: (alias) => {
                     const binding = deployment.metadata.models[alias];
@@ -410,9 +411,11 @@ export async function startServer(options: LocalServerOptions) {
                   onChange: changed,
                 });
                 store.put(`run-config:${run.state.id}`, session.configuration, 0);
+                store.put(`run-submission:${run.state.id}`, submission, 0);
                 active = run;
                 return run;
               },
+              submission.identity,
             );
             return json(res, result.replayed ? 200 : 201, result);
           }

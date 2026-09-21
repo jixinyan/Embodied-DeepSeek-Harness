@@ -132,30 +132,47 @@ export class UserSessions {
       }
     });
   }
+  replayTask(id: string, taskId: string, requestId: string, inputIdentity = taskId) {
+    this.get(id);
+    const prior = this.store.get<{
+      taskId: string;
+      runId: string | null;
+      inputIdentity?: string;
+    }>(`session-task-request:${id}:${requestId}`);
+    if (!prior) return undefined;
+    if (
+      prior.value.taskId !== taskId ||
+      (prior.value.inputIdentity ?? prior.value.taskId) !== inputIdentity
+    )
+      throw new SessionConflict('Task request ID reused with different input.');
+    const runId = prior.value.runId;
+    if (
+      !runId ||
+      !this.store.get(`run:${runId}`) ||
+      this.store.get<{ sessionId: string }>(`run-user-session:${runId}`)?.value.sessionId !== id
+    )
+      throw new SessionConflict('Task admission was interrupted; inspect history.');
+    return { runId, replayed: true };
+  }
   task(
     id: string,
     taskId: string,
     requestId: string,
     create: (backend: EmbodiedBackend, record: UserSessionRecord) => UpperRun,
+    inputIdentity = taskId,
   ): Promise<{ runId: string; replayed?: boolean }> {
     return this.exclusive(async () => {
       const record = this.get(id);
       const key = `session-task-request:${id}:${requestId}`;
-      const prior = this.store.get<{ taskId: string; runId: string | null }>(key);
-      if (prior) {
-        if (prior.value.taskId !== taskId)
-          throw new SessionConflict('Task request ID reused with different input.');
-        if (!prior.value.runId)
-          throw new SessionConflict('Task admission was interrupted; inspect history.');
-        return { runId: prior.value.runId, replayed: true };
-      }
+      const replayed = this.replayTask(id, taskId, requestId, inputIdentity);
+      if (replayed) return replayed;
       const current = this.current;
       if (current?.record.id !== id || !current.environment || current.record.state !== 'ready')
         throw new SessionConflict('Session is not ready for another task.');
       if (current.drain) await current.drain;
       // A failed new allocation must close its own port, not the prior retired run.
       delete current.run;
-      this.store.put(key, { taskId, runId: null }, 0);
+      this.store.put(key, { taskId, inputIdentity, runId: null }, 0);
       current.record.state = 'running';
       this.save(current.record);
       let backend: EmbodiedBackend | undefined;
@@ -169,7 +186,7 @@ export class UserSessions {
         current.record.runIds.push(run.state.id);
         this.save(current.record);
         this.store.put(`run-user-session:${run.state.id}`, { sessionId: id }, 0);
-        this.store.put(key, { taskId, runId: run.state.id }, 1);
+        this.store.put(key, { taskId, inputIdentity, runId: run.state.id }, 1);
         await run.start();
         this.changed(run);
         return { runId: run.state.id };
