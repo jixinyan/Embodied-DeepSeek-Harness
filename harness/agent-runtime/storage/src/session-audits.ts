@@ -1,13 +1,23 @@
 import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
+import { SessionSeq, type Session } from '@deepseek-ai/dsh-session';
 import type { LocalStore } from './local-store.js';
 
-const auditIndexSchema = z
-  .object({
-    format: z.literal('edh.session-audit.v1'),
-    count: z.number().int().nonnegative().safe(),
-  })
-  .strict();
+const auditIndexSchema = z.discriminatedUnion('format', [
+  z
+    .object({
+      format: z.literal('edh.session-audit.v1'),
+      count: z.number().int().nonnegative().safe(),
+    })
+    .strict(),
+  z
+    .object({
+      format: z.literal('edh.session-audit.v2'),
+      count: z.number().int().nonnegative().safe(),
+      sessionId: z.string().min(1),
+    })
+    .strict(),
+]);
 type AuditIndex = z.infer<typeof auditIndexSchema>;
 const identity = z
   .string()
@@ -36,35 +46,74 @@ function countOf(value: AuditIndex | unknown[]): number {
 export class SessionAudits {
   constructor(private readonly store: LocalStore) {}
   append(runId: string, assignmentId: string, events: unknown): void {
+    if (!Array.isArray(events)) throw new Error('Expected a native session event array.');
+    this.appendRange(runId, assignmentId, events.length, (index) => events[index]);
+  }
+  appendNative(runId: string, assignmentId: string, session: Session): void {
+    const count = session.seq;
+    this.appendRange(
+      runId,
+      assignmentId,
+      count,
+      (index) => {
+        const event = session.eventAt(SessionSeq(index));
+        if (!event || event.seq !== index) throw new Error('Incomplete native session audit.');
+        return event;
+      },
+      session.id,
+    );
+  }
+  private appendRange(
+    runId: string,
+    assignmentId: string,
+    total: number,
+    eventAt: (index: number) => unknown,
+    sessionId?: string,
+  ): void {
     identity.parse(runId);
     identity.parse(assignmentId);
-    if (!Array.isArray(events)) throw new Error('Expected a native session event array.');
     const key = `session-audit:${runId}:${assignmentId}`;
     const prior = this.store.get<AuditIndex | unknown[]>(key);
     const legacy = Array.isArray(prior?.value) ? prior.value : undefined;
+    const priorIndex = prior && !legacy ? auditIndexSchema.parse(prior.value) : undefined;
+    const priorSessionId =
+      priorIndex?.format === 'edh.session-audit.v2' ? priorIndex.sessionId : undefined;
+    if (priorSessionId !== undefined && sessionId !== priorSessionId)
+      throw new Error('Session audit belongs to a different native session.');
     const count = prior ? countOf(prior.value) : 0;
-    if (events.length < count) throw new Error('Session audit history regressed.');
+    if (total < count) throw new Error('Session audit history regressed.');
     const eventKey = (index: number) => `session-audit-event:${runId}:${assignmentId}:${index}`;
+    if (legacy || (sessionId !== undefined && priorSessionId === undefined)) {
+      for (let index = 0; index < count; index++) {
+        const stored = legacy ? { value: legacy[index] } : this.store.get(eventKey(index));
+        if (!stored) throw new Error('Incomplete session audit.');
+        if (!isDeepStrictEqual(eventAt(index), stored.value))
+          throw new Error('Native session audit prefix changed.');
+      }
+    }
     if (
       count &&
       !isDeepStrictEqual(
-        events[count - 1],
+        eventAt(count - 1),
         legacy?.[count - 1] ?? this.store.get(eventKey(count - 1))?.value,
       )
     )
       throw new Error('Native session audit prefix changed.');
-    if (events.length === count && !legacy) return;
-    for (let index = legacy ? 0 : count; index < events.length; index++) {
+    if (total === count && !legacy && sessionId === priorSessionId) return;
+    for (let index = legacy ? 0 : count; index < total; index++) {
+      const event = eventAt(index);
       const existing = this.store.get(eventKey(index));
       if (existing) {
-        if (!isDeepStrictEqual(existing.value, events[index]))
+        if (!isDeepStrictEqual(existing.value, event))
           throw new Error('Session audit append conflict.');
-      } else this.store.put(eventKey(index), events[index], 0);
+      } else this.store.put(eventKey(index), event, 0);
     }
     // Publish only after all event writes; interrupted suffixes remain invisible until reconciled.
     this.store.put(
       key,
-      { format: 'edh.session-audit.v1', count: events.length },
+      sessionId === undefined
+        ? { format: 'edh.session-audit.v1', count: total }
+        : { format: 'edh.session-audit.v2', count: total, sessionId },
       prior?.version ?? 0,
     );
   }

@@ -26,7 +26,7 @@ turn. `retire` closes admission and requests cancellation immediately. Both shar
 existing retirement completions and retain cleanup failures.
 
 Retirement awaits quiescence, attempts native handle disposal, then publishes the
-final event snapshot. Native disposal removes Agent and Session registry entries and
+final native event range. Native disposal removes Agent and Session registry entries and
 unwinds the scoped services. Events produced by those services during cleanup are
 included in the final audit. Audit export is attempted after a disposal error too.
 Errors are aggregated after all cleanup stages have been attempted.
@@ -53,10 +53,11 @@ The tests cover:
 - Seventy sequential independent assignments with live registry capacity released each time.
 - A native scoped cleanup contribution whose event appears in the final persisted audit.
 - Team shutdown racing pending native creation.
+- Native delivery failure from an unavailable adapter, including persisted error events.
 - A real journal write hold rejecting creation publication and final audit, with native cleanup.
 - A real audit write failure releasing registries and grants while remaining observable at shutdown.
 
-These checks establish idle native lifecycle and local authority behavior. They do
+These checks establish idle native lifecycle, native delivery failure and local authority behavior. They do
 not establish in-flight live VLM/provider shutdown, cooperative external cancellation,
 garbage-collector timing or a bound on process memory. Active-session event history,
 retained assignment/projection growth and domain-record archival remain required

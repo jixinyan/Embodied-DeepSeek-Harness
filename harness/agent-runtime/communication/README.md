@@ -32,6 +32,12 @@ Application evidence grants open from the creation brief and release after retir
 cleanup. Late additions require an existing live grant scope. See the
 [lifecycle checks](../../../docs/implementation/assignment-lifetime.md).
 
+The synchronous audit hook receives the native Session. UpperRun publishes it through
+`SessionAudits.appendNative`, which reads immutable events individually through the
+original DSH sequence API. Delivery error detection likewise reads the captured
+delivery range. Complete native event-array snapshots are unnecessary for these paths.
+See [native audit publication](../../../docs/implementation/session-audits.md#native-publication).
+
 
 Normal completion uses `TeamSessions.finish`: reject new messages immediately, allow
 the current native turn to receive its final tool receipt and produce final output,

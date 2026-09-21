@@ -47,8 +47,8 @@ async function openTeam() {
         if (type === 'agent.retired') grants.release(String(detail.assignmentId));
         store.put(`lifecycle:${randomUUID()}`, { type, detail }, 0);
       },
-      audit(id, events) {
-        audits.append(runId, id, events);
+      audit(id, session) {
+        audits.appendNative(runId, id, session);
       },
     },
     () => ({ provider: 'openai-compatible', model: 'deployment-model' }),
@@ -222,6 +222,30 @@ test('team close drains pending native creation and prevents further admission',
     await closing;
     assert.equal(t.host.sessions.list().length, 0);
     await assert.rejects(t.sessions.create('lead', t.brief()), /admission closed/);
+  } finally {
+    await t.close();
+  }
+});
+
+test('native delivery publishes its error events when the selected model adapter is unavailable', async () => {
+  const t = await openTeam();
+  try {
+    const assignment = await t.sessions.create('lead', t.brief());
+    await assert.rejects(
+      t.sessions.deliver(assignment.id, { instruction: 'Review the document.' }, 'user'),
+      /no adapter registered/,
+    );
+    const session = t.host.sessions.get(SessionId(assignment.sessionId))!;
+    const events = session.snapshotEvents();
+    assert(events.some((event) => event.type === 'turn/end' && event.data.reason.kind === 'error'));
+    assert.deepEqual(t.audits.read(t.runId)[0]!.value, events);
+    assert.deepEqual(t.store.get(`session-audit:${t.runId}:${assignment.id}`)?.value, {
+      format: 'edh.session-audit.v2',
+      count: events.length,
+      sessionId: session.id,
+    });
+    await t.sessions.retire(assignment.id, 'model-unavailable');
+    assert.equal(t.host.sessions.get(SessionId(assignment.sessionId)), undefined);
   } finally {
     await t.close();
   }

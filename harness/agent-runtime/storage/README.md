@@ -37,8 +37,11 @@ records. `list(prefix)` explicitly collects all selected values. Iterators obser
 records as keys are visited; historical readers use published count/version boundaries
 when they need a fixed view. Keep the store open while consuming an iterator.
 [session-audits.ts](src/session-audits.ts) appends native audit events separately,
-publishes a durable count index and reads historical full-array snapshots. Entire
-audit histories no longer need to fit one 8 MiB journal record. Resumable model sessions
+publishes a durable count index and reads historical full-array snapshots. Native
+publication uses `appendNative` with fixed sequence boundaries and individual event
+reads. V2 indexes retain the native Session identity; older indexed/inline histories
+can be adopted after complete published-prefix validation. Each event is subject to
+the journal's 8 MiB record limit. Resumable model sessions
 and automatic stale-lock takeover remain unimplemented.
 
 `SessionAudits.index`, `page` and `before` provide bounded assignment/event reads for

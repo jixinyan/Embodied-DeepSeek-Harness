@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
 import type { AgentHandle, AssistantStreamFrame } from '@deepseek-ai/dsh-agent';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
+import { SessionSeq, type Session } from '@deepseek-ai/dsh-session';
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools';
 import { createDshSession } from '@edh/agents';
 import type { ContractValidator, InvocationBrief } from '@edh/contracts';
@@ -18,7 +19,7 @@ export interface SessionHooks {
   tools(assignment: Assignment): readonly ToolDefinition[];
   context?(assignment: Assignment): Record<string, unknown>;
   event(type: string, detail: Record<string, unknown>): void;
-  audit(assignmentId: string, events: unknown): void;
+  audit(assignmentId: string, session: Session): void;
   stream?(assignmentId: string, frame: AssistantStreamFrame): void;
 }
 /** Delegation creates a neutral-host DSH session; delivery uses the original inbox. */
@@ -203,7 +204,7 @@ export class TeamSessions {
       throw new Error('Destination assignment is unknown, finishing or retired.');
     const attachments = structuredClone(images);
     if (attachments.length > 16) throw new Error('Message exceeds the image reference bound.');
-    const before = entry.handle.agent.session.snapshotEvents().length;
+    const before = entry.handle.agent.session.seq;
     const messageId = randomUUID();
     this.hooks.event('message.delivered', {
       messageId,
@@ -222,8 +223,9 @@ export class TeamSessions {
       }),
     );
     await entry.handle.agent.whenIdle();
-    const events = entry.handle.agent.session.snapshotEvents();
-    this.hooks.audit(assignmentId, events);
+    const session = entry.handle.agent.session;
+    const through = session.seq;
+    this.hooks.audit(assignmentId, session);
     const meter = this.host.get('tokenMeter');
     if (meter) {
       const measurement = meter.measure(entry.handle.agent.session);
@@ -235,7 +237,9 @@ export class TeamSessions {
         contextWindow: entry.handle.agent.session.requestContext()?.contextWindow ?? null,
       });
     }
-    for (const event of events.slice(before)) {
+    for (let index = before; index < through; index++) {
+      const event = session.eventAt(SessionSeq(index));
+      if (!event) throw new Error('Incomplete native delivery history.');
       if (event.type === 'turn/end' && event.data.reason.kind === 'error')
         throw new Error(event.data.reason.error.message);
     }
@@ -290,7 +294,7 @@ export class TeamSessions {
         errors.push(error);
       }
       try {
-        this.hooks.audit(id, entry.handle.agent.session.snapshotEvents());
+        this.hooks.audit(id, entry.handle.agent.session);
       } catch (error) {
         errors.push(error);
       }

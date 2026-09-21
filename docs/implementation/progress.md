@@ -1,19 +1,25 @@
 # Implementation progress
 
-Spec: v1.26. Current checkpoint: **native assignment cleanup, final audits and retired evidence-grant release**.
+Spec: v1.27. Current checkpoint: **incremental native audit publication with Session identity**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
+Native audit publication and delivery-error inspection read the original DSH event
+sequence directly. Published audits bind their native Session identity, and adopting
+older unbound histories validates every published event. Audit export holds individual
+event bodies; active native log/surface retention remains open.
+[Publication semantics](session-audits.md#native-publication).
+
 Native role retirement removes Agent/Session registry entries, includes scoped-cleanup
 events in the final audit, and releases assignment evidence permissions. Creation
 publication failures also dispose acquired handles. Late grant extensions fail, and
-cleanup errors remain observable at shutdown. Seven native/file lifecycle checks
+cleanup errors remain observable at shutdown. Eight native/file lifecycle checks
 exercise this behavior without a model or physical backend. Active-session and retained
 application-history limits remain open. [Lifecycle guide](assignment-lifetime.md).
 
-The latest delivery connects original-image reference inspection and collection to
+Configured image retention connects original-image reference inspection and collection to
 idle server admission and the console. Configured reference sources hold their own
 images, journal writes pause during inspection/deletion, and every SKILL source and
 stored session resource state is checked. Complete external ownership is a deployment
@@ -72,10 +78,11 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: eight retention/admission checks, nine original-image collection
-checks, 23 image/lifetime/HTTP checks, 16 storage/admission checks and 22 console tests
-pass. Prior checkpoints passed nine SKILL provenance, eight evidence-storage, nine audit
-and 16 history tests. Browser component DOM checks cover audit
+Current focused checks: sixteen native audit checks, eight assignment-lifecycle checks
+and 22 console tests pass. Prior checkpoints passed eight retention/admission checks,
+nine original-image collection checks, 23 image/lifetime/HTTP checks, 16 storage/admission
+checks, nine SKILL provenance checks, eight evidence-storage checks and 16 history tests.
+Browser component DOM checks cover audit
 assignment selection, event navigation and empty history; previous checks cover actual
 image loading, cache cleanup and journal compaction. TypeScript, formatting, provenance
 and structure checks pass. Scripted runtime tests were not executed for this checkpoint.
@@ -1155,3 +1162,31 @@ domain-record archival preserving SKILL provenance; active-task clarification;
 provider-backed criteria discovery; live VLM acceptance and CLI-free bootstrap.
 Physical worker/provider integration remains separate. The upper-runtime objective
 remains incomplete. [Lifecycle guide](assignment-lifetime.md).
+
+## Incremental native audit publication (2026-09-21)
+
+TeamSessions supplies its native Session to the synchronous audit hook. SessionAudits
+captures its event count, reads original events individually, writes the unpublished
+suffix and publishes the count after successful writes. Native delivery records its
+sequence boundaries and checks that range for turn errors. Both application paths use
+the original DSH sequence API without materializing a complete event-array snapshot.
+
+Native audit indexes use v2 with an explicit Session identity. Another native Session
+or an unbound array cannot extend them. Existing v1/inline histories remain readable;
+native adoption validates the entire published prefix before binding the identity.
+Conflicting unpublished events and oversized records fail with the previous published
+boundary retained. Stored event versions remain immutable across repeated publication,
+adoption, compaction and reopening.
+
+Validation: sixteen audit checks and eight assignment-lifecycle checks pass using
+actual native Session/Agent services, authored documents, real journals and HTTP.
+The native delivery check exercises an unavailable adapter and verifies persisted
+error events. Twenty-two console tests, strict TypeScript, formatting, 128 pinned DSH
+source files, 25 module bindings and local documentation links pass. Scripted
+model/backend suites were not run; no successful live model call is claimed.
+
+Active native log/surface retention, retained assignment projections and domain-record
+archival remain required. Continue those alongside active-task clarification,
+provider-backed criteria discovery, live VLM acceptance and CLI-free bootstrap.
+Physical worker/provider integration retains its separate scope. The upper-runtime
+objective remains incomplete. [Audit publication guide](session-audits.md#native-publication).

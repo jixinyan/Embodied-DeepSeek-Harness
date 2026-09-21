@@ -1,6 +1,6 @@
 # Paged native session audits
 
-`SessionAudits` persists native DSH event snapshots at delivery quiescence and role
+`SessionAudits` persists native DSH events at delivery quiescence and role
 retirement. Each event is a separate immutable journal record. An assignment index
 publishes the visible count after event writes complete. An uncommitted suffix is
 excluded from readers. This is a read-only debugging history; it does not resume a
@@ -76,15 +76,63 @@ callers and can allocate memory proportional to that history. The HTTP inspector
 the paged APIs. This change preserves DSH event production, append-only publication,
 native compaction and role disposal.
 
+## Native publication
+
+The application calls `SessionAudits.appendNative(runId, assignmentId, session)`.
+It captures `session.seq` once, then uses the original `session.eventAt` API to read
+the required immutable events individually. Publication validates the previous boundary,
+writes new event records, and publishes the captured count after all writes succeed.
+Repeated publication at the same boundary performs no writes. A persisted unpublished
+suffix is accepted only when its events exactly match the native source.
+
+Native audits use this index:
+
+```json
+{
+  "format": "edh.session-audit.v2",
+  "count": 300,
+  "sessionId": "native-session-id"
+}
+```
+
+A v2 index accepts publication only from that native Session identity. The array-based
+`append` API serves unbound imported histories and writes v1 indexes; it cannot extend
+a v2 audit. Both indexed formats and legacy inline arrays are readable. Adopting a v1
+index or inline history through `appendNative` verifies the entire published prefix
+before binding the identity. Missing records and mismatched events fail. Existing
+immutable event records retain their versions. Readers must support v2 for workspaces
+containing native audit indexes written by this version.
+
+`SessionHooks.audit` receives `(assignmentId, session)` synchronously. Application
+hooks call `appendNative` directly. TeamSessions records native sequence boundaries
+around delivery and reads that range for turn errors. Audit publication and delivery
+inspection do not request a full event-array snapshot or clone the native log.
+
+The native Session remains the owner of its active log, surface and derived context.
+This publication path holds individual event bodies and fixed counters; legacy inline
+adoption also loads its existing single journal record. Native history, stored key
+indexes, assignment projections and explicitly requested full-history reads retain
+their independent allocation costs. Event writes are incremental: an oversized event
+or storage error may leave a persisted suffix, while the prior published count remains
+authoritative. Every individual event must fit the journal's record limit.
+
 ## Acceptance and remaining work
 
-`pnpm test:audits` runs nine actual-file/HTTP/process tests. They cover both navigation
+`pnpm test:audits` runs sixteen native-session/file/HTTP/process tests. They cover both navigation
 directions, fixed ranges during append, UTF-8 byte limits, oversized events, assignment
 pagination, task isolation, incomplete publications, corruption, legacy arrays,
 compaction and reopening. A child process with a 64 MiB V8 old-space limit writes and
 reopens more than 96 MiB of documents and reads every event through bounded pages.
 Browser component acceptance uses the production markup, controller and query reader
 with actual stored documents. No model or environment executes in these checks.
+
+Native publication tests use the original Session implementation and authored document
+messages. They verify suffix-only writes, idempotence, v2 identity checks, complete
+prefix validation on adoption, partial-publication reconciliation, malformed indexes,
+record-limit failure and reopening after compaction. Assignment lifecycle acceptance
+also runs a native delivery with an unavailable adapter and checks that its actual
+error events are published before the caller receives the failure. Successful live
+model delivery and bounded active-log memory remain separate acceptance requirements.
 
 Disk retention, original-media reference accounting, distinct-key index growth and
 native active-session event lifetime still require domain-specific lifecycle work.

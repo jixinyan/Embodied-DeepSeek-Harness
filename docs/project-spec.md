@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.26 · 2026-09-21
+Version: v1.27 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -301,6 +301,14 @@ reports and audits retain their independent lifetimes. See the
 Retired identities are not reusable. Callers may query/acknowledge durable reports
 after native disposal. A late child report to a finished caller is retained with
 failed delivery, without reopening the caller or implicitly transferring new context.
+
+Native audit publication captures the Session event count and reads events by their
+original sequence. Only the unpublished suffix is written, followed by its visible
+count. The v2 audit index binds a native Session identity to the assignment. Adopting
+an unbound historical audit checks its entire published prefix. Delivery error checks
+also inspect only the current delivery range. These operations preserve the native
+DSH event log; active-log retention remains separate work. See the
+[audit publication interface](implementation/session-audits.md#native-publication).
 
 Before retry, Planner prepares the Evolver handoff and recovery record. Starting the
 experience agent must not block execution: durable events can be read later through

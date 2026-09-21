@@ -147,3 +147,8 @@ Visual-selection events are stored in EDH's existing append-only session audits 
 run events. This is not a resumable upstream persistence backend. Any future DSH
 persistence provider must explicitly account for EDH's added event vocabulary; do
 not silently skip unknown required events or resume physical commands from history.
+
+Native audit publication uses fixed sequence boundaries and individual event reads.
+Delivery error inspection uses the same native sequence API. Both paths preserve the
+active log and avoid materializing a complete audit array. Native log/surface retention
+and live summary evaluation remain independent requirements.

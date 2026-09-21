@@ -285,8 +285,8 @@ export class UpperRun {
             else this.spawn(this.fail(new Error('Assignment deadline exceeded.')));
           }
         },
-        audit: (id, events) => {
-          audits.append(this.state.id, id, events);
+        audit: (id, session) => {
+          audits.appendNative(this.state.id, id, session);
         },
       },
       options.model,
