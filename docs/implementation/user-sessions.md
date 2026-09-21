@@ -47,7 +47,8 @@ cannot allocate while a user session owns the environment.
 - `GET /api/sessions/:id`: state, resource disposition, configuration and a compact
   `taskHistory` containing format, task count and latest task ID. Read task IDs through
   the session-scoped `/api/runs` pages.
-- `POST /api/sessions/:id/tasks`: `{scenario, requestId, instruction?, contextRunIds?}`
+- `GET /api/sessions/:id/tasks`: read the immutable session task catalog.
+- `POST /api/sessions/:id/tasks`: `{scenario, requestId, catalogRevision, instruction?, contextRunIds?}`
   starts a task using an allowed criteria preset and an optional user instruction.
 - `POST /api/sessions/:id/close`: `{}` ends the session and releases the environment.
 - Existing run detail, SSE, pause, resume-request, stop and audit endpoints remain.
@@ -144,10 +145,10 @@ require source-aware retention; this change bounds the session's task-history fi
 
 ## Task instructions and explicit history
 
-The user selects an installed task criteria preset and edits the next instruction in
+The user selects a task from the session catalog and edits the next instruction in
 the console. `instruction` accepts 1–4000 characters; omitted instructions use the
 preset text. The selected goal, success checks, entities, subgoal catalog and budget
-remain deployment-bound. Browser input cannot replace these fields. The Planner
+remain bound to the admitted deployment/environment catalog. Browser input cannot replace these fields. The Planner
 receives the instruction as the objective in its native DSH invocation.
 
 `contextRunIds` explicitly selects up to four completed tasks from the same user
@@ -168,7 +169,8 @@ brief. Workspace SKILL retrieval remains the mechanism for cross-session experie
 The accepted submission is stored with the run and available through **Inspect submitted
 input**, including the criteria snapshot and exact historical context admitted for that task.
 
-Request identity includes the effective instruction and ordered context selection.
+Request identity includes the effective instruction, ordered context selection and
+the session catalog's content digest. [Catalog API and provider interface](session-task-catalogs.md).
 Reusing a request ID with changed input fails. Repeated requests return only a durable
 run belonging to the same session; incomplete admission records require inspection.
 The browser keeps one pending request identity in native session storage until the
@@ -227,8 +229,8 @@ overrides are disabled.
 
 1. Connect actual simulation/hardware allocations, owned workers, action admission and
    device resource reconciliation. No real provider is bundled in the CPU demo.
-2. Add provider-backed discovery and confirmation of new task criteria. Editable
-   instructions and scoped prior-task context use deployment-registered criteria.
+2. Validate environment task discovery and execution with actual providers. The host
+   captures immutable catalogs and the console confirms selected catalog revisions.
    [Active-task clarification](user-clarification.md) now has durable question/answer
    records, native DSH followups and console component acceptance; live-model and
    provider-confirmed pause/resume acceptance remains required.

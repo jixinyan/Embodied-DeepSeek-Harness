@@ -8,6 +8,7 @@ import { Context } from '@deepseek-ai/cordis';
 import { ContractValidator } from '@edh/contracts';
 import type { ResolvedPhysicalRuntimeProfile } from '@edh/execution';
 import { UserSessions, SessionConflict } from './user-sessions.js';
+import { SessionTaskCatalogs } from './session-task-catalog.js';
 import { validateLaunchSelection } from '../../console/public/launch-selection.js';
 import { consoleContentSecurityPolicy, readConsoleAsset } from './console-assets.js';
 import { admitSessionTask } from './task-admission.js';
@@ -221,7 +222,8 @@ async function startApplication(
       }
     }
     const store = (ownedStore = new LocalStore(options.dataDirectory));
-    const userSessions = new UserSessions(store);
+    const taskCatalogs = new SessionTaskCatalogs(store, validator);
+    const userSessions = new UserSessions(store, taskCatalogs);
     const reports = new AssignmentReports(store, validator);
     reports.reconcileInterruptedDeliveries();
     interruptClarifications(store);
@@ -279,7 +281,7 @@ async function startApplication(
       digest: team.sourceDigest,
       tools: deployment.metadata.tools,
       scenarios,
-      goal: deployment.tasks[scenarios[0]!]!.goal,
+      goal: scenarios.length ? deployment.tasks[scenarios[0]!]!.goal : null,
       scenarioGoals: Object.fromEntries(scenarios.map((id) => [id, deployment.tasks[id]!.goal])),
       physicalRuntime:
         deployment.metadata.source === 'test_fixture' ? 'not_connected' : 'deployment_bound',
@@ -547,6 +549,17 @@ async function startApplication(
                 ...(profile.physicalProfile ? { profile: profile.physicalProfile } : {}),
               });
             },
+            profile.taskSource === 'environment'
+              ? { source: 'environment' }
+              : {
+                  source: 'deployment',
+                  configured: {
+                    revision: deploymentDigest,
+                    tasks: Object.fromEntries(
+                      profile.tasks.map((id) => [id, deployment.metadata.tasks[id]!]),
+                    ),
+                  },
+                },
           );
           return json(res, 201, record);
         }
@@ -558,6 +571,13 @@ async function startApplication(
           const operation = userSessionRoute[2];
           const record = userSessions.get(id);
           if (method === 'GET' && !operation) return json(res, 200, record);
+          if (method === 'GET' && operation === 'tasks') {
+            if ([...url.searchParams].length)
+              throw new HttpError(400, 'Task catalog reads accept no query parameters.');
+            if (!record.taskCatalog)
+              throw new HttpError(404, 'This session has no retained task catalog.');
+            return json(res, 200, taskCatalogs.read(record));
+          }
           if (method === 'POST' && operation === 'close') {
             const data = await body(req);
             if (Object.keys(data).length)
@@ -568,11 +588,15 @@ async function startApplication(
             const data = await body(req);
             const profile = deployment.launchProfiles[record.profileId];
             if (!profile) throw new HttpError(400, 'The session launch profile is unavailable.');
+            if (record.deploymentDigest !== deploymentDigest)
+              throw new HttpError(409, 'The session belongs to a different deployment.');
+            const catalog = record.taskCatalog ? taskCatalogs.read(record) : undefined;
             const submission = admitSessionTask(data, {
               validator,
               session: record,
-              allowedTasks: profile.tasks,
-              tasks: deployment.tasks,
+              allowedTasks: catalog ? Object.keys(catalog.tasks) : profile.tasks,
+              tasks: catalog?.tasks ?? deployment.tasks,
+              ...(catalog ? { catalogRevision: catalog.descriptor.digest } : {}),
               store,
             });
             if (admitting) throw new HttpError(409, 'A task is being admitted.');
@@ -611,6 +635,9 @@ async function startApplication(
                 return run;
               },
               submission.identity,
+              catalog
+                ? { task: catalog.tasks[taskId]!, catalogRevision: catalog.descriptor.digest }
+                : undefined,
             );
             return json(res, result.replayed ? 200 : 201, result);
           }

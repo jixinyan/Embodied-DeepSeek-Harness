@@ -7,6 +7,7 @@ import {
 import { renderLaunchControls } from './launch-controls.js';
 import { renderCoordination } from './coordination.js';
 import { renderTaskComposer } from './task-composer.js';
+import { createTaskCatalogSelection } from './task-catalog.js';
 import { bindClarification } from './clarification.js';
 import { api } from './api.js';
 import { taskRequest, completeTaskRequest } from './task-request.js';
@@ -48,6 +49,16 @@ const shorten = (id) => (id ? id.slice(0, 8) : '—');
 function error(message) {
   $('error').hidden = !message;
   text('error', message || '');
+}
+const taskCatalog = createTaskCatalogSelection(api, () => updateControls(), error);
+function taskDefinitions() {
+  const session = activeUserSession();
+  if (!session?.taskCatalog) return { presets: config.taskPresets, goals: config.scenarioGoals };
+  const presets = taskCatalog.ready(session) ? taskCatalog.catalog.tasks : {};
+  return {
+    presets,
+    goals: Object.fromEntries(Object.entries(presets).map(([id, task]) => [id, task.goal])),
+  };
 }
 function inspect(title, value) {
   auditBrowser.close();
@@ -117,11 +128,20 @@ function renderLauncher() {
           : 'Choose components to resolve a compatible configuration.'
         : 'This deployment has no session launcher. The task button uses the legacy single-run API.',
   );
-  for (const option of $('scenario').options)
-    option.disabled = Boolean(profile && !profile.tasks.includes(option.value));
-  if ($('scenario').selectedOptions[0]?.disabled) $('scenario').value = profile.tasks[0];
+  const definitions = taskDefinitions();
+  const choices = Object.entries(definitions.presets ?? {}).filter(
+    ([id]) => session?.taskCatalog || !profile || profile.tasks.includes(id),
+  );
+  const choiceSignature = JSON.stringify(choices.map(([id, task]) => [id, task.label]));
+  if ($('scenario').dataset.choices !== choiceSignature) {
+    const prior = $('scenario').value || $('scenario').dataset.previous;
+    $('scenario').replaceChildren(...choices.map(([id, task]) => new Option(task.label, id)));
+    if (choices.some(([id]) => id === prior)) $('scenario').value = prior;
+    $('scenario').dataset.choices = choiceSignature;
+  }
+  if ($('scenario').value) $('scenario').dataset.previous = $('scenario').value;
   if (!current)
-    $('instruction').value = config.taskPresets?.[$('scenario').value]?.instruction ?? '';
+    $('instruction').value = definitions.presets?.[$('scenario').value]?.instruction ?? '';
   $('create-session').disabled =
     busy ||
     Boolean(activeUserSessionId) ||
@@ -169,10 +189,12 @@ async function refreshHistory() {
 }
 function updateControls() {
   const active = activeRunRecord;
+  taskCatalog.select(activeUserSession());
   $('start').disabled =
     busy ||
     Boolean(active && !ended(active.state)) ||
-    (hasLauncher() && activeUserSession()?.state !== 'ready');
+    (hasLauncher() &&
+      (activeUserSession()?.state !== 'ready' || !taskCatalog.ready(activeUserSession())));
   $('scenario').disabled = $('start').disabled;
   renderLauncher();
   updateTaskComposer();
@@ -184,16 +206,32 @@ function updateControls() {
   $('stop').disabled = !writable;
 }
 function updateTaskComposer() {
+  const definitions = taskDefinitions();
+  const session = activeUserSession();
   renderTaskComposer({
     enabled: hasLauncher(),
     session: activeUserSession(),
     scenario: $('scenario').value,
-    presets: config.taskPresets,
-    goals: config.scenarioGoals,
+    presets: definitions.presets,
+    goals: definitions.goals,
     runs: taskHistory.runs,
-    busy,
+    busy: busy || !taskCatalog.ready(session),
     current,
   });
+  $('reload-task-catalog').disabled =
+    busy || !session?.taskCatalog || taskCatalog.status === 'loading';
+  const revision = session?.taskCatalog?.revision ?? '';
+  $('task-catalog-status').title = revision;
+  text(
+    'task-catalog-status',
+    session?.taskCatalog
+      ? taskCatalog.status === 'ready'
+        ? `${Object.keys(definitions.presets).length} tasks · ${session.taskCatalog.source} · ${revision.length > 28 ? revision.slice(0, 12) + '…' : revision}`
+        : taskCatalog.status === 'error'
+          ? 'Task catalog unavailable. Reload to retry.'
+          : 'Loading session tasks…'
+      : 'Deployment task criteria',
+  );
 }
 const archivedSensor = createAssignmentSelection(api, () => showSensor(), error);
 const archivedTodo = createAssignmentSelection(api, () => renderTodos(), error);
@@ -902,6 +940,8 @@ $('start').onclick = () => {
   )
     return;
   return action(async () => {
+    if (!taskCatalog.ready(activeUserSession()))
+      throw new Error('Load the session task catalog before submitting a task.');
     const target = hasLauncher() ? `/api/sessions/${activeUserSessionId}/tasks` : '/api/runs';
     const input = {
       scenario: $('scenario').value,
@@ -909,6 +949,9 @@ $('start').onclick = () => {
         ? {
             instruction: $('task-instruction').value,
             contextRunIds: [...$('task-context').selectedOptions].map((option) => option.value),
+            ...(activeUserSession()?.taskCatalog
+              ? { catalogRevision: activeUserSession().taskCatalog.digest }
+              : {}),
           }
         : {}),
     };
@@ -963,11 +1006,15 @@ $('refresh-history').onclick = () => refreshHistory().catch((e) => error(e.messa
 $('sensor-view').onchange = showSensor;
 $('scenario').onchange = () => {
   if (!current)
-    $('instruction').value = config.taskPresets?.[$('scenario').value]?.instruction ?? '';
+    $('instruction').value = taskDefinitions().presets?.[$('scenario').value]?.instruction ?? '';
   updateTaskComposer();
 };
 $('inspect-next-criteria').onclick = () =>
-  inspect('Next task · Required success criteria', config.scenarioGoals[$('scenario').value]);
+  inspect('Next task · Required success criteria', taskDefinitions().goals[$('scenario').value]);
+$('reload-task-catalog').onclick = () => {
+  taskCatalog.select(activeUserSession(), true);
+  updateControls();
+};
 $('inspect-submission').onclick = () =>
   inspect('Submitted task · User instruction, criteria and explicit context', current.submission);
 $('event-filter').onchange = renderTimeline;

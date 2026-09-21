@@ -44,6 +44,7 @@ export function sessionSummary(record: UserSessionRecord) {
     updatedAt: record.updatedAt,
     state: record.state,
     resources: record.resources,
+    ...(record.taskCatalog ? { taskCatalog: structuredClone(record.taskCatalog) } : {}),
     runCount: sessionTaskCount(record),
     environment: profile?.environment ?? null,
     embodiment: profile?.embodiment ?? null,

@@ -44,6 +44,12 @@ prompts and resolved bindings; do not put credentials in those public fields.
 Adapters and backend/tool factories are not serialized. A YAML tool name alone
 cannot load executable code. Follow the [native tool guide](upper-runtime.md).
 
+Launch profiles can set `taskSource: 'environment'` and `tasks: []` to discover task
+definitions from their allocated environment. Other profiles select deployment task
+IDs. Each new session snapshots a validated catalog before becoming ready; the console
+loads it and confirms its digest on submission. See the
+[session catalog interface](session-task-catalogs.md) for provider responsibilities.
+
 The default upper application requires the team's entrypoint to be its decision
 owner. This is checked before opening the store or allocating a backend. Unknown
 model aliases/providers, duplicate adapter bindings, invalid tasks/budgets and

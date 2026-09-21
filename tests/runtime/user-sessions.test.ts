@@ -14,7 +14,17 @@ import {
 } from '../../apps/server/src/demo-deployment.js';
 import { UserSessions } from '../../apps/server/src/user-sessions.js';
 
-async function post(url: string, path: string, data: unknown) {
+async function post(url: string, path: string, data: Record<string, unknown>) {
+  if (
+    path.startsWith('/api/sessions/') &&
+    path.endsWith('/tasks') &&
+    !Object.hasOwn(data, 'catalogRevision')
+  ) {
+    const catalogResponse = await fetch(url + path);
+    assert.equal(catalogResponse.status, 200);
+    const catalog = await catalogResponse.json();
+    data = { ...data, catalogRevision: catalog.descriptor.digest };
+  }
   const response = await fetch(url + path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

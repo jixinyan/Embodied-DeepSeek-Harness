@@ -103,7 +103,17 @@ native TeamSessions after the asking turn settles. The console owns drafts, expl
 submission and delivery-state presentation. Existing task criteria and device permissions
 remain authoritative. See the [interaction guide](../implementation/user-clarification.md).
 
+## Task catalog ownership
+
+`TaskDefinition` and GoalBinding validation live in the tasks module.
+`SessionTaskCatalogs` in the server owns immutable per-session catalog records and
+their ownership/content checks. UserSessions captures the configured source during
+environment admission; the HTTP service and console read the retained catalog.
+Task admission confirms its digest before passing one definition to UpperRun and
+the environment's task backend factory. See [task catalogs](../implementation/session-task-catalogs.md).
+
 ## Experience read ownership
+
 
 SkillLibrary owns immutable experience documents and explicit full/section reads.
 Its CommonMark reader preserves mandatory context and reference definitions while

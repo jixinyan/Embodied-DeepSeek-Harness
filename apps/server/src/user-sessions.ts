@@ -3,6 +3,8 @@ import { isDeepStrictEqual } from 'node:util';
 import { z } from 'zod';
 import type { LocalStore } from '@edh/storage';
 import type { EmbodiedBackend } from '@edh/execution';
+import type { TaskCatalogDefinition, TaskDefinition } from '@edh/tasks';
+import type { SessionTaskCatalogs, SessionCatalogDescriptor } from './session-task-catalog.js';
 import { UpperRun, terminal } from './application.js';
 import type { SessionEnvironment } from './deployment.js';
 import {
@@ -29,6 +31,7 @@ export type UserSessionRecord = SessionTaskFields & {
     | 'interrupted';
   resources: 'allocating' | 'held' | 'released' | 'unknown';
   configuration: Record<string, unknown>;
+  taskCatalog?: SessionCatalogDescriptor;
   error?: string;
 };
 export class SessionConflict extends Error {}
@@ -60,13 +63,20 @@ export class UserSessions {
   private shutdown = new AbortController();
   private closePromise?: Promise<void>;
   private readonly tasks: SessionTaskHistory;
-  constructor(private readonly store: LocalStore) {
+  constructor(
+    private readonly store: LocalStore,
+    private readonly catalogs?: SessionTaskCatalogs,
+  ) {
     this.tasks = new SessionTaskHistory(store);
     for (const row of store.scan<UserSessionRecord>('user-session:')) {
       if (row.key !== `user-session:${requestIdentity.parse(row.value.id)}`)
         throw new Error('User session identity conflicts with its record key.');
       this.retainRequest(row.value);
       const record = this.tasks.migrate(row.value, row.version);
+      if (record.taskCatalog) {
+        if (!this.catalogs) throw new Error('Session task catalog reader is required.');
+        this.catalogs.read(record);
+      }
       if (record.state === 'closed' || record.state === 'interrupted') continue;
       this.save({
         ...record,
@@ -160,12 +170,14 @@ export class UserSessions {
   open(
     input: SessionOpenInput,
     allocate: (signal: AbortSignal) => Promise<SessionEnvironment> | SessionEnvironment,
+    catalog?: { source: SessionCatalogDescriptor['source']; configured?: TaskCatalogDefinition },
   ): Promise<UserSessionRecord> {
     return this.exclusive(async () => {
       const prior = this.replaySession(input);
       if (prior) return prior;
       if (this.current)
         throw new SessionConflict('End the current session before allocating another environment.');
+      if (catalog && !this.catalogs) throw new Error('Session task catalog reader is required.');
       const record: UserSessionRecord = {
         ...input,
         configuration: JSON.parse(JSON.stringify(input.configuration)),
@@ -181,6 +193,14 @@ export class UserSessions {
       const current = (this.current = { record } as NonNullable<UserSessions['current']>);
       try {
         current.environment = await allocate(this.shutdown.signal);
+        this.shutdown.signal.throwIfAborted();
+        if (catalog)
+          record.taskCatalog = await this.catalogs!.capture(
+            record,
+            current.environment,
+            catalog,
+            this.shutdown.signal,
+          );
         this.shutdown.signal.throwIfAborted();
         record.state = 'ready';
         record.resources = 'held';
@@ -225,6 +245,7 @@ export class UserSessions {
     requestId: string,
     create: (backend: EmbodiedBackend, record: UserSessionRecord) => UpperRun,
     inputIdentity = taskId,
+    definition?: { task: TaskDefinition; catalogRevision: string },
   ): Promise<{ runId: string; replayed?: boolean }> {
     return this.exclusive(async () => {
       const record = this.get(id);
@@ -244,6 +265,7 @@ export class UserSessions {
       try {
         backend = await current.environment.createTaskBackend(taskId, {
           signal: this.shutdown.signal,
+          ...(definition ? structuredClone(definition) : {}),
         });
         this.shutdown.signal.throwIfAborted();
         const run = create(backend, record);

@@ -90,7 +90,12 @@ and followup delivery, task/assignment admission and an inline response panel. N
 HTTP and browser component checks pass; live-model continuation with a real provider
 remains unverified. [Interaction guide](user-clarification.md).
 
-Still pending: actual simulator/hardware allocation, discovery of new task criteria,
+Session-specific catalogs can be captured from deployment definitions or the allocated
+environment's `describeTasks`. Console selection and backend creation share the admitted
+definition and content digest. Actual document/journal/HTTP checks cover persisted
+catalogs and selection. See [task catalogs](session-task-catalogs.md).
+
+Still pending: actual simulator/hardware allocation, provider-backed catalog discovery acceptance,
 live end-to-end clarification acceptance and CLI-free server bootstrap.
 [Legacy design migration audit](legacy-migration.md) lists retained and missing designs.
 

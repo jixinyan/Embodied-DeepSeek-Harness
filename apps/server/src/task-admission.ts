@@ -18,6 +18,7 @@ export function admitSessionTask(
   options: {
     session: UserSessionRecord;
     allowedTasks: readonly string[];
+    catalogRevision?: string;
     tasks: Readonly<
       Record<
         string,
@@ -30,7 +31,8 @@ export function admitSessionTask(
 ) {
   if (
     Object.keys(input).some(
-      (key) => !['scenario', 'requestId', 'instruction', 'contextRunIds'].includes(key),
+      (key) =>
+        !['scenario', 'requestId', 'instruction', 'contextRunIds', 'catalogRevision'].includes(key),
     ) ||
     typeof input.scenario !== 'string' ||
     !options.allowedTasks.includes(input.scenario) ||
@@ -39,6 +41,8 @@ export function admitSessionTask(
     !/^[A-Za-z0-9-]{8,80}$/.test(input.requestId)
   )
     throw new Error('Invalid task criteria or request ID for this session.');
+  if (input.catalogRevision !== options.catalogRevision)
+    throw new Error('Task catalog changed or was not selected. Refresh the session task catalog.');
   if (
     input.instruction !== undefined &&
     (typeof input.instruction !== 'string' ||
@@ -92,10 +96,19 @@ export function admitSessionTask(
   const instruction =
     input.instruction === undefined ? task.instruction : (input.instruction as string).trim();
   const identity =
-    instruction === task.instruction && !contextRunIds.length
+    instruction === task.instruction &&
+    !contextRunIds.length &&
+    options.catalogRevision === undefined
       ? input.scenario
       : `sha256:${createHash('sha256')
-          .update(JSON.stringify([input.scenario, instruction, contextRunIds]))
+          .update(
+            JSON.stringify([
+              input.scenario,
+              instruction,
+              contextRunIds,
+              ...(options.catalogRevision === undefined ? [] : [options.catalogRevision]),
+            ]),
+          )
           .digest('hex')}`;
   return {
     scenario: input.scenario,
@@ -104,6 +117,7 @@ export function admitSessionTask(
     context,
     contextRunIds: [...contextRunIds] as string[],
     identity,
+    ...(options.catalogRevision === undefined ? {} : { catalogRevision: options.catalogRevision }),
     goal: structuredClone(task.goal),
     allowedSubgoalChecks: structuredClone(task.allowedSubgoalChecks ?? []),
     predefinedGoals: structuredClone(task.predefinedGoals ?? []),

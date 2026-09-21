@@ -8,8 +8,8 @@ import {
   type PhysicalRuntimeProfile,
   type ResolvedPhysicalRuntimeProfile,
 } from '@edh/execution';
-import type { ContractValidator, SuccessCheck } from '@edh/contracts';
-import { TaskGoals, type GoalBinding } from '@edh/tasks';
+import type { ContractValidator } from '@edh/contracts';
+import { parseTaskDefinition, type TaskDefinition, type TaskCatalogDefinition } from '@edh/tasks';
 import type { ApplicationOptions } from './application.js';
 import { CORE_TOOLS } from './application.js';
 import type { ModelBinding } from './runtime.js';
@@ -26,10 +26,13 @@ export interface DeploymentServices {
 
 /** One environment allocation, retained across independent task backends. */
 export interface SessionEnvironment {
+  describeTasks?(options: {
+    signal: AbortSignal;
+  }): TaskCatalogDefinition | Promise<TaskCatalogDefinition>;
   /** Fresh task control scope; closing this port must not destroy the environment. */
   createTaskBackend(
     taskId: string,
-    options: { signal: AbortSignal },
+    options: { signal: AbortSignal; task?: TaskDefinition; catalogRevision?: string },
   ): Promise<EmbodiedBackend> | EmbodiedBackend;
   /** Stop/release the environment, even after a task-port cleanup error. */
   close(): Promise<void>;
@@ -44,6 +47,7 @@ export interface LaunchProfile {
   /** Default for roles without an explicit model binding. */
   readonly defaultModel: string;
   readonly tasks: readonly string[];
+  readonly taskSource?: 'deployment' | 'environment';
   readonly physicalProfile?: PhysicalRuntimeProfile;
   readonly physicalProviders?: PhysicalProfileValidators;
   readonly createEnvironment: (options: {
@@ -52,12 +56,7 @@ export interface LaunchProfile {
     profile?: ResolvedPhysicalRuntimeProfile;
   }) => SessionEnvironment | Promise<SessionEnvironment>;
 }
-export interface TaskPreset {
-  readonly label: string;
-  readonly instruction: string;
-  readonly goal: GoalBinding;
-  readonly allowedSubgoalChecks?: readonly SuccessCheck[];
-  readonly predefinedGoals?: readonly GoalBinding[];
+export interface TaskPreset extends TaskDefinition {
   /** A fresh backend per admitted run. Startup preflight never calls this factory. */
   readonly createBackend: (options: {
     signal: AbortSignal;
@@ -123,7 +122,13 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
       throw new Error(`Invalid or reserved tool binding: ${id}`);
   const tasks: Record<string, TaskPreset> = Object.create(null);
   const taskMetadata: Record<string, Omit<TaskPreset, 'createBackend'>> = Object.create(null);
-  if (!Object.keys(input.tasks).length) throw new Error('Deployment requires at least one task.');
+  if (
+    !Object.keys(input.tasks).length &&
+    !Object.values(input.launchProfiles ?? {}).some(
+      (profile) => profile.taskSource === 'environment',
+    )
+  )
+    throw new Error('Deployment requires tasks or an environment task catalog.');
   for (const [id, task] of Object.entries(input.tasks)) {
     if (
       !validId(id) ||
@@ -133,8 +138,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     )
       throw new Error(`Invalid task preset: ${id}`);
     const { createBackend, ...metadata } = task;
-    const data = freeze(structuredClone(metadata));
-    new TaskGoals(validator, data.goal, data.allowedSubgoalChecks, data.predefinedGoals);
+    const data = freeze(parseTaskDefinition(metadata, validator));
     taskMetadata[id] = data;
     tasks[id] = Object.freeze({ ...data, createBackend });
   }
@@ -167,7 +171,9 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
       !Object.hasOwn(models, profile.defaultModel) ||
       typeof profile.createEnvironment !== 'function' ||
       !Array.isArray(profile.tasks) ||
-      !profile.tasks.length ||
+      (profile.taskSource !== undefined &&
+        !['deployment', 'environment'].includes(profile.taskSource)) ||
+      (profile.taskSource === 'environment' ? profile.tasks.length !== 0 : !profile.tasks.length) ||
       new Set(profile.tasks).size !== profile.tasks.length ||
       profile.tasks.some((id) => !Object.hasOwn(tasks, id))
     )
@@ -188,6 +194,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
         checkpoint: profile.checkpoint,
         defaultModel: profile.defaultModel,
         tasks: [...profile.tasks],
+        taskSource: profile.taskSource ?? 'deployment',
         ...(resolved ? { physicalProfile: resolved } : {}),
       }),
     );

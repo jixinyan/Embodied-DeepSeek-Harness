@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.41 · 2026-09-21
+Version: v1.42 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -37,7 +37,7 @@ This provides configuration assembly, not a connected physical provider.
 OpenAI-compatible VLM transport now reuses native DSH serialization and streaming.
 WebSocket policy transport and a deterministic action gate run independently with CPU
 acceptance. Current work prioritizes upper-runtime retention and lifecycle,
-criteria discovery, live VLM acceptance and console bootstrap. Active-task clarification
+provider-backed criteria discovery acceptance, live VLM acceptance and console bootstrap. Active-task clarification
 has native/file/HTTP and console component acceptance; live task continuation remains
 required. Physical
 integration requires the host-to-Python worker bridge, resource/watchdog lifecycle
@@ -100,6 +100,13 @@ before journal publication; subsequent catalog admission preserves existing bind
 and rejects invalid batches without partial updates. See
 [goal admission](../harness/agent-runtime/tasks/README.md#goal-binding-admission).
 
+Each new User Session stores an immutable task catalog supplied by its deployment or
+the allocated environment's `describeTasks` method. Console task choices and criteria
+inspection read that session catalog. Submission confirms its content digest, and task
+backend creation receives the selected definition and digest. Snapshot ownership,
+shape and content are validated independently of model decisions. See
+[catalog discovery, persistence and acceptance](implementation/session-task-catalogs.md).
+
 ### User-session and launcher clarification (v1.12)
 
 A user conversation is a **User Session** containing multiple sequential task runs
@@ -131,7 +138,7 @@ logo and a blue/white palette. Debug output remains directly inspectable.
 
 Session task admission accepts an editable user instruction and up to four explicitly
 selected historical outcomes from that session. Selected criteria remain immutable
-deployment bindings. Ownership, terminal state, input limits and complete request
+session-catalog bindings. Ownership, terminal state, input limits and complete request
 identity are checked before allocation. A saved submission records the criteria and
 context snapshot. The entry Planner receives this context through its InvocationBrief;
 delegated agents retain independent caller-provided briefs. Browser drafts survive
@@ -141,7 +148,7 @@ native DSH turn conclusion and followup delivery, plus a console response panel.
 Answer acceptance retains current criteria and execution permissions; resumed execution
 requires an explicit Planner decision. Restart interrupts unfinished interactions.
 See [clarification behavior and acceptance](implementation/user-clarification.md).
-Provider-backed discovery of new criteria and live clarification/pause/resume acceptance
+Provider-backed acceptance of catalog discovery and live clarification/pause/resume acceptance
 remain open.
 
 ### 0.2 Repository and workspace

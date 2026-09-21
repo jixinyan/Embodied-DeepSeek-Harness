@@ -37,6 +37,12 @@ remain separate integration requirements.
 
 ## Runtime responsibilities
 
+[task-definition.ts](src/task-definition.ts) validates public task definitions and
+versioned catalogs using the same goal admission. Server deployment presets and
+environment-supplied catalogs share these types. Definitions contain public task
+instructions and criteria; executable providers remain application bindings.
+See [session catalogs](../../../docs/implementation/session-task-catalogs.md).
+
 The runner executes sequential subgoals and observes one recovery chain at a time.
 Repair prerequisites can succeed while the original recovery remains open. Only the
 original-goal verdict authorizes its SKILL. Learning failures do not fail the task.

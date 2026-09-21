@@ -1,10 +1,24 @@
 # Implementation progress
 
-Spec: v1.41. Current checkpoint: **shared goal binding admission before plan publication**.
+Spec: v1.42. Current checkpoint: **immutable session task catalogs and confirmed task selection**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+New sessions capture a task catalog from registered deployment definitions or the
+allocated environment's `describeTasks`. The host validates complete task definitions,
+stores immutable ownership/revision/content records and publishes a compact descriptor.
+The console reads that session's tasks and criteria, disables submission during failed
+or pending reads, and confirms the catalog digest on submission. Backend task creation
+receives the selected definition and digest. Startup validates retained catalogs without
+allocating providers. Four authored catalog/journal checks, fourteen task/session request
+checks and twenty-five console checks pass (43 total). The console catalog check uses
+actual HTTP and stored documents. TypeScript, formatting, pinned-source provenance and
+523 documentation-link checks pass. No model or environment allocation executes in these
+checks. Actual provider discovery/task execution, catalog scale limits and full console
+acceptance with those providers remain open, alongside upper lifecycle/retention and
+CLI-free bootstrap. [Catalog interface and acceptance](session-task-catalogs.md).
 
 Configured and Planner-created goals use complete GoalBinding validation. Entity maps,
 capabilities, task semantics, identity and configuration are checked alongside the shared

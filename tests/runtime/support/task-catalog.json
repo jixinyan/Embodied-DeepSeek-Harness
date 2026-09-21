@@ -1,0 +1,23 @@
+{
+  "revision": "authored-document-v1",
+  "tasks": {
+    "document-review": {
+      "label": "Review a document",
+      "instruction": "Review the project document and record its available sections.",
+      "goal": {
+        "id": "review-document",
+        "configuration": "authored-catalog-document",
+        "successContract": {
+          "id": "document-review",
+          "version": "1",
+          "all": [{ "check_id": "reviewed", "check": "document_reviewed", "args": ["document"] }],
+          "source": { "kind": "user", "reference": "authored-catalog-input-no-execution" }
+        },
+        "entities": { "document": "project-spec" },
+        "capabilities": ["document-reading"],
+        "taskSemantics": ["document inspection"],
+        "budget": { "max_control_steps": 100, "max_wall_time_s": 60 }
+      }
+    }
+  }
+}

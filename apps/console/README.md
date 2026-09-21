@@ -57,7 +57,11 @@ the active session targeted by the next task. Task stop does not end that sessio
 Selections resolve complete installed profiles and are checked again at admission with
 the catalog revision. An active session fixes its selections until End session.
 User instructions and selected historical outcomes are admitted against installed task
-criteria. New-criteria discovery and a CLI-free local-server bootstrap remain pending.
+criteria. Environment discovery can populate immutable session task catalogs; the
+console loads the active session's tasks, confirms the catalog digest on submission,
+and disables submission while the catalog is loading or unavailable. Reload task
+catalog retries an explicit read. See [catalog behavior](../../docs/implementation/session-task-catalogs.md).
+Actual provider discovery acceptance and a CLI-free local-server bootstrap remain pending.
 Active-task clarification has an inline response panel with persisted drafts,
 immutable accepted responses and delivery status; live-model continuation remains
 unverified. See the [interaction guide](../../docs/implementation/user-clarification.md).
