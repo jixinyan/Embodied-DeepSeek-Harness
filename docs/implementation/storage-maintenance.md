@@ -20,7 +20,7 @@ synchronized. The live index and file descriptor move to the published checkpoin
 The writer lock remains held throughout. A checkpoint that would not reduce journal
 size is discarded and the current journal remains authoritative.
 
-Nonempty checkpoints start with a JSON object containing:
+Checkpoints without prior retirement use a v1 header when nonempty:
 
 - `format`: `edh-domain-checkpoint-v1`.
 - `sequence`: the preserved global write sequence.
@@ -52,6 +52,55 @@ Failures before publication retain the previous authoritative journal. Failures 
 rename retain the published checkpoint and report the failure. A returned success
 requires publication and synchronization to complete. Process-termination acceptance
 does not establish protection against every filesystem or power failure.
+
+## Record retirement
+
+`LocalStore.retire(keys, expectedSequence)` is a trusted storage-owner API. It accepts
+a nonempty array of distinct existing keys and the inspected global sequence. Invalid
+keys, duplicate/missing records and stale sequences fail before mutation. All write
+holds must be released, and observers cannot call it recursively.
+
+The operation validates current record bodies and atomically publishes a checkpoint
+containing the remaining records. Retained values, CAS versions and iteration order
+are preserved. One successful batch advances the global sequence once, regardless of
+the number of removed keys. Reopen and later appends retain that sequence even when
+every key was removed. A deleted key has no current revision and can be created again
+at version 1. Application request identities that must never be reused need separate
+retained records or tombstones established by their lifecycle owner.
+
+The return value contains `removedRecords`, `before`, `after` and `byteDifference`.
+The byte difference is `before.journalBytes - after.journalBytes`; it can be negative
+when the checkpoint header costs more than the removed records. Retirement always
+publishes the selected deletion, including in that case. Compaction still publishes
+only when it reduces size and never removes current keys.
+
+After any retirement, checkpoints use `edh-domain-checkpoint-v2`:
+
+- `sequence` is the global write/retirement sequence, a positive safe integer.
+- `records` is the retained count and may be zero.
+- `sequenceOffset` is positive and satisfies
+  `sum(retained record versions) + sequenceOffset === sequence`.
+- `hash` is SHA-256 of `[format, sequence, records, sequenceOffset]` encoded as JSON.
+
+The offset accounts for removed version histories and retirement transactions. Normal
+appends and compaction preserve this accounting; further retirement updates it. Entry
+sequences are contiguous and end at the header sequence. Record checksums, unique keys,
+version totals and complete prefix checks apply. An empty checkpoint requires
+`sequenceOffset === sequence`. V1 and headerless journals remain readable. Application
+versions without v2 support cannot open a retired journal.
+
+Retirement uses the same synchronized staging file, atomic rename, directory sync and
+failure handling as compaction. It emits one synchronous `retire` notification after
+publication. WorkspaceHistoryIndex reconciles remaining sources and removes absent
+summaries in a SQLite transaction. If index publication fails, the store stops; reopening
+reconciles the index from the committed journal. Cross-file publication is recoverable
+through this sequence and is not a distributed transaction.
+
+There is no record-retirement HTTP route or console control. Application admission must
+establish domain ownership, preserve SKILL provenance and durable request identities,
+acquire complete external reference leases, and validate a reviewed selection before
+using this primitive. It does not inspect arbitrary document relationships or retire
+image objects. Only authored acceptance journals are deleted by the tests.
 
 ## Console and HTTP
 
@@ -90,11 +139,15 @@ See [image maintenance and ownership](image-storage.md#image-inventory-and-reque
 
 ## Acceptance and remaining work
 
-`pnpm test:storage` runs 16 tests using real journals, processes and admission inputs.
+`pnpm test:storage` runs 27 tests using real journals, processes and admission inputs.
 Coverage includes versions/order/sequence preservation, reopen and further writes,
 incomplete/corrupt checkpoints, external journal changes, unpublished staging files,
 stale/busy admission, exact cache-cleanup inputs, and actual process termination during
-checkpoint publication.
+checkpoint publication. Retirement adds eight real-file/process checks for selection
+admission, retained versions/order, empty checkpoints, v2 corruption, write holds,
+observer failures, external modifications, process termination and bounded body reads.
+`pnpm test:workspace-history` runs fourteen checks, including immediate retirement
+reconciliation and recovery after an actual SQLite writer lock blocks index publication.
 A child with a 64 MiB V8 old-space limit compacts a journal exceeding 96 MiB and rereads
 all 96 latest documents. This limits neither total RSS nor the distinct-key index.
 
@@ -105,7 +158,7 @@ admission/storage functions. Full application maintenance while draining live mo
 and provider scopes remains unverified. No scripted model or physical backend is used
 by these acceptance checks.
 
-Distinct-key retention, run/session archival, application-wide original-image reference
+Application retention admission, run/session archival, application-wide original-image reference
 ownership, native context/audit lifetime, and automated retention scheduling remain
 separate upper-runtime work. Compaction alone does not impose a total disk quota.
 

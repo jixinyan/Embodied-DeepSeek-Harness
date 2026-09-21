@@ -199,6 +199,72 @@ test('compaction publication remains recoverable when the derived index is locke
   });
 });
 
+test('retirement reconciles removed summaries and ownership in the live index and on reopen', async () => {
+  await directory(async (path) => {
+    let store = new LocalStore(path);
+    const { runs, sessions } = await workspaceDocuments(store, 4);
+    let index = new WorkspaceHistoryIndex(store);
+    try {
+      const retained = index.get('run', runs[1]!.id)!;
+      const keys = [
+        `run:${runs[0]!.id}`,
+        `run-user-session:${runs[0]!.id}`,
+        `run-user-session:${runs[2]!.id}`,
+        `user-session:${sessions[0]!.id}`,
+      ];
+      store.retire(keys, store.statistics().sequence);
+      assert.equal(index.get('run', runs[0]!.id), undefined);
+      assert.equal(index.get('session', sessions[0]!.id), undefined);
+      assert.equal(index.get('run', runs[2]!.id)!.userSessionId, null);
+      assert.deepEqual(index.get('run', runs[1]!.id), retained);
+      assert.equal(index.page('run').records.length, 3);
+      assert.equal(index.page('session').records.length, 3);
+      index.close();
+      store.close();
+      store = new LocalStore(path);
+      index = new WorkspaceHistoryIndex(store);
+      assert.equal(index.statistics().sourceReads, 0);
+      assert.equal(index.get('run', runs[0]!.id), undefined);
+      assert.equal(index.get('session', sessions[0]!.id), undefined);
+      assert.deepEqual(index.get('run', runs[1]!.id), retained);
+    } finally {
+      index.close();
+      store.close();
+    }
+  });
+});
+
+test('retirement remains durable when a real SQLite lock interrupts derived index publication', async () => {
+  await directory(async (path) => {
+    let store = new LocalStore(path);
+    const { runs } = await workspaceDocuments(store, 2);
+    let index = new WorkspaceHistoryIndex(store);
+    const database = new DatabaseSync(resolve(path, 'workspace-history.sqlite'));
+    database.exec('BEGIN IMMEDIATE');
+    const sequence = store.statistics().sequence;
+    try {
+      assert.throws(() => store.retire([`run:${runs[0]!.id}`], sequence), /locked/);
+      assert.throws(() => store.get(`run:${runs[0]!.id}`), /not readable/);
+      assert.throws(() => index.get('run', runs[0]!.id), /unavailable/);
+    } finally {
+      database.exec('ROLLBACK');
+      database.close();
+      index.close();
+      store.close();
+    }
+    store = new LocalStore(path);
+    index = new WorkspaceHistoryIndex(store);
+    try {
+      assert.equal(store.statistics().sequence, sequence + 1);
+      assert.equal(index.get('run', runs[0]!.id), undefined);
+      assert(index.get('run', runs[1]!.id));
+    } finally {
+      index.close();
+      store.close();
+    }
+  });
+});
+
 test('cached summaries reject external source changes before returning a page', async () => {
   await directory(async (path) => {
     const store = new LocalStore(path);

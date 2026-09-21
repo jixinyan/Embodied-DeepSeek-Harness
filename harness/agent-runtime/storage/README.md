@@ -69,8 +69,14 @@ Session/run/server shutdown attempts all cleanup stages and reports aggregate fa
 `statistics()` exposes current/superseded byte counts. `compact()` atomically publishes
 all latest records with unchanged versions, ordering and global write sequence. It
 retains independent event/evidence/history keys. The console admits this operation only
-in an idle workspace with a fresh inspected sequence. Distinct-key deletion and
-automated retention scheduling remain pending.
+in an idle workspace with a fresh inspected sequence.
+`retire(keys, expectedSequence)` atomically removes an explicit nonempty set of current
+keys and advances the global sequence once. Retained values, versions and order survive
+reopen. Deleted keys can be created again at version 1. V2 checkpoints preserve sequence
+accounting, including empty stores. This primitive is available to trusted owners;
+application reference checks, request identity preservation, console admission and
+automated retention scheduling remain separate work. See the
+[retirement API](../../../docs/implementation/storage-maintenance.md#record-retirement).
 
 `revision(key)` and `revisions(prefix)` expose detached version/checksum metadata
 without decoding record bodies. Derived readers call `assertCurrent()` before using
@@ -79,17 +85,18 @@ record reads continue to validate the requested record's checksum. These filesys
 checks assume the local writer owns the journal; they do not authenticate hostile
 filesystem changes with restored metadata.
 
-`observe(callback)` receives synchronous `put` or `compact` notifications after source
+`observe(callback)` receives synchronous `put`, `compact` or `retire` notifications after source
 publication and metadata updates. Callbacks can read the committed source; recursive
-writes, compaction, close and observer registration are rejected. A callback failure
+writes, compaction, retirement, close and observer registration are rejected. A callback failure
 stops further store access and propagates to the writer. The source write has already
 committed and remains durable. Derived owners must reconcile from the source when
 reopened, unsubscribe at close, and close before the store. Compaction can change
 record checksums while preserving versions, so derived readers must process its
-notification too. The observer mechanism does not create a cross-file transaction.
+notification too. Retirement requires derived readers to reconcile absent keys and
+changed ownership. The observer mechanism does not create a cross-file transaction.
 
 `holdWrites()` returns a sequence-bound read hold and idempotent release. Nested holds
-reject `put` and `compact` until all releases complete. The retention controller uses
+reject `put`, `compact` and `retire` until all releases complete. The retention controller uses
 this guard while image-reference snapshots and collection are active. It does not
 replace the store writer lock or coordinate external filesystem changes.
 

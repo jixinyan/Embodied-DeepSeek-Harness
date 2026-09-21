@@ -166,7 +166,11 @@ closes it before the journal. Index failure after source publication stops the c
 store; reopening reconciles from the source. Page readers retain bounded candidates.
 See [workspace index semantics](../implementation/workspace-history.md#persistent-summary-index).
 
-LocalStore owns checkpoint format, record validation and atomic compaction. The server
+LocalStore owns checkpoint format, record validation, atomic compaction and explicit
+sequence-bound batch retirement. Retirement notifies derived readers to reconcile
+removed keys and retained ownership. Application reference closure, preserved request
+identities and SKILL sources must be established before exposing record deletion.
+The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys
 and independent evidence/event records; it does not grant record access or set domain

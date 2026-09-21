@@ -1,10 +1,31 @@
 # Implementation progress
 
-Spec: v1.44. Current checkpoint: **declarative cloud API and vLLM upper-model bindings**.
+Spec: v1.45. Current checkpoint: **atomic record retirement and history-index reconciliation**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+LocalStore now supports explicit batch retirement under a current global sequence.
+It validates the selected keys, preserves retained values/CAS versions/order, and
+publishes one synchronized checkpoint atomically. Retirement advances the global
+sequence once. V2 checkpoints preserve sequence accounting after deletion, including
+an empty store; headerless journals and v1 checkpoints remain readable. Write holds
+and observer mutation guards cover retirement. The workspace SQLite index reconciles
+removed records and ownership after publication; an index failure stops the writer
+and is recovered from the durable source on reopen.
+
+Twenty-seven storage/admission checks and fourteen workspace journal/SQLite/HTTP/process
+checks pass. New cases cover stale/missing/duplicate selections, empty-store restart,
+corrupt/incomplete v2 checkpoints, actual SQLite contention, actual process termination
+and more than 96 MiB of journal input under a 64 MiB V8 old-space limit. No model or
+physical backend executes. This is a trusted storage primitive with no HTTP deletion
+route. Domain ownership, preserved request identities, SKILL-source closure, external
+reference leases and reviewed console selection remain required for application
+retention. [Retirement API, format and acceptance](storage-maintenance.md#record-retirement).
+TypeScript, changed-source formatting, 128 pinned DSH source checks and 551 local
+documentation-link checks pass. Domain retention admission and interrupted-session
+continuation remain open alongside live provider/model acceptance.
 
 Upper model configuration now loads YAML/JSON for cloud OpenAI-compatible APIs and
 vLLM servers. One configuration can contain both, with stable role aliases, explicit
@@ -21,7 +42,7 @@ No generated model response or physical backend executes. Live cloud/vLLM infere
 and complete task acceptance remain pending, as requested until services are available.
 [Model configuration API and examples](model-configuration.md).
 TypeScript, formatting, pinned DSH source verification and 547 local documentation
-links pass. Domain retention implementation remains the next upper capability.
+links pass. Domain retention admission remains the next upper capability.
 
 The desktop application selects a versioned local launch configuration, executes its
 trusted deployment factory in a fresh owned process and opens the existing console.

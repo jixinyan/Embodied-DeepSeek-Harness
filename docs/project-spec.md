@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.44 · 2026-09-21
+Version: v1.45 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -41,7 +41,11 @@ image service resolves request images, and a non-secret configuration digest con
 to deployment identity. See [model configuration](implementation/model-configuration.md).
 WebSocket policy transport and a deterministic action gate run independently with CPU
 acceptance. Current work prioritizes unimplemented upper capabilities before further
-optimization, including domain retention and restart lifecycle. Live VLM and
+optimization, including domain retention and restart lifecycle. Atomic record retirement
+and live history-index reconciliation are implemented at the storage boundary. Application
+retention still requires reference ownership, SKILL-source preservation, durable request
+identities and explicit console admission; see [retirement](implementation/storage-maintenance.md#record-retirement).
+Live VLM and
 provider-backed criteria discovery acceptance remain pending. The desktop launcher
 now owns configured local-service startup; live deployment acceptance and signed
 distribution remain open. Active-task clarification

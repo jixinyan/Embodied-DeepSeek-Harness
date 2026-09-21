@@ -30,17 +30,32 @@ const entrySchema = z
   })
   .strict();
 type Entry = z.infer<typeof entrySchema>;
-const checkpointSchema = z
-  .object({
-    format: z.literal('edh-domain-checkpoint-v1'),
-    sequence: z.number().int().positive().safe(),
-    records: z.number().int().positive().safe(),
-    hash: digestSchema,
-  })
-  .strict();
+const checkpointSchema = z.discriminatedUnion('format', [
+  z
+    .object({
+      format: z.literal('edh-domain-checkpoint-v1'),
+      sequence: z.number().int().positive().safe(),
+      records: z.number().int().positive().safe(),
+      hash: digestSchema,
+    })
+    .strict(),
+  z
+    .object({
+      format: z.literal('edh-domain-checkpoint-v2'),
+      sequence: z.number().int().positive().safe(),
+      records: z.number().int().nonnegative().safe(),
+      sequenceOffset: z.number().int().positive().safe(),
+      hash: digestSchema,
+    })
+    .strict(),
+]);
 const checkpointHash = (sequence: number, records: number) =>
   createHash('sha256')
     .update(JSON.stringify(['edh-domain-checkpoint-v1', sequence, records]))
+    .digest('hex');
+const retirementHash = (sequence: number, records: number, sequenceOffset: number) =>
+  createHash('sha256')
+    .update(JSON.stringify(['edh-domain-checkpoint-v2', sequence, records, sequenceOffset]))
     .digest('hex');
 
 export interface StoreStatistics {
@@ -57,13 +72,20 @@ export interface StoreCompaction {
   after: StoreStatistics;
   reclaimedBytes: number;
 }
+export interface StoreRetirement {
+  removedRecords: number;
+  before: StoreStatistics;
+  after: StoreStatistics;
+  byteDifference: number;
+}
 export interface StoreRevision {
   readonly version: number;
   readonly hash: string;
 }
 export type StoreChange =
   | { readonly type: 'put'; readonly key: string }
-  | { readonly type: 'compact' };
+  | { readonly type: 'compact' }
+  | { readonly type: 'retire' };
 interface RecordLocation {
   version: number;
   sequence: number;
@@ -128,15 +150,22 @@ export class LocalStore {
         const parsed = JSON.parse(line.toString('utf8')) as unknown;
         if (parsed && typeof parsed === 'object' && 'format' in parsed) {
           const checkpoint = checkpointSchema.parse(parsed);
+          const sequenceOffset =
+            checkpoint.format === 'edh-domain-checkpoint-v2' ? checkpoint.sequenceOffset : 0;
           if (
             offset !== 0 ||
-            checkpoint.records > checkpoint.sequence ||
-            checkpoint.hash !== checkpointHash(checkpoint.sequence, checkpoint.records)
+            checkpoint.records > checkpoint.sequence - sequenceOffset ||
+            (!checkpoint.records && sequenceOffset !== checkpoint.sequence) ||
+            checkpoint.hash !==
+              (checkpoint.format === 'edh-domain-checkpoint-v2'
+                ? retirementHash(checkpoint.sequence, checkpoint.records, sequenceOffset)
+                : checkpointHash(checkpoint.sequence, checkpoint.records))
           )
             throw new Error('Domain checkpoint corruption; refusing to replay.');
           this.sequence = checkpoint.sequence - checkpoint.records;
           this.checkpointBytes = this.journalBytes;
           checkpointRemaining = checkpoint.records;
+          checkpointVersions = sequenceOffset;
           continue;
         }
         const entry = entrySchema.parse(parsed);
@@ -151,6 +180,8 @@ export class LocalStore {
         this.sequence = entry.sequence;
         if (checkpointRemaining) {
           checkpointVersions += entry.record.version;
+          if (!Number.isSafeInteger(checkpointVersions))
+            throw new Error('Domain checkpoint version accounting exceeds its limit.');
           checkpointRemaining--;
           if (!checkpointRemaining && checkpointVersions !== this.sequence)
             throw new Error('Domain checkpoint versions do not match its sequence.');
@@ -346,12 +377,45 @@ export class LocalStore {
     };
   }
   compact(): StoreCompaction {
+    const result = this.rewriteCheckpoint(new Set(), this.sequence);
+    return {
+      compacted: result.published,
+      before: result.before,
+      after: result.after,
+      reclaimedBytes: result.byteDifference,
+    };
+  }
+  retire(keys: readonly string[], expectedSequence: number): StoreRetirement {
+    if (this.notifying) throw new Error('Store observers cannot mutate the store.');
+    this.assertCurrent();
+    if (!Number.isSafeInteger(expectedSequence) || expectedSequence < 0)
+      throw new Error('Invalid retirement sequence.');
+    if (expectedSequence !== this.sequence) throw new Error('Retirement sequence conflict.');
+    if (!Array.isArray(keys) || !keys.length) throw new Error('Retirement requires record keys.');
+    const removed = new Set<string>();
+    for (const key of keys) {
+      entrySchema.shape.key.parse(key);
+      if (removed.has(key)) throw new Error(`Duplicate retirement key: ${key}`);
+      if (!this.records.has(key)) throw new Error(`Missing retirement key: ${key}`);
+      removed.add(key);
+    }
+    const sequence = this.sequence + 1;
+    if (!Number.isSafeInteger(sequence)) throw new Error('Domain store sequence limit reached.');
+    const result = this.rewriteCheckpoint(removed, sequence);
+    return {
+      removedRecords: removed.size,
+      before: result.before,
+      after: result.after,
+      byteDifference: result.byteDifference,
+    };
+  }
+  private rewriteCheckpoint(removed: ReadonlySet<string>, targetSequence: number) {
     if (this.notifying) throw new Error('Store observers cannot mutate the store.');
     this.assertCurrent();
     if (this.writeHolds) throw new Error('Store writes are suspended for reference inspection.');
     const before = this.statistics();
-    if (!before.supersededBytes)
-      return { compacted: false, before, after: before, reclaimedBytes: 0 };
+    if (!removed.size && !before.supersededBytes)
+      return { published: false, before, after: before, byteDifference: 0 };
     const journal = resolve(this.directory, 'records.jsonl');
     const staging = resolve(this.directory, `records.compact-${randomUUID()}.jsonl`);
     const locations = new Map<string, RecordLocation>();
@@ -360,7 +424,14 @@ export class LocalStore {
     let previousFd: number | undefined;
     let created = false;
     let published = false;
-    let result: StoreCompaction | undefined;
+    let result:
+      | {
+          published: boolean;
+          before: StoreStatistics;
+          after: StoreStatistics;
+          byteDifference: number;
+        }
+      | undefined;
     const failures: unknown[] = [];
     try {
       const original = fstatSync(this.fd, { bigint: true });
@@ -389,17 +460,33 @@ export class LocalStore {
         bytesWritten += bytes.length;
         return bytes.length;
       };
-      const checkpointBytes = this.records.size
+      const retainedCount = this.records.size - removed.size;
+      let retainedVersions = 0;
+      for (const [key, location] of this.records)
+        if (!removed.has(key)) retainedVersions += location.version;
+      const sequenceOffset = targetSequence - retainedVersions;
+      if (!Number.isSafeInteger(sequenceOffset) || sequenceOffset < 0)
+        throw new Error('Invalid domain checkpoint version accounting.');
+      const checkpointBytes = sequenceOffset
         ? append({
-            format: 'edh-domain-checkpoint-v1',
-            sequence: this.sequence,
-            records: this.records.size,
-            hash: checkpointHash(this.sequence, this.records.size),
+            format: 'edh-domain-checkpoint-v2',
+            sequence: targetSequence,
+            records: retainedCount,
+            sequenceOffset,
+            hash: retirementHash(targetSequence, retainedCount, sequenceOffset),
           })
-        : 0;
-      let sequence = this.sequence - this.records.size;
+        : retainedCount
+          ? append({
+              format: 'edh-domain-checkpoint-v1',
+              sequence: targetSequence,
+              records: retainedCount,
+              hash: checkpointHash(targetSequence, retainedCount),
+            })
+          : 0;
+      let sequence = targetSequence - retainedCount;
       for (const key of this.records.keys()) {
         const record = this.get(key)!;
+        if (removed.has(key)) continue;
         sequence++;
         const checksum = hash(sequence, key, record);
         const offset = bytesWritten;
@@ -414,7 +501,7 @@ export class LocalStore {
       }
       fsyncSync(stagingFd);
       checkOriginal();
-      if (bytesWritten < before.journalBytes) {
+      if (removed.size || bytesWritten < before.journalBytes) {
         directoryFd = openSync(this.directory, 'r');
         renameSync(staging, journal);
         published = true;
@@ -424,14 +511,15 @@ export class LocalStore {
         this.records = locations;
         this.journalBytes = bytesWritten;
         this.checkpointBytes = checkpointBytes;
+        this.sequence = targetSequence;
         fsyncSync(directoryFd);
       }
       const after = this.statistics();
       result = {
-        compacted: published,
+        published,
         before,
         after,
-        reclaimedBytes: before.journalBytes - after.journalBytes,
+        byteDifference: before.journalBytes - after.journalBytes,
       };
     } catch (error) {
       failures.push(error);
@@ -454,12 +542,12 @@ export class LocalStore {
     if (failures.length) {
       this.poisoned = true;
       if (failures.length === 1) throw failures[0];
-      throw new AggregateError(failures, 'Domain compaction and cleanup failed.');
+      throw new AggregateError(failures, 'Domain checkpoint and cleanup failed.');
     }
     if (published) {
       try {
         this.fingerprint = fstatSync(this.fd, { bigint: true });
-        this.notify({ type: 'compact' });
+        this.notify({ type: removed.size ? 'retire' : 'compact' });
       } catch (error) {
         this.poisoned = true;
         throw error;

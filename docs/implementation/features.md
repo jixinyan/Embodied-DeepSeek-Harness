@@ -18,6 +18,7 @@ Snapshot: 2026-09-21. Upper runtime, model transport and standalone policy/actio
 | Immutable retired assignment archives, compact summaries and selected detail/TODO/observation reads | [History API and actual file/native acceptance](assignment-history.md) |
 | Bounded workspace session/task pages, session filters and independent active-session controls | [Workspace history API and document/HTTP acceptance](workspace-history.md) |
 | Persistent SQLite workspace summaries, source revision checks and restart/compaction reconciliation | [Index ownership and actual SQLite/file acceptance](workspace-history.md#persistent-summary-index) |
+| Atomic sequence-bound record retirement, v2 checkpoint recovery and derived-index reconciliation | [Trusted storage API and real file/process/SQLite acceptance](storage-maintenance.md#record-retirement) |
 | Direct persisted session-open request lookup with complete configuration identity and startup reconciliation | [Request identity and real-file acceptance](user-sessions.md#session-open-request-identity) |
 | Compact session task history, immutable membership and legacy migration | [Membership publication and real-file acceptance](user-sessions.md#task-membership-history) |
 | Immutable accepted verdict archives, compact summaries and explicit full-result inspection | [Publication, selected HTTP reads and acceptance](verdict-history.md) |
@@ -148,7 +149,9 @@ LocalStore can atomically compact superseded record versions while retaining all
 current records, their CAS versions, global sequence and independent history. The
 console exposes storage statistics and idle-only maintenance with a fresh sequence
 check. Real-file/process tests cover reopening, corruption, interrupted publication
-and retained history/image references. Distinct-key and original-image retention remain open.
+and retained history/image references. The trusted record-retirement primitive also
+removes explicit keys atomically and reconciles the history index. Application-level
+record retention still requires complete ownership and explicit admission.
 [Maintenance guide](storage-maintenance.md).
 
 Image storage reports original/cache usage and supports explicit cleanup of derived

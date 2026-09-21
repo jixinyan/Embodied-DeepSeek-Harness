@@ -221,7 +221,7 @@ export class WorkspaceHistoryIndex {
   }
 
   private committed(change: StoreChange) {
-    if (change.type === 'compact') {
+    if (change.type === 'compact' || change.type === 'retire') {
       this.reconcile();
       return;
     }

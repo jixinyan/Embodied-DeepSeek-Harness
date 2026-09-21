@@ -13,6 +13,7 @@ export {
   LocalStore,
   type StoreStatistics,
   type StoreCompaction,
+  type StoreRetirement,
   type StoreRevision,
   type StoreChange,
 } from './local-store.js';

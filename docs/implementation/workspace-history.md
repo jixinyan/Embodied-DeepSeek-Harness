@@ -68,15 +68,16 @@ durable writes, not an atomic transaction across both files.
 At startup, the journal replays and validates its own records. The summary index checks
 its format and SQLite integrity, compares source revisions, rebuilds missing/stale rows
 from individual source records and removes rows with no source. Unchanged rows need no
-body reads during reconciliation. Compaction triggers the same reconciliation because
-source checksums can change while their versions remain constant. Reopening recovers
+body reads during reconciliation. Compaction and retirement trigger the same reconciliation:
+source checksums can change while their versions remain constant, and retirement removes
+summaries for absent sources and refreshes changed ownership. Reopening recovers
 source writes whose index update was interrupted; it performs no model or device work.
 Unknown formats and corrupt summary reads fail explicitly. The application never
 silently deletes an unreadable index.
 
 `statistics()` reports index-owned source lookups and decoded summary reads for local
 diagnostics. It excludes LocalStore's startup replay and reads by other services.
-Startup/compaction still traverse source metadata; startup also checks SQLite pages.
+Startup, compaction and retirement still traverse source metadata; startup also checks SQLite pages.
 Individual source records, the key index, active session configuration, current run
 collections and disk retention have independent costs. UserSessions startup traverses
 source records individually. Duplicate-opening lookup reads a persisted request
@@ -107,7 +108,7 @@ preserve existing DOM nodes and focus. Closing the page cancels pending reads.
 
 ## Acceptance
 
-`pnpm test:workspace-history` runs twelve actual journal/SQLite/HTTP/process checks: tied-date
+`pnpm test:workspace-history` runs fourteen actual journal/SQLite/HTTP/process checks: tied-date
 ordering and full traversal, independently returned active records, session filters
 and cursor admission, byte-budget continuity and newer insertions, detached summary
 reads, HTTP origin/query errors and memory pressure. The child process stores more
@@ -118,7 +119,8 @@ a 64 MiB V8 old-space limit. Repeated pages perform no index-owned source reads;
 an unchanged index also performs none. Tests cover live source/ownership updates,
 stale/missing index reconciliation, source-less row removal, corruption and unsupported
 versions. A second real SQLite connection holds a writer lock to exercise failures after
-source append and compaction publication; both recover on reopen. Authored metadata
+source append, compaction and retirement publication; all recover on reopen. Retirement
+also checks live row removal, ownership changes and unchanged-index reopening. Authored metadata
 does not represent physical execution results.
 
 The preceding browser component acceptance used production markup, history readers, API transport,
