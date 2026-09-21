@@ -29,10 +29,13 @@ export function renderTaskComposer({
   const eligible = runs.filter(
     (run) => run.userSessionId === session?.id && terminal.has(run.state),
   );
-  const signature = JSON.stringify(eligible.map((run) => [run.id, run.state]));
+  const signature = JSON.stringify([session?.id, eligible.map((run) => [run.id, run.state])]);
   if (input.dataset.tasks !== signature) {
-    const selected = new Set([...input.selectedOptions].map((option) => option.value));
+    const retained = input.dataset.session === session?.id ? [...input.selectedOptions] : [];
+    const selected = new Set(retained.map((option) => option.value));
+    const visible = new Set(eligible.map((run) => run.id));
     input.replaceChildren(
+      ...retained.filter((option) => !visible.has(option.value)),
       ...eligible.map((run) => {
         const option = new Option(
           `${run.id.slice(0, 8)} · ${run.state} · ${run.instruction}`,
@@ -43,8 +46,9 @@ export function renderTaskComposer({
       }),
     );
     input.dataset.tasks = signature;
+    input.dataset.session = session?.id ?? '';
   }
-  input.disabled = instruction.disabled || !eligible.length;
+  input.disabled = instruction.disabled || !input.options.length;
   const validate = () => {
     instruction.setCustomValidity(instruction.value.trim() ? '' : 'Enter a task instruction.');
     input.setCustomValidity(

@@ -6,6 +6,8 @@ team configuration, UpperRun, a local domain store and an explicitly synthetic b
 - [runtime.ts](src/runtime.ts): original DSH services and cooperative timeout policy.
 - [application.ts](src/application.ts): role tools, task/verification/recovery coordination.
 - [http-server.ts](src/http-server.ts): admission, history, control endpoints and SSE subscriptions.
+- [workspace-history.ts](src/workspace-history.ts): bounded session/task summaries,
+  scoped cursors and independent active records; [API and acceptance](../../docs/implementation/workspace-history.md).
 - [run-event-stream.ts](src/run-event-stream.ts): bounded event batches, current projections and connection backpressure.
 - [fixture-model.ts](src/fixture-model.ts) / [fixture-backend.ts](src/fixture-backend.ts): keyless test dependencies.
 

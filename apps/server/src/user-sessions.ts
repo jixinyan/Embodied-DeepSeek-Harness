@@ -41,7 +41,7 @@ export class UserSessions {
   private shutdown = new AbortController();
   private closePromise?: Promise<void>;
   constructor(private readonly store: LocalStore) {
-    for (const row of store.list<UserSessionRecord>('user-session:')) {
+    for (const row of store.scan<UserSessionRecord>('user-session:')) {
       if (row.value.state === 'closed' || row.value.state === 'interrupted') continue;
       this.save({
         ...row.value,
@@ -93,7 +93,12 @@ export class UserSessions {
     allocate: (signal: AbortSignal) => Promise<SessionEnvironment> | SessionEnvironment,
   ): Promise<UserSessionRecord> {
     return this.exclusive(async () => {
-      const prior = this.list().find((row) => row.requestId === input.requestId);
+      let prior: UserSessionRecord | undefined;
+      for (const row of this.store.scan<UserSessionRecord>('user-session:')) {
+        if (row.value.requestId !== input.requestId) continue;
+        prior = row.value;
+        break;
+      }
       if (prior) {
         if (
           prior.profileId !== input.profileId ||

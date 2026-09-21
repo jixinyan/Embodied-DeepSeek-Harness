@@ -17,6 +17,7 @@ import { serveEvidenceImage } from './evidence-images.js';
 import { readSessionAudit } from './session-audit-view.js';
 import { readRoleReports } from './report-view.js';
 import { readAssignmentDetails } from './assignment-view.js';
+import { readRunList, readSessionList } from './workspace-history.js';
 import {
   ClarificationConflict,
   interruptClarifications,
@@ -474,7 +475,7 @@ async function startApplication(
         if (method === 'GET' && url.pathname === '/api/skills')
           return json(res, 200, readWorkspaceSkills(store, validator));
         if (method === 'GET' && url.pathname === '/api/sessions')
-          return json(res, 200, { sessions: userSessions.list(), activeId: userSessions.activeId });
+          return json(res, 200, readSessionList(store, url.searchParams, userSessions.activeId));
         if (method === 'POST' && url.pathname === '/api/sessions') {
           const data = await body(req);
           if (
@@ -606,23 +607,7 @@ async function startApplication(
           }
         }
         if (method === 'GET' && url.pathname === '/api/runs')
-          return json(res, 200, {
-            runs: store
-              .list<RunState>('run:')
-              .map((r) => ({
-                id: r.value.id,
-                state: r.value.state,
-                scenario: r.value.scenario,
-                createdAt: r.value.createdAt,
-                instruction: r.value.instruction,
-                userSessionId:
-                  store.get<{ sessionId: string }>(`run-user-session:${r.value.id}`)?.value
-                    .sessionId ?? null,
-              }))
-              .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-              .slice(0, 100),
-            activeId: active?.state.id ?? null,
-          });
+          return json(res, 200, readRunList(store, url.searchParams, active?.state.id ?? null));
         if (method === 'POST' && url.pathname === '/api/runs') {
           const data = await body(req);
           if (Object.keys(data).some((k) => !['scenario', 'requestId'].includes(k)))

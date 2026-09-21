@@ -40,15 +40,23 @@ cannot allocate while a user session owns the environment.
 - `POST /api/sessions`: `{profileId, requestId, selection, catalogRevision}` allocates one user session.
   The console sends all six selected component values and the deployment digest.
   Existing profile-only API clients may continue sending `{profileId, requestId}`.
-- `GET /api/sessions`: session history, actual stored configuration and active ID.
+- `GET /api/sessions?before={id}`: bounded session summaries, next cursor and independent
+  active-session configuration. Omit `before` for the latest page.
+- `GET /api/runs?session={id}&before={runId}`: bounded task summaries for a session;
+  omit filters for all tasks or use `session=standalone` for independent tasks.
 - `GET /api/sessions/:id`: state, resource disposition and task IDs.
 - `POST /api/sessions/:id/tasks`: `{scenario, requestId, instruction?, contextRunIds?}`
   starts a task using an allowed criteria preset and an optional user instruction.
 - `POST /api/sessions/:id/close`: `{}` ends the session and releases the environment.
 - Existing run detail, SSE, pause, resume-request, stop and audit endpoints remain.
   Run detail includes the accepted `submission` and its explicit historical context.
+
 - `GET /api/skills`: up to 100 stored bundles with originating run/session links and
   [inspected provenance](skill-provenance.md), including missing-source diagnostics.
+
+The sidebar and task-context selector navigate separate history pages. Selected outcomes
+survive page changes within the active session. See [workspace history](workspace-history.md)
+for cursor semantics, record limits and acceptance.
 
 A session progresses through `opening → ready → running → draining → ready` for each
 task, then `closing → closed`. Drain waits for pending role receipts and Evolver work

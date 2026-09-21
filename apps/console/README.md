@@ -39,7 +39,8 @@ The launcher provides New session, Run task and End session controls. Separate c
 selectors choose runtime source, environment, embodiment, checkpoint, policy and upper model default; one
 session can run multiple tasks without resetting its environment. Sidebar groups show
 session state and environment binding, with independently inspectable task runs below.
-Click a session heading for its complete frozen configuration/resource state. The
+Click a session heading to filter its tasks; **Inspect session** reads its complete
+frozen configuration and resource state. The
 Experience library exposes cross-session bundles and source run/session links. Each
 bundle includes inspected provenance: original goal, failure/success verdicts,
 evidence/image identities and missing-source diagnostics. Record availability and
@@ -86,6 +87,12 @@ loads. Sidebar task labels use the actual submitted instruction. See the
 [session admission guide](../../docs/implementation/user-sessions.md).
 
 ## Incremental run updates
+
+Workspace history has separate bounded session/task pages with session filters and
+earlier/recent navigation. Active controls use independently returned active records.
+The task composer pages that session's outcomes and retains up to four selected
+outcomes across pages. Session inspection fetches the full stored configuration only
+on request. See [workspace history](../../docs/implementation/workspace-history.md).
 
 The console reads a projection and the newest bounded history page at a fixed event count,
 then subscribes from that absolute cursor. It appends

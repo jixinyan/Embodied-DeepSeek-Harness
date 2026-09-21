@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.31 · 2026-09-21
+Version: v1.32 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -65,6 +65,9 @@ Retired role briefs, TODO/report bodies, last observations and stream frames mov
 verified immutable archives. Compact run summaries preserve status and caller identity;
 the console loads selected historical details explicitly. See
 [assignment history](implementation/assignment-history.md) for publication, API and limits.
+Workspace session/task lists use bounded summary pages and independent active records.
+The console supports session filtering, earlier/recent history and cross-page selection
+of task outcomes. See [workspace history](implementation/workspace-history.md).
 [Physical profiles](implementation/physical-profiles.md) bind declared simulator,
 embodiment, policy mappings and role context; installed adapter validation is required.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)

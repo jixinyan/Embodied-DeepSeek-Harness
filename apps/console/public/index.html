@@ -28,7 +28,24 @@
           ↻
         </button>
       </div>
-      <div id="history" class="history"><p class="muted">No runs yet.</p></div>
+      <div id="history" class="history">
+        <div data-workspace="sessions"></div>
+        <div class="history-navigation">
+          <button data-workspace="sessions-earlier" disabled>Earlier sessions</button>
+          <button data-workspace="sessions-latest" disabled>Recent sessions</button>
+        </div>
+        <p data-workspace="session-status" role="status">Loading sessions…</p>
+        <label
+          >Task history
+          <select data-workspace="scope" aria-label="Task history session"></select
+        ></label>
+        <div data-workspace="runs"></div>
+        <div class="history-navigation">
+          <button data-workspace="runs-earlier" disabled>Earlier tasks</button>
+          <button data-workspace="runs-latest" disabled>Recent tasks</button>
+        </div>
+        <p data-workspace="run-status" role="status">Loading tasks…</p>
+      </div>
       <section class="team-section" id="team">
         <div class="panel-heading">
           <h2>Agent assignments</h2>
@@ -207,6 +224,11 @@
             disabled
             aria-describedby="task-context-help"
           ></select>
+          <div id="task-context-navigation" class="history-navigation">
+            <button data-context="earlier" class="text-button" disabled>Earlier outcomes</button>
+            <button data-context="latest" class="text-button" disabled>Recent outcomes</button>
+            <span data-context="status" role="status"></span>
+          </div>
           <p id="task-context-help" class="section-note">
             Optional · Up to four tasks from this session. Planner receives recorded outcomes and
             must observe the current scene.

@@ -22,6 +22,7 @@ const publicFiles: Record<string, string> = {
   'session-audit.js': 'text/javascript; charset=utf-8',
   'report-history.js': 'text/javascript; charset=utf-8',
   'assignment-details.js': 'text/javascript; charset=utf-8',
+  'workspace-history.js': 'text/javascript; charset=utf-8',
   'logo.png': 'image/png',
 };
 

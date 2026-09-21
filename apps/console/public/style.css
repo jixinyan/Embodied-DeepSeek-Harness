@@ -145,6 +145,19 @@ a {
   border-color: var(--line);
   box-shadow: 0 1px 3px #20302506;
 }
+.history-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.history-navigation button {
+  width: auto;
+}
+.history [role='status'] {
+  font-size: 11px;
+  color: var(--muted);
+}
 .history button:hover {
   background: #e9ece6;
 }

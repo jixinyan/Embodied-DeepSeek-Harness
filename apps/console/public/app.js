@@ -15,6 +15,7 @@ import { bindStorageMaintenance } from './storage-maintenance.js';
 import { bindSessionAudit } from './session-audit.js';
 import { bindReportHistory } from './report-history.js';
 import { bindAssignmentDetails, createAssignmentSelection } from './assignment-details.js';
+import { bindWorkspaceHistory, bindTaskContextHistory } from './workspace-history.js';
 import {
   appendRunHistory,
   mergeRunUpdate,
@@ -28,16 +29,14 @@ let config, current, stream, displayedFrame;
 let busy = false;
 let loadRevision = 0;
 let activeRunId = null;
-let runHistory = [];
-let userSessions = [];
+let activeRunRecord = null;
+let activeSessionRecord = null;
 let activeUserSessionId = null;
-let historyRevision = 0;
-let historySignature = '';
 let historyTimer;
 let inspectedHistory = null;
 let eventPageRevision = 0;
 let eventPageLoading = false;
-const activeUserSession = () => userSessions.find((s) => s.id === activeUserSessionId);
+const activeUserSession = () => activeSessionRecord;
 const hasLauncher = () => Object.keys(config?.launchProfiles ?? {}).length > 0;
 const ended = (state) =>
   ['succeeded', 'failed', 'cancelled', 'interrupted', 'unknown'].includes(state);
@@ -124,7 +123,7 @@ function renderLauncher() {
   $('create-session').disabled =
     busy ||
     Boolean(activeUserSessionId) ||
-    Boolean(activeRunId && !ended(runHistory.find((r) => r.id === activeRunId)?.state)) ||
+    Boolean(activeRunId && !ended(activeRunRecord?.state)) ||
     !hasLauncher() ||
     !complete ||
     !profile;
@@ -135,69 +134,39 @@ function renderLauncher() {
     : (session?.configuration ?? config.launchTeams?.[profileSelector.value] ?? config);
   renderCoordination(view, current);
 }
-async function refreshHistory() {
-  const revision = ++historyRevision;
-  const [data, sessions] = await Promise.all([api('/api/runs'), api('/api/sessions')]);
-  if (revision !== historyRevision) return data;
-  runHistory = data.runs;
-  activeRunId = data.activeId;
-  userSessions = sessions.sessions;
-  activeUserSessionId = sessions.activeId;
-  const signature = JSON.stringify([data, sessions, current?.id]);
-  if (signature === historySignature) {
+const taskHistory = bindTaskContextHistory(
+  $('task-context-navigation'),
+  api,
+  () => updateTaskComposer(),
+  error,
+);
+const workspaceHistory = bindWorkspaceHistory($('history'), api, {
+  openRun: (id) => loadRun(id).catch((failure) => error(failure.message)),
+  inspectSession: (id) =>
+    action(async () => {
+      inspect(
+        'User session · Environment, tasks and resource ownership',
+        await api(`/api/sessions/${id}`),
+      );
+    }),
+  selectedRun: () => current?.id,
+  changed: ({ tasks, sessions }) => {
+    activeRunId = tasks.activeId;
+    activeRunRecord = tasks.activeRun;
+    activeUserSessionId = sessions.activeId;
+    activeSessionRecord = sessions.activeSession;
     updateControls();
-    return data;
-  }
-  historySignature = signature;
-  $('history').replaceChildren();
-  const addRun = (run) => {
-    const button = document.createElement('button');
-    button.classList.toggle('active', run.id === current?.id);
-    if (run.id === current?.id) button.setAttribute('aria-current', 'true');
-    button.title = `${run.instruction}\n${run.id} · ${new Date(run.createdAt).toLocaleString()}`;
-    const title = document.createElement('strong');
-    title.textContent =
-      run.instruction.length > 72 ? `${run.instruction.slice(0, 71)}…` : run.instruction;
-    const info = document.createElement('span');
-    info.textContent = `${run.state} · ${new Date(run.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    button.append(title, info);
-    button.onclick = () => loadRun(run.id).catch((e) => error(e.message));
-    $('history').append(button);
-  };
-  for (const session of userSessions) {
-    const heading = document.createElement('button');
-    heading.className = 'user-session-heading';
-    const title = document.createElement('strong');
-    title.textContent = `Session ${shorten(session.id)} · ${session.state}`;
-    const detail = document.createElement('span');
-    const profile = session.configuration.launchProfile;
-    detail.textContent = `${profile?.environment ?? 'Unknown environment'} · ${profile?.embodiment ?? 'Unknown embodiment'}`;
-    heading.append(title, detail);
-    heading.onclick = () =>
-      inspect('User session · Environment, tasks and resource ownership', session);
-    $('history').append(heading);
-    data.runs.filter((r) => r.userSessionId === session.id).forEach(addRun);
-  }
-  const legacy = data.runs.filter((r) => !r.userSessionId);
-  if (legacy.length) {
-    const label = document.createElement('p');
-    label.className = 'section-label';
-    label.textContent = 'STANDALONE TASK HISTORY';
-    $('history').append(label);
-    legacy.forEach(addRun);
-  }
-  if (!data.runs.length && !userSessions.length) {
-    const p = document.createElement('p');
-    p.className = 'muted';
-    p.textContent = 'No sessions yet.';
-    $('history').append(p);
-  }
-  renderLauncher();
-  updateControls();
-  return data;
+  },
+  failed: error,
+});
+async function refreshHistory() {
+  const data = await workspaceHistory.refresh();
+  if (!data) return undefined;
+  await taskHistory.refresh(activeUserSessionId);
+  return data.tasks;
 }
 function updateControls() {
-  const active = runHistory.find((r) => r.id === activeRunId);
+  const active = activeRunRecord;
   $('start').disabled =
     busy ||
     Boolean(active && !ended(active.state)) ||
@@ -219,7 +188,7 @@ function updateTaskComposer() {
     scenario: $('scenario').value,
     presets: config.taskPresets,
     goals: config.scenarioGoals,
-    runs: runHistory,
+    runs: taskHistory.runs,
     busy,
     current,
   });
@@ -1092,7 +1061,7 @@ try {
   renderAgents();
   showSensor();
   const history = await refreshHistory();
-  if (history.activeId || history.runs[0]) await loadRun(history.activeId || history.runs[0].id);
+  if (history?.activeId || history?.runs[0]) await loadRun(history.activeId || history.runs[0].id);
   else {
     text('connection', 'Local server ready');
     updateControls();
@@ -1108,4 +1077,6 @@ historyTimer = setInterval(() => {
 window.addEventListener('pagehide', () => {
   stream?.close();
   clearInterval(historyTimer);
+  workspaceHistory.close();
+  taskHistory.close();
 });
