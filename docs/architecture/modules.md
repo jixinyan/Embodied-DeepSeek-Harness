@@ -118,6 +118,13 @@ uses this scoped route for latest and agent-seen frames. See the
 
 ## Journal maintenance ownership
 
+WorkspaceHistoryIndex in `apps/server` owns the derived SQLite session/run summaries.
+LocalStore supplies detached revisions, source-file checks and synchronous committed
+change notifications. The application opens the index after startup reconciliation and
+closes it before the journal. Index failure after source publication stops the current
+store; reopening reconciles from the source. Page readers retain bounded candidates.
+See [workspace index semantics](../implementation/workspace-history.md#persistent-summary-index).
+
 LocalStore owns checkpoint format, record validation and atomic compaction. The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys

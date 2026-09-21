@@ -1,25 +1,21 @@
 # Implementation progress
 
-Spec: v1.32. Current checkpoint: **bounded workspace history and independent active-session controls**.
+Spec: v1.33. Current checkpoint: **persistent workspace summary index with source reconciliation**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-LocalStore exposes detached source revisions and synchronous post-publication observers
-for derived indexes. Source identity checks reject changed journals; observer failures
-stop the current store while preserving the durable source. Nineteen actual storage
-checks pass, including observer/reopen behavior, recursive-write rejection, external
-file replacement and compaction. Workspace summary index integration is in progress.
-
-Workspace run/session queries return at most 32 summaries with a 256 KiB page target
-and an exclusive cursor. Active records remain available independently of the selected
-page. Session filters and the task composer's independent history navigation preserve
-explicit outcome selection. Full records are read individually; candidate pages remain
-bounded during scanning. Startup session reconciliation and admission lookup also scan
-incrementally. Five actual journal/HTTP/process checks pass, including over 100 MiB of
-authored documents traversed under a 64 MiB V8 old-space limit. Per-page scan I/O and
-remaining cumulative run metadata still need independent limits.
+WorkspaceHistoryIndex stores source-bound summaries in SQLite and updates them after
+durable source writes. Ordered/scoped queries read at most 33 candidates and return at
+most 32 summaries with a 256 KiB page target. Pages read no full source bodies; one active
+session configuration remains an explicit source read. Startup and compaction reconcile
+source revisions. Real SQLite lock failures stop admission after source publication and
+recover on reopen. Source file changes and corrupt summary reads fail explicitly.
+Twelve actual journal/SQLite/HTTP/process checks pass, including over 100 MiB of authored
+documents indexed and traversed under a 64 MiB V8 old-space limit. Nineteen storage checks
+cover source revisions/observers, file identity, compaction and recovery. Remaining
+cumulative run metadata, startup costs and domain retention still need lifecycle work.
 [Workspace history API and acceptance](workspace-history.md).
 
 Retired assignment details are stored and read back before releasing their full brief,
@@ -124,10 +120,12 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: five workspace-history checks and 24 console tests pass (29 total).
-Browser component DOM checks cover session/task pagination, scope selection, separate
-active metadata and retained task-context selections across pages. Strict TypeScript,
-formatting, source provenance and local documentation checks pass.
+Current focused checks: twelve workspace-history checks, 19 storage checks and 24 console
+tests pass (55 total). Actual HTTP checks preserve cursor, filter and active-record
+semantics. The preceding browser component DOM checks cover session/task pagination,
+scope selection, separate active metadata and retained task-context selections across
+pages. Strict TypeScript, formatting, source provenance and local documentation checks
+pass. No model/backend execution or new browser UI behavior is claimed.
 
 The assignment-history checkpoint passed seven assignment-history checks, nine native
 assignment-lifecycle checks and 24 console tests (40 total). The console selection check uses real HTTP

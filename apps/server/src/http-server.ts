@@ -18,6 +18,7 @@ import { readSessionAudit } from './session-audit-view.js';
 import { readRoleReports } from './report-view.js';
 import { readAssignmentDetails } from './assignment-view.js';
 import { readRunList, readSessionList } from './workspace-history.js';
+import { WorkspaceHistoryIndex } from './workspace-history-index.js';
 import {
   ClarificationConflict,
   interruptClarifications,
@@ -205,6 +206,7 @@ async function startApplication(
     team.sourceDigest +
     [...launchTeams].map(([id, t]) => `:${id}:${t.sourceDigest}`).join('');
   let ownedStore: LocalStore | undefined;
+  let ownedWorkspaceIndex: WorkspaceHistoryIndex | undefined;
   let host: Context | undefined;
   try {
     host = await createDshHost(deployment.adapters, deployment.contextManagement);
@@ -227,6 +229,7 @@ async function startApplication(
     const history = new RunHistory(store);
     for (const record of store.scan<RunState>('run:'))
       history.interrupt(record.value, record.version);
+    const workspaceIndex = (ownedWorkspaceIndex = new WorkspaceHistoryIndex(store));
     if (options.imageRetention && !imageMaintenance?.objects)
       throw new Error('The configured image provider does not support original-image collection.');
     const imageRetention = options.imageRetention
@@ -475,7 +478,11 @@ async function startApplication(
         if (method === 'GET' && url.pathname === '/api/skills')
           return json(res, 200, readWorkspaceSkills(store, validator));
         if (method === 'GET' && url.pathname === '/api/sessions')
-          return json(res, 200, readSessionList(store, url.searchParams, userSessions.activeId));
+          return json(
+            res,
+            200,
+            readSessionList(workspaceIndex, url.searchParams, userSessions.activeId),
+          );
         if (method === 'POST' && url.pathname === '/api/sessions') {
           const data = await body(req);
           if (
@@ -607,7 +614,11 @@ async function startApplication(
           }
         }
         if (method === 'GET' && url.pathname === '/api/runs')
-          return json(res, 200, readRunList(store, url.searchParams, active?.state.id ?? null));
+          return json(
+            res,
+            200,
+            readRunList(workspaceIndex, url.searchParams, active?.state.id ?? null),
+          );
         if (method === 'POST' && url.pathname === '/api/runs') {
           const data = await body(req);
           if (Object.keys(data).some((k) => !['scenario', 'requestId'].includes(k)))
@@ -883,6 +894,7 @@ async function startApplication(
                 server.closeIdleConnections();
               }),
           );
+          await cleanup(() => workspaceIndex.close());
           await cleanup(() => store.close());
           await cleanup(() => imageContext.fiber.dispose());
           if (errors.length)
@@ -899,6 +911,11 @@ async function startApplication(
     const errors: unknown[] = [error];
     try {
       await host?.fiber.dispose();
+    } catch (failure) {
+      errors.push(failure);
+    }
+    try {
+      ownedWorkspaceIndex?.close();
     } catch (failure) {
       errors.push(failure);
     }

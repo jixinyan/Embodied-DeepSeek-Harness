@@ -27,7 +27,7 @@
     "test:audits": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-audits.test.ts tests/runtime/session-audit-pages.test.ts tests/runtime/native-audit-publication.test.ts",
     "test:assignment-lifetime": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/assignment-lifetime.test.ts",
     "test:assignment-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/assignment-history.test.ts",
-    "test:workspace-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/workspace-history.test.ts",
+    "test:workspace-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/workspace-history.test.ts tests/runtime/workspace-history-index.test.ts",
     "test:session-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-history.test.ts",
     "test:report-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/report-history.test.ts",
     "test:skill-provenance": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/skill-provenance.test.ts",

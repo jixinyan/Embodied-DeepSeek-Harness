@@ -5,8 +5,10 @@ import { readRunList, readSessionList } from '../../../apps/server/src/workspace
 import { workspaceDocuments } from './workspace-documents.js';
 import { assignmentDocuments } from './assignment-documents.js';
 import { UserSessions } from '../../../apps/server/src/user-sessions.js';
+import { WorkspaceHistoryIndex } from '../../../apps/server/src/workspace-history-index.js';
 
 const store = new LocalStore(process.argv[2]!);
+let index: WorkspaceHistoryIndex | undefined;
 try {
   const { runs, sessions } = await workspaceDocuments(store, 1);
   const { state: assignmentState, assignment } = await assignmentDocuments();
@@ -55,20 +57,27 @@ try {
   let sessionsRead = 0;
   const lifecycle = new UserSessions(store);
   await lifecycle.close();
+  index = new WorkspaceHistoryIndex(store);
+  const sourceReads = index.statistics().sourceReads;
   let before: string | null = null;
   do {
-    const page = readRunList(store, new URLSearchParams(before ? { before } : {}), null);
+    const page = readRunList(index, new URLSearchParams(before ? { before } : {}), null);
     assert(Buffer.byteLength(JSON.stringify(page)) < 256 * 1024);
     runsRead += page.runs.length;
     before = page.nextBeforeId;
   } while (before);
   do {
-    const page = readSessionList(store, new URLSearchParams(before ? { before } : {}), null);
+    const page = readSessionList(index, new URLSearchParams(before ? { before } : {}), null);
     assert(Buffer.byteLength(JSON.stringify(page)) < 256 * 1024);
     sessionsRead += page.sessions.length;
     before = page.nextBeforeId;
   } while (before);
+  assert.equal(index.statistics().sourceReads, sourceReads);
+  index.close();
+  index = new WorkspaceHistoryIndex(store);
+  assert.equal(index.statistics().sourceReads, 0);
   console.log(JSON.stringify({ documentBytes, count, runsRead, sessionsRead }));
 } finally {
+  index?.close();
   store.close();
 }

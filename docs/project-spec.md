@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.32 · 2026-09-21
+Version: v1.33 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -66,6 +66,10 @@ verified immutable archives. Compact run summaries preserve status and caller id
 the console loads selected historical details explicitly. See
 [assignment history](implementation/assignment-history.md) for publication, API and limits.
 Workspace session/task lists use bounded summary pages and independent active records.
+An application-owned SQLite summary index tracks committed source revisions and run
+ownership. Page reads use ordered indexes; startup and compaction reconcile from the
+authoritative journal. Source/index write failures remain explicit and reopening repairs
+incomplete derived publication without executing models or devices.
 The console supports session filtering, earlier/recent history and cross-page selection
 of task outcomes. See [workspace history](implementation/workspace-history.md).
 [Physical profiles](implementation/physical-profiles.md) bind declared simulator,

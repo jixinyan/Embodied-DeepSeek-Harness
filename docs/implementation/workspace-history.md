@@ -36,20 +36,51 @@ Pages are live reads, not a frozen multi-request snapshot. Newer insertions appe
 the latest page without changing an earlier cursor. A newly inserted older-dated record
 may appear on a subsequent older page. State changes remain visible on refresh.
 
-## Memory and lifecycle
+## Persistent summary index
 
-`workspace-history.ts` scans LocalStore records one at a time, projects each summary
-and retains only the selected page candidates. It does not collect full historical
-run/session bodies. The byte and count limits apply during candidate selection too.
-UserSessions startup reconciliation and duplicate-opening lookup also traverse records
-individually. Explicit `UserSessions.list()` still materializes its complete result for
-callers requesting it; the HTTP and admission paths use the incremental readers.
+`WorkspaceHistoryIndex` owns `workspace-history.sqlite` alongside the authoritative
+LocalStore journal. It uses Node's built-in `node:sqlite` module, a versioned strict
+schema, FULL synchronous commits and a 4 MiB page-cache target. SQLite temporary tables
+stay in memory. The application owns one index per open store, registers its committed
+change observer and closes it before closing the source store.
 
-This limits simultaneous history-body retention. Each page still performs a linear
-journal scan and reads individual source records. A persistent summary index would be
-required to bound scan I/O as the number of records grows. Individual source records,
-the store key index, active session configuration, current run state and disk retention
-remain independent costs. This change does not bound every application allocation.
+Indexes on `(kind, created_ms, id)` and `(kind, session_id, created_ms, id)` support
+ordered cursor queries. Each query reads at most 33 candidate summaries through a
+SQLite iterator, then applies the 32-record/256 KiB page target. Count, byte limits,
+oversized-record behavior and exclusive cursors remain the public API. Ordinary pages,
+cursor lookups, session scope validation and active run summaries read no full journal
+bodies. The active session's full configuration requires one explicit source read.
+
+Each summary binds the source version/checksum and, for runs, the ownership record's
+version/checksum. A summary checksum covers its identity, order, owner and encoded body.
+Reads verify those values against current source metadata. The source journal's file
+identity, size and modification time are checked before cached reads. Source checksum
+validation still occurs whenever full source records are read. These checks assume
+exclusive local ownership; they are not authentication against a hostile filesystem.
+
+After each source `put` has been fsynced, a synchronous observer updates the affected
+summary in a SQLite transaction. Ownership updates refresh run membership; ownership
+written before its run is incorporated when that run is stored. Unrelated source keys
+require no summary update. Index transaction failures propagate and stop the current
+source store. The already committed source record remains durable. This is two ordered
+durable writes, not an atomic transaction across both files.
+
+At startup, the journal replays and validates its own records. The summary index checks
+its format and SQLite integrity, compares source revisions, rebuilds missing/stale rows
+from individual source records and removes rows with no source. Unchanged rows need no
+body reads during reconciliation. Compaction triggers the same reconciliation because
+source checksums can change while their versions remain constant. Reopening recovers
+source writes whose index update was interrupted; it performs no model or device work.
+Unknown formats and corrupt summary reads fail explicitly. The application never
+silently deletes an unreadable index.
+
+`statistics()` reports index-owned source lookups and decoded summary reads for local
+diagnostics. It excludes LocalStore's startup replay and reads by other services.
+Startup/compaction still traverse source metadata; startup also checks SQLite pages.
+Individual source records, the key index, active session configuration, current run
+collections and disk retention have independent costs. UserSessions startup and
+duplicate-opening lookup traverse source records individually. Explicit
+`UserSessions.list()` retains its complete-result allocation cost.
 
 ## Console behavior
 
@@ -71,16 +102,22 @@ preserve existing DOM nodes and focus. Closing the page cancels pending reads.
 
 ## Acceptance
 
-`pnpm test:workspace-history` runs five actual journal/HTTP/process checks: tied-date
+`pnpm test:workspace-history` runs twelve actual journal/SQLite/HTTP/process checks: tied-date
 ordering and full traversal, independently returned active records, session filters
 and cursor admission, byte-budget continuity and newer insertions, detached summary
 reads, HTTP origin/query errors and memory pressure. The child process stores more
 than 100 MiB of project documents in valid role briefs and session configuration,
-opens the session lifecycle and traverses all run/session pages under a 64 MiB V8
-old-space limit. Authored metadata does not represent physical execution results.
+opens the session lifecycle, builds the index and traverses all run/session pages under
+a 64 MiB V8 old-space limit. Repeated pages perform no index-owned source reads; reopening
+an unchanged index also performs none. Tests cover live source/ownership updates,
+stale/missing index reconciliation, source-less row removal, corruption and unsupported
+versions. A second real SQLite connection holds a writer lock to exercise failures after
+source append and compaction publication; both recover on reopen. Authored metadata
+does not represent physical execution results.
 
-Browser component acceptance uses production markup, history readers, API transport,
+The preceding browser component acceptance used production markup, history readers, API transport,
 list controllers and task composer over actual HTTP and stored document records.
 It exercises earlier/recent pages, scope selection, independent active metadata and
-cross-page task-context selection. No model or environment is connected. Live VLM,
+cross-page task-context selection. The index preserves those HTTP response shapes;
+current HTTP and console regression checks pass. No model or environment is connected. Live VLM,
 device lifecycle and whole-application endurance acceptance remain required.

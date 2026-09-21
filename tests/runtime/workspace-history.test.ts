@@ -14,34 +14,42 @@ import {
 } from '../../apps/server/src/workspace-history.js';
 import { HttpError, assertLocalRequest } from '../../apps/server/src/local-http.js';
 import { workspaceDocuments } from './support/workspace-documents.js';
+import { WorkspaceHistoryIndex } from '../../apps/server/src/workspace-history-index.js';
 
-async function withStore(action: (store: LocalStore, directory: string) => Promise<void>) {
+async function withStore(
+  action: (store: LocalStore, directory: string, index: WorkspaceHistoryIndex) => Promise<void>,
+) {
   await mkdir(resolve('.local/work'), { recursive: true });
   const directory = await mkdtemp(resolve('.local/work/edh-workspace-history-'));
   const store = new LocalStore(directory);
+  const index = new WorkspaceHistoryIndex(store);
   try {
-    await action(store, directory);
+    await action(store, directory, index);
   } finally {
+    index.close();
     store.close();
     await rm(directory, { recursive: true, force: true });
   }
 }
 
 test('workspace pages retain deterministic tied-date order and independent active records', async () => {
-  await withStore(async (store) => {
+  await withStore(async (store, _directory, index) => {
     const { runs, sessions } = await workspaceDocuments(store);
     const expected = runs.map((row) => row.id).reverse();
     const received: string[] = [];
     let before: string | null = null;
     do {
-      const page = readRunList(store, new URLSearchParams(before ? { before } : {}), runs[0]!.id);
+      const reads = index.statistics();
+      const page = readRunList(index, new URLSearchParams(before ? { before } : {}), runs[0]!.id);
+      assert.equal(index.statistics().sourceReads, reads.sourceReads);
+      assert(index.statistics().summaryReads - reads.summaryReads <= 35);
       assert(page.runs.length <= workspacePageLimits.records);
       assert.equal(page.activeRun!.id, runs[0]!.id);
       received.push(...page.runs.map((row) => row.id));
       before = page.nextBeforeId;
     } while (before);
     assert.deepEqual(received, expected);
-    const first = readSessionList(store, new URLSearchParams(), sessions[0]!.id);
+    const first = readSessionList(index, new URLSearchParams(), sessions[0]!.id);
     assert.equal(first.sessions.length, 32);
     assert.equal(first.activeSession!.id, sessions[0]!.id);
     assert.deepEqual(first.activeSession!.configuration, sessions[0]!.configuration);
@@ -49,16 +57,16 @@ test('workspace pages retain deterministic tied-date order and independent activ
     assert.equal('runIds' in first.sessions[0]!, false);
     first.sessions[0]!.environment = 'caller edit';
     assert.equal(
-      readSessionList(store, new URLSearchParams(), null).sessions[0]!.environment,
+      readSessionList(index, new URLSearchParams(), null).sessions[0]!.environment,
       'document-records',
     );
     const middle = readSessionList(
-      store,
+      index,
       new URLSearchParams({ before: first.nextBeforeId! }),
       null,
     );
     const last = readSessionList(
-      store,
+      index,
       new URLSearchParams({ before: middle.nextBeforeId! }),
       null,
     );
@@ -71,12 +79,12 @@ test('workspace pages retain deterministic tied-date order and independent activ
 });
 
 test('session-scoped task pages preserve membership and reject foreign or malformed cursors', async () => {
-  await withStore(async (store) => {
+  await withStore(async (store, _directory, index) => {
     const { runs, sessions } = await workspaceDocuments(store);
     const scope = sessions[0]!.id;
-    const first = readRunList(store, new URLSearchParams({ session: scope }), null);
+    const first = readRunList(index, new URLSearchParams({ session: scope }), null);
     const last = readRunList(
-      store,
+      index,
       new URLSearchParams({ session: scope, before: first.nextBeforeId! }),
       null,
     );
@@ -88,7 +96,7 @@ test('session-scoped task pages preserve membership and reject foreign or malfor
         .reverse(),
     );
     assert(
-      readRunList(store, new URLSearchParams({ session: 'standalone' }), null).runs.every(
+      readRunList(index, new URLSearchParams({ session: 'standalone' }), null).runs.every(
         (row) => row.userSessionId === null,
       ),
     );
@@ -97,25 +105,25 @@ test('session-scoped task pages preserve membership and reject foreign or malfor
       { session: 'missing' },
       { before: runs[1]!.id, session: scope },
     ])
-      assert.throws(() => readRunList(store, new URLSearchParams(params), null));
+      assert.throws(() => readRunList(index, new URLSearchParams(params), null));
     for (const query of ['before=a&before=b', 'limit=1000', 'before=__proto__', 'session='])
-      assert.throws(() => readRunList(store, new URLSearchParams(query), null));
-    assert.throws(() => readSessionList(store, new URLSearchParams({ session: scope }), null));
-    assert.throws(() => readSessionList(store, new URLSearchParams({ before: 'missing' }), null));
+      assert.throws(() => readRunList(index, new URLSearchParams(query), null));
+    assert.throws(() => readSessionList(index, new URLSearchParams({ session: scope }), null));
+    assert.throws(() => readSessionList(index, new URLSearchParams({ before: 'missing' }), null));
   });
 });
 
 test('byte-limited pages preserve continuity across oversized summaries and later insertions', async () => {
-  await withStore(async (store) => {
+  await withStore(async (store, _directory, index) => {
     const { runs } = await workspaceDocuments(store, 4);
     const oversized = { ...runs[2]!, instruction: 'Document review '.repeat(30000) };
     store.put(`run:${oversized.id}`, oversized, 1);
-    const first = readRunList(store, new URLSearchParams(), null);
+    const first = readRunList(index, new URLSearchParams(), null);
     assert.deepEqual(
       first.runs.map((row) => row.id),
       [runs[3]!.id],
     );
-    const second = readRunList(store, new URLSearchParams({ before: first.nextBeforeId! }), null);
+    const second = readRunList(index, new URLSearchParams({ before: first.nextBeforeId! }), null);
     assert.deepEqual(
       second.runs.map((row) => row.id),
       [oversized.id],
@@ -123,18 +131,18 @@ test('byte-limited pages preserve continuity across oversized summaries and late
     assert(Buffer.byteLength(JSON.stringify(second.runs)) > workspacePageLimits.bytes);
     const inserted = { ...runs[0]!, id: 'zz-new-document' };
     store.put(`run:${inserted.id}`, inserted, 0);
-    const third = readRunList(store, new URLSearchParams({ before: second.nextBeforeId! }), null);
+    const third = readRunList(index, new URLSearchParams({ before: second.nextBeforeId! }), null);
     assert.deepEqual(
       third.runs.map((row) => row.id),
       [runs[1]!.id, runs[0]!.id],
     );
     assert.equal(third.nextBeforeId, null);
-    assert.equal(readRunList(store, new URLSearchParams(), null).runs[0]!.id, inserted.id);
+    assert.equal(readRunList(index, new URLSearchParams(), null).runs[0]!.id, inserted.id);
   });
 });
 
 test('workspace HTTP reads expose bounded summaries and explicit query errors', async () => {
-  await withStore(async (store) => {
+  await withStore(async (store, _directory, index) => {
     await workspaceDocuments(store);
     const server = createServer((req, res) => {
       try {
@@ -142,8 +150,8 @@ test('workspace HTTP reads expose bounded summaries and explicit query errors', 
         const url = new URL(req.url!, 'http://localhost');
         const value =
           url.pathname === '/api/runs'
-            ? readRunList(store, url.searchParams, null)
-            : readSessionList(store, url.searchParams, null);
+            ? readRunList(index, url.searchParams, null)
+            : readSessionList(index, url.searchParams, null);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(value));
       } catch (error) {
@@ -176,7 +184,8 @@ test(
   'workspace summaries page over more than 100 MiB of documents under a constrained heap',
   { timeout: 90000 },
   async () => {
-    await withStore(async (store, directory) => {
+    await withStore(async (store, directory, index) => {
+      index.close();
       store.close();
       const result = await promisify(execFile)(
         process.execPath,
