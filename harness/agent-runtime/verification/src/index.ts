@@ -1,4 +1,4 @@
-// Architecture contract only. No runtime implementation.
+export { VerificationContexts, type VerificationContextRecord } from './contexts.js';
 import type { TaskScope, VerificationResult } from '@edh/contracts';
 export interface MonitorFeedback {
   readonly scope: TaskScope;

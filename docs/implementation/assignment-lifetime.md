@@ -37,6 +37,13 @@ new evidence or transferring references requires an existing grant scope. A late
 extension cannot recreate a released set. Run shutdown closes all remaining grant
 scopes after native sessions and pending application operations settle.
 
+Formal-check contexts use a separate versioned record and retain only active assignment
+IDs/versions in memory. UpperRun releases those identities at the same retirement
+boundary and closes the registry after shutdown drains. Source observations are loaded
+through their persisted evidence references. Historical inspection preserves the record
+without reactivating verification or restoring evidence permissions. See
+[verification contexts](../../harness/agent-runtime/verification/README.md#formal-check-context-lifetime).
+
 Retained assignment briefs, last-seen images and published reports remain inspectable
 history. Those records do not authorize a retired role to read evidence. Native
 role-context disposal does not delete stored evidence or its image objects. Image
@@ -63,6 +70,7 @@ The tests cover:
 - A real journal write hold rejecting creation publication and final audit, with native cleanup.
 - A real audit write failure releasing registries and grants while remaining observable at shutdown.
 - A rewritten archive rejected by retired assignment lookup after resident brief release.
+- A native verifier finishing its turn, releasing active check state and retaining its document evidence.
 
 These checks establish idle native lifecycle, native delivery failure and local authority behavior. They do
 not establish in-flight live VLM/provider shutdown, cooperative external cancellation,

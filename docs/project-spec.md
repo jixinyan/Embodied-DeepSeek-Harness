@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.33 · 2026-09-21
+Version: v1.34 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -47,6 +47,10 @@ commands, examples and unimplemented integration. The execution port requires a 
 with execution/boundary/state-version preconditions and a matching published backend
 update. An owner ID in a prior subgoal is not a new authorization. See the
 [execution contract](../harness/agent-runtime/execution/README.md).
+Formal-check contexts persist request/boundary identities, scoped facts and evidence
+references. Only active assignment identities and accepted versions remain resident;
+native retirement releases them while historical records remain inspectable. See
+[verification lifetime](../harness/agent-runtime/verification/README.md).
 The unified console now displays key
 state without page/tab switching; further polish follows actual provider integration.
 Native DSH [context management](implementation/context-management.md) is available

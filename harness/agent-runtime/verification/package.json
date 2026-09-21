@@ -11,6 +11,10 @@
     }
   },
   "dependencies": {
-    "@edh/contracts": "workspace:*"
+    "@edh/contracts": "workspace:*",
+    "@edh/execution": "workspace:*",
+    "@edh/perception": "workspace:*",
+    "@edh/storage": "workspace:*",
+    "zod": "4.4.3"
   }
 }

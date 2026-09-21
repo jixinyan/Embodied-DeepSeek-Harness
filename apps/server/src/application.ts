@@ -10,7 +10,6 @@ import {
   type SubgoalRequest,
   type SuccessCheck,
   type VerificationResult,
-  type CheckResult,
   type EvidenceRef,
   type PlanDocument,
 } from '@edh/contracts';
@@ -25,6 +24,7 @@ import { LocalStore, SessionHistory, type SessionHistoryOptions } from '@edh/sto
 import { AssignmentFiles } from '@edh/files';
 import { TaskPlans } from '@edh/planning';
 import { AssignmentEvidenceGrants, SkillLibrary } from '@edh/memory';
+import { VerificationContexts } from '@edh/verification';
 import { skillSourceLimitations } from './skill-provenance.js';
 import { UserClarifications, ClarificationConflict, readClarification } from './clarifications.js';
 import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
@@ -52,13 +52,6 @@ import {
 } from '@edh/tools';
 export const terminal = (state: RunState['state']) =>
   ['succeeded', 'failed', 'cancelled', 'interrupted', 'unknown'].includes(state);
-interface CheckedBoundary {
-  requestId: string;
-  executionId: string;
-  boundaryId: string;
-  facts: CheckResult[];
-  sample: SensorSample;
-}
 interface RecoveryObservation {
   id: string;
   goal: GoalBinding;
@@ -108,7 +101,7 @@ export class UpperRun {
   private deliveredMessages = 0;
   private readonly evidence: SensorSamples;
   private readonly grants = new AssignmentEvidenceGrants();
-  private readonly checks = new Map<string, CheckedBoundary>();
+  private readonly checks: VerificationContexts;
   private readonly pending = new Set<Promise<void>>();
   private readonly formalBoundaries = new Set<string>();
   private resumePermit:
@@ -199,6 +192,12 @@ export class UpperRun {
       this.state.id,
       options.backend.source,
     );
+    this.checks = new VerificationContexts(
+      options.store,
+      options.validator,
+      this.evidence,
+      this.state.id,
+    );
     const sessionHistory = new SessionHistory(options.store, options.sessionHistory);
     this.sessions = new TeamSessions(
       options.host,
@@ -284,6 +283,7 @@ export class UpperRun {
             };
           }
           if (type === 'agent.retired') {
+            this.checks.release(String(detail.assignmentId));
             this.grants.release(String(detail.assignmentId));
             this.clarifications.cancel(
               'The requesting assignment ended.',
@@ -1223,9 +1223,9 @@ export class UpperRun {
           throw new Error('Execution boundary changed during formal checks.');
         this.options.validator.parse('EvidenceRef', checked.sample.evidence);
         for (const fact of checked.facts) this.options.validator.parse('CheckResult', fact);
+        this.retainSample(checked.sample);
+        this.checks.update(a.id, checked.facts, checked.sample.evidence.id);
         this.observe(a, checked.sample);
-        context.facts = structuredClone(checked.facts);
-        context.sample = structuredClone(checked.sample);
         this.event('verification.checked', {
           assignmentId: a.id,
           facts: checked.facts,
@@ -1710,16 +1710,21 @@ export class UpperRun {
     }
   }
   private async formal(update: BackendUpdate): Promise<void> {
-    const a = await this.assignment(
+    const brief = this.brief(
       this.sessions.team.definition.bindings.final_verifier,
       'Perform mandatory formal verification at this stopped execution boundary.',
     );
-    this.checks.set(a.id, {
+    brief.task_scope = structuredClone(update.status.task_scope);
+    const a = await this.sessions.create(
+      this.sessions.team.definition.bindings.final_verifier,
+      brief,
+    );
+    this.checks.open(a.id, {
       requestId: randomUUID(),
       executionId: update.status.execution_id,
       boundaryId: update.status.boundary_event_id!,
-      facts: [],
-      sample: update.sample,
+      scope: a.brief.task_scope,
+      evidenceId: update.sample.evidence.id,
     });
     this.event('verification.requested', {
       assignmentId: a.id,
@@ -1815,6 +1820,7 @@ export class UpperRun {
       await cleanup(() => this.sessions.close());
       await cleanup(() => this.settle());
       this.grants.close();
+      this.checks.close();
       this.closed = true;
       errors.push(...this.lifecycleErrors);
       if (errors.length)

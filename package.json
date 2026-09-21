@@ -26,6 +26,7 @@
     "test:images": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/local-images.test.ts tests/runtime/evidence-images.test.ts tests/runtime/server-image-lifetime.test.ts tests/runtime/image-maintenance.test.ts",
     "test:audits": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-audits.test.ts tests/runtime/session-audit-pages.test.ts tests/runtime/native-audit-publication.test.ts",
     "test:assignment-lifetime": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/assignment-lifetime.test.ts",
+    "test:verification-contexts": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/verification-contexts.test.ts",
     "test:assignment-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/assignment-history.test.ts",
     "test:workspace-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/workspace-history.test.ts tests/runtime/workspace-history-index.test.ts",
     "test:session-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-history.test.ts",

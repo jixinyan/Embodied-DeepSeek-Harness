@@ -11,6 +11,8 @@ import { AssignmentEvidenceGrants } from '@edh/memory';
 import { LocalStore, SessionAudits, SessionHistory } from '@edh/storage';
 import { FileTeamLoader } from '@edh/teams';
 import { AssignmentHistory, type RunState } from '@edh/tasks';
+import { SensorSamples } from '@edh/perception';
+import { VerificationContexts } from '@edh/verification';
 import { CORE_TOOLS } from '@edh/tools';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 
@@ -60,6 +62,8 @@ async function openTeam() {
     error: null,
   };
   const assignmentHistory = new AssignmentHistory(store, validator);
+  const samples = new SensorSamples(store, validator, runId, 'test_fixture');
+  const checks = new VerificationContexts(store, validator, samples, runId);
   const sessions = new TeamSessions(
     host,
     team,
@@ -84,6 +88,7 @@ async function openTeam() {
         }
         if (type === 'agent.retired') {
           const id = String(detail.assignmentId);
+          checks.release(id);
           grants.release(id);
           state.assignments[id]!.status = detail.cleanupFailed ? 'retirement_failed' : 'retired';
           assignmentHistory.retain(state, id);
@@ -129,6 +134,8 @@ async function openTeam() {
     runId,
     state,
     assignmentHistory,
+    samples,
+    checks,
     sessions,
     brief,
     async close() {
@@ -136,6 +143,7 @@ async function openTeam() {
         await sessions.close();
       } finally {
         grants.close();
+        checks.close();
         await host.fiber.dispose();
         store.close();
         await rm(directory, { recursive: true, force: true });
@@ -233,6 +241,63 @@ test('retired native assignments release capacity across repeated independent de
       assert.equal(t.state.assignments[assignment.id]!.brief, undefined);
       assert.deepEqual(t.sessions.get(assignment.id), assignment);
     }
+  } finally {
+    await t.close();
+  }
+});
+
+test('native verifier retirement releases active checks and preserves referenced document history', async () => {
+  const t = await openTeam();
+  try {
+    const brief = t.brief();
+    brief.task_scope.recovery_id = 'document-recovery';
+    const assignment = await t.sessions.create('verifier', brief);
+    const sample = t.samples.retain({
+      evidence: {
+        id: 'verification-document',
+        kind: 'event',
+        source: 'authored-project-document',
+        created_at: '2026-09-21T00:00:00.000Z',
+        observed_at: '2026-09-21T00:00:00.000Z',
+        clock_id: 'document-clock',
+        visibility: 'agent',
+        task_scope: assignment.brief.task_scope,
+      },
+      sequence: 0,
+      source: 'test_fixture',
+      description: await readFile('README.md', 'utf8'),
+      visualization: {},
+    });
+    t.checks.open(assignment.id, {
+      requestId: 'document-request',
+      executionId: 'document-execution-record',
+      boundaryId: 'document-boundary-record',
+      scope: assignment.brief.task_scope,
+      evidenceId: sample.evidence.id,
+    });
+    const facts = [
+      {
+        check_id: 'physical-evidence-unavailable',
+        value: null,
+        reason: 'Document inspection has no connected physical provider.',
+        evidence_refs: [sample.evidence.id],
+      },
+    ];
+    t.checks.update(assignment.id, facts, sample.evidence.id);
+    const history = t.checks.inspect(assignment.id);
+    assert.equal(history!.scope.recovery_id, brief.task_scope.recovery_id);
+    const finishing = t.sessions.finish(assignment.id, 'document-review-ended');
+    assert.equal(t.checks.activeCount, 1);
+    await finishing;
+    assert.equal(t.checks.activeCount, 0);
+    assert.equal(t.checks.get(assignment.id), undefined);
+    assert.throws(
+      () => t.checks.update(assignment.id, facts, sample.evidence.id),
+      /no longer active/,
+    );
+    assert.deepEqual(t.checks.inspect(assignment.id), history);
+    assert.deepEqual(t.samples.read(sample.evidence.id), sample);
+    assert.equal(t.host.sessions.get(SessionId(assignment.sessionId)), undefined);
   } finally {
     await t.close();
   }

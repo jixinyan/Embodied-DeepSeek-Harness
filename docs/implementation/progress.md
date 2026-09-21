@@ -1,10 +1,19 @@
 # Implementation progress
 
-Spec: v1.33. Current checkpoint: **persistent workspace summary index with source reconciliation**.
+Spec: v1.34. Current checkpoint: **durable verification contexts with native assignment lifetime**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+VerificationContexts stores check identities, scopes, facts and evidence references in
+versioned records. Its active registry retains only assignment IDs and record versions;
+UpperRun releases them on native retirement and after task shutdown drains. Referenced
+observations remain available through SensorSamples. Reopening retains inspection
+without reactivating verification. Four actual journal/document checks and ten native
+lifecycle checks pass, alongside eight evidence-storage checks. Full live-model/provider
+verification, cumulative verdict metadata and domain retention remain separate work.
+[Verification context ownership](../../harness/agent-runtime/verification/README.md).
 
 WorkspaceHistoryIndex stores source-bound summaries in SQLite and updates them after
 durable source writes. Ordered/scoped queries read at most 33 candidates and return at
@@ -120,7 +129,12 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: twelve workspace-history checks, 19 storage checks and 24 console
+Current focused checks: four verification-context checks, ten native assignment-lifecycle
+checks and eight evidence-storage checks pass (22 total). Strict TypeScript, formatting,
+source provenance and documentation links pass. The evidence is actual files, native
+services and authored documents; no model or physical provider executes.
+
+The workspace-index checkpoint passed twelve workspace-history checks, 19 storage checks and 24 console
 tests pass (55 total). Actual HTTP checks preserve cursor, filter and active-record
 semantics. The preceding browser component DOM checks cover session/task pagination,
 scope selection, separate active metadata and retained task-context selections across

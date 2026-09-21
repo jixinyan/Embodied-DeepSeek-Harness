@@ -320,6 +320,18 @@ importers:
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts
+      '@edh/execution':
+        specifier: workspace:*
+        version: link:../execution
+      '@edh/perception':
+        specifier: workspace:*
+        version: link:../perception
+      '@edh/storage':
+        specifier: workspace:*
+        version: link:../storage
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   harness/contracts:
     dependencies:

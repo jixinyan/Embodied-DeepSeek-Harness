@@ -118,6 +118,11 @@ uses this scoped route for latest and agent-seen frames. See the
 
 ## Journal maintenance ownership
 
+VerificationContexts owns persisted formal-check identities, scopes, facts and evidence
+references. UpperRun owns active assignment admission/release and still applies shared
+verdict gates. SensorSamples owns the referenced observations. Native retirement releases
+active check identities while preserving the stored record for host inspection.
+
 WorkspaceHistoryIndex in `apps/server` owns the derived SQLite session/run summaries.
 LocalStore supplies detached revisions, source-file checks and synchronous committed
 change notifications. The application opens the index after startup reconciliation and
