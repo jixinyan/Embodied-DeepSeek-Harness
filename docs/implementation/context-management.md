@@ -134,7 +134,8 @@ automatic compaction, twenty real localhost HTTP requests and upper console even
 - Summaries may omit or misstate facts. They cannot substitute for fresh perception,
   formal verification, immutable contracts, or stored evidence.
 - Sensor metadata and run events are persisted and read on demand. Live console history
-  uses bounded windows; complete audits remain explicit reads. Journal/index retention,
+  uses bounded windows; audit inspection uses bounded assignment/event pages with an
+  explicit published range. Journal/index retention,
   binary media cleanup and resumable sessions remain separate work. Restart never
   silently replays historical physical commands.
 

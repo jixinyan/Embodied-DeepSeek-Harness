@@ -30,6 +30,33 @@ async function until(check: () => Promise<boolean>) {
   }
 }
 
+async function readAudit(url: string, runId: string): Promise<unknown[]> {
+  const events: unknown[] = [];
+  let nextAfter: string | null = null;
+  do {
+    const suffix: string = nextAfter ? `?afterAssignment=${encodeURIComponent(nextAfter)}` : '';
+    const index = await (await fetch(`${url}/api/runs/${runId}/audit${suffix}`)).json();
+    for (const session of index.sessions) {
+      let after = 0;
+      while (after < session.eventTotal) {
+        const query = new URLSearchParams({
+          assignment: session.assignmentId,
+          after: String(after),
+          through: String(session.eventTotal),
+        });
+        const response = await fetch(`${url}/api/runs/${runId}/audit?${query}`);
+        assert.equal(response.status, 200);
+        const page = await response.json();
+        assert.ok(page.throughOffset > after);
+        events.push(...page.events);
+        after = page.throughOffset;
+      }
+    }
+    nextAfter = index.nextAfter;
+  } while (nextAfter);
+  return events;
+}
+
 test(
   'one user session retains its world across independent tasks and preserves recovery experience after close',
   { timeout: 45000 },
@@ -76,7 +103,7 @@ test(
       const secondRun = await (await fetch(`${server.url}/api/runs/${second.body.runId}`)).json();
       assert.equal(secondRun.state, 'succeeded');
       assert.notEqual(secondRun.decisionAssignmentId, firstRun.decisionAssignmentId);
-      const audit = await (await fetch(`${server.url}/api/runs/${second.body.runId}/audit`)).json();
+      const audit = await readAudit(server.url, second.body.runId);
       const native = JSON.stringify(audit);
       assert.ok(
         native.includes('Cup inside cabinet'),
@@ -107,9 +134,7 @@ test(
           (await (await fetch(`${server.url}/api/sessions/${next.body.id}`)).json()).state ===
           'ready',
       );
-      const thirdAudit = JSON.stringify(
-        await (await fetch(`${server.url}/api/runs/${third.body.runId}/audit`)).json(),
-      );
+      const thirdAudit = JSON.stringify(await readAudit(server.url, third.body.runId));
       assert.ok(
         thirdAudit.includes(firstRun.skillIds[0]),
         'A new user session can explicitly retrieve prior-session experience.',

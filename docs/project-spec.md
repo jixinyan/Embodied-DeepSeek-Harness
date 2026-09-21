@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.21 · 2026-09-21
+Version: v1.22 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -661,6 +661,12 @@ and permits request variants to regenerate on demand. Custom providers advertise
 optional maintenance capability. Distinct-key, original-image and session/audit
 retention remain required. See the
 [maintenance guide](implementation/storage-maintenance.md).
+
+Native audit inspection uses bounded assignment and event pages. The console selects
+one role assignment and a fixed published event range, with earlier/later navigation
+and an explicit latest-page refresh. An uncommitted suffix remains hidden. Event
+offsets preserve the stored native event sequence without resuming any execution.
+See the [audit API and acceptance](implementation/session-audits.md).
 
 ### 8.5 Complete recovery sequence
 

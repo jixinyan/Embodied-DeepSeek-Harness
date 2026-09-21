@@ -32,6 +32,12 @@ publishes a durable count index and reads historical full-array snapshots. Entir
 audit histories no longer need to fit one 8 MiB journal record. Resumable model sessions
 and automatic stale-lock takeover remain unimplemented.
 
+`SessionAudits.index`, `page` and `before` provide bounded assignment/event reads for
+the console. The published event count is the visibility boundary; clients can retain
+that count while navigating a growing audit. Legacy arrays remain readable. Complete
+in-process `read` retains its explicit full-history allocation cost. See the
+[audit API and limits](../../../docs/implementation/session-audits.md).
+
 See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
 [module responsibilities](../../../docs/architecture/modules.md).

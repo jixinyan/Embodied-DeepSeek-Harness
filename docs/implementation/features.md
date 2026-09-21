@@ -122,3 +122,11 @@ model-request images through the same idle admission boundary. Cleanup requires 
 current provider revision, excludes image writers and retains original evidence bytes.
 Custom providers can expose the optional maintenance controller. Actual file tests
 cover cache regeneration, busy/stale conflicts, invalid entries and shutdown.
+
+## Paged native audit inspection
+
+The audit HTTP route and console select one assignment and a bounded page of native
+events. A fixed published event count supports navigation while later events arrive.
+Assignment indexes are also paged. Real-file, HTTP and constrained-heap process tests
+cover retained values, task scope, legacy arrays and publication boundaries. Domain
+retention and native active-session lifetime remain open. [Audit guide](session-audits.md).

@@ -14,6 +14,7 @@ import { admitSessionTask } from './task-admission.js';
 import { RunEventStream } from './run-event-stream.js';
 import { HttpError, assertLocalRequest } from './local-http.js';
 import { serveEvidenceImage } from './evidence-images.js';
+import { readSessionAudit } from './session-audit-view.js';
 import {
   admitStorageCompaction,
   admitImageCacheCleanup,
@@ -27,7 +28,6 @@ import {
 import { FileTeamLoader } from '@edh/teams';
 import {
   LocalStore,
-  SessionAudits,
   LocalImageStore,
   ImageMaintenanceConflict,
   type LocalImageOptions,
@@ -708,7 +708,7 @@ async function startApplication(
             );
           }
           if (method === 'GET' && operation === 'audit')
-            return json(res, 200, { sessions: new SessionAudits(store).read(id) });
+            return json(res, 200, readSessionAudit(store, id, url.searchParams));
           if (method === 'GET' && operation === 'recovery') {
             return json(res, 200, {
               recovery: record.recoveryId

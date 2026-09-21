@@ -1,13 +1,14 @@
 # Implementation progress
 
-Spec: v1.21. Current checkpoint: **DSH upper application with scoped images and explicit journal/image-cache maintenance**.
+Spec: v1.22. Current checkpoint: **DSH upper application with paged audits and explicit journal/image-cache maintenance**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The latest delivery adds image inventory and explicit request-cache cleanup alongside
-atomic journal compaction and idle-only console maintenance.
+The latest delivery adds bounded assignment/event audit browsing. Image inventory,
+explicit request-cache cleanup, atomic journal compaction and idle-only console
+maintenance remain available.
 Application-owned image storage and scoped HTTP reads support the observation renderer.
 Durable evidence, paged history and incremental
 transport support upper-first integration. Model/policy adapters and standalone action
@@ -57,12 +58,12 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: 16 storage/admission tests, 23 image/lifetime/HTTP tests and
-22 console logic/transport tests pass. The preceding journal checkpoint also passed
-eight evidence-storage tests and 16 history checks. Browser component DOM checks cover
-actual image loading, request-cache cleanup and document-journal compaction. TypeScript,
-formatting, provenance and structure checks pass. Scripted runtime tests were not
-executed for this checkpoint.
+Current focused checks: nine audit file/HTTP/process tests and 22 console logic/transport
+tests pass. Prior maintenance checkpoints passed 16 storage/admission, 23 image/lifetime/HTTP,
+eight evidence-storage and 16 history tests. Browser component DOM checks cover audit
+assignment selection, event navigation and empty history; previous checks cover actual
+image loading, cache cleanup and journal compaction. TypeScript, formatting, provenance
+and structure checks pass. Scripted runtime tests were not executed for this checkpoint.
 
 Remaining: live VLM and sensor-provider acceptance; host-to-Python worker
 transport; actual simulator, learned policy, perception and hardware adapters; resource
@@ -974,3 +975,34 @@ Next: complete domain-aware retention for run/session/evidence/audit records and
 media references; finish active-task clarification, provider-backed criteria discovery,
 live VLM acceptance and CLI-free bootstrap. The actual worker/provider integrations
 remain separate physical-runtime work. The upper-runtime objective remains incomplete.
+
+## Bounded native audit browsing (2026-09-21)
+
+SessionAudits exposes assignment-index and forward/backward event pages. Indexes return
+at most 64 assignments; event pages contain at most 128 events and target 256 KiB of
+encoded bodies, preserving one larger event intact. A fixed published event count
+keeps navigation stable across later appends. Invalid indexes, missing published bodies
+and foreign cursors fail explicitly. Legacy arrays, original event values and journal
+compaction remain supported.
+
+The audit HTTP route returns an assignment index and accepts an explicit assignment
+with bounded event offsets. The console retains one index and event page, supports
+earlier/later/latest navigation and clears its held contents when inspection closes.
+Read-only text rendering, loading/empty/error states and stale-response suppression
+belong to the inspector controller. Native DSH sessions and audit publication remain
+unchanged. In-process complete-history reads retain their explicit allocation cost.
+
+Validation: `pnpm test:audits` passes nine real-file/HTTP/process checks. A child with a
+64 MiB V8 old-space limit writes, reopens and pages through more than 96 MiB of documents.
+Twenty-two console logic/transport tests, TypeScript, formatting, provenance and
+structure checks pass. Browser component acceptance uses production markup/controller
+and query handling over actual stored documents: 300 events, 65 assignments, both
+navigation directions, assignment changes, index continuation, empty history and
+text-only rendering. No model or physical provider executes. Historical scripted
+user-session tests were updated to consume the paged API and were not run.
+
+Next: domain retention and reference accounting for run/session/evidence/audit records
+and original media; native active-session and assignment-grant lifetime; active-task
+clarification; provider-backed criteria discovery; live VLM acceptance and CLI-free
+bootstrap. Audit paging limits browsing allocations and does not establish disk quotas
+or complete the upper-runtime objective.

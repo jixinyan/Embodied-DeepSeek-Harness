@@ -493,6 +493,20 @@
         </div>
         <button id="close-inspector" class="icon-button" aria-label="Close inspector">×</button>
       </div>
+      <div id="audit-controls" hidden>
+        <label
+          >Assignment
+          <select data-audit="assignment" aria-label="Audit assignment"></select
+        ></label>
+        <div class="storage-actions">
+          <button data-audit="first-assignments" class="button small">First assignments</button>
+          <button data-audit="next-assignments" class="button small">More assignments</button>
+          <button data-audit="earlier" class="button small">Earlier events</button>
+          <button data-audit="later" class="button small">Later events</button>
+          <button data-audit="latest" class="button small">Latest events</button>
+        </div>
+        <p data-audit="status" role="status"></p>
+      </div>
       <pre id="inspector-body"></pre>
     </dialog>
   </body>

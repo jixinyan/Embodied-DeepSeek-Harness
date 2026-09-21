@@ -108,6 +108,14 @@ before reading bytes. See the [image guide](../../docs/implementation/image-stor
 Component acceptance uses an actual repository PNG, real local storage/HTTP and browser
 DOM checks. Camera streaming, live VLM behavior and physical execution remain unverified.
 
+## Native session audits
+
+Native DSH audit inspection has assignment selection and earlier/later/latest event
+controls. Assignment indexes and event bodies are paged; the inspector retains one
+page of each, renders document contents as text and excludes late responses after
+another inspection opens. Only published audit events are shown. See the
+[audit HTTP API and acceptance](../../docs/implementation/session-audits.md).
+
 ## Workspace storage
 
 The expandable Workspace storage section displays journal size, current record count

@@ -10,6 +10,7 @@ import { renderTaskComposer } from './task-composer.js';
 import { taskRequest, completeTaskRequest } from './task-request.js';
 import { renderSensorImages } from './sensor-images.js';
 import { bindStorageMaintenance } from './storage-maintenance.js';
+import { bindSessionAudit } from './session-audit.js';
 import {
   appendRunHistory,
   mergeRunUpdate,
@@ -60,6 +61,7 @@ async function api(path, data) {
   return result;
 }
 function inspect(title, value) {
+  auditBrowser.close();
   text('inspector-title', title);
   text('inspector-body', typeof value === 'string' ? value : JSON.stringify(value, null, 2));
   if (!$('inspector').open) $('inspector').showModal();
@@ -1010,10 +1012,13 @@ $('inspect-recovery').onclick = () =>
       await api(`/api/runs/${current.id}/recovery`),
     ),
   );
+const auditBrowser = bindSessionAudit($('audit-controls'), $('inspector-body'), api, action);
 $('inspect-audit').onclick = () =>
-  action(async () =>
-    inspect('Native DSH session audit · Read-only', await api(`/api/runs/${current.id}/audit`)),
-  );
+  action(async () => {
+    inspect('Native DSH session audit · Read-only', '');
+    await auditBrowser.open(current.id);
+  });
+$('inspector').addEventListener('close', () => auditBrowser.close());
 $('close-inspector').onclick = () => $('inspector').close();
 $('inspector').addEventListener('click', (e) => {
   const rect = $('inspector').getBoundingClientRect();

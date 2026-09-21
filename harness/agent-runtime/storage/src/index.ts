@@ -11,7 +11,12 @@ export interface AssetStore {
 
 export { LocalStore, type StoreStatistics, type StoreCompaction } from './local-store.js';
 
-export { SessionAudits } from './session-audits.js';
+export {
+  SessionAudits,
+  auditPageLimits,
+  type SessionAuditIndexPage,
+  type SessionAuditPage,
+} from './session-audits.js';
 export { LocalImageStore, type LocalImageOptions } from './local-images.js';
 export {
   ImageMaintenanceConflict,
