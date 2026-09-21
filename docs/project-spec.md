@@ -641,6 +641,12 @@ remain available to the console. Binary media binding, reference-set growth and
 disk retention have separate implementation and acceptance requirements. See the
 [perception storage guide](../harness/agent-runtime/perception/README.md).
 
+The native DSH attachment service now has an EDH local image provider using pinned
+DSH normalization/publication code. It supports durable image bytes and route-specific
+request projection, with explicit operation limits and lifecycle. Server assembly,
+authorized HTTP image delivery, console rendering and live VLM acceptance remain
+separate integration work. See the [image storage guide](implementation/image-storage.md).
+
 ### 8.5 Complete recovery sequence
 
 ![Execution, verification and recovery sequence](architecture/assets/async-recovery-sequence.svg)

@@ -832,3 +832,33 @@ grant/reference and native audit/context lifecycle; provider-backed criteria dis
 active-task clarification; live VLM evaluation and local-server bootstrap. Physical
 worker/provider integration retains its separate scope. The next evidence step is the
 deployment attachment provider and its authorized byte-resolution path.
+
+## Native local image provider (2026-09-20)
+
+LocalImageStore implements DSH's AttachmentStore using six attachment-local source
+files from the existing pinned DSH revision. The provider validates encoded images,
+normalizes orientation/color/dimensions, publishes immutable digest-addressed files,
+verifies reads and generates deterministic model-request variants. Configuration uses
+an explicit directory and frozen image/operation limits. Accepted operations own their
+input copies; native Cordis disposal rejects new work and awaits accepted operations.
+
+The source map records two patches: printable filename sanitization and full-decoded,
+fail-fast request-cache reads. Sharp is pinned to 0.35.3. The service is available to
+deployment-owned contexts and the existing model resolveImage callback. It does not
+grant evidence access or mount an HTTP route. Default server assembly, environment
+factory injection and console sensor images remain integration work.
+
+Validation: ten `pnpm test:images` cases pass using the actual repository PNG logo and
+real files, without model/backend substitutes. They cover native mounting, encoded
+prompt admission, concurrent publication, reopen/detached reads, batch rejection,
+byte/pixel limits, filename handling, normalized/request images, cache errors, corrupt
+objects, invalid references, cancellation, operation limits and disposal during writes.
+Eight evidence-storage tests and 19 console logic/transport tests pass. TypeScript,
+formatting, 128 pinned source files, structure and whitespace checks pass. No live
+model, sensor, simulator or browser was run; scripted runtime tests were not executed.
+
+Next: bind image services into deployment/server lifetime and environment factories,
+provide scoped image reads for the console, and validate the image-reference path with
+an actual VLM. Binary object/cache retention and reference accounting, journal/index
+retention, active-task clarification, new-criteria admission and local-server bootstrap
+remain required upper-system work. Physical worker/provider work remains separate.

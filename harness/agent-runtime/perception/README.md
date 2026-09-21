@@ -30,7 +30,8 @@ invalid records and reopen behavior. A process with a 64 MiB V8 old-space limit 
 and rereads 1,600 documents totaling more than 64 MiB. This tests metadata storage,
 not image bytes, whole-process RSS, sensor accuracy or model behavior.
 
-Custom perception tools remain ordinary native DSH tools. Real camera bytes and
-normalization belong to the deployment attachment store and model resolver; SAM,
-depth/localization and simulator providers still require actual integration.
+Custom perception tools remain ordinary native DSH tools. The deployment can use
+[LocalImageStore](../../../docs/implementation/image-storage.md) for real encoded bytes,
+normalization and model request projection. Camera/worker binding, console image routes,
+SAM, depth/localization and simulator providers still require actual integration.
 See the [Planner loop and image path](../../../docs/implementation/model-policy-adapters.md).

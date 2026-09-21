@@ -1,5 +1,10 @@
 # Durable domain records
 
+[LocalImageStore](../../../docs/implementation/image-storage.md) provides the native
+DSH attachment service for encoded-image storage and model request projection.
+Its deployment context owns storage limits and shutdown. Application evidence grants
+remain separate from byte access; server/console image binding is pending.
+
 [local-store.ts](src/local-store.ts) implements a single-writer CAS journal with checksum validation, fsync and incomplete-tail recovery. The application stores events, plans, files, recovery, skills and read-only DSH audits.
 
 The in-memory index retains each key's latest version, sequence, byte position,

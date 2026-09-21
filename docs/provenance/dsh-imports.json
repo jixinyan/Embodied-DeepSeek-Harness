@@ -1,9 +1,17 @@
 {
   "repository": "https://github.com/deepseek-ai/deepseek-harness",
   "commit": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
-  "selection": "Transitive TypeScript imports, exports, type imports and module augmentations from the five audited seeds plus session-projection. Optional manifest peers not imported by this graph are excluded. The unmodified cooperative timeout policy is additionally imported for the upper application. Context integration additionally imports the unchanged compaction services and replay-aware token meter, plus command identity and retry event types only (no command/retry service).",
-  "source_discovery_correction": "The manifest audit omitted dsh-attachment, which the llm source imports. Included from source; no attachment filesystem provider is mounted.",
+  "selection": "Transitive TypeScript imports, exports, type imports and module augmentations from the five audited seeds plus session-projection. Optional manifest peers not imported by this graph are excluded. The unmodified cooperative timeout policy is additionally imported for the upper application. Context integration additionally imports the unchanged compaction services and replay-aware token meter, plus command identity and retry event types only (no command/retry service). Image integration imports six local attachment primitives used by the EDH image service.",
+  "attachment_scope": "The LLM uses the native attachment interface. The local image provider uses pinned source primitives and is mounted explicitly by deployment-owned contexts.",
   "packages": [
+    {
+      "name": "@deepseek-ai/dsh-attachment-local",
+      "source": "packages/attachment/attachment-local",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachment-local",
+      "owner": "storage",
+      "manifest_sha256": "1219f77f4373c4fe0177004b289eb0289f025bc7a6f5968a174945467b8a1bc5",
+      "license": "MIT"
+    },
     {
       "name": "@deepseek-ai/cordis",
       "source": "vendor/cordis",
@@ -246,6 +254,52 @@
     }
   ],
   "files": [
+    {
+      "source": "packages/attachment/attachment-local/src/request-image.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachment-local/request-image.ts",
+      "source_sha256": "70c72344ea7ec9e9a253ad00502e1c8d7767ad518d7b703f0fe06d0972797a7f",
+      "local_sha256": "d1b00d312ce81e39765c24108eb9d7b1166cfbae65c4b6b806e45c7482e30fc7",
+      "modifications": [
+        "Decode cached request images completely, reject animation/retained metadata or incompatible image facts, and propagate cache errors except missing files."
+      ]
+    },
+    {
+      "source": "packages/attachment/attachment-local/src/compression-limiter.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachment-local/compression-limiter.ts",
+      "source_sha256": "b25712ad14609b27f2e1c0d8118eafe7be0adb2180ce40739a02f1fd75722063",
+      "local_sha256": "b25712ad14609b27f2e1c0d8118eafe7be0adb2180ce40739a02f1fd75722063",
+      "modifications": []
+    },
+    {
+      "source": "packages/attachment/attachment-local/src/encoding.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachment-local/encoding.ts",
+      "source_sha256": "6404620aaa9ccf87fdfcdb6302c2be09b666b76dd755a8f0f761c5890a7c9921",
+      "local_sha256": "6404620aaa9ccf87fdfcdb6302c2be09b666b76dd755a8f0f761c5890a7c9921",
+      "modifications": []
+    },
+    {
+      "source": "packages/attachment/attachment-local/src/image.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachment-local/image.ts",
+      "source_sha256": "cc09fcf2ea3f6d8c78b60d2d9cf0b4f509a970b01fadf8c63b197227d87d6bb7",
+      "local_sha256": "cc09fcf2ea3f6d8c78b60d2d9cf0b4f509a970b01fadf8c63b197227d87d6bb7",
+      "modifications": []
+    },
+    {
+      "source": "packages/attachment/attachment-local/src/normalization.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachment-local/normalization.ts",
+      "source_sha256": "dbb9951d96b2fcd9b89f35fe9e35b8d5279e5c0de7563e896f26372a4f187302",
+      "local_sha256": "dbb9951d96b2fcd9b89f35fe9e35b8d5279e5c0de7563e896f26372a4f187302",
+      "modifications": []
+    },
+    {
+      "source": "packages/attachment/attachment-local/src/store.ts",
+      "destination": "harness/agent-runtime/storage/src/dsh/attachment-local/store.ts",
+      "source_sha256": "0cef060e5ab1d1c4e461da26aed73cab56f528a7144d9165f2ed3a972c521a2d",
+      "local_sha256": "4b627d534da3cdd8c7b8e3ca68656e25c8d46563bcf3971f50231c162deb1fa6",
+      "modifications": [
+        "Sanitize display names by removing control characters and retaining printable filenames."
+      ]
+    },
     {
       "source": "packages/attachment/attachment/src/admission.ts",
       "destination": "harness/agent-runtime/storage/src/dsh/attachments/admission.ts",
@@ -1265,6 +1319,7 @@
     ]
   },
   "external_imports": [
+    "sharp",
     "zod",
     "@standard-schema/spec",
     "eventsource-parser/stream"

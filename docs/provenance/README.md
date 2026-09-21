@@ -6,7 +6,7 @@ They answer different questions: optional manifest peers are not necessarily run
 requirements, and the pinned LLM source references attachment types absent from its
 manifest dependency closure.
 
-The source import map pins 122 files from 30 modules. It preserves the original
+The source import map pins 128 files from 31 modules. It preserves the original
 Agent loop, session, scope, model, tool and lifecycle implementations in EDH's
 own domain directories. No upstream CLI, presets, Loader, console or full monorepo
 is copied. Supporting settings, approval, code-runtime and attachment definitions
@@ -26,3 +26,9 @@ The context-management import adds native compaction, optional tool-text pruning
 token estimation. Only embodied summary instructions differ from pinned behavior;
 the source map records that patch and both hashes. Retry/command identity types do
 not mount their optional services. See [context management](../implementation/context-management.md).
+
+Image storage imports six attachment-local functions/modules from the same pinned
+revision. Filename sanitization preserves printable names; cached request-image reads
+fully decode and propagate invalid-cache errors. Both patches retain source and local
+hashes. EDH's LocalImageStore mounts the native attachment service with explicit storage,
+resource limits and disposal. See the [image provider guide](../implementation/image-storage.md).
