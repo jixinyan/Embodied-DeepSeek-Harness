@@ -12,12 +12,12 @@ A checklist or document change never substitutes for execution evidence.
 ## Current delivery priority
 
 Complete and harden the upper application first, using the runnable CPU fixture;
-then bind the physical runtime for one real-simulation MVP. UI design is deferred;
-key state must ultimately be visible together. The [current progress](progress.md)
+then bind the physical runtime for one real-simulation MVP. The unified console provides
+session control, compatible configuration and observable agent/task state. The [current progress](progress.md)
 lists the exact status and next sequential actions. F1–F7 remain the full acceptance
 matrix: partial upper slices do not establish physical-provider readiness.
 
-### Session launcher and migration sequence (v1.13)
+### Session launcher and migration sequence (v1.14)
 
 1. **Implemented, CPU acceptance:** separate user-session environment ownership from
    task runs and native DSH assignment sessions. Verify world continuity, task cleanup,
@@ -26,8 +26,9 @@ matrix: partial upper slices do not establish physical-provider readiness.
    create/end sessions, run sequential tasks, inspect history and shared SKILL provenance.
 3. **Implemented, configuration/browser checks:** compatible environment, embodiment,
    checkpoint, policy and default-model controls; shared admission validation, revision
-   checks and branded Team/workflow visualization. **Next:** attach scoped conversation/task
-   context and task-admission criteria to the session.
+   checks and branded Team/workflow visualization. Editable task instructions and explicit
+   prior-task context now use registered criteria and native DSH briefs. **Next:** provider-backed
+   discovery/confirmation of new criteria and user clarification during active tasks.
 4. Add desktop/service bootstrap; starting the local server must become possible without
    typing a command. Do not confuse browser session creation with server startup.
 5. Bind worker-owned media and physical resources. Port spatial memory and semantic frame

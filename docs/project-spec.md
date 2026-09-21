@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.13 · 2026-09-20
+Version: v1.14 · 2026-09-20
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -74,6 +74,15 @@ allocation. An active session keeps its configuration fixed until it ends. Merma
 Team relationships and status animations use configured roles and actual assignment
 records, with separate execution and verification indicators. Branding uses the project
 logo and a blue/white palette. Debug output remains directly inspectable.
+
+Session task admission accepts an editable user instruction and up to four explicitly
+selected historical outcomes from that session. Selected criteria remain immutable
+deployment bindings. Ownership, terminal state, input limits and complete request
+identity are checked before allocation. A saved submission records the criteria and
+context snapshot. The entry Planner receives this context through its InvocationBrief;
+delegated agents retain independent caller-provided briefs. Browser drafts survive
+status refreshes, and unconfirmed submissions retain their request identity for retry.
+Provider-backed discovery of new criteria and active-task user clarification remain open.
 
 ### 0.2 Repository and workspace
 

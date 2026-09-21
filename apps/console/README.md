@@ -45,7 +45,9 @@ The launcher is separate from the selected historical task: the launcher text id
 the active session targeted by the next task. Task stop does not end that session.
 Selections resolve complete installed profiles and are checked again at admission with
 the catalog revision. An active session fixes its selections until End session.
-Free-form conversational tasks and a CLI-free local-server bootstrap remain pending.
+User instructions and selected historical outcomes are admitted against installed task
+criteria. New-criteria discovery, active-task clarification and a CLI-free local-server
+bootstrap remain pending.
 No actual simulator or robot is connected. See the [session guide](../../docs/implementation/user-sessions.md).
 
 ## Team and workflow visualization
@@ -61,3 +63,17 @@ reduced-motion preferences. Native logs, model output and TODO/plan inspection s
 owns the dependent input controls. `coordination.js` renders Team and task projections.
 `ocean.css` applies the brand theme over the existing workbench layout. Run `pnpm test:console`
 for catalog and real static-resource checks. These checks do not invoke a model or physical backend.
+
+## Next task input
+
+The composer provides an editable instruction, a selection of up to four ended tasks
+from the active session, criteria inspection and accepted-input inspection. Draft text
+survives state refreshes and historical run selection. An explicit reset button loads
+the selected criteria's instruction. Historical context is checked by the server and
+delivered only through the entry Planner's invocation brief.
+
+`task-composer.js` owns input projection and draft preservation. `task-request.js` keeps
+unconfirmed submission IDs in native browser session storage so retrying the same input
+does not allocate another task. The pending identity is released after the accepted run
+loads. Sidebar task labels use the actual submitted instruction. See the
+[session admission guide](../../docs/implementation/user-sessions.md).

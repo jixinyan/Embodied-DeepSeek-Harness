@@ -6,6 +6,8 @@ import {
 } from './launch-selection.js';
 import { renderLaunchControls } from './launch-controls.js';
 import { renderCoordination } from './coordination.js';
+import { renderTaskComposer } from './task-composer.js';
+import { taskRequest, completeTaskRequest } from './task-request.js';
 
 const $ = (id) => document.getElementById(id);
 let selection = {};
@@ -148,9 +150,10 @@ async function refreshHistory() {
     const button = document.createElement('button');
     button.classList.toggle('active', run.id === current?.id);
     if (run.id === current?.id) button.setAttribute('aria-current', 'true');
-    button.title = `${run.id} · ${new Date(run.createdAt).toLocaleString()}`;
+    button.title = `${run.instruction}\n${run.id} · ${new Date(run.createdAt).toLocaleString()}`;
     const title = document.createElement('strong');
-    title.textContent = run.scenario.replaceAll('-', ' ');
+    title.textContent =
+      run.instruction.length > 72 ? `${run.instruction.slice(0, 71)}…` : run.instruction;
     const info = document.createElement('span');
     info.textContent = `${run.state} · ${new Date(run.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     button.append(title, info);
@@ -197,11 +200,24 @@ function updateControls() {
     (hasLauncher() && activeUserSession()?.state !== 'ready');
   $('scenario').disabled = $('start').disabled;
   renderLauncher();
+  updateTaskComposer();
   const writable = current && !current.readOnly && !ended(current.state) && !busy;
   const execution = current?.executions.at(-1);
   $('pause').disabled = !writable || execution?.state !== 'running';
   $('resume').disabled = !writable || execution?.state !== 'paused';
   $('stop').disabled = !writable;
+}
+function updateTaskComposer() {
+  renderTaskComposer({
+    enabled: hasLauncher(),
+    session: activeUserSession(),
+    scenario: $('scenario').value,
+    presets: config.taskPresets,
+    goals: config.scenarioGoals,
+    runs: runHistory,
+    busy,
+    current,
+  });
 }
 function showSensor() {
   const selection = $('sensor-view').value;
@@ -735,7 +751,6 @@ async function loadRun(id) {
   const loaded = await api(`/api/runs/${id}`);
   if (revision !== loadRevision) return;
   current = loaded;
-  if (config.scenarios.includes(current.scenario)) $('scenario').value = current.scenario;
   feedSignature = '';
   $('follow-output').checked = true;
   render();
@@ -789,15 +804,29 @@ $('inspect-todos').onclick = () =>
     'TODO history · Native DSH snapshots',
     current?.events.filter((e) => e.type === 'agent.todos') ?? [],
   );
-$('start').onclick = () =>
-  action(async () => {
+$('start').onclick = () => {
+  if (
+    hasLauncher() &&
+    (!$('task-instruction').reportValidity() || !$('task-context').reportValidity())
+  )
+    return;
+  return action(async () => {
     const target = hasLauncher() ? `/api/sessions/${activeUserSessionId}/tasks` : '/api/runs';
-    const result = await api(target, {
+    const input = {
       scenario: $('scenario').value,
-      requestId: crypto.randomUUID(),
-    });
+      ...(hasLauncher()
+        ? {
+            instruction: $('task-instruction').value,
+            contextRunIds: [...$('task-context').selectedOptions].map((option) => option.value),
+          }
+        : {}),
+    };
+    const request = taskRequest(target, input, config.deploymentDigest);
+    const result = await api(target, request);
     await loadRun(result.runId);
+    completeTaskRequest(request.requestId);
   });
+};
 $('launch-profile').onchange = () => {
   selection = profileSelection(config.launchProfiles[$('launch-profile').value]);
   renderLauncher();
@@ -842,7 +871,12 @@ $('sensor-view').onchange = showSensor;
 $('scenario').onchange = () => {
   if (!current)
     $('instruction').value = config.taskPresets?.[$('scenario').value]?.instruction ?? '';
+  updateTaskComposer();
 };
+$('inspect-next-criteria').onclick = () =>
+  inspect('Next task · Required success criteria', config.scenarioGoals[$('scenario').value]);
+$('inspect-submission').onclick = () =>
+  inspect('Submitted task · User instruction, criteria and explicit context', current.submission);
 $('event-filter').onchange = renderTimeline;
 $('inspect-team').onclick = () =>
   inspect(

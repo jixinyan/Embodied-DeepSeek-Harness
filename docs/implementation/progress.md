@@ -589,6 +589,36 @@ fixture runtime suite was not rerun for this change.
 
 Implementation checkpoints: `26d380b` (shared selection rules) and `64cfc75` (console and admission).
 
-Remaining upper work includes scoped conversational task admission, bounded run/media
-retention, measured live VLM behavior and desktop/service bootstrap. Real provider
+Remaining upper work includes new-criteria admission and active-task clarification,
+bounded run/media retention, measured live VLM behavior and desktop/service bootstrap. Real provider
 allocation, sensor rendering and the worker/action-admission bridge remain integration work.
+
+## Editable instructions and scoped task history (2026-09-20)
+
+Session task admission accepts a user instruction and explicit same-session history
+selection against registered task criteria. It validates allowed presets, input limits,
+context ownership and terminal state before allocating a task backend. Saved submissions
+include detached goal/context snapshots and source record versions. The entry Planner
+receives historical outcomes through its native InvocationBrief; tool evidence grants
+and other roles' private contexts retain their existing scope. Request identity covers
+the effective instruction and context selection. Replay requires a durable, owned run.
+Core checkpoint: `11e08c3`.
+
+The console adds a task composer, criteria/input inspection, actual instruction labels
+in history, draft preservation and native browser storage for unconfirmed request IDs.
+Changing criteria preserves edited text; resetting to preset text is explicit. Request
+acknowledgements cannot clear a newer pending request. A successful run-detail load
+releases the pending ID so another intentional task can use the same instruction.
+
+Validation: `pnpm test:admission` passes five checks using the real LocalStore journal
+and declared task/history data. They cover immutable criteria, canonical input identity,
+invalid input, context ownership, projection limits, detached persistence and durable
+request replay. `pnpm test:console` passes nine checks. Type checking, formatting,
+DSH provenance, local documentation links and diff whitespace pass. Browser component
+checks exercise production composer controls and native session storage: draft retention,
+criteria reset, context filtering, session isolation, request retry identity and
+acknowledgement ordering. No model or environment execution was performed in this checkpoint.
+
+Remaining: provider-backed discovery of new criteria, active-task user clarification,
+bounded event/media retention, live VLM evaluation and local-server bootstrap. These
+remain required upper-system work; physical provider integration has separate acceptance.

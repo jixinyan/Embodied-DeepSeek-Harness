@@ -42,9 +42,11 @@ cannot allocate while a user session owns the environment.
   Existing profile-only API clients may continue sending `{profileId, requestId}`.
 - `GET /api/sessions`: session history, actual stored configuration and active ID.
 - `GET /api/sessions/:id`: state, resource disposition and task IDs.
-- `POST /api/sessions/:id/tasks`: `{scenario, requestId}` starts an allowed task.
+- `POST /api/sessions/:id/tasks`: `{scenario, requestId, instruction?, contextRunIds?}`
+  starts a task using an allowed criteria preset and an optional user instruction.
 - `POST /api/sessions/:id/close`: `{}` ends the session and releases the environment.
 - Existing run detail, SSE, pause, resume-request, stop and audit endpoints remain.
+  Run detail includes the accepted `submission` and its explicit historical context.
 - `GET /api/skills`: up to 100 stored bundles with originating run/session links.
 
 A session progresses through `opening → ready → running → draining → ready` for each
@@ -56,6 +58,40 @@ same process. Admission requests are configuration-bound and deduplicated. After
 restart, unfinished sessions become `interrupted / unknown`, with no physical command
 replay. Historical sessions are read-only; provider resource reconciliation remains an
 integration requirement. A closed session retains its conversation task records and skills.
+
+## Task instructions and explicit history
+
+The user selects an installed task criteria preset and edits the next instruction in
+the console. `instruction` accepts 1–4000 characters; omitted instructions use the
+preset text. The selected goal, success checks, entities, subgoal catalog and budget
+remain deployment-bound. Browser input cannot replace these fields. The Planner
+receives the instruction as the objective in its native DSH invocation.
+
+`contextRunIds` explicitly selects up to four completed tasks from the same user
+session. Admission checks both session membership and persisted run ownership, then
+records a detached summary with the source record version, task instruction, outcome,
+timestamp, final-goal verification conclusion and skill IDs. Private messages, model
+reasoning, tool payloads, sensor data and evidence permissions remain in their existing
+scopes. Total context is limited to 16 KiB; oversized requests fail before backend
+allocation. Historical results require fresh observation before physical decisions.
+
+The selected summaries are passed to the entry Planner through
+`InvocationBrief.history_summary`. New delegated roles receive the caller's explicit
+brief. Workspace SKILL retrieval remains the mechanism for cross-session experience.
+The accepted submission is stored with the run and available through **Inspect submitted
+input**, including the criteria snapshot and exact historical context admitted for that task.
+
+Request identity includes the effective instruction and ordered context selection.
+Reusing a request ID with changed input fails. Repeated requests return only a durable
+run belonging to the same session; incomplete admission records require inspection.
+The browser keeps one pending request identity in native session storage until the
+accepted run is loaded. Retrying unchanged input uses the same ID; changing input,
+session or deployment creates a new identity. User submission initiates each request.
+
+State updates and historical task inspection preserve the current draft. Changing
+criteria preserves edited text; **Use criteria instruction** explicitly restores the
+selected preset text. The next task and the inspected historical task remain separate
+UI selections. A new user session starts a fresh draft.
 
 ## Experience scope
 
@@ -104,8 +140,9 @@ overrides are disabled.
 
 1. Connect actual simulation/hardware allocations, owned workers, action admission and
    device resource reconciliation. No real provider is bundled in the CPU demo.
-2. Support free-form conversational task admission with explicit success contracts and
-   scoped prior-task context handoff. Current tasks are deployment-registered presets.
+2. Add provider-backed discovery and confirmation of new task criteria, plus user
+   clarification during an active task. Editable instructions and scoped prior-task
+   context are implemented against deployment-registered criteria.
 3. Package a desktop/service bootstrap so opening the panel can start its local server.
    The panel controls sessions once the server is running; a browser cannot start its
    own unavailable HTTP server. CLI-free bootstrap is not yet implemented.

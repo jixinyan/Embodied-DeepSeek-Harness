@@ -62,6 +62,11 @@ selectors, shared admission validation and catalog revision checks. The branded 
 adds Mermaid Team relationships and event-driven workflow states. See the
 [console implementation](../../apps/console/README.md) and [selection tests](../../tests/console/launch-selection.test.mjs).
 
-Still pending: actual simulator/hardware allocation, general conversational task admission,
-and CLI-free server bootstrap.
+Task admission accepts editable instructions and explicitly selected same-session history,
+with immutable registered criteria, persisted input snapshots and complete request identity.
+See [admission](../../apps/server/src/task-admission.ts) and
+[journal/input checks](../../tests/runtime/task-admission.test.ts).
+
+Still pending: actual simulator/hardware allocation, discovery of new task criteria,
+active-task clarification and CLI-free server bootstrap.
 [Legacy design migration audit](legacy-migration.md) lists retained and missing designs.

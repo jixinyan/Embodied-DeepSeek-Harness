@@ -122,7 +122,7 @@
           </div>
         </div>
         <div class="mission-actions">
-          <label for="scenario" class="eyebrow">NEXT TASK</label
+          <label for="scenario" class="eyebrow">NEXT TASK CRITERIA</label
           ><select id="scenario">
             <option value="retry-success">Failure → recovery → success</option>
             <option value="multi-goal-recovery">Placement → access repair → storage</option>
@@ -130,6 +130,36 @@
             <option value="unknown">Insufficient evidence</option>
             <option value="backend-error">Backend error</option></select
           ><button id="start" class="button primary">Run task</button>
+        </div>
+      </section>
+      <section class="task-composer" aria-label="Next task input" id="task-composer">
+        <div>
+          <label for="task-instruction">Instruction for the next task</label>
+          <textarea id="task-instruction" maxlength="4000" rows="3" disabled></textarea>
+          <button id="reset-task-instruction" class="text-button" disabled>
+            Use criteria instruction
+          </button>
+          <p class="section-note">
+            Choose the task criteria above. The instruction guides planning within those criteria.
+          </p>
+        </div>
+        <div>
+          <label for="task-context">Previous task outcomes to share with Planner</label>
+          <select
+            id="task-context"
+            multiple
+            size="3"
+            disabled
+            aria-describedby="task-context-help"
+          ></select>
+          <p id="task-context-help" class="section-note">
+            Optional · Up to four tasks from this session. Planner receives recorded outcomes and
+            must observe the current scene.
+          </p>
+          <button id="inspect-next-criteria" class="text-button">Inspect next task criteria</button>
+          <button id="inspect-submission" class="text-button" disabled>
+            Inspect submitted input
+          </button>
         </div>
       </section>
       <div class="run-strip">

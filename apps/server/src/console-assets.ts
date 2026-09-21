@@ -12,6 +12,8 @@ const publicFiles: Record<string, string> = {
   'launch-selection.js': 'text/javascript; charset=utf-8',
   'launch-controls.js': 'text/javascript; charset=utf-8',
   'coordination.js': 'text/javascript; charset=utf-8',
+  'task-composer.js': 'text/javascript; charset=utf-8',
+  'task-request.js': 'text/javascript; charset=utf-8',
   'logo.png': 'image/png',
 };
 
