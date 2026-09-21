@@ -1,5 +1,13 @@
 # Context and recovery experience
 
+[evidence-grants.ts](src/evidence-grants.ts) owns live assignment evidence permissions.
+Creation copies the explicit brief's references; authorized observation and handoff
+extend that assignment's set. Reads return detached references. Retirement releases
+the set and later extensions fail. Run shutdown closes all remaining grant scopes.
+The owner opens each fresh assignment once; TeamSessions prevents assignment-ID reuse.
+This in-memory authority does not delete persisted evidence or confer access through
+historical brief/SKILL references. [Lifecycle and checks](../../../docs/implementation/assignment-lifetime.md).
+
 [library.ts](src/library.ts) stores and exports versioned SKILL.md artifacts, searches explicit task semantics, and checks provenance. Failure signals, possible causes and avoid guidance accompany planning and verification guidance. Successful original-goal recovery gates publication in UpperRun. Fixture experience is excluded from ordinary searches by default.
 
 ## On-demand context

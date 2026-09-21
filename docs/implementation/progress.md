@@ -1,10 +1,17 @@
 # Implementation progress
 
-Spec: v1.25. Current checkpoint: **DSH upper application with configured image retention and console collection previews**.
+Spec: v1.26. Current checkpoint: **native assignment cleanup, final audits and retired evidence-grant release**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Native role retirement removes Agent/Session registry entries, includes scoped-cleanup
+events in the final audit, and releases assignment evidence permissions. Creation
+publication failures also dispose acquired handles. Late grant extensions fail, and
+cleanup errors remain observable at shutdown. Seven native/file lifecycle checks
+exercise this behavior without a model or physical backend. Active-session and retained
+application-history limits remain open. [Lifecycle guide](assignment-lifetime.md).
 
 The latest delivery connects original-image reference inspection and collection to
 idle server admission and the console. Configured reference sources hold their own
@@ -375,7 +382,7 @@ A monitor whose creation finishes after the boundary changes is retired without
 receiving stale frames. Final role reports also end their monitor assignment.
 
 TeamSessions retirement retains identity/audits while releasing native handles and
-preventing ID reuse. Cleanup is idempotent, attempts disposal after audit failure,
+preventing ID reuse. Cleanup is idempotent, attempts final audit after native disposal,
 and participates in shutdown error reporting. The console projection records retired
 status. No DSH loop or pinned upstream source was changed.
 
@@ -1119,3 +1126,32 @@ Live application drain, provider-specific reference coverage and hardware resour
 reconciliation remain separate acceptance requirements. Domain-record archival/deletion,
 active-session/grant lifetime, active-task clarification, criteria discovery, live VLM
 acceptance and CLI-free bootstrap remain open. [Retention guide](image-retention.md).
+
+## Native assignment cleanup and evidence permissions (2026-09-21)
+
+AssignmentEvidenceGrants opens from each explicit creation brief, copies incoming
+references, and requires an existing scope for extensions. UpperRun releases the set
+after role retirement cleanup, including failure, and closes remaining sets at run
+shutdown. Historical evidence and briefs remain available through their own readers.
+Observation completion extends only existing grant scopes.
+
+TeamSessions disposes native handles acquired before an application publication
+failure and preserves cleanup errors. Its final retirement audit follows native
+disposal, including events committed by scoped cleanup. Repeated retirement/close
+share completions; durable audits and assignment identities remain inspectable.
+
+Validation: seven `pnpm test:assignment-lifetime` checks use actual DSH services,
+native scopes, authored documents and LocalStore journals. They cover grant isolation
+and release, sequential native capacity across 70 assignments, audit reopening,
+cleanup-event publication, pending creation at shutdown, and actual write-hold
+failures during publication/retirement. No model adapter or physical backend executes.
+Nine audit checks, eight evidence-storage checks and 22 console checks also pass.
+Strict TypeScript, formatting, 128 pinned DSH source files, 25 module bindings and
+421 local documentation links pass verification. Scripted runtime tests were not run.
+These checks do not certify in-flight VLM/provider shutdown or process-memory bounds.
+
+Next: active native context/event retention and retained assignment projections;
+domain-record archival preserving SKILL provenance; active-task clarification;
+provider-backed criteria discovery; live VLM acceptance and CLI-free bootstrap.
+Physical worker/provider integration remains separate. The upper-runtime objective
+remains incomplete. [Lifecycle guide](assignment-lifetime.md).

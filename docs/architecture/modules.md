@@ -97,7 +97,10 @@ See the [session guide and SVG](../implementation/user-sessions.md).
 
 `perception/SensorSamples` owns validation and immutable, run-scoped sensor metadata
 publication through LocalStore. UpperRun owns assignment grants, visibility checks and
-current sensor projections. The catalog reads requested records without accumulating
+current sensor projections. AssignmentEvidenceGrants copies brief references at role
+creation, accepts explicit extensions while that scope exists, and releases permissions
+after role retirement cleanup or run shutdown. Retired brief references remain history.
+The catalog reads requested records without accumulating
 historical sample bodies. It stores image references; the deployment attachment provider
 must supply and validate image bytes. The server owns its native attachment context,
 injects `DeploymentServices.images` into deployment/environment/task factories, and
@@ -118,5 +121,7 @@ retention policy. [Maintenance guide](../implementation/storage-maintenance.md).
 LocalImageStore owns streamed image inventory, its mutation revision and exclusive
 request-cache cleanup. The server owns idle admission and exposes an optional
 maintenance controller for custom native image providers. Original objects remain
-available after cleanup. Domain services must supply reference accounting before
-original-object collection can be introduced.
+available after cache cleanup. Original-object collection uses configured reference
+leases, journal write holds, SKILL source checks and confirmed session resource release.
+The server validates a fresh inspection token before deletion; deployments must declare
+complete external ownership. See [image retention](../implementation/image-retention.md).

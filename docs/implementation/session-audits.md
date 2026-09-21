@@ -6,6 +6,11 @@ publishes the visible count after event writes complete. An uncommitted suffix i
 excluded from readers. This is a read-only debugging history; it does not resume a
 DSH session or physical commands.
 
+The final retirement snapshot is taken after native handle disposal, so scope-cleanup
+events are included. Audit publication is attempted even after a disposal error;
+failures remain visible to the retirement caller and Team shutdown. See the
+[assignment lifecycle](assignment-lifetime.md).
+
 ## HTTP and console
 
 `GET /api/runs/:runId/audit` returns an assignment index:

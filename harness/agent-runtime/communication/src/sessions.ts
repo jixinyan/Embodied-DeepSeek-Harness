@@ -75,9 +75,10 @@ export class TeamSessions {
       brief,
     });
     this.creating.add(assignment.id);
+    let handle: AgentHandle | undefined;
     try {
       const binding = this.model(role.model);
-      const handle = await createDshSession(this.host, {
+      handle = await createDshSession(this.host, {
         sessionId: assignment.sessionId,
         ...binding,
         instructions: `${role.instructions}\n\nTools use double underscores in place of dots. Source: ${this.team.sourceDigest}.\nEvery message is explicit context. Never infer another role's hidden conversation.\nUse agent__report to return assignment work to your fixed caller. Start expectedVersion at 0; use the returned version for later reports. Use insufficient_context with specific requestedContext and result=null when blocked. A completed/failed/cancelled report is final for this assignment. Custom output_schema constrains completed report.result. Use team__query to inspect your own or a directly delegated assignment's report. Use team__ack_report with the exact assignmentId and reportId after assessing a received report. State accepted or rejected and give a concise summary; this acknowledgement is immutable and does not verify physical success. Delivery settlement is session quiescence, not this acknowledgement. Never treat an analysis report as formal physical success.`,
@@ -102,14 +103,7 @@ export class TeamSessions {
             }
           : {}),
       });
-      if (this.closed) {
-        try {
-          await handle.dispose();
-        } catch (error) {
-          this.lateCleanupErrors.push(error);
-        }
-        throw new Error('Team closed during creation.');
-      }
+      if (this.closed) throw new Error('Team closed during creation.');
       const entry = {
         assignment,
         handle,
@@ -123,7 +117,7 @@ export class TeamSessions {
         entry.timer = null;
         if (status === 'running' && !entry.retiring) {
           entry.timer = setTimeout(() => {
-            handle.agent.cancel({ kind: 'user' });
+            entry.handle.agent.cancel({ kind: 'user' });
             this.hooks.event('agent.deadline', { assignmentId: assignment.id, member });
           }, this.lifetimeMs);
           entry.timer.unref();
@@ -178,6 +172,21 @@ export class TeamSessions {
         tools: brief.tools_and_limits.allowed_tools,
       });
       return structuredClone(assignment);
+    } catch (error) {
+      if (handle) {
+        const registered = this.live.has(assignment.id);
+        try {
+          if (registered) await this.retire(assignment.id, 'assignment-creation-failed');
+          else await handle.dispose();
+        } catch (cleanupError) {
+          if (!registered) this.lateCleanupErrors.push(cleanupError);
+          throw new AggregateError(
+            [error, cleanupError],
+            'Assignment creation and cleanup failed.',
+          );
+        }
+      }
+      throw error;
     } finally {
       this.creating.delete(assignment.id);
     }
@@ -272,12 +281,16 @@ export class TeamSessions {
     const completion = Promise.resolve().then(async () => {
       try {
         await entry.handle.agent.whenIdle();
-        this.hooks.audit(id, entry.handle.agent.session.snapshotEvents());
       } catch (error) {
         errors.push(error);
       }
       try {
         await entry.handle.dispose();
+      } catch (error) {
+        errors.push(error);
+      }
+      try {
+        this.hooks.audit(id, entry.handle.agent.session.snapshotEvents());
       } catch (error) {
         errors.push(error);
       }

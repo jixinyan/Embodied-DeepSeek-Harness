@@ -17,11 +17,20 @@ segment. Pausing retires the monitor; formal verification and resumed monitoring
 receive fresh assignments with explicit context.
 
 `TeamSessions.retire` closes message/tool admission and requests native cancellation
-immediately, then waits for quiescence, exports the audit and disposes the handle.
+immediately, then waits for quiescence, disposes the handle and exports the final audit.
+Events committed during scoped disposal are included. Audit export is attempted even
+when native disposal fails.
 Repeated retirement shares its completion. Identity and historical audit remain
 available; retired IDs cannot be reused or receive new work. Audit failure does not
 skip disposal, and shutdown collects cleanup errors from already retired sessions.
-This releases active session capacity, not retained history or model-context memory.
+The native disposer removes Agent and Session registry entries and unwinds their scopes.
+Retained assignment identities and persisted history have separate lifetimes. Active
+session history and application projections still require retention limits.
+
+Creation-publication failures dispose their native handles and preserve cleanup errors.
+Application evidence grants open from the creation brief and release after retirement
+cleanup. Late additions require an existing live grant scope. See the
+[lifecycle checks](../../../docs/implementation/assignment-lifetime.md).
 
 
 Normal completion uses `TeamSessions.finish`: reject new messages immediately, allow

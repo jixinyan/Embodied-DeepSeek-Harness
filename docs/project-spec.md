@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.25 · 2026-09-21
+Version: v1.26 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -289,6 +289,14 @@ Accepted formal-verification assignments use the same completion path. Missing-c
 reports remain open. An Evolver with a published SKILL is released after its final
 success delivery settles; learning failures release the handle independently of task
 success. The decision owner remains available through run shutdown for report inspection.
+
+Retirement awaits native disposal before publishing its final audit snapshot, including
+events committed by scoped cleanup. Assignment evidence grants are opened from the
+explicit brief at creation and released after retirement cleanup, including failed
+cleanup. Late evidence extensions fail. Creation-publication failures also dispose the
+native handle; cleanup failures remain observable at shutdown. Stored evidence, briefs,
+reports and audits retain their independent lifetimes. See the
+[assignment lifecycle](implementation/assignment-lifetime.md) for acceptance boundaries.
 
 Retired identities are not reusable. Callers may query/acknowledge durable reports
 after native disposal. A late child report to a finished caller is retained with

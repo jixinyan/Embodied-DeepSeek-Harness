@@ -24,7 +24,7 @@ import type { LoadedTeam } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
 import { AssignmentFiles } from '@edh/files';
 import { TaskPlans } from '@edh/planning';
-import { SkillLibrary } from '@edh/memory';
+import { AssignmentEvidenceGrants, SkillLibrary } from '@edh/memory';
 import { skillSourceLimitations } from './skill-provenance.js';
 import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
 import {
@@ -100,7 +100,7 @@ export class UpperRun {
   private readonly recoveryHistory: RecoveryHistory;
   private deliveredMessages = 0;
   private readonly evidence: SensorSamples;
-  private readonly grants = new Map<string, Set<string>>();
+  private readonly grants = new AssignmentEvidenceGrants();
   private readonly checks = new Map<string, CheckedBoundary>();
   private readonly pending = new Set<Promise<void>>();
   private readonly formalBoundaries = new Set<string>();
@@ -251,6 +251,7 @@ export class UpperRun {
         event: (type, detail) => {
           if (type === 'agent.created') {
             const a = detail.assignment as Assignment;
+            this.grants.open(a.id, a.brief.evidence_refs);
             this.state.assignments[a.id] = {
               ...a,
               status: 'idle',
@@ -259,6 +260,7 @@ export class UpperRun {
             };
           }
           if (type === 'agent.retired') {
+            this.grants.release(String(detail.assignmentId));
             const row = this.state.assignments[String(detail.assignmentId)];
             if (row) row.status = detail.cleanupFailed ? 'retirement_failed' : 'retired';
           }
@@ -433,8 +435,7 @@ export class UpperRun {
   }
   private permit(a: Assignment, ids: readonly string[]): SensorSample[] {
     return ids.map((id) => {
-      if (!this.grants.get(a.id)?.has(id))
-        throw new Error('Evidence is not in assignment context.');
+      if (!this.grants.has(a.id, id)) throw new Error('Evidence is not in assignment context.');
       const sample = this.evidence.read(id);
       if (!sample || sample.evidence.visibility !== 'agent')
         throw new Error('Evidence is not agent-visible.');
@@ -448,9 +449,7 @@ export class UpperRun {
     if (input.evidence.visibility !== 'agent')
       throw new Error('Sensor evidence is not agent-visible.');
     const sample = this.retainSample(input);
-    const grant = this.grants.get(a.id) ?? new Set<string>();
-    grant.add(sample.evidence.id);
-    this.grants.set(a.id, grant);
+    this.grants.extend(a.id, [sample.evidence.id]);
     this.state.agentSeen[a.id] = structuredClone(sample);
     this.state.latestSensor = structuredClone(sample);
     this.event('observation.consumed', {
@@ -520,7 +519,6 @@ export class UpperRun {
   ): Promise<Assignment> {
     const brief = this.brief(member, objective, caller, context, refs);
     const a = await this.sessions.create(member, brief);
-    this.grants.set(a.id, new Set(refs));
     return a;
   }
   async start(): Promise<void> {
@@ -836,7 +834,10 @@ export class UpperRun {
             state: recipient === 'user' ? 'recorded' : 'queued',
           });
           if (recipient !== 'user' && this.sessions.acceptsMessages(recipient)) {
-            for (const sample of samples) this.grants.get(recipient)!.add(sample.evidence.id);
+            this.grants.extend(
+              recipient,
+              samples.map((sample) => sample.evidence.id),
+            );
             const delivery = this.sessions
               .deliver(
                 recipient,
@@ -963,7 +964,7 @@ export class UpperRun {
         const images = sensorImages(samples);
         if (target.id === a.id) throw new Error('Self messaging is not a delegation.');
         if (this.deliveredMessages >= 256) throw new Error('Message budget exceeded.');
-        for (const ref of refs) this.grants.get(target.id)!.add(ref);
+        this.grants.extend(target.id, refs);
         this.spawn(
           this.sessions.deliver(
             target.id,
@@ -1010,7 +1011,7 @@ export class UpperRun {
           required_capabilities: [...this.goal.capabilities],
           success_contract: structuredClone(this.goal.successContract),
           budget: structuredClone(this.goal.budget),
-          context_refs: [...(this.grants.get(a.id) ?? [])],
+          context_refs: this.grants.references(a.id),
           decision_owner_id: a.sessionId,
           owner_assignment_id: a.id,
           idempotency_key: randomUUID(),
@@ -1331,7 +1332,7 @@ export class UpperRun {
     const role = this.sessions.team.definition.bindings.recovery_evolver;
     if (role && this.sessions.team.definition.learning_enabled !== false) {
       // Capture the complete brief before any asynchronous creation; learning must not gate motion.
-      const refs = [...(this.grants.get(a.id) ?? [])];
+      const refs = this.grants.references(a.id);
       const brief = this.brief(
         role,
         'Record the recovery through original-subgoal success. Derive planning and verification knowledge.',
@@ -1342,7 +1343,6 @@ export class UpperRun {
       recovery.delivery = (async () => {
         const e = await this.sessions.create(role, brief);
         recovery.evolverId = e.id;
-        this.grants.set(e.id, new Set(refs));
         await this.sessions.deliver(
           e.id,
           { kind: 'recovery-start', brief: e.brief, context: recovery.context },
@@ -1427,7 +1427,7 @@ export class UpperRun {
       (async () => {
         await this.flushRecovery(recovery);
         if (!recovery.evolverId || recovery.error) return;
-        for (const ref of result.evidence_refs) this.grants.get(recovery.evolverId)!.add(ref);
+        this.grants.extend(recovery.evolverId, result.evidence_refs);
         await this.sessions.deliver(
           recovery.evolverId,
           {
@@ -1713,6 +1713,7 @@ export class UpperRun {
       await cleanup(() => this.options.backend.close());
       await cleanup(() => this.sessions.close());
       await cleanup(() => this.settle());
+      this.grants.close();
       this.closed = true;
       errors.push(...this.lifecycleErrors);
       if (errors.length)

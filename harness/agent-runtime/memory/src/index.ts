@@ -19,6 +19,7 @@ export interface EvidenceReader {
 }
 
 export { SkillLibrary } from './library.js';
+export { AssignmentEvidenceGrants } from './evidence-grants.js';
 
 export {
   installContextManagement,
