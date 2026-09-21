@@ -1,12 +1,14 @@
 # Implementation progress
 
-Spec: v1.22. Current checkpoint: **DSH upper application with paged audits and explicit journal/image-cache maintenance**.
+Spec: v1.23. Current checkpoint: **DSH upper application with inspected SKILL provenance, paged audits and explicit storage maintenance**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The latest delivery adds bounded assignment/event audit browsing. Image inventory,
+The latest delivery adds SKILL source inspection through recorded recovery ownership,
+accepted failure/success verdicts and run/session/evidence/image references. Missing
+source records are explicit; conflicting records fail. Bounded assignment/event audit browsing, image inventory,
 explicit request-cache cleanup, atomic journal compaction and idle-only console
 maintenance remain available.
 Application-owned image storage and scoped HTTP reads support the observation renderer.
@@ -58,9 +60,9 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: nine audit file/HTTP/process tests and 22 console logic/transport
-tests pass. Prior maintenance checkpoints passed 16 storage/admission, 23 image/lifetime/HTTP,
-eight evidence-storage and 16 history tests. Browser component DOM checks cover audit
+Current focused checks: nine SKILL provenance file/HTTP checks, eight evidence-storage
+and 23 image/lifetime/HTTP checks pass. Prior maintenance checkpoints passed nine audit,
+22 console logic/transport, 16 storage/admission and 16 history tests. Browser component DOM checks cover audit
 assignment selection, event navigation and empty history; previous checks cover actual
 image loading, cache cleanup and journal compaction. TypeScript, formatting, provenance
 and structure checks pass. Scripted runtime tests were not executed for this checkpoint.
@@ -1006,3 +1008,38 @@ and original media; native active-session and assignment-grant lifetime; active-
 clarification; provider-backed criteria discovery; live VLM acceptance and CLI-free
 bootstrap. Audit paging limits browsing allocations and does not establish disk quotas
 or complete the upper-runtime objective.
+
+## SKILL source inspection (2026-09-21)
+
+The workspace experience API includes read-only provenance resolved through explicit
+recovery ownership. It checks the original-goal failed/passed relationship, the source
+run's exact accepted verdicts and origin, optional user-session ownership and immutable
+sensor/image metadata. Missing source records or legacy ownership are visible as
+incomplete; conflicting present records fail. Source identity follows the recovery
+even when the mutable run SKILL index does not list the bundle. Stored SKILL keys must
+match their metadata identities. Shared image references are listed once with their
+referring evidence identities.
+
+The API scans bundles incrementally, retains the latest 100 and reads their referenced
+source records without scanning unrelated runs. The existing Experience library
+inspector displays provenance with each bundle. Newly published limitation metadata
+uses the declared simulation, hardware or test-fixture origin and preserves explicit
+transfer limits. Agent search/load behavior and evidence permissions remain unchanged.
+
+Validation: nine `pnpm test:skill-provenance` checks pass using authored documents,
+real LocalStore/image files, the repository PNG and local HTTP. They cover ownership,
+detached reads, compaction/reopen, incomplete sources, legacy ownership, inconsistent
+goals/verdicts/origins/scopes, exact accepted verdicts, SKILL identity, the latest-100
+window, request-origin restrictions and source limitations. Eight evidence-storage and
+23 image/lifetime/HTTP checks pass, alongside TypeScript, formatting, pinned DSH source
+and structure/link checks. No live model, sensor or physical provider was executed;
+scripted runtime tests were not run. HTTP acceptance invokes the production reader and
+origin guard; complete live application acceptance remains required.
+
+Source availability describes inspected metadata. It does not certify image bytes,
+the complete event history or cross-environment transfer. The dependency list does not
+authorize deletion or enumerate all task-owned data. Next: complete domain retention
+for task/session/evidence/audit records and original media, preserving SKILL sources;
+finish native active-session/grant lifetime, active-task clarification, provider-backed
+criteria discovery, live VLM acceptance and CLI-free bootstrap. The upper-runtime
+objective remains incomplete. [Source inspection guide](skill-provenance.md).

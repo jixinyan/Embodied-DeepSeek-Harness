@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.22 · 2026-09-21
+Version: v1.23 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -36,8 +36,10 @@ tools and backend factories; see the [deployment guide](implementation/deploymen
 This provides configuration assembly, not a connected physical provider.
 OpenAI-compatible VLM transport now reuses native DSH serialization and streaming.
 WebSocket policy transport and a deterministic action gate run independently with CPU
-acceptance. Continue with the host-to-Python worker bridge, resource/watchdog lifecycle
-and device event publication; do not replace the DSH loop. See the
+acceptance. Current work prioritizes upper-runtime retention and lifecycle, task
+clarification, criteria discovery, live VLM acceptance and console bootstrap. Physical
+integration requires the host-to-Python worker bridge, resource/watchdog lifecycle
+and device event publication. See the
 [adapter guide and SVG](implementation/model-policy-adapters.md) for exact contracts,
 commands, examples and unimplemented integration. The execution port requires a formally checked pause and explicit Planner resume,
 with execution/boundary/state-version preconditions and a matching published backend
@@ -667,6 +669,14 @@ one role assignment and a fixed published event range, with earlier/later naviga
 and an explicit latest-page refresh. An uncommitted suffix remains hidden. Event
 offsets preserve the stored native event sequence without resuming any execution.
 See the [audit API and acceptance](implementation/session-audits.md).
+
+Workspace SKILL inspection resolves explicit recovery/run/session ownership, checks
+the recorded original-goal failure and accepted success, and lists evidence/image
+metadata dependencies. Missing source records are reported as incomplete; inconsistent
+records fail. This is a read-only metadata check. It grants no model-context access,
+certifies no transfer performance and authorizes no source deletion. New experience
+limitations reflect the declared simulation, hardware or test-fixture origin. See the
+[source inspection API and acceptance](implementation/skill-provenance.md).
 
 ### 8.5 Complete recovery sequence
 
@@ -1334,9 +1344,12 @@ Delivered: selective original DSH runtime, native tools/TODOs, immutable teams,
 independent role sessions, explicit context/evidence, versioned plans/files,
 async verification and recovery, failure-aware SKILLs, durable domain records and
 a runnable HTTP/SSE debugging console. These run with scripted model/backend
-fixtures, including sequential multi-goal recovery. Live VLM deployment, concurrent
-physical goals, nested independent recovery chains, physical transport/action
-admission, actual simulation/policies/perception and hardware remain pending.
+fixtures, including sequential multi-goal recovery. OpenAI-compatible model transport,
+WebSocket policy transport and standalone action admission have local acceptance.
+Live VLM deployment, concurrent physical goals, nested independent recovery chains,
+the host-to-worker bridge and actual simulation/policies/perception/hardware integration
+remain pending. SKILL source inspection, paged audits and explicit journal/image-cache
+maintenance are implemented; domain retention and full upper acceptance remain open.
 See [progress](implementation/progress.md) for acceptance and the next steps.
 
 ## 16. Work packages, source entry points and first CPU scenario

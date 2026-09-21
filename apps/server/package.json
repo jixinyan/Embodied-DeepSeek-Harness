@@ -18,6 +18,7 @@
     "@edh/planning": "workspace:*",
     "@edh/files": "workspace:*",
     "@edh/tasks": "workspace:*",
-    "@edh/perception": "workspace:*"
+    "@edh/perception": "workspace:*",
+    "zod": "4.4.3"
   }
 }

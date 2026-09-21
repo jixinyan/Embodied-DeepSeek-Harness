@@ -25,6 +25,7 @@ import { LocalStore, SessionAudits } from '@edh/storage';
 import { AssignmentFiles } from '@edh/files';
 import { TaskPlans } from '@edh/planning';
 import { SkillLibrary } from '@edh/memory';
+import { skillSourceLimitations } from './skill-provenance.js';
 import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
 import {
   TaskGoals,
@@ -1267,9 +1268,7 @@ export class UpperRun {
             recovery_id: recovery.id,
             verdict_ref: verdict.verdict_id,
             origin: this.state.source,
-            limitations: [
-              'Observed in the CPU fixture only; no cross-embodiment transfer has been validated.',
-            ],
+            limitations: skillSourceLimitations(this.state.source),
             validation_status:
               this.state.source === 'test_fixture' ? 'test_fixture' : 'source_validated',
             validated_configurations:

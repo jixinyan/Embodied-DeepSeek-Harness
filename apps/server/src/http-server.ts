@@ -15,6 +15,7 @@ import { RunEventStream } from './run-event-stream.js';
 import { HttpError, assertLocalRequest } from './local-http.js';
 import { serveEvidenceImage } from './evidence-images.js';
 import { readSessionAudit } from './session-audit-view.js';
+import { readWorkspaceSkills } from './skill-provenance.js';
 import {
   admitStorageCompaction,
   admitImageCacheCleanup,
@@ -33,7 +34,7 @@ import {
   type LocalImageOptions,
   type ImageStorageMaintenance,
 } from '@edh/storage';
-import { SkillLibrary, type SkillBundle } from '@edh/memory';
+import { SkillLibrary } from '@edh/memory';
 import { RunHistory, RecoveryHistory, type RunState } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
 import { UpperRun, terminal } from './application.js';
@@ -407,24 +408,7 @@ async function startApplication(
           }
         }
         if (method === 'GET' && url.pathname === '/api/skills')
-          return json(res, 200, {
-            skills: store
-              .list<SkillBundle>('skill:')
-              .map((row) => {
-                const run = store
-                  .list<RunState>('run:')
-                  .find((r) => r.value.skillIds.includes(row.value.metadata.skill_id));
-                return {
-                  ...row.value,
-                  runId: run?.value.id ?? null,
-                  userSessionId: run
-                    ? (store.get<{ sessionId: string }>(`run-user-session:${run.value.id}`)?.value
-                        .sessionId ?? null)
-                    : null,
-                };
-              })
-              .slice(-100),
-          });
+          return json(res, 200, readWorkspaceSkills(store, validator));
         if (method === 'GET' && url.pathname === '/api/sessions')
           return json(res, 200, { sessions: userSessions.list(), activeId: userSessions.activeId });
         if (method === 'POST' && url.pathname === '/api/sessions') {

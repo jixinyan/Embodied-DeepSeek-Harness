@@ -40,7 +40,11 @@ selectors choose runtime source, environment, embodiment, checkpoint, policy and
 session can run multiple tasks without resetting its environment. Sidebar groups show
 session state and environment binding, with independently inspectable task runs below.
 Click a session heading for its complete frozen configuration/resource state. The
-Experience library exposes cross-session bundles and source run/session links.
+Experience library exposes cross-session bundles and source run/session links. Each
+bundle includes inspected provenance: original goal, failure/success verdicts,
+evidence/image identities and missing-source diagnostics. Record availability and
+declared transfer-validation limits are separate fields. See the
+[source inspection guide](../../docs/implementation/skill-provenance.md).
 
 The launcher is separate from the selected historical task: the launcher text identifies
 the active session targeted by the next task. Task stop does not end that session.

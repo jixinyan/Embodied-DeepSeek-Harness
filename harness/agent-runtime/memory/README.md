@@ -34,6 +34,13 @@ The search iterates persisted bundles one at a time and stops after 20 matches;
 SKILL bodies from the whole library are not collected into one in-memory array.
 Export uses the same lazy store scan. Search results still contain metadata only.
 
+The workspace experience inspector resolves SKILL provenance through explicit recovery
+ownership and checks failure/success verdicts, run/session associations and sensor/image
+metadata. Missing source records are visible as incomplete; conflicting records fail.
+New source limitations reflect the declared simulation, hardware or test-fixture origin.
+This inspection changes no model context or evidence permissions. See the
+[source inspection API and acceptance](../../../docs/implementation/skill-provenance.md).
+
 See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
 [module responsibilities](../../../docs/architecture/modules.md).

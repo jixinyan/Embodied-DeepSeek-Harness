@@ -47,7 +47,8 @@ cannot allocate while a user session owns the environment.
 - `POST /api/sessions/:id/close`: `{}` ends the session and releases the environment.
 - Existing run detail, SSE, pause, resume-request, stop and audit endpoints remain.
   Run detail includes the accepted `submission` and its explicit historical context.
-- `GET /api/skills`: up to 100 stored bundles with originating run/session links.
+- `GET /api/skills`: up to 100 stored bundles with originating run/session links and
+  [inspected provenance](skill-provenance.md), including missing-source diagnostics.
 
 A session progresses through `opening → ready → running → draining → ready` for each
 task, then `closing → closed`. Drain waits for pending role receipts and Evolver work

@@ -25,6 +25,7 @@
     "test:evidence": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/sensor-samples.test.ts",
     "test:images": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/local-images.test.ts tests/runtime/evidence-images.test.ts tests/runtime/server-image-lifetime.test.ts tests/runtime/image-maintenance.test.ts",
     "test:audits": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-audits.test.ts tests/runtime/session-audit-pages.test.ts",
+    "test:skill-provenance": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/skill-provenance.test.ts",
     "test:console": "tsx --experimental-eventsource --tsconfig tsconfig.runtime.json --test tests/console/*.test.*",
     "test:contracts": "tsx --tsconfig tsconfig.runtime.json --test --test-reporter=dot tests/contracts/*.test.ts && node scripts/test-python.mjs",
     "demo": "tsx --tsconfig tsconfig.runtime.json apps/server/src/main.ts"

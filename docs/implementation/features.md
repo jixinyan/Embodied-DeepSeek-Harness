@@ -130,3 +130,13 @@ events. A fixed published event count supports navigation while later events arr
 Assignment indexes are also paged. Real-file, HTTP and constrained-heap process tests
 cover retained values, task scope, legacy arrays and publication boundaries. Domain
 retention and native active-session lifetime remain open. [Audit guide](session-audits.md).
+
+## SKILL source inspection
+
+Workspace experience inspection resolves recovery ownership, original-goal failure and
+success, source run/session and sensor/image metadata. Missing references are explicit;
+conflicting records fail. New source limitations follow the declared provider origin.
+The latest 100 bundles include provenance without scanning unrelated runs. Agent
+retrieval remains explicit and does not inherit source evidence permissions. Original
+image integrity checks and domain retention have separate responsibilities.
+[Source API, semantics and acceptance](skill-provenance.md).
