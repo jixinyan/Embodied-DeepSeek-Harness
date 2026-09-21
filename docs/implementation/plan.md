@@ -11,11 +11,17 @@ A checklist or document change never substitutes for execution evidence.
 
 ## Current delivery priority
 
-Complete and harden the upper application first, using the runnable CPU fixture;
-then bind the physical runtime for one real-simulation MVP. The unified console provides
+Complete and harden the upper application using actual storage, transport and browser
+checks, with live model acceptance before claiming model-driven operation. Then bind
+the physical runtime for one real-simulation MVP. The unified console provides
 session control, compatible configuration and observable agent/task state. The [current progress](progress.md)
 lists the exact status and next sequential actions. F1–F7 remain the full acceptance
 matrix: partial upper slices do not establish physical-provider readiness.
+
+Explicit journal compaction now retains all current records and their references.
+The console provides idle-only maintenance with a fresh sequence check. Continue with
+distinct-key/run/session retention and binary image/cache reference accounting; current
+compaction alone does not bound total disk usage. See [maintenance](storage-maintenance.md).
 
 ### Session launcher and migration sequence (v1.14)
 

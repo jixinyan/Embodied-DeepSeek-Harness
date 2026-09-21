@@ -1,13 +1,14 @@
 # Implementation progress
 
-Spec: v1.19. Current checkpoint: **DSH upper application with durable evidence and scoped console images**.
+Spec: v1.20. Current checkpoint: **DSH upper application with scoped images and explicit journal maintenance**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The latest delivery connects application-owned image storage, scoped HTTP image reads
-and the console observation renderer. Durable evidence, paged history and incremental
+The latest delivery adds atomic journal compaction and idle-only console maintenance.
+Application-owned image storage and scoped HTTP reads support the observation renderer.
+Durable evidence, paged history and incremental
 transport support upper-first integration. Model/policy adapters and standalone action
 admission are described in the [adapter guide](model-policy-adapters.md).
 `pnpm demo` starts a local console at `http://127.0.0.1:4317`. A scripted model emits
@@ -55,10 +56,11 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: 17 image/lifetime/HTTP tests, eight evidence-storage tests and
-22 console logic/transport tests pass. Browser component DOM checks cover actual image
-loading. TypeScript, formatting, provenance and structure checks pass. Scripted runtime
-tests were not executed for this checkpoint.
+Current focused checks: 15 storage/admission tests, 17 image/lifetime/HTTP tests,
+eight evidence-storage tests, 16 history checks and 22 console logic/transport tests
+pass. Browser component DOM checks cover actual image loading and document-journal
+compaction. TypeScript, formatting, provenance and structure checks pass. Scripted
+runtime tests were not executed for this checkpoint.
 
 Remaining: live VLM and sensor-provider acceptance; host-to-Python worker
 transport; actual simulator, learned policy, perception and hardware adapters; resource
@@ -909,3 +911,33 @@ Remaining upper work: binary object/cache retention and reference accounting;
 journal/index retention; grant/reference and native audit/context lifetime; active-task
 clarification; provider-backed criteria discovery; live VLM acceptance and CLI-free
 bootstrap. Physical worker/provider integration remains a separate requirement.
+
+## Atomic journal compaction and maintenance (2026-09-21)
+
+LocalStore now reports current/superseded byte statistics and atomically publishes a
+complete checkpoint containing every current record. CAS versions, insertion order,
+global write sequence and independent history/evidence records are preserved. A smaller
+checkpoint is synchronized before rename and directory synchronization. Headerless
+journals remain readable; compacted journals require the versioned checkpoint reader.
+Partial checkpoints and detected corruption fail without rewriting authoritative data.
+
+The console's Workspace storage section displays statistics and submits explicit
+compaction using the inspected sequence. Server admission excludes open user sessions,
+active tasks, concurrent admission/lifecycle work and shutdown. Accepted maintenance
+settles/closes retained terminal task scopes before compacting. This is synchronous
+idle maintenance; distinct-key/media deletion and background retention are still open.
+
+Validation: 15 storage/admission tests use real files and processes. A 64 MiB old-space
+child compacts a journal exceeding 96 MiB, reopens it and reads every latest document.
+A separate process is terminated during actual checkpoint publication; reopening
+preserves complete current documents. Sixteen history checks include retained published
+boundaries after compaction; 17 image checks include exact scoped HTTP reads afterward.
+Eight evidence-storage and 22 console logic/transport checks pass. Browser component
+acceptance uses actual documents and production markup/controller/storage functions.
+No live model or physical provider is executed. Full application drain during live
+provider/model work remains an acceptance requirement.
+
+Remaining upper work: distinct-key/run/session retention; binary object/cache reference
+accounting and collection; grant/reference and native audit/context lifetime; active-task
+clarification; provider-backed criteria discovery; live VLM acceptance and CLI-free
+bootstrap. Actual worker/provider integration retains its separate scope.

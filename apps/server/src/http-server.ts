@@ -14,6 +14,7 @@ import { admitSessionTask } from './task-admission.js';
 import { RunEventStream } from './run-event-stream.js';
 import { HttpError, assertLocalRequest } from './local-http.js';
 import { serveEvidenceImage } from './evidence-images.js';
+import { admitStorageCompaction, maintenanceBlocker } from './storage-maintenance.js';
 import {
   runEventCursor,
   maxEventBatch,
@@ -227,6 +228,15 @@ async function startApplication(
     let admissionDone: Promise<void> | undefined;
     let closePromise: Promise<void> | undefined;
     const shutdown = new AbortController();
+    const storageBlocker = () =>
+      maintenanceBlocker({
+        stopping: closing,
+        admitting,
+        sessionBusy: userSessions.busy,
+        sessionId: userSessions.activeId,
+        activeTask: Boolean(active && !terminal(active.state.state)),
+      });
+    const storageView = () => ({ statistics: store.statistics(), blockedBy: storageBlocker() });
     const streams = new Map<ServerResponse, RunEventStream<RunState>>();
     const runRecord = (id: string) => {
       const state =
@@ -291,6 +301,35 @@ async function startApplication(
           return;
         if (method === 'GET' && url.pathname === '/api/config')
           return json(res, 200, publicConfiguration);
+        if (method === 'GET' && url.pathname === '/api/storage')
+          return json(res, 200, storageView());
+        if (method === 'POST' && url.pathname === '/api/storage/compact') {
+          const input = await body(req);
+          admitStorageCompaction(input, store.statistics(), storageBlocker());
+          admitting = true;
+          let release!: () => void;
+          admissionDone = new Promise<void>((done) => {
+            release = done;
+          });
+          try {
+            if (active) {
+              await active.settle();
+              await active.close();
+              active = undefined;
+            }
+            shutdown.signal.throwIfAborted();
+            const result = store.compact();
+            return json(res, 200, { statistics: store.statistics(), blockedBy: null, result });
+          } catch (failure) {
+            throw new HttpError(
+              shutdown.signal.aborted ? 503 : 500,
+              failure instanceof Error ? failure.message : String(failure),
+            );
+          } finally {
+            admitting = false;
+            release();
+          }
+        }
         if (method === 'GET' && url.pathname === '/api/skills')
           return json(res, 200, {
             skills: store

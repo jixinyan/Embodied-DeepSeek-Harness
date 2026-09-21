@@ -107,3 +107,13 @@ before reading bytes. See the [image guide](../../docs/implementation/image-stor
 
 Component acceptance uses an actual repository PNG, real local storage/HTTP and browser
 DOM checks. Camera streaming, live VLM behavior and physical execution remain unverified.
+
+## Workspace storage
+
+The expandable Workspace storage section displays journal size, current record count
+and superseded-version bytes. Refresh reads the latest statistics. Compact journal
+submits the inspected write sequence, displays the reclaimed bytes and preserves all
+current records and independent history. The server requires an idle workspace and
+ends retained terminal task scopes before maintenance. Stale observations and busy
+session/task states return explicit errors. See the
+[maintenance format, lifecycle and acceptance](../../docs/implementation/storage-maintenance.md).

@@ -51,6 +51,7 @@ async function withImageServer(
     path: string;
     privatePath: string;
     images: LocalImageStore;
+    store: LocalStore;
     ref: Awaited<ReturnType<LocalImageStore['saveImage']>>;
   }) => Promise<void>,
 ) {
@@ -117,6 +118,7 @@ async function withImageServer(
       path,
       privatePath: path.replace('logo%3Aagent', 'logo%3Adebug_only'),
       images,
+      store,
       ref,
     });
   } finally {
@@ -131,8 +133,8 @@ async function withImageServer(
   }
 }
 
-test('real HTTP image reads return the exact saved bytes and safe media headers', async () => {
-  await withImageServer(async ({ url, path, images, ref }) => {
+test('real HTTP image reads preserve saved bytes and scope across journal compaction', async () => {
+  await withImageServer(async ({ url, path, images, ref, store }) => {
     const response = await fetch(url + path);
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('content-type'), ref.mediaType);
@@ -148,6 +150,15 @@ test('real HTTP image reads return the exact saved bytes and safe media headers'
     assert.equal(head.status, 200);
     assert.equal(head.headers.get('content-length'), String(ref.bytes));
     assert.equal((await head.arrayBuffer()).byteLength, 0);
+    for (let version = 0; version < 8; version++)
+      store.put('inspection:note', { text: 'Image inspection document'.repeat(128) }, version);
+    assert.equal(store.compact().compacted, true);
+    const compacted = await fetch(url + path);
+    assert.equal(compacted.status, 200);
+    assert.deepEqual(
+      new Uint8Array(await compacted.arrayBuffer()),
+      (await images.readImage(ref)).data,
+    );
   });
 });
 

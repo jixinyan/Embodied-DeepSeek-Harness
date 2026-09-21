@@ -3,7 +3,8 @@
 [LocalImageStore](../../../docs/implementation/image-storage.md) provides the native
 DSH attachment service for encoded-image storage and model request projection.
 Its deployment context owns storage limits and shutdown. Application evidence grants
-remain separate from byte access; server/console image binding is pending.
+remain separate from byte access; the server injects image services into deployments
+and supplies scoped console image reads.
 
 [local-store.ts](src/local-store.ts) implements a single-writer CAS journal with checksum validation, fsync and incomplete-tail recovery. The application stores events, plans, files, recovery, skills and read-only DSH audits.
 
@@ -16,8 +17,8 @@ sequence, versions and checksums while rebuilding the index. JSON decoding uses
 `get` reads the indexed byte range and verifies its identity/version/checksum before
 returning a detached value. A read failure prevents further reads or writes through
 that store instance. Writes verify the journal size, append and fsync before updating
-the index. The existing journal remains the durable source; no data-format migration
-or second database is introduced.
+the index. The journal remains the durable source. Explicit compaction writes the
+versioned checkpoint format described in the [maintenance guide](../../../docs/implementation/storage-maintenance.md).
 
 `scan(prefix)` yields one decoded record at a time. Startup run reconciliation and
 SKILL export use this iterator. Experience search stops after 20 matching metadata
@@ -26,7 +27,8 @@ records as keys are visited; historical readers use published count/version boun
 when they need a fixed view. Keep the store open while consuming an iterator.
 [session-audits.ts](src/session-audits.ts) appends native audit events separately,
 publishes a durable count index and reads historical full-array snapshots. Entire
-audit histories no longer need to fit one 8 MiB journal record. No resumable model sessions, automatic stale-lock takeover or compaction is implemented.
+audit histories no longer need to fit one 8 MiB journal record. Resumable model sessions
+and automatic stale-lock takeover remain unimplemented.
 
 See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
@@ -37,7 +39,11 @@ RunHistory in the tasks module reconstructs published run events and appends a s
 restart annotation. It never promotes an uncommitted suffix to successful task state.
 Journal-open failure releases only the lock acquired during that initialization.
 Session/run/server shutdown attempts all cleanup stages and reports aggregate failures.
-Long-horizon compaction and deletion policies remain pending.
+`statistics()` exposes current/superseded byte counts. `compact()` atomically publishes
+all latest records with unchanged versions, ordering and global write sequence. It
+retains independent event/evidence/history keys. The console admits this operation only
+in an idle workspace with a fresh inspected sequence. Distinct-key deletion and media
+retention policies remain pending.
 
 `pnpm test:storage` exercises real journal files and checks write/reopen/scan behavior
 in a child process with a 64 MiB V8 old-space limit and more than 64 MiB of journal

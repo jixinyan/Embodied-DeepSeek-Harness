@@ -54,6 +54,32 @@
         </div>
       </header>
       <div id="error" class="error" role="alert" hidden></div>
+      <details id="storage-maintenance" class="storage-maintenance">
+        <summary>Workspace storage</summary>
+        <p>
+          Compact superseded record versions. Current records, events and experience remain
+          available.
+        </p>
+        <dl>
+          <div>
+            <dt>Journal</dt>
+            <dd data-storage="journal">Not loaded</dd>
+          </div>
+          <div>
+            <dt>Current records</dt>
+            <dd data-storage="records">Not loaded</dd>
+          </div>
+          <div>
+            <dt>Superseded versions</dt>
+            <dd data-storage="superseded">Not loaded</dd>
+          </div>
+        </dl>
+        <div class="storage-actions">
+          <button id="refresh-storage" class="button small">Refresh storage</button>
+          <button id="compact-storage" class="button small" disabled>Compact journal</button>
+        </div>
+        <p data-storage="status" role="status">Open to inspect storage.</p>
+      </details>
       <section class="session-launcher" aria-label="User session launcher">
         <div class="launcher-heading">
           <strong>User session</strong><span id="user-session-state" class="tag">NO SESSION</span>

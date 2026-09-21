@@ -9,6 +9,7 @@ import { renderCoordination } from './coordination.js';
 import { renderTaskComposer } from './task-composer.js';
 import { taskRequest, completeTaskRequest } from './task-request.js';
 import { renderSensorImages } from './sensor-images.js';
+import { bindStorageMaintenance } from './storage-maintenance.js';
 import {
   appendRunHistory,
   mergeRunUpdate,
@@ -960,6 +961,7 @@ $('workspace-skills').onclick = () =>
         : 'No experience yet. A formally failed subgoal followed by Planner recovery and verified success can publish a SKILL. Skills retain source, applicability and validation limits.',
     );
   });
+bindStorageMaintenance($('storage-maintenance'), api, action);
 for (const command of ['pause', 'resume', 'stop'])
   $(command).onclick = () =>
     action(async () => {

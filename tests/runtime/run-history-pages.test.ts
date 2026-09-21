@@ -115,6 +115,31 @@ test('invalid publication state cannot create an event record', async () => {
   });
 });
 
+test('journal compaction retains published history and keeps unpublished events outside its boundary', async () => {
+  await withStore((store) => {
+    const state = record();
+    const history = new RunHistory(store);
+    let version = 0;
+    for (let index = 0; index < 24; index++)
+      version = history.append(state, version, 'user.note', { text: `Document ${index}` }).version;
+    const expected = history.restore(state);
+    assert.throws(() => history.append(state, version - 1, 'user.note', {}), /Version conflict/);
+    assert.equal(store.compact().compacted, true);
+    assert.deepEqual(history.restore(state), expected);
+    assert.equal(history.total(state), 24);
+    assert.equal(store.get<RunEvent>(`event:${state.id}:25`)!.value.sequence, 25);
+    store.close();
+    const reopened = new LocalStore(store.directory);
+    try {
+      const saved = reopened.get<RunState>(`run:${state.id}`)!;
+      assert.equal(saved.version, version);
+      assert.deepEqual(new RunHistory(reopened).restore(saved.value), expected);
+    } finally {
+      reopened.close();
+    }
+  });
+});
+
 test(
   'active publication exceeds 4000 events within a 64 MiB old-space limit',
   { timeout: 60000 },

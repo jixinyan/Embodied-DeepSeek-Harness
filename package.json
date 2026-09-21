@@ -21,7 +21,7 @@
     "test:runtime": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/*.test.ts",
     "test:admission": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/task-admission.test.ts",
     "test:history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/run-history-pages.test.ts tests/runtime/recovery-history.test.ts",
-    "test:storage": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/store-index.test.ts",
+    "test:storage": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/store-index.test.ts tests/runtime/store-compaction.test.ts tests/runtime/storage-maintenance.test.ts",
     "test:evidence": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/sensor-samples.test.ts",
     "test:images": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/local-images.test.ts tests/runtime/evidence-images.test.ts tests/runtime/server-image-lifetime.test.ts",
     "test:console": "tsx --experimental-eventsource --tsconfig tsconfig.runtime.json --test tests/console/*.test.*",

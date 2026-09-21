@@ -107,3 +107,12 @@ restricted or unassociated images. Latest and agent-seen frames render through t
 multi-image component with load/dimension/error status. Seventeen actual file/HTTP tests
 and browser component DOM checks cover this path. Live VLM/provider acceptance and
 media retention remain required. [Image service guide](image-storage.md).
+
+## Journal compaction and console maintenance
+
+LocalStore can atomically compact superseded record versions while retaining all
+current records, their CAS versions, global sequence and independent history. The
+console exposes storage statistics and idle-only maintenance with a fresh sequence
+check. Real-file/process tests cover reopening, corruption, interrupted publication
+and retained history/image references. Distinct-key and media retention remain open.
+[Maintenance guide](storage-maintenance.md).

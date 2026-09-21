@@ -106,3 +106,11 @@ associated image references and agent-visible evidence. The browser image compon
 uses this scoped route for latest and agent-seen frames. See the
 [perception guide](../../harness/agent-runtime/perception/README.md) and
 [image-service boundary](../implementation/image-storage.md).
+
+## Journal maintenance ownership
+
+LocalStore owns checkpoint format, record validation and atomic compaction. The server
+owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
+console owns statistics and operation status. Compaction preserves all current keys
+and independent evidence/event records; it does not grant record access or set domain
+retention policy. [Maintenance guide](../implementation/storage-maintenance.md).
