@@ -105,6 +105,12 @@ admission/storage functions. Full application maintenance while draining live mo
 and provider scopes remains unverified. No scripted model or physical backend is used
 by these acceptance checks.
 
-Distinct-key retention, run/session archival, original-image reference accounting and
-collection, native context/audit lifetime, and automated retention scheduling remain
+Distinct-key retention, run/session archival, application-wide original-image reference
+ownership, native context/audit lifetime, and automated retention scheduling remain
 separate upper-runtime work. Compaction alone does not impose a total disk quota.
+
+The local image service now has explicit original-object collection and a structured
+journal reference inventory. Application-wide root ownership and idle collection
+admission remain required before an original-deletion HTTP operation can be exposed.
+The current maintenance endpoints continue to preserve all original objects. See
+[local collection and ownership requirements](image-storage.md#original-object-collection-and-recorded-references).

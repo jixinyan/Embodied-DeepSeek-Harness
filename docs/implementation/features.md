@@ -140,3 +140,12 @@ The latest 100 bundles include provenance without scanning unrelated runs. Agent
 retrieval remains explicit and does not inherit source evidence permissions. Original
 image integrity checks and domain retention have separate responsibilities.
 [Source API, semantics and acceptance](skill-provenance.md).
+
+## Local original-image collection
+
+The local image provider accepts a complete retained-ID set and collects unreferenced
+originals while excluding readers/writers. Structured journal reference inspection
+finds nested attachment identities across all current namespaces. Nine real-file tests
+cover the collector and reference inventory. Application-wide reference ownership,
+server admission and an original-deletion console operation remain pending. Current
+console maintenance preserves all originals. [Collection boundary](image-storage.md#original-object-collection-and-recorded-references).

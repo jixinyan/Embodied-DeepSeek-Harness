@@ -1,12 +1,15 @@
 # Implementation progress
 
-Spec: v1.23. Current checkpoint: **DSH upper application with inspected SKILL provenance, paged audits and explicit storage maintenance**.
+Spec: v1.24. Current checkpoint: **DSH upper application with local image collection primitives and inspected SKILL provenance**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The latest delivery adds SKILL source inspection through recorded recovery ownership,
+The latest delivery adds trusted local original-image collection from an explicit
+retained-ID set and structured journal image-reference inspection. Complete application
+reference ownership and original-deletion HTTP/UI admission remain pending.
+SKILL source inspection uses recorded recovery ownership,
 accepted failure/success verdicts and run/session/evidence/image references. Missing
 source records are explicit; conflicting records fail. Bounded assignment/event audit browsing, image inventory,
 explicit request-cache cleanup, atomic journal compaction and idle-only console
@@ -60,8 +63,8 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: nine SKILL provenance file/HTTP checks, eight evidence-storage
-and 23 image/lifetime/HTTP checks pass. Prior maintenance checkpoints passed nine audit,
+Current focused checks: nine original-image collection/reference checks, nine SKILL
+provenance file/HTTP checks and 23 image/lifetime/HTTP checks pass. Prior maintenance checkpoints passed eight evidence-storage, nine audit,
 22 console logic/transport, 16 storage/admission and 16 history tests. Browser component DOM checks cover audit
 assignment selection, event navigation and empty history; previous checks cover actual
 image loading, cache cleanup and journal compaction. TypeScript, formatting, provenance
@@ -1043,3 +1046,37 @@ for task/session/evidence/audit records and original media, preserving SKILL sou
 finish native active-session/grant lifetime, active-task clarification, provider-backed
 criteria discovery, live VLM acceptance and CLI-free bootstrap. The upper-runtime
 objective remains incomplete. [Source inspection guide](skill-provenance.md).
+
+## Local original-image collection and reference inventory (2026-09-21)
+
+LocalImageStore accepts an explicit complete retained-ID set and a current image
+revision for original-object collection. It validates inventory and the presence of
+retained originals before deletion, excludes pending readers/writers and rejects new
+original consumers during collection. Retained roots are copied at admission. Native
+disposal waits for accepted collection; failure and cancellation propagate. Successful
+collection synchronizes affected directories and returns removed files/bytes and
+retained-object counts. Request-cache files and original staging remain separate.
+
+The storage module also inventories structured attachment IDs across current journal
+records. It reads one record at a time, counts each referring record once and retains
+at most four example ownership keys per image. Results include the inspected store
+sequence. Nested arrays, historical records and extension namespaces are included;
+malformed structured IDs fail. Prose-only references and external storage need their
+own ownership declarations.
+
+Validation: nine `pnpm test:image-collection` checks pass using actual PNG bytes, native
+image transformations, real image files and domain journals. They cover retained-byte
+identity, physical deletion, reopening, shared roots, cache independence, stale/missing
+roots, reader/writer exclusion, links/invalid entries, cancellation, disposal, detached
+inputs, empty roots, staging preservation and journal inventory after compaction.
+Twenty-three image/lifetime/HTTP tests and nine SKILL provenance tests also pass.
+TypeScript, formatting, pinned-source provenance and structure/link checks pass.
+No model, sensor, physical provider or new browser behavior was exercised.
+
+The collector is available to trusted local lifecycle owners. The HTTP API and console
+do not invoke it. Complete application reference providers, frozen journal/image
+admission and quiescence of external host-path consumers are required for integration.
+Next: connect those ownership/lifecycle requirements to retention admission, preserve
+SKILL sources during domain-record retention, and continue active-session/grant
+lifetime, active-task clarification, criteria discovery, live VLM acceptance and
+CLI-free bootstrap. The full upper-runtime objective remains incomplete.

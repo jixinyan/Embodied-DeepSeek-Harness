@@ -13,8 +13,10 @@ import {
   ImageMaintenanceConflict,
   inspectImageFiles,
   clearRequestImageFiles,
+  clearUnreferencedImageFiles,
   type ImageStorageInspection,
   type ImageCacheCleanup,
+  type ImageObjectCleanup,
 } from './image-maintenance.js';
 import { CompressionLimiter } from './dsh/attachment-local/compression-limiter.ts';
 import { readRequestImageFile } from './dsh/attachment-local/request-image.ts';
@@ -58,6 +60,7 @@ export class LocalImageStore extends AttachmentStore {
   private writers = 0;
   private inspections = 0;
   private maintaining = false;
+  private collectingObjects = false;
 
   private revisionToken(): string {
     return `${this.instanceId}:${this.revision}`;
@@ -168,10 +171,14 @@ export class LocalImageStore extends AttachmentStore {
   }
 
   async readImage(ref: ImageAttachmentRef, signal?: AbortSignal) {
+    if (this.collectingObjects)
+      throw new ImageMaintenanceConflict('Original image collection is in progress.');
     return this.operation(() => readImageFile(this.root, structuredClone(ref), signal));
   }
 
   override imageHostPath(ref: ImageAttachmentRef): string {
+    if (this.collectingObjects)
+      throw new ImageMaintenanceConflict('Original image collection is in progress.');
     return normalizedImagePath(this.root, ref);
   }
 
@@ -230,6 +237,49 @@ export class LocalImageStore extends AttachmentStore {
         return { before, after, removedFiles: removed.files, reclaimedBytes: removed.bytes };
       });
     } finally {
+      this.maintaining = false;
+    }
+  }
+
+  async collectUnreferencedObjects(
+    revision: string,
+    retainedAttachmentIds: readonly string[],
+    signal?: AbortSignal,
+  ): Promise<ImageObjectCleanup> {
+    if (this.closed) throw new Error('Image storage is closed.');
+    signal?.throwIfAborted();
+    const retained = new Set(
+      z
+        .array(
+          z
+            .string()
+            .length(71)
+            .regex(/^sha256:[a-f0-9]{64}$/),
+        )
+        .parse(retainedAttachmentIds),
+    );
+    if (this.maintaining || this.pending.size || this.writers || this.inspections)
+      throw new ImageMaintenanceConflict('Image operations are still in progress.');
+    if (revision !== this.revisionToken())
+      throw new ImageMaintenanceConflict('Image storage changed. Refresh storage before cleanup.');
+    this.maintaining = true;
+    this.collectingObjects = true;
+    this.revision++;
+    try {
+      return await this.operation(async () => {
+        const before = await inspectImageFiles(this.root, revision, signal);
+        const removed = await clearUnreferencedImageFiles(this.root, retained, signal);
+        const after = await inspectImageFiles(this.root, this.revisionToken(), signal);
+        return {
+          before,
+          after,
+          retainedObjects: retained.size,
+          removedFiles: removed.files,
+          reclaimedBytes: removed.bytes,
+        };
+      });
+    } finally {
+      this.collectingObjects = false;
       this.maintaining = false;
     }
   }

@@ -8,6 +8,14 @@ and supplies scoped console image reads. Image inventory and explicit request-ca
 cleanup preserve original objects, require a current provider revision and exclude
 concurrent image mutations. Custom providers can expose the optional maintenance API.
 
+`collectUnreferencedObjects` provides explicit local original-image collection using a
+complete caller-supplied retained-ID set. It excludes active readers/writers and checks
+all retained objects before deletion. `inspectStoredImageReferences` inventories nested
+structured attachment IDs across current journal documents, with bounded example keys.
+External/prose-only references require additional owner declarations. The server has
+not exposed original collection; complete retention admission remains required. See
+the [collection semantics](../../../docs/implementation/image-storage.md#original-object-collection-and-recorded-references).
+
 [local-store.ts](src/local-store.ts) implements a single-writer CAS journal with checksum validation, fsync and incomplete-tail recovery. The application stores events, plans, files, recovery, skills and read-only DSH audits.
 
 The in-memory index retains each key's latest version, sequence, byte position,
@@ -51,7 +59,7 @@ Session/run/server shutdown attempts all cleanup stages and reports aggregate fa
 all latest records with unchanged versions, ordering and global write sequence. It
 retains independent event/evidence/history keys. The console admits this operation only
 in an idle workspace with a fresh inspected sequence. Distinct-key deletion and media
-retention policies remain pending.
+retention admission policies remain pending.
 
 `pnpm test:storage` exercises real journal files and checks write/reopen/scan behavior
 in a child process with a 64 MiB V8 old-space limit and more than 64 MiB of journal

@@ -18,9 +18,11 @@ export {
   type SessionAuditPage,
 } from './session-audits.js';
 export { LocalImageStore, type LocalImageOptions } from './local-images.js';
+export { inspectStoredImageReferences, type StoredImageReferences } from './image-references.js';
 export {
   ImageMaintenanceConflict,
   type ImageStorageMaintenance,
   type ImageStorageInspection,
   type ImageCacheCleanup,
+  type ImageObjectCleanup,
 } from './image-maintenance.js';

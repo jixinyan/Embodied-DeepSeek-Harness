@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.23 · 2026-09-21
+Version: v1.24 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -677,6 +677,15 @@ records fail. This is a read-only metadata check. It grants no model-context acc
 certifies no transfer performance and authorizes no source deletion. New experience
 limitations reflect the declared simulation, hardware or test-fixture origin. See the
 [source inspection API and acceptance](implementation/skill-provenance.md).
+
+The local image provider can collect original objects outside an explicit complete
+retained-ID set, with image-revision checks and exclusive reader/writer admission.
+Structured journal reference inspection includes current historical and extension
+records and bounds example ownership keys. External and prose-only references need
+their own declarations. Application-wide root coverage, idle coordination and the
+original-deletion HTTP/UI operation remain unimplemented; the console only clears
+derived request images. See the
+[collection responsibilities](implementation/image-storage.md#original-object-collection-and-recorded-references).
 
 ### 8.5 Complete recovery sequence
 

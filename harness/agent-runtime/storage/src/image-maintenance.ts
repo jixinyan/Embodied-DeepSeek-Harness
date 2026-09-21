@@ -18,6 +18,9 @@ export interface ImageCacheCleanup {
   removedFiles: number;
   reclaimedBytes: number;
 }
+export interface ImageObjectCleanup extends ImageCacheCleanup {
+  retainedObjects: number;
+}
 export interface ImageStorageMaintenance {
   inspect(signal?: AbortSignal): Promise<ImageStorageInspection>;
   clearRequestCache(revision: string, signal?: AbortSignal): Promise<ImageCacheCleanup>;
@@ -70,7 +73,7 @@ async function* imageFiles(
       const stat = await lstat(path);
       if (!stat.isFile() || stat.isSymbolicLink())
         throw new Error('Image storage file changed type.');
-      yield { path, directory: shardPath, bytes: stat.size };
+      yield { path, directory: shardPath, name: file.name, bytes: stat.size };
     }
   }
 }
@@ -103,6 +106,37 @@ export async function clearRequestImageFiles(
   const removed = { files: 0, bytes: 0 };
   const directories = new Set<string>();
   for await (const file of imageFiles(root, 'request-images', signal)) {
+    signal?.throwIfAborted();
+    await unlink(file.path);
+    removed.files++;
+    removed.bytes += file.bytes;
+    directories.add(file.directory);
+  }
+  for (const directory of directories) {
+    const handle = await open(directory, 'r');
+    try {
+      await handle.sync();
+    } finally {
+      await handle.close();
+    }
+  }
+  return removed;
+}
+
+export async function clearUnreferencedImageFiles(
+  root: string,
+  retained: ReadonlySet<string>,
+  signal?: AbortSignal,
+): Promise<ImageFileUsage> {
+  const remaining = new Set(retained);
+  for await (const file of imageFiles(root, 'objects', signal))
+    remaining.delete(`sha256:${file.name}`);
+  if (remaining.size) throw new Error('Referenced original images are missing from storage.');
+  signal?.throwIfAborted();
+  const removed = { files: 0, bytes: 0 };
+  const directories = new Set<string>();
+  for await (const file of imageFiles(root, 'objects', signal)) {
+    if (retained.has(`sha256:${file.name}`)) continue;
     signal?.throwIfAborted();
     await unlink(file.path);
     removed.files++;
