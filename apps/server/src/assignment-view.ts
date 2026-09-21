@@ -1,6 +1,6 @@
 import type { ContractValidator } from '@edh/contracts';
 import { isDeepStrictEqual } from 'node:util';
-import { AssignmentHistory, type RunState } from '@edh/tasks';
+import { AssignmentHistory, VerdictHistory, type RunState } from '@edh/tasks';
 import type { LocalStore } from '@edh/storage';
 import { SensorSamples } from '@edh/perception';
 import { VerificationContexts } from '@edh/verification';
@@ -68,7 +68,9 @@ export function readAssignmentDetails(
         value.verifier_assignment_id === id || value.verification_request_id === context.requestId,
     );
     if (accepted.length > 1) throw new Error('Assignment has multiple accepted formal verdicts.');
-    const verdict = accepted.length ? validator.parse('VerificationResult', accepted[0]) : null;
+    const verdict = accepted.length
+      ? new VerdictHistory(store, validator).resolve(runId, accepted[0]!)
+      : null;
     if (
       verdict &&
       (verdict.verifier_assignment_id !== id ||

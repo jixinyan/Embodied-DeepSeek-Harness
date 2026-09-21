@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { ContractValidator } from '@edh/contracts';
 import type { SkillBundle } from '@edh/memory';
 import { SensorSamples } from '@edh/perception';
-import { RecoveryHistory, type RunState } from '@edh/tasks';
+import { RecoveryHistory, VerdictHistory, type RunState } from '@edh/tasks';
 import type { LocalStore } from '@edh/storage';
 import { SessionTaskHistory, sessionTaskKey, readSessionTasks } from './session-task-history.js';
 
@@ -115,13 +115,22 @@ function resolveProvenance(
   const run = read<RunState>(`run:${result.runId}`);
   if (run === undefined) return result;
   const checkedRun = runSchema.parse(run);
-  if (
-    checkedRun.id !== result.runId ||
-    checkedRun.source !== metadata.origin ||
-    !run.verdicts.some((value) => isDeepStrictEqual(value, failed)) ||
-    !run.verdicts.some((value) => isDeepStrictEqual(value, passed))
-  )
+  const verdictHistory = new VerdictHistory(store, validator);
+  const inspectVerdict = (expected: typeof failed) => {
+    const published = run.verdicts.filter((value) => value.verdict_id === expected.verdict_id);
+    if (published.length !== 1)
+      throw new Error('Skill source run does not retain the matching accepted verdicts.');
+    if ('detailsStored' in published[0]!) {
+      const key = `verdict-history:${JSON.stringify([result.runId, expected.verdict_id])}`;
+      if (read(key) === undefined) return;
+    }
+    if (!isDeepStrictEqual(verdictHistory.resolve(result.runId!, published[0]!), expected))
+      throw new Error('Skill source run does not retain the matching accepted verdicts.');
+  };
+  if (checkedRun.id !== result.runId || checkedRun.source !== metadata.origin)
     throw new Error('Skill source run does not retain the matching origin and accepted verdicts.');
+  inspectVerdict(failed);
+  inspectVerdict(passed);
   read(`run-config:${result.runId}`);
   const ownershipKey = `run-user-session:${result.runId}`;
   const ownership = store.get(ownershipKey);

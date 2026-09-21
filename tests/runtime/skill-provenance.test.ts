@@ -9,7 +9,7 @@ import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import { ContractValidator, type SkillMetadata, type VerificationResult } from '@edh/contracts';
 import { SkillLibrary, type SkillBundle } from '@edh/memory';
 import { SensorSamples } from '@edh/perception';
-import { RecoveryHistory, type RecoveryTrace } from '@edh/tasks';
+import { RecoveryHistory, VerdictHistory, type RecoveryTrace } from '@edh/tasks';
 import { LocalStore, LocalImageStore } from '@edh/storage';
 import {
   inspectSkillProvenance,
@@ -360,6 +360,47 @@ test('source inspection requires both exact accepted verdicts in the source run'
       else record.value.verdicts[1]!.boundary_event_id = 'another-boundary';
       store.put('run:run', record.value, record.version);
       assert.throws(() => inspectSkillProvenance(store, validator, 'skill'), /accepted verdicts/);
+    });
+  }
+});
+
+test('skill provenance reads immutable archived verdicts and identifies missing or conflicting sources', async () => {
+  for (const mode of ['complete', 'missing', 'conflicting', 'rewritten']) {
+    await withStore(async (store) => {
+      documents(store);
+      const row = store.get<{ verdicts: VerificationResult[] }>('run:run')!;
+      const history = new VerdictHistory(store, validator);
+      const summaries = row.value.verdicts.map((verdict) => history.retain('run', verdict));
+      if (mode === 'conflicting') summaries[0]!.checkCount++;
+      store.put('run:run', { ...row.value, verdicts: summaries }, row.version);
+      const key = 'verdict-history:["run","failed-verdict"]';
+      if (mode === 'missing') {
+        await withStore((incomplete) => {
+          for (const record of store.scan('')) {
+            if (record.key !== key) incomplete.put(record.key, record.value, 0);
+          }
+          const source = inspectSkillProvenance(incomplete, validator, 'skill');
+          assert.equal(source.state, 'incomplete');
+          assert(source.missing.some((record) => record.key === key));
+          assert(
+            source.records.some(
+              (record) => record.key === 'verdict-history:["run","passed-verdict"]',
+            ),
+          );
+        });
+        return;
+      }
+      if (mode === 'rewritten') store.put(key, store.get(key)!.value, 1);
+      if (mode === 'complete') {
+        const source = inspectSkillProvenance(store, validator, 'skill');
+        assert.equal(source.state, 'available');
+        assert(source.records.some((record) => record.key === key && record.version === 1));
+      } else {
+        assert.throws(
+          () => inspectSkillProvenance(store, validator, 'skill'),
+          /summary conflicts|archive was rewritten/,
+        );
+      }
     });
   }
 });

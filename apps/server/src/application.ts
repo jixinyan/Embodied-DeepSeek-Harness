@@ -32,6 +32,7 @@ import {
   TaskGoals,
   RunHistory,
   AssignmentHistory,
+  VerdictHistory,
   RecoveryHistory,
   taskContextSummary,
   type TaskContextSummary,
@@ -410,7 +411,13 @@ export class UpperRun {
     return this.state.requests.findLast((r) => r.goal_id === this.goal.id);
   }
   private currentVerdict(): VerificationResult | undefined {
-    return this.state.verdicts.findLast((v) => v.task_scope.goal_id === this.goal.id);
+    const latest = this.state.verdicts.findLast((v) => v.task_scope.goal_id === this.goal.id);
+    return latest
+      ? new VerdictHistory(this.options.store, this.options.validator).resolve(
+          this.state.id,
+          latest,
+        )
+      : undefined;
   }
   private stoppedAndVerified(): void {
     const execution = this.options.backend.query();
@@ -1274,7 +1281,12 @@ export class UpperRun {
         if (errors.length) throw new Error(errors.join(', '));
         if (this.state.verdicts.some((v) => v.verification_request_id === checked.requestId))
           throw new Error('Verification request already settled.');
-        this.state.verdicts.push(result);
+        this.state.verdicts.push(
+          new VerdictHistory(this.options.store, this.options.validator).retain(
+            this.state.id,
+            result,
+          ),
+        );
         this.event('verification.completed', { result });
         this.resolveRecovery(result);
         const lead = this.sessions.get(this.state.decisionAssignmentId);

@@ -28,6 +28,12 @@ the durable brief reader after native retirement. The console reads selected det
 TODOs and last observations through a run-scoped HTTP endpoint. See
 [assignment history](../../../docs/implementation/assignment-history.md).
 
+[verdict-history.ts](src/verdict-history.ts) stores immutable complete accepted results
+and derives compact run entries with bounded explanation previews. Explicit readers
+validate full archive contents and their agreement with published summaries. Planner,
+task context, assignment inspection and SKILL provenance retain full-result semantics.
+See [verdict history](../../../docs/implementation/verdict-history.md).
+
 See [multi-goal runtime](../../../docs/implementation/multi-goal-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
 [module responsibilities](../../../docs/architecture/modules.md).

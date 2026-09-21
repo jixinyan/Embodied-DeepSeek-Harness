@@ -8,7 +8,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { AssignmentReports } from '@edh/communication';
 import { LocalStore } from '@edh/storage';
-import { AssignmentHistory } from '@edh/tasks';
+import { AssignmentHistory, VerdictHistory } from '@edh/tasks';
 import { SensorSamples } from '@edh/perception';
 import { VerificationContexts } from '@edh/verification';
 import { readAssignmentDetails } from '../../apps/server/src/assignment-view.js';
@@ -301,7 +301,7 @@ test('assignment inspection distinguishes saved checks from a submitted unknown 
       observed_at: state.createdAt,
       clock_id: 'document-clock',
     });
-    state.verdicts.push(verdict);
+    state.verdicts.push(new VerdictHistory(store, validator).retain(state.id, verdict));
     history.retain(state, assignment.id);
     contexts.release(assignment.id);
     store.put(`run:${state.id}`, state, 1);

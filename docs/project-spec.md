@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.37 · 2026-09-21
+Version: v1.38 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -53,6 +53,11 @@ native retirement releases them while historical records remain inspectable. The
 Assignment inspector exposes saved check facts and accepted verdicts separately,
 validating their task, execution, boundary, criteria and evidence identities. See
 [verification lifetime](../harness/agent-runtime/verification/README.md).
+Accepted verdicts have immutable complete records and compact run summaries. Planner
+decisions, recovery, selected historical task context and SKILL source inspection
+resolve full results explicitly. The console selects individual accepted results;
+missing or conflicting records remain explicit. See
+[verdict publication and inspection](implementation/verdict-history.md).
 The unified console now displays key
 state without page/tab switching; further polish follows actual provider integration.
 Native DSH [context management](implementation/context-management.md) is available

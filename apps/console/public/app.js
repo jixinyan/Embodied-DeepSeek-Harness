@@ -15,6 +15,7 @@ import { bindStorageMaintenance } from './storage-maintenance.js';
 import { bindSessionAudit } from './session-audit.js';
 import { bindReportHistory } from './report-history.js';
 import { bindAssignmentDetails, createAssignmentSelection } from './assignment-details.js';
+import { bindVerdictDetails } from './verdict-details.js';
 import { bindWorkspaceHistory, bindTaskContextHistory } from './workspace-history.js';
 import {
   appendRunHistory,
@@ -52,6 +53,7 @@ function inspect(title, value) {
   auditBrowser.close();
   reportBrowser.close();
   assignmentBrowser.close();
+  verdictBrowser.close();
   text('inspector-title', title);
   text('inspector-body', typeof value === 'string' ? value : JSON.stringify(value, null, 2));
   if (!$('inspector').open) $('inspector').showModal();
@@ -743,7 +745,10 @@ function render() {
   );
   text(
     'verification-explanation',
-    verdict?.explanation ?? 'A completed policy call does not establish task success.',
+    verdict
+      ? (verdict.explanation ?? verdict.explanationPreview) +
+          (verdict.explanationTruncated ? '…' : '')
+      : 'A completed policy call does not establish task success.',
   );
   $('inspect-verdict').disabled = !verdict;
   const recoverySaved = current.skillIds.includes(current.recoveryId);
@@ -979,7 +984,10 @@ $('inspect-team').onclick = () =>
 $('inspect-frame').onclick = () =>
   inspect('Displayed observation · Evidence and source', displayedFrame);
 $('inspect-verdict').onclick = () =>
-  inspect('Formal verification · Accepted verdicts', current.verdicts);
+  action(async () => {
+    inspect('Formal verification · Accepted verdicts', '');
+    await verdictBrowser.open(current.id, current.verdicts);
+  });
 $('inspect-skill').onclick = () =>
   inspect(
     'Recovery skill · SKILL.md',
@@ -996,6 +1004,7 @@ $('inspect-recovery').onclick = () =>
   );
 const auditBrowser = bindSessionAudit($('audit-controls'), $('inspector-body'), api, action);
 const reportBrowser = bindReportHistory($('report-controls'), $('inspector-body'), api, action);
+const verdictBrowser = bindVerdictDetails($('verdict-controls'), $('inspector-body'), api, action);
 const assignmentBrowser = bindAssignmentDetails(
   $('assignment-controls'),
   $('inspector-body'),
@@ -1018,6 +1027,7 @@ $('inspect-audit').onclick = () =>
     await auditBrowser.open(current.id);
   });
 $('inspector').addEventListener('close', () => {
+  verdictBrowser.close();
   auditBrowser.close();
   reportBrowser.close();
   assignmentBrowser.close();

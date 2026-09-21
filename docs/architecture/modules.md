@@ -127,6 +127,12 @@ references. UpperRun owns active assignment admission/release and still applies 
 verdict gates. SensorSamples owns the referenced observations. Native retirement releases
 active check identities while preserving the stored record for host inspection.
 
+VerdictHistory owns immutable accepted results and exact summary-to-record validation.
+UpperRun applies acceptance gates and publishes compact verdict entries after archive
+read-back. Planner/recovery consumers, selected task context and source inspection
+resolve complete results; the console uses the selected-result HTTP reader. See
+[verdict history](../implementation/verdict-history.md).
+
 WorkspaceHistoryIndex in `apps/server` owns the derived SQLite session/run summaries.
 LocalStore supplies detached revisions, source-file checks and synchronous committed
 change notifications. The application opens the index after startup reconciliation and

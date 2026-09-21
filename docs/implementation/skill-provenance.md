@@ -51,6 +51,9 @@ inconsistent also fails through the sensor catalog's integrity checks.
 - SKILL evidence references exactly match the unique union of failure and success
   evidence references.
 - The source run has the same origin and retains both exact accepted verdicts.
+  Compact entries resolve through [immutable verdict archives](verdict-history.md).
+  Their keys/versions appear in `records`; absent archives make the source incomplete,
+  and rewritten records or conflicting summaries fail.
 - A recorded user-session association points to a session that owns this run through
   its compact history and immutable membership record, or a legacy inline task list.
   Compact membership must fall within the published admission count and agree with
@@ -90,6 +93,8 @@ the production reader and request-origin check. They cover explicit ownership,
 shared image references, detached reads, compaction/reopen, missing references,
 legacy ownership, inconsistent records, exact source verdicts, mismatched SKILL
 identities, the latest-100 window, HTTP origin restrictions and source limitations.
+Archived-result checks also cover exact source references, absent archives, summary
+conflicts and rewritten archive versions.
 
 No model, sensor, simulation or hardware executes in these tests. Live recovery
 publication and complete application integration with a provider remain separate

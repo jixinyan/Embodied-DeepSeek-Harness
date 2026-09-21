@@ -157,6 +157,10 @@ timestamp, final-goal verification conclusion and skill IDs. Private messages, m
 reasoning, tool payloads, sensor data and evidence permissions remain in their existing
 scopes. Total context is limited to 16 KiB; oversized requests fail before backend
 allocation. Historical results require fresh observation before physical decisions.
+The selected final-goal verdict resolves its [complete archived explanation](verdict-history.md).
+The preview displayed in a run summary does not limit the admitted explanation; the
+existing total context budget still applies. Missing or conflicting archives fail
+before task allocation.
 
 The selected summaries are passed to the entry Planner through
 `InvocationBrief.history_summary`. New delegated roles receive the caller's explicit

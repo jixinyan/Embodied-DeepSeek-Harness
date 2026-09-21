@@ -5,10 +5,17 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { ContractValidator } from '@edh/contracts';
 import { LocalStore } from '@edh/storage';
-import { TaskGoals, taskContextSummary, type GoalBinding, type RunState } from '@edh/tasks';
+import {
+  TaskGoals,
+  VerdictHistory,
+  taskContextSummary,
+  type GoalBinding,
+  type RunState,
+} from '@edh/tasks';
 import { admitSessionTask } from '../../apps/server/src/task-admission.js';
 import { UserSessions, type UserSessionRecord } from '../../apps/server/src/user-sessions.js';
 import { SessionTaskHistory } from '../../apps/server/src/session-task-history.js';
+import { verdictDocuments } from './support/verdict-documents.js';
 
 const goal: GoalBinding = {
   id: 'store-cup',
@@ -25,6 +32,9 @@ const goal: GoalBinding = {
   budget: { max_control_steps: 100, max_wall_time_s: 60 },
 };
 const tasks = { cup: { instruction: 'Put the cup in the cabinet.', goal } };
+const validator = new ContractValidator(
+  JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
+);
 
 function userSession(): UserSessionRecord & { runIds: string[] } {
   return {
@@ -85,7 +95,7 @@ function cancelledRecord(): RunState {
 
 test('task admission preserves selected criteria and binds the actual user instruction', async () => {
   await withStore(async (store) => {
-    const options = { session: userSession(), allowedTasks: ['cup'], tasks, store };
+    const options = { session: userSession(), allowedTasks: ['cup'], tasks, store, validator };
     const request = { scenario: 'cup', requestId: randomUUID() };
     const original = admitSessionTask(request, options);
     assert.equal(original.identity, 'cup');
@@ -103,16 +113,13 @@ test('task admission preserves selected criteria and binds the actual user instr
     );
     assert.deepEqual(custom.goal, goal);
     assert.notEqual(custom.goal, goal);
-    const validator = new ContractValidator(
-      JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
-    );
     assert.deepEqual(new TaskGoals(validator, custom.goal).get(goal.id), goal);
   });
 });
 
 test('task admission rejects unregistered criteria, raw context and malformed input', async () => {
   await withStore((store) => {
-    const options = { session: userSession(), allowedTasks: ['cup'], tasks, store };
+    const options = { session: userSession(), allowedTasks: ['cup'], tasks, store, validator };
     const request = { scenario: 'cup', requestId: randomUUID() };
     for (const input of [
       { ...request, scenario: 'unknown' },
@@ -141,7 +148,7 @@ test('explicit historical context reads scoped journal records without private p
     session.runIds.push(run.id);
     store.put(`run:${run.id}`, run, 0);
     store.put(`run-user-session:${run.id}`, { sessionId: session.id }, 0);
-    const options = { session, allowedTasks: ['cup'], tasks, store };
+    const options = { session, allowedTasks: ['cup'], tasks, store, validator };
     const request = { scenario: 'cup', requestId: randomUUID(), contextRunIds: [run.id] };
     const admitted = admitSessionTask(request, options);
     assert.equal(admitted.context[0]!.outcome, 'cancelled');
@@ -178,7 +185,7 @@ test('context admission rejects active, missing and oversized history', async ()
     const session = userSession();
     const run = cancelledRecord();
     session.runIds.push(run.id);
-    const options = { session, allowedTasks: ['cup'], tasks, store };
+    const options = { session, allowedTasks: ['cup'], tasks, store, validator };
     const request = { scenario: 'cup', requestId: randomUUID(), contextRunIds: [run.id] };
     assert.throws(() => admitSessionTask(request, options), /unavailable/);
     store.put(`run-user-session:${run.id}`, { sessionId: session.id }, 0);
@@ -192,6 +199,33 @@ test('context admission rejects active, missing and oversized history', async ()
   });
 });
 
+test('selected historical task context resolves the complete archived verdict and rejects missing details', async () => {
+  await withStore(async (store) => {
+    const session = userSession();
+    const { state: run, result } = await verdictDocuments();
+    run.state = 'unknown';
+    run.finalGoalId = result.task_scope.goal_id!;
+    result.explanation = 'Authored unknown-result document. '.repeat(30);
+    const summary = new VerdictHistory(store, validator).retain(run.id, result);
+    run.verdicts = [summary];
+    session.runIds.push(run.id);
+    store.put(`run:${run.id}`, run, 0);
+    store.put(`run-user-session:${run.id}`, { sessionId: session.id }, 0);
+    const options = { session, allowedTasks: ['cup'], tasks, store, validator };
+    const request = { scenario: 'cup', requestId: randomUUID(), contextRunIds: [run.id] };
+    const admitted = admitSessionTask(request, options);
+    assert.deepEqual(admitted.context[0]!.finalVerification, {
+      verdictId: result.verdict_id,
+      status: 'unknown',
+      explanation: result.explanation,
+    });
+    assert(summary.explanationTruncated);
+    run.verdicts = [{ ...summary, verdict_id: 'unavailable-archive' }];
+    store.put(`run:${run.id}`, run, 1);
+    assert.throws(() => admitSessionTask(request, options), /archive is missing/);
+  });
+});
+
 test('task context selection reads compact session membership with the existing run ownership check', async () => {
   await withStore((store) => {
     const session = userSession();
@@ -201,7 +235,7 @@ test('task context selection reads compact session membership with the existing 
     store.put(`run:${run.id}`, run, 0);
     store.put(`run-user-session:${run.id}`, { sessionId: session.id }, 0);
     const compact = new SessionTaskHistory(store).migrate(session, 1);
-    const options = { session: compact, allowedTasks: ['cup'], tasks, store };
+    const options = { session: compact, allowedTasks: ['cup'], tasks, store, validator };
     const request = { scenario: 'cup', requestId: randomUUID(), contextRunIds: [run.id] };
     assert.equal(admitSessionTask(request, options).context[0]!.runId, run.id);
     assert.throws(
@@ -224,7 +258,7 @@ test('request replay checks complete input identity and durable task ownership',
     store.put(`run:${run.id}`, run, 0);
     store.put(`run-user-session:${run.id}`, { sessionId: session.id }, 0);
     const sessions = new UserSessions(store);
-    const options = { session, allowedTasks: ['cup'], tasks, store };
+    const options = { session, allowedTasks: ['cup'], tasks, store, validator };
     const request = { scenario: 'cup', requestId: randomUUID(), instruction: 'Move slowly.' };
     const submission = admitSessionTask(request, options);
     const key = `session-task-request:${session.id}:${request.requestId}`;

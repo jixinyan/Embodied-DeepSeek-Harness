@@ -1,5 +1,11 @@
 import { createHash } from 'node:crypto';
-import { taskContextSummary, type RunState, type TaskContextSummary } from '@edh/tasks';
+import {
+  taskContextSummary,
+  VerdictHistory,
+  type RunState,
+  type TaskContextSummary,
+} from '@edh/tasks';
+import type { ContractValidator } from '@edh/contracts';
 import type { LocalStore } from '@edh/storage';
 import type { TaskPreset } from './deployment.js';
 import type { UserSessionRecord } from './user-sessions.js';
@@ -19,6 +25,7 @@ export function admitSessionTask(
       >
     >;
     store: LocalStore;
+    validator: ContractValidator;
   },
 ) {
   if (
@@ -56,9 +63,12 @@ export function admitSessionTask(
       throw new Error('Historical task ownership or record is unavailable.');
     const run = record.value;
     if (!ended.has(run.state)) throw new Error('Selected task context is still active.');
-    const verdict = run.verdicts.findLast(
+    const summary = run.verdicts.findLast(
       (value) => value.task_scope.task_id === runId && value.task_scope.goal_id === run.finalGoalId,
     );
+    const verdict = summary
+      ? new VerdictHistory(options.store, options.validator).resolve(runId, summary)
+      : undefined;
     return {
       runId,
       userSessionId: options.session.id,

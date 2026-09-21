@@ -1,10 +1,24 @@
 # Implementation progress
 
-Spec: v1.37. Current checkpoint: **compact session task history and immutable membership**.
+Spec: v1.38. Current checkpoint: **immutable accepted verdicts and explicit full-result reads**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Accepted verification results are archived before their summaries enter run state.
+Summaries preserve identity/status and a bounded explanation preview; Planner decisions,
+assignment inspection, selected task context and SKILL provenance resolve full records.
+The console loads one accepted result at a time with explicit selection and refresh.
+Six actual journal/HTTP/process checks cover publication, immutability, scope,
+missing/conflicting records and more than 100 MiB of authored verdict documents under
+a 64 MiB V8 old-space limit. Nine assignment-history, seven task-admission and eleven
+SKILL-provenance checks pass, alongside 24 console checks. No model or physical
+provider executes. Browser DOM checks using production controls/readers cover selected
+full results, literal HTML text, refresh, missing-record errors, empty selection and
+close. TypeScript, formatting, pinned-source provenance and 500 local documentation
+links pass. Cumulative summary metadata, domain retention and live provider
+acceptance remain open. [Verdict history semantics](verdict-history.md).
 
 Session records hold task count/latest identity and publish immutable per-task
 membership records. Startup migrates legacy arrays while preserving their order and

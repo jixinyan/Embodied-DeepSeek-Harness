@@ -30,6 +30,7 @@
     "test:assignment-lifetime": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/assignment-lifetime.test.ts",
     "test:verification-contexts": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/verification-contexts.test.ts",
     "test:assignment-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/assignment-history.test.ts",
+    "test:verdict-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/verdict-history.test.ts",
     "test:workspace-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/workspace-history.test.ts tests/runtime/workspace-history-index.test.ts",
     "test:session-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-history.test.ts",
     "test:report-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/report-history.test.ts",

@@ -12,6 +12,11 @@ inspector tabs. Narrow screens stack these sections on the same page; long conte
 scrolls within its panel. Full payloads remain available in a keyboard-accessible
 inspector, including goal criteria and their verdict history.
 
+The verification panel shows a bounded explanation preview. **Accepted verdicts**
+loads one selected full result, including complete checks and explanation. Refresh,
+selection changes and close cancel superseded reads and clear the previous body.
+Missing records remain explicit. See [verdict history](../../docs/implementation/verdict-history.md).
+
 Execution budgets come from the matching subgoal request. Session lifecycle, formal
 verdicts and recovery publication are separate states. Historical run selection is
 protected against out-of-order responses. Scrolling upward with the mouse wheel

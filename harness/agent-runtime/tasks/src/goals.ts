@@ -91,7 +91,10 @@ export class TaskGoals {
   ready(
     plan: PlanDocument,
     id: string,
-    verdicts: readonly VerificationResult[],
+    verdicts: readonly Pick<
+      VerificationResult,
+      'verdict_id' | 'task_scope' | 'status' | 'goal_contract_id' | 'goal_contract_version'
+    >[],
     requests: readonly SubgoalRequest[],
   ): GoalBinding {
     const item = plan.items.find((candidate) => candidate.goal_id === id);

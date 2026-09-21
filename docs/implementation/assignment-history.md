@@ -87,6 +87,10 @@ existing paged route. Native audits remain independently available.
 
 ## Acceptance and remaining limits
 
+Accepted verdict summaries resolve through the immutable
+[verdict archive](verdict-history.md) before formal fact comparisons. The inspector
+continues to return the complete accepted result; missing or conflicting archives fail.
+
 `pnpm test:assignment-history` runs nine actual file/HTTP/process checks. Coverage
 includes exact preservation, detached reads, immutable archives, compaction/reopen,
 write exclusion, invalid identity/scope, report inspection after archival, observation

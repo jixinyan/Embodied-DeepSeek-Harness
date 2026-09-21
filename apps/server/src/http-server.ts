@@ -17,6 +17,7 @@ import { serveEvidenceImage } from './evidence-images.js';
 import { readSessionAudit } from './session-audit-view.js';
 import { readRoleReports } from './report-view.js';
 import { readAssignmentDetails } from './assignment-view.js';
+import { readVerdictDetails } from './verdict-view.js';
 import { readRunList, readSessionList } from './workspace-history.js';
 import { WorkspaceHistoryIndex } from './workspace-history-index.js';
 import {
@@ -568,6 +569,7 @@ async function startApplication(
             const profile = deployment.launchProfiles[record.profileId];
             if (!profile) throw new HttpError(400, 'The session launch profile is unavailable.');
             const submission = admitSessionTask(data, {
+              validator,
               session: record,
               allowedTasks: profile.tasks,
               tasks: deployment.tasks,
@@ -740,7 +742,7 @@ async function startApplication(
           }
         }
         const match =
-          /^\/api\/runs\/([A-Za-z0-9-]+)(?:\/(events|history|pause|resume|stop|audit|reports|assignments|recovery))?$/.exec(
+          /^\/api\/runs\/([A-Za-z0-9-]+)(?:\/(events|history|pause|resume|stop|audit|reports|assignments|verdicts|recovery))?$/.exec(
             url.pathname,
           );
         if (match) {
@@ -779,6 +781,8 @@ async function startApplication(
             return json(res, 200, readRoleReports(store, validator, id, url.searchParams));
           if (method === 'GET' && operation === 'assignments')
             return json(res, 200, readAssignmentDetails(store, validator, id, url.searchParams));
+          if (method === 'GET' && operation === 'verdicts')
+            return json(res, 200, readVerdictDetails(store, validator, id, url.searchParams));
           if (method === 'GET' && operation === 'recovery') {
             return json(res, 200, {
               recovery: record.recoveryId

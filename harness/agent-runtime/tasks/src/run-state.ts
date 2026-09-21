@@ -1,10 +1,5 @@
-import type {
-  InvocationBrief,
-  AgentReport,
-  ExecutionStatus,
-  SubgoalRequest,
-  VerificationResult,
-} from '@edh/contracts';
+import type { InvocationBrief, AgentReport, ExecutionStatus, SubgoalRequest } from '@edh/contracts';
+import type { RunVerdict } from './verdict-history.js';
 import type { SensorSample } from '@edh/execution';
 import type { TaskContextSummary } from './task-context.js';
 export interface RunEvent {
@@ -84,7 +79,7 @@ export interface RunState {
   eventCount?: number;
   executions: ExecutionStatus[];
   requests: SubgoalRequest[];
-  verdicts: VerificationResult[];
+  verdicts: RunVerdict[];
   latestSensor: SensorSample | null;
   agentSeen: Record<string, SensorSample>;
   agentStreams?: Record<

@@ -19,7 +19,10 @@ export class TaskPlans {
     plan: PlanDocument,
     expectedVersion: number,
     owner: { agentId: string; assignmentId: string },
-    verdicts: readonly VerificationResult[],
+    verdicts: readonly Pick<
+      VerificationResult,
+      'verdict_id' | 'task_scope' | 'status' | 'goal_contract_id' | 'goal_contract_version'
+    >[],
     requests: readonly SubgoalRequest[] = [],
   ): void {
     this.validator.parse('PlanDocument', plan);
