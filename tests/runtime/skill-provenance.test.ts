@@ -9,7 +9,13 @@ import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import { ContractValidator, type SkillMetadata, type VerificationResult } from '@edh/contracts';
 import { SkillLibrary, type SkillBundle } from '@edh/memory';
 import { SensorSamples } from '@edh/perception';
-import { RecoveryHistory, VerdictHistory, type RecoveryTrace } from '@edh/tasks';
+import {
+  RecoveryHistory,
+  VerdictHistory,
+  type RecoveryTrace,
+  type RunState,
+  type RunEvent,
+} from '@edh/tasks';
 import { LocalStore, LocalImageStore } from '@edh/storage';
 import {
   inspectSkillProvenance,
@@ -43,6 +49,7 @@ function documents(
     image?: ImageAttachmentRef;
     session?: boolean;
     origin?: SkillMetadata['origin'];
+    recoveryEvents?: number;
   } = {},
 ) {
   const origin = options.origin ?? 'test_fixture';
@@ -81,14 +88,34 @@ function documents(
   if (options.omit !== 'recovery') {
     const recovery = new RecoveryHistory(store);
     recovery.create('recovery', 'run', { failedVerdict: failed, originalGoalId: 'goal' });
-    recovery.update('recovery', passed, null);
   }
   if (options.omit !== 'run')
     store.put(
       'run:run',
-      { id: 'run', source: origin, verdicts: [failed, passed], skillIds: [] },
+      {
+        id: 'run',
+        source: origin,
+        verdicts: [failed, passed],
+        skillIds: [],
+        events: [],
+        eventCount: options.recoveryEvents ?? 0,
+      },
       0,
     );
+  for (let sequence = 1; sequence <= (options.recoveryEvents ?? 0); sequence++) {
+    store.put(
+      `event:run:${sequence}`,
+      {
+        sequence,
+        at,
+        type: 'documentation.review',
+        detail: { text: `Authored recovery history document ${sequence}.` },
+      },
+      0,
+    );
+    new RecoveryHistory(store).append('recovery', 'run', sequence);
+  }
+  if (options.omit !== 'recovery') new RecoveryHistory(store).update('recovery', passed, null);
   if (options.omit !== 'configuration')
     store.put('run-config:run', { description: 'Authored source configuration document' }, 0);
   if (options.session) {
@@ -403,6 +430,114 @@ test('skill provenance reads immutable archived verdicts and identifies missing 
       }
     });
   }
+});
+
+test('recovery provenance includes each published intermediate index and source event across retirement and reopen', async () => {
+  await withStore(async (store) => {
+    documents(store, { recoveryEvents: 3 });
+    store.put('event:run:4', { sequence: 4, type: 'unpublished.document', detail: {} }, 0);
+    const source = inspectSkillProvenance(store, validator, 'skill');
+    assert.equal(source.state, 'available');
+    for (let index = 1; index <= 3; index++) {
+      assert(
+        source.records.some(
+          (record) => record.key === `recovery-event:recovery:${index}` && record.version === 1,
+        ),
+      );
+      assert(
+        source.records.some(
+          (record) => record.key === `event:run:${index}` && record.version === 1,
+        ),
+      );
+    }
+    assert(!source.records.some((record) => record.key === 'event:run:4'));
+    store.retire(['event:run:4'], store.statistics().sequence);
+    store.close();
+    const reopened = new LocalStore(store.directory);
+    try {
+      const latest = inspectSkillProvenance(reopened, validator, 'skill');
+      assert.equal(latest.state, 'available');
+      assert.deepEqual(latest.records, source.records);
+    } finally {
+      reopened.close();
+    }
+  });
+});
+
+test('absent recovery event indexes and source bodies make SKILL provenance incomplete', async () => {
+  for (const key of ['recovery-event:recovery:2', 'event:run:2'])
+    await withStore((store) => {
+      documents(store, { recoveryEvents: 3 });
+      store.retire([key], store.statistics().sequence);
+      const source = inspectSkillProvenance(store, validator, 'skill');
+      assert.equal(source.state, 'incomplete');
+      assert(source.records.some((record) => record.key === key && record.version === null));
+      assert(source.missing.some((record) => record.key === key));
+      assert(source.records.some((record) => record.key === 'event:run:3'));
+    });
+});
+
+test('conflicting recovery history rejects rewritten, unordered and unpublished source references', async () => {
+  for (const change of [
+    'rewritten-index',
+    'rewritten-event',
+    'unordered',
+    'unpublished',
+    'sequence',
+  ])
+    await withStore((store) => {
+      documents(store, { recoveryEvents: 3 });
+      const key =
+        change === 'rewritten-event' || change === 'sequence'
+          ? 'event:run:2'
+          : 'recovery-event:recovery:2';
+      const row = store.get(key)!;
+      if (change === 'rewritten-index' || change === 'rewritten-event') {
+        store.put(key, row.value, row.version);
+      } else {
+        store.retire([key], store.statistics().sequence);
+        const value =
+          change === 'unordered'
+            ? 1
+            : change === 'unpublished'
+              ? 4
+              : {
+                  ...(row.value as Record<string, unknown>),
+                  sequence: 1,
+                };
+        store.put(key, value, 0);
+      }
+      assert.throws(() => inspectSkillProvenance(store, validator, 'skill'), /Skill recovery/);
+    });
+});
+
+test('inline recovery sources retain exact recorded event bodies and reject conflicting history', async () => {
+  for (const inlineRun of [false, true])
+    await withStore((store) => {
+      documents(store, { recoveryEvents: 2 });
+      if (inlineRun) {
+        const row = store.get<RunState>('run:run')!;
+        delete row.value.eventCount;
+        row.value.events = [1, 2].map(
+          (sequence) => store.get<RunEvent>(`event:run:${sequence}`)!.value,
+        );
+        store.put('run:run', row.value, row.version);
+        store.retire(['event:run:1', 'event:run:2'], store.statistics().sequence);
+        assert.equal(inspectSkillProvenance(store, validator, 'skill').state, 'available');
+      }
+      const history = new RecoveryHistory(store);
+      const original = store.get<RecoveryTrace>('recovery:recovery')!;
+      const inline = history.restore('recovery');
+      delete inline.eventCount;
+      store.put('recovery:recovery', inline, original.version);
+      assert.equal(inspectSkillProvenance(store, validator, 'skill').state, 'available');
+      inline.events[0]!.detail.text = 'Conflicting authored history';
+      store.put('recovery:recovery', inline, original.version + 1);
+      assert.throws(
+        () => inspectSkillProvenance(store, validator, 'skill'),
+        /inline recovery event conflicts/,
+      );
+    });
 });
 
 test('real HTTP library reads expose durable provenance while preserving bundle and source scope', async () => {

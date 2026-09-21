@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.45 · 2026-09-21
+Version: v1.46 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -776,7 +776,9 @@ See the [audit API and acceptance](implementation/session-audits.md).
 
 Workspace SKILL inspection resolves explicit recovery/run/session ownership, checks
 the recorded original-goal failure and accepted success, and lists evidence/image
-metadata dependencies. Missing source records are reported as incomplete; inconsistent
+metadata dependencies. Published recovery event indexes and source bodies are inspected
+individually with immutable-version, increasing-sequence and published-boundary checks.
+Inline recovery events must match their recorded run sources. Missing source records are reported as incomplete; inconsistent
 records fail. This is a read-only metadata check. It grants no model-context access,
 certifies no transfer performance and authorizes no source deletion. New experience
 limitations reflect the declared simulation, hardware or test-fixture origin. See the

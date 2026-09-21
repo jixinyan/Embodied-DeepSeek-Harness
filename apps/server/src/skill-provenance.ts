@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { ContractValidator } from '@edh/contracts';
 import type { SkillBundle } from '@edh/memory';
 import { SensorSamples } from '@edh/perception';
-import { RecoveryHistory, VerdictHistory, type RunState } from '@edh/tasks';
+import { RecoveryHistory, VerdictHistory, type RunEvent, type RunState } from '@edh/tasks';
 import type { LocalStore } from '@edh/storage';
 import { SessionTaskHistory, sessionTaskKey, readSessionTasks } from './session-task-history.js';
 
@@ -13,6 +13,11 @@ const runSchema = z.object({
   id: identifier,
   source: z.enum(['test_fixture', 'simulation', 'hardware']),
   verdicts: z.array(z.unknown()),
+});
+const eventSchema = z.object({
+  sequence: z.number().int().positive().safe(),
+  type: z.string().min(1),
+  detail: z.record(z.string(), z.unknown()),
 });
 
 export interface SkillProvenance {
@@ -131,6 +136,51 @@ function resolveProvenance(
     throw new Error('Skill source run does not retain the matching origin and accepted verdicts.');
   inspectVerdict(failed);
   inspectVerdict(passed);
+  const eventCount = recovery.eventCount ?? recovery.events.length;
+  if (eventCount) {
+    const published = z
+      .number()
+      .int()
+      .nonnegative()
+      .safe()
+      .parse(run.eventCount ?? z.array(z.unknown()).parse(run.events).length);
+    let previous = 0;
+    for (let index = 1; index <= eventCount; index++) {
+      const referenceKey = `recovery-event:${metadata.recovery_id}:${index}`;
+      const sequence =
+        recovery.eventCount === undefined
+          ? recovery.events[index - 1]!.sequence
+          : read<number>(referenceKey);
+      if (sequence === undefined) {
+        if (recovery.eventCount === undefined)
+          throw new Error('Skill inline recovery event has no sequence.');
+        continue;
+      }
+      if (recovery.eventCount !== undefined && store.revision(referenceKey)!.version !== 1)
+        throw new Error('Skill recovery event index was rewritten.');
+      if (!Number.isSafeInteger(sequence) || sequence <= previous || sequence > published)
+        throw new Error('Skill recovery event is outside ordered published run history.');
+      previous = sequence;
+      const eventKey = `event:${result.runId}:${sequence}`;
+      const event =
+        run.eventCount === undefined ? run.events[sequence - 1] : read<RunEvent>(eventKey);
+      if (event === undefined) {
+        if (run.eventCount === undefined)
+          throw new Error('Skill recovery references a missing inline run event.');
+        continue;
+      }
+      if (run.eventCount !== undefined && store.revision(eventKey)!.version !== 1)
+        throw new Error('Skill recovery source event was rewritten.');
+      const checked = eventSchema.parse(event);
+      if (checked.sequence !== sequence)
+        throw new Error('Skill recovery source event has a conflicting sequence.');
+      if (
+        recovery.eventCount === undefined &&
+        !isDeepStrictEqual(checked, recovery.events[index - 1])
+      )
+        throw new Error('Skill inline recovery event conflicts with its source run.');
+    }
+  }
   read(`run-config:${result.runId}`);
   const ownershipKey = `run-user-session:${result.runId}`;
   const ownership = store.get(ownershipKey);

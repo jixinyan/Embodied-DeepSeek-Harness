@@ -1,10 +1,26 @@
 # Implementation progress
 
-Spec: v1.45. Current checkpoint: **atomic record retirement and history-index reconciliation**.
+Spec: v1.46. Current checkpoint: **recovery event provenance for retained experience**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+SKILL source inspection now reads every published recovery event index and its source
+run event individually. Returned dependencies include their keys/versions. Missing
+indexes or event bodies mark the source incomplete; rewritten versions, unordered or
+unpublished references and conflicting event identities fail. Inline recovery/run
+histories remain readable with exact event-body agreement. Unpublished suffixes are
+excluded. Existing image-retention admission therefore requires intact recovery
+history alongside verdict, session and sensor sources.
+
+Fifteen provenance checks and eight image-retention checks pass using authored
+documents, actual journals, image files and HTTP. New checks exercise actual record
+retirement, reopen, missing intermediate records, conflicting references and inline
+source formats. TypeScript and changed-source formatting pass. No model or physical
+provider executes. [Source inspection rules](skill-provenance.md). Domain retention
+still needs complete record ownership, request identity preservation, external source
+leases and reviewed console admission; these references alone do not authorize deletion.
 
 Tool inventory validation compares all implemented logical IDs against `CORE_TOOLS`,
 including `user.ask`, before checking role references. Generated-schema equality and

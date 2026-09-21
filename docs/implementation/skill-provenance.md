@@ -16,7 +16,9 @@ and `markdown`. Each item also includes `runId`, `userSessionId` and `provenance
 The console's Experience library inspector exposes these fields with the bundle.
 The API returns the latest 100 inserted bundles in insertion order. The scan holds
 at most 100 bundles, and source resolution reads only their referenced records.
-It does not scan every run or materialize recovery-event history.
+It reads referenced recovery events individually and returns their keys/versions without
+event bodies. It does not scan unrelated runs or collect the full run event history.
+Returned reference metadata grows with the published recovery trace length.
 
 | Provenance field | Meaning |
 | --- | --- |
@@ -25,7 +27,7 @@ It does not scan every run or materialize recovery-event history.
 | `failedVerdictId`, `successfulVerdictId` | Original failure and accepted recovery result |
 | `state` | `available` or `incomplete` for the inspected source records |
 | `storeSequence` | Journal sequence observed for this synchronous read |
-| `records` | Direct source keys and their current versions; absent versions are null |
+| `records` | Source keys, including recovery event indexes and bodies, with current versions; absent versions are null |
 | `evidence` | Evidence identities and their associated image identities |
 | `images` | Distinct image identities with referring evidence identities |
 | `missing` | Missing-reference diagnostics, including legacy recovery ownership gaps |
@@ -37,7 +39,7 @@ are validated by the image service when read. Source inspection only checks thei
 persisted attachment metadata through SensorSamples.
 
 An `incomplete` result preserves known identities and reports absent recovery, run,
-configuration, session, session-task membership or sensor-sample records. A legacy recovery without explicit
+configuration, session, session-task membership, recovery event index/body or sensor-sample records. A legacy recovery without explicit
 run ownership remains incomplete. Existing malformed or conflicting records fail
 the request. A sensor sample whose required attachment metadata is absent or
 inconsistent also fails through the sensor catalog's integrity checks.
@@ -59,6 +61,13 @@ inconsistent also fails through the sensor catalog's integrity checks.
   Compact membership must fall within the published admission count and agree with
   the latest-task identity when it occupies the final position. Its key/version is
   included in `records`.
+- Each indexed recovery event has an immutable index and source event at version 1.
+  References increase strictly and remain inside the source run's published event
+  count. The source event's sequence agrees with the referenced identity. Missing
+  indexes or bodies mark the SKILL incomplete while inspection continues through the
+  remaining published references. Existing conflicting records fail. Unpublished
+  suffix records are excluded. Legacy inline recovery events must equal their source
+  run's sequence/type/detail; inline run histories remain supported.
 - Referenced sensor samples belong to the source run, preserve its origin and are
   agent-visible. SensorSamples validates immutable sample and attachment metadata.
 
@@ -95,6 +104,10 @@ legacy ownership, inconsistent records, exact source verdicts, mismatched SKILL
 identities, the latest-100 window, HTTP origin restrictions and source limitations.
 Archived-result checks also cover exact source references, absent archives, summary
 conflicts and rewritten archive versions.
+Recovery-source checks cover all published intermediate indexes/bodies, actual batch
+retirement and reopening, missing records, rewritten versions, unordered/out-of-range
+references, conflicting source identities and inline histories. No deletion endpoint
+is exposed by these inspections.
 
 No model, sensor, simulation or hardware executes in these tests. Live recovery
 publication and complete application integration with a provider remain separate
