@@ -549,7 +549,7 @@ environment, embodiment, policy/checkpoint, model and resource state. New sessio
 Run task and End session are distinct controls. Workspace experience inspection retains
 origin run/session links. Browser acceptance on the CPU preview exercised recovery,
 a second task in the same session, session end and experience inspection without browser
-errors. Configuration bundles remain the selectable unit; independent selectors are pending.
+errors. Installed profiles provide the authoritative complete configuration combinations.
 Implementation ownership checkpoint: `c57106f`.
 
 
@@ -559,3 +559,36 @@ Type checking, 122-file DSH provenance, public language/local links and SVG XML 
 The new SVG was rendered and visually inspected. No live VLM, simulator, learned policy
 or hardware was used. The temporary UI review uses its own data directory and preserves
 the existing console history.
+
+## Compatible launcher and branded coordination UI (2026-09-20)
+
+Separate source, environment, embodiment, checkpoint, policy and default-model controls
+resolve installed configuration combinations. Parent changes clear dependent choices;
+sole valid values are selected automatically. Session ownership locks all six choices.
+The same full-combination validator runs in the browser and at server admission, with a
+deployment-revision check before environment allocation. Profile-only API callers remain
+supported. Resolved per-profile Teams are available for configuration inspection.
+
+The console includes the project logo and a blue/white theme, a locally rendered Mermaid
+role graph, assignment-driven role animation, inspectable role/model/tool bindings and
+separate observation, planning, execution, verification and experience states. Historical
+tasks retain their recorded roles. Full logs, model output, native TODOs and payload
+inspection remain available. Reduced-motion settings disable animation. Static asset
+delivery restricts public files and installed Mermaid ESM files to their allowed directories.
+
+Validation: `pnpm test:console` passes nine tests for declared catalog constraints,
+full-tuple admission, malformed selections and actual static resources/path restrictions.
+`pnpm exec tsc --noEmit`, `pnpm format:check`, `pnpm check:structure`,
+`pnpm check:provenance` and `git diff --check` pass. Browser component checks use the
+production selection controls and Mermaid renderer under the production CSP, with a
+repository Team loaded by FileTeamLoader. Checks confirm checkpoint narrowing, dependent
+selection updates, session-style input locking, role inspection, SVG nodes and logo loading, with no browser
+errors. Catalog examples test selection rules only; no simulator, checkpoint or model was
+executed. No end-to-end physical Session claim follows from these checks. The existing
+fixture runtime suite was not rerun for this change.
+
+Implementation checkpoints: `26d380b` (shared selection rules) and `64cfc75` (console and admission).
+
+Remaining upper work includes scoped conversational task admission, bounded run/media
+retention, measured live VLM behavior and desktop/service bootstrap. Real provider
+allocation, sensor rendering and the worker/action-admission bridge remain integration work.

@@ -17,15 +17,17 @@ key state must ultimately be visible together. The [current progress](progress.m
 lists the exact status and next sequential actions. F1–F7 remain the full acceptance
 matrix: partial upper slices do not establish physical-provider readiness.
 
-### Session launcher and migration sequence (v1.12)
+### Session launcher and migration sequence (v1.13)
 
 1. **Implemented, CPU acceptance:** separate user-session environment ownership from
    task runs and native DSH assignment sessions. Verify world continuity, task cleanup,
    cancellation, late allocation, failed release and restart interruption.
 2. **Implemented, CPU console:** show installed launch bundles and their full bindings;
    create/end sessions, run sequential tasks, inspect history and shared SKILL provenance.
-3. **Next:** attach scoped conversation/task context and task-admission criteria to the
-   session, then expose independent compatible environment/model/checkpoint selectors.
+3. **Implemented, configuration/browser checks:** compatible environment, embodiment,
+   checkpoint, policy and default-model controls; shared admission validation, revision
+   checks and branded Team/workflow visualization. **Next:** attach scoped conversation/task
+   context and task-admission criteria to the session.
 4. Add desktop/service bootstrap; starting the local server must become possible without
    typing a command. Do not confuse browser session creation with server startup.
 5. Bind worker-owned media and physical resources. Port spatial memory and semantic frame

@@ -57,6 +57,11 @@ launch-profile selections; independent task/role scopes; task drain before envir
 reuse; explicit session end; failed-release/restart state; grouped console history and
 workspace experience inspection. [Session guide and SVG](user-sessions.md).
 
+The launcher includes compatible source/environment/embodiment/checkpoint/policy/model
+selectors, shared admission validation and catalog revision checks. The branded console
+adds Mermaid Team relationships and event-driven workflow states. See the
+[console implementation](../../apps/console/README.md) and [selection tests](../../tests/console/launch-selection.test.mjs).
+
 Still pending: actual simulator/hardware allocation, general conversational task admission,
-independent compatible provider/checkpoint fields, and CLI-free server bootstrap.
+and CLI-free server bootstrap.
 [Legacy design migration audit](legacy-migration.md) lists retained and missing designs.

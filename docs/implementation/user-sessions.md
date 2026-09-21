@@ -36,8 +36,10 @@ cannot allocate while a user session owns the environment.
 
 ## HTTP and lifecycle
 
-- `GET /api/config`: installed launch profile catalog, task/model bindings.
-- `POST /api/sessions`: `{profileId, requestId}` allocates one user session.
+- `GET /api/config`: installed launch profile catalog, resolved profile Teams and task/model bindings.
+- `POST /api/sessions`: `{profileId, requestId, selection, catalogRevision}` allocates one user session.
+  The console sends all six selected component values and the deployment digest.
+  Existing profile-only API clients may continue sending `{profileId, requestId}`.
 - `GET /api/sessions`: session history, actual stored configuration and active ID.
 - `GET /api/sessions/:id`: state, resource disposition and task IDs.
 - `POST /api/sessions/:id/tasks`: `{scenario, requestId}` starts an allowed task.
@@ -63,16 +65,49 @@ in simulation may inform a hardware plan; this does not establish hardware trans
 success. Fixture experience remains labeled and excluded from non-fixture retrieval.
 Raw hidden agent context is not an experience transport.
 
+## Compatible component selection
+
+The console exposes Runtime source, Environment, Embodiment, Checkpoint, Policy and
+Upper model default as separate controls. Each field is constrained by the preceding
+selections. A change clears dependent fields; a sole compatible value is selected
+automatically. Fields wait until their parent selections are complete. The compatible
+configuration control distinguishes installed profiles with identical component values
+but different task sets or adapter options.
+
+For example, if an installed B1K/R1Pro catalog declares `pi051` and `gr00t8`, only those
+checkpoints are selectable for that combination. A checkpoint registered only for
+RoboCasa is excluded. These names illustrate catalog rules; they do not assert that
+those checkpoints or simulator adapters are installed in this repository.
+
+Both browser and server use the same full-combination validator. Known individual
+values cannot be combined into an unregistered profile. The server checks the catalog
+revision before allocating resources and returns HTTP 409 for a stale revision.
+Provider validators still own physical-profile semantics, action/observation mappings,
+checkpoint support and release compatibility. Labels do not establish robotics performance.
+
+An active session fixes all component choices for its lifetime. End session releases
+that environment before another configuration can be selected. Historical task views
+retain their recorded configuration. Resolved role cards show actual role model aliases;
+an explicit role model continues to override the upper default selection.
+
+The blue-and-white console uses the project logo, a Mermaid role graph, inspectable
+role cards and separate observation/planning/execution/verification/experience states.
+Delegation arrows come from caller assignment IDs; active roles animate from assignment
+status. Sensor arrival and execution end have their own labels. Only a passed verification
+or published experience receives a success mark. Logs, model output, TODOs and full
+payload inspection remain available on the same page. Reduced-motion settings disable
+animations. Mermaid ESM assets are served locally; scripts remain same-origin under
+CSP. Generated diagram styling requires inline CSS, while objects and document base
+overrides are disabled.
+
 ## Remaining launcher work
 
-1. Add independently selectable compatible environment/embodiment/policy/checkpoint
-   fields backed by installed provider catalogs. Current selection is a validated bundle.
-2. Connect actual simulation/hardware allocations, owned workers, action admission and
+1. Connect actual simulation/hardware allocations, owned workers, action admission and
    device resource reconciliation. No real provider is bundled in the CPU demo.
-3. Support free-form conversational task admission with explicit success contracts and
+2. Support free-form conversational task admission with explicit success contracts and
    scoped prior-task context handoff. Current tasks are deployment-registered presets.
-4. Package a desktop/service bootstrap so opening the panel can start its local server.
+3. Package a desktop/service bootstrap so opening the panel can start its local server.
    The panel controls sessions once the server is running; a browser cannot start its
    own unavailable HTTP server. CLI-free bootstrap is not yet implemented.
-5. Add bounded history/media retention, knowledge filtering and measured transfer
+4. Add bounded history/media retention, knowledge filtering and measured transfer
    evaluations. Multiple concurrent environment sessions are not supported yet.

@@ -34,8 +34,8 @@ See the [deployment guide](../../docs/implementation/deployments.md).
 
 ## User-session launcher
 
-The demo now provides New session, Run task and End session controls. A launch profile
-shows its environment, embodiment, policy checkpoint and default upper model; one
+The launcher provides New session, Run task and End session controls. Separate compatible
+selectors choose runtime source, environment, embodiment, checkpoint, policy and upper model default; one
 session can run multiple tasks without resetting its environment. Sidebar groups show
 session state and environment binding, with independently inspectable task runs below.
 Click a session heading for its complete frozen configuration/resource state. The
@@ -43,6 +43,21 @@ Experience library exposes cross-session bundles and source run/session links.
 
 The launcher is separate from the selected historical task: the launcher text identifies
 the active session targeted by the next task. Task stop does not end that session.
-Only installed compatible bundles are selectable today; free-form conversational tasks,
-independent provider selectors and a CLI-free local-server bootstrap remain pending.
+Selections resolve complete installed profiles and are checked again at admission with
+the catalog revision. An active session fixes its selections until End session.
+Free-form conversational tasks and a CLI-free local-server bootstrap remain pending.
 No actual simulator or robot is connected. See the [session guide](../../docs/implementation/user-sessions.md).
+
+## Team and workflow visualization
+
+The logo and blue/white theme appear throughout the workspace. A locally served Mermaid
+graph shows configured roles and actual delegation relationships. Role cards expose
+assignment status, tool counts, resolved model aliases and configuration inspection.
+Observation, planning, execution, verification and experience have distinct state indicators;
+execution end does not mark verification as passed. Active-state animations respect
+reduced-motion preferences. Native logs, model output and TODO/plan inspection stay visible.
+
+`launch-selection.js` provides shared browser/server validation; `launch-controls.js`
+owns the dependent input controls. `coordination.js` renders Team and task projections.
+`ocean.css` applies the brand theme over the existing workbench layout. Run `pnpm test:console`
+for catalog and real static-resource checks. These checks do not invoke a model or physical backend.

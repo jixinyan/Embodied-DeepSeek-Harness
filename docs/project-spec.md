@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.12 · 2026-09-19
+Version: v1.13 · 2026-09-20
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -66,6 +66,14 @@ embodiment, policy/checkpoint, upper model and role/tool configurations before a
 Experience is workspace-wide and explicitly retrieved across sessions, with source and
 transfer-validation limits retained. Read the [session lifecycle and remaining steps](implementation/user-sessions.md)
 and [legacy design migration audit](implementation/legacy-migration.md).
+
+The console resolves dependent runtime-source, environment, embodiment, checkpoint,
+policy and default-model selectors against installed complete launch profiles. Browser
+and server validate the selected combination; stale catalog revisions fail before
+allocation. An active session keeps its configuration fixed until it ends. Mermaid
+Team relationships and status animations use configured roles and actual assignment
+records, with separate execution and verification indicators. Branding uses the project
+logo and a blue/white palette. Debug output remains directly inspectable.
 
 ### 0.2 Repository and workspace
 
