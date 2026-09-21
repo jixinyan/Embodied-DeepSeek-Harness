@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.42 · 2026-09-21
+Version: v1.43 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -36,8 +36,11 @@ tools and backend factories; see the [deployment guide](implementation/deploymen
 This provides configuration assembly, not a connected physical provider.
 OpenAI-compatible VLM transport now reuses native DSH serialization and streaming.
 WebSocket policy transport and a deterministic action gate run independently with CPU
-acceptance. Current work prioritizes upper-runtime retention and lifecycle,
-provider-backed criteria discovery acceptance, live VLM acceptance and console bootstrap. Active-task clarification
+acceptance. Current work prioritizes unimplemented upper capabilities before further
+optimization, including domain retention and restart lifecycle. Live VLM and
+provider-backed criteria discovery acceptance remain pending. The desktop launcher
+now owns configured local-service startup; live deployment acceptance and signed
+distribution remain open. Active-task clarification
 has native/file/HTTP and console component acceptance; live task continuation remains
 required. Physical
 integration requires the host-to-Python worker bridge, resource/watchdog lifecycle
@@ -121,8 +124,13 @@ Session records retain a task-history count and latest-task reference. Immutable
 per-task memberships preserve ownership without expanding the session document on
 each admission. Startup migrates legacy task arrays, and existing paged task routes
 provide full history. See [membership publication](implementation/user-sessions.md#task-membership-history).
-The console is the primary launcher and status surface. CLI-free server bootstrap is a
-separate packaging requirement. Launch selections must resolve installed environment,
+The console is the primary session launcher and status surface. The
+[desktop application](../apps/desktop/README.md) selects a launch configuration,
+starts the existing server in an owned process and opens the console. It requires
+a prepared checkout and a trusted deployment factory. Stop and application quit
+wait for cleanup and process exit; abnormal exit preserves an explicit error.
+Published signed installers and live deployment acceptance remain open.
+Launch selections must resolve installed environment,
 embodiment, policy/checkpoint, upper model and role/tool configurations before allocation.
 Experience is workspace-wide and explicitly retrieved across sessions, with source and
 transfer-validation limits retained. Read the [session lifecycle and remaining steps](implementation/user-sessions.md)

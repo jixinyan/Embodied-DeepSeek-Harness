@@ -1,10 +1,34 @@
 # Implementation progress
 
-Spec: v1.42. Current checkpoint: **immutable session task catalogs and confirmed task selection**.
+Spec: v1.43. Current checkpoint: **desktop deployment launcher and owned service startup**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+The desktop application selects a versioned local launch configuration, executes its
+trusted deployment factory in a fresh owned process and opens the existing console.
+It reuses `startServer`, tsx runtime aliases and the checkout's installed dependencies.
+Configuration paths, optional environment-file loading, remembered selection, loopback
+readiness, output inspection and graceful stop/quit are implemented. A startup failure
+remains visible and a subsequent launch waits for the prior child to exit. Unexpected
+exit never certifies physical resource release. The local application package includes
+Electron/Node and uses an external prepared checkout. Signed distribution remains open.
+
+Six actual file/process checks and one actual Electron DOM/IPC check pass. They cover
+path validation, secret-free configuration metadata, missing module exports, repeated
+launch, startup cancellation, saved selection and isolated window capabilities. These
+checks execute no model or physical backend. Successful live deployment startup,
+console task execution and provider cleanup still need acceptance with configured
+services. [Launcher configuration and ownership](../../apps/desktop/README.md).
+The macOS arm64 application builds successfully, and the same DOM/IPC acceptance
+passes against both development Electron and the packaged executable. TypeScript,
+formatting, 128 pinned-source checks and 533 local documentation links pass.
+
+Follow-up work prioritizes missing upper-runtime capabilities before retrieval,
+performance or appearance refinements. Live model evaluation is deferred until a
+service is available. Domain retention, interrupted-session continuation and actual
+provider discovery/execution acceptance remain open.
 
 New sessions capture a task catalog from registered deployment definitions or the
 allocated environment's `describeTasks`. The host validates complete task definitions,
@@ -17,8 +41,8 @@ checks and twenty-five console checks pass (43 total). The console catalog check
 actual HTTP and stored documents. TypeScript, formatting, pinned-source provenance and
 523 documentation-link checks pass. No model or environment allocation executes in these
 checks. Actual provider discovery/task execution, catalog scale limits and full console
-acceptance with those providers remain open, alongside upper lifecycle/retention and
-CLI-free bootstrap. [Catalog interface and acceptance](session-task-catalogs.md).
+acceptance with those providers remain open, alongside upper lifecycle/retention.
+[Catalog interface and acceptance](session-task-catalogs.md).
 
 Configured and Planner-created goals use complete GoalBinding validation. Entity maps,
 capabilities, task semantics, identity and configuration are checked alongside the shared

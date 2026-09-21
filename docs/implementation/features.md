@@ -6,6 +6,7 @@ Snapshot: 2026-09-21. Upper runtime, model transport and standalone policy/actio
 
 | Working capability                                                                                        | Inspect the implementation / evidence                                                                                                                |
 | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Native desktop launcher, selected deployment configuration and owned service lifecycle | [Launcher, packaging and acceptance limits](../../apps/desktop/README.md) |
 | Original DSH loop, tool validation, sessions, timeout and cancellation                                    | [Host](../../apps/server/src/runtime.ts), [native tests](../../tests/runtime/native-tools.test.ts)                                                   |
 | Opt-in native context compaction, token estimates and scoped authoritative state                          | [Context guide](context-management.md), [native acceptance](../../tests/runtime/context-management.test.ts)                                          |
 | User-defined teams, independent roles and completion with retained audits/reports                         | [Loader](../../harness/agent-runtime/teams/src/loader.ts), [sessions](../../harness/agent-runtime/communication/src/sessions.ts)                     |
@@ -96,7 +97,8 @@ definition and content digest. Actual document/journal/HTTP checks cover persist
 catalogs and selection. See [task catalogs](session-task-catalogs.md).
 
 Still pending: actual simulator/hardware allocation, provider-backed catalog discovery acceptance,
-live end-to-end clarification acceptance and CLI-free server bootstrap.
+live end-to-end clarification acceptance and complete live deployment acceptance through
+the desktop launcher. Signed installer distribution remains release work.
 [Legacy design migration audit](legacy-migration.md) lists retained and missing designs.
 
 ## On-demand experience context

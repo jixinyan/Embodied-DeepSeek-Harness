@@ -3,4 +3,5 @@ packages:
   - harness/agent-runtime/*
   - harness/contracts
 allowBuilds:
+  electron: true
   esbuild: true

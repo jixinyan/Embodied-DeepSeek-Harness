@@ -61,7 +61,8 @@ criteria. Environment discovery can populate immutable session task catalogs; th
 console loads the active session's tasks, confirms the catalog digest on submission,
 and disables submission while the catalog is loading or unavailable. Reload task
 catalog retries an explicit read. See [catalog behavior](../../docs/implementation/session-task-catalogs.md).
-Actual provider discovery acceptance and a CLI-free local-server bootstrap remain pending.
+The [desktop launcher](../desktop/README.md) selects a configured deployment and starts
+the local server. Actual provider discovery and live deployment acceptance remain pending.
 Active-task clarification has an inline response panel with persisted drafts,
 immutable accepted responses and delivery status; live-model continuation remains
 unverified. See the [interaction guide](../../docs/implementation/user-clarification.md).

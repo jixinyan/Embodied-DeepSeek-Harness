@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'"
+    />
+    <title>EDH Launcher</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="brand">EDH</span>
+        <div>
+          <h1>Embodied DeepSeek Harness</h1>
+          <p>Local service launcher</p>
+        </div>
+      </header>
+      <section aria-labelledby="configuration-heading">
+        <h2 id="configuration-heading">Deployment</h2>
+        <p id="configuration">No launch configuration selected.</p>
+        <button id="select">Choose configuration…</button>
+        <p class="hint">
+          The selected file names your checkout, deployment module and data directory. Deployment
+          modules run as trusted local code.
+        </p>
+      </section>
+      <section aria-labelledby="service-heading">
+        <h2 id="service-heading">Service <span id="status">idle</span></h2>
+        <div class="actions">
+          <button id="start" disabled>Start service</button>
+          <button id="open" disabled>Open console</button>
+          <button id="stop" disabled>Stop service</button>
+        </div>
+        <p id="address"></p>
+        <p id="operation" role="status" aria-live="polite"></p>
+        <p id="error" role="alert"></p>
+        <p class="hint">
+          Stopping waits for task and environment cleanup. Closing the console keeps the service
+          available. Quitting the launcher stops its service.
+        </p>
+      </section>
+      <details open>
+        <summary>Service output</summary>
+        <pre id="log" aria-label="Service output">No service output.</pre>
+      </details>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

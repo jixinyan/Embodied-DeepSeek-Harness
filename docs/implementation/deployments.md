@@ -6,6 +6,12 @@ is a wrapper that supplies the CPU configuration from
 [demo-deployment.ts](../../apps/server/src/demo-deployment.ts). There is no second
 agent loop or runtime registration system.
 
+The [desktop launcher](../../apps/desktop/README.md) loads a trusted module whose
+default export is a `DeploymentServices => ServerDeployment` factory. It supplies
+checkout root, data directory and port to this same `startServer` API. A local JSON
+launch configuration and optional environment file keep process startup separate
+from session-compatible model, checkpoint, embodiment and environment choices.
+
 ## Run the configuration example
 
 From the repository root:

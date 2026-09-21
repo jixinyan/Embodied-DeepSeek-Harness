@@ -234,8 +234,8 @@ overrides are disabled.
    [Active-task clarification](user-clarification.md) now has durable question/answer
    records, native DSH followups and console component acceptance; live-model and
    provider-confirmed pause/resume acceptance remains required.
-3. Package a desktop/service bootstrap so opening the panel can start its local server.
-   The panel controls sessions once the server is running; a browser cannot start its
-   own unavailable HTTP server. CLI-free bootstrap is not yet implemented.
+3. Validate the [desktop launcher](../../apps/desktop/README.md) with a complete live
+   deployment. Native startup, configuration selection, service ownership and
+   shutdown are implemented; published signed installers remain release work.
 4. Add bounded history/media retention, knowledge filtering and measured transfer
    evaluations. Multiple concurrent environment sessions are not supported yet.

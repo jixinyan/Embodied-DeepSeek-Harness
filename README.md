@@ -28,6 +28,7 @@ for the complete intended framework.
 | --- | --- |
 | [apps/server](apps/server/README.md) | Application composition and host entry |
 | [apps/console](apps/console/README.md) | Physical control panel |
+| [apps/desktop](apps/desktop/README.md) | Desktop deployment selection and owned local-service startup |
 | [harness/agent-runtime](harness/agent-runtime/README.md) | Agents, teams, models, tools, tasks, verification and memory |
 | [harness/contracts](harness/contracts/README.md) | Shared schemas and generated wire types |
 | [harness/physical-runtime](harness/physical-runtime/README.md) | Policy, simulator, embodiment and hardware boundaries |
@@ -48,6 +49,14 @@ The multi-goal scenario demonstrates failed placement, an access prerequisite,
 placement recovery and final cabinet closure; see [the illustrated runtime guide](docs/implementation/multi-goal-runtime.md).
 
 The fixture is an integration demo; it does not control a real or simulated robot.
+
+## Open a configured deployment from the desktop
+
+`pnpm build:desktop` creates a native application under `dist/desktop/`. Open it,
+choose a local launch configuration, start the service and open the console. The
+application uses a prepared EDH checkout and a trusted deployment factory; it does
+not bundle model weights or physical providers. See the
+[desktop configuration and lifecycle guide](apps/desktop/README.md).
 
 ## Run the checks
 

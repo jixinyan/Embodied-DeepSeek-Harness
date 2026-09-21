@@ -30,7 +30,7 @@ for await (const file of files('.')) {
     assert.equal(p.private, true, `Bootstrap packages must be private: ${file}`);
     manifests.set(p.name, { file, data: p });
     await access(path.join(path.dirname(file), 'README.md'));
-    await access(path.join(path.dirname(file), 'src/index.ts'));
+    await access(path.join(path.dirname(file), p.main ?? 'src/index.ts'));
   }
   if (/\.(?:md|svg|ya?ml|json|ts|mjs|py)$/.test(file)) {
     const publicText = await readFile(file, 'utf8');
