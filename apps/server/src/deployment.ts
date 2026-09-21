@@ -76,6 +76,7 @@ export interface ServerDeployment {
   readonly defaultModel: string;
   readonly models: Readonly<Record<string, { readonly provider: string; readonly model: string }>>;
   readonly adapters: readonly ModelBinding[];
+  readonly modelConfigurationDigest?: string;
   readonly tasks: Readonly<Record<string, TaskPreset>>;
   readonly additionalTools?: ApplicationOptions['additionalTools'];
   readonly providers?: readonly string[];
@@ -101,6 +102,12 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     throw new Error('Deployment requires an ID, version and description.');
   if (!['test_fixture', 'simulation', 'hardware'].includes(input.source))
     throw new Error('Invalid deployment evidence source.');
+  if (
+    input.modelConfigurationDigest !== undefined &&
+    (input.modelConfigurationDigest.length !== 64 ||
+      !/^[a-f0-9]{64}$/.test(input.modelConfigurationDigest))
+  )
+    throw new Error('Invalid model configuration digest.');
   const models = freeze(structuredClone(input.models));
   const providers = new Set<string>();
   const adapters = input.adapters.map((binding) => {
@@ -218,6 +225,9 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     ...(contextManagement === undefined ? {} : { contextManagement }),
     ...(physicalProfile === undefined ? {} : { physicalProfile }),
     models,
+    ...(input.modelConfigurationDigest === undefined
+      ? {}
+      : { modelConfigurationDigest: input.modelConfigurationDigest }),
     launchProfiles: launchMetadata,
     tasks: taskMetadata,
     tools: [...CORE_TOOLS, ...Object.keys(additionalTools)],

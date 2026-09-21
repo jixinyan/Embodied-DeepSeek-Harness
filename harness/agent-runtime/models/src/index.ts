@@ -1,4 +1,3 @@
-// Architecture contract only. No runtime implementation.
 export interface ModelCapabilities {
   readonly images: boolean;
   readonly toolCalls: boolean;
@@ -19,3 +18,9 @@ export {
   type OpenAICompatibleOptions,
   type OpenAICompatibleModel,
 } from './openai-compatible.js';
+export {
+  createConfiguredModels,
+  parseModelConfiguration,
+  readModelConfiguration,
+  type ModelConfiguration,
+} from './configuration.js';

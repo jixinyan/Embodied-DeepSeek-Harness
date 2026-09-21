@@ -19,6 +19,8 @@ fixtures. See [the extension guide](../docs/implementation/upper-runtime.md).
 
 ## Executable endpoint examples
 
+- [Cloud API and local vLLM configurations](models/README.md): declarative upper
+  model bindings for an installed deployment, with explicit credential references.
 - [OpenAI-compatible console binding](deployments/openai-compatible.mjs): requires
   an actual configured model endpoint; physical state remains a CPU fixture.
 - [WebSocket policy roundtrip](policies/websocket_roundtrip.py): local inference

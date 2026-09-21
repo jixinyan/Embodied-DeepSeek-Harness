@@ -1,0 +1,14 @@
+version: 1
+defaultModel: brain
+endpoints:
+  local:
+    hosting: vllm
+    baseURL: http://127.0.0.1:8000/v1
+    authentication:
+      type: none
+    maxTokensField: max_tokens
+models:
+  brain:
+    endpoint: local
+    model: local-vlm
+    inputModalities: [text, image]

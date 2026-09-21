@@ -1,0 +1,15 @@
+version: 1
+defaultModel: brain
+endpoints:
+  cloud:
+    hosting: cloud_api
+    baseURL: https://your-provider.example/v1
+    authentication:
+      type: environment
+      variable: EDH_CLOUD_API_KEY
+    maxTokensField: max_completion_tokens
+models:
+  brain:
+    endpoint: cloud
+    model: your-vision-model
+    inputModalities: [text, image]

@@ -10,6 +10,10 @@ compatibility preflight are documented in [physical stack profiles](physical-pro
 
 ## Upper model: one native DSH adapter
 
+Cloud and vLLM endpoint/model/authentication choices can be loaded from YAML or JSON
+through the [model configuration API](model-configuration.md). The assembly helper
+uses this same adapter and includes configuration identity in deployment admission.
+
 [OpenAICompatibleAdapter](../../harness/agent-runtime/models/src/openai-compatible.ts)
 extends the original DSH LlmAdapter. It uses absorbed DSH message/image serialization,
 SSE parsing and tool-call translation. The existing DSH agent loop still owns tool

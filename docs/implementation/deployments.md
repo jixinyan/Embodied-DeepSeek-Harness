@@ -41,6 +41,7 @@ The executable contract is
 | `contextManagement` | Optional native DSH compaction/measurement policy; automatic mode requires adapter-declared model capacity; see [context management](context-management.md) |
 | `sessionHistory` | Native event-body residency policy; defaults to 256 events and 8 MiB at audit checkpoints; see [history management](session-history.md) |
 | `adapters` | Original DSH `LlmAdapter` bindings, registered by provider name; keep credentials inside trusted adapter setup |
+| `modelConfigurationDigest` | Optional SHA-256 from `createConfiguredModels`; records endpoint/model/request configuration in immutable deployment identity without credential values |
 | `tasks` | Task IDs mapped to public labels/instructions, immutable final goals, optional allowed subgoal checks/predefined goals, and backend factories |
 | `additionalTools` | Logical tool IDs mapped to native DSH tool factories; roles opt in through their tool lists |
 | `providers` | Available tool-provider names for team preflight; declaring a name does not install or implement a provider |

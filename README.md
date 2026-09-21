@@ -80,6 +80,10 @@ Python checks prefer `.venv/bin/python`, falling back to `python3`; override
 
 ## Configure models and policies
 
+Use the [model configuration guide](docs/implementation/model-configuration.md) for
+YAML/JSON cloud API and local vLLM bindings. Both support explicit credential handling,
+model aliases and application-owned image resolution through the native DSH adapter.
+
 The [adapter guide](docs/implementation/model-policy-adapters.md) includes a local vLLM /
 remote OpenAI-compatible model example and a runnable WebSocket policy-to-action-gate
 CPU example. The host-to-Python worker bridge and real provider integration remain next.

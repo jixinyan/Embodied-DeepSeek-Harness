@@ -15,6 +15,7 @@
     "@edh/storage": "workspace:*",
     "eventsource-parser": "3.1.0",
     "zod": "4.4.3",
+    "yaml": "2.8.1",
     "@edh/memory": "workspace:*"
   }
 }

@@ -21,6 +21,7 @@
     "test:runtime": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/*.test.ts",
     "test:admission": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/task-admission.test.ts",
     "test:goal-bindings": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/goal-bindings.test.ts",
+    "test:model-configuration": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/model-configuration.test.ts",
     "test:session-requests": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-requests.test.ts",
     "test:task-catalogs": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-task-catalog.test.ts tests/console/task-catalog.test.mjs",
     "test:session-tasks": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-task-history.test.ts",

@@ -249,6 +249,9 @@ async function startApplication(
       deploymentDigest,
       description: deployment.metadata.description,
       models: deployment.metadata.models,
+      ...(deployment.metadata.modelConfigurationDigest === undefined
+        ? {}
+        : { modelConfigurationDigest: deployment.metadata.modelConfigurationDigest }),
       imageStorage: {
         available: true,
         limits: services.images.imageLimits,

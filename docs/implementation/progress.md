@@ -1,10 +1,27 @@
 # Implementation progress
 
-Spec: v1.43. Current checkpoint: **desktop deployment launcher and owned service startup**.
+Spec: v1.44. Current checkpoint: **declarative cloud API and vLLM upper-model bindings**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Upper model configuration now loads YAML/JSON for cloud OpenAI-compatible APIs and
+vLLM servers. One configuration can contain both, with stable role aliases, explicit
+environment credentials or unauthenticated access, image capability/capacity declarations
+and endpoint request options. Assembly reuses the existing native adapter and image service.
+Unknown fields/routes, conflicting capabilities and missing credentials fail before
+inference. Credential rotation remains private; endpoint/request configuration contributes
+to deployment admission identity and recorded HTTP/run metadata.
+
+Seven configuration/native-service checks use actual files, environment lookups, DSH
+registration and attachment services. They cover both hosting modes, authenticated vLLM,
+the project PNG's request-image path and byte-limit rejection before network dispatch.
+No generated model response or physical backend executes. Live cloud/vLLM inference
+and complete task acceptance remain pending, as requested until services are available.
+[Model configuration API and examples](model-configuration.md).
+TypeScript, formatting, pinned DSH source verification and 547 local documentation
+links pass. Domain retention implementation remains the next upper capability.
 
 The desktop application selects a versioned local launch configuration, executes its
 trusted deployment factory in a fresh owned process and opens the existing console.

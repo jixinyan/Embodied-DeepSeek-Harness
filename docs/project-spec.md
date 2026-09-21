@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.43 · 2026-09-21
+Version: v1.44 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -35,6 +35,10 @@ The local server accepts explicit deployment bindings for tasks, native DSH mode
 tools and backend factories; see the [deployment guide](implementation/deployments.md).
 This provides configuration assembly, not a connected physical provider.
 OpenAI-compatible VLM transport now reuses native DSH serialization and streaming.
+Cloud API and vLLM bindings can be loaded from YAML/JSON with explicit authentication,
+model aliases, image capabilities and endpoint-specific request options. The configured
+image service resolves request images, and a non-secret configuration digest contributes
+to deployment identity. See [model configuration](implementation/model-configuration.md).
 WebSocket policy transport and a deterministic action gate run independently with CPU
 acceptance. Current work prioritizes unimplemented upper capabilities before further
 optimization, including domain retention and restart lifecycle. Live VLM and
