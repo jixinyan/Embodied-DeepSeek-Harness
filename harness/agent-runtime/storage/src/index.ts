@@ -9,7 +9,13 @@ export interface AssetStore {
   readAuthorized(assignmentId: string, assetId: string): Promise<Uint8Array>;
 }
 
-export { LocalStore, type StoreStatistics, type StoreCompaction } from './local-store.js';
+export {
+  LocalStore,
+  type StoreStatistics,
+  type StoreCompaction,
+  type StoreRevision,
+  type StoreChange,
+} from './local-store.js';
 export {
   SessionHistory,
   defaultSessionHistory,

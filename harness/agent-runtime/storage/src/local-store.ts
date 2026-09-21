@@ -57,6 +57,13 @@ export interface StoreCompaction {
   after: StoreStatistics;
   reclaimedBytes: number;
 }
+export interface StoreRevision {
+  readonly version: number;
+  readonly hash: string;
+}
+export type StoreChange =
+  | { readonly type: 'put'; readonly key: string }
+  | { readonly type: 'compact' };
 interface RecordLocation {
   version: number;
   sequence: number;
@@ -79,6 +86,9 @@ export class LocalStore {
   private closed = false;
   private poisoned = false;
   private writeHolds = 0;
+  private notifying = false;
+  private readonly observers = new Set<(change: StoreChange) => void>();
+  private fingerprint!: { dev: bigint; ino: bigint; size: bigint; mtimeNs: bigint };
   constructor(readonly directory: string) {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
     this.lock = resolve(directory, 'writer.lock');
@@ -160,6 +170,7 @@ export class LocalStore {
         ftruncateSync(this.fd, this.journalBytes);
         fsyncSync(this.fd);
       }
+      this.fingerprint = fstatSync(this.fd, { bigint: true });
     } catch (error) {
       const failures: unknown[] = [error];
       for (const fd of [lockFd, journalFd, readerFd]) {
@@ -214,6 +225,52 @@ export class LocalStore {
   list<T>(prefix: string): { key: string; version: number; value: T }[] {
     return [...this.scan<T>(prefix)];
   }
+  assertCurrent(): void {
+    if (this.closed || this.poisoned) throw new Error('Store is not readable.');
+    this.poisoned = true;
+    const current = statSync(resolve(this.directory, 'records.jsonl'), { bigint: true });
+    const expected = this.fingerprint;
+    if (
+      current.dev !== expected.dev ||
+      current.ino !== expected.ino ||
+      current.size !== expected.size ||
+      current.mtimeNs !== expected.mtimeNs
+    )
+      throw new Error('Domain store changed outside its writer.');
+    this.poisoned = false;
+  }
+  revision(key: string): StoreRevision | undefined {
+    if (this.closed || this.poisoned) throw new Error('Store is not readable.');
+    const record = this.records.get(key);
+    return record ? { version: record.version, hash: record.hash } : undefined;
+  }
+  *revisions(prefix: string): Generator<{ key: string } & StoreRevision> {
+    if (this.closed || this.poisoned) throw new Error('Store is not readable.');
+    for (const [key, record] of this.records) {
+      if (this.closed || this.poisoned) throw new Error('Store is not readable.');
+      if (key.startsWith(prefix)) yield { key, version: record.version, hash: record.hash };
+    }
+  }
+  observe(observer: (change: StoreChange) => void): () => void {
+    if (this.notifying) throw new Error('Store observers cannot register observers.');
+    this.assertCurrent();
+    this.observers.add(observer);
+    return () => this.observers.delete(observer);
+  }
+  private notify(change: StoreChange): void {
+    this.notifying = true;
+    try {
+      for (const observer of this.observers) {
+        const result: unknown = observer(Object.freeze(change));
+        if (result !== undefined) throw new Error('Store observers must return synchronously.');
+      }
+    } catch (error) {
+      this.poisoned = true;
+      throw error;
+    } finally {
+      this.notifying = false;
+    }
+  }
   *scan<T>(prefix: string): Generator<{ key: string; version: number; value: T }> {
     if (this.closed || this.poisoned) throw new Error('Store is not readable.');
     for (const key of this.records.keys())
@@ -221,6 +278,7 @@ export class LocalStore {
   }
   put<T>(key: string, value: T, expectedVersion: number): number {
     if (this.closed || this.poisoned) throw new Error('Store is not writable.');
+    if (this.notifying) throw new Error('Store observers cannot mutate the store.');
     if (this.writeHolds) throw new Error('Store writes are suspended for reference inspection.');
     if (!key || key.length > 512) throw new Error('Invalid record key.');
     const version = this.records.get(key)?.version ?? 0;
@@ -236,8 +294,7 @@ export class LocalStore {
     const entry: Entry = { sequence, key, record, hash: hash(sequence, key, record) };
     const bytes = Buffer.from(JSON.stringify(entry) + '\n');
     try {
-      if (fstatSync(this.fd).size !== this.journalBytes)
-        throw new Error('Domain store size changed outside its writer.');
+      this.assertCurrent();
       let offset = 0;
       while (offset < bytes.length) {
         const written = writeSync(this.fd, bytes, offset);
@@ -245,6 +302,7 @@ export class LocalStore {
         offset += written;
       }
       fsyncSync(this.fd);
+      this.fingerprint = fstatSync(this.fd, { bigint: true });
     } catch (error) {
       this.poisoned = true;
       throw error;
@@ -258,6 +316,7 @@ export class LocalStore {
     });
     this.journalBytes += bytes.length;
     this.sequence = sequence;
+    this.notify({ type: 'put', key });
     return record.version;
   }
   statistics(): StoreStatistics {
@@ -287,6 +346,8 @@ export class LocalStore {
     };
   }
   compact(): StoreCompaction {
+    if (this.notifying) throw new Error('Store observers cannot mutate the store.');
+    this.assertCurrent();
     if (this.writeHolds) throw new Error('Store writes are suspended for reference inspection.');
     const before = this.statistics();
     if (!before.supersededBytes)
@@ -395,11 +456,22 @@ export class LocalStore {
       if (failures.length === 1) throw failures[0];
       throw new AggregateError(failures, 'Domain compaction and cleanup failed.');
     }
+    if (published) {
+      try {
+        this.fingerprint = fstatSync(this.fd, { bigint: true });
+        this.notify({ type: 'compact' });
+      } catch (error) {
+        this.poisoned = true;
+        throw error;
+      }
+    }
     return result!;
   }
   close(): void {
     if (this.closed) return;
+    if (this.notifying) throw new Error('Store observers cannot close the store.');
     this.closed = true;
+    this.observers.clear();
     try {
       closeSync(this.fd);
     } finally {

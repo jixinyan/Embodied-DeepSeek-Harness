@@ -27,7 +27,7 @@ sequence, versions and checksums while rebuilding the index. JSON decoding uses
 
 `get` reads the indexed byte range and verifies its identity/version/checksum before
 returning a detached value. A read failure prevents further reads or writes through
-that store instance. Writes verify the journal size, append and fsync before updating
+that store instance. Writes verify journal identity, size and modification time, append and fsync before updating
 the index. The journal remains the durable source. Explicit compaction writes the
 versioned checkpoint format described in the [maintenance guide](../../../docs/implementation/storage-maintenance.md).
 
@@ -71,6 +71,22 @@ all latest records with unchanged versions, ordering and global write sequence. 
 retains independent event/evidence/history keys. The console admits this operation only
 in an idle workspace with a fresh inspected sequence. Distinct-key deletion and
 automated retention scheduling remain pending.
+
+`revision(key)` and `revisions(prefix)` expose detached version/checksum metadata
+without decoding record bodies. Derived readers call `assertCurrent()` before using
+cached values: journal replacement, resizing or modification stops the store. Normal
+record reads continue to validate the requested record's checksum. These filesystem
+checks assume the local writer owns the journal; they do not authenticate hostile
+filesystem changes with restored metadata.
+
+`observe(callback)` receives synchronous `put` or `compact` notifications after source
+publication and metadata updates. Callbacks can read the committed source; recursive
+writes, compaction, close and observer registration are rejected. A callback failure
+stops further store access and propagates to the writer. The source write has already
+committed and remains durable. Derived owners must reconcile from the source when
+reopened, unsubscribe at close, and close before the store. Compaction can change
+record checksums while preserving versions, so derived readers must process its
+notification too. The observer mechanism does not create a cross-file transaction.
 
 `holdWrites()` returns a sequence-bound read hold and idempotent release. Nested holds
 reject `put` and `compact` until all releases complete. The retention controller uses

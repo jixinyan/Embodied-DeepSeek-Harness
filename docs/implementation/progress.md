@@ -6,6 +6,12 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## Current delivery boundary
 
+LocalStore exposes detached source revisions and synchronous post-publication observers
+for derived indexes. Source identity checks reject changed journals; observer failures
+stop the current store while preserving the durable source. Nineteen actual storage
+checks pass, including observer/reopen behavior, recursive-write rejection, external
+file replacement and compaction. Workspace summary index integration is in progress.
+
 Workspace run/session queries return at most 32 summaries with a 256 KiB page target
 and an exclusive cursor. Active records remain available independently of the selected
 page. Session filters and the task composer's independent history navigation preserve
