@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { AddressInfo } from 'node:net';
-import type { Context } from '@deepseek-ai/cordis';
+import { Context } from '@deepseek-ai/cordis';
 import { ContractValidator } from '@edh/contracts';
 import type { ResolvedPhysicalRuntimeProfile } from '@edh/execution';
 import { UserSessions, SessionConflict } from './user-sessions.js';
@@ -12,25 +12,31 @@ import { validateLaunchSelection } from '../../console/public/launch-selection.j
 import { consoleContentSecurityPolicy, readConsoleAsset } from './console-assets.js';
 import { admitSessionTask } from './task-admission.js';
 import { RunEventStream } from './run-event-stream.js';
+import { HttpError, assertLocalRequest } from './local-http.js';
+import { serveEvidenceImage } from './evidence-images.js';
 import {
   runEventCursor,
   maxEventBatch,
   maxEventBatchBytes,
 } from '../../console/public/run-update.js';
 import { FileTeamLoader } from '@edh/teams';
-import { LocalStore, SessionAudits } from '@edh/storage';
+import { LocalStore, SessionAudits, LocalImageStore, type LocalImageOptions } from '@edh/storage';
 import { SkillLibrary, type SkillBundle } from '@edh/memory';
 import { RunHistory, RecoveryHistory, type RunState } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
 import { UpperRun, terminal } from './application.js';
-import { prepareDeployment, type ServerDeployment } from './deployment.js';
+import { prepareDeployment, type ServerDeployment, type DeploymentServices } from './deployment.js';
 import type { DemoDeploymentOptions } from './demo-deployment.js';
 
 export interface LocalServerOptions {
   root: string;
   dataDirectory: string;
   port?: number;
-  deployment: ServerDeployment;
+  deployment:
+    | ServerDeployment
+    | ((services: DeploymentServices) => ServerDeployment | Promise<ServerDeployment>);
+  imageStorage?: Omit<LocalImageOptions, 'directory'>;
+  mountImages?: (context: Context, directory: string) => void | Promise<void>;
 }
 export interface DemoServerOptions extends DemoDeploymentOptions {
   dataDirectory: string;
@@ -53,14 +59,6 @@ export async function startDemoServer(options: DemoServerOptions) {
       launchProfiles: createDemoLaunchProfiles(validator, options.tickMs),
     },
   });
-}
-class HttpError extends Error {
-  constructor(
-    readonly status: number,
-    message: string,
-  ) {
-    super(message);
-  }
 }
 async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
   if (!req.headers['content-type']?.startsWith('application/json'))
@@ -90,6 +88,35 @@ function json(res: ServerResponse, status: number, value: unknown): void {
 }
 /** Local single-user console service assembled from explicit trusted deployment bindings. */
 export async function startServer(options: LocalServerOptions) {
+  if (options.mountImages && options.imageStorage)
+    throw new Error('Configure the local image store or a custom image provider.');
+  const imageContext = new Context();
+  try {
+    const directory = resolve(options.dataDirectory);
+    if (options.mountImages) await options.mountImages(imageContext, directory);
+    else await imageContext.plugin(LocalImageStore, { ...options.imageStorage, directory });
+    if (!imageContext.attachments) throw new Error('Image provider did not mount attachments.');
+    const services = Object.freeze({ images: imageContext.attachments });
+    const deployment =
+      typeof options.deployment === 'function'
+        ? await options.deployment(services)
+        : options.deployment;
+    return await startApplication({ ...options, deployment }, imageContext, services);
+  } catch (error) {
+    try {
+      await imageContext.fiber.dispose();
+    } catch (cleanup) {
+      throw new AggregateError([error, cleanup], 'Application startup and image cleanup failed.');
+    }
+    throw error;
+  }
+}
+
+async function startApplication(
+  options: LocalServerOptions & { deployment: ServerDeployment },
+  imageContext: Context,
+  services: DeploymentServices,
+) {
   const validator = await readValidator(options.root);
   const deployment = prepareDeployment(options.deployment, validator);
   const scenarios = Object.keys(deployment.tasks);
@@ -161,6 +188,7 @@ export async function startServer(options: LocalServerOptions) {
       deploymentDigest,
       description: deployment.metadata.description,
       models: deployment.metadata.models,
+      imageStorage: { available: true, limits: services.images.imageLimits },
       launchProfiles: deployment.metadata.launchProfiles,
       launchTeams: Object.fromEntries(
         [...launchTeams].map(([id, selected]) => [
@@ -248,12 +276,19 @@ export async function startServer(options: LocalServerOptions) {
       void (async () => {
         if (closing) throw new HttpError(503, 'Server is stopping.');
         const port = (server.address() as AddressInfo).port;
-        if (![`127.0.0.1:${port}`, `localhost:${port}`].includes(req.headers.host ?? ''))
-          throw new HttpError(403, 'Unrecognized local host.');
-        if (req.headers.origin && req.headers.origin !== `http://${req.headers.host}`)
-          throw new HttpError(403, 'Cross-origin access is disabled.');
+        assertLocalRequest(req, port);
         const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
         const method = req.method ?? 'GET';
+        if (
+          await serveEvidenceImage(
+            req,
+            res,
+            url,
+            { store, validator, images: services.images },
+            shutdown.signal,
+          )
+        )
+          return;
         if (method === 'GET' && url.pathname === '/api/config')
           return json(res, 200, publicConfiguration);
         if (method === 'GET' && url.pathname === '/api/skills')
@@ -336,6 +371,7 @@ export async function startServer(options: LocalServerOptions) {
               signal.throwIfAborted();
               return profile.createEnvironment({
                 signal,
+                services,
                 ...(profile.physicalProfile ? { profile: profile.physicalProfile } : {}),
               });
             },
@@ -479,6 +515,7 @@ export async function startServer(options: LocalServerOptions) {
             }
             const backend = await task.createBackend({
               signal: shutdown.signal,
+              services,
               ...(deployment.physicalProfile ? { profile: deployment.physicalProfile } : {}),
             });
             try {
@@ -673,6 +710,7 @@ export async function startServer(options: LocalServerOptions) {
               }),
           );
           await cleanup(() => store.close());
+          await cleanup(() => imageContext.fiber.dispose());
           if (errors.length)
             throw new AggregateError(
               errors,

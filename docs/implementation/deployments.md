@@ -56,7 +56,7 @@ inference are not health-checked by preflight.
    The historical field name `scenario` now identifies any configured task preset.
    Free-form instructions, model-selected task criteria and request-supplied executable
    providers are not accepted by this endpoint.
-3. The server durably reserves the request ID and calls `createBackend({ signal })`
+3. The server durably reserves the request ID and calls `createBackend({ signal, services })`
    once for a new admission. Return a fresh backend for each run. The factory owns
    cleanup if it rejects before returning; the server owns returned instances.
 4. UpperRun uses the task's registered checks, goal, budget, tools and native DSH model
@@ -82,8 +82,9 @@ a snapshot are explicitly labeled; the console can show their recorded assignmen
 but cannot reconstruct their original prompts. Restarted histories remain read-only;
 no agent session or physical command is automatically resumed.
 
-The synthetic cabinet illustration is shown only for fixture evidence. Other sources
-currently show observation metadata: live camera transport/rendering is still pending.
+The observation panel displays admitted image references through scoped HTTP reads;
+samples without images retain their available metadata. The synthetic cabinet
+illustration is shown only for fixture evidence without image references.
 A `simulation` or `hardware` declaration is not evidence that a provider is healthy.
 
 ## Next integration steps
@@ -93,8 +94,9 @@ A `simulation` or `hardware` declaration is not evidence that a provider is heal
 2. Implement the [EmbodiedBackend port](../../harness/agent-runtime/execution/README.md),
    with asynchronous reads, cancellation, cached status and confirmed boundaries.
 3. Bind one simulator/policy/perception configuration and register its success checks.
-4. Run real provider acceptance before claiming a physical MVP. Action admission,
-   resource arbitration, Python transport and real sensor display remain unimplemented.
+4. Run real provider acceptance before claiming a physical MVP. Standalone action
+   admission is implemented; resource arbitration, Python worker transport and actual
+   sensor-provider integration remain required.
 
 [Deployment acceptance tests](../../tests/runtime/server-deployment.test.ts) exercise
 custom tasks/models, immutable metadata/history, preflight rejection, source mismatch
@@ -105,6 +107,21 @@ Shutdown failures do not skip later cleanup stages: the run, native sessions, ho
 HTTP listener and store are drained or attempted before an aggregate error is returned.
 This guarantees cleanup attempts, not that a failing external device stopped.
 Repeated close calls share the same result.
+
+## Application-owned image service
+
+`startServer` accepts a deployment object or an asynchronous
+`deployment: (services) => ServerDeployment` factory. It mounts a native image provider
+before calling the factory, so model adapters can bind `services.images.readImageRequest`.
+Task backend and retained-environment factories receive the same `services` object.
+Save encoded images through `services.images.saveImages` and return their immutable
+references in sensor samples. See the [image API and lifecycle](image-storage.md).
+
+The default provider uses `dataDirectory`; `imageStorage` configures its limits.
+Custom providers use `mountImages(context, directory)` and the native AttachmentStore
+interface. The two options are mutually exclusive. Service cleanup runs on startup
+failure and after consumers stop during shutdown. Public configuration exposes image
+limits, while byte reads use persisted run/evidence scope and visibility.
 
 ## Configured model and policy endpoints
 

@@ -11,5 +11,6 @@ export type {
   TaskPreset,
   LaunchProfile,
   SessionEnvironment,
+  DeploymentServices,
 } from './deployment.js';
 export { UpperRun, type ApplicationOptions } from './application.js';

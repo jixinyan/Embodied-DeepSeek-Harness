@@ -99,4 +99,10 @@ See the [session guide and SVG](../implementation/user-sessions.md).
 publication through LocalStore. UpperRun owns assignment grants, visibility checks and
 current sensor projections. The catalog reads requested records without accumulating
 historical sample bodies. It stores image references; the deployment attachment provider
-must supply and validate image bytes. See the [perception guide](../../harness/agent-runtime/perception/README.md).
+must supply and validate image bytes. The server owns its native attachment context,
+injects `DeploymentServices.images` into deployment/environment/task factories, and
+disposes it after consumers stop. Console image reads require persisted run ownership,
+associated image references and agent-visible evidence. The browser image component
+uses this scoped route for latest and agent-seen frames. See the
+[perception guide](../../harness/agent-runtime/perception/README.md) and
+[image-service boundary](../implementation/image-storage.md).

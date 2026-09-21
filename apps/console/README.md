@@ -28,7 +28,8 @@ Task presets and source labels come from deployment configuration. Newly admitte
 retain their own public configuration for historical inspection; legacy runs explicitly
 report that configuration is unavailable and show their recorded assignments. The Next
 Task selector uses the current deployment, while the workspace shows the selected run.
-Non-fixture sources show observation metadata until real sensor rendering is connected.
+Samples containing admitted image references show a multi-image observation viewer.
+Samples without images show their available metadata.
 See the [deployment guide](../../docs/implementation/deployments.md).
 
 
@@ -94,3 +95,15 @@ each historical view holds one page and shows its sequence range. Filters apply 
 that range, with a dedicated TODO-updates filter. Agent activity search and TODO-history
 shortcuts cover recent events. Current TODOs, plans, verdicts and recovery status remain
 independent of event eviction. Browsing history keeps live state updates connected.
+
+## Observation images
+
+`sensor-images.js` renders the selected latest or agent-seen observation using scoped
+run/evidence/image URLs. Each image has a loading state, decoded dimensions or a read
+error; repeated projection refreshes preserve the existing image elements. Empty and
+restricted samples clear the viewer. Source labels identify test images explicitly.
+The server checks persisted ownership, reference association and evidence visibility
+before reading bytes. See the [image guide](../../docs/implementation/image-storage.md).
+
+Component acceptance uses an actual repository PNG, real local storage/HTTP and browser
+DOM checks. Camera streaming, live VLM behavior and physical execution remain unverified.

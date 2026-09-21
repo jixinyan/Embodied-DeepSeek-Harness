@@ -13,6 +13,11 @@ import { TaskGoals, type GoalBinding } from '@edh/tasks';
 import type { ApplicationOptions } from './application.js';
 import { CORE_TOOLS } from './application.js';
 import type { ModelBinding } from './runtime.js';
+import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
+
+export interface DeploymentServices {
+  readonly images: AttachmentStore;
+}
 
 /** One environment allocation, retained across independent task backends. */
 export interface SessionEnvironment {
@@ -38,6 +43,7 @@ export interface LaunchProfile {
   readonly physicalProviders?: PhysicalProfileValidators;
   readonly createEnvironment: (options: {
     signal: AbortSignal;
+    services: DeploymentServices;
     profile?: ResolvedPhysicalRuntimeProfile;
   }) => SessionEnvironment | Promise<SessionEnvironment>;
 }
@@ -50,6 +56,7 @@ export interface TaskPreset {
   /** A fresh backend per admitted run. Startup preflight never calls this factory. */
   readonly createBackend: (options: {
     signal: AbortSignal;
+    services: DeploymentServices;
     profile?: ResolvedPhysicalRuntimeProfile;
   }) => EmbodiedBackend | Promise<EmbodiedBackend>;
 }

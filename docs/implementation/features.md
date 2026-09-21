@@ -38,7 +38,7 @@ then closes the cabinet for final task success. See the [illustrated flow](multi
 - Host-to-Python worker transport, shared device resources/watchdog and real physical stop acknowledgement. Standalone policy transport and action admission are CPU-tested.
 - Actual BEHAVIOR/RoboCasa/RoboTwin, VLA/VLN, SAM/depth and hardware adapters.
 - Resumable model sessions, distributed/exactly-once delivery, scalable retention and multi-user hosting.
-- Further console usability and live sensor integration; the unified fixture workspace is implemented.
+- Further console usability and actual sensor-provider integration; the unified workspace and scoped image renderer are implemented.
 
 The demo model and sensors are scripted/synthetic. Its upper workflow is runnable;
 it is not the requested final simulation MVP yet. See [progress](progress.md) for
@@ -97,3 +97,13 @@ The existing journal format and publication boundaries remain authoritative. Sto
 checks include write/reopen/scan of a journal exceeding 64 MiB under a 64 MiB V8
 old-space limit. The key index, active run and caller/browser results still need
 lifetime limits. [Storage behavior](../../harness/agent-runtime/storage/README.md).
+
+## Application image service and observation viewer
+
+The server owns a native attachment context and injects its service into deployment,
+environment and task factories. The local provider stores and validates actual bytes;
+the console reader resolves persisted run/evidence/image identities and rejects
+restricted or unassociated images. Latest and agent-seen frames render through the same
+multi-image component with load/dimension/error status. Seventeen actual file/HTTP tests
+and browser component DOM checks cover this path. Live VLM/provider acceptance and
+media retention remain required. [Image service guide](image-storage.md).

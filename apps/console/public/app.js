@@ -8,6 +8,7 @@ import { renderLaunchControls } from './launch-controls.js';
 import { renderCoordination } from './coordination.js';
 import { renderTaskComposer } from './task-composer.js';
 import { taskRequest, completeTaskRequest } from './task-request.js';
+import { renderSensorImages } from './sensor-images.js';
 import {
   appendRunHistory,
   mergeRunUpdate,
@@ -233,13 +234,27 @@ function showSensor() {
   displayedFrame = selection === 'latest' ? current?.latestSensor : current?.agentSeen[selection];
   const frame = displayedFrame;
   const fixture = (frame?.source ?? current?.source ?? config.mode) === 'test_fixture';
-  $('sensor-svg').toggleAttribute('hidden', !fixture);
-  text('scene-source', fixture ? 'FIXTURE' : 'PROVIDER METADATA');
+  const imageCount = renderSensorImages($('sensor-images'), current?.id, frame);
+  $('sensor-svg').toggleAttribute('hidden', !fixture || imageCount > 0);
+  text(
+    'scene-source',
+    imageCount
+      ? fixture
+        ? 'TEST IMAGE'
+        : 'SENSOR IMAGE'
+      : fixture
+        ? 'FIXTURE'
+        : 'PROVIDER METADATA',
+  );
   text(
     'sensor-subtitle',
-    fixture
-      ? 'CPU illustration · Not real camera imagery'
-      : 'Provider evidence metadata · Image renderer not connected',
+    imageCount
+      ? `${imageCount} ${imageCount === 1 ? 'view' : 'views'} · ${fixture ? 'Test evidence' : 'Recorded sensor evidence'}`
+      : fixture
+        ? 'CPU illustration · Not real camera imagery'
+        : frame?.evidence.visibility === 'debug_only'
+          ? 'Restricted evidence · image access unavailable'
+          : 'Provider metadata · No image attached',
   );
   text(
     'frame-source',

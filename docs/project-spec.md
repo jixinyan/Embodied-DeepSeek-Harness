@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.18 · 2026-09-20
+Version: v1.19 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -643,9 +643,12 @@ disk retention have separate implementation and acceptance requirements. See the
 
 The native DSH attachment service now has an EDH local image provider using pinned
 DSH normalization/publication code. It supports durable image bytes and route-specific
-request projection, with explicit operation limits and lifecycle. Server assembly,
-authorized HTTP image delivery, console rendering and live VLM acceptance remain
-separate integration work. See the [image storage guide](implementation/image-storage.md).
+request projection, with explicit operation limits and lifecycle. The application owns
+the attachment context and supplies its service to deployment, environment and task
+factories. The console reads images by persisted run/evidence/attachment identity,
+checks agent visibility and displays the selected latest or agent-seen observations.
+Live VLM/provider acceptance, media retention and reference accounting remain required.
+See the [image storage guide](implementation/image-storage.md).
 
 ### 8.5 Complete recovery sequence
 

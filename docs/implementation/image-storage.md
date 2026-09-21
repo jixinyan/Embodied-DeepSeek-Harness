@@ -8,8 +8,37 @@ Cordis disposal. It is exported by `@edh/storage`.
 
 ## Deployment API
 
-Mount the provider on a deployment-owned Cordis context and retain that context until
-all consumers finish:
+`startServer` mounts a native attachment service for the application lifetime. The
+default `LocalImageStore` uses the resolved `dataDirectory`; `imageStorage` can set
+its byte, pixel and operation limits. `/api/config` exposes image limits without
+exposing filesystem paths. Supply a deployment factory when model adapters need the
+service during construction:
+
+```ts
+await startServer({
+  root,
+  dataDirectory,
+  deployment: ({ images }) => createDeployment(images),
+});
+```
+
+`createDeployment` is deployment-owned composition returning a `ServerDeployment`.
+The existing deployment object form remains supported. Both task `createBackend`
+and session `createEnvironment` receive `{ signal, services, profile? }`, where
+`services.images` is the same application-owned native service. Providers save camera
+bytes through it and return the resulting references in `SensorSample.images`.
+A retained environment can keep this service for its later task scopes. Providers
+must finish their image operations before their own close completes; they must not
+dispose the application's attachment context.
+
+`mountImages(context, directory)` can install another native `AttachmentStore` using
+the supplied Cordis context. It is mutually exclusive with `imageStorage` and must
+finish mounting `context.attachments` before returning. The framework validates the
+service presence. Deployment construction/startup failures dispose the context;
+normal shutdown disposes it after task/session consumers, DSH and HTTP have stopped.
+Native disposal waits for admitted writes and rejects new operations.
+
+Independent consumers can also mount the provider on an owned Cordis context:
 
 ```ts
 import { Context } from '@deepseek-ai/cordis';
@@ -45,9 +74,31 @@ present in the model input; it does not accept arbitrary URLs or filesystem path
 The adapter retains its independent image-count and request-byte limits. Dispose the
 image context after server consumers stop: `await imageContext.fiber.dispose()`.
 
-This is a callable deployment component. The default server does not mount it
-automatically. Deployment injection into environment factories, an authorized HTTP
-image endpoint, console sensor rendering and live VLM acceptance remain open.
+The [OpenAI-compatible example](../../examples/deployments/openai-compatible.mjs)
+binds this resolver through the deployment factory. Its physical source is explicitly
+synthetic; running the example does not establish sensor or simulation acceptance.
+
+## Console image reads
+
+`GET /api/runs/:runId/evidence/:evidenceId/images/:attachmentId` and `HEAD` resolve
+only the image reference recorded in that run's persisted sensor sample. Identifiers
+are opaque URL components. Missing run/evidence/association returns 404; malformed
+identifiers return 400; restricted evidence returns 403. The viewer admits only
+`agent` visibility. Assignment-specific access remains independently checked before
+model delivery. This is a local single-user service, without multi-user authentication.
+
+Local Host/Origin checks and browser Fetch Metadata checks apply before route access.
+Successful responses carry the recorded MIME type, byte count, `no-store`, `nosniff`
+and `Cross-Origin-Resource-Policy: same-origin`. Missing byte objects return 410;
+integrity/read errors return 500 with a stable public message. Reads receive disconnect,
+15-second timeout and server-shutdown cancellation. Arbitrary filesystem paths and
+unassociated attachment IDs cannot be requested through this route.
+
+`sensor-images.js` renders the selected latest or agent-seen sample in the observation
+panel. It supports up to 16 images, loading/dimension/error status and text-safe labels.
+Identical evidence refreshes preserve existing image DOM. Empty or restricted samples
+clear and hide the image container. Frames with references use the image viewer;
+source labels continue to identify test evidence explicitly.
 
 ## Stored objects and validation
 
@@ -100,10 +151,15 @@ required work; the provider currently retains immutable objects and request vari
 
 ## Acceptance
 
-Run `pnpm test:images`. Ten tests use the repository's actual PNG logo and real local
-files. They exercise native service mounting and encoded-prompt admission, concurrent
+Run `pnpm test:images`. Seventeen tests use the repository's actual PNG logo, real local
+files and HTTP sockets. They exercise native service mounting and encoded-prompt admission, concurrent
 deduplication, reopening, batch rejection, byte/pixel limits, filename sanitization,
 normalization, request projection/cache reads, cancellation, corruption, immutable
-reference checks, operation admission and shutdown during publication. No model,
-camera, simulator or browser is executed. Sources and local patches are recorded in
+reference checks, operation admission, startup cleanup, deployment service injection,
+scoped HTTP reads, local-origin restrictions and shutdown during publication.
+Browser component acceptance uses this same PNG and production renderer/HTTP reader:
+loaded dimensions, multiple slots, stable DOM refresh, empty/restricted states and
+missing-evidence errors are inspected through DOM state. No model, camera or simulator
+is executed. Full application acceptance with a live VLM/provider remains pending.
+Sources and local patches are recorded in
 the [DSH provenance map](../provenance/dsh-imports.json).

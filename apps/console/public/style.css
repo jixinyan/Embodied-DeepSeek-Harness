@@ -706,6 +706,41 @@ progress::-moz-progress-bar {
   overflow: hidden;
   position: relative;
 }
+.sensor-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 8px;
+  padding: 8px;
+  max-height: 420px;
+  overflow: auto;
+}
+.sensor-images[hidden] {
+  display: none;
+}
+.sensor-image {
+  margin: 0;
+  min-width: 0;
+}
+.sensor-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #101a2a;
+}
+.sensor-image figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 2px;
+  font-size: 10px;
+  overflow-wrap: anywhere;
+}
+.sensor-image[data-state='error'] img {
+  display: none;
+}
 .scene svg {
   width: 100%;
   display: block;

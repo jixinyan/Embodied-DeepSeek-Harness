@@ -1,13 +1,15 @@
 # Implementation progress
 
-Spec: v1.18. Current checkpoint: **runnable DSH upper application and CPU console**.
+Spec: v1.19. Current checkpoint: **DSH upper application with durable evidence and scoped console images**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The latest delivery adds model/policy adapters and standalone action admission while
-retaining the upper-first integration baseline. See the [adapter guide](model-policy-adapters.md).
+The latest delivery connects application-owned image storage, scoped HTTP image reads
+and the console observation renderer. Durable evidence, paged history and incremental
+transport support upper-first integration. Model/policy adapters and standalone action
+admission are described in the [adapter guide](model-policy-adapters.md).
 `pnpm demo` starts a local console at `http://127.0.0.1:4317`. A scripted model emits
 native DSH tool calls; a CPU fixture backend supplies labeled synthetic observations
 and execution states. This validates orchestration, not model intelligence or robotics.
@@ -39,17 +41,26 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 Local environment: Node 25.4, pnpm 11.19.0, Python 3.14. CI uses Node 22/Python 3.11.
 The complete check command is `pnpm check`.
 
-- 89 runtime tests: original DSH seams, native tool schemas/timeouts, custom-role
+Earlier CPU acceptance included 89 runtime tests and shared TS/Python cases using
+explicit fixtures. Those results document orchestration behavior; current image and
+storage acceptance uses actual files, HTTP sockets and authored documents:
+
+- Historical runtime coverage: original DSH seams, native tool schemas/timeouts, custom-role
   isolation and extensions, storage/configuration, full recovery, unknown/error,
   pause/resume/cancel, HTTP/SSE/idempotency, deployment admission and interrupted restart.
 - 256 shared wire/lifecycle/physical-boundary cases in TypeScript and Python,
   plus non-JSON rejection tests; generated contract types match the schema.
 - 17 Python policy/action-gate tests use real localhost WebSockets and CPU devices.
-- 122 pinned DSH source files and 25 referenced module bindings verified.
+- 128 pinned DSH source files and 25 referenced module bindings verified.
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Remaining: live VLM evaluation and sensor attachment binding; host-to-Python worker
+Current focused checks: 17 image/lifetime/HTTP tests, eight evidence-storage tests and
+22 console logic/transport tests pass. Browser component DOM checks cover actual image
+loading. TypeScript, formatting, provenance and structure checks pass. Scripted runtime
+tests were not executed for this checkpoint.
+
+Remaining: live VLM and sensor-provider acceptance; host-to-Python worker
 transport; actual simulator, learned policy, perception and hardware adapters; resource
 arbitration/watchdog and real device acknowledgement. Model HTTP transport, policy
 WebSocket transport and interruptible action admission are now locally exercised. The upper runner
@@ -862,3 +873,39 @@ provide scoped image reads for the console, and validate the image-reference pat
 an actual VLM. Binary object/cache retention and reference accounting, journal/index
 retention, active-task clarification, new-criteria admission and local-server bootstrap
 remain required upper-system work. Physical worker/provider work remains separate.
+
+## Application image service and console reads (2026-09-21)
+
+`startServer` owns a native attachment context, installs LocalImageStore by default,
+and exposes its service to an optional deployment factory and the environment/task
+factories. Custom mounting uses the same native interface and lifetime. Startup failures
+dispose the context; shutdown releases it after consumers. The OpenAI-compatible
+example binds request-image resolution through this service. Configuration publishes
+image limits without exposing private filesystem locations.
+
+The HTTP image route resolves persisted run/evidence/attachment associations, admits
+only agent-visible samples and validates returned bytes against the recorded reference.
+Local Host/Origin and browser Fetch Metadata restrictions apply before reading. Responses
+use recorded media headers, no-store and same-origin resource policy; missing and corrupt
+objects return explicit errors. Disconnect, timeout and shutdown cancel byte reads.
+
+The observation panel renders latest or agent-seen images with multiple slots, loading
+and dimension/error status. Identical refreshes preserve existing image elements.
+Restricted or empty samples clear the viewer. Test images keep their explicit source
+label. The spec, architecture, deployment and console/image guides describe these APIs.
+
+Validation: 17 actual image file/HTTP/lifetime tests and 22 console logic/transport
+tests pass. Startup checks exercise the production server entry with incomplete
+deployment configuration, native image services and real pending file publication.
+Browser component checks load the actual repository PNG through the production reader
+and renderer, inspect decoded dimensions, multiple slots, DOM preservation, restricted
+and empty states, and a real missing-evidence error. These checks use authored evidence
+documents; no model or environment is executed. Full application/provider lifetime and
+live VLM acceptance remain required; scripted runtime tests were not run. Eight
+evidence-storage tests, TypeScript, formatting, provenance, structure and whitespace
+checks pass.
+
+Remaining upper work: binary object/cache retention and reference accounting;
+journal/index retention; grant/reference and native audit/context lifetime; active-task
+clarification; provider-backed criteria discovery; live VLM acceptance and CLI-free
+bootstrap. Physical worker/provider integration remains a separate requirement.

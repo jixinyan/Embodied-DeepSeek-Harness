@@ -22,23 +22,11 @@ const validator = new ContractValidator(
   ),
 );
 const base = createDemoDeployment({ root }, validator);
-const adapter = new OpenAICompatibleAdapter({
-  baseURL,
-  models: [
-    {
-      id: model,
-      inputModalities: ['text', 'image'],
-      ...(contextWindow === undefined ? {} : { contextWindow }),
-    },
-  ],
-  ...(apiKey ? { apiKey: () => apiKey } : {}),
-  // Real sensor images require a deployment-owned resolveImage callback; this backend supplies metadata only.
-});
 const server = await startServer({
   root,
   port: 4319,
   dataDirectory: resolve(root, '.runs/http-model'),
-  deployment: {
+  deployment: ({ images }) => ({
     ...base,
     id: 'http-model-workbench',
     version: '1',
@@ -53,8 +41,29 @@ const server = await startServer({
           },
         }),
     models: { brain: { provider: 'http-model', model } },
-    adapters: [{ providers: ['http-model'], adapter }],
-  },
+    adapters: [
+      {
+        providers: ['http-model'],
+        adapter: new OpenAICompatibleAdapter({
+          baseURL,
+          models: [
+            {
+              id: model,
+              inputModalities: ['text', 'image'],
+              ...(contextWindow === undefined ? {} : { contextWindow }),
+            },
+          ],
+          ...(apiKey ? { apiKey: () => apiKey } : {}),
+          resolveImage: (ref, signal) =>
+            images.readImageRequest(
+              ref,
+              { maxPixels: 1024 * 1024, maxBytes: 2 * 1024 * 1024 },
+              signal,
+            ),
+        }),
+      },
+    ],
+  }),
 });
 console.log(
   `HTTP model workbench: ${server.url}\nModel calls begin only when you start a task. The physical backend remains synthetic.`,
