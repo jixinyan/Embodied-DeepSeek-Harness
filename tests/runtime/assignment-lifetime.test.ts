@@ -10,6 +10,7 @@ import { TeamSessions, type Assignment } from '@edh/communication';
 import { AssignmentEvidenceGrants } from '@edh/memory';
 import { LocalStore, SessionAudits, SessionHistory } from '@edh/storage';
 import { FileTeamLoader } from '@edh/teams';
+import { AssignmentHistory, type RunState } from '@edh/tasks';
 import { CORE_TOOLS } from '@edh/tools';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 
@@ -34,18 +35,59 @@ async function openTeam() {
   const audits = new SessionAudits(store);
   const history = new SessionHistory(store, { maxResidentEvents: 2, maxResidentBytes: 1024 });
   const runId = randomUUID();
+  const state: RunState = {
+    id: runId,
+    instruction: 'Review project documentation.',
+    scenario: 'documentation-review',
+    source: 'test_fixture',
+    state: 'running',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    teamDigest: team.sourceDigest,
+    teamId: team.definition.team_id,
+    decisionAssignmentId: '',
+    attempt: 1,
+    recoveryId: null,
+    retryChanges: [],
+    assignments: {},
+    events: [],
+    executions: [],
+    requests: [],
+    verdicts: [],
+    latestSensor: null,
+    agentSeen: {},
+    skillIds: [],
+    error: null,
+  };
+  const assignmentHistory = new AssignmentHistory(store, validator);
   const sessions = new TeamSessions(
     host,
     team,
     validator,
     {
       tools: () => [],
+      readRetiredAssignment(id) {
+        const row = assignmentHistory.read(runId, id)?.assignment;
+        if (!row) return undefined;
+        return { id: row.id, member: row.member, sessionId: row.sessionId, brief: row.brief };
+      },
       event(type, detail) {
         if (type === 'agent.created') {
           const assignment = detail.assignment as Assignment;
           grants.open(assignment.id, assignment.brief.evidence_refs);
+          state.assignments[assignment.id] = {
+            ...assignment,
+            status: 'idle',
+            model: 'deployment-model',
+            tools: [],
+          };
         }
-        if (type === 'agent.retired') grants.release(String(detail.assignmentId));
+        if (type === 'agent.retired') {
+          const id = String(detail.assignmentId);
+          grants.release(id);
+          state.assignments[id]!.status = detail.cleanupFailed ? 'retirement_failed' : 'retired';
+          assignmentHistory.retain(state, id);
+        }
         store.put(`lifecycle:${randomUUID()}`, { type, detail }, 0);
       },
       audit(id, session) {
@@ -85,6 +127,8 @@ async function openTeam() {
     grants,
     audits,
     runId,
+    state,
+    assignmentHistory,
     sessions,
     brief,
     async close() {
@@ -154,6 +198,9 @@ test('native assignment retirement releases registries and grants while retainin
     assert.equal(t.grants.has(assignment.id, 'readme'), false);
     assert.throws(() => t.grants.extend(assignment.id, ['late-frame']), /unavailable/);
     assert.deepEqual(t.sessions.get(assignment.id), assignment);
+    assert.equal(t.state.assignments[assignment.id]!.brief, undefined);
+    assert.equal(t.state.assignments[assignment.id]!.detailsStored, true);
+    assert.deepEqual(t.assignmentHistory.read(t.runId, assignment.id)?.assignment.brief, brief);
     await assert.rejects(t.sessions.create('lead', brief), /already exists/);
     await assert.rejects(t.sessions.deliver(assignment.id, {}, 'user'), /retired/);
     await assert.rejects(t.sessions.whenIdle(assignment.id), /no longer accepting/);
@@ -183,6 +230,8 @@ test('retired native assignments release capacity across repeated independent de
       assert.equal(t.host.sessions.list().length, 0);
       assert.equal(t.host.agents.get(SessionId(assignment.sessionId)), undefined);
       assert.equal(t.grants.has(assignment.id, 'readme'), false);
+      assert.equal(t.state.assignments[assignment.id]!.brief, undefined);
+      assert.deepEqual(t.sessions.get(assignment.id), assignment);
     }
   } finally {
     await t.close();
@@ -210,6 +259,20 @@ test('retirement audit includes events committed by native scoped cleanup', asyn
     assert.equal(events.length, before + 1);
     assert.deepEqual(t.audits.read(t.runId)[0]!.value, events);
     assert.equal(t.host.sessions.get(SessionId(assignment.sessionId)), undefined);
+  } finally {
+    await t.close();
+  }
+});
+
+test('retired native assignment lookup reads its verified archive after resident release', async () => {
+  const t = await openTeam();
+  try {
+    const assignment = await t.sessions.create('lead', t.brief());
+    await t.sessions.retire(assignment.id, 'review-ended');
+    const archived = t.assignmentHistory.read(t.runId, assignment.id)!;
+    t.store.put(`assignment-history:${JSON.stringify([t.runId, assignment.id])}`, archived, 1);
+    assert.throws(() => t.sessions.get(assignment.id), /rewritten/);
+    assert.equal(t.sessions.isLive(assignment.id), false);
   } finally {
     await t.close();
   }

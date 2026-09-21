@@ -18,5 +18,6 @@ export type { RunState, RunEvent, RunAssignment, UserClarification } from './run
 export { TaskGoals, type GoalBinding } from './goals.js';
 
 export { RunHistory, type RunEventPage } from './history.js';
+export { AssignmentHistory, type AssignmentDetails } from './assignment-history.js';
 export { RecoveryHistory, type RecoveryTrace, type RecoveryPage } from './recovery-history.js';
 export { taskContextSummary, type TaskContextSummary } from './task-context.js';

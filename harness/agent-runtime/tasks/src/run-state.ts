@@ -17,7 +17,11 @@ export interface RunAssignment {
   id: string;
   member: string;
   sessionId: string;
-  brief: InvocationBrief;
+  brief?: InvocationBrief;
+  detailsStored?: boolean;
+  callerAssignmentId?: string;
+  lastObservationId?: string;
+  todoCount?: number;
   status: string;
   model: string;
   tools: string[];

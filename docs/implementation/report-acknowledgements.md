@@ -68,7 +68,8 @@ transactions and resumable DSH sessions remain future work.
   caller acknowledgement and a bounded page of version-history receipts to the role
   or its direct caller. Optional `beforeReportId` selects earlier versions and
   `includeBodies: true` includes the selected report contents.
-- HTTP run projections expose `roleReports` with bounded receipt pages per assignment.
+- HTTP run projections expose `roleReports` with bounded receipt pages for assignments
+  whose details remain inline. Archived assignments use explicit report inspection.
   The console's **Role reports** inspector selects an assignment, displays report
   bodies and supports **Earlier versions** and **Latest versions**. Restarted runs
   retain inspection access.
@@ -122,8 +123,10 @@ available for callers that intentionally request a complete array.
 
 Cursor admission currently traverses the published prefix to prove membership; deep
 historical pages and acknowledgements have linear read cost. The service keeps no
-complete-history cache. Run projections still contain assignment metadata and a latest
-report per assignment, so their total size needs separate lifecycle work.
+complete-history cache. Run projections retain compact retired assignment metadata;
+their report bodies remain available through this explicit route. Inline active roles
+retain their latest report. See [assignment history](assignment-history.md). Total
+metadata size and other run collections still need lifecycle limits.
 
 `pnpm test:report-history` runs seven actual journal/HTTP/process checks for page
 continuity, byte budgets, detached reads, unpublished/foreign cursors, predecessor

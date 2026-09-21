@@ -1,5 +1,6 @@
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import { randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import type { Context } from '@deepseek-ai/cordis';
 import type { AgentHandle, AssistantStreamFrame } from '@deepseek-ai/dsh-agent';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
@@ -21,6 +22,7 @@ export interface SessionHooks {
   event(type: string, detail: Record<string, unknown>): void;
   audit(assignmentId: string, session: Session): void;
   stream?(assignmentId: string, frame: AssistantStreamFrame): void;
+  readRetiredAssignment?(assignmentId: string): Assignment | undefined;
 }
 /** Delegation creates a neutral-host DSH session; delivery uses the original inbox. */
 export class TeamSessions {
@@ -65,7 +67,12 @@ export class TeamSessions {
     const role = this.team.members[member];
     if (!role || brief.team_run_id !== this.team.teamRunId)
       throw new Error('Unknown member or foreign team.');
-    if (this.assignments.has(brief.assignment_id) || this.creating.has(brief.assignment_id))
+    if (
+      this.assignments.has(brief.assignment_id) ||
+      this.creating.has(brief.assignment_id) ||
+      this.retirements.has(brief.assignment_id) ||
+      this.completions.has(brief.assignment_id)
+    )
       throw new Error('Assignment already exists.');
     if (brief.tools_and_limits.allowed_tools.some((name) => !role.definition.tools.includes(name)))
       throw new Error('Brief exceeds role tool authority.');
@@ -250,8 +257,10 @@ export class TeamSessions {
     }
   }
   get(id: string): Assignment {
-    const assignment = this.assignments.get(id);
+    const assignment = this.assignments.get(id) ?? this.hooks.readRetiredAssignment?.(id);
     if (!assignment) throw new Error('Unknown assignment.');
+    if (assignment.id !== id || assignment.brief.team_run_id !== this.team.teamRunId)
+      throw new Error('Assignment history belongs to a different identity or Team.');
     return structuredClone(assignment);
   }
   isLive(id: string): boolean {
@@ -317,6 +326,12 @@ export class TeamSessions {
           reason,
           cleanupFailed: errors.length > 0,
         });
+        if (this.hooks.readRetiredAssignment) {
+          const archived = this.hooks.readRetiredAssignment(id);
+          if (!isDeepStrictEqual(archived, entry.assignment))
+            throw new Error('Retired assignment archive does not preserve its source.');
+          this.assignments.delete(id);
+        }
       } catch (error) {
         errors.push(error);
       }

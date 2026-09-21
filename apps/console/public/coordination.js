@@ -100,7 +100,8 @@ export function renderCoordination(configuration, run) {
   }
   const links = new Set();
   for (const assignment of assignments) {
-    const caller = assignments.find((a) => a.id === assignment.brief.caller_assignment_id);
+    const callerId = assignment.brief?.caller_assignment_id ?? assignment.callerAssignmentId;
+    const caller = assignments.find((a) => a.id === callerId);
     if (!caller || caller.member === assignment.member) continue;
     const from = members.indexOf(caller.member);
     const to = members.indexOf(assignment.member);

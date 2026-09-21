@@ -116,6 +116,13 @@ DOM checks. Camera streaming, live VLM behavior and physical execution remain un
 
 ## Native session audits
 
+The **Assignments** inspector and role cards read one assignment's complete brief,
+TODOs, report and final stream through the assignment detail endpoint. Historical TODO
+and sensor selectors load the selected archive, retaining one response per view and
+cancelling superseded requests. Compact retired rows preserve Team caller edges.
+Loading, empty and failure states remain visible. See
+[assignment history](../../docs/implementation/assignment-history.md).
+
 The **Role reports** inspector reads one assignment's published reports in bounded
 pages. It exposes report bodies, delivery status and caller acknowledgements, with
 earlier/latest navigation and explicit empty/error states. Opening another inspector

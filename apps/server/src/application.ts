@@ -31,6 +31,7 @@ import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/executio
 import {
   TaskGoals,
   RunHistory,
+  AssignmentHistory,
   RecoveryHistory,
   taskContextSummary,
   type TaskContextSummary,
@@ -100,6 +101,7 @@ export class UpperRun {
   private readonly reports: AssignmentReports;
   private readonly skills: SkillLibrary;
   private readonly history: RunHistory;
+  private readonly assignmentHistory: AssignmentHistory;
   private readonly clarifications: UserClarifications;
   private clarificationTurnBlocked = false;
   private readonly recoveryHistory: RecoveryHistory;
@@ -180,6 +182,7 @@ export class UpperRun {
     this.reports = new AssignmentReports(options.store, options.validator);
     this.skills = new SkillLibrary(options.store, options.validator);
     this.history = new RunHistory(options.store);
+    this.assignmentHistory = new AssignmentHistory(options.store, options.validator);
     this.clarifications = new UserClarifications(options.store, this.state.id, (record) => {
       if (
         record.state === 'pending' ||
@@ -203,6 +206,12 @@ export class UpperRun {
       options.validator,
       {
         tools: (a) => this.tools(a),
+        readRetiredAssignment: (id) => {
+          const record = this.assignmentHistory.read(this.state.id, id);
+          if (!record) return undefined;
+          const { id: assignmentId, member, sessionId, brief } = record.assignment;
+          return { id: assignmentId, member, sessionId, brief };
+        },
         context: (a) => {
           const owner = a.id === this.state.decisionAssignmentId;
           const scope = owner
@@ -281,7 +290,10 @@ export class UpperRun {
               String(detail.assignmentId),
             );
             const row = this.state.assignments[String(detail.assignmentId)];
-            if (row) row.status = detail.cleanupFailed ? 'retirement_failed' : 'retired';
+            if (row) {
+              row.status = detail.cleanupFailed ? 'retirement_failed' : 'retired';
+              this.assignmentHistory.retain(this.state, row.id);
+            }
           }
           if (type === 'agent.status') {
             const a = this.state.assignments[String(detail.assignmentId)];

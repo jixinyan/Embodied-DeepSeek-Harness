@@ -301,7 +301,8 @@
           <div id="live-output" class="live-output" hidden></div>
           <div class="feed-footer">
             <span id="feed-count">No messages yet</span
-            ><button id="inspect-reports" class="text-button" disabled>Role reports ↗</button>
+            ><button id="inspect-assignments" class="text-button" disabled>Assignments ↗</button>
+            <button id="inspect-reports" class="text-button" disabled>Role reports ↗</button>
             <button id="inspect-audit" class="text-button" disabled>Native DSH audit ↗</button>
           </div>
         </section>
@@ -557,6 +558,14 @@
           <button data-reports="latest" class="button small">Latest versions</button>
         </div>
         <p data-reports="status" role="status"></p>
+      </div>
+      <div id="assignment-controls" hidden>
+        <label
+          >Assignment
+          <select data-assignment="selection" aria-label="Assignment details"></select
+        ></label>
+        <button data-assignment="refresh" class="button small">Refresh details</button>
+        <p data-assignment="status" role="status"></p>
       </div>
       <pre id="inspector-body"></pre>
     </dialog>

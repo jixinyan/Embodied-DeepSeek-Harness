@@ -21,6 +21,7 @@ const publicFiles: Record<string, string> = {
   'storage-maintenance.js': 'text/javascript; charset=utf-8',
   'session-audit.js': 'text/javascript; charset=utf-8',
   'report-history.js': 'text/javascript; charset=utf-8',
+  'assignment-details.js': 'text/javascript; charset=utf-8',
   'logo.png': 'image/png',
 };
 

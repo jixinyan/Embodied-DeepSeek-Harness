@@ -14,6 +14,7 @@ import { renderSensorImages } from './sensor-images.js';
 import { bindStorageMaintenance } from './storage-maintenance.js';
 import { bindSessionAudit } from './session-audit.js';
 import { bindReportHistory } from './report-history.js';
+import { bindAssignmentDetails, createAssignmentSelection } from './assignment-details.js';
 import {
   appendRunHistory,
   mergeRunUpdate,
@@ -51,6 +52,7 @@ function error(message) {
 function inspect(title, value) {
   auditBrowser.close();
   reportBrowser.close();
+  assignmentBrowser.close();
   text('inspector-title', title);
   text('inspector-body', typeof value === 'string' ? value : JSON.stringify(value, null, 2));
   if (!$('inspector').open) $('inspector').showModal();
@@ -222,13 +224,22 @@ function updateTaskComposer() {
     current,
   });
 }
+const archivedSensor = createAssignmentSelection(api, () => showSensor(), error);
+const archivedTodo = createAssignmentSelection(api, () => renderTodos(), error);
 function showSensor() {
   const selection = $('sensor-view').value;
-  displayedFrame = selection === 'latest' ? current?.latestSensor : current?.agentSeen[selection];
+  const archived = archivedSensor.select(current?.id, current?.assignments[selection]);
+  displayedFrame =
+    selection === 'latest'
+      ? current?.latestSensor
+      : (archived?.observation ?? current?.agentSeen[selection]);
   const frame = displayedFrame;
   const fixture = (frame?.source ?? current?.source ?? config.mode) === 'test_fixture';
   const imageCount = renderSensorImages($('sensor-images'), current?.id, frame);
-  $('sensor-svg').toggleAttribute('hidden', !fixture || imageCount > 0);
+  $('sensor-svg').toggleAttribute(
+    'hidden',
+    !fixture || imageCount > 0 || archivedSensor.loading || Boolean(archivedSensor.error),
+  );
   text(
     'scene-source',
     imageCount
@@ -241,13 +252,17 @@ function showSensor() {
   );
   text(
     'sensor-subtitle',
-    imageCount
-      ? `${imageCount} ${imageCount === 1 ? 'view' : 'views'} · ${fixture ? 'Test evidence' : 'Recorded sensor evidence'}`
-      : fixture
-        ? 'CPU illustration · Not real camera imagery'
-        : frame?.evidence.visibility === 'debug_only'
-          ? 'Restricted evidence · image access unavailable'
-          : 'Provider metadata · No image attached',
+    archivedSensor.loading
+      ? 'Loading archived observation…'
+      : archivedSensor.error
+        ? 'Archived observation unavailable'
+        : imageCount
+          ? `${imageCount} ${imageCount === 1 ? 'view' : 'views'} · ${fixture ? 'Test evidence' : 'Recorded sensor evidence'}`
+          : fixture
+            ? 'CPU illustration · Not real camera imagery'
+            : frame?.evidence.visibility === 'debug_only'
+              ? 'Restricted evidence · image access unavailable'
+              : 'Provider metadata · No image attached',
   );
   text(
     'frame-source',
@@ -338,21 +353,17 @@ function renderAgents() {
     status.textContent = state.toUpperCase();
     card.append(icon, info, status);
     card.onclick = () =>
-      inspect(
-        `${member} · Independent assignments`,
-        membersAssignments.map((assignment) => ({
-          ...assignment,
-          reportState:
-            current.roleReports?.find((report) => report.assignmentId === assignment.id) ?? null,
-        })),
-      );
+      action(async () => {
+        inspect(`${member} · Independent assignments`, '');
+        await assignmentBrowser.open(current.id, membersAssignments);
+      });
     $('agents').append(card);
   }
   const old = $('sensor-view').value;
   const options = [
     { value: 'latest', label: 'Latest sensor' },
     ...assignments
-      .filter((a) => current.agentSeen[a.id])
+      .filter((a) => current.agentSeen[a.id] || a.lastObservationId)
       .map((a) => ({ value: a.id, label: `${a.member} · ${shorten(a.id)}` })),
   ];
   $('sensor-view').replaceChildren(
@@ -475,13 +486,21 @@ function renderTodos() {
   const filter = $('agent-filter').value;
   const assignments = Object.values(current.assignments);
   const owner = assignments.find((a) => a.id === current.decisionAssignmentId);
-  const row =
-    filter === 'all' ? owner : assignments.filter((a) => a.member === filter && a.todos).at(-1);
+  const selected =
+    filter === 'all'
+      ? owner
+      : assignments.filter((a) => a.member === filter && (a.todos || a.todoCount)).at(-1);
+  const details = archivedTodo.select(current.id, selected);
+  const row = selected?.detailsStored ? details?.assignment : selected;
   text(
     'todo-source',
-    row?.todos
-      ? `${row.member} · session event ${row.todoSequence} · turn ${row.todoTurn}${row.todoTurn !== row.turn ? ' · previous turn' : ''}`
-      : 'No checklist for the selected role.',
+    archivedTodo.loading
+      ? 'Loading archived checklist…'
+      : archivedTodo.error
+        ? 'Archived checklist unavailable'
+        : row?.todos
+          ? `${row.member} · session event ${row.todoSequence} · turn ${row.todoTurn}${row.todoTurn !== row.turn ? ' · previous turn' : ''}`
+          : 'No checklist for the selected role.',
   );
   $('todos').replaceChildren();
   for (const item of row?.todos ?? []) {
@@ -504,7 +523,7 @@ function renderTodos() {
     div.append(badge, button);
     $('todos').append(div);
   }
-  $('inspect-todos').disabled = !assignments.some((a) => a.todos);
+  $('inspect-todos').disabled = !assignments.some((a) => a.todos || a.todoCount);
 }
 function renderFeed() {
   if (!current) return;
@@ -795,6 +814,7 @@ function render() {
   $('inspect-skill').disabled = !current.skills?.length;
   $('inspect-audit').disabled = false;
   $('inspect-reports').disabled = false;
+  $('inspect-assignments').disabled = false;
   if (current.error) error(current.error);
   renderAgents();
   showSensor();
@@ -1007,6 +1027,17 @@ $('inspect-recovery').onclick = () =>
   );
 const auditBrowser = bindSessionAudit($('audit-controls'), $('inspector-body'), api, action);
 const reportBrowser = bindReportHistory($('report-controls'), $('inspector-body'), api, action);
+const assignmentBrowser = bindAssignmentDetails(
+  $('assignment-controls'),
+  $('inspector-body'),
+  api,
+  action,
+);
+$('inspect-assignments').onclick = () =>
+  action(async () => {
+    inspect('Assignment details · Explicit context and final state', '');
+    await assignmentBrowser.open(current.id, Object.values(current.assignments));
+  });
 $('inspect-reports').onclick = () =>
   action(async () => {
     inspect('Role reports · Published versions and caller receipts', '');
@@ -1020,6 +1051,7 @@ $('inspect-audit').onclick = () =>
 $('inspector').addEventListener('close', () => {
   auditBrowser.close();
   reportBrowser.close();
+  assignmentBrowser.close();
 });
 $('close-inspector').onclick = () => $('inspector').close();
 $('inspector').addEventListener('click', (e) => {

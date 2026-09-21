@@ -1,12 +1,13 @@
-export async function api(path, data) {
+export async function api(path, data, signal) {
   const response = await fetch(
     path,
     data === undefined
-      ? {}
+      ? { signal }
       : {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
+          signal,
         },
   );
   const result = await response.json();

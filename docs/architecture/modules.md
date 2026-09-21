@@ -130,6 +130,12 @@ pre-step, delivery and retirement checkpoints. Deployment policy records the cou
 limits, and UpperRun emits release statistics. Active model context and application
 projections remain separate owners. See [native history](../implementation/session-history.md).
 
+AssignmentHistory owns immutable retired role payloads and compact run summaries.
+UpperRun invokes it at native retirement; TeamSessions verifies its durable reader
+before releasing the resident brief. The server checks run ownership for selected
+detail reads, and the console keeps only selected historical payloads. See
+[assignment history](../implementation/assignment-history.md).
+
 LocalImageStore owns streamed image inventory, its mutation revision and exclusive
 request-cache cleanup. The server owns idle admission and exposes an optional
 maintenance controller for custom native image providers. Original objects remain

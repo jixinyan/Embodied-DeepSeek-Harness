@@ -255,7 +255,7 @@ test(
       assert.equal(context.result!.verdict_id, placementSuccess.verdict_id);
       assert(JSON.stringify(context.events).includes('open-cabinet'));
       for (const verdict of state.verdicts) {
-        const verifier = state.assignments[verdict.verifier_assignment_id]!;
+        const verifier = app.run.sessions.get(verdict.verifier_assignment_id);
         const request = state.requests.find((r) => r.attempt_id === verdict.task_scope.attempt_id)!;
         assert.deepEqual(verifier.brief.success_contract, request.success_contract);
         assert.equal(verifier.brief.task_scope.goal_id, request.goal_id);
@@ -1081,7 +1081,7 @@ test(
       const id = String(frames[0]!.detail.recipient);
       assert.notEqual(id, app.run.state.decisionAssignmentId);
       assert.equal(
-        app.run.state.assignments[id]!.brief.caller_assignment_id,
+        app.run.sessions.get(id).brief.caller_assignment_id,
         app.run.state.decisionAssignmentId,
       );
       assert.equal(app.host.agents.list().length, 2);

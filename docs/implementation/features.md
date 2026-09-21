@@ -10,6 +10,7 @@ Snapshot: 2026-09-21. Upper runtime, model transport and standalone policy/actio
 | Opt-in native context compaction, token estimates and scoped authoritative state                          | [Context guide](context-management.md), [native acceptance](../../tests/runtime/context-management.test.ts)                                          |
 | User-defined teams, independent roles and completion with retained audits/reports                         | [Loader](../../harness/agent-runtime/teams/src/loader.ts), [sessions](../../harness/agent-runtime/communication/src/sessions.ts)                     |
 | Retired assignment grant release, native disposal and final cleanup-event audit | [Lifecycle and native/file checks](assignment-lifetime.md) |
+| Immutable retired assignment archives, compact summaries and selected detail/TODO/observation reads | [History API and actual file/native acceptance](assignment-history.md) |
 | Incremental native audit publication with Session identity and validated historical adoption | [Publication API and checks](session-audits.md#native-publication) |
 | Native event-body residency limits with verified durable history and unchanged sequence identities | [Policy and native/file/process checks](session-history.md) |
 | Whole-message visual history budgets with scoped audit and console maintenance events | [Visual policy](context-management.md), [visual tests](../../tests/runtime/visual-history.test.ts) |

@@ -1,18 +1,26 @@
 # Implementation progress
 
-Spec: v1.30. Current checkpoint: **paged role-report inspection and incremental reconciliation**.
+Spec: v1.31. Current checkpoint: **retired assignment archival and on-demand inspection**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Retired assignment details are stored and read back before releasing their full brief,
+TODO/report bodies, last observation and stream from the run projection. TeamSessions
+uses a verified archive reader after native cleanup. The console reads selected role
+details, historical TODOs and observations explicitly. Seven actual file/HTTP/process
+checks and nine native lifecycle checks pass, including over 100 MiB of authored brief
+documents under a 64 MiB V8 old-space limit. Compact metadata and remaining cumulative
+run collections still need lifecycle limits. [Assignment history](assignment-history.md).
 
 Role-report queries and the console inspector read bounded published-version pages.
 Agents select earlier receipts and optionally load their report bodies through
 `team.query`; native input validation keeps those controls optional. Acknowledgement
 and startup reconciliation traverse stored reports individually. Seven actual
 journal/HTTP/process checks pass, including report history exceeding 100 MiB under a
-64 MiB V8 old-space limit. Assignment briefs, last observations and cumulative run
-projections still require independent retention work.
+64 MiB V8 old-space limit. Retired report bodies are omitted from run updates and remain
+available through explicit report inspection.
 [Report API and remaining costs](report-acknowledgements.md#bounded-history-reads).
 
 Planner `user.ask` persists a scoped question and concludes its native DSH turn.
@@ -37,7 +45,7 @@ V8 old-space limit. Active model surface and application projections have separa
 Native role retirement removes Agent/Session registry entries, includes scoped-cleanup
 events in the final audit, and releases assignment evidence permissions. Creation
 publication failures also dispose acquired handles. Late grant extensions fail, and
-cleanup errors remain observable at shutdown. Eight native/file lifecycle checks
+cleanup errors remain observable at shutdown. Nine native/file lifecycle checks
 exercise this behavior without a model or physical backend. Active-context and retained
 application-history limits remain open. [Lifecycle guide](assignment-lifetime.md).
 
@@ -100,7 +108,15 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: seven report-history checks and 23 console tests pass (30 total).
+Current focused checks: seven assignment-history checks, nine native assignment-lifecycle
+checks and 24 console tests pass (40 total). The console selection check uses real HTTP
+and stored assignment documents to exercise cancellation and missing-record errors.
+Browser component DOM checks cover selected
+archive details, role switching, empty selection and historical TODO/observation reads.
+Strict TypeScript, formatting, provenance and structure checks pass. Scripted runtime
+tests were not executed for this checkpoint.
+
+The report-history checkpoint passed seven report-history checks and 23 console tests (30 total).
 The preceding checkpoint passed eleven native history checks, nine clarification checks,
 sixteen native audit checks, eight assignment-lifecycle checks and 23 console tests
 (67 total). Prior checkpoints passed eight retention/admission checks,
@@ -1245,7 +1261,7 @@ response storage and stale pending updates. The component has no connected model
 device; delivery remains queued. A live VLM/provider clarification and pause/resume
 scenario remains required. No scripted model/backend acceptance was run.
 
-Continue active native log/surface retention, retained assignment projections,
-domain-record archival preserving SKILL provenance, provider-backed criteria discovery,
+Continue active model-surface limits, compact metadata and remaining run collection
+lifetimes, domain-record retention preserving SKILL provenance, provider-backed criteria discovery,
 live VLM acceptance and CLI-free bootstrap. Physical worker/provider integration remains
 separate. The upper-runtime objective remains incomplete.

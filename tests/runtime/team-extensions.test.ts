@@ -215,7 +215,9 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
         false,
       );
       await run.settle();
-      const analyst = Object.values(run.state.assignments).find((a) => a.member === 'analyst')!;
+      const analyst = run.sessions.get(
+        Object.values(run.state.assignments).find((a) => a.member === 'analyst')!.id,
+      );
       assert(analyst);
       const input = JSON.stringify(model.requests[1]);
       assert.match(input, /ANALYST_ROLE_MARKER/);
@@ -357,8 +359,11 @@ ANALYST_ROLE_MARKER. Only use explicitly supplied context.
               (event.detail.data as { name: string }).name === 'agent__report',
           ),
       );
-      assert.equal(run.state.assignments[analyst.id]!.report?.agent_id, analyst.sessionId);
-      assert.equal(run.state.assignments[analyst.id]!.reportVersion, 2);
+      assert.equal(
+        new AssignmentReports(store, validator).read(analyst.id)!.report.agent_id,
+        analyst.sessionId,
+      );
+      assert.equal(new AssignmentReports(store, validator).read(analyst.id)!.version, 2);
       assert(replayed, 'Exact replay in the final native turn returns the durable receipt.');
       const reports = new AssignmentReports(store, validator);
       assert.equal(reports.submit(run.sessions.get(analyst.id), completed).replay, true);

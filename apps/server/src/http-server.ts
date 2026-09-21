@@ -16,6 +16,7 @@ import { HttpError, assertLocalRequest, readJsonBody as body } from './local-htt
 import { serveEvidenceImage } from './evidence-images.js';
 import { readSessionAudit } from './session-audit-view.js';
 import { readRoleReports } from './report-view.js';
+import { readAssignmentDetails } from './assignment-view.js';
 import {
   ClarificationConflict,
   interruptClarifications,
@@ -343,6 +344,7 @@ async function startApplication(
         readOnly: active?.state.id !== id || terminal(state.state),
         plan: store.get(`plan:${id}`)?.value ?? null,
         roleReports: Object.keys(state.assignments)
+          .filter((assignmentId) => !state.assignments[assignmentId]!.detailsStored)
           .map((assignmentId) => ({ assignmentId, ...reports.status(assignmentId) }))
           .filter((row) => row.latestReport),
         skills: state.skillIds.map((skillId) => skills.load(skillId)),
@@ -742,7 +744,7 @@ async function startApplication(
           }
         }
         const match =
-          /^\/api\/runs\/([A-Za-z0-9-]+)(?:\/(events|history|pause|resume|stop|audit|reports|recovery))?$/.exec(
+          /^\/api\/runs\/([A-Za-z0-9-]+)(?:\/(events|history|pause|resume|stop|audit|reports|assignments|recovery))?$/.exec(
             url.pathname,
           );
         if (match) {
@@ -779,6 +781,8 @@ async function startApplication(
             return json(res, 200, readSessionAudit(store, id, url.searchParams));
           if (method === 'GET' && operation === 'reports')
             return json(res, 200, readRoleReports(store, validator, id, url.searchParams));
+          if (method === 'GET' && operation === 'assignments')
+            return json(res, 200, readAssignmentDetails(store, validator, id, url.searchParams));
           if (method === 'GET' && operation === 'recovery') {
             return json(res, 200, {
               recovery: record.recoveryId

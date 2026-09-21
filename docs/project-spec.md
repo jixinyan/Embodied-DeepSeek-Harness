@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.30 · 2026-09-21
+Version: v1.31 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -61,6 +61,10 @@ Role report queries return bounded history pages with explicit earlier-version c
 Agents request earlier report bodies when needed; the console provides the same
 read-only navigation. Acknowledgement and startup reconciliation traverse published
 versions individually. See [report inspection](implementation/report-acknowledgements.md).
+Retired role briefs, TODO/report bodies, last observations and stream frames move into
+verified immutable archives. Compact run summaries preserve status and caller identity;
+the console loads selected historical details explicitly. See
+[assignment history](implementation/assignment-history.md) for publication, API and limits.
 [Physical profiles](implementation/physical-profiles.md) bind declared simulator,
 embodiment, policy mappings and role context; installed adapter validation is required.
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)
@@ -313,6 +317,13 @@ cleanup. Late evidence extensions fail. Creation-publication failures also dispo
 native handle; cleanup failures remain observable at shutdown. Stored evidence, briefs,
 reports and audits retain their independent lifetimes. See the
 [assignment lifecycle](implementation/assignment-lifetime.md) for acceptance boundaries.
+
+UpperRun archives full retired assignment details before publishing a compact summary.
+The native TeamSessions cache releases its brief only after the durable reader returns
+the identical assignment. Historical queries preserve access to TODOs, observations,
+reports and explicit context; they confer no current evidence permissions. The archive
+and run summary have separate publication boundaries. See
+[storage and inspection](implementation/assignment-history.md).
 
 Retired identities are not reusable. Callers may query/acknowledge durable reports
 after native disposal. A late child report to a finished caller is retained with

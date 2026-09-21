@@ -42,6 +42,12 @@ history. Those records do not authorize a retired role to read evidence. Native
 role-context disposal does not delete stored evidence or its image objects. Image
 retention independently checks persisted references and configured external ownership.
 
+UpperRun saves retired payloads through AssignmentHistory and verifies the stored value
+before replacing the full run row with a compact summary. TeamSessions then verifies
+the archived brief through its configured reader before releasing its resident copy.
+Historical `get` calls use that reader. See [assignment history](assignment-history.md)
+for publication boundaries, HTTP inspection and remaining cumulative metadata costs.
+
 ## Acceptance
 
 `pnpm test:assignment-lifetime` uses the actual DSH host, Team loader, native Agent and
@@ -56,11 +62,12 @@ The tests cover:
 - Native delivery failure from an unavailable adapter, including persisted error events.
 - A real journal write hold rejecting creation publication and final audit, with native cleanup.
 - A real audit write failure releasing registries and grants while remaining observable at shutdown.
+- A rewritten archive rejected by retired assignment lookup after resident brief release.
 
 These checks establish idle native lifecycle, native delivery failure and local authority behavior. They do
 not establish in-flight live VLM/provider shutdown, cooperative external cancellation,
 garbage-collector timing or a bound on process memory. Native event-body history uses
 the [residency policy](session-history.md), and report histories have
 [bounded inspection](report-acknowledgements.md#bounded-history-reads).
-Active model context, retained assignment/projection growth and domain-record archival
+Active model context, compact metadata/projection growth and domain-record retention
 remain required upper-runtime work. Full recovery/receipt behavior needs live model acceptance.

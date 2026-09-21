@@ -22,6 +22,12 @@ reads recovery progress in bounded pages, and reconstructs complete recovery tra
 for explicit inspection. Original run events remain the authoritative bodies.
 See [recovery delivery](../../../docs/implementation/multi-goal-runtime.md#recovery-progress-storage-and-delivery).
 
+[assignment-history.ts](src/assignment-history.ts) archives retired assignment payloads
+and checks exact read-back before compacting their run summaries. TeamSessions uses
+the durable brief reader after native retirement. The console reads selected details,
+TODOs and last observations through a run-scoped HTTP endpoint. See
+[assignment history](../../../docs/implementation/assignment-history.md).
+
 See [multi-goal runtime](../../../docs/implementation/multi-goal-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
 [module responsibilities](../../../docs/architecture/modules.md).
