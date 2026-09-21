@@ -14,6 +14,7 @@ try {
   const { state: assignmentState, assignment } = await assignmentDocuments();
   let documentBytes = 0;
   let count = 1;
+  let lastSessionId = sessions[0]!.id;
   while (documentBytes <= 100 * 1024 * 1024) {
     const id = `document-${String(count++).padStart(6, '0')}`;
     const document = await readFile('docs/project-spec.md', 'utf8');
@@ -45,17 +46,26 @@ try {
       {
         ...sessions[0],
         id,
+        requestId: `request-${id}`,
         runIds: [id],
         configuration: { ...sessions[0]!.configuration, document },
       },
       0,
     );
     store.put(`run-user-session:${id}`, { sessionId: id }, 0);
+    lastSessionId = id;
     documentBytes += Buffer.byteLength(document) * 2;
   }
   let runsRead = 0;
   let sessionsRead = 0;
   const lifecycle = new UserSessions(store);
+  const lastSession = lifecycle.get(lastSessionId);
+  let replayedRequests = 0;
+  for (let i = 0; i < 16; i++) {
+    assert.deepEqual(lifecycle.replaySession(sessions[0]!), sessions[0]);
+    assert.deepEqual(lifecycle.replaySession(lastSession), lastSession);
+    replayedRequests += 2;
+  }
   await lifecycle.close();
   index = new WorkspaceHistoryIndex(store);
   const sourceReads = index.statistics().sourceReads;
@@ -76,7 +86,7 @@ try {
   index.close();
   index = new WorkspaceHistoryIndex(store);
   assert.equal(index.statistics().sourceReads, 0);
-  console.log(JSON.stringify({ documentBytes, count, runsRead, sessionsRead }));
+  console.log(JSON.stringify({ documentBytes, count, runsRead, sessionsRead, replayedRequests }));
 } finally {
   index?.close();
   store.close();

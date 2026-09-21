@@ -78,8 +78,10 @@ silently deletes an unreadable index.
 diagnostics. It excludes LocalStore's startup replay and reads by other services.
 Startup/compaction still traverse source metadata; startup also checks SQLite pages.
 Individual source records, the key index, active session configuration, current run
-collections and disk retention have independent costs. UserSessions startup and
-duplicate-opening lookup traverse source records individually. Explicit
+collections and disk retention have independent costs. UserSessions startup traverses
+source records individually. Duplicate-opening lookup reads a persisted request
+identity and its source session directly; see
+[request admission](user-sessions.md#session-open-request-identity). Explicit
 `UserSessions.list()` retains its complete-result allocation cost.
 
 ## Console behavior
@@ -107,7 +109,8 @@ ordering and full traversal, independently returned active records, session filt
 and cursor admission, byte-budget continuity and newer insertions, detached summary
 reads, HTTP origin/query errors and memory pressure. The child process stores more
 than 100 MiB of project documents in valid role briefs and session configuration,
-opens the session lifecycle, builds the index and traverses all run/session pages under
+opens the session lifecycle, performs 32 direct old/new request lookups, builds the
+index and traverses all run/session pages under
 a 64 MiB V8 old-space limit. Repeated pages perform no index-owned source reads; reopening
 an unchanged index also performs none. Tests cover live source/ownership updates,
 stale/missing index reconciliation, source-less row removal, corruption and unsupported

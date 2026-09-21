@@ -68,6 +68,37 @@ restart, unfinished sessions become `interrupted / unknown`, with no physical co
 replay. Historical sessions are read-only; provider resource reconciliation remains an
 integration requirement. A closed session retains its conversation task records and skills.
 
+## Session-open request identity
+
+UserSessions owns `session-open-request:{requestId}` records with format
+`edh.session-open-request.v1`. Each contains the request ID and its session ID; its
+journal version stays at 1. New admission publishes the `opening` session, publishes
+this identity, then invokes the environment factory. Each write is durable separately.
+If publication fails, admission stops before allocation. Startup reconstructs a
+missing identity from the source session and marks unfinished sessions interrupted.
+It validates existing request records and rejects duplicate source request IDs,
+rewritten identities, conflicting keys and absent source sessions.
+
+`replaySession` reads one request record and its source session directly. It compares
+the profile, deployment digest and complete configuration using the JSON representation
+persisted by LocalStore. Reusing a request ID with changed configuration fails. Returned
+records are detached; reading an old request neither activates its session nor acquires
+environment resources. A missing request returns no previous admission. Normal opening
+then applies current-session and lifecycle admission rules.
+
+Request metadata contains no copies of model configuration, role definitions or task
+history. Startup reconciliation still traverses historical sources individually;
+request/source key metadata and per-session task ID lists retain lifetime growth.
+Source-aware retention must preserve or explicitly retire request ownership together
+with its session. Journal compaction preserves both records and their versions.
+
+`pnpm test:session-requests` runs seven actual journal/document checks covering detached
+reads, configuration identity, compaction/reopen, interrupted publication, write holds,
+duplicate IDs, rewritten records and missing/conflicting sources. The workspace
+pressure check stores over 100 MiB of project documents, performs 32 old/new request
+lookups and traverses history under a 64 MiB V8 old-space limit. These checks do not
+allocate a simulator, device or model. Live provider lifecycle acceptance remains open.
+
 ## Task instructions and explicit history
 
 The user selects an installed task criteria preset and edits the next instruction in

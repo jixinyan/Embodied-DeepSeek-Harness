@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.35 · 2026-09-21
+Version: v1.36 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -88,6 +88,11 @@ Do not install the simulator/GPU stack merely to run the upper acceptance suite.
 
 A user conversation is a **User Session** containing multiple sequential task runs
 on one retained environment. DSH role sessions remain independent assignment contexts.
+Session-open requests have immutable persisted request-to-session identities. Duplicate
+requests directly read the matching record and compare the complete serialized launch
+configuration. Startup reconciles source-only admissions and interrupts unfinished
+sessions without allocating an environment. See the
+[request publication rules](implementation/user-sessions.md#session-open-request-identity).
 Ending a task releases its control scope; ending the user session releases the environment.
 The console is the primary launcher and status surface. CLI-free server bootstrap is a
 separate packaging requirement. Launch selections must resolve installed environment,

@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
+import { z } from 'zod';
 import type { LocalStore } from '@edh/storage';
 import type { EmbodiedBackend } from '@edh/execution';
 import { UpperRun, terminal } from './application.js';
@@ -26,6 +28,19 @@ export interface UserSessionRecord {
   error?: string;
 }
 export class SessionConflict extends Error {}
+type SessionOpenInput = Pick<
+  UserSessionRecord,
+  'requestId' | 'profileId' | 'deploymentDigest' | 'configuration'
+>;
+const requestIdentity = z.string().regex(/^[A-Za-z0-9-]{1,128}$/);
+const sessionRequestSchema = z
+  .object({
+    format: z.literal('edh.session-open-request.v1'),
+    requestId: requestIdentity,
+    sessionId: requestIdentity,
+  })
+  .strict();
+const sessionRequestKey = (id: string) => `session-open-request:${requestIdentity.parse(id)}`;
 /** Product-level environment ownership. Agent execution remains entirely inside UpperRun/DSH. */
 export class UserSessions {
   private current:
@@ -42,6 +57,9 @@ export class UserSessions {
   private closePromise?: Promise<void>;
   constructor(private readonly store: LocalStore) {
     for (const row of store.scan<UserSessionRecord>('user-session:')) {
+      if (row.key !== `user-session:${requestIdentity.parse(row.value.id)}`)
+        throw new Error('User session identity conflicts with its record key.');
+      this.retainRequest(row.value);
       if (row.value.state === 'closed' || row.value.state === 'interrupted') continue;
       this.save({
         ...row.value,
@@ -51,6 +69,52 @@ export class UserSessions {
           'Server restarted. No environment or agent work was resumed; reconcile provider resources before reuse.',
       });
     }
+    for (const row of store.scan('session-open-request:')) {
+      const request = sessionRequestSchema.parse(row.value);
+      if (row.version !== 1 || row.key !== sessionRequestKey(request.requestId))
+        throw new Error('Session request record identity or version conflicts.');
+      this.requestSource(request.requestId);
+    }
+  }
+  private retainRequest(record: UserSessionRecord): void {
+    const request = sessionRequestSchema.parse({
+      format: 'edh.session-open-request.v1',
+      requestId: record.requestId,
+      sessionId: record.id,
+    });
+    const key = sessionRequestKey(record.requestId);
+    const existing = this.store.get(key);
+    if (existing) {
+      if (
+        existing.version !== 1 ||
+        !isDeepStrictEqual(sessionRequestSchema.parse(existing.value), request)
+      )
+        throw new Error('Session request identity conflicts with its source.');
+      return;
+    }
+    this.store.put(key, request, 0);
+  }
+  private requestSource(requestId: string): UserSessionRecord | undefined {
+    const row = this.store.get(sessionRequestKey(requestId));
+    if (!row) return undefined;
+    const request = sessionRequestSchema.parse(row.value);
+    if (row.version !== 1 || request.requestId !== requestId)
+      throw new Error('Session request record identity or version conflicts.');
+    const source = this.store.get<UserSessionRecord>(`user-session:${request.sessionId}`)?.value;
+    if (!source || source.id !== request.sessionId || source.requestId !== requestId)
+      throw new Error('Session request source is missing or conflicting.');
+    return source;
+  }
+  replaySession(input: SessionOpenInput): UserSessionRecord | undefined {
+    const prior = this.requestSource(input.requestId);
+    if (!prior) return undefined;
+    if (
+      prior.profileId !== input.profileId ||
+      prior.deploymentDigest !== input.deploymentDigest ||
+      !isDeepStrictEqual(prior.configuration, JSON.parse(JSON.stringify(input.configuration)))
+    )
+      throw new SessionConflict('Session request ID belongs to a different configuration.');
+    return prior;
   }
   private save(record: UserSessionRecord): void {
     record.updatedAt = new Date().toISOString();
@@ -84,33 +148,17 @@ export class UserSessions {
     });
   }
   open(
-    input: {
-      requestId: string;
-      profileId: string;
-      deploymentDigest: string;
-      configuration: Record<string, unknown>;
-    },
+    input: SessionOpenInput,
     allocate: (signal: AbortSignal) => Promise<SessionEnvironment> | SessionEnvironment,
   ): Promise<UserSessionRecord> {
     return this.exclusive(async () => {
-      let prior: UserSessionRecord | undefined;
-      for (const row of this.store.scan<UserSessionRecord>('user-session:')) {
-        if (row.value.requestId !== input.requestId) continue;
-        prior = row.value;
-        break;
-      }
-      if (prior) {
-        if (
-          prior.profileId !== input.profileId ||
-          prior.deploymentDigest !== input.deploymentDigest
-        )
-          throw new SessionConflict('Session request ID belongs to a different configuration.');
-        return prior;
-      }
+      const prior = this.replaySession(input);
+      if (prior) return prior;
       if (this.current)
         throw new SessionConflict('End the current session before allocating another environment.');
       const record: UserSessionRecord = {
         ...input,
+        configuration: JSON.parse(JSON.stringify(input.configuration)),
         id: randomUUID(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -119,6 +167,7 @@ export class UserSessions {
         runIds: [],
       };
       this.save(record);
+      this.retainRequest(record);
       const current = (this.current = { record } as NonNullable<UserSessions['current']>);
       try {
         current.environment = await allocate(this.shutdown.signal);

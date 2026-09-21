@@ -202,6 +202,7 @@ test(
       assert(output.documentBytes > 100 * 1024 * 1024);
       assert.equal(output.runsRead, output.count);
       assert.equal(output.sessionsRead, output.count);
+      assert.equal(output.replayedRequests, 32);
     });
   },
 );

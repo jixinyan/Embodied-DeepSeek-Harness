@@ -1,10 +1,22 @@
 # Implementation progress
 
-Spec: v1.35. Current checkpoint: **formal verification inspection with source consistency**.
+Spec: v1.36. Current checkpoint: **durable session-open request identity and direct lookup**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Session opening resolves repeated request IDs through immutable journal identities
+and reads only the matching source session. Profile, deployment digest and the full
+serialized configuration must agree. New admission publishes the session and request
+identity before calling its environment factory. Startup reconciles missing identities,
+rejects duplicate/conflicting sources and interrupts unfinished sessions without
+activating resources. Seven actual journal/document checks and five task-admission
+checks pass. Twelve workspace checks include more than 100 MiB of authored documents,
+32 repeated old/new request lookups and full history traversal under a 64 MiB V8
+old-space limit. No model or physical provider executes in these checks. Startup
+source traversal, per-session task ID growth and provider-backed lifecycle acceptance
+remain open. [Session request semantics](user-sessions.md#session-open-request-identity).
 
 The Assignment inspector reads formal-check contexts, source observations and accepted
 verdicts together. Waiting for facts, saved checks and settled verdicts have distinct
