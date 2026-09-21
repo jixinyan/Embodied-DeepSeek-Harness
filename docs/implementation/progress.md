@@ -1,10 +1,21 @@
 # Implementation progress
 
-Spec: v1.40. Current checkpoint: **on-demand SKILL section reads through native DSH tools**.
+Spec: v1.41. Current checkpoint: **shared goal binding admission before plan publication**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Configured and Planner-created goals use complete GoalBinding validation. Entity maps,
+capabilities, task semantics, identity and configuration are checked alongside the shared
+wire success-condition and budget definitions. Construction, preparation and batch admission
+enforce the 64-goal task limit; existing bindings are immutable. UpperRun prepares validated
+goals before its plan journal write, then admits detached copies. Invalid batches leave
+the catalog unchanged. Four authored document/journal checks and seven task-admission checks
+pass. TypeScript, formatting, pinned-source provenance and 513 documentation-link checks
+pass. No model or physical provider executes. Provider-backed criteria discovery, live-model
+acceptance and upper-runtime lifecycle/retention work remain open.
+[Goal admission API and tests](../../harness/agent-runtime/tasks/README.md#goal-binding-admission).
 
 `skills.load` accepts optional section names and returns selected Markdown with full
 metadata, included/omitted section lists and source/returned byte counts. Preamble,

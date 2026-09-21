@@ -5,6 +5,38 @@ from registered checks and enforces verified plan dependencies. [run-state.ts](s
 projects active goal/attempt and recovery identity. UpperRun assembles these domain
 rules into native DSH tools; it does not replace the agent loop.
 
+## Goal binding admission
+
+[goal-binding.ts](src/goal-binding.ts) provides `parseGoalBinding(value, validator)`
+for configured and Planner-created goals. It validates goal identity, configuration,
+entity names and bindings, capability and task-semantic arrays, and exact object fields.
+Text entries must contain non-whitespace content; empty maps/arrays remain valid when
+the task requires none. Goal IDs use the wire identifier syntax and 128-character limit.
+The shared `SuccessContract` and `Budget` validators own criteria and budget validation,
+including unique check IDs, finite positive time and safe-integer control-step limits.
+Returned values are detached copies.
+
+TaskGoals validates the root and every predefined goal during construction, before
+deployment allocates a backend. Each task retains at most 64 goal identities across
+configuration and subsequent plans. Planner preparation validates the plan and derived
+bindings before UpperRun writes it through TaskPlans. New Planner goals inherit the
+root's environment bindings, capabilities and budget, use registered predicates and
+append their description to task semantics. TaskPlans continues to enforce plan ownership,
+versions, dependencies and already-executed criteria.
+
+After a successful plan write, batch admission validates every binding and capacity
+before updating the catalog. Existing identities require exact unchanged bindings;
+invalid batches change no catalog entries. Reads, prepared values and catalog entries
+are independent copies. Deployment uses this same admission path for its preset goals.
+
+`pnpm test:goal-bindings` exercises authored configuration/plan documents and an actual
+LocalStore journal. These checks cover invalid fields and budgets, capacity, atomic
+batch rejection, immutable bindings, detached values and validation before plan publication.
+They execute no model, simulator or policy. Provider-backed task discovery and evaluation
+remain separate integration requirements.
+
+## Runtime responsibilities
+
 The runner executes sequential subgoals and observes one recovery chain at a time.
 Repair prerequisites can succeed while the original recovery remains open. Only the
 original-goal verdict authorizes its SKILL. Learning failures do not fail the task.

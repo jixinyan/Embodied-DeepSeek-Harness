@@ -7,16 +7,9 @@ import type {
   SuccessContract,
   VerificationResult,
 } from '@edh/contracts';
+import { parseGoalBinding, type GoalBinding } from './goal-binding.js';
 
-export interface GoalBinding {
-  id: string;
-  configuration: string;
-  successContract: SuccessContract;
-  entities: Record<string, string>;
-  capabilities: string[];
-  taskSemantics: string[];
-  budget: { max_control_steps: number; max_wall_time_s: number };
-}
+export type { GoalBinding } from './goal-binding.js';
 const checks = (contract: SuccessContract) => ('all' in contract ? contract.all : contract.any);
 /** Authorizes Planner-authored goals against deployment-bound checks, not hidden world state. */
 export class TaskGoals {
@@ -30,12 +23,17 @@ export class TaskGoals {
     allowedChecks: readonly SuccessCheck[] = [],
     predefined: readonly GoalBinding[] = [],
   ) {
-    this.root = structuredClone(root);
-    this.subgoalSource = Object.freeze({ kind: 'user', reference: `planner-subgoals:${root.id}` });
+    if (predefined.length >= 64)
+      throw new Error('Task exceeds 64 admitted goals, including retained history.');
+    this.root = parseGoalBinding(root, validator);
+    this.subgoalSource = Object.freeze({
+      kind: 'user',
+      reference: `planner-subgoals:${this.root.id}`,
+    });
     for (const goal of [root, ...predefined]) {
-      validator.parse('SuccessContract', goal.successContract);
-      if (this.goals.has(goal.id)) throw new Error('Duplicate goal binding.');
-      this.goals.set(goal.id, structuredClone(goal));
+      const binding = parseGoalBinding(goal, validator);
+      if (this.goals.has(binding.id)) throw new Error('Duplicate goal binding.');
+      this.goals.set(binding.id, binding);
     }
     for (const check of allowedChecks) {
       validator.parse('SuccessCheck', check);
@@ -57,6 +55,7 @@ export class TaskGoals {
     };
   }
   prepare(plan: PlanDocument): GoalBinding[] {
+    this.validator.parse('PlanDocument', plan);
     if (new Set([...this.goals.keys(), ...plan.items.map((item) => item.goal_id)]).size > 64)
       throw new Error('Task exceeds 64 admitted goals, including retained history.');
     const root = plan.items.find((item) => item.goal_id === this.root.id);
@@ -76,17 +75,30 @@ export class TaskGoals {
         if (!isDeepStrictEqual(check, this.checks.get(check.check_id)))
           throw new Error(`Unregistered or changed subgoal check: ${check.check_id}`);
       }
-      return {
-        ...structuredClone(this.root),
-        id: item.goal_id,
-        successContract: structuredClone(item.success_contract),
-        taskSemantics: [...this.root.taskSemantics, item.description],
-      };
+      return parseGoalBinding(
+        {
+          ...this.root,
+          id: item.goal_id,
+          successContract: item.success_contract,
+          taskSemantics: [...this.root.taskSemantics, item.description],
+        },
+        this.validator,
+      );
     });
   }
   /** Commit only after the versioned plan write succeeds. */
   admit(goals: readonly GoalBinding[]): void {
-    for (const goal of goals) this.goals.set(goal.id, structuredClone(goal));
+    const admitted = goals.map((goal) => parseGoalBinding(goal, this.validator));
+    if (new Set(admitted.map((goal) => goal.id)).size !== admitted.length)
+      throw new Error('Duplicate goal binding.');
+    if (new Set([...this.goals.keys(), ...admitted.map((goal) => goal.id)]).size > 64)
+      throw new Error('Task exceeds 64 admitted goals, including retained history.');
+    for (const goal of admitted) {
+      const existing = this.goals.get(goal.id);
+      if (existing && !isDeepStrictEqual(existing, goal))
+        throw new Error('Admitted goal bindings are immutable; use a new goal identity.');
+    }
+    for (const goal of admitted) this.goals.set(goal.id, goal);
   }
   ready(
     plan: PlanDocument,

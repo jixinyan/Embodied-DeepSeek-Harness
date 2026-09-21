@@ -13,6 +13,7 @@
   "dependencies": {
     "@edh/contracts": "workspace:*",
     "@edh/execution": "workspace:*",
-    "@edh/storage": "workspace:*"
+    "@edh/storage": "workspace:*",
+    "zod": "4.4.3"
   }
 }

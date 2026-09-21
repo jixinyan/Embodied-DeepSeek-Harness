@@ -45,6 +45,11 @@ First-pass success creates no recovery skill; unknown is never accepted as succe
 The multi-goal scenario adds a separately verified access prerequisite, retries placement,
 then closes the cabinet for final task success. See the [illustrated flow](multi-goal-runtime.md).
 
+Configured goal fields and Planner-derived bindings use the same task-module validator.
+Wire success/budget validation, immutable catalog identities and the 64-goal task limit
+apply before execution. Authored document/journal checks cover this admission path.
+See [goal validation](../../harness/agent-runtime/tasks/README.md#goal-binding-admission).
+
 ## Still outside the working boundary
 
 - Live model deployment/evaluation; concurrent physical goals and nested independent recovery chains.

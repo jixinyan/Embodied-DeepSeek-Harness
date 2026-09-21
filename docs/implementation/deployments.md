@@ -50,6 +50,12 @@ model aliases/providers, duplicate adapter bindings, invalid tasks/budgets and
 unresolved team dependencies fail startup preflight. Backend connection and model
 inference are not health-checked by preflight.
 
+Preset root/predefined goals use the task module's shared
+[GoalBinding admission](../../harness/agent-runtime/tasks/README.md#goal-binding-admission).
+It validates all entity/capability/task-semantic fields and uses the wire definitions
+for success conditions and budgets. The task's 64-goal limit includes configured and
+later Planner-created identities. Invalid bindings fail before backend allocation.
+
 ## Task admission and provider ownership
 
 1. The browser obtains task presets, roles, models and source from `/api/config`.

@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.40 · 2026-09-21
+Version: v1.41 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -93,6 +93,12 @@ embodiment, policy mappings and role context; installed adapter validation is re
 Read [progress](implementation/progress.md), [upper-runtime guide](implementation/upper-runtime.md)
 and [capability map](implementation/features.md) for concrete code, checks and limits.
 Do not install the simulator/GPU stack merely to run the upper acceptance suite.
+
+Configured and Planner-created GoalBindings share complete field validation, wire
+success/budget definitions and a 64-identity task limit. Plan-derived bindings validate
+before journal publication; subsequent catalog admission preserves existing bindings
+and rejects invalid batches without partial updates. See
+[goal admission](../harness/agent-runtime/tasks/README.md#goal-binding-admission).
 
 ### User-session and launcher clarification (v1.12)
 

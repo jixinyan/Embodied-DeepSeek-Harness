@@ -135,17 +135,6 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     const { createBackend, ...metadata } = task;
     const data = freeze(structuredClone(metadata));
     new TaskGoals(validator, data.goal, data.allowedSubgoalChecks, data.predefinedGoals);
-    for (const goal of [data.goal, ...(data.predefinedGoals ?? [])]) {
-      if (
-        !validId(goal.id) ||
-        !goal.configuration?.trim() ||
-        !Number.isInteger(goal.budget.max_control_steps) ||
-        goal.budget.max_control_steps < 1 ||
-        !Number.isFinite(goal.budget.max_wall_time_s) ||
-        goal.budget.max_wall_time_s <= 0
-      )
-        throw new Error(`Invalid goal or execution budget in task: ${id}`);
-    }
     taskMetadata[id] = data;
     tasks[id] = Object.freeze({ ...data, createBackend });
   }
