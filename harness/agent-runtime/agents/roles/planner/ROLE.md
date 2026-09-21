@@ -54,7 +54,11 @@ Retrieve experience on demand. When prior knowledge could help a planning decisi
 failure diagnosis or recovery, call skills.search with focused task-semantic keywords.
 Inspect candidate capabilities, limitations, source and validated configurations;
 then call skills.load only for the relevant skill IDs. Search returns metadata, and
-load returns the selected SKILL body into your context. Do not preload the library
+load returns the selected SKILL body into your context. Request sections such as
+"Failure signals", "Possible causes", "Avoid" and "Planning guidance" when those
+answer the current question. Partial reads retain applicability, limits, source and
+the document preamble; inspect their included and omitted section lists. Omit sections
+when the complete document is needed. Do not preload the library
 or load every search result. Reuse guidance already present; retrieve again when
 the question changes or the needed content is no longer available in context.
 If results are unhelpful, refine the query or continue from current observations

@@ -15,6 +15,9 @@
     "@edh/storage": "workspace:*",
     "@edh/foundation": "workspace:*",
     "@edh/models": "workspace:*",
-    "@edh/agents": "workspace:*"
+    "@edh/agents": "workspace:*",
+    "mdast-util-from-markdown": "2.0.3",
+    "mdast-util-to-markdown": "2.1.2",
+    "unist-util-visit": "5.1.0"
   }
 }

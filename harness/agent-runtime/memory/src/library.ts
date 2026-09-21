@@ -2,18 +2,10 @@ import { mkdirSync, writeFileSync, renameSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { LocalStore } from '@edh/storage';
 import type { ContractValidator, SkillMetadata } from '@edh/contracts';
-import type { SkillBundle } from './index.js';
+import type { SkillBundle, SkillRead } from './index.js';
+import { skillSections, selectSkillSections } from './skill-sections.js';
 
-export const SKILL_SECTIONS = [
-  'When to use',
-  'Failure signals',
-  'Possible causes',
-  'Avoid',
-  'Planning guidance',
-  'Verification guidance',
-  'Limits',
-  'Source',
-] as const;
+export { SKILL_SECTIONS } from './skill-sections.js';
 export class SkillLibrary {
   constructor(
     private readonly store: LocalStore,
@@ -35,20 +27,21 @@ export class SkillLibrary {
     }
     return matches;
   }
-  load(id: string): SkillBundle {
+  load(id: string, sections?: readonly string[]): SkillRead {
     const r = this.store.get<SkillBundle>(`skill:${id}`);
     if (!r) throw new Error('Skill not found.');
-    return r.value;
+    if (r.version !== 1) throw new Error('Skill record was rewritten.');
+    const metadata = this.validator.parse('SkillMetadata', r.value.metadata);
+    if (metadata.skill_id !== id) throw new Error('Skill identity does not match its stored key.');
+    if (sections !== undefined)
+      return { metadata, ...selectSkillSections(r.value.markdown, sections) };
+    skillSections(r.value.markdown);
+    return { metadata, markdown: r.value.markdown };
   }
   /** Caller provides trusted successful-recovery provenance; the model supplies only prose. */
   save(metadata: SkillMetadata, markdown: string): SkillBundle {
     this.validator.parse('SkillMetadata', metadata);
-    if (!markdown.trim() || Buffer.byteLength(markdown) > 64 * 1024)
-      throw new Error('Invalid skill content.');
-    for (const section of SKILL_SECTIONS) {
-      if (!markdown.includes(`## ${section}\n`))
-        throw new Error(`Skill requires section: ${section}`);
-    }
+    skillSections(markdown);
     if (!metadata.evidence_refs.length || !metadata.verdict_ref)
       throw new Error('Skill requires evidence and accepted verdict.');
     const bundle = { metadata, markdown };

@@ -29,7 +29,11 @@ Do not accept policy self-reported success as the verdict. Request missing
 context. Skills may suggest checks but cannot override task conditions.
 When a verification question could benefit from prior experience, use skills.search
 with focused task-semantic keywords. Review metadata for applicability and limits,
-then use skills.load only for relevant guidance. Do not preload the library, load
+then use skills.load only for relevant guidance. Request sections such as
+"Failure signals" and "Verification guidance" for a focused read. Applicability,
+limits, source and the document preamble accompany selected sections. Inspect the
+included and omitted section lists; omit sections when the complete document is needed.
+Do not preload the library, load
 every result or reload content still available in this assignment. Search may return
 no useful match; continue with authorized checks and current evidence. Retrieve again
 when a new uncertainty requires it. Another agent loading a skill does not add it to

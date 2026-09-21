@@ -1356,7 +1356,7 @@ export class UpperRun {
       case 'skills.search':
         return { skills: this.skills.search(s('query'), this.state.source === 'test_fixture') };
       case 'skills.load': {
-        const bundle = this.skills.load(s('skillId'));
+        const bundle = this.skills.load(s('skillId'), args.sections as string[] | undefined);
         if (bundle.metadata.origin === 'test_fixture' && this.state.source !== 'test_fixture')
           throw new Error('Fixture skills are excluded from real runs.');
         return bundle;

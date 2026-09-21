@@ -103,6 +103,15 @@ native TeamSessions after the asking turn settles. The console owns drafts, expl
 submission and delivery-state presentation. Existing task criteria and device permissions
 remain authoritative. See the [interaction guide](../implementation/user-clarification.md).
 
+## Experience read ownership
+
+SkillLibrary owns immutable experience documents and explicit full/section reads.
+Its CommonMark reader preserves mandatory context and reference definitions while
+reporting omitted sections. UpperRun binds the optional selection to the existing
+native `skills.load` tool; each calling assignment receives its own tool result.
+Role prompts own retrieval decisions. See the
+[section API](../../harness/agent-runtime/memory/README.md#selective-section-reads).
+
 ## Sensor metadata ownership
 
 `perception/SensorSamples` owns validation and immutable, run-scoped sensor metadata

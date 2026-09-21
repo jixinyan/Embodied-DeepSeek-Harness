@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.39 · 2026-09-21
+Version: v1.40 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -780,17 +780,21 @@ entire SKILL library at startup or after another role publishes an experience.
 1. The agent formulates a focused query from the current task and question.
 2. `skills.search` returns metadata without SKILL bodies. The agent evaluates task
    relevance, required capabilities, limitations and validated configurations.
-3. `skills.load` returns only the selected skill's metadata and Markdown into the
-   calling assignment's native DSH context. The agent may load another relevant
-   skill, refine the search, or proceed with current observations and evidence.
+3. `skills.load` returns the selected skill's metadata and Markdown into the calling
+   assignment's native DSH context. Optional `sections` selects named chapters while
+   retaining the preamble, applicability, limitations and source. The result identifies
+   included and omitted sections. Omitting the parameter reads the full document.
+   The agent may request additional sections, load another skill, refine the search,
+   or proceed with current observations and evidence.
 4. The agent reuses guidance already available in context. A changed question or
    content removed by context maintenance may justify another retrieval.
 5. Delegation includes explicit applicable guidance or a skill reference and its
    limitations. Each recipient decides what it needs in its independent context.
 
 Retrieval is agent-directed; the implementation currently uses keyword matching over
-`task_semantics`, capped at 20 metadata records per search. Semantic embeddings,
-relevance ranking and section-level loading remain unimplemented. Current prompts
+`task_semantics`, capped at 20 metadata records per search. Semantic embeddings and
+relevance ranking remain unimplemented. CommonMark section selection preserves source
+text and reference targets; reads leave stored/exported documents unchanged. Current prompts
 instruct selective loading; the runtime does not deduplicate deliberate load calls.
 Native tool-call records expose queries and selected versions for inspection.
 

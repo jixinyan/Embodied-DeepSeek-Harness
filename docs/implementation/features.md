@@ -94,8 +94,11 @@ live end-to-end clarification acceptance and CLI-free server bootstrap.
 Planner and Verifier have explicit search/select/load instructions and descriptive
 native tools. Search returns metadata; selected SKILL bodies enter only the calling
 assignment's context. Cross-session persistence does not preload future role contexts.
-Current retrieval uses task-semantic keywords with a 20-result bound; embedding search,
-semantic ranking and section loading remain unimplemented. See the
+Current retrieval uses task-semantic keywords with a 20-result bound. Optional section
+loading retains applicability, limitations, source and required link definitions, and
+reports included/omitted sections. Actual document/journal and native tool checks cover
+this reader; live model selection remains unverified. Embedding search and semantic
+ranking remain unimplemented. See the
 [memory guide](../../harness/agent-runtime/memory/README.md).
 
 ## Incremental console transport

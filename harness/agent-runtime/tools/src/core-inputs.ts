@@ -55,13 +55,14 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
     explanation: str,
   },
   'skills.search': { query: str },
-  'skills.load': { skillId: str },
+  'skills.load': { skillId: str, sections: strings },
   'skills.save': { markdown: str },
   'evidence.read': { evidenceId: str },
 };
 export const CORE_TOOLS = [...Object.keys(CORE_TOOL_PARAMETERS), 'todo_write'];
 export const CORE_TOOL_OPTIONAL_PARAMETERS: Readonly<Record<string, readonly string[]>> = {
   'team.query': ['beforeReportId', 'includeBodies'],
+  'skills.load': ['sections'],
 };
 
 export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
@@ -72,7 +73,7 @@ export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
   'skills.search':
     'Search recovery experience on demand using task-semantic keywords. Returns up to 20 metadata records, without SKILL bodies. Inspect capabilities, limitations, origin and validated configurations before selecting a skill. Matching uses keywords, not semantic embeddings; an empty result does not prove that no relevant experience exists.',
   'skills.load':
-    'Load one selected, immutable SKILL version into this assignment context by skillId. Use after reviewing search metadata or an explicitly supplied skill reference. Load only knowledge needed for the current decision or verification question; reuse content already available in context. Guidance is advisory and grants no source-evidence access or changes to task criteria.',
+    'Load one selected, immutable SKILL version into this assignment context by skillId. Optionally supply sections as distinct heading names, such as Failure signals, Possible causes, Avoid, Planning guidance or Verification guidance. Selected reads always retain the document preamble, When to use, Limits and Source, with metadata and an explicit included/omitted-section list. Omit sections to read the complete document. Use after reviewing search metadata or an explicitly supplied skill reference; reuse guidance already available in context. Guidance grants no source-evidence access or changes to task criteria.',
   'skills.save':
     'Publish recovery guidance after formal success of the original recovery goal. Include applicability, failure signals, possible causes, unsuccessful changes, planning and verification guidance, limits and evidence references. Publication does not inject this SKILL into other agents or future sessions.',
 };

@@ -1,10 +1,22 @@
 # Implementation progress
 
-Spec: v1.39. Current checkpoint: **execution-scoped formal verification boundary admission**.
+Spec: v1.40. Current checkpoint: **on-demand SKILL section reads through native DSH tools**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+`skills.load` accepts optional section names and returns selected Markdown with full
+metadata, included/omitted section lists and source/returned byte counts. Preamble,
+applicability, limitations and source accompany every selected read. CommonMark parsing
+preserves nested content and reference-link targets, including definitions in omitted
+sections. Complete stored/exported SKILL documents remain unchanged. Built-in Planner
+and Verifier prompts describe focused reads; the extension interface exposes the same
+selection types. Six actual document/journal/native-tool checks and eleven provenance
+checks pass. TypeScript, formatting, pinned-source provenance and 508 local documentation
+links pass. These checks execute no model or physical provider. Semantic ranking,
+live agent retrieval decisions and upper-runtime lifecycle/retention work remain open.
+[Section API and acceptance](../../harness/agent-runtime/memory/README.md#selective-section-reads).
 
 Formal verification admission persists the original stopped status under a run,
 execution and boundary identity. Continuous paused updates reuse that admission only

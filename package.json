@@ -36,6 +36,7 @@
     "test:session-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-history.test.ts",
     "test:report-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/report-history.test.ts",
     "test:skill-provenance": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/skill-provenance.test.ts",
+    "test:skill-sections": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/skill-sections.test.ts",
     "test:image-collection": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/image-object-collection.test.ts",
     "test:image-retention": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/image-retention.test.ts",
     "test:console": "tsx --experimental-eventsource --tsconfig tsconfig.runtime.json --test tests/console/*.test.*",
