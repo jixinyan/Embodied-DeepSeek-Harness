@@ -1,4 +1,5 @@
 export { VerificationContexts, type VerificationContextRecord } from './contexts.js';
+export { VerificationBoundaries } from './boundaries.js';
 import type { TaskScope, VerificationResult } from '@edh/contracts';
 export interface MonitorFeedback {
   readonly scope: TaskScope;

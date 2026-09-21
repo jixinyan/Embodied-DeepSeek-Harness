@@ -1,10 +1,23 @@
 # Implementation progress
 
-Spec: v1.38. Current checkpoint: **immutable accepted verdicts and explicit full-result reads**.
+Spec: v1.39. Current checkpoint: **execution-scoped formal verification boundary admission**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Formal verification admission persists the original stopped status under a run,
+execution and boundary identity. Continuous paused updates reuse that admission only
+while preserving stopped facts. New stops and terminal transitions require fresh
+identities; different executions may use the same boundary label. Publication failures
+and identity conflicts propagate through the existing run failure/stop path. The service
+has no separate resident history collection; LocalStore key-index and disk growth
+remain open. Authored protocol documents and actual journals verify admission semantics;
+live model/provider ordering and device stop acceptance remain separate requirements.
+Seven boundary-admission, four verification-context and ten native role-lifecycle
+checks pass (21 total). TypeScript, formatting, pinned-source provenance and 506 local
+documentation-link checks pass. No model or physical provider executes in this checkpoint.
+[Boundary rules and tests](verification-boundaries.md).
 
 Accepted verification results are archived before their summaries enter run state.
 Summaries preserve identity/status and a bounded explanation preview; Planner decisions,

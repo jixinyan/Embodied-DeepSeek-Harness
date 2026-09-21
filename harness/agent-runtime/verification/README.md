@@ -6,6 +6,14 @@ work and release the verifier after its final native turn. It enforces limited e
 
 ## Formal-check context lifetime
 
+`VerificationBoundaries` records formal admission by run, execution and boundary ID.
+It preserves the original stopped status and admits repeated continuous-pause updates
+without scheduling another verifier. New stops require fresh identities within that
+execution; providers may reuse labels in different executions. Scope, stopped facts,
+source version and exact publication are checked before scheduling. Boundary records
+survive restart for inspection without activating model work. See
+[boundary admission and tests](../../../docs/implementation/verification-boundaries.md).
+
 `VerificationContexts` stores each assignment's request, execution, stopped boundary,
 task scope, current facts and evidence ID under a versioned `verification-context`
 record. The active registry retains only assignment IDs and accepted record versions.

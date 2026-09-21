@@ -29,6 +29,7 @@
     "test:audits": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/session-audits.test.ts tests/runtime/session-audit-pages.test.ts tests/runtime/native-audit-publication.test.ts",
     "test:assignment-lifetime": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/assignment-lifetime.test.ts",
     "test:verification-contexts": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/verification-contexts.test.ts",
+    "test:verification-boundaries": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/verification-boundaries.test.ts",
     "test:assignment-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/assignment-history.test.ts",
     "test:verdict-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/verdict-history.test.ts",
     "test:workspace-history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/workspace-history.test.ts tests/runtime/workspace-history-index.test.ts",

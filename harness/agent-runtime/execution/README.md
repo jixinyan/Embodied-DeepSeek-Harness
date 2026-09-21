@@ -92,6 +92,13 @@ last accepted status is historical evidence, not proof of current hardware state
 following a connection or protocol failure. Device/resource recovery is still a
 worker integration responsibility.
 
+Formal boundary IDs are scoped to a run and execution. Continuous paused updates must
+preserve the stopped boundary's time, scope, clock, control steps, confirmation and
+reason. Every new stop after resume and every paused-to-ended transition requires a
+fresh boundary ID within that execution. The upper host records admission before
+publishing the stopped status and scheduling the formal role. See
+[boundary publication](../../../docs/implementation/verification-boundaries.md).
+
 Six additional upper tests cover pending formal checks, unsolicited resume, missing
 acknowledgement, concurrent commands, a newer pause during acknowledgement,
 execution/image identity and first-state budget rejection. All use CPU providers.

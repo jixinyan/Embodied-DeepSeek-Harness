@@ -24,7 +24,7 @@ import { LocalStore, SessionHistory, type SessionHistoryOptions } from '@edh/sto
 import { AssignmentFiles } from '@edh/files';
 import { TaskPlans } from '@edh/planning';
 import { AssignmentEvidenceGrants, SkillLibrary } from '@edh/memory';
-import { VerificationContexts } from '@edh/verification';
+import { VerificationBoundaries, VerificationContexts } from '@edh/verification';
 import { skillSourceLimitations } from './skill-provenance.js';
 import { UserClarifications, ClarificationConflict, readClarification } from './clarifications.js';
 import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
@@ -104,7 +104,7 @@ export class UpperRun {
   private readonly grants = new AssignmentEvidenceGrants();
   private readonly checks: VerificationContexts;
   private readonly pending = new Set<Promise<void>>();
-  private readonly formalBoundaries = new Set<string>();
+  private readonly formalBoundaries: VerificationBoundaries;
   private resumePermit:
     | {
         executionId: string;
@@ -197,6 +197,11 @@ export class UpperRun {
       options.store,
       options.validator,
       this.evidence,
+      this.state.id,
+    );
+    this.formalBoundaries = new VerificationBoundaries(
+      options.store,
+      options.validator,
       this.state.id,
     );
     const sessionHistory = new SessionHistory(options.store, options.sessionHistory);
@@ -1609,6 +1614,10 @@ export class UpperRun {
       if (errors.length) throw new Error(errors.join(', '));
     }
     update.sample = this.retainSample(update.sample);
+    const needsFormal =
+      !terminal(this.state.state) && this.gates.requiresVerification(update.status)
+        ? this.formalBoundaries.admit(previous, update.status)
+        : false;
     if (previous?.state === 'paused' && update.status.state === 'running' && this.resumePermit)
       this.resumePermit.observed = true;
     const index = this.state.executions.findIndex(
@@ -1627,11 +1636,7 @@ export class UpperRun {
     if (this.gates.requiresVerification(update.status)) {
       if (update.status.state === 'paused') this.state.state = 'paused';
       else this.state.state = 'verifying';
-      const boundary = update.status.boundary_event_id!;
-      if (!this.formalBoundaries.has(boundary)) {
-        this.formalBoundaries.add(boundary);
-        this.spawn(this.formal(update));
-      }
+      if (needsFormal) this.spawn(this.formal(update));
     } else if (update.status.state === 'running' && update.status.control_steps > 0) {
       this.latestMonitor = update;
       if (!this.monitorBusy) this.spawn(this.monitor());

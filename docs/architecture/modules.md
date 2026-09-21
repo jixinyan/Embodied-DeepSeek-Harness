@@ -127,6 +127,12 @@ references. UpperRun owns active assignment admission/release and still applies 
 verdict gates. SensorSamples owns the referenced observations. Native retirement releases
 active check identities while preserving the stored record for host inspection.
 
+VerificationBoundaries owns immutable run/execution/boundary admission records and
+continuous-pause identity checks. UpperRun applies lifecycle checks before admission,
+then publishes the accepted status and schedules a native formal role. Shared lifecycle
+validation continues to own budgets and resume authority. See
+[verification boundaries](../implementation/verification-boundaries.md).
+
 VerdictHistory owns immutable accepted results and exact summary-to-record validation.
 UpperRun applies acceptance gates and publishes compact verdict entries after archive
 read-back. Planner/recovery consumers, selected task context and source inspection

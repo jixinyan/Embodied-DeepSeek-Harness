@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.38 · 2026-09-21
+Version: v1.39 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -58,6 +58,11 @@ decisions, recovery, selected historical task context and SKILL source inspectio
 resolve full results explicitly. The console selects individual accepted results;
 missing or conflicting records remain explicit. See
 [verdict publication and inspection](implementation/verdict-history.md).
+Formal boundary admission uses run, execution and boundary identities together.
+Continuous paused updates preserve their stopped facts; a new stop after resume and
+a paused-to-ended transition require fresh boundary identities. Immutable admission
+records precede native verifier scheduling. See
+[verification boundaries](implementation/verification-boundaries.md).
 The unified console now displays key
 state without page/tab switching; further polish follows actual provider integration.
 Native DSH [context management](implementation/context-management.md) is available
