@@ -87,3 +87,13 @@ reconnection, strict client continuity checks and write backpressure. UpperRun e
 lightweight change notifications. Initial history loads in bounded pages through a
 fixed event count; incremental projections read only the requested event window.
 Cumulative store/browser memory still requires retention work. [Protocol and checks](run-stream.md).
+
+## Indexed journal bodies
+
+LocalStore keeps latest key/version/byte-position/checksum metadata and reads record
+bodies on demand. Startup replay and lazy scans avoid materializing all stored bodies.
+Read integrity failures stop that store instance; writes verify the indexed file size.
+The existing journal format and publication boundaries remain authoritative. Storage
+checks include write/reopen/scan of a journal exceeding 64 MiB under a 64 MiB V8
+old-space limit. The key index, active run and caller/browser results still need
+lifetime limits. [Storage behavior](../../harness/agent-runtime/storage/README.md).

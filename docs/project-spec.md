@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.17 · 2026-09-20
+Version: v1.18 · 2026-09-20
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -947,6 +947,11 @@ single event remains atomic. The server reads only the requested event page for 
 incremental update. Projection size and cumulative server/browser storage require
 separate retention limits. See the implemented
 [stream protocol and acceptance](implementation/run-stream.md).
+
+LocalStore retains byte positions and version/checksum metadata in memory, reading
+record bodies on demand from its existing journal. Startup replay, history validation
+and SKILL scans process records incrementally. The key index and caller-owned task/UI
+histories require separate lifetime limits. See the [storage implementation](../harness/agent-runtime/storage/README.md).
 
 ## 11. User-defined teams and roles
 

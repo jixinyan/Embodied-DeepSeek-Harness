@@ -184,7 +184,10 @@ The library excludes fixture experience from ordinary searches by default.
 A single-writer append-only journal persists domain records with versions, checksums
 and fsync. Event records are separate from run projections. Native session audit events
 are also appended separately behind a count index, with legacy array reads supported.
-Each journal record remains bounded to 8 MiB; aggregate audits may be larger. DSH session exports are
+LocalStore indexes byte positions and validates record bodies when reading them. Startup
+replay and scan-based consumers process records incrementally. See the
+[storage implementation](../../harness/agent-runtime/storage/README.md) for memory scope.
+Each stored value is limited to 8 MiB, plus journal metadata; aggregate audits may be larger. DSH session exports are
 read-only audits; restarting marks unfinished runs interrupted without resubmitting
 physical work. A stale writer lock requires confirming the old process is stopped
 before manual removal. No automatic lock takeover or journal compaction is implemented.

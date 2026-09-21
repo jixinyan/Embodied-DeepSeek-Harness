@@ -97,8 +97,9 @@ detached results, unpublished suffixes, restart annotations, legacy data, journa
 reopening and invalid boundaries. The HTTP stream test also uses partial event windows
 to exercise absolute cursors across reconnection and projection-only updates.
 
-The active run, LocalStore and the browser still retain complete histories. Journal
-compaction, browser history eviction, media retention and the 4,000-event run budget
+LocalStore retains a byte-position index and reads journal bodies on demand. The active
+run and browser still retain complete task histories. Journal compaction, key-index
+growth, browser history eviction, media retention and the 4,000-event run budget
 require separate work. Current projections still contain assignment and task data,
 and a single large event remains atomic. Bounded event reads and transfer do not
 establish bounded lifetime storage or live-model performance.

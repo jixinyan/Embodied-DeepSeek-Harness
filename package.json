@@ -21,6 +21,7 @@
     "test:runtime": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/*.test.ts",
     "test:admission": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/task-admission.test.ts",
     "test:history": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/run-history-pages.test.ts",
+    "test:storage": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/store-index.test.ts",
     "test:console": "tsx --experimental-eventsource --tsconfig tsconfig.runtime.json --test tests/console/*.test.*",
     "test:contracts": "tsx --tsconfig tsconfig.runtime.json --test --test-reporter=dot tests/contracts/*.test.ts && node scripts/test-python.mjs",
     "demo": "tsx --tsconfig tsconfig.runtime.json apps/server/src/main.ts"

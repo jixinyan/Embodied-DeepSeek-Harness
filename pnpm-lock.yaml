@@ -251,6 +251,12 @@ importers:
       '@edh/models':
         specifier: workspace:*
         version: link:../models
+      '@types/n-readlines':
+        specifier: 1.0.2
+        version: 1.0.2
+      n-readlines:
+        specifier: 1.0.1
+        version: 1.0.1
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -613,6 +619,9 @@ packages:
   '@types/lodash@4.17.25':
     resolution: {integrity: sha512-+K1NIO8I+F9/wNulfVvu23QYd0Pe9/OCqRrim4NoYIf1VoEDL90Ve4ClzpyqBLc7NpGGWRvYNCKZ1BE/Jpf8dQ==}
 
+  '@types/n-readlines@1.0.2':
+    resolution: {integrity: sha512-jEpAbqwRa7bwMU44zSWE0ritLzeaHpEqPMBDCDRHp0Xle4V8xrE2jvqlVewm3KOFFjfYGaDrjpEk2j5Edr1Prw==}
+
   '@types/node@22.19.0':
     resolution: {integrity: sha512-xpr/lmLPQEj+TUnHmR+Ab91/glhJvsqcjB+yY0Ix9GO70H6Lb4FHH5GeqdOE5btAx7eIMwuHkp4H2MSkLcqWbA==}
 
@@ -918,6 +927,10 @@ packages:
 
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
+
+  n-readlines@1.0.1:
+    resolution: {integrity: sha512-z4SyAIVgMy7CkgsoNw7YVz40v0g4+WWvvqy8+ZdHrCtgevcEO758WQyrYcw3XPxcLxF+//RszTz/rO48nzD0wQ==}
+    engines: {node: '>=6.x.x'}
 
   package-manager-detector@1.8.0:
     resolution: {integrity: sha512-yQA4H19AmPEoMUeavPMDIe1higySl/gH/yaQrkT/s07Qp+7pp2hYz30N3z2l5BkjVkF9Ow6o0wjJamm2y7Sn0A==}
@@ -1252,6 +1265,10 @@ snapshots:
   '@types/json-schema@7.0.15': {}
 
   '@types/lodash@4.17.25': {}
+
+  '@types/n-readlines@1.0.2':
+    dependencies:
+      '@types/node': 22.19.0
 
   '@types/node@22.19.0':
     dependencies:
@@ -1620,6 +1637,8 @@ snapshots:
       uuid: 14.0.2
 
   minimist@1.2.8: {}
+
+  n-readlines@1.0.1: {}
 
   package-manager-detector@1.8.0: {}
 

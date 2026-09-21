@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.17. Current checkpoint: **runnable DSH upper application and CPU console**.
+Spec: v1.18. Current checkpoint: **runnable DSH upper application and CPU console**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -691,3 +691,28 @@ executed; the existing scripted runtime suite was not rerun.
 Remaining: cumulative journal/browser retention, media cleanup, the 4,000-event run
 budget, provider-backed criteria discovery, active-task clarification, live VLM
 evaluation and local-server bootstrap. Physical provider integration remains separate.
+
+## Indexed journal bodies (2026-09-20)
+
+LocalStore retains latest record locations and integrity metadata; values are decoded
+from indexed journal ranges when requested. Startup replay uses the pinned LF reader
+incrementally. CAS versions, insertion order, fsync publication, writer exclusion,
+incomplete-tail handling and the existing file format remain intact. Read failures
+disable further access through that store instance. Writes reject external file-size
+changes. Run startup reconciliation, SKILL export and experience search use lazy scans;
+search stops after 20 metadata matches.
+
+Validation: six new storage checks cover actual file operations, detached reads,
+UTF-8/CRLF positions, blank LF lines, tail recovery, corruption, lazy scans and external
+appends. A child process with a 64 MiB V8 old-space limit writes, reopens and scans
+128 records whose journal exceeds 64 MiB. Two existing audit checks and two selected
+original storage checks pass. Six history, five task-admission and 17 console checks
+also pass, for 38 relevant checks. TypeScript, formatting, DSH provenance, structure
+and whitespace checks pass. Test data stays under the ignored repository work directory.
+No model or physical provider was executed; the scripted runtime suite was not rerun.
+
+Remaining: key-index growth, journal/disk retention, browser history limits, active-run
+event retention and budget handling, media cleanup, provider-backed criteria discovery,
+active-task clarification, live VLM evaluation and local-server bootstrap. Caller-owned
+full list/audit results retain their own memory costs. The storage test does not bound
+whole-process RSS or the memory of all application consumers.

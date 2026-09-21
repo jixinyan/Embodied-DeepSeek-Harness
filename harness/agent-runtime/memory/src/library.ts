@@ -21,15 +21,19 @@ export class SkillLibrary {
   ) {}
   search(query: string, includeFixtures = false): SkillMetadata[] {
     const words = query.toLowerCase().split(/\W+/).filter(Boolean);
-    return this.store
-      .list<SkillBundle>('skill:')
-      .map((r) => r.value.metadata)
-      .filter(
-        (m) =>
-          (includeFixtures || m.origin !== 'test_fixture') &&
-          words.some((word) => m.task_semantics.join(' ').toLowerCase().includes(word)),
-      )
-      .slice(0, 20);
+    const matches: SkillMetadata[] = [];
+    if (!words.length) return matches;
+    for (const record of this.store.scan<SkillBundle>('skill:')) {
+      const metadata = record.value.metadata;
+      if (
+        (includeFixtures || metadata.origin !== 'test_fixture') &&
+        words.some((word) => metadata.task_semantics.join(' ').toLowerCase().includes(word))
+      ) {
+        matches.push(metadata);
+        if (matches.length === 20) break;
+      }
+    }
+    return matches;
   }
   load(id: string): SkillBundle {
     const r = this.store.get<SkillBundle>(`skill:${id}`);
@@ -75,6 +79,6 @@ export class SkillLibrary {
     renameSync(temporary, target);
   }
   exportAll(): void {
-    for (const r of this.store.list<SkillBundle>('skill:')) this.export(r.value);
+    for (const r of this.store.scan<SkillBundle>('skill:')) this.export(r.value);
   }
 }

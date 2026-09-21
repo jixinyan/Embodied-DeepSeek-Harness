@@ -30,6 +30,10 @@ section loading are unimplemented. Agent-directed search and selective loading a
 operate through the existing tools. Guidance informs planning and verification while
 current task criteria, evidence permissions and execution authority remain authoritative.
 
+The search iterates persisted bundles one at a time and stops after 20 matches;
+SKILL bodies from the whole library are not collected into one in-memory array.
+Export uses the same lazy store scan. Search results still contain metadata only.
+
 See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
 [module responsibilities](../../../docs/architecture/modules.md).

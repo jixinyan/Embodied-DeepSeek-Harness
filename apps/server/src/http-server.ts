@@ -152,7 +152,7 @@ export async function startServer(options: LocalServerOptions) {
     const skills = new SkillLibrary(store, validator);
     skills.exportAll();
     const history = new RunHistory(store);
-    for (const record of store.list<RunState>('run:'))
+    for (const record of store.scan<RunState>('run:'))
       history.interrupt(record.value, record.version);
     const publicConfiguration = {
       mode: deployment.metadata.source,
