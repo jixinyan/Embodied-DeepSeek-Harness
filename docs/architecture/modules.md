@@ -92,3 +92,11 @@ not an agent loop. A retained `SessionEnvironment` creates one fresh backend con
 scope per task. `UpperRun` and the native DSH services continue to own task execution
 and independent role contexts. Workspace SKILL storage outlives all three scopes.
 See the [session guide and SVG](../implementation/user-sessions.md).
+
+## Sensor metadata ownership
+
+`perception/SensorSamples` owns validation and immutable, run-scoped sensor metadata
+publication through LocalStore. UpperRun owns assignment grants, visibility checks and
+current sensor projections. The catalog reads requested records without accumulating
+historical sample bodies. It stores image references; the deployment attachment provider
+must supply and validate image bytes. See the [perception guide](../../harness/agent-runtime/perception/README.md).

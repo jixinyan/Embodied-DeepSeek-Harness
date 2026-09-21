@@ -800,3 +800,35 @@ Remaining: journal/index retention, media cleanup, provider-backed criteria disc
 active-task clarification, live VLM evaluation and local-server bootstrap. Event-body
 targets do not bound total browser memory, current projection size, full audit/recovery
 inspection responses, or oversized individual records.
+
+## Durable sensor metadata (2026-09-20)
+
+UpperRun uses the perception module's SensorSamples catalog for admitted observations
+and execution updates. Immutable samples and attachment metadata are stored in the
+existing journal under unambiguous run-scoped identities. Exact replay adds no records;
+conflicting evidence or attachment identities fail before new publication. Attachment
+records precede the sample, so incomplete publication can reserve metadata without
+publishing an observation. Reads validate the sample source, identity and referenced
+metadata. JSON normalization preserves replay behavior after reopening the journal.
+
+Assignment grants are checked before reading; debug-only evidence is rejected before
+model delivery. Catalog persistence creates no new permissions or resumable sessions.
+The application retains current sensor projections and reference sets while historical
+sample bodies are read on demand. Historical runs retain their original records; missing
+catalog entries are not reconstructed. The spec, module guide and perception README
+describe the storage boundary and remaining media responsibilities.
+
+Validation: eight `pnpm test:evidence` cases pass using authored metadata documents and
+real LocalStore files. They exercise detached reads, immutable replay, conflict preflight,
+namespace isolation, debug visibility, source/size/identity rejection, partial publication,
+record consistency and reopening. A child process with a 64 MiB V8 old-space limit writes
+and rereads 1,600 documents whose journal exceeds 64 MiB. All 15 history and 19 console
+logic/transport checks pass, alongside TypeScript, formatting, provenance, structure and
+whitespace checks. No model, image-byte resolver, sensor or physical provider was run;
+scripted runtime tests were not executed. This acceptance does not bound whole-process RSS.
+
+Remaining: binary media storage/resolution and console rendering; journal/index retention;
+grant/reference and native audit/context lifecycle; provider-backed criteria discovery;
+active-task clarification; live VLM evaluation and local-server bootstrap. Physical
+worker/provider integration retains its separate scope. The next evidence step is the
+deployment attachment provider and its authorized byte-resolution path.

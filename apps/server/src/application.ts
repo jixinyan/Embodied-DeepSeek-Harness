@@ -1,6 +1,5 @@
-import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import { isDeepStrictEqual } from 'node:util';
-import { admitSensorSample, sensorImages } from '@edh/perception';
+import { admitSensorSample, sensorImages, SensorSamples } from '@edh/perception';
 import { randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools';
@@ -99,8 +98,7 @@ export class UpperRun {
   private readonly history: RunHistory;
   private readonly recoveryHistory: RecoveryHistory;
   private deliveredMessages = 0;
-  private readonly evidence = new Map<string, SensorSample>();
-  private readonly imageReferences = new Map<string, ImageAttachmentRef>();
+  private readonly evidence: SensorSamples;
   private readonly grants = new Map<string, Set<string>>();
   private readonly checks = new Map<string, CheckedBoundary>();
   private readonly pending = new Set<Promise<void>>();
@@ -177,6 +175,12 @@ export class UpperRun {
     this.skills = new SkillLibrary(options.store, options.validator);
     this.history = new RunHistory(options.store);
     this.recoveryHistory = new RecoveryHistory(options.store);
+    this.evidence = new SensorSamples(
+      options.store,
+      options.validator,
+      this.state.id,
+      options.backend.source,
+    );
     const audits = new SessionAudits(options.store);
     this.sessions = new TeamSessions(
       options.host,
@@ -430,26 +434,14 @@ export class UpperRun {
     return ids.map((id) => {
       if (!this.grants.get(a.id)?.has(id))
         throw new Error('Evidence is not in assignment context.');
-      const sample = this.evidence.get(id);
+      const sample = this.evidence.read(id);
       if (!sample || sample.evidence.visibility !== 'agent')
         throw new Error('Evidence is not agent-visible.');
       return sample;
     });
   }
   private retainSample(input: SensorSample): SensorSample {
-    const sample = admitSensorSample(this.options.validator, input, this.options.backend.source);
-    const previous = this.evidence.get(sample.evidence.id);
-    if (previous && !isDeepStrictEqual(previous, sample))
-      throw new Error('An immutable evidence ID cannot be rebound to another sensor sample.');
-    for (const image of sample.images ?? []) {
-      const previousImage = this.imageReferences.get(image.attachmentId);
-      if (previousImage && !isDeepStrictEqual(previousImage, image))
-        throw new Error('An immutable attachment ID cannot be rebound to different metadata.');
-    }
-    for (const image of sample.images ?? [])
-      this.imageReferences.set(image.attachmentId, structuredClone(image));
-    this.evidence.set(sample.evidence.id, structuredClone(sample));
-    return sample;
+    return this.evidence.retain(input);
   }
   private observe(a: Assignment, input: SensorSample): SensorSample {
     if (input.evidence.visibility !== 'agent')

@@ -1,4 +1,3 @@
-// Architecture contract only. No runtime implementation.
 import type { Observation, SegmentationRequest, SegmentationResult } from '@edh/contracts';
 export interface PerceptionProvider {
   capture(sensorId: string): Promise<Observation>;
@@ -6,3 +5,4 @@ export interface PerceptionProvider {
 }
 
 export { admitSensorSample, sensorImages } from './sensor-sample.js';
+export { SensorSamples } from './sensor-samples.js';

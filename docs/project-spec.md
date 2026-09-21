@@ -633,6 +633,14 @@ Metadata and references link the failure, changes and verified recovery evidence
 Task completion returns results and recovery/skill references. A fresh agent on the
 next task retrieves relevant knowledge rather than inheriting the previous conversation.
 
+Sensor metadata is persisted through a run-scoped `SensorSamples` catalog. Each sample
+and its image references are immutable; repeated identical publication is idempotent.
+UpperRun checks assignment grants before retrieval and agent visibility before delivery.
+Historical records are read on demand. Storage presence grants no model access. Current sensor projections
+remain available to the console. Binary media binding, reference-set growth and
+disk retention have separate implementation and acceptance requirements. See the
+[perception storage guide](../harness/agent-runtime/perception/README.md).
+
 ### 8.5 Complete recovery sequence
 
 ![Execution, verification and recovery sequence](architecture/assets/async-recovery-sequence.svg)

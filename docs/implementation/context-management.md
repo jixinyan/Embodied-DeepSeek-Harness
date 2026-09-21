@@ -133,8 +133,9 @@ automatic compaction, twenty real localhost HTTP requests and upper console even
   triggers. Semantic keyframes, long-video handling and live VLM evaluation remain open.
 - Summaries may omit or misstate facts. They cannot substitute for fresh perception,
   formal verification, immutable contracts, or stored evidence.
-- Raw evidence, run events and disk history are not compacted. The 4,000-event limit,
-  scalable retention and resumable sessions remain separate work. Restart never
+- Sensor metadata and run events are persisted and read on demand. Live console history
+  uses bounded windows; complete audits remain explicit reads. Journal/index retention,
+  binary media cleanup and resumable sessions remain separate work. Restart never
   silently replays historical physical commands.
 
 See [provenance](../provenance/README.md), [runtime integration](upper-runtime.md)
