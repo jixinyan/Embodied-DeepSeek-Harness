@@ -13,3 +13,9 @@ export { LocalStore, type StoreStatistics, type StoreCompaction } from './local-
 
 export { SessionAudits } from './session-audits.js';
 export { LocalImageStore, type LocalImageOptions } from './local-images.js';
+export {
+  ImageMaintenanceConflict,
+  type ImageStorageMaintenance,
+  type ImageStorageInspection,
+  type ImageCacheCleanup,
+} from './image-maintenance.js';

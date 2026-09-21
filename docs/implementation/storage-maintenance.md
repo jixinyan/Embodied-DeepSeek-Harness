@@ -1,4 +1,4 @@
-# Journal maintenance
+# Workspace storage maintenance
 
 `LocalStore.statistics()` reports record count, global write sequence, journal bytes,
 current-record bytes, checkpoint-header bytes and superseded bytes. Superseded bytes
@@ -56,29 +56,45 @@ does not establish protection against every filesystem or power failure.
 ## Console and HTTP
 
 The console's **Workspace storage** section shows journal size, record count and
-superseded bytes. **Refresh storage** reads current values. **Compact journal** submits
-the inspected sequence and reports the reclaimed bytes.
+superseded bytes, original-image usage and model-request-cache usage.
+**Refresh storage** reads current values. **Compact journal** submits the inspected
+sequence and reports reclaimed bytes. **Clear model image cache** submits the inspected
+image revision and preserves original images and their evidence references.
 
-- `GET /api/storage` returns `{ statistics, blockedBy }`.
+- `GET /api/storage` returns `{ statistics, blockedBy, images }`. `images` contains
+  `{ available: true, inspection }` for a maintenance-capable provider, or
+  `{ available: false }` otherwise. An inspection is ready with usage/revision or busy.
 - `POST /api/storage/compact` accepts only `{ expectedSequence }`.
+- `POST /api/storage/clear-request-cache` accepts only `{ expectedRevision }`.
 - Invalid input returns 400; a stale sequence or busy workspace returns 409.
+- Cache cleanup returns 409 for a stale image revision or image-operation conflict;
+  a provider without maintenance support returns 501. `/api/config.imageStorage`
+  reports its `maintenance` capability alongside native image limits.
 - An open user session, active task, session/admission operation or shutdown blocks
   maintenance. End the session or finish/stop a legacy task before requesting it.
 - Accepted maintenance reserves the same server admission guard used for task/session
   allocation. It waits for a retained terminal task to settle and close, rechecks
-  shutdown, then compacts the journal. The response contains updated statistics and
-  `{ compacted, before, after, reclaimedBytes }` under `result`.
+  shutdown, then performs the requested maintenance. Compaction returns updated statistics
+  and `{ operation: 'journal_compaction', compacted, before, after, reclaimedBytes }`
+  under `result`. Cache cleanup returns updated statistics, the resulting image
+  inspection and `{ operation: 'request_cache_clear', before, after, removedFiles,
+  reclaimedBytes }` under `result`.
 
 Maintenance is synchronous while the workspace is idle. Large stores can temporarily
 delay HTTP/SSE responses. It requires temporary disk space for the complete checkpoint.
-No maintenance runs automatically on a user's data directory.
+No maintenance runs automatically on a user's data directory. Image inspection and
+cleanup stream file entries asynchronously. Cache cleanup validates recognized files
+before deletion, excludes concurrent image mutations and preserves all original images.
+Deletion is incremental: cancellation or I/O failure can leave a partially cleared cache.
+See [image maintenance and ownership](image-storage.md#image-inventory-and-request-cache-maintenance).
 
 ## Acceptance and remaining work
 
-`pnpm test:storage` runs 15 tests using real journals, processes and admission inputs.
+`pnpm test:storage` runs 16 tests using real journals, processes and admission inputs.
 Coverage includes versions/order/sequence preservation, reopen and further writes,
 incomplete/corrupt checkpoints, external journal changes, unpublished staging files,
-stale/busy admission, and actual process termination during checkpoint publication.
+stale/busy admission, exact cache-cleanup inputs, and actual process termination during
+checkpoint publication.
 A child with a 64 MiB V8 old-space limit compacts a journal exceeding 96 MiB and rereads
 all 96 latest documents. This limits neither total RSS nor the distinct-key index.
 
@@ -89,6 +105,6 @@ admission/storage functions. Full application maintenance while draining live mo
 and provider scopes remains unverified. No scripted model or physical backend is used
 by these acceptance checks.
 
-Distinct-key retention, run/session archival, image/cache reference accounting and
+Distinct-key retention, run/session archival, original-image reference accounting and
 collection, native context/audit lifetime, and automated retention scheduling remain
 separate upper-runtime work. Compaction alone does not impose a total disk quota.

@@ -114,3 +114,9 @@ owns idle-state and sequence admission, terminal-task drain and HTTP exposure. T
 console owns statistics and operation status. Compaction preserves all current keys
 and independent evidence/event records; it does not grant record access or set domain
 retention policy. [Maintenance guide](../implementation/storage-maintenance.md).
+
+LocalImageStore owns streamed image inventory, its mutation revision and exclusive
+request-cache cleanup. The server owns idle admission and exposes an optional
+maintenance controller for custom native image providers. Original objects remain
+available after cleanup. Domain services must supply reference accounting before
+original-object collection can be introduced.

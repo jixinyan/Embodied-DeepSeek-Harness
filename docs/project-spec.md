@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.20 · 2026-09-21
+Version: v1.21 · 2026-09-21
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -655,7 +655,11 @@ versions. Current key/value pairs, CAS versions, write sequence and independent 
 records remain available. The console supplies an idle-only maintenance operation with
 an inspected-sequence precondition; terminal task scopes finish before publication.
 Compacted journals use a versioned checkpoint prefix and require a compatible reader.
-Distinct-key, image/cache and session/audit retention remain required. See the
+Image inventory reports original and model-request-cache usage. Explicit cache cleanup
+requires an idle workspace and a current service revision, preserves original objects,
+and permits request variants to regenerate on demand. Custom providers advertise this
+optional maintenance capability. Distinct-key, original-image and session/audit
+retention remain required. See the
 [maintenance guide](implementation/storage-maintenance.md).
 
 ### 8.5 Complete recovery sequence

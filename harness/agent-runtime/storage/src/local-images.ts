@@ -1,4 +1,5 @@
 import { isAbsolute, join, parse, resolve } from 'node:path';
+import { randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
 import {
   AttachmentStore,
@@ -8,6 +9,13 @@ import {
   type SaveImageAttachment,
 } from '@deepseek-ai/dsh-attachment';
 import { z } from 'zod';
+import {
+  ImageMaintenanceConflict,
+  inspectImageFiles,
+  clearRequestImageFiles,
+  type ImageStorageInspection,
+  type ImageCacheCleanup,
+} from './image-maintenance.js';
 import { CompressionLimiter } from './dsh/attachment-local/compression-limiter.ts';
 import { readRequestImageFile } from './dsh/attachment-local/request-image.ts';
 import {
@@ -45,6 +53,29 @@ export class LocalImageStore extends AttachmentStore {
   private readonly maxPending: number;
   private readonly pending = new Set<Promise<unknown>>();
   private closed = false;
+  private readonly instanceId = randomUUID();
+  private revision = 0n;
+  private writers = 0;
+  private inspections = 0;
+  private maintaining = false;
+
+  private revisionToken(): string {
+    return `${this.instanceId}:${this.revision}`;
+  }
+
+  private async mutation<T>(run: () => Promise<T>): Promise<T> {
+    if (this.closed) throw new Error('Image storage is closed.');
+    if (this.maintaining)
+      throw new ImageMaintenanceConflict('Image cache maintenance is in progress.');
+    this.writers++;
+    this.revision++;
+    try {
+      return await this.operation(run);
+    } finally {
+      this.writers--;
+      this.revision++;
+    }
+  }
 
   constructor(ctx: Context, options: LocalImageOptions) {
     const config = optionsSchema.parse(options);
@@ -118,7 +149,7 @@ export class LocalImageStore extends AttachmentStore {
   }
 
   override async saveImages(inputs: readonly SaveImageAttachment[]): Promise<ImageAttachmentRef[]> {
-    return this.operation(async () => {
+    return this.mutation(async () => {
       const copies = this.snapshot(inputs);
       const prepared = await this.compression.run(async () => {
         const images = [];
@@ -149,7 +180,7 @@ export class LocalImageStore extends AttachmentStore {
     policy: ImageRequestPolicy,
     signal?: AbortSignal,
   ): Promise<RequestImageAttachment> {
-    return this.operation(async () => {
+    return this.mutation(async () => {
       signal?.throwIfAborted();
       const reference = structuredClone(ref);
       const requestPolicy = structuredClone(policy);
@@ -159,5 +190,47 @@ export class LocalImageStore extends AttachmentStore {
         return readRequestImageFile(this.root, stored, requestPolicy, signal);
       });
     });
+  }
+
+  async inspectStorage(signal?: AbortSignal): Promise<ImageStorageInspection> {
+    return this.operation(async () => {
+      signal?.throwIfAborted();
+      const revision = this.revisionToken();
+      if (this.maintaining || this.writers) return { state: 'busy', revision };
+      this.inspections++;
+      try {
+        const inspection = await inspectImageFiles(this.root, revision, signal);
+        if (this.writers || revision !== this.revisionToken())
+          return { state: 'busy', revision: this.revisionToken() };
+        return inspection;
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT' && revision !== this.revisionToken())
+          return { state: 'busy', revision: this.revisionToken() };
+        throw error;
+      } finally {
+        this.inspections--;
+      }
+    });
+  }
+
+  async clearRequestCache(revision: string, signal?: AbortSignal): Promise<ImageCacheCleanup> {
+    if (this.closed) throw new Error('Image storage is closed.');
+    signal?.throwIfAborted();
+    if (this.maintaining || this.writers || this.inspections)
+      throw new ImageMaintenanceConflict('Image operations are still in progress.');
+    if (revision !== this.revisionToken())
+      throw new ImageMaintenanceConflict('Image storage changed. Refresh storage before cleanup.');
+    this.maintaining = true;
+    this.revision++;
+    try {
+      return await this.operation(async () => {
+        const before = await inspectImageFiles(this.root, revision, signal);
+        const removed = await clearRequestImageFiles(this.root, signal);
+        const after = await inspectImageFiles(this.root, this.revisionToken(), signal);
+        return { before, after, removedFiles: removed.files, reclaimedBytes: removed.bytes };
+      });
+    } finally {
+      this.maintaining = false;
+    }
   }
 }

@@ -6,6 +6,7 @@ import { LocalStore } from '@edh/storage';
 import {
   maintenanceBlocker,
   admitStorageCompaction,
+  admitImageCacheCleanup,
 } from '../../apps/server/src/storage-maintenance.js';
 import { HttpError } from '../../apps/server/src/local-http.js';
 
@@ -64,4 +65,23 @@ test('maintenance admission checks activity and the inspected durable sequence',
     store.close();
     await rm(directory, { recursive: true, force: true });
   }
+});
+
+test('image cache admission accepts only an inspected revision and an idle workspace', () => {
+  assert.equal(admitImageCacheCleanup({ expectedRevision: 'inspection:3' }, null), 'inspection:3');
+  for (const input of [
+    {},
+    { expectedRevision: '' },
+    { expectedRevision: 3 },
+    { expectedRevision: 'inspection:3', path: '/private' },
+    { expectedRevision: 'x'.repeat(513) },
+  ])
+    assert.throws(
+      () => admitImageCacheCleanup(input, null),
+      (error) => error instanceof HttpError && error.status === 400,
+    );
+  assert.throws(
+    () => admitImageCacheCleanup({ expectedRevision: 'inspection:3' }, 'A task is active.'),
+    (error) => error instanceof HttpError && error.status === 409,
+  );
 });

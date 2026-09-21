@@ -33,8 +33,12 @@ dispose the application's attachment context.
 
 `mountImages(context, directory)` can install another native `AttachmentStore` using
 the supplied Cordis context. It is mutually exclusive with `imageStorage` and must
-finish mounting `context.attachments` before returning. The framework validates the
-service presence. Deployment construction/startup failures dispose the context;
+finish mounting `context.attachments` before returning. It may return an
+`ImageStorageMaintenance` controller with `inspect(signal?)` and
+`clearRequestCache(revision, signal?)` methods. A provider returning no controller
+keeps image reads/writes available and exposes maintenance as unavailable. The
+framework validates service presence and supplied maintenance methods.
+Deployment construction/startup failures dispose the context;
 normal shutdown disposes it after task/session consumers, DSH and HTTP have stopped.
 Native disposal waits for admitted writes and rejects new operations.
 
@@ -146,17 +150,48 @@ This service is a trusted storage API. It has no assignment or user authorizatio
 must not be exposed as an unrestricted attachment-ID endpoint. UpperRun grants and
 visibility remain mandatory before model delivery. HTTP readers must establish run,
 evidence and viewer authorization before obtaining bytes. File host paths are private
-deployment details. Binary retention, reference accounting and garbage collection remain
-required work; the provider currently retains immutable objects and request variants.
+deployment details. Original-object reference accounting and garbage collection remain
+required work. Request variants support explicit cache maintenance.
+
+## Image inventory and request-cache maintenance
+
+`inspectStorage(signal?)` returns `state: ready`, an opaque `revision`, and file/byte
+counts for original `objects` and derived `requestCache`. During writes or maintenance,
+or when a writer changes the store during inspection, it returns `state: busy`.
+Directory enumeration is streamed; inventory does not decode or verify image content.
+Ordinary image reads retain their digest and raster validation.
+
+`clearRequestCache(revision, signal?)` requires the current inspected revision and no
+active writer, inspection or other maintenance operation. It validates the complete
+inventory before removing recognized request variants and their native staging files.
+Unknown names, unexpected file types and symbolic links fail validation. It leaves
+original objects and original-publication staging files unchanged. Original-image
+reads remain available; publication and model-request reads are excluded during cleanup.
+The next model-request read regenerates its required variant from the retained object.
+
+The result contains `before`, `after`, `removedFiles` and `reclaimedBytes`. Successful
+cleanup synchronizes affected cache directories. Cancellation or I/O failure during
+deletion can leave a partially cleared cache and propagates the error; refresh the
+inventory before another attempt. Native disposal waits for admitted maintenance.
+Revision tokens belong to one service instance and change on image mutations or
+cleanup. The application must exclusively own this directory; revision checks do not
+coordinate external processes modifying files.
+
+The console exposes inventory and explicit cleanup through idle-only server admission.
+The [maintenance API](storage-maintenance.md) describes requests, conflicts and
+custom-provider capability reporting. No automatic deletion or total-disk quota is imposed.
 
 ## Acceptance
 
-Run `pnpm test:images`. Seventeen tests use the repository's actual PNG logo, real local
+Run `pnpm test:images`. Twenty-three tests use the repository's actual PNG logo, real local
 files and HTTP sockets. They exercise native service mounting and encoded-prompt admission, concurrent
 deduplication, reopening, batch rejection, byte/pixel limits, filename sanitization,
 normalization, request projection/cache reads, cancellation, corruption, immutable
 reference checks, operation admission, startup cleanup, deployment service injection,
 scoped HTTP reads, local-origin restrictions and shutdown during publication.
+Maintenance checks cover byte-preserving original reads after cleanup, regeneration,
+stale/busy admission, invalid entries, symbolic links, native staging files,
+cancellation and disposal during admitted cleanup.
 Browser component acceptance uses this same PNG and production renderer/HTTP reader:
 loaded dimensions, multiple slots, stable DOM refresh, empty/restricted states and
 missing-evidence errors are inspected through DOM state. No model, camera or simulator

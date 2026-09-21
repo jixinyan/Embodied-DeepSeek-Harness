@@ -73,12 +73,24 @@
             <dt>Superseded versions</dt>
             <dd data-storage="superseded">Not loaded</dd>
           </div>
+          <div>
+            <dt>Original images</dt>
+            <dd data-storage="images">Not loaded</dd>
+          </div>
+          <div>
+            <dt>Model request cache</dt>
+            <dd data-storage="image-cache">Not loaded</dd>
+          </div>
         </dl>
         <div class="storage-actions">
           <button id="refresh-storage" class="button small">Refresh storage</button>
           <button id="compact-storage" class="button small" disabled>Compact journal</button>
+          <button id="clear-image-cache" class="button small" disabled>
+            Clear model image cache
+          </button>
         </div>
         <p data-storage="status" role="status">Open to inspect storage.</p>
+        <p data-storage="image-status" role="status">Image usage has not been inspected.</p>
       </details>
       <section class="session-launcher" aria-label="User session launcher">
         <div class="launcher-heading">

@@ -1,6 +1,6 @@
 # Current capability map
 
-Snapshot: 2026-09-13. Upper runtime, model transport and standalone policy/action admission are tested; live physical integration is pending.
+Snapshot: 2026-09-21. Upper runtime, model transport and standalone policy/action admission are tested; live physical integration is pending.
 
 ![Implemented capabilities and remaining work](../architecture/assets/implementation-status.svg)
 
@@ -104,7 +104,7 @@ The server owns a native attachment context and injects its service into deploym
 environment and task factories. The local provider stores and validates actual bytes;
 the console reader resolves persisted run/evidence/image identities and rejects
 restricted or unassociated images. Latest and agent-seen frames render through the same
-multi-image component with load/dimension/error status. Seventeen actual file/HTTP tests
+multi-image component with load/dimension/error status. Twenty-three actual file/HTTP tests
 and browser component DOM checks cover this path. Live VLM/provider acceptance and
 media retention remain required. [Image service guide](image-storage.md).
 
@@ -114,5 +114,11 @@ LocalStore can atomically compact superseded record versions while retaining all
 current records, their CAS versions, global sequence and independent history. The
 console exposes storage statistics and idle-only maintenance with a fresh sequence
 check. Real-file/process tests cover reopening, corruption, interrupted publication
-and retained history/image references. Distinct-key and media retention remain open.
+and retained history/image references. Distinct-key and original-image retention remain open.
 [Maintenance guide](storage-maintenance.md).
+
+Image storage reports original/cache usage and supports explicit cleanup of derived
+model-request images through the same idle admission boundary. Cleanup requires a
+current provider revision, excludes image writers and retains original evidence bytes.
+Custom providers can expose the optional maintenance controller. Actual file tests
+cover cache regeneration, busy/stale conflicts, invalid entries and shutdown.

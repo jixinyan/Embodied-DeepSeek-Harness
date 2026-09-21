@@ -4,7 +4,9 @@
 DSH attachment service for encoded-image storage and model request projection.
 Its deployment context owns storage limits and shutdown. Application evidence grants
 remain separate from byte access; the server injects image services into deployments
-and supplies scoped console image reads.
+and supplies scoped console image reads. Image inventory and explicit request-cache
+cleanup preserve original objects, require a current provider revision and exclude
+concurrent image mutations. Custom providers can expose the optional maintenance API.
 
 [local-store.ts](src/local-store.ts) implements a single-writer CAS journal with checksum validation, fsync and incomplete-tail recovery. The application stores events, plans, files, recovery, skills and read-only DSH audits.
 

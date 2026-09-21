@@ -159,6 +159,15 @@ test('real HTTP image reads preserve saved bytes and scope across journal compac
       new Uint8Array(await compacted.arrayBuffer()),
       (await images.readImage(ref)).data,
     );
+    await images.readImageRequest(ref, { maxPixels: 128 * 128, maxBytes: 64 * 1024 });
+    const inspected = await images.inspectStorage();
+    assert.equal((await images.clearRequestCache(inspected.revision)).removedFiles, 1);
+    const afterCacheCleanup = await fetch(url + path);
+    assert.equal(afterCacheCleanup.status, 200);
+    assert.deepEqual(
+      new Uint8Array(await afterCacheCleanup.arrayBuffer()),
+      (await images.readImage(ref)).data,
+    );
   });
 });
 

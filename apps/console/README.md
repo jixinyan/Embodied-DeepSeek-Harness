@@ -111,9 +111,14 @@ DOM checks. Camera streaming, live VLM behavior and physical execution remain un
 ## Workspace storage
 
 The expandable Workspace storage section displays journal size, current record count
-and superseded-version bytes. Refresh reads the latest statistics. Compact journal
+and superseded-version bytes, plus original-image and model-request-cache file/byte
+counts. Refresh reads the latest statistics. Compact journal
 submits the inspected write sequence, displays the reclaimed bytes and preserves all
 current records and independent history. The server requires an idle workspace and
 ends retained terminal task scopes before maintenance. Stale observations and busy
-session/task states return explicit errors. See the
+session/task states return explicit errors. Clear model image cache removes regenerable
+request variants and retains original images. The button requires a ready inventory,
+nonempty cache and an idle workspace. Busy and unsupported providers have explicit
+status messages. Cache cleanup uses the inspected revision; refreshing updates that
+revision after image activity. See the
 [maintenance format, lifecycle and acceptance](../../docs/implementation/storage-maintenance.md).

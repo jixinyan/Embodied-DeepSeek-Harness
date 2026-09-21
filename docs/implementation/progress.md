@@ -1,12 +1,13 @@
 # Implementation progress
 
-Spec: v1.20. Current checkpoint: **DSH upper application with scoped images and explicit journal maintenance**.
+Spec: v1.21. Current checkpoint: **DSH upper application with scoped images and explicit journal/image-cache maintenance**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The latest delivery adds atomic journal compaction and idle-only console maintenance.
+The latest delivery adds image inventory and explicit request-cache cleanup alongside
+atomic journal compaction and idle-only console maintenance.
 Application-owned image storage and scoped HTTP reads support the observation renderer.
 Durable evidence, paged history and incremental
 transport support upper-first integration. Model/policy adapters and standalone action
@@ -56,11 +57,12 @@ storage acceptance uses actual files, HTTP sockets and authored documents:
 - Formatting, strict TypeScript, public English/local links, Python imports and SVG
   XML checks pass. Tests use fixtures; no live model, GPU policy or robot is evaluated.
 
-Current focused checks: 15 storage/admission tests, 17 image/lifetime/HTTP tests,
-eight evidence-storage tests, 16 history checks and 22 console logic/transport tests
-pass. Browser component DOM checks cover actual image loading and document-journal
-compaction. TypeScript, formatting, provenance and structure checks pass. Scripted
-runtime tests were not executed for this checkpoint.
+Current focused checks: 16 storage/admission tests, 23 image/lifetime/HTTP tests and
+22 console logic/transport tests pass. The preceding journal checkpoint also passed
+eight evidence-storage tests and 16 history checks. Browser component DOM checks cover
+actual image loading, request-cache cleanup and document-journal compaction. TypeScript,
+formatting, provenance and structure checks pass. Scripted runtime tests were not
+executed for this checkpoint.
 
 Remaining: live VLM and sensor-provider acceptance; host-to-Python worker
 transport; actual simulator, learned policy, perception and hardware adapters; resource
@@ -941,3 +943,34 @@ Remaining upper work: distinct-key/run/session retention; binary object/cache re
 accounting and collection; grant/reference and native audit/context lifetime; active-task
 clarification; provider-backed criteria discovery; live VLM acceptance and CLI-free
 bootstrap. Actual worker/provider integration retains its separate scope.
+
+## Image inventory and explicit request-cache cleanup (2026-09-21)
+
+LocalImageStore streams original/cache file counts and byte usage, returning a busy
+state during overlapping mutations. Cleanup requires the current service revision and
+excludes publication, model-request reads, inspection and other maintenance. Preflight
+rejects unexpected entries and symbolic links before deletion. Recognized derived
+variants and cache staging files are removed; original images and original staging
+remain available. Subsequent model requests regenerate their variants from the originals.
+Cancellation or filesystem failure during deletion can leave a partially cleared cache
+and returns an error. Native shutdown waits for admitted cleanup.
+
+The default server image provider exposes inventory and cleanup. Custom native mounts
+may return an optional maintenance controller. Configuration reports that capability;
+the console displays usage and a guarded cleanup action. HTTP admission uses the same
+idle/session/task guard as journal compaction and requires an inspected image revision.
+No user data is cleaned automatically.
+
+Validation: 23 actual image-file/HTTP/lifetime tests, 16 storage/admission tests and
+22 console logic/transport tests pass. Browser component checks use production markup,
+controller and storage operations with an actual PNG and document journal. They verify
+cache clearing, empty-cache button state, identical original-image SHA-256 before/after,
+and subsequent journal compaction with the document's CAS version retained. TypeScript,
+formatting, source provenance, structure and whitespace checks pass. No live model or
+physical provider runs in these checks; full application maintenance while draining
+live consumers remains unverified.
+
+Next: complete domain-aware retention for run/session/evidence/audit records and original
+media references; finish active-task clarification, provider-backed criteria discovery,
+live VLM acceptance and CLI-free bootstrap. The actual worker/provider integrations
+remain separate physical-runtime work. The upper-runtime objective remains incomplete.

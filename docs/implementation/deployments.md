@@ -121,7 +121,11 @@ The default provider uses `dataDirectory`; `imageStorage` configures its limits.
 Custom providers use `mountImages(context, directory)` and the native AttachmentStore
 interface. The two options are mutually exclusive. Service cleanup runs on startup
 failure and after consumers stop during shutdown. Public configuration exposes image
-limits, while byte reads use persisted run/evidence scope and visibility.
+limits and maintenance capability, while byte reads use persisted run/evidence scope
+and visibility. A custom mount may return an `ImageStorageMaintenance` controller;
+the default local provider exposes usage inspection and explicit request-cache cleanup.
+Providers without a controller remain usable for images. Maintenance requires an idle
+workspace and a current provider revision. See the [maintenance API](storage-maintenance.md).
 
 ## Configured model and policy endpoints
 

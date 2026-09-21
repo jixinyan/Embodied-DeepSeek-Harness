@@ -14,14 +14,25 @@ import { admitSessionTask } from './task-admission.js';
 import { RunEventStream } from './run-event-stream.js';
 import { HttpError, assertLocalRequest } from './local-http.js';
 import { serveEvidenceImage } from './evidence-images.js';
-import { admitStorageCompaction, maintenanceBlocker } from './storage-maintenance.js';
+import {
+  admitStorageCompaction,
+  admitImageCacheCleanup,
+  maintenanceBlocker,
+} from './storage-maintenance.js';
 import {
   runEventCursor,
   maxEventBatch,
   maxEventBatchBytes,
 } from '../../console/public/run-update.js';
 import { FileTeamLoader } from '@edh/teams';
-import { LocalStore, SessionAudits, LocalImageStore, type LocalImageOptions } from '@edh/storage';
+import {
+  LocalStore,
+  SessionAudits,
+  LocalImageStore,
+  ImageMaintenanceConflict,
+  type LocalImageOptions,
+  type ImageStorageMaintenance,
+} from '@edh/storage';
 import { SkillLibrary, type SkillBundle } from '@edh/memory';
 import { RunHistory, RecoveryHistory, type RunState } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
@@ -37,7 +48,10 @@ export interface LocalServerOptions {
     | ServerDeployment
     | ((services: DeploymentServices) => ServerDeployment | Promise<ServerDeployment>);
   imageStorage?: Omit<LocalImageOptions, 'directory'>;
-  mountImages?: (context: Context, directory: string) => void | Promise<void>;
+  mountImages?: (
+    context: Context,
+    directory: string,
+  ) => void | ImageStorageMaintenance | Promise<void | ImageStorageMaintenance>;
 }
 export interface DemoServerOptions extends DemoDeploymentOptions {
   dataDirectory: string;
@@ -94,15 +108,38 @@ export async function startServer(options: LocalServerOptions) {
   const imageContext = new Context();
   try {
     const directory = resolve(options.dataDirectory);
-    if (options.mountImages) await options.mountImages(imageContext, directory);
-    else await imageContext.plugin(LocalImageStore, { ...options.imageStorage, directory });
+    let imageMaintenance: ImageStorageMaintenance | undefined;
+    if (options.mountImages) {
+      const mounted = await options.mountImages(imageContext, directory);
+      if (mounted !== undefined) {
+        if (
+          !mounted ||
+          typeof mounted.inspect !== 'function' ||
+          typeof mounted.clearRequestCache !== 'function'
+        )
+          throw new Error('Image maintenance requires inspect and clearRequestCache methods.');
+        imageMaintenance = mounted;
+      }
+    } else {
+      await imageContext.plugin(LocalImageStore, { ...options.imageStorage, directory });
+      const images = imageContext.attachments as LocalImageStore;
+      imageMaintenance = {
+        inspect: (signal) => images.inspectStorage(signal),
+        clearRequestCache: (revision, signal) => images.clearRequestCache(revision, signal),
+      };
+    }
     if (!imageContext.attachments) throw new Error('Image provider did not mount attachments.');
     const services = Object.freeze({ images: imageContext.attachments });
     const deployment =
       typeof options.deployment === 'function'
         ? await options.deployment(services)
         : options.deployment;
-    return await startApplication({ ...options, deployment }, imageContext, services);
+    return await startApplication(
+      { ...options, deployment },
+      imageContext,
+      services,
+      imageMaintenance,
+    );
   } catch (error) {
     try {
       await imageContext.fiber.dispose();
@@ -117,6 +154,7 @@ async function startApplication(
   options: LocalServerOptions & { deployment: ServerDeployment },
   imageContext: Context,
   services: DeploymentServices,
+  imageMaintenance?: ImageStorageMaintenance,
 ) {
   const validator = await readValidator(options.root);
   const deployment = prepareDeployment(options.deployment, validator);
@@ -189,7 +227,11 @@ async function startApplication(
       deploymentDigest,
       description: deployment.metadata.description,
       models: deployment.metadata.models,
-      imageStorage: { available: true, limits: services.images.imageLimits },
+      imageStorage: {
+        available: true,
+        limits: services.images.imageLimits,
+        maintenance: Boolean(imageMaintenance),
+      },
       launchProfiles: deployment.metadata.launchProfiles,
       launchTeams: Object.fromEntries(
         [...launchTeams].map(([id, selected]) => [
@@ -236,7 +278,12 @@ async function startApplication(
         sessionId: userSessions.activeId,
         activeTask: Boolean(active && !terminal(active.state.state)),
       });
-    const storageView = () => ({ statistics: store.statistics(), blockedBy: storageBlocker() });
+    const storageView = async () => {
+      const images = imageMaintenance
+        ? { available: true, inspection: await imageMaintenance.inspect(shutdown.signal) }
+        : { available: false };
+      return { statistics: store.statistics(), blockedBy: storageBlocker(), images };
+    };
     const streams = new Map<ServerResponse, RunEventStream<RunState>>();
     const runRecord = (id: string) => {
       const state =
@@ -302,10 +349,19 @@ async function startApplication(
         if (method === 'GET' && url.pathname === '/api/config')
           return json(res, 200, publicConfiguration);
         if (method === 'GET' && url.pathname === '/api/storage')
-          return json(res, 200, storageView());
-        if (method === 'POST' && url.pathname === '/api/storage/compact') {
+          return json(res, 200, await storageView());
+        if (
+          method === 'POST' &&
+          ['/api/storage/compact', '/api/storage/clear-request-cache'].includes(url.pathname)
+        ) {
           const input = await body(req);
-          admitStorageCompaction(input, store.statistics(), storageBlocker());
+          const clearImages = url.pathname === '/api/storage/clear-request-cache';
+          let imageRevision: string | undefined;
+          if (clearImages) {
+            if (!imageMaintenance)
+              throw new HttpError(501, 'This image provider does not expose cache maintenance.');
+            imageRevision = admitImageCacheCleanup(input, storageBlocker());
+          } else admitStorageCompaction(input, store.statistics(), storageBlocker());
           admitting = true;
           let release!: () => void;
           admissionDone = new Promise<void>((done) => {
@@ -318,11 +374,31 @@ async function startApplication(
               active = undefined;
             }
             shutdown.signal.throwIfAborted();
+            if (clearImages) {
+              const result = await imageMaintenance!.clearRequestCache(
+                imageRevision!,
+                shutdown.signal,
+              );
+              return json(res, 200, {
+                statistics: store.statistics(),
+                blockedBy: null,
+                images: { available: true, inspection: result.after },
+                result: { ...result, operation: 'request_cache_clear' },
+              });
+            }
             const result = store.compact();
-            return json(res, 200, { statistics: store.statistics(), blockedBy: null, result });
+            return json(res, 200, {
+              statistics: store.statistics(),
+              blockedBy: null,
+              result: { ...result, operation: 'journal_compaction' },
+            });
           } catch (failure) {
             throw new HttpError(
-              shutdown.signal.aborted ? 503 : 500,
+              shutdown.signal.aborted
+                ? 503
+                : failure instanceof ImageMaintenanceConflict
+                  ? 409
+                  : 500,
               failure instanceof Error ? failure.message : String(failure),
             );
           } finally {
