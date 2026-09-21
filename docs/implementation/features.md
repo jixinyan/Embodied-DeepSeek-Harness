@@ -84,5 +84,6 @@ semantic ranking and section loading remain unimplemented. See the
 
 Implemented: cursor-based SSE event batches, projection-only text updates, native
 reconnection, strict client continuity checks and write backpressure. UpperRun emits
-lightweight change notifications. Full initial history and cumulative store/browser
-memory still require retention work. [Protocol and checks](run-stream.md).
+lightweight change notifications. Initial history loads in bounded pages through a
+fixed event count; incremental projections read only the requested event window.
+Cumulative store/browser memory still requires retention work. [Protocol and checks](run-stream.md).

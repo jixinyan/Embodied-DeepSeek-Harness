@@ -110,6 +110,28 @@ test('restart annotation is included in the visible cursor and survives a later 
   assert.equal(createRunUpdate(state, 3).events.length, 0);
 });
 
+test('partial event windows preserve absolute cursors and reject missing pages', () => {
+  const state = { id: 'transport-check', events: notes(300) };
+  const window = {
+    ...state,
+    eventOffset: 128,
+    eventCount: 300,
+    events: state.events.slice(128, 256),
+  };
+  const update = createRunUpdate(window, 128);
+  assert.equal(update.afterSequence, 128);
+  assert.equal(update.throughSequence, 256);
+  assert.equal(update.eventTotal, 300);
+  assert.equal(update.projection, null);
+  for (const invalid of [
+    { ...window, eventOffset: 129 },
+    { ...window, eventCount: 200 },
+    { ...window, eventCount: undefined },
+    { ...window, events: [] },
+  ])
+    assert.throws(() => createRunUpdate(invalid, 128));
+});
+
 test('snapshot clients receive the complete projection over real HTTP', async (t) => {
   const state = { id: 'transport-check', events: notes(3), status: 'ready' };
   const server = createServer((_req, res) => {
@@ -148,6 +170,7 @@ test(
     let connections = 0;
     let lastEventId;
     let backpressureObserved = false;
+    const readCursors = [];
     let current = { ...state, events: [], status: 'loading' };
     let active;
     const streams = new Set();
@@ -160,7 +183,15 @@ test(
       const stream = new RunEventStream(
         state.id,
         res,
-        () => state,
+        (afterSequence) => {
+          readCursors.push(afterSequence);
+          return {
+            ...state,
+            eventCount: state.events.length,
+            eventOffset: afterSequence,
+            events: state.events.slice(afterSequence, afterSequence + maxEventBatch),
+          };
+        },
         'delta',
         cursor,
         () => streams.delete(stream),
@@ -199,6 +230,9 @@ test(
     source.close();
     assert.equal(connections, 2);
     assert.equal(lastEventId, String(initialCursor));
+    assert.equal(readCursors[0], 0);
+    assert.ok(readCursors.includes(initialCursor));
+    assert.equal(readCursors.at(-1), 300);
     assert.ok(received > 2);
     assert.equal(backpressureObserved, true);
     assert.deepEqual(current.events, state.events);

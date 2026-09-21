@@ -1,9 +1,32 @@
 # Run event streaming
 
-The console loads a complete run through `GET /api/runs/:id`, then subscribes to
+The console loads the run projection through `GET /api/runs/:id?events=none`, reads
+its history in bounded pages, then subscribes to
 `GET /api/runs/:id/events?format=delta&after=N`. `N` is the number of contiguous
 events already held by that client. The server validates the cursor before sending
 stream headers. Negative, malformed, unsafe or future cursors are rejected.
+
+## Initial history
+
+The projection returns an empty `events` array and the visible `eventCount` at that
+instant. The console fixes this count as its initial history boundary and requests
+`GET /api/runs/:id/history?after=A&through=N` until every event through `N` is loaded.
+Each response contains `runId`, `afterSequence`, `throughSequence`, `eventTotal` and
+`events`. `eventTotal` is the requested boundary, and `throughSequence` is the last
+event in that page. Pages use the same 128-entry and 256 KiB body targets as SSE.
+An empty page is valid only at the selected boundary.
+
+Concurrent events do not change the selected initial boundary. SSE catches up from
+that boundary after loading. The console checks page identity, sequence and boundary;
+switching runs stops further reads for the previous selection. The connection label
+shows history-loading progress. The original GET without `events=none` still returns
+complete history for explicit full-history clients.
+
+RunHistory reads only the requested immutable event records. A record written beyond
+the published count stays invisible. Restart annotations contribute one additional
+visible sequence from their separate namespace. Legacy inline histories remain
+readable. Startup reconciliation validates event pages without collecting every event
+into another complete history array.
 
 ## Update protocol
 
@@ -36,7 +59,7 @@ violation closes the console subscription and displays the error.
 
 The SSE `id` is `throughSequence`. Native EventSource reconnects with `Last-Event-ID`,
 which takes precedence over the original `after` query. The client retains previously
-accepted batches across reconnects. A new page load obtains a complete run again.
+accepted batches across reconnects. A new page load reads the initial history again in pages.
 Restart annotations participate in the visible cursor even though their durable
 records have a separate namespace. No physical commands are replayed by this stream.
 
@@ -53,6 +76,10 @@ concurrent event streams to 16.
 `ApplicationOptions.onChange` receives only `{ id, state, updatedAt }`. Consumers
 request `UpperRun.snapshot()` when they need the full run. This prevents full history
 cloning on every model text chunk solely to announce that the run changed.
+`UpperRun.projection()` clones current state with an empty event array and the
+published count. Incremental server views read only the event page following the
+subscriber's cursor. A text-only update reads no historical event bodies. Complete
+`snapshot()` and full-history API reads remain explicit operations.
 
 ## Validation and remaining limits
 
@@ -63,8 +90,15 @@ crosses actual writable backpressure, and receives a projection-only update. The
 console check command enables Node's experimental EventSource implementation.
 No model, policy, simulator or hardware execution is represented by these checks.
 
-The initial GET still transfers full history. Server projection construction, the
-active run, LocalStore and the browser still retain complete histories. Journal
-compaction, history pagination, media retention and the 4,000-event run budget require
-separate work. Incremental transmission reduces repeated network payloads; it does
-not establish bounded lifetime storage or live-model performance.
+`pnpm test:history` runs [journal page checks](../../tests/runtime/run-history-pages.test.ts)
+against real LocalStore persistence and the production client merger. They cover a
+fixed boundary during append, bounded reads, UTF-8 sizes, single large events,
+detached results, unpublished suffixes, restart annotations, legacy data, journal
+reopening and invalid boundaries. The HTTP stream test also uses partial event windows
+to exercise absolute cursors across reconnection and projection-only updates.
+
+The active run, LocalStore and the browser still retain complete histories. Journal
+compaction, browser history eviction, media retention and the 4,000-event run budget
+require separate work. Current projections still contain assignment and task data,
+and a single large event remains atomic. Bounded event reads and transfer do not
+establish bounded lifetime storage or live-model performance.

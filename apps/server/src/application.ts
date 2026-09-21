@@ -287,6 +287,10 @@ export class UpperRun {
   snapshot(): RunState {
     return structuredClone(this.state);
   }
+  projection(): RunState {
+    const { events, ...state } = this.state;
+    return structuredClone({ ...state, events: [], eventCount: events.length });
+  }
   private notifyChange(): void {
     const { id, state, updatedAt } = this.state;
     this.options.onChange?.({ id, state, updatedAt });

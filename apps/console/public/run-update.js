@@ -12,14 +12,24 @@ export function runEventCursor(value, total) {
 }
 
 export function createRunUpdate(state, afterSequence) {
-  const total = state.events.length;
+  const offset = state.eventOffset ?? 0;
+  const total = state.eventOffset === undefined ? state.events.length : state.eventCount;
+  if (
+    !Number.isSafeInteger(offset) ||
+    !Number.isSafeInteger(total) ||
+    offset < 0 ||
+    offset > afterSequence ||
+    offset + state.events.length > total
+  )
+    throw new Error('Invalid run history window.');
   if (!Number.isSafeInteger(afterSequence)) throw new Error('Invalid run event cursor.');
   runEventCursor(String(afterSequence), total);
   const events = [];
   let bytes = 0;
   const encoder = new TextEncoder();
-  for (let index = afterSequence; index < Math.min(afterSequence + maxEventBatch, total); index++) {
-    const event = state.events[index];
+  const end = Math.min(afterSequence + maxEventBatch, offset + state.events.length, total);
+  for (let index = afterSequence; index < end; index++) {
+    const event = state.events[index - offset];
     if (event.sequence !== index + 1) throw new Error('Run history is not contiguous.');
     const size = encoder.encode(JSON.stringify(event)).byteLength;
     if (events.length && bytes + size > maxEventBatchBytes) break;
@@ -27,7 +37,8 @@ export function createRunUpdate(state, afterSequence) {
     bytes += size;
   }
   const throughSequence = afterSequence + events.length;
-  const { events: omitted, ...projection } = state;
+  if (!events.length && throughSequence < total) throw new Error('Incomplete run history window.');
+  const { events: omitted, eventOffset: omittedOffset, ...projection } = state;
   return {
     protocol: runUpdateProtocol,
     runId: state.id,
@@ -37,6 +48,17 @@ export function createRunUpdate(state, afterSequence) {
     events,
     projection: throughSequence === total ? { ...projection, eventCount: total } : null,
   };
+}
+
+export function appendRunHistory(current, page) {
+  if (!page || page.eventTotal !== current.eventCount)
+    throw new Error('Run history page changed the selected boundary.');
+  const { events, ...projection } = current;
+  return mergeRunUpdate(current, {
+    ...page,
+    protocol: runUpdateProtocol,
+    projection: page.throughSequence === current.eventCount ? projection : null,
+  });
 }
 
 export function mergeRunUpdate(current, update) {

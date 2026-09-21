@@ -80,7 +80,8 @@ loads. Sidebar task labels use the actual submitted instruction. See the
 
 ## Incremental run updates
 
-After loading a run, the console subscribes from its current event cursor. It appends
+The console reads a projection and bounded history pages through a fixed event count,
+then subscribes from that cursor. It appends
 contiguous batches and renders the current projection when catch-up completes. Native
 EventSource resumes accepted batches after a connection loss. Model text updates with
 no new domain events reuse local history without receiving it again. Invalid updates

@@ -12,7 +12,11 @@ import { validateLaunchSelection } from '../../console/public/launch-selection.j
 import { consoleContentSecurityPolicy, readConsoleAsset } from './console-assets.js';
 import { admitSessionTask } from './task-admission.js';
 import { RunEventStream } from './run-event-stream.js';
-import { runEventCursor } from '../../console/public/run-update.js';
+import {
+  runEventCursor,
+  maxEventBatch,
+  maxEventBatchBytes,
+} from '../../console/public/run-update.js';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
 import { SkillLibrary, type SkillBundle } from '@edh/memory';
@@ -196,18 +200,27 @@ export async function startServer(options: LocalServerOptions) {
     let closePromise: Promise<void> | undefined;
     const shutdown = new AbortController();
     const streams = new Map<ServerResponse, RunEventStream<RunState>>();
-    const runView = (id: string) => {
+    const runRecord = (id: string) => {
       const state =
-        active?.state.id === id
-          ? active.snapshot()
-          : (() => {
-              const record = store.get<RunState>(`run:${id}`);
-              return record ? history.restore(record.value) : undefined;
-            })();
+        active?.state.id === id ? active.projection() : store.get<RunState>(`run:${id}`)?.value;
       if (!state) throw new HttpError(404, 'Run not found.');
+      return state;
+    };
+    const runView = (id: string, eventSelection: 'all' | 'none' | number = 'all') => {
+      const state = runRecord(id);
+      const eventCount = history.total(state);
+      const events =
+        eventSelection === 'all'
+          ? history.restore(state).events
+          : eventSelection === 'none'
+            ? []
+            : history.page(state, eventSelection, eventCount, maxEventBatch, maxEventBatchBytes)
+                .events;
       return {
         ...state,
-        eventCount: state.events.length,
+        events,
+        eventCount,
+        ...(typeof eventSelection === 'number' ? { eventOffset: eventSelection } : {}),
         configuration: store.get(`run-config:${id}`)?.value ?? null,
         submission: store.get(`run-submission:${id}`)?.value ?? null,
         userSessionId:
@@ -505,21 +518,35 @@ export async function startServer(options: LocalServerOptions) {
           }
         }
         const match =
-          /^\/api\/runs\/([A-Za-z0-9-]+)(?:\/(events|pause|resume|stop|audit|recovery))?$/.exec(
+          /^\/api\/runs\/([A-Za-z0-9-]+)(?:\/(events|history|pause|resume|stop|audit|recovery))?$/.exec(
             url.pathname,
           );
         if (match) {
           const id = match[1]!;
           const operation = match[2];
-          const view = runView(id);
-          if (method === 'GET' && !operation) return json(res, 200, view);
+          const record = runRecord(id);
+          if (method === 'GET' && !operation) {
+            const events = url.searchParams.get('events') ?? 'all';
+            if (events !== 'none' && events !== 'all')
+              throw new HttpError(400, 'Unsupported run history selection.');
+            return json(res, 200, runView(id, events));
+          }
+          if (method === 'GET' && operation === 'history') {
+            const total = history.total(record);
+            const through = runEventCursor(url.searchParams.get('through') ?? String(total), total);
+            const after = runEventCursor(url.searchParams.get('after') ?? '0', through);
+            return json(
+              res,
+              200,
+              history.page(record, after, through, maxEventBatch, maxEventBatchBytes),
+            );
+          }
           if (method === 'GET' && operation === 'audit')
             return json(res, 200, { sessions: new SessionAudits(store).read(id) });
           if (method === 'GET' && operation === 'recovery') {
-            const state = runView(id);
             return json(res, 200, {
-              recovery: state.recoveryId
-                ? (store.get(`recovery:${state.recoveryId}`)?.value ?? null)
+              recovery: record.recoveryId
+                ? (store.get(`recovery:${record.recoveryId}`)?.value ?? null)
                 : null,
             });
           }
@@ -530,7 +557,7 @@ export async function startServer(options: LocalServerOptions) {
               throw new HttpError(400, 'Unsupported run stream format.');
             const resume = req.headers['last-event-id'] ?? url.searchParams.get('after') ?? '0';
             if (typeof resume !== 'string') throw new HttpError(400, 'Invalid run event cursor.');
-            const cursor = format === 'delta' ? runEventCursor(resume, view.events.length) : 0;
+            const cursor = format === 'delta' ? runEventCursor(resume, history.total(record)) : 0;
             res.writeHead(200, {
               'Content-Type': 'text/event-stream',
               'Cache-Control': 'no-cache',
@@ -539,7 +566,7 @@ export async function startServer(options: LocalServerOptions) {
             const entry = new RunEventStream(
               id,
               res,
-              () => runView(id),
+              (afterSequence) => runView(id, afterSequence ?? 'all'),
               format,
               cursor,
               () => streams.delete(res),

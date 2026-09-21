@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.16. Current checkpoint: **runnable DSH upper application and CPU console**.
+Spec: v1.17. Current checkpoint: **runnable DSH upper application and CPU console**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -664,3 +664,30 @@ Remaining: bounded journal/browser retention, paginated initial history, retaine
 cleanup, provider-backed criteria discovery, active-task clarification, live VLM
 evaluation and local-server bootstrap. The 4,000-event run limit and full projection
 construction remain in place. Physical integration retains its separate acceptance.
+
+## Bounded history reads (2026-09-20)
+
+RunHistory now reads bounded ranges directly from published event records. Initial
+console loading fixes an event boundary, requests pages through that boundary and
+then subscribes to later updates. Changing the selected run stops additional reads
+for the previous selection. The console displays loading progress. SSE projection
+construction uses UpperRun.projection plus the requested event page; text-only
+updates read no historical event bodies. Explicit full snapshots remain available.
+Startup interruption validates pages without collecting another full event array.
+
+The page API preserves detached records, legacy inline data, immutable publication
+boundaries and separately stored restart annotations. Unpublished suffixes stay
+invisible; invalid cursors and missing requested records fail immediately. The
+[stream guide](run-stream.md) documents request fields and remaining memory limits.
+
+Validation: six `pnpm test:history` cases use real LocalStore files for concurrent
+append, fixed boundaries, limited reads, UTF-8 size limits, oversized events, restart
+annotations, legacy records and reopen behavior. Seventeen console checks pass,
+including native HTTP reconnect using partial event windows and absolute cursors.
+Five task-admission checks, TypeScript, formatting, JavaScript syntax, DSH provenance,
+documentation links and whitespace checks pass. No model or physical provider was
+executed; the existing scripted runtime suite was not rerun.
+
+Remaining: cumulative journal/browser retention, media cleanup, the 4,000-event run
+budget, provider-backed criteria discovery, active-task clarification, live VLM
+evaluation and local-server bootstrap. Physical provider integration remains separate.

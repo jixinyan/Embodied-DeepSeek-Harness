@@ -11,7 +11,7 @@ export class RunEventStream<T extends EventState> {
   constructor(
     readonly runId: string,
     private readonly response: ServerResponse,
-    private readonly read: () => T,
+    private readonly read: (afterSequence?: number) => T,
     private readonly format: 'delta' | 'snapshot',
     afterSequence: number,
     onClose: () => void,
@@ -65,7 +65,7 @@ export class RunEventStream<T extends EventState> {
       this.dirty = true;
       return;
     }
-    const state = this.read();
+    const state = this.read(this.format === 'delta' ? this.cursor : undefined);
     if (state.id !== this.runId) throw new Error('Run stream identity changed.');
     this.dirty = false;
     if (this.format === 'snapshot') {

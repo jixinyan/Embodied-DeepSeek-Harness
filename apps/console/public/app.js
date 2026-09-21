@@ -8,7 +8,7 @@ import { renderLaunchControls } from './launch-controls.js';
 import { renderCoordination } from './coordination.js';
 import { renderTaskComposer } from './task-composer.js';
 import { taskRequest, completeTaskRequest } from './task-request.js';
-import { mergeRunUpdate } from './run-update.js';
+import { appendRunHistory, mergeRunUpdate } from './run-update.js';
 
 const $ = (id) => document.getElementById(id);
 let selection = {};
@@ -749,8 +749,24 @@ async function loadRun(id) {
   const revision = ++loadRevision;
   stream?.close();
   error('');
-  const loaded = await api(`/api/runs/${id}`);
+  let loaded = await api(`/api/runs/${id}?events=none`);
   if (revision !== loadRevision) return;
+  if (
+    loaded.id !== id ||
+    !Array.isArray(loaded.events) ||
+    loaded.events.length !== 0 ||
+    !Number.isSafeInteger(loaded.eventCount) ||
+    loaded.eventCount < 0
+  )
+    throw new Error('Invalid run history projection.');
+  while (loaded.events.length < loaded.eventCount) {
+    text('connection', `Loading history ${loaded.events.length} / ${loaded.eventCount}`);
+    const page = await api(
+      `/api/runs/${id}/history?after=${loaded.events.length}&through=${loaded.eventCount}`,
+    );
+    if (revision !== loadRevision) return;
+    loaded = appendRunHistory(loaded, page);
+  }
   current = loaded;
   feedSignature = '';
   $('follow-output').checked = true;

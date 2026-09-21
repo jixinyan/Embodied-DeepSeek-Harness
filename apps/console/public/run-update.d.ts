@@ -4,6 +4,8 @@ export const maxEventBatchBytes: number;
 export interface EventState {
   id: string;
   events: { sequence: number }[];
+  eventOffset?: number;
+  eventCount?: number;
 }
 export interface RunUpdate<T extends EventState> {
   protocol: typeof runUpdateProtocol;
@@ -20,3 +22,7 @@ export function createRunUpdate<T extends EventState>(
   afterSequence: number,
 ): RunUpdate<T>;
 export function mergeRunUpdate<T extends EventState>(current: T, update: RunUpdate<T>): T;
+export function appendRunHistory<T extends EventState>(
+  current: T,
+  page: Omit<RunUpdate<T>, 'protocol' | 'projection'>,
+): T;
