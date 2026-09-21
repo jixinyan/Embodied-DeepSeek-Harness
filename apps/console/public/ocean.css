@@ -1,0 +1,360 @@
+:root {
+  --bg: #f3f7ff;
+  --paper: #ffffff;
+  --ink: #14284a;
+  --muted: #627797;
+  --line: #dae5f5;
+  --green: #1267ed;
+  --red: #be4161;
+}
+body {
+  background: radial-gradient(ellipse at 85% 0, #dcecff 0, transparent 55%), var(--bg);
+}
+.sidebar {
+  background: linear-gradient(175deg, #ffffff 0%, #edf5ff 100%);
+  border-right-color: #d8e6fb;
+}
+.brand-logo {
+  width: 58px;
+  height: 64px;
+  object-fit: contain;
+}
+.brand {
+  color: #103979;
+  font-size: 13px;
+  font-weight: 700;
+}
+.workspace-label {
+  margin-top: 15px;
+  color: #1763c3;
+}
+header {
+  background: #ffffffb8;
+  border-bottom-color: var(--line);
+}
+.button {
+  border-color: #d4e1f4;
+  border-radius: 8px;
+  color: #355581;
+}
+.button.primary {
+  background: #0866ed;
+  color: white;
+  border-color: #0866ed;
+  box-shadow: 0 3px 10px #0967ed22;
+}
+.button:hover:not(:disabled) {
+  background: #e7f1ff;
+  border-color: #95bcf7;
+}
+.button.primary:hover:not(:disabled) {
+  background: #0059da;
+}
+:focus-visible {
+  outline: 2px solid #0866ed;
+  outline-offset: 3px;
+}
+select {
+  max-width: 100%;
+  color: #163b73;
+  border-color: #cdddf4;
+  background: #fff;
+  border-radius: 7px;
+}
+.session-launcher {
+  border-radius: 16px;
+  background: #ffffffdf;
+  box-shadow: 0 8px 30px #12366d06;
+  padding: 16px 18px;
+  margin-top: 14px;
+}
+.launcher-heading strong {
+  font-size: 15px;
+  letter-spacing: -0.2px;
+}
+.launcher-controls {
+  margin-top: 12px;
+}
+.component-selectors {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+.component-selectors label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #f3f7ff;
+  border: 1px solid #e0eafb;
+}
+.component-selectors label > span {
+  color: #536b8d;
+  font-size: 11px;
+}
+.component-selectors select {
+  width: 100%;
+  font-size: 12px;
+  padding: 8px 6px;
+}
+.component-selectors label:focus-within {
+  border-color: #3181f3;
+  background: #eaf3ff;
+}
+.launch-details {
+  display: none;
+}
+.session-launcher .section-note {
+  margin-bottom: 0;
+  font-size: 11px;
+}
+.tag {
+  border-color: #d8e6f8;
+  background: #f2f7ff;
+  color: #5577a8;
+}
+.coordination-panel {
+  margin: 0 22px 16px;
+  padding: 16px 18px 12px;
+  border: 1px solid #d8e6fa;
+  border-radius: 16px;
+  background: linear-gradient(115deg, #fff 25%, #ecf5ff);
+}
+.coordination-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.coordination-header h2 {
+  font-size: 15px;
+  font-weight: 650;
+  margin: 3px 0 0;
+}
+.coordination-header .eyebrow {
+  color: #4486d9;
+  letter-spacing: 1.4px;
+  font-size: 10px;
+}
+.coordination-body {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+  gap: 18px;
+  align-items: center;
+}
+#team-graph {
+  overflow: auto;
+  min-width: 0;
+  max-height: 180px;
+}
+#team-graph svg {
+  display: block;
+  max-height: 175px;
+  margin: auto;
+}
+.team-cards {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 14px 3px;
+}
+.role-orbit-card {
+  display: grid;
+  grid-template-columns: 35px 1fr;
+  grid-template-rows: auto auto;
+  gap: 2px 8px;
+  flex: 1 0 130px;
+  max-width: 210px;
+  text-align: left;
+  padding: 12px 10px;
+  border: 1px solid #d1e2fc;
+  border-radius: 12px;
+  background: #ffffffd9;
+  color: #214675;
+  transition:
+    border-color 180ms,
+    transform 180ms;
+}
+.role-orbit-card:hover {
+  border-color: #478cf0;
+  transform: translateY(-2px);
+}
+.role-orbit-card strong {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.role-emblem {
+  grid-row: 1 / 3;
+  width: 33px;
+  height: 33px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #e6f8ff, #bbd9ff);
+  box-shadow: inset 0 0 0 2px #ffffff;
+  color: #0665ec;
+  font-weight: 700;
+}
+.role-status {
+  font-size: 10px;
+  color: #597298;
+  text-transform: uppercase;
+}
+.role-orbit-card small {
+  grid-column: 1 / 3;
+  margin-top: 7px;
+  font-size: 10px;
+  color: #627797;
+}
+.role-orbit-card .role-model {
+  margin-top: 0;
+  overflow-wrap: anywhere;
+}
+.role-orbit-card[data-state='running'] .role-emblem {
+  animation: role-pulse 1.8s ease-in-out infinite;
+}
+#team-graph .activeRole rect {
+  stroke: #0968f5;
+  stroke-width: 2px;
+  animation: role-pulse 1.8s ease-in-out infinite;
+}
+.execution-flow {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid #dce9f9;
+}
+.workflow-phase {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  color: #627797;
+  font-size: 11px;
+  position: relative;
+}
+.workflow-phase small {
+  display: block;
+  font-size: 10px;
+  margin-top: 3px;
+}
+.workflow-phase:not(:last-child)::after {
+  content: '';
+  height: 1px;
+  background: #d5e3f7;
+  flex: 1;
+  margin: 0 12px;
+}
+.phase-orb {
+  flex: 0 0 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #d3e1f4;
+  display: grid;
+  place-items: center;
+  background: #f8fbff;
+}
+.workflow-phase:is([data-state='passed'], [data-state='published']) .phase-orb {
+  background: #e6f1ff;
+  border-color: #7daff4;
+  color: #1267ed;
+}
+.workflow-phase:is([data-state='active'], [data-state='running']) .phase-orb {
+  background: #0866ed;
+  border-color: #91caff;
+  animation: role-pulse 1.8s ease-in-out infinite;
+}
+.workflow-phase:is([data-state='active'], [data-state='running']) {
+  color: #075ee0;
+}
+.workflow-phase:is([data-state='failed'], [data-state='unknown'], [data-state='interrupted']) {
+  color: #b73e59;
+}
+.workflow-phase:is([data-state='failed'], [data-state='unknown'], [data-state='interrupted'])
+  .phase-orb {
+  border-color: #cd687e;
+  background: #fff2f5;
+}
+.workflow-phase:is([data-state='paused'], [data-state='pausing']) .phase-orb {
+  border-color: #c08b39;
+  background: #fff6e8;
+}
+.history button.active {
+  border-color: #94bcf3;
+  background: #eaf3ff;
+  box-shadow: 0 2px 8px #176ae612;
+}
+.agent-icon {
+  background: #e7f1ff;
+  color: #0866ed;
+}
+.workbench {
+  min-height: 500px;
+  height: calc(100dvh - 450px);
+  border-top-color: var(--line);
+}
+.planning-panel,
+.telemetry-panel {
+  background: #f7faff;
+}
+.conversation-panel {
+  background: #fff;
+}
+.scene {
+  border-radius: 12px;
+  overflow: hidden;
+}
+@keyframes role-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 1px #1676fa44);
+  }
+  50% {
+    filter: drop-shadow(0 0 5px #1676fa88);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (max-width: 1150px) {
+  .component-selectors {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .coordination-body {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  #team-graph {
+    max-height: 130px;
+  }
+  #team-graph svg {
+    max-height: 125px;
+  }
+}
+@media (max-width: 700px) {
+  .component-selectors {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .coordination-panel,
+  .session-launcher {
+    margin-left: 12px;
+    margin-right: 12px;
+  }
+  .execution-flow {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .workflow-phase {
+    flex: 1 0 28%;
+  }
+  .workbench {
+    height: auto;
+  }
+}

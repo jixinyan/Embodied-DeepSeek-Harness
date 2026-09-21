@@ -5,14 +5,19 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>EDH · Agent Workbench</title>
     <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/ocean.css" />
     <script type="module" src="/app.js"></script>
   </head>
   <body>
     <aside class="sidebar">
       <a class="brand" href="/"
-        ><span class="brand-symbol">EDH</span><span>Agent workbench</span></a
+        ><img class="brand-logo" src="/logo.png" alt="Embodied DeepSeek Harness" /><span
+          >Embodied<br />DeepSeek Harness</span
+        ></a
       >
-      <div class="workspace-label">Embodied DeepSeek Harness<span>Local workspace</span></div>
+      <div class="workspace-label">
+        Everything is a plugin.<span>Mission control / Local workspace</span>
+      </div>
       <div class="history-title">
         <span class="section-label">SESSIONS &amp; TASKS</span
         ><button
@@ -45,7 +50,7 @@
         <div class="breadcrumb">Workspace <span>/</span> <strong>Mission control</strong></div>
         <div class="header-actions">
           <span id="deployment-source" class="tag fixture">CONNECTING</span
-          ><button id="inspect-team" class="button small">Team config</button>
+          ><button id="inspect-team" class="button small">Inspect config</button>
         </div>
       </header>
       <div id="error" class="error" role="alert" hidden></div>
@@ -54,7 +59,7 @@
           <strong>User session</strong><span id="user-session-state" class="tag">NO SESSION</span>
         </div>
         <div class="launcher-controls">
-          <label for="launch-profile">Configuration</label>
+          <label for="launch-profile">Compatible configuration</label>
           <select
             id="launch-profile"
             aria-label="Environment, embodiment, policy and model configuration"
@@ -63,10 +68,50 @@
           <button id="end-session" class="button small" disabled>End session</button>
           <button id="workspace-skills" class="button small">Experience library</button>
         </div>
+        <div class="component-selectors" id="component-selectors">
+          <label
+            ><span>01 / Runtime</span
+            ><select id="select-source" aria-label="Runtime source"></select
+          ></label>
+          <label
+            ><span>02 / Environment</span
+            ><select id="select-environment" aria-label="Environment"></select
+          ></label>
+          <label
+            ><span>03 / Embodiment</span
+            ><select id="select-embodiment" aria-label="Embodiment"></select
+          ></label>
+          <label
+            ><span>04 / Checkpoint</span
+            ><select id="select-checkpoint" aria-label="Checkpoint"></select
+          ></label>
+          <label
+            ><span>05 / Policy</span
+            ><select id="select-policy" aria-label="Policy"></select
+          ></label>
+          <label
+            ><span>06 / Upper model default</span
+            ><select id="select-defaultModel" aria-label="Upper model default"></select
+          ></label>
+        </div>
         <div id="launch-details" class="launch-details"></div>
         <p id="session-target" class="section-note">
           Select an installed configuration to allocate an environment.
         </p>
+      </section>
+      <section class="coordination-panel" aria-label="Team coordination">
+        <div class="coordination-header">
+          <div>
+            <span class="eyebrow">COMPOSABLE ROLES</span>
+            <h2>Team coordination</h2>
+          </div>
+          <span id="team-mode" class="tag">CONFIGURATION</span>
+        </div>
+        <div class="coordination-body">
+          <div id="team-graph" aria-label="Team role graph"></div>
+          <div id="team-cards" class="team-cards"></div>
+        </div>
+        <div id="execution-flow" class="execution-flow" aria-label="Task workflow"></div>
       </section>
       <section class="mission-card">
         <div class="mission-copy">

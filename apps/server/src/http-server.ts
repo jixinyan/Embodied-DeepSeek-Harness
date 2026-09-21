@@ -8,6 +8,8 @@ import type { Context } from '@deepseek-ai/cordis';
 import { ContractValidator } from '@edh/contracts';
 import type { ResolvedPhysicalRuntimeProfile } from '@edh/execution';
 import { UserSessions, SessionConflict } from './user-sessions.js';
+import { validateLaunchSelection } from '../../console/public/launch-selection.js';
+import { consoleContentSecurityPolicy, readConsoleAsset } from './console-assets.js';
 import { FileTeamLoader } from '@edh/teams';
 import { LocalStore, SessionAudits } from '@edh/storage';
 import { SkillLibrary, type SkillBundle } from '@edh/memory';
@@ -153,6 +155,12 @@ export async function startServer(options: LocalServerOptions) {
       description: deployment.metadata.description,
       models: deployment.metadata.models,
       launchProfiles: deployment.metadata.launchProfiles,
+      launchTeams: Object.fromEntries(
+        [...launchTeams].map(([id, selected]) => [
+          id,
+          { team: selected.definition, roles: selected.members, digest: selected.sourceDigest },
+        ]),
+      ),
       ...(deployment.contextManagement ? { contextManagement: deployment.contextManagement } : {}),
       ...(deployment.metadata.physicalProfile
         ? { physicalProfile: deployment.metadata.physicalProfile }
@@ -249,10 +257,7 @@ export async function startServer(options: LocalServerOptions) {
     const server = createServer((req, res) => {
       res.setHeader('X-Content-Type-Options', 'nosniff');
       res.setHeader('Referrer-Policy', 'no-referrer');
-      res.setHeader(
-        'Content-Security-Policy',
-        "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'",
-      );
+      res.setHeader('Content-Security-Policy', consoleContentSecurityPolicy);
       void (async () => {
         if (closing) throw new HttpError(503, 'Server is stopping.');
         const port = (server.address() as AddressInfo).port;
@@ -288,13 +293,27 @@ export async function startServer(options: LocalServerOptions) {
         if (method === 'POST' && url.pathname === '/api/sessions') {
           const data = await body(req);
           if (
-            Object.keys(data).some((k) => !['profileId', 'requestId'].includes(k)) ||
+            Object.keys(data).some(
+              (k) => !['profileId', 'requestId', 'selection', 'catalogRevision'].includes(k),
+            ) ||
             typeof data.profileId !== 'string' ||
             !Object.hasOwn(deployment.launchProfiles, data.profileId) ||
             typeof data.requestId !== 'string' ||
             !/^[A-Za-z0-9-]{8,80}$/.test(data.requestId)
           )
             throw new HttpError(400, 'Choose an installed launch profile and a valid request ID.');
+          if (data.selection !== undefined || data.catalogRevision !== undefined) {
+            if (data.catalogRevision !== deploymentDigest)
+              throw new HttpError(
+                409,
+                'Configuration catalog changed. Refresh before starting a session.',
+              );
+            validateLaunchSelection(
+              deployment.metadata.launchProfiles,
+              data.profileId,
+              data.selection,
+            );
+          }
           if (admitting || (!userSessions.activeId && active && !terminal(active.state.state)))
             throw new HttpError(409, 'A task is active.');
           const profile = deployment.launchProfiles[data.profileId]!;
@@ -559,22 +578,16 @@ export async function startServer(options: LocalServerOptions) {
             return json(res, 202, { accepted: true, state: active.state.state });
           }
         }
-        if (
-          method === 'GET' &&
-          ['/', '/index.html', '/style.css', '/app.js'].includes(url.pathname)
-        ) {
-          const file = url.pathname === '/' ? 'index.html' : url.pathname.slice(1);
-          const bytes = await readFile(resolve(options.root, 'apps/console/public', file));
-          res.writeHead(200, {
-            'Content-Type': file.endsWith('.html')
-              ? 'text/html; charset=utf-8'
-              : file.endsWith('.css')
-                ? 'text/css; charset=utf-8'
-                : 'text/javascript; charset=utf-8',
-            'Cache-Control': 'no-cache',
-          });
-          res.end(bytes);
-          return;
+        if (method === 'GET') {
+          const asset = await readConsoleAsset(options.root, url.pathname);
+          if (asset) {
+            res.writeHead(200, {
+              'Content-Type': asset.contentType,
+              'Cache-Control': 'no-cache',
+            });
+            res.end(asset.bytes);
+            return;
+          }
         }
         throw new HttpError(404, 'Route not found.');
       })().catch((error) => {

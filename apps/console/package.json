@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@edh/contracts": "workspace:*"
+    "@edh/contracts": "workspace:*",
+    "mermaid": "12.0.0"
   }
 }

@@ -195,6 +195,7 @@
     "harness/**/*.ts",
     "apps/**/*.ts",
     "tests/contracts/**/*.ts",
+    "tests/console/**/*.ts",
     "tests/runtime/**/*.ts"
   ],
   "exclude": [

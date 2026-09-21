@@ -9,7 +9,7 @@
     "node": ">=22.19.0"
   },
   "scripts": {
-    "check": "pnpm format:check && pnpm check:contracts && pnpm check:provenance && pnpm typecheck && pnpm check:structure && pnpm check:python && pnpm test:runtime && pnpm test:contracts",
+    "check": "pnpm format:check && pnpm check:contracts && pnpm check:provenance && pnpm typecheck && pnpm check:structure && pnpm check:python && pnpm test:runtime && pnpm test:contracts && pnpm test:console",
     "generate:contracts": "node scripts/generate-contracts.mjs",
     "check:contracts": "node scripts/generate-contracts.mjs --check && tsx --tsconfig tsconfig.runtime.json scripts/check-contracts.mjs",
     "typecheck": "node scripts/build-dsh-types.mjs && tsc --noEmit",
@@ -19,6 +19,7 @@
     "format:check": "prettier --check \"harness/agent-runtime/*/src/index.ts\" \"harness/contracts/src/index.ts\" \"apps/*/src/index.ts\" \"scripts/*.mjs\" \"tests/contracts/*.ts\" \"harness/agent-runtime/agents/src/runtime.ts\" \"apps/server/src/runtime.ts\" \"tests/runtime/*.ts\" \"harness/contracts/src/validation.ts\" \"harness/contracts/src/lifecycle.ts\" \"harness/contracts/src/physical-boundary.ts\" \"harness/agent-runtime/*/src/*.ts\" \"apps/server/src/*.ts\" \"apps/console/public/*.{html,css,js}\" --no-error-on-unmatched-pattern",
     "check:provenance": "node scripts/check-dsh-source.mjs",
     "test:runtime": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/*.test.ts",
+    "test:console": "tsx --tsconfig tsconfig.runtime.json --test tests/console/*.test.*",
     "test:contracts": "tsx --tsconfig tsconfig.runtime.json --test --test-reporter=dot tests/contracts/*.test.ts && node scripts/test-python.mjs",
     "demo": "tsx --tsconfig tsconfig.runtime.json apps/server/src/main.ts"
   },

@@ -1,4 +1,14 @@
+import {
+  launchFields,
+  matchingProfiles,
+  profileSelection,
+  validateLaunchSelection,
+} from './launch-selection.js';
+import { renderLaunchControls } from './launch-controls.js';
+import { renderCoordination } from './coordination.js';
+
 const $ = (id) => document.getElementById(id);
+let selection = {};
 let config, current, stream, displayedFrame;
 let busy = false;
 let loadRevision = 0;
@@ -47,6 +57,24 @@ function connected(value) {
 }
 function renderLauncher() {
   const session = activeUserSession();
+  const catalog = config.launchProfiles ?? {};
+  if (session) selection = profileSelection(session.configuration.launchProfile);
+  renderLaunchControls(catalog, selection, {
+    locked: Boolean(session),
+    busy,
+    onChange: renderLauncher,
+  });
+  const matches = matchingProfiles(catalog, selection);
+  const profileSelector = $('launch-profile');
+  const ids = matches.map(([id]) => id);
+  if (profileSelector.dataset.choices !== JSON.stringify(ids)) {
+    const prior = profileSelector.value;
+    profileSelector.replaceChildren(...matches.map(([id, p]) => new Option(p.label, id)));
+    if (ids.includes(prior)) profileSelector.value = prior;
+    profileSelector.dataset.choices = JSON.stringify(ids);
+  }
+  if (session) profileSelector.value = session.profileId;
+  const complete = launchFields.every((field) => selection[field]);
   const profile =
     session?.configuration.launchProfile ?? config.launchProfiles?.[$('launch-profile').value];
   text(
@@ -75,21 +103,31 @@ function renderLauncher() {
   text(
     'session-target',
     session
-      ? `Tasks target session ${shorten(session.id)}. Environment is retained between tasks.${session.error ? ' ' + session.error : ''}`
+      ? `Tasks target session ${shorten(session.id)}. Configuration is fixed until End session; the environment is retained between tasks.${session.error ? ' ' + session.error : ''}`
       : hasLauncher()
-        ? 'New session allocates the selected environment. Only installed configuration bundles are available.'
+        ? complete && profile
+          ? `${matches.length} compatible configuration${matches.length === 1 ? '' : 's'} · Matches installed configuration bindings.`
+          : 'Choose components to resolve a compatible configuration.'
         : 'This deployment has no session launcher. The task button uses the legacy single-run API.',
   );
   for (const option of $('scenario').options)
     option.disabled = Boolean(profile && !profile.tasks.includes(option.value));
   if ($('scenario').selectedOptions[0]?.disabled) $('scenario').value = profile.tasks[0];
+  if (!current)
+    $('instruction').value = config.taskPresets?.[$('scenario').value]?.instruction ?? '';
   $('create-session').disabled =
     busy ||
     Boolean(activeUserSessionId) ||
     Boolean(activeRunId && !ended(runHistory.find((r) => r.id === activeRunId)?.state)) ||
-    !hasLauncher();
+    !hasLauncher() ||
+    !complete ||
+    !profile;
   $('end-session').disabled = busy || !session || ['opening', 'closing'].includes(session.state);
   $('launch-profile').disabled = busy || Boolean(activeUserSessionId);
+  const view = current
+    ? current.configuration
+    : (session?.configuration ?? config.launchTeams?.[profileSelector.value] ?? config);
+  renderCoordination(view, current);
 }
 async function refreshHistory() {
   const revision = ++historyRevision;
@@ -761,13 +799,17 @@ $('start').onclick = () =>
     await loadRun(result.runId);
   });
 $('launch-profile').onchange = () => {
+  selection = profileSelection(config.launchProfiles[$('launch-profile').value]);
   renderLauncher();
   updateControls();
 };
 $('create-session').onclick = () =>
   action(async () => {
+    validateLaunchSelection(config.launchProfiles, $('launch-profile').value, selection);
     await api('/api/sessions', {
       profileId: $('launch-profile').value,
+      selection,
+      catalogRevision: config.deploymentDigest,
       requestId: crypto.randomUUID(),
     });
     await refreshHistory();
