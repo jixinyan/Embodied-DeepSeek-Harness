@@ -31,9 +31,12 @@ and the video mapping. `ffmpeg` uses the recorded simulator-time interval betwee
 successive frames. The final frame repeats the last interval, or uses a
 documented 0.05-second display interval when the video contains one frame.
 The replay manifest retains the actual simulator timestamp and event sequence for
-every frame; the HTML video link resolves the current playback position to that
-recorded event and its wall-clock timestamp. A video is withheld when any source
-frame or simulator timestamp in its group is unavailable.
+every frame. It also records the actual encoded presentation timestamps from
+`ffprobe` with a 0.1-millisecond input timebase and checks them against the
+source simulator timestamps. The HTML video link resolves the current playback
+position through those encoded timestamps to the recorded event and its
+wall-clock timestamp. A video is withheld when any source frame or simulator
+timestamp in its group is unavailable.
 The encoded video repeats its final recorded frame once to hold that final
 display interval. `recordedFrameCount` and `encodedFrameCount` distinguish the
 source frames from this playback frame.

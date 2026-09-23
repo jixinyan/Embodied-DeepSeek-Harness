@@ -134,6 +134,19 @@ async function runFfmpeg(args) {
   });
 }
 
+async function encodedFramePts(file) {
+  const { stdout } = await execute('ffprobe', ['-v', 'error', '-select_streams', 'v:0',
+    '-show_entries', 'frame=best_effort_timestamp_time', '-of', 'json', file],
+  { maxBuffer: 16 * 1024 * 1024 });
+  const frames = JSON.parse(stdout).frames;
+  if (!Array.isArray(frames) || !frames.length) throw new Error('Encoded video has no frames.');
+  const timestamps = frames.map((frame) => Number(frame.best_effort_timestamp_time));
+  if (timestamps.some((value, index) => !Number.isFinite(value)
+      || (index && value <= timestamps[index - 1])))
+    throw new Error('Encoded video timestamps are invalid.');
+  return timestamps;
+}
+
 function ffconcatPath(file) {
   return file.replaceAll('\\', '\\\\').replaceAll("'", "'\\''");
 }
@@ -171,13 +184,21 @@ async function makeVideos(output, images, selectedCamera) {
     const lines = ['ffconcat version 1.0'];
     ordered.forEach((row, index) => {
       lines.push(`file '${ffconcatPath(path.resolve(output, row.file))}'`);
+      lines.push('option framerate 10000');
       lines.push(`duration ${intervals[index] ?? tailDurationS}`);
     });
     lines.push(`file '${ffconcatPath(path.resolve(output, ordered.at(-1).file))}'`);
+    lines.push('option framerate 10000');
     await writeFile(path.join(output, concat), `${lines.join('\n')}\n`);
     await runFfmpeg(['-hide_banner', '-loglevel', 'error', '-y', '-safe', '0', '-f', 'concat',
       '-i', path.join(output, concat), '-fps_mode', 'vfr', '-c:v', 'libx264',
       '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path.join(output, video)]);
+    const encodedFramePtsS = await encodedFramePts(path.join(output, video));
+    if (encodedFramePtsS.length !== ordered.length + 1)
+      throw new Error('Encoded frame count does not preserve the recorded sequence.');
+    for (const [index, row] of ordered.entries())
+      if (Math.abs(encodedFramePtsS[index] - (row.simulationTimeS - ordered[0].simulationTimeS)) > 0.00015)
+        throw new Error('Encoded frame timestamp differs from the recorded simulator time.');
     videos.push({
       file: video,
       concat,
@@ -187,7 +208,10 @@ async function makeVideos(output, images, selectedCamera) {
       tailDurationS,
       tailDurationSource: intervals.length ? 'last recorded frame interval' : 'single-frame playback duration',
       recordedFrameCount: ordered.length,
-      encodedFrameCount: ordered.length + 1,
+      encodedFrameCount: encodedFramePtsS.length,
+      encodedFramePtsS,
+      recordedFrameVideoPtsS: encodedFramePtsS.slice(0, ordered.length),
+      inputTimebaseHz: 10000,
       finalEncodedFrameRepeatsLastRecordedFrame: true,
       frameEventSequences: ordered.map((row) => row.eventSequence),
       frameSimulationTimesS: ordered.map((row) => row.simulationTimeS),
@@ -259,7 +283,7 @@ summary.textContent=data.run.scenario+' · '+data.run.state+' · '+data.run.id+'
 const availability=document.getElementById('availability');
 availability.textContent=data.missing.length?'Unavailable records: '+data.missing.join('; '):'All referenced replay records are available.';
 const videoSection=document.getElementById('videos');
-for(const item of data.videos){const box=document.createElement('article');const title=document.createElement('h2');title.textContent=item.camera+' · execution '+item.executionId;box.append(title);const video=document.createElement('video');video.controls=true;video.src=item.file;box.append(video);const caption=document.createElement('p');const link=document.createElement('a');link.href='#event-'+item.frameEventSequences[0];caption.append(link);box.append(caption);videoSection.append(box);video.addEventListener('timeupdate',()=>{const simulationTime=item.firstSimulationTimeS+video.currentTime;let index=0;for(let next=1;next<item.frameSimulationTimesS.length;next++){if(item.frameSimulationTimesS[next]>simulationTime)break;index=next;}const sequence=item.frameEventSequences[index];const event=data.events[sequence-1];link.href='#event-'+sequence;link.textContent='Frame event #'+sequence+' · simulator '+item.frameSimulationTimesS[index].toFixed(3)+' s · wall '+(event?.at??'unavailable');});}
+for(const item of data.videos){const box=document.createElement('article');const title=document.createElement('h2');title.textContent=item.camera+' · execution '+item.executionId;box.append(title);const video=document.createElement('video');video.controls=true;video.src=item.file;box.append(video);const caption=document.createElement('p');const link=document.createElement('a');link.href='#event-'+item.frameEventSequences[0];caption.append(link);box.append(caption);videoSection.append(box);video.addEventListener('timeupdate',()=>{let index=0;for(let next=1;next<item.recordedFrameVideoPtsS.length;next++){if(item.recordedFrameVideoPtsS[next]>video.currentTime)break;index=next;}const sequence=item.frameEventSequences[index];const event=data.events[sequence-1];link.href='#event-'+sequence;link.textContent='Frame event #'+sequence+' · simulator '+item.frameSimulationTimesS[index].toFixed(3)+' s · wall '+(event?.at??'unavailable');});}
 const eventSection=document.getElementById('events');
 for(const event of data.events){const box=document.createElement('article');box.className='event';box.id='event-'+event.sequence;const title=document.createElement('h3');title.textContent='#'+event.sequence+' '+event.type;box.append(title);const time=document.createElement('small');time.textContent=event.at;box.append(time);
 const refs=data.images.filter(row=>row.eventSequence===event.sequence&&row.file);if(refs.length){const gallery=document.createElement('div');gallery.className='images';for(const row of refs){const figure=document.createElement('figure');const img=document.createElement('img');img.src=row.file;img.alt=row.image.name;figure.append(img);const label=document.createElement('figcaption');label.textContent=row.image.name+' · observed '+(row.observedAt??'unavailable');figure.append(label);gallery.append(figure);}box.append(gallery);}
