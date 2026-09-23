@@ -67,6 +67,7 @@ interface RecoveryObservation {
   error?: string;
 }
 export interface ApplicationOptions {
+  runId?: string;
   sessionHistory?: SessionHistoryOptions;
   goal: GoalBinding;
   allowedSubgoalChecks?: readonly SuccessCheck[];
@@ -142,7 +143,7 @@ export class UpperRun {
     this.goal = this.goals.get(options.goal.id);
     const team = { ...options.team, teamRunId: randomUUID() };
     this.state = {
-      id: randomUUID(),
+      id: options.runId ?? randomUUID(),
       instruction: options.instruction,
       ...(options.taskContext ? { taskContext: structuredClone([...options.taskContext]) } : {}),
       scenario: options.scenario,

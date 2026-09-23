@@ -5,6 +5,10 @@ team configuration, UpperRun, a local domain store and an explicitly synthetic b
 
 - [runtime.ts](src/runtime.ts): original DSH services and cooperative timeout policy.
 - [application.ts](src/application.ts): role tools, task/verification/recovery coordination.
+- [native-worker.ts](src/native-worker.ts): retained native simulator process,
+  task-scoped backend ports, bounded transport requests, camera attachment storage,
+  and confirmed process release. The session keeps one native scene across tasks;
+  each task receives a separate run ID before its backend and UpperRun are created.
 - [http-server.ts](src/http-server.ts): admission, history, control endpoints and SSE subscriptions.
 - [user-sessions.ts](src/user-sessions.ts): retained environment lifetime, task admission
   and durable session-open request identity; [publication and checks](../../docs/implementation/user-sessions.md#session-open-request-identity).
@@ -32,4 +36,9 @@ team configuration, UpperRun, a local domain store and an explicitly synthetic b
 See [extension and lifecycle guide](../../docs/implementation/upper-runtime.md).
 Use `startServer` with explicit `ServerDeployment` bindings for tasks, native DSH
 models, tools and backend factories. `startDemoServer` supplies the CPU configuration.
-See the [deployment guide](../../docs/implementation/deployments.md) and runnable example. No real physical provider or live model is configured by default.
+See the [deployment guide](../../docs/implementation/deployments.md) and runnable example.
+The native worker requires an explicit simulator, task catalog, policy service,
+scene configuration, and isolated runtime command. The default demo remains synthetic.
+The RoboCasa process check stores actual reset camera frames and native checks under
+`.local/work/native-worker-remote`; the learned policy has not completed an action in
+that check.

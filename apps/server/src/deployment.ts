@@ -32,7 +32,12 @@ export interface SessionEnvironment {
   /** Fresh task control scope; closing this port must not destroy the environment. */
   createTaskBackend(
     taskId: string,
-    options: { signal: AbortSignal; task?: TaskDefinition; catalogRevision?: string },
+    options: {
+      signal: AbortSignal;
+      runId: string;
+      task?: TaskDefinition;
+      catalogRevision?: string;
+    },
   ): Promise<EmbodiedBackend> | EmbodiedBackend;
   /** Stop/release the environment, even after a task-port cleanup error. */
   close(): Promise<void>;

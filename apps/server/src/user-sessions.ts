@@ -243,7 +243,7 @@ export class UserSessions {
     id: string,
     taskId: string,
     requestId: string,
-    create: (backend: EmbodiedBackend, record: UserSessionRecord) => UpperRun,
+    create: (backend: EmbodiedBackend, record: UserSessionRecord, runId: string) => UpperRun,
     inputIdentity = taskId,
     definition?: { task: TaskDefinition; catalogRevision: string },
   ): Promise<{ runId: string; replayed?: boolean }> {
@@ -261,14 +261,18 @@ export class UserSessions {
       this.store.put(key, { taskId, inputIdentity, runId: null }, 0);
       current.record.state = 'running';
       this.save(current.record);
+      const runId = randomUUID();
       let backend: EmbodiedBackend | undefined;
       try {
         backend = await current.environment.createTaskBackend(taskId, {
           signal: this.shutdown.signal,
+          runId,
           ...(definition ? structuredClone(definition) : {}),
         });
         this.shutdown.signal.throwIfAborted();
-        const run = create(backend, record);
+        const run = create(backend, record, runId);
+        if (run.state.id !== runId)
+          throw new Error('Task backend and upper run have different run identities.');
         current.run = run;
         current.record = this.tasks.append(current.record, run.state.id);
         this.store.put(`run-user-session:${run.state.id}`, { sessionId: id }, 0);

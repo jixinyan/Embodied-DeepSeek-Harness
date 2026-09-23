@@ -24,6 +24,7 @@ export {
   type DomainRetirementPreview,
 } from './domain-retention.js';
 export type { TaskDefinition, TaskCatalogDefinition } from '@edh/tasks';
+export { createNativeWorkerEnvironment, type NativeWorkerConfiguration } from './native-worker.js';
 export { sessionRecordOwners } from './session-record-owners.js';
 export { evidenceRecordOwners } from './evidence-record-owners.js';
 export { reportRecordOwners } from './report-record-owners.js';

@@ -10,7 +10,7 @@ import copy
 from datetime import datetime, timedelta, timezone
 import math
 import time
-from typing import Any, Callable, Protocol
+from typing import Any, Awaitable, Callable, Protocol
 from uuid import uuid4
 
 from physical_harness.validation import ContractValidator
@@ -33,7 +33,8 @@ class ActionGate:
                  task_scope: dict[str, Any], action_spec: dict[str, Any], max_control_steps: int,
                  max_wall_time_s: float, lease_valid: Callable[[], bool],
                  max_segment_actions: int = 1, observation_ttl_s: float = 2,
-                 device_timeout_s: float = 10, clock: Callable[[], float] = time.monotonic) -> None:
+                 device_timeout_s: float = 10, clock: Callable[[], float] = time.monotonic,
+                 on_segment: Callable[[dict[str, Any], dict[str, Any]], Awaitable[None]] | None = None) -> None:
         validator.parse("ActionSpec", action_spec)
         validator.parse("ExecutionScope", task_scope)
         if type(max_control_steps) is not int or not 0 < max_control_steps <= 9007199254740991:
@@ -47,6 +48,7 @@ class ActionGate:
         self._budget, self._wall_budget = max_control_steps, max_wall_time_s
         self._lease, self._segment = lease_valid, max_segment_actions
         self._ttl, self._device_timeout, self._clock = observation_ttl_s, device_timeout_s, clock
+        self._on_segment = on_segment
         self._started = clock()
         self._generation = 0
         self._state = "running"
@@ -141,6 +143,8 @@ class ActionGate:
                 if any(receipt[key] != segment[key] for key in ("execution_id", "generation", "segment_id")) or receipt["executed_actions"] > len(actions):
                     raise GateRejected("Device receipt does not match the issued segment.")
                 self._executed += receipt["executed_actions"]
+                if self._on_segment is not None and receipt["executed_actions"]:
+                    await self._on_segment(copy.deepcopy(segment), copy.deepcopy(receipt))
                 if self._generation != bound["generation"] or self._state != "running":
                     break
                 if receipt["executed_actions"] != len(actions):

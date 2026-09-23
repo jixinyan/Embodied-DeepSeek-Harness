@@ -610,10 +610,11 @@ async function startApplication(
               id,
               taskId,
               submission.requestId,
-              (backend, session) => {
+              (backend, session, runId) => {
                 if (backend.source !== (profile.source ?? deployment.metadata.source))
                   throw new Error('Backend source differs from launch profile.');
                 const run = new UpperRun({
+                  runId,
                   host: dsh,
                   team: launchTeams.get(record.profileId)!,
                   validator,
