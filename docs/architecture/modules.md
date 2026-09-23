@@ -5,8 +5,9 @@ from DSH into these modules. Step 00 verifies the original loop and scoped lifec
 upper Team, planning, verification and experience services now run with CPU fixtures.
 OpenAI-compatible model transport, WebSocket policy transport and action admission
 are executable with local protocol/CPU tests. The RoboCasa native adapter and action device
-also pass GPU rendering and manual-control boundary checks. BEHAVIOR-1K, RoboTwin,
-learned-policy execution and the complete worker-to-host workflow are under integration.
+also pass GPU rendering and manual-control boundary checks. The native worker passes
+actual reset, image transport and connection-failure checks. BEHAVIOR-1K, RoboTwin,
+learned-policy execution and complete upper tasks are under integration.
 See the [adapter boundaries](../implementation/model-policy-adapters.md).
 
 ![Architecture](assets/framework-overview.svg)

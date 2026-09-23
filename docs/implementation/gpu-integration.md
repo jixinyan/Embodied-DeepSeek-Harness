@@ -199,6 +199,29 @@ native `opengl` convention accounted for by the simulator adapter. The policy
 consumes those PNG pixels directly. Evidence is retained at
 `.local/work/robocasa-camera-parity/result.json`; this check executes no policy.
 
+## Native worker transport checks
+
+The `4428fb6` worker checkpoint passes actual process checks with the installed
+RoboCasa environment on GPU 5. The TypeScript host runs locally and connects to
+the isolated Python worker over SSH. One environment retains its scene across
+two task ports with separate run IDs. Pre-execution capture stores three real
+256 × 256 image attachments. Repeated execution request identities are rejected,
+and a native stopped-boundary check returns `task_success=false`.
+
+The policy endpoint is unavailable in this check. Its connection error reaches
+the host with the actual diagnostic, zero executed controls and an
+`ended`/`device_confirmed=true` status. This establishes failure propagation;
+learned-policy inference, in-chunk monitoring and the complete upper task remain
+pending. A separate interruption during initialization rejects the pending request
+and preserves unconfirmed resource release. Normal close requires its acknowledgement
+and worker process exit.
+
+Reports and process output are in the **local** checkout at
+`.local/work/native-worker-remote/{result.json,disconnect.json,process.log}`;
+the associated image objects are in its `images/` directory. The camera-parity
+report above is retained on the GPU host. TypeScript checking, Python compilation,
+format checks for the changed files and whitespace validation pass for this checkpoint.
+
 ## RoboTwin rendering check
 
 The pinned SAPIEN `3.0.0b1` renderer passes an actual native check on the assigned
@@ -268,7 +291,7 @@ log is `.local/work/vlm-8002-gpu7.log`. They remain deployment-local evidence.
    selection exposes only combinations whose adapter, embodiment, sensors, action mapping
    and checkpoint declarations match.
 
-The host-to-worker bridge, remaining simulator providers and learned-policy task acceptance remain
-required. Existing checkpoint directories must be checked against their manifests and
+Learned-action worker acceptance, remaining simulator providers and complete task
+acceptance remain required. Existing checkpoint directories must be checked against their manifests and
 deployment metadata before advertising compatibility. Retention owner completion and
 reviewed deletion admission remain tracked in [domain retention](domain-retention.md).

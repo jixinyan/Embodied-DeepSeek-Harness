@@ -92,8 +92,10 @@ now owns configured local-service startup; live deployment acceptance and signed
 distribution remain open. Active-task clarification
 has native/file/HTTP and console component acceptance; live task continuation remains
 required. Physical
-integration requires the host-to-Python worker bridge, resource/watchdog lifecycle
-and device event publication. See the
+integration now has a host-to-Python worker bridge with actual reset, image transport,
+independent task identities and connection-failure checks. Learned-policy execution,
+asynchronous monitoring during native controls and complete task acceptance remain
+required. See the
 [adapter guide and SVG](implementation/model-policy-adapters.md) for exact contracts,
 commands, examples and unimplemented integration. The execution port requires a formally checked pause and explicit Planner resume,
 with execution/boundary/state-version preconditions and a matching published backend

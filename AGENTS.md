@@ -13,8 +13,9 @@ requirement or deployment binding is unclear.
 - DSH-backed upper roles, tools, recovery, storage and a local console run with
   explicitly labeled CPU fixtures. HTTP model and WebSocket policy adapters plus
   standalone action admission are CPU-tested. Native RoboCasa reset, manual control
-  through ActionGate and live VLM image/tool rounds are verified. The host worker
-  bridge, learned-policy task acceptance and remaining physical providers are pending.
+  through ActionGate and live VLM image/tool rounds are verified. Native worker reset,
+  image transport and connection-failure boundaries pass real process checks.
+  Learned-action worker acceptance and remaining physical providers are pending.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.
 - Reuse DSH tool registration/dispatch/validation, sessions, inbox/followup, model
@@ -69,5 +70,6 @@ requirement or deployment binding is unclear.
 ## Adapter integration checkpoint
 
 Read `docs/implementation/model-policy-adapters.md` for executable endpoint and
-action-gate components. Real provider acceptance and the host-to-worker bridge are
-pending. Do not replace native DSH model/tool behavior or bypass the action gate.
+action-gate components. Native worker transport has partial real acceptance;
+learned-policy and complete provider workflows remain pending. Do not replace native
+DSH model/tool behavior or bypass the action gate.

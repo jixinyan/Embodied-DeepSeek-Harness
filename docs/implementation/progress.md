@@ -35,7 +35,12 @@ budget exhaustion, consecutive executions within one retained scene, and interru
 of an action sequence with stable simulation time after confirmed stop. Actual completed
 actions and internal physics steps are recorded on the simulator owner thread, including
 when an asynchronous caller is cancelled. These checks use explicit manual controls.
-Learned-policy inference, worker transport and end-to-end task acceptance remain pending.
+The native worker transport also passes real process checks at `4428fb6`: reset,
+three image attachments, two independent task run IDs in one scene, native
+`task_success=false`, and policy connection failure with a confirmed terminal
+device boundary. Interrupted initialization rejects pending requests and leaves
+resource release unconfirmed. These worker checks execute zero learned-policy
+actions. Learned-policy inference and end-to-end task acceptance remain pending.
 [Deployment isolation, source pins and actual checks](gpu-integration.md).
 
 RoboTwin's pinned SAPIEN renderer passes native GPU rendering and 100 physics
