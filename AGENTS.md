@@ -15,8 +15,10 @@ requirement or deployment binding is unclear.
   standalone action admission are CPU-tested. Native RoboCasa reset, manual control
   through ActionGate and live VLM image/tool rounds are verified. Native worker reset,
   image transport and connection-failure boundaries pass real process checks.
-  Real GR00T worker controls and confirmed pause/stop pass; the recorded task-success
-  check remains false. Complete Planner/Verifier tasks and remaining providers are pending.
+  Real GR00T worker controls and confirmed pause/stop pass. A console Planner run
+  records 64 controls, formal GT failure and an inspectable camera/event replay.
+  RoboTwin native task reset passes; successful tasks/recovery and remaining
+  provider control checks are pending.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.
 - Reuse DSH tool registration/dispatch/validation, sessions, inbox/followup, model
