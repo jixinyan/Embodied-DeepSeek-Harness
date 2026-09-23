@@ -1512,8 +1512,11 @@ fixtures, including sequential multi-goal recovery. OpenAI-compatible model tran
 WebSocket policy transport and standalone action admission have local acceptance.
 Live VLM deployment and independent DSH image/tool rounds pass. Native RoboCasa
 reset, manual control, ActionGate pause/resume and budget exhaustion also pass.
-Concurrent physical goals, nested independent recovery chains, the host-to-worker
-bridge, learned-policy tasks and remaining simulation/perception/hardware integration
+The native worker carries real GR00T actions and camera evidence. A console-driven
+Planner run executes 64 controls and receives a formally accepted native failed
+verdict; its event/camera replay preserves that outcome. RoboTwin native task reset
+passes. Concurrent physical goals, nested independent recovery chains, successful
+learned-policy tasks and remaining simulation/perception/hardware integration
 remain pending. SKILL source inspection, paged audits and explicit journal/image-cache
 maintenance are implemented; domain retention and full upper acceptance remain open.
 See [progress](implementation/progress.md) for acceptance and the next steps.
