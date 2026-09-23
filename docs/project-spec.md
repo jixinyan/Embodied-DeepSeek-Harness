@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.46 · 2026-09-21
+Version: v1.47 · 2026-09-22
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -43,8 +43,10 @@ WebSocket policy transport and a deterministic action gate run independently wit
 acceptance. Current work prioritizes unimplemented upper capabilities before further
 optimization, including domain retention and restart lifecycle. Atomic record retirement
 and live history-index reconciliation are implemented at the storage boundary. Application
-retention still requires reference ownership, SKILL-source preservation, durable request
-identities and explicit console admission; see [retirement](implementation/storage-maintenance.md#record-retirement).
+retention has a configured controller for declared record references, SKILL-source
+preservation, durable request identities and leased external sources. Complete built-in
+record ownership, host idle admission and reviewed console selection remain pending;
+see [domain retention](implementation/domain-retention.md).
 Live VLM and
 provider-backed criteria discovery acceptance remain pending. The desktop launcher
 now owns configured local-service startup; live deployment acceptance and signed

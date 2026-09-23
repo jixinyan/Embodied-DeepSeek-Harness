@@ -12,6 +12,8 @@ team configuration, UpperRun, a local domain store and an explicitly synthetic b
   immutable task membership and legacy migration; [ownership and checks](../../docs/implementation/user-sessions.md#task-membership-history).
 - [workspace-history.ts](src/workspace-history.ts): bounded session/task summaries,
   scoped cursors and independent active records; [API and acceptance](../../docs/implementation/workspace-history.md).
+- [domain-retention.ts](src/domain-retention.ts): configured record owners, reference
+  leases and versioned retirement previews; [admission boundaries](../../docs/implementation/domain-retention.md).
 - [run-event-stream.ts](src/run-event-stream.ts): bounded event batches, current projections and connection backpressure.
 - [fixture-model.ts](src/fixture-model.ts) / [fixture-backend.ts](src/fixture-backend.ts): keyless test dependencies.
 

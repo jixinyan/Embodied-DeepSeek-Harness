@@ -1,10 +1,20 @@
 # Implementation progress
 
-Spec: v1.46. Current checkpoint: **recovery event provenance for retained experience**.
+Spec: v1.47. Current checkpoint: **configured domain record retention admission**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+DomainRetention accepts versioned record owners and leased external reference sources.
+It checks every declared edge, retains SKILL provenance and durable request identities,
+requires closed/released sessions, and binds atomic deletion to a single-use preview.
+Unknown owners, incomplete sources, changed revisions, retained incoming references
+and concurrent operations fail. External leases remain held through journal publication.
+Eight actual journal/file-lock checks pass, including cancellation, source changes and
+reopen. No model or physical provider executes. A complete EDH ownership policy, host
+idle admission and console selection remain pending.
+[API, ownership responsibilities and acceptance](domain-retention.md).
 
 SKILL source inspection now reads every published recovery event index and its source
 run event individually. Returned dependencies include their keys/versions. Missing
@@ -19,8 +29,8 @@ documents, actual journals, image files and HTTP. New checks exercise actual rec
 retirement, reopen, missing intermediate records, conflicting references and inline
 source formats. TypeScript and changed-source formatting pass. No model or physical
 provider executes. [Source inspection rules](skill-provenance.md). Domain retention
-still needs complete record ownership, request identity preservation, external source
-leases and reviewed console admission; these references alone do not authorize deletion.
+still needs a complete built-in record ownership policy and reviewed console admission;
+these references alone do not authorize deletion.
 
 Tool inventory validation compares all implemented logical IDs against `CORE_TOOLS`,
 including `user.ask`, before checking role references. Generated-schema equality and

@@ -170,6 +170,10 @@ LocalStore owns checkpoint format, record validation, atomic compaction and expl
 sequence-bound batch retirement. Retirement notifies derived readers to reconcile
 removed keys and retained ownership. Application reference closure, preserved request
 identities and SKILL sources must be established before exposing record deletion.
+DomainRetention in `apps/server` owns configured reference inspection, source leases,
+mandatory provenance/request retention and single-use versioned previews. Record owners
+declare their namespaces and complete edges. A complete built-in ownership policy and
+HTTP/console admission remain pending. See [domain retention](../implementation/domain-retention.md).
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys

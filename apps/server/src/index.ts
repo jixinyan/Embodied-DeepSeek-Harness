@@ -14,4 +14,13 @@ export type {
   DeploymentServices,
 } from './deployment.js';
 export { UpperRun, type ApplicationOptions } from './application.js';
+export {
+  DomainRetention,
+  DomainRetentionConflict,
+  type DomainRecordOwner,
+  type DomainReferenceLease,
+  type DomainReferenceSource,
+  type DomainRetentionPolicy,
+  type DomainRetirementPreview,
+} from './domain-retention.js';
 export type { TaskDefinition, TaskCatalogDefinition } from '@edh/tasks';

@@ -96,11 +96,12 @@ summaries in a SQLite transaction. If index publication fails, the store stops; 
 reconciles the index from the committed journal. Cross-file publication is recoverable
 through this sequence and is not a distributed transaction.
 
-There is no record-retirement HTTP route or console control. Application admission must
-establish domain ownership, preserve SKILL provenance and durable request identities,
-acquire complete external reference leases, and validate a reviewed selection before
-using this primitive. It does not inspect arbitrary document relationships or retire
-image objects. Only authored acceptance journals are deleted by the tests.
+There is no record-retirement HTTP route or console control. The configured
+[DomainRetention controller](domain-retention.md) checks declared record ownership,
+SKILL provenance, request identities and leased external references against a single-use
+preview before calling this primitive. Complete built-in ownership and host/console
+admission remain required. The primitive does not inspect arbitrary document relationships
+or retire image objects. Only authored acceptance journals are deleted by the tests.
 
 ## Console and HTTP
 
