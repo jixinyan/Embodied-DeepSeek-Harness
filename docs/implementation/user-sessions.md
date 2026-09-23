@@ -105,6 +105,17 @@ allocate a simulator, device or model. Live provider lifecycle acceptance remain
 
 ## Task membership history
 
+`SessionTaskHistory.members(record)` enumerates every published membership for whole-history
+reference inspection. It validates identities, immutable versions, unique positions,
+the final member and complete coverage through the published count. The caller must
+consume the generator completely to establish completeness. Compact enumeration follows
+journal order; each member retains its logical position. It stores only seen position
+numbers while reading one membership body at a time. Legacy inline histories preserve
+their array order. Valid unpublished suffixes remain outside the enumeration.
+`readMember(sessionId, runId)` validates an individual stored membership; callers use
+`has` or `members` when they need publication admission. These readers do not resume a
+task or modify its records. See [retention owners](domain-retention.md#session-and-request-owners).
+
 `SessionTaskHistory` owns immutable `session-task-member:` records keyed by the JSON
 array `[sessionId, runId]`. Each version-1 record declares format
 `edh.session-task-member.v1`, session/task identity and its positive admission position.

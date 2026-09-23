@@ -40,7 +40,7 @@ type SessionOpenInput = Pick<
   'requestId' | 'profileId' | 'deploymentDigest' | 'configuration'
 >;
 const requestIdentity = z.string().regex(/^[A-Za-z0-9-]{1,128}$/);
-const sessionRequestSchema = z
+export const sessionRequestSchema = z
   .object({
     format: z.literal('edh.session-open-request.v1'),
     requestId: requestIdentity,

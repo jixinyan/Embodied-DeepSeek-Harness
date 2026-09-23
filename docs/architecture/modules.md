@@ -174,6 +174,10 @@ DomainRetention in `apps/server` owns configured reference inspection, source le
 mandatory provenance/request retention and single-use versioned previews. Record owners
 declare their namespaces and complete edges. A complete built-in ownership policy and
 HTTP/console admission remain pending. See [domain retention](../implementation/domain-retention.md).
+SessionTaskHistory owns full published membership enumeration. The server's
+sessionRecordOwners declares Session/request/catalog dependencies and validates reverse
+task ownership before retention admission. Request identity records retain their replay
+sources; an archive/tombstone lifecycle remains required for deleting those sources.
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys

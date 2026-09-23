@@ -20,6 +20,7 @@ Snapshot: 2026-09-21. Upper runtime, model transport and standalone policy/actio
 | Persistent SQLite workspace summaries, source revision checks and restart/compaction reconciliation | [Index ownership and actual SQLite/file acceptance](workspace-history.md#persistent-summary-index) |
 | Atomic sequence-bound record retirement, v2 checkpoint recovery and derived-index reconciliation | [Trusted storage API and real file/process/SQLite acceptance](storage-maintenance.md#record-retirement) |
 | Configured record owners, leased references, SKILL/request retention and single-use deletion previews | [Domain retention API and actual journal/file-lock acceptance](domain-retention.md) |
+| Session/request reference owners, complete published membership inspection and reverse identity checks | [Namespace coverage and remaining ownership](domain-retention.md#session-and-request-owners) |
 | Direct persisted session-open request lookup with complete configuration identity and startup reconciliation | [Request identity and real-file acceptance](user-sessions.md#session-open-request-identity) |
 | Compact session task history, immutable membership and legacy migration | [Membership publication and real-file acceptance](user-sessions.md#task-membership-history) |
 | Immutable accepted verdict archives, compact summaries and explicit full-result inspection | [Publication, selected HTTP reads and acceptance](verdict-history.md) |

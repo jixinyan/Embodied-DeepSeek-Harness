@@ -48,7 +48,7 @@ export const readSessionTasks = (record: unknown): SessionTaskRecord => sessionS
 export class SessionTaskHistory {
   constructor(private readonly store: LocalStore) {}
 
-  private read(sessionId: string, runId: string): Member | undefined {
+  readMember(sessionId: string, runId: string): Member | undefined {
     const row = this.store.get(sessionTaskKey(sessionId, runId));
     if (!row) return undefined;
     const member = memberSchema.parse(row.value);
@@ -59,7 +59,7 @@ export class SessionTaskHistory {
 
   private retain(member: Member): void {
     memberSchema.parse(member);
-    const prior = this.read(member.sessionId, member.runId);
+    const prior = this.readMember(member.sessionId, member.runId);
     if (prior) {
       if (!isDeepStrictEqual(prior, member))
         throw new Error('Session task membership conflicts with its published position.');
@@ -71,7 +71,7 @@ export class SessionTaskHistory {
   validate(record: unknown): SessionTaskRecord {
     const checked = sessionSchema.parse(record);
     if (checked.taskHistory?.lastRunId) {
-      const tail = this.read(checked.id, checked.taskHistory.lastRunId);
+      const tail = this.readMember(checked.id, checked.taskHistory.lastRunId);
       if (!tail || tail.position !== checked.taskHistory.count)
         throw new Error('Session task history head has no matching published membership.');
     }
@@ -82,7 +82,7 @@ export class SessionTaskHistory {
     identifier.parse(runId);
     const checked = readSessionTasks(record);
     if (checked.runIds) return checked.runIds.includes(runId);
-    const member = this.read(checked.id, runId);
+    const member = this.readMember(checked.id, runId);
     if (!member) return false;
     if (member.position > checked.taskHistory!.count)
       throw new Error('Session task membership is outside the published history.');
@@ -128,7 +128,8 @@ export class SessionTaskHistory {
     const source = this.store.get<T>(`user-session:${checked.id}`);
     if (!source || !isDeepStrictEqual(source.value, record))
       throw new Error('Session task history source changed before admission.');
-    if (this.read(checked.id, runId)) throw new Error('Session task membership already exists.');
+    if (this.readMember(checked.id, runId))
+      throw new Error('Session task membership already exists.');
     const member: Member = {
       format: 'edh.session-task-member.v1',
       sessionId: checked.id,
@@ -143,5 +144,42 @@ export class SessionTaskHistory {
     } as Compact<T>;
     this.store.put(`user-session:${checked.id}`, next, source.version);
     return next;
+  }
+
+  *members(record: unknown): Generator<Member> {
+    const checked = this.validate(record);
+    if (checked.runIds) {
+      if (new Set(checked.runIds).size !== checked.runIds.length)
+        throw new Error('Session task history contains duplicate task identities.');
+      for (const [index, runId] of checked.runIds.entries())
+        yield {
+          format: 'edh.session-task-member.v1',
+          sessionId: checked.id,
+          runId,
+          position: index + 1,
+        };
+      return;
+    }
+    const head = checked.taskHistory!;
+    const positions = new Set<number>();
+    for (const row of this.store.scan(`session-task-member:[${JSON.stringify(checked.id)},`)) {
+      const member = memberSchema.parse(row.value);
+      if (
+        row.version !== 1 ||
+        member.sessionId !== checked.id ||
+        row.key !== sessionTaskKey(member.sessionId, member.runId)
+      )
+        throw new Error('Session task membership identity or version conflicts.');
+      if (member.position > head.count) continue;
+      if (
+        positions.has(member.position) ||
+        (member.position === head.count) !== (member.runId === head.lastRunId)
+      )
+        throw new Error('Session task membership conflicts with its published position.');
+      positions.add(member.position);
+      yield member;
+    }
+    if (positions.size !== head.count)
+      throw new Error('Published session task membership is incomplete.');
   }
 }

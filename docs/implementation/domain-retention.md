@@ -33,6 +33,40 @@ reference state. The controller acquires sources in ID order and releases them i
 reverse order. `journal`, `skills` and `requests` are reserved source IDs. A declaration
 without an actual stabilization mechanism is insufficient for a changing source.
 
+## Session and request owners
+
+`sessionRecordOwners(store, validator)` supplies seven owners for application assembly:
+
+| Namespace | Declared dependencies |
+| --- | --- |
+| `user-session:` | Its open-request record, every published task, each task's session ownership, compact membership records and its published task catalog |
+| `session-open-request:` | The matching source session; always retained |
+| `session-task-member:` | Source session and task; published membership also references the task's session ownership |
+| `run-user-session:` | Source session, task and compact membership, with exact reverse ownership checks |
+| `session-task-request:` | Source session; admitted requests also retain task, ownership and compact membership; always retained |
+| `session-task-catalog:` | The matching source session, with catalog identity, descriptor and content verification |
+| `request:` | The admitted legacy task when present; always retained |
+
+Session inspection consumes the complete published membership inventory. Missing
+intermediate positions, duplicate positions, rewritten immutable entries and conflicting
+record identities fail. Legacy inline task IDs declare direct task/ownership dependencies
+without requiring compact membership records. Valid membership suffixes beyond the
+published count remain outside the session's dependency set. They still have their own
+owner and must satisfy their declared references if selected for inspection.
+
+An open-request record and its source session must agree in both directions. A published
+task must resolve to the same source session through its ownership record. Failed task
+admission retains its null-run request identity. Request readers support the retained
+legacy accepted format and the current two-write publication sequence.
+
+These owners describe framework-defined relationships. Deployments with custom record
+references inside configuration/catalog text must extend the corresponding owner or
+declare those references through an external source. Owner prefixes cannot overlap.
+Run, assignment, evidence, recovery, report, file and native-audit owners remain required
+for a complete application journal. This pack does not authorize deleting a session:
+the retained request record continues to require its replay source. Removing such
+history requires an explicit archived-identity lifecycle and corresponding reader support.
+
 ## Mandatory retained records
 
 Both preview and deletion apply these checks:
@@ -77,11 +111,14 @@ for [publication and recovery semantics](storage-maintenance.md#record-retiremen
 
 ## Acceptance and integration work
 
-`pnpm test:domain-retention` runs eight checks with real journals, exclusive file locks,
+`pnpm test:domain-retention` runs fourteen checks with real journals, exclusive file locks,
 file revisions, cancellation and reopen. Authored documents exercise reference cycles,
 retained incoming edges, mandatory SKILL/request roots, incomplete provenance, changed
 previews, malformed configuration and external-source cleanup. No model response or
 physical provider executes, and no user workspace record is deleted.
+Six session-owner checks additionally cover exact dependency sets, all published
+membership positions, unchanged request replay after rejected deletion, reverse identity
+conflicts, catalog integrity, legacy inline history, compaction and reopen.
 
 Application delivery still requires a complete EDH record-owner inventory, external
 ownership declarations, host idle admission and reviewed console selection. Session

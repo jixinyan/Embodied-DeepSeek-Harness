@@ -1,10 +1,23 @@
 # Implementation progress
 
-Spec: v1.47. Current checkpoint: **configured domain record retention admission**.
+Spec: v1.48. Current checkpoint: **session and request record reference owners**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Session/request retention now has seven explicit namespace owners. They cover open
+requests, task requests, task catalogs, published membership and reverse run ownership.
+SessionTaskHistory enumerates complete published history with immutable identity and
+position checks, including missing intermediate records. Legacy inline histories remain
+readable. Retained request records continue to protect replay sources. Fourteen domain
+retention checks pass using authored documents, real journals and file locks. Run,
+assignment, evidence, recovery, report, file and audit ownership plus reviewed host/console
+admission remain pending. [Owner inventory](domain-retention.md#session-and-request-owners).
+Seven session-history and seven request-replay checks also pass, including 2,000
+stored task memberships, SQLite history consistency and journal reopen. TypeScript,
+changed-source formatting and local documentation links pass. The preceding `1ac9e40`
+checkpoint passed GitHub Framework checks; live model/provider acceptance remains separate.
 
 DomainRetention accepts versioned record owners and leased external reference sources.
 It checks every declared edge, retains SKILL provenance and durable request identities,
