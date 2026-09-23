@@ -30,11 +30,11 @@ selected DeepSeek Harness implementations, with traceable provenance.
 > DSH-backed roles, native tools/TODOs, formal verification, recovery and SKILL
 > publication run with an explicitly synthetic CPU backend and scripted model.
 > RoboCasa's native `OpenCabinet` adapter passes GPU camera and ActionGate checks,
-> including six confirmed GR00T controls and 150 physics steps through the native
-> worker. Its recorded task-success check is false. A local Qwen VLM completes
-> native DSH image/tool rounds for independent Planner and Verifier sessions.
-> Complete model-driven task verification, console rollout replay, BEHAVIOR-1K,
-> RoboTwin task execution and hardware integration remain pending.
+> including a console-driven Qwen Planner run with 64 GR00T controls and 1,600
+> physics steps. Formal verification records native task failure; an inspectable
+> camera/event replay preserves that outcome. RoboTwin's actual task reset and
+> three-camera capture also pass. Successful task recovery, BEHAVIOR-1K,
+> RoboTwin policy control and hardware integration remain pending.
 
 ![Current implementation](docs/architecture/assets/implementation-status.svg)
 

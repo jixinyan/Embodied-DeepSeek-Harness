@@ -247,8 +247,31 @@ passing exit status, base revision `478299e` and the exact list of working chang
 `process.log` and `images/` are retained in that same attempt directory. The
 service-side record is preserved in the GPU host's
 `.local/work/gr00t-service-pre-provenance.log`.
-This is policy-to-simulator acceptance. Planner-driven execution, asynchronous
-Verifier behavior, accepted task success and console replay remain pending.
+This is policy-to-simulator acceptance. Accepted task success and successful recovery
+require separate evidence.
+
+## Console-driven RoboCasa execution
+
+Run `598378e8-a56b-4629-b8a9-380dc1408fdd` was submitted through the console with
+the native instruction `Open the cabinet door.` Qwen created a plan and started
+execution; GR00T supplied four action chunks, ActionGate admitted 64 controls,
+and MuJoCo advanced 1,600 physics steps. The confirmed budget boundary triggered
+formal verification. The accepted native verdict was `task_success=false`. The
+run later terminated after the Planner assignment exceeded its deadline.
+
+The replay at `.local/work/replay-failed-pts/` contains 399 events, 204 original
+images and three camera videos. Each video has 64 source frames and one terminal
+hold frame. FFprobe verifies every source frame timestamp within 0.15 ms of its
+recorded simulation time. Policy request identities, checkpoint provenance and
+image hashes are retained. This replay preserves the failed outcome.
+
+Camera synchronization is measured separately from control frequency. The native
+RoboCasa control frequency is 20 Hz of simulation time. In subsequent run
+`8c08ebd4-7e5e-449a-82b1-d8d55f589b33`, 64 host frame events span approximately
+57.5 wall-clock seconds, about 1.1 events/s, with sampled capture-to-event delays
+of 1.9–4.0 seconds. These values do not measure browser display FPS. Browser
+decoded-frame metrics and image persistence optimizations require fresh live
+measurement before a faster end-to-end rate can be claimed.
 
 ## RoboTwin rendering check
 
@@ -258,8 +281,15 @@ reports PCI `0000:dd:00.0`, matching that device's NVIDIA process inventory. A
 256 × 256 RGB frame is nonuniform. After 100 physics steps at 250 Hz, the test box
 rests at approximately 0.1 m above the ground. The report is saved locally at
 `.local/work/robotwin-render/result.json`; no policy or RoboTwin task executes in
-this rendering check. Task reset, CuRobo control and interruption acceptance remain
-required before the RoboTwin provider can be marked verified.
+this rendering check.
+
+The actual `adjust_bottle` task reset subsequently passed with Aloha AgileX and
+seed 0. The adapter returned three 640 × 480 PNG observations, fourteen native
+joint/gripper targets and `task_success=false`. The physics timestep is 0.004 s.
+The deployment uses CuRobo 0.7.7 compiled with isolated CUDA 13.0.88, PyTorch
+2.11 with CUDA 13.0 and Warp 1.7.0. Its report is
+`.local/work/robotwin-task/result.json` on the GPU host. Policy control and
+interruption acceptance remain required before full provider validation.
 
 ## Live VLM image and tool checks
 

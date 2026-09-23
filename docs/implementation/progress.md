@@ -43,13 +43,19 @@ resource release unconfirmed. These worker checks execute zero learned-policy
 actions. A subsequent actual GR00T worker check passes six confirmed controls,
 150 MuJoCo physics steps, corresponding camera frames, confirmed pause/stop and
 a second task in the same scene. Its native `task_success` remains `false`.
-The report retains its base revision and working changes; complete Planner/Verifier
-task acceptance and console replay remain pending.
+The report retains its base revision and working changes. A real console task now
+records Planner-selected execution, four GR00T calls, 64 admitted controls and
+1,600 physics steps. Formal verification accepted the native failed verdict.
+The task later exceeded its Planner assignment deadline. Its inspectable replay
+retains 399 events, 204 original images and three timestamp-verified camera videos.
+Successful task and recovery acceptance remain pending.
 [Deployment isolation, source pins and actual checks](gpu-integration.md).
 
 RoboTwin's pinned SAPIEN renderer passes native GPU rendering and 100 physics
 steps on the allocated device, with matching reported PCI identity. Its actual
-task reset and learned-policy control remain pending. The selected RoboTwin pi0.5
+`adjust_bottle` reset also passes with Aloha AgileX, three 640 × 480 camera images,
+fourteen joint/gripper targets and native GT failure. Learned-policy control remains
+pending. The selected RoboTwin pi0.5
 checkpoint and processor weights are downloaded under `checkpoints/`; their
 SHA256 values match the fixed upstream revision. All three simulators use dedicated
 `data/` directories, and RoboCasa's native reset/render checks pass after relocation.
@@ -62,7 +68,7 @@ GPU. Native API completion returns `tool_calls` followed by `stop`. Independent 
 DSH Planner and Verifier sessions each call one camera tool, receive the actual RoboCasa
 image attachment and finish with `turn/end=completed`. The checks validate matching
 call/result identifiers and image identity. They use a static native reset frame;
-model-driven robot execution and formal GT verification remain pending.
+complete successful model-driven tasks and recovery remain pending.
 [Live VLM evidence](gpu-integration.md#live-vlm-image-and-tool-checks).
 
 The latest upstream DSH release review targets `dsh-v0.1.7-rc.1`
