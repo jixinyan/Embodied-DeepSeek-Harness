@@ -32,7 +32,11 @@ for (const adaptation of imported.release_adaptations ?? []) {
     assert(!adaptedDestinations.has(destination), `Duplicate release destination: ${destination}`);
     adaptedDestinations.add(destination);
     const file = imported.files.find((item) => item.destination === destination);
-    assert.notEqual(file.source_sha256, file.local_sha256, `Unmodified release destination: ${destination}`);
+    assert.notEqual(
+      file.source_sha256,
+      file.local_sha256,
+      `Unmodified release destination: ${destination}`,
+    );
     assert(file.modifications.length > 0, `Missing patch explanation: ${destination}`);
   }
 }

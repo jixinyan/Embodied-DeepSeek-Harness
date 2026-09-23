@@ -15,7 +15,11 @@ test('redacts nested secrets declared by real union, intersection and transform 
   });
   const input = Object.freeze({
     provider: Object.freeze({ token: 'provider-value', endpoint: 'provider.example' }),
-    fallback: Object.freeze({ token: 'fallback-value', endpoint: 'fallback.example', label: 'backup' }),
+    fallback: Object.freeze({
+      token: 'fallback-value',
+      endpoint: 'fallback.example',
+      label: 'backup',
+    }),
     active: Object.freeze({ token: 'active-value', endpoint: 'active.example' }),
   });
 
