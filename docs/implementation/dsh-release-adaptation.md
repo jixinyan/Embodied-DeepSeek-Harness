@@ -104,9 +104,18 @@ existing native text pruner and explicit visual-history policy.
 
 ## Acceptance
 
-Release adaptation is under implementation. Required checks cover native serial
-initialization and failure cleanup, cancellation record serialization, output/headroom
-calculation, schema-based secret removal, source provenance, TypeScript integration
-and actual VLM image/tool calls. Each completed source checkpoint records its executed
-checks. Simulation and learned-policy acceptance remain tracked in the
+The four selected mechanisms are implemented. Schema-based secret removal, serial
+initialization, initialization failure/disposal and cancellation record checks pass.
+Cancellation uses an actual local HTTP request and inspects the durable native event.
+Output/headroom tests cover the 32K deployment, model overrides and invalid budgets.
+Native DSH admission with the OpenAI-compatible adapter rejects oversized initial and
+dynamic request caps before any HTTP request; disabling automatic compaction permits
+transport. The test endpoint supplies no generated model responses.
+
+TypeScript integration, formatting, source provenance and local documentation checks
+pass. A full concurrent runtime run reported timeouts; the affected console, upper-run
+and user-session suites passed individual reruns. This is not a full-suite pass.
+Live VLM checks on the complete release adaptation are tracked in
+[GPU integration](gpu-integration.md#live-vlm-image-and-tool-checks).
+Simulation and learned-policy acceptance remain tracked in the
 [live integration plan](live-integration.md).

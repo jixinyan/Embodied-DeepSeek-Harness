@@ -49,7 +49,10 @@ model-driven robot execution and formal GT verification remain pending.
 The latest upstream DSH release review targets `dsh-v0.1.7-rc.1`
 (`46a7f68b0922371ce7144b668b90e377d8e799f4`, 2026-09-23 prerelease).
 Serial agent initialization, output-aware compaction, cancellation records and nested
-secret redaction are being adapted with exact source provenance. The
+secret redaction are implemented with exact source provenance. Native initialization,
+disposal, HTTP cancellation, secret traversal and budget-admission checks pass.
+An oversized initial or dynamically selected output cap fails before HTTP transport;
+disabling automatic compaction retains direct transport behavior. The
 [release adaptation guide](dsh-release-adaptation.md) records the model, image and
 stored-history compatibility boundaries and required acceptance checks.
 

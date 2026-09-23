@@ -83,8 +83,8 @@ reference-image pinning and learned frame selection remain future extensions.
 
 ## Preserve authority and role isolation
 
-The only behavioral patch to the absorbed summarizer is its embodied instruction
-and checkpoint preamble. It asks for exact goal/contract/attempt/boundary identities,
+The summarization prompt uses EDH's embodied instruction and checkpoint preamble.
+It asks for exact goal/contract/attempt/boundary identities,
 observations versus hypotheses, pending reports, failure conditions, recovery state
 and next steps. It cannot execute tools or grant motion/evidence permissions.
 

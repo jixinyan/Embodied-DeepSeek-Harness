@@ -43,7 +43,7 @@ Keep deployment resources in separate directories under a configurable workspace
 | `data/robotwin/` | RoboTwin objects, backgrounds and embodiment assets |
 | `checkpoints/` | Model weights, processors, normalization statistics and checkpoint metadata |
 | `envs/` | Isolated Python environments, Node.js and deployment graphics libraries |
-| `.cache/` | Dependency and download caches |
+| `cache/` | Dependency and download caches |
 | EDH `.local/work/` | Local acceptance reports, logs and intermediate checks |
 
 Download assets directly into their provider's data directory and weights into their

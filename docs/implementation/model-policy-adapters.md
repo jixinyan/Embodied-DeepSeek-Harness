@@ -1,9 +1,11 @@
 # Model endpoints, policy transport and action admission
 
-Status: 2026-09-19. Both adapters and the action gate are executable and tested with
-local HTTP/WebSocket peers. No live VLM, learned VLA/VLN, simulator or hardware has
-been evaluated. The existing console still uses a CPU physical fixture. A host-to-
-Python execution worker bridge remains the next integration step. Profile selection and
+Status: 2026-09-23. Both adapters and the action gate are executable and tested with
+local HTTP/WebSocket peers. A live vLLM VLM passes real RoboCasa image and native DSH
+tool rounds. Native RoboCasa reset and manual ActionGate control also pass; learned
+policy tasks and hardware acceptance remain pending. The default console uses a CPU
+physical fixture. A host-to-Python execution worker bridge remains the next integration
+step. See [actual provider acceptance](live-integration.md). Profile selection and
 compatibility preflight are documented in [physical stack profiles](physical-profiles.md).
 
 ![Model and policy boundaries](../architecture/assets/model-policy-adapters.svg)
