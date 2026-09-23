@@ -12,8 +12,9 @@ requirement or deployment binding is unclear.
   provenance. Do not import the entire upstream repository or write a new loop.
 - DSH-backed upper roles, tools, recovery, storage and a local console run with
   explicitly labeled CPU fixtures. HTTP model and WebSocket policy adapters plus
-  standalone action admission are CPU-tested; the host worker bridge and actual
-  simulation/hardware providers remain unimplemented.
+  standalone action admission are CPU-tested. Native RoboCasa reset, manual control
+  through ActionGate and live VLM image/tool rounds are verified. The host worker
+  bridge, learned-policy task acceptance and remaining physical providers are pending.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.
 - Reuse DSH tool registration/dispatch/validation, sessions, inbox/followup, model

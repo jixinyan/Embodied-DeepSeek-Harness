@@ -2,7 +2,7 @@
 
 Version: v1.55 · 2026-09-23
 
-Status: upper application and console run with CPU fixtures; real physical integration pending.
+Status: upper application and console run with CPU fixtures; native RoboCasa control and live VLM tool rounds pass; full physical workflow pending.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -85,8 +85,9 @@ extensions, including legacy inline history. Seven event checks use real journal
 authored documents; no model or physical provider executes.
 Remaining record owners, host idle admission and reviewed console selection remain pending;
 see [domain retention](implementation/domain-retention.md).
-Live VLM and
-provider-backed criteria discovery acceptance remain pending. The desktop launcher
+Live VLM image/tool rounds pass with independent native DSH Planner and Verifier
+sessions and a real RoboCasa reset image. Provider-backed criteria discovery and
+model-driven physical task acceptance remain pending. The desktop launcher
 now owns configured local-service startup; live deployment acceptance and signed
 distribution remain open. Active-task clarification
 has native/file/HTTP and console component acceptance; live task continuation remains
@@ -1507,8 +1508,10 @@ async verification and recovery, failure-aware SKILLs, durable domain records an
 a runnable HTTP/SSE debugging console. These run with scripted model/backend
 fixtures, including sequential multi-goal recovery. OpenAI-compatible model transport,
 WebSocket policy transport and standalone action admission have local acceptance.
-Live VLM deployment, concurrent physical goals, nested independent recovery chains,
-the host-to-worker bridge and actual simulation/policies/perception/hardware integration
+Live VLM deployment and independent DSH image/tool rounds pass. Native RoboCasa
+reset, manual control, ActionGate pause/resume and budget exhaustion also pass.
+Concurrent physical goals, nested independent recovery chains, the host-to-worker
+bridge, learned-policy tasks and remaining simulation/perception/hardware integration
 remain pending. SKILL source inspection, paged audits and explicit journal/image-cache
 maintenance are implemented; domain retention and full upper acceptance remain open.
 See [progress](implementation/progress.md) for acceptance and the next steps.
