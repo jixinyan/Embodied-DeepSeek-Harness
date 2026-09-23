@@ -38,6 +38,13 @@ when an asynchronous caller is cancelled. These checks use explicit manual contr
 Learned-policy inference, worker transport and end-to-end task acceptance remain pending.
 [Deployment isolation, source pins and actual checks](gpu-integration.md).
 
+RoboTwin's pinned SAPIEN renderer passes native GPU rendering and 100 physics
+steps on the allocated device, with matching reported PCI identity. Its actual
+task reset and learned-policy control remain pending. The selected RoboTwin pi0.5
+checkpoint and processor weights are downloaded under `checkpoints/`; their
+SHA256 values match the fixed upstream revision. All three simulators use dedicated
+`data/` directories, and RoboCasa's native reset/render checks pass after relocation.
+
 An isolated Qwen VLM served by vLLM now passes actual image/tool checks on an available
 GPU. Native API completion returns `tool_calls` followed by `stop`. Independent native
 DSH Planner and Verifier sessions each call one camera tool, receive the actual RoboCasa

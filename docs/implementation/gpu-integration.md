@@ -190,6 +190,17 @@ same scene, and interruption during a multi-action sequence. The simulator clock
 remains unchanged after confirmed stop. These controls establish the device boundary;
 learned-policy task completion and the complete console workflow remain pending.
 
+## RoboTwin rendering check
+
+The pinned SAPIEN `3.0.0b1` renderer passes an actual native check on the assigned
+GPU. The provider selects `Device("cuda:6")` through deployment configuration and
+reports PCI `0000:dd:00.0`, matching that device's NVIDIA process inventory. A
+256 × 256 RGB frame is nonuniform. After 100 physics steps at 250 Hz, the test box
+rests at approximately 0.1 m above the ground. The report is saved locally at
+`.local/work/robotwin-render/result.json`; no policy or RoboTwin task executes in
+this rendering check. Task reset, CuRobo control and interruption acceptance remain
+required before the RoboTwin provider can be marked verified.
+
 ## Live VLM image and tool checks
 
 An isolated vLLM 0.30.0 service loads the deployment's Qwen3.8-27B checkpoint and

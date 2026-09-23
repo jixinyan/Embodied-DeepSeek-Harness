@@ -52,7 +52,7 @@ reuse requires its own task and provenance evidence.
 | --- | --- | --- | --- |
 | RoboCasa 1.0.1 / PandaOmron | Passed: OpenCabinet reset, three cameras and manual control | Native ActionGate pause/resume, budget and consecutive executions passed; worker transport pending | Static-image VLM/tool checks passed; learned-policy task pending |
 | BEHAVIOR-1K v3.9.2 / R1Pro | Pending | Pending | Pending |
-| RoboTwin stable release / configured arms | Pending | Pending | Pending |
+| RoboTwin stable release / configured arms | Native SAPIEN rendering and physics passed; task reset pending | Pending | Matching pi0.5 weights downloaded and hash-verified; inference pending |
 
 See [GPU integration](gpu-integration.md) for immutable source pins, dependency
 isolation and completed native checks. Record model family, exact checkpoint,
