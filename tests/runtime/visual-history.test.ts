@@ -236,7 +236,13 @@ test('oversized fresh observations fail before inference without silently droppi
 
 test('visual retention and native pressure compaction compose while fresh input stays visible', async () => {
   const f = await fixture({
-    compaction: { thresholdRatio: 0.6, retainTokens: 0, maxTokens: 512, compactionRetries: 0 },
+    compaction: {
+      thresholdRatio: 0.6,
+      headroomTokens: 512,
+      retainTokens: 0,
+      maxTokens: 512,
+      compactionRetries: 0,
+    },
     visualHistory: { maxImages: 4 },
   });
   f.model.tools = true;
