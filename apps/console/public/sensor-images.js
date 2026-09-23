@@ -1,8 +1,17 @@
 const identity = (value) =>
   typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\s\S])/.test(value);
 
-export function sensorImageSources(runId, frame) {
-  if (!frame || frame.evidence.visibility !== 'agent' || !frame.images?.length) return [];
+export function sensorImageSources(runId, frame, operatorEventSequence = null) {
+  if (!frame || !frame.images?.length) return [];
+  const operatorFrame = operatorEventSequence !== null;
+  if (operatorFrame) {
+    if (
+      frame.evidence.visibility !== 'debug_only' ||
+      !Number.isSafeInteger(operatorEventSequence) ||
+      operatorEventSequence < 1
+    )
+      throw new Error('Invalid operator frame scope.');
+  } else if (frame.evidence.visibility !== 'agent') return [];
   if (
     typeof runId !== 'string' ||
     !/^[A-Za-z0-9-]{1,128}$(?![\s\S])/.test(runId) ||
@@ -13,7 +22,9 @@ export function sensorImageSources(runId, frame) {
   return frame.images.map((image, index) => {
     if (!identity(image.attachmentId)) throw new Error('Invalid sensor image identity.');
     return {
-      src: `/api/runs/${runId}/evidence/${encodeURIComponent(frame.evidence.id)}/images/${encodeURIComponent(image.attachmentId)}`,
+      src: operatorFrame
+        ? `/api/runs/${runId}/replay/frames/${operatorEventSequence}/images/${encodeURIComponent(image.attachmentId)}`
+        : `/api/runs/${runId}/evidence/${encodeURIComponent(frame.evidence.id)}/images/${encodeURIComponent(image.attachmentId)}`,
       label: image.name || `View ${index + 1}`,
       width: image.width,
       height: image.height,
@@ -31,13 +42,17 @@ function viewFor(container) {
   metrics.setAttribute('role', 'status');
   view = {
     runId: null,
+    selectionKey: null,
     desiredKey: null,
     displayedKey: null,
     generation: 0,
     controller: null,
+    loadingSequence: null,
+    queued: null,
     figures: [],
     urls: [],
     displayedAt: [],
+    idleTimer: null,
     metrics,
   };
   views.set(container, view);
@@ -52,6 +67,10 @@ function clear(container, view) {
   view.generation++;
   view.controller?.abort();
   view.controller = null;
+  view.loadingSequence = null;
+  view.queued = null;
+  if (view.idleTimer !== null) view.clearTimeout(view.idleTimer);
+  view.idleTimer = null;
   release(view.urls, view);
   view.urls = [];
   view.figures = [];
@@ -117,7 +136,6 @@ async function publish(container, view, sources, frame, key, generation, control
     );
     return;
   }
-  view.controller = null;
   const failure = settled.find((result) => result.status === 'rejected');
   if (failure) {
     release(
@@ -127,6 +145,9 @@ async function publish(container, view, sources, frame, key, generation, control
     view.metrics.textContent = `Camera update unavailable · ${failure.reason.message}`;
     container.dataset.imageError = failure.reason.message;
     if (!view.figures.length) container.replaceChildren(view.metrics);
+    view.controller = null;
+    view.loadingSequence = null;
+    startQueued(container, view);
     return;
   }
   const decodedAt = view.performance.now();
@@ -181,16 +202,63 @@ async function publish(container, view, sources, frame, key, generation, control
     else delete container.dataset.displayFps;
     view.metrics.textContent = `Image load ${requestToDecodedMs.toFixed(0)} ms · ${
       fps === null ? 'Measuring display rate' : `Display ${fps.toFixed(1)} frames/s`
-    }${captureToDecodedMs === null ? '' : ` · Camera age about ${(captureToDecodedMs / 1000).toFixed(1)} s`}`;
-    view.metrics.title = 'Camera age compares the capture host clock with this browser clock.';
+    }${captureToDecodedMs === null ? '' : ` · Capture to decode about ${(captureToDecodedMs / 1000).toFixed(1)} s`}`;
+    view.metrics.title =
+      'Capture-to-decode compares the capture host clock with this browser clock.';
+    if (view.idleTimer !== null) view.clearTimeout(view.idleTimer);
+    view.idleTimer = view.setTimeout(() => {
+      if (view.displayedKey !== key) return;
+      view.displayedAt = [];
+      container.dataset.displayFps = '0.0';
+      view.metrics.textContent = `No new frames for 5 s · Last image load ${requestToDecodedMs.toFixed(0)} ms${captureToDecodedMs === null ? '' : ` · Capture to decode about ${(captureToDecodedMs / 1000).toFixed(1)} s`}`;
+      view.idleTimer = null;
+    }, 5000);
     container.hidden = false;
     onDisplayed(frame);
+    view.controller = null;
+    view.loadingSequence = null;
     view.requestAnimationFrame(() => release(previousUrls, view));
+    startQueued(container, view);
   });
 }
 
-export function renderSensorImages(container, runId, frame, onDisplayed = () => {}) {
-  const sources = sensorImageSources(runId, frame);
+function startQueued(container, view) {
+  const queued = view.queued;
+  view.queued = null;
+  if (queued && queued.key !== view.displayedKey) startLoading(container, view, queued);
+}
+
+function startLoading(container, view, task) {
+  view.generation++;
+  const controller = new AbortController();
+  view.controller = controller;
+  view.loadingSequence = task.frame.sequence;
+  container.hidden = false;
+  if (!view.figures.length) {
+    view.metrics.textContent = 'Loading camera images…';
+    container.replaceChildren(view.metrics);
+  }
+  void publish(
+    container,
+    view,
+    task.sources,
+    task.frame,
+    task.key,
+    view.generation,
+    controller,
+    task.onDisplayed,
+  );
+}
+
+export function renderSensorImages(
+  container,
+  runId,
+  frame,
+  onDisplayed = () => {},
+  selectionKey = 'latest',
+  operatorEventSequence = null,
+) {
+  const sources = sensorImageSources(runId, frame, operatorEventSequence);
   const key = JSON.stringify(sources);
   const view = viewFor(container);
   view.URL = container.ownerDocument.defaultView.URL;
@@ -199,10 +267,17 @@ export function renderSensorImages(container, runId, frame, onDisplayed = () => 
   view.requestAnimationFrame = container.ownerDocument.defaultView.requestAnimationFrame.bind(
     container.ownerDocument.defaultView,
   );
+  view.setTimeout = container.ownerDocument.defaultView.setTimeout.bind(
+    container.ownerDocument.defaultView,
+  );
+  view.clearTimeout = container.ownerDocument.defaultView.clearTimeout.bind(
+    container.ownerDocument.defaultView,
+  );
   view.document = container.ownerDocument;
-  if (view.runId !== runId) {
+  if (view.runId !== runId || view.selectionKey !== selectionKey) {
     clear(container, view);
     view.runId = runId;
+    view.selectionKey = selectionKey;
   }
   if (!sources.length) {
     clear(container, view);
@@ -210,18 +285,19 @@ export function renderSensorImages(container, runId, frame, onDisplayed = () => 
     return 0;
   }
   if (key === view.desiredKey) return sources.length;
-  view.generation++;
-  view.controller?.abort();
-  view.controller = null;
   view.desiredKey = key;
-  if (key === view.displayedKey) return sources.length;
-  const controller = new AbortController();
-  view.controller = controller;
-  container.hidden = false;
-  if (!view.figures.length) {
-    view.metrics.textContent = 'Loading camera images…';
-    container.replaceChildren(view.metrics);
+  if (view.controller) {
+    if (frame.sequence > view.loadingSequence) {
+      view.queued = { sources, frame, key, onDisplayed };
+      return sources.length;
+    }
+    view.generation++;
+    view.controller.abort();
+    view.controller = null;
+    view.loadingSequence = null;
+    view.queued = null;
   }
-  void publish(container, view, sources, frame, key, view.generation, controller, onDisplayed);
+  if (key !== view.displayedKey)
+    startLoading(container, view, { sources, frame, key, onDisplayed });
   return sources.length;
 }

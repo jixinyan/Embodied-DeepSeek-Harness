@@ -27,7 +27,7 @@ import {
 
 const $ = (id) => document.getElementById(id);
 let selection = {};
-let config, current, stream, displayedFrame;
+let config, current, stream, displayedFrame, displayedScopeKey;
 let busy = false;
 let loadRevision = 0;
 let activeRunId = null;
@@ -238,22 +238,44 @@ const archivedTodo = createAssignmentSelection(api, () => renderTodos(), error);
 function showSensor() {
   const selection = $('sensor-view').value;
   const archived = archivedSensor.select(current?.id, current?.assignments[selection]);
-  displayedFrame =
+  const operator = current?.latestOperatorFrame;
+  const latestSensor = current?.latestSensor;
+  const latestOperatorVisible =
+    Boolean(operator) &&
+    (!latestSensor ||
+      Date.parse(operator.sample.evidence.observed_at) >=
+        Date.parse(latestSensor.evidence.observed_at));
+  const operatorIsLatest = selection === 'latest' && latestOperatorVisible;
+  const latestFrame = latestOperatorVisible ? operator.sample : latestSensor;
+  const frame =
     selection === 'latest'
-      ? current?.latestSensor
+      ? operatorIsLatest
+        ? operator.sample
+        : latestSensor
       : (archived?.observation ?? current?.agentSeen[selection]);
-  const frame = displayedFrame;
+  const operatorEventSequence = operatorIsLatest ? operator.eventSequence : null;
   const fixture = (frame?.source ?? current?.source ?? config.mode) === 'test_fixture';
   const imageContainer = $('sensor-images');
   const runId = current?.id;
-  const imageCount = renderSensorImages(imageContainer, runId, frame, () => {
-    if (
-      current?.id === runId &&
-      $('sensor-view').value === selection &&
-      displayedFrame?.evidence.id === frame.evidence.id
-    )
-      text('frame-number', `FRAME ${String(frame.sequence).padStart(4, '0')}`);
-  });
+  const scopeKey = `${runId ?? ''}:${selection}`;
+  if (displayedScopeKey !== scopeKey) {
+    displayedFrame = null;
+    displayedScopeKey = scopeKey;
+  }
+  const imageCount = renderSensorImages(
+    imageContainer,
+    runId,
+    frame,
+    (actualFrame) => {
+      if (current?.id !== runId || $('sensor-view').value !== selection) return;
+      displayedFrame = actualFrame;
+      text('frame-number', `FRAME ${String(actualFrame.sequence).padStart(4, '0')}`);
+      showDisplayedSensorDetails(actualFrame);
+    },
+    selection,
+    operatorEventSequence,
+  );
+  if (!imageCount) displayedFrame = frame;
   $('sensor-svg').toggleAttribute(
     'hidden',
     !fixture || imageCount > 0 || archivedSensor.loading || Boolean(archivedSensor.error),
@@ -275,7 +297,7 @@ function showSensor() {
       : archivedSensor.error
         ? 'Archived observation unavailable'
         : imageCount
-          ? `${imageCount} ${imageCount === 1 ? 'view' : 'views'} · ${fixture ? 'Test evidence' : 'Recorded sensor evidence'}`
+          ? `${imageCount} ${imageCount === 1 ? 'view' : 'views'} · ${operatorIsLatest ? 'Recorded operator camera frame' : fixture ? 'Test evidence' : 'Recorded sensor evidence'}`
           : fixture
             ? 'CPU illustration · Not real camera imagery'
             : frame?.evidence.visibility === 'debug_only'
@@ -285,7 +307,9 @@ function showSensor() {
   text(
     'frame-source',
     selection === 'latest'
-      ? 'Latest sensor'
+      ? operatorIsLatest
+        ? 'Latest operator frame'
+        : 'Latest sensor'
       : `${current?.assignments[selection]?.member ?? 'Agent'} received`,
   );
   text(
@@ -294,16 +318,19 @@ function showSensor() {
       ? imageContainer.dataset.displayedSequence
         ? `FRAME ${String(imageContainer.dataset.displayedSequence).padStart(4, '0')}`
         : 'LOADING FRAME'
-      : frame
-        ? `FRAME ${String(frame.sequence).padStart(4, '0')}`
+      : displayedFrame
+        ? `FRAME ${String(displayedFrame.sequence).padStart(4, '0')}`
         : 'NO FRAME',
   );
   text(
     'latest-frame',
-    current?.latestSensor
-      ? `Frame ${current.latestSensor.sequence} · ${new Date(current.latestSensor.evidence.observed_at).toLocaleTimeString()}`
+    latestFrame
+      ? `Frame ${latestFrame.sequence} · ${new Date(latestFrame.evidence.observed_at).toLocaleTimeString()}`
       : '—',
   );
+  showDisplayedSensorDetails(displayedFrame);
+}
+function showDisplayedSensorDetails(frame) {
   text('sensor-description', frame?.description ?? 'Awaiting provider observation.');
   text('sensor-age', frame ? new Date(frame.evidence.observed_at).toLocaleTimeString() : '—');
   $('inspect-frame').disabled = !frame;

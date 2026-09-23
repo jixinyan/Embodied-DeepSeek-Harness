@@ -27,8 +27,6 @@ Provider output and concise decision notes can be inspected; absent internal rea
 must not be invented. TODO completion is distinct from formal physical success.
 See [runtime guide](../../docs/implementation/upper-runtime.md) and
 [capability map](../../docs/implementation/features.md).
-
-
 Task presets and source labels come from deployment configuration. Newly admitted runs
 retain their own public configuration for historical inspection; legacy runs explicitly
 report that configuration is unavailable and show their recorded assignments. The Next
@@ -36,7 +34,6 @@ Task selector uses the current deployment, while the workspace shows the selecte
 Samples containing admitted image references show a multi-image observation viewer.
 Samples without images show their available metadata.
 See the [deployment guide](../../docs/implementation/deployments.md).
-
 
 ## User-session launcher
 
@@ -124,14 +121,18 @@ independent of event eviction. Browsing history keeps live state updates connect
 ## Observation images
 
 `sensor-images.js` renders the selected latest or agent-seen observation using scoped
-run/evidence/image URLs. Referenced camera images are requested and decoded in parallel.
+run/evidence/image URLs. The latest view also accepts the run's operator camera projection
+through its recorded frame event URL; assignment views retain agent-seen evidence.
+Referenced camera images are requested and decoded in parallel.
 The viewer publishes one complete decoded observation in a browser frame, retains its
-visible image elements across updates, and cancels superseded requests. Empty and
+visible image elements across updates, and keeps only the newest queued live frame while
+the current frame loads. Run and selection changes cancel superseded requests. Empty and
 restricted samples clear the viewer. Source labels identify test images explicitly.
 The visible image status reports local request-to-decode time and display frames per
-second based on published frames. Camera age compares the capture host clock with
-the browser clock, so it requires synchronized host clocks. The outer frame label
-tracks the last fully displayed observation.
+second based on published frames, reporting no new frames after five seconds.
+Capture-to-decode compares the capture host clock with the browser clock, so it
+requires synchronized host clocks. The outer frame label and observation details
+track the last fully displayed observation.
 The server checks persisted ownership, reference association and evidence visibility
 before reading bytes. See the [image guide](../../docs/implementation/image-storage.md).
 
