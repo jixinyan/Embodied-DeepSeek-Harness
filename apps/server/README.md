@@ -24,6 +24,8 @@ team configuration, UpperRun, a local domain store and an explicitly synthetic b
   original-goal recovery provenance and published event dependencies.
 - [run-record-owners.ts](src/run-record-owners.ts): run projections, immutable
   configuration, restart annotations and selected historical task sources.
+- [event-record-owners.ts](src/event-record-owners.ts): event/message source references,
+  historical payload validation and versioned deployment extensions.
 - [run-event-stream.ts](src/run-event-stream.ts): bounded event batches, current projections and connection backpressure.
 - [fixture-model.ts](src/fixture-model.ts) / [fixture-backend.ts](src/fixture-backend.ts): keyless test dependencies.
 

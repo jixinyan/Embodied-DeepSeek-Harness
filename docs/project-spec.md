@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.52 · 2026-09-23
+Version: v1.53 · 2026-09-23
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -26,6 +26,13 @@ are SVG assets; include their directory when handing over this document.
 ## 0. Handoff entry point
 
 ### 0.1 Current work and next action
+
+GPU-host access is now available for simulation integration. The active delivery
+priority is a real environment-to-console workflow, retaining DSH role orchestration,
+policy client/server inference, action admission and formal verification. Supported
+versions and checkpoint/embodiment compatibility must be recorded from actual upstream
+sources and validated on the host. BEHAVIOR-1K, RoboCasa and RoboTwin remain integration
+targets; installed dependencies alone do not establish a working provider.
 
 The runtime choice is settled: reuse DSH, with EDH-owned composition and embodied
 behavior. Upper Team/Role, tools, TODOs, plans/files, verification, recovery, SKILL
@@ -54,6 +61,9 @@ Assignment/recovery owners retain explicit delegation, evidence, formal-result a
 ordered event sources, including both failed and successful recovery provenance.
 Run/configuration/restart owners retain published history, typed task sources and
 selected historical context, with same-session and immutable configuration checks.
+Event/message ownership retains typed source references and supports versioned deployment
+extensions, including legacy inline history. Seven event checks use real journals and
+authored documents; no model or physical provider executes.
 Remaining record owners, host idle admission and reviewed console selection remain pending;
 see [domain retention](implementation/domain-retention.md).
 Live VLM and

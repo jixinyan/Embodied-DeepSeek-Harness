@@ -218,8 +218,35 @@ requires `options.inlineEventReferences`, containing an explicit `version` and s
 contributes to the run owner's policy version. This preserves inline event payload
 references without rewriting history. The inspector must handle every event type and
 extension payload present in that deployment. Missing or malformed declarations fail.
-The built-in event payload inventory and separately stored event owners remain pending.
+`RunEventReferences` supplies built-in payload inspection and a separately stored event owner.
 Custom references inside configuration or free text still require deployment declarations.
+
+## Event and message owners
+
+`RunEventReferences(store, validator, extension?)` exposes `owner()` for `event:` records
+and an own `inspect(event, runId)` function for `runRecordOwners`'s
+`inlineEventReferences` option. Its version includes a digest of the extension version.
+Event keys, sequence numbers and immutable versions must agree. Published legacy inline
+bodies must match their indexed copies; an unpublished assignment-created suffix can
+retain its supplied context before the assignment is published in the run projection.
+
+Typed references include assignment archives, brief and observation evidence, execution
+boundaries, verdict archives, reports and acknowledgements, recovery records/indexes,
+plan sources, clarification questions and SKILL provenance. Report delivery can resolve
+an explicit current-only legacy report source. Observation metadata and message sensor
+snapshots must match their retained sources. Historical clarification events compare
+stable question identity because the source's response/delivery lifecycle can advance.
+Recovery-start context and recovery-progress page contents must match retained history;
+progress retains the preceding index needed to validate its page boundary.
+
+Unknown event types or message kinds require a versioned extension. The extension runs
+for every event and returns complete journal keys, including any application-defined
+references inside tool arguments/results, model content, custom message data or free
+text. Built-in inspection does not infer those references from arbitrary strings.
+The deployment owns extension completeness and version changes. Registered sensor-image
+metadata is retained when present; image byte ownership remains with the image service.
+These owners are composition APIs. A complete ownership policy and reviewed host/console
+deletion admission remain required.
 
 ## Mandatory retained records
 
@@ -265,7 +292,7 @@ for [publication and recovery semantics](storage-maintenance.md#record-retiremen
 
 ## Acceptance and integration work
 
-`pnpm test:domain-retention` runs forty-two checks with real journals, exclusive file locks,
+`pnpm test:domain-retention` runs forty-nine checks with real journals, exclusive file locks,
 file revisions, cancellation and reopen. Authored documents exercise reference cycles,
 retained incoming edges, mandatory SKILL/request roots, incomplete provenance, changed
 previews, malformed configuration and external-source cleanup. No model response or
@@ -294,6 +321,10 @@ source failures, unpublished suffixes, inline and archived assignments, request 
 verdict sources, configuration/session agreement, selected historical task context,
 membership migration, restart annotations, inline payload declarations, clarification,
 compaction and reopen. They use authored documents and actual journal operations.
+Seven event checks cover delegation, evidence and verdict sources, conflicting identities,
+immutable events, current-only and historical reports, exact recovery pages, clarification
+lifecycle changes, versioned extensions, legacy inline composition, unpublished suffixes,
+compaction and reopen. They execute no model or physical provider.
 
 Application delivery still requires a complete EDH record-owner inventory, external
 ownership declarations, host idle admission and reviewed console selection. Session

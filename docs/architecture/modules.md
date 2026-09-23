@@ -191,7 +191,10 @@ and successful sources and every published recovery index, preserving source his
 needed by retained assignments and experience. `runRecordOwners` declares run projection,
 configuration and restart dependencies, including selected historical task context and
 published session membership. Its inline event inspector is explicitly versioned.
-Event/submission/plan/file/clarification and native-audit owners remain required for a
+`RunEventReferences` declares typed event/message dependencies, resolves historical
+report/verdict sources and checks recovery page contents. Its versioned extension
+inspects deployment payload references; the same inspector handles legacy inline events.
+Submission/plan/file/clarification and native-audit owners remain required for a
 complete application retention policy.
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The

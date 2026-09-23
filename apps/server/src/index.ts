@@ -29,3 +29,4 @@ export { evidenceRecordOwners } from './evidence-record-owners.js';
 export { reportRecordOwners } from './report-record-owners.js';
 export { taskRecordOwners } from './task-record-owners.js';
 export { runRecordOwners, type RunRecordOwnerOptions } from './run-record-owners.js';
+export { RunEventReferences, type EventReferenceExtension } from './event-record-owners.js';

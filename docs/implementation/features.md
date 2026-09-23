@@ -25,6 +25,7 @@ Snapshot: 2026-09-23. Upper runtime, model transport and standalone policy/actio
 | Report/receipt reference owners and validated persisted report history | [Dependencies, legacy sources and acceptance](domain-retention.md#report-and-receipt-owners) |
 | Assignment/recovery reference owners preserving delegation evidence and failed/successful source history | [Task source ownership and acceptance](domain-retention.md#assignment-and-recovery-owners) |
 | Run/configuration/restart reference owners preserving published history and selected task context | [Run source ownership and acceptance](domain-retention.md#run-configuration-and-restart-owners) |
+| Event/message reference ownership preserving observations, reports, recovery pages and explicit extension sources | [Event inspection and acceptance](domain-retention.md#event-and-message-owners) |
 | Direct persisted session-open request lookup with complete configuration identity and startup reconciliation | [Request identity and real-file acceptance](user-sessions.md#session-open-request-identity) |
 | Compact session task history, immutable membership and legacy migration | [Membership publication and real-file acceptance](user-sessions.md#task-membership-history) |
 | Immutable accepted verdict archives, compact summaries and explicit full-result inspection | [Publication, selected HTTP reads and acceptance](verdict-history.md) |

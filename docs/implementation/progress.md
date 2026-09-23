@@ -1,10 +1,26 @@
 # Implementation progress
 
-Spec: v1.52. Current checkpoint: **run, configuration and restart reference owners**.
+Spec: v1.53. Current checkpoint: **event reference ownership and GPU integration preparation**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+RunEventReferences declares event and message dependencies using the existing domain
+readers. It covers delegation, observations, reports, verification, recovery pages,
+clarification identities and versioned custom reference inspection. The same inspector
+composes with legacy inline run history. Forty-nine retention checks pass using authored
+documents and actual journals, including compaction and reopen. TypeScript and changed
+source formatting pass. No model or physical provider executes in these checks.
+The preceding `81e6e90` checkpoint passed GitHub Framework checks.
+[Event source rules](domain-retention.md#event-and-message-owners).
+
+The user has authorized GPU-host inspection and simulation integration. The next delivery
+priority is a real simulator-to-console workflow through the existing policy transport
+and action gate, with explicit environment, embodiment and checkpoint compatibility.
+BEHAVIOR-1K, RoboCasa and RoboTwin remain required targets. Environment installation,
+worker integration and real provider acceptance are pending. Remaining upper retention
+owners and reviewed deletion admission remain tracked separately.
 
 Three run owners now declare the run projection, configuration and restart annotation
 dependencies. Published events, typed task sources, exact sensor snapshots, selected
