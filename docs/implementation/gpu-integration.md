@@ -221,6 +221,9 @@ Reports and process output are in the **local** checkout at
 the associated image objects are in its `images/` directory. The camera-parity
 report above is retained on the GPU host. TypeScript checking, Python compilation,
 format checks for the changed files and whitespace validation pass for this checkpoint.
+Fourteen session-request and task-history checks also pass against real local journals,
+including compaction/reopen, interrupted publication and 2,000 task memberships.
+These storage checks do not execute a model or simulator.
 
 ## RoboTwin rendering check
 
@@ -269,6 +272,28 @@ summarization.
 The GPU 7 release-check result files are `.local/work/qwen38-native-rc1-gpu7.json` and
 `.local/work/qwen38-dsh-rc1-gpu7.json` in the remote EDH checkout. The inference service
 log is `.local/work/vlm-8002-gpu7.log`. They remain deployment-local evidence.
+
+## RoboTwin policy service readiness
+
+The isolated LeRobot 0.6.1 service loads the selected pi0.5 checkpoint with strict
+parameter matching and listens on a deployment-local WebSocket endpoint. Its pinned
+source is `7e241bd630a3719a56157a497ce5d08f244784f1`; the checkpoint is
+`SidneyXie/pi05_robotwin@e49e2ab6c11f07511573b67261bd129e88d0a416`.
+The 9,354,050,752-byte model file matches the published SHA256
+`9a5381c3260fc58fdb4b90d17b93f9090bcbfbcd8e0287f9bf2acea2477a2bc3`.
+
+The checkpoint's official PaliGemma tokenizer requires authorized Hugging Face
+access. The GPU deployment has that access and retains the six tokenizer files
+under `checkpoints/lerobot/paligemma-3b-pt-224/`, pinned to
+`google/paligemma-3b-pt-224@35e4f46485b4d07967e7e9935bc3786aad50687c`.
+The saved pre/postprocessor initializes offline against these local files.
+Credentials stay outside the repository and run exports.
+
+The actual service runs on the allocated GPU 4 and reports its model/tokenizer
+identities in `.local/work/lerobot-pi05-service.log` on the GPU host. It accepts
+three 640 × 480 RGB cameras and a fourteen-value native state vector. Service
+startup does not yet certify inference from a real RoboTwin task, valid admitted
+actions or task completion; those checks remain pending.
 
 ## Integration sequence and acceptance
 
