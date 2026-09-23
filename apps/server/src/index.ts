@@ -25,3 +25,4 @@ export {
 } from './domain-retention.js';
 export type { TaskDefinition, TaskCatalogDefinition } from '@edh/tasks';
 export { sessionRecordOwners } from './session-record-owners.js';
+export { evidenceRecordOwners } from './evidence-record-owners.js';

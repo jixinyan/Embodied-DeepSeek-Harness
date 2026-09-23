@@ -16,6 +16,8 @@ team configuration, UpperRun, a local domain store and an explicitly synthetic b
   leases and versioned retirement previews; [admission boundaries](../../docs/implementation/domain-retention.md).
 - [session-record-owners.ts](src/session-record-owners.ts): Session/request/catalog
   reference declarations and task ownership checks for retention assembly.
+- [evidence-record-owners.ts](src/evidence-record-owners.ts): sensor and verification
+  dependencies, scoped source checks and accepted-verdict agreement.
 - [run-event-stream.ts](src/run-event-stream.ts): bounded event batches, current projections and connection backpressure.
 - [fixture-model.ts](src/fixture-model.ts) / [fixture-backend.ts](src/fixture-backend.ts): keyless test dependencies.
 

@@ -1,10 +1,21 @@
 # Implementation progress
 
-Spec: v1.48. Current checkpoint: **session and request record reference owners**.
+Spec: v1.49. Current checkpoint: **evidence and verification record reference owners**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Five evidence/verification owners declare sensor metadata, stopped boundaries, formal
+contexts and verdict dependencies. They reuse existing scoped readers, validate exact
+verifier/context/fact agreement and protect archived assignment sources. Shared image
+reference validation is exported by perception and reused by ownership inspection.
+Nineteen domain-retention and eight sensor-record checks pass with real journals, the
+project PNG and authored documents. No model or physical provider executes. TypeScript
+and changed-source formatting pass. The preceding `c4e12aa` checkpoint passed GitHub
+Framework checks. Complete run/assignment/recovery/report/file/audit ownership, archived
+identity lifecycle and reviewed host/console admission remain pending.
+[Evidence ownership and acceptance](domain-retention.md#evidence-and-verification-owners).
 
 Session/request retention now has seven explicit namespace owners. They cover open
 requests, task requests, task catalogs, published membership and reverse run ownership.
@@ -12,7 +23,7 @@ SessionTaskHistory enumerates complete published history with immutable identity
 position checks, including missing intermediate records. Legacy inline histories remain
 readable. Retained request records continue to protect replay sources. Fourteen domain
 retention checks pass using authored documents, real journals and file locks. Run,
-assignment, evidence, recovery, report, file and audit ownership plus reviewed host/console
+assignment, recovery, report, file and audit ownership plus reviewed host/console
 admission remain pending. [Owner inventory](domain-retention.md#session-and-request-owners).
 Seven session-history and seven request-replay checks also pass, including 2,000
 stored task memberships, SQLite history consistency and journal reopen. TypeScript,

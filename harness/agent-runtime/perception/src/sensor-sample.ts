@@ -9,6 +9,38 @@ const object = (value: unknown): value is Record<string, unknown> =>
 const opaque = (value: unknown) =>
   typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\s\S])/.test(value);
 
+export function validateImageAttachmentReference(ref: unknown): asserts ref is ImageAttachmentRef {
+  if (
+    !object(ref) ||
+    Object.keys(ref).some(
+      (key) =>
+        ![
+          'attachmentId',
+          'mediaType',
+          'bytes',
+          'width',
+          'height',
+          'name',
+          'originalDimensions',
+        ].includes(key),
+    ) ||
+    !opaque(ref.attachmentId) ||
+    typeof ref.mediaType !== 'string' ||
+    !['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(ref.mediaType) ||
+    !positive(ref.bytes, 32 * 1024 * 1024) ||
+    !positive(ref.width, 65536) ||
+    !positive(ref.height, 65536) ||
+    (ref.name !== undefined &&
+      (typeof ref.name !== 'string' || ref.name.length > 256 || /[\\/\x00-\x1f]/.test(ref.name))) ||
+    (ref.originalDimensions !== undefined &&
+      (!object(ref.originalDimensions) ||
+        Object.keys(ref.originalDimensions).some((key) => !['width', 'height'].includes(key)) ||
+        !positive(ref.originalDimensions.width, 65536) ||
+        !positive(ref.originalDimensions.height, 65536)))
+  )
+    throw new Error('Invalid immutable image attachment reference.');
+}
+
 /** Validate metadata only. The deployment's attachment store must verify image bytes. */
 export function admitSensorSample(
   validator: ContractValidator,
@@ -40,39 +72,7 @@ export function admitSensorSample(
   if (sample.images !== undefined) {
     if (!Array.isArray(sample.images) || sample.images.length > 16)
       throw new Error('Sensor sample exceeds the image reference bound.');
-    for (const ref of sample.images) {
-      if (
-        !object(ref) ||
-        Object.keys(ref).some(
-          (key) =>
-            ![
-              'attachmentId',
-              'mediaType',
-              'bytes',
-              'width',
-              'height',
-              'name',
-              'originalDimensions',
-            ].includes(key),
-        ) ||
-        !opaque(ref.attachmentId) ||
-        typeof ref.mediaType !== 'string' ||
-        !['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(ref.mediaType) ||
-        !positive(ref.bytes, 32 * 1024 * 1024) ||
-        !positive(ref.width, 65536) ||
-        !positive(ref.height, 65536) ||
-        (ref.name !== undefined &&
-          (typeof ref.name !== 'string' ||
-            ref.name.length > 256 ||
-            /[\\/\x00-\x1f]/.test(ref.name))) ||
-        (ref.originalDimensions !== undefined &&
-          (!object(ref.originalDimensions) ||
-            Object.keys(ref.originalDimensions).some((key) => !['width', 'height'].includes(key)) ||
-            !positive(ref.originalDimensions.width, 65536) ||
-            !positive(ref.originalDimensions.height, 65536)))
-      )
-        throw new Error('Invalid immutable image attachment reference.');
-    }
+    for (const ref of sample.images) validateImageAttachmentReference(ref);
     if (new Set(sample.images.map((image) => image.attachmentId)).size !== sample.images.length)
       throw new Error('Duplicate image in sensor sample.');
   }

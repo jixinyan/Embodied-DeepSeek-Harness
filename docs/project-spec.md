@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.48 · 2026-09-22
+Version: v1.49 · 2026-09-22
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -46,6 +46,8 @@ and live history-index reconciliation are implemented at the storage boundary. A
 retention has a configured controller for declared record references, SKILL-source
 preservation, durable request identities and leased external sources. Session/request
 owners now inspect complete task membership, reverse ownership and catalog dependencies.
+Evidence/verification owners inspect image metadata, stopped boundaries, formal contexts
+and accepted-verdict sources through their existing readers.
 Remaining record owners, host idle admission and reviewed console selection remain pending;
 see [domain retention](implementation/domain-retention.md).
 Live VLM and

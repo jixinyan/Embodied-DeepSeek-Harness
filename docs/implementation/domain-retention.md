@@ -62,10 +62,42 @@ legacy accepted format and the current two-write publication sequence.
 These owners describe framework-defined relationships. Deployments with custom record
 references inside configuration/catalog text must extend the corresponding owner or
 declare those references through an external source. Owner prefixes cannot overlap.
-Run, assignment, evidence, recovery, report, file and native-audit owners remain required
+Run, assignment, recovery, report, file and native-audit owners remain required
 for a complete application journal. This pack does not authorize deleting a session:
 the retained request record continues to require its replay source. Removing such
 history requires an explicit archived-identity lifecycle and corresponding reader support.
+
+## Evidence and verification owners
+
+`evidenceRecordOwners(store, validator)` supplies five additional owners:
+
+| Namespace | Declared dependencies |
+| --- | --- |
+| `sensor-sample:` | Source run, recovery identity when present, and every referenced sensor-image metadata record |
+| `sensor-image:` | Source run; attachment identity, immutable version and complete metadata are validated |
+| `verification-boundary:` | Source run, recovery identity when present and every recorded observation |
+| `verification-context:` | Source run, archived assignment when applicable, stopped boundary, captured evidence and recovery identity when present |
+| `verdict-history:` | Verification context and its dependencies, with exact verdict-to-context agreement |
+
+These owners use SensorSamples, AssignmentHistory, VerificationBoundaries,
+VerificationContexts and VerdictHistory to read their authoritative records. Shared
+image-reference validation is exported by `@edh/perception` and used by both sensor
+admission and metadata ownership inspection. It validates metadata; actual attachment
+bytes remain the image provider's responsibility.
+
+Evidence must belong to its key's run and source mode. A verification context must
+match its assignment brief, boundary and observation scope. Contexts with recorded
+facts require agent-visible evidence. Accepted verdicts must agree with the verifier
+session, request, execution, boundary, task scope, exact facts, evidence list and goal
+criteria identity/version. References to missing required records or conflicting scopes
+stop inspection. JSON tuple keys must retain their canonical encoding.
+
+The verification owners require the persisted context and boundary sources. Legacy
+records lacking those sources require an explicit migration or restoration before
+retention admission; this pack does not create evidence or infer an absent verification
+history. Custom semantic dependencies in arbitrary text still require deployment-owned
+reference declarations. Original-image collection remains a separate operation and
+continues to retain images referenced by the remaining journal.
 
 ## Mandatory retained records
 
@@ -111,7 +143,7 @@ for [publication and recovery semantics](storage-maintenance.md#record-retiremen
 
 ## Acceptance and integration work
 
-`pnpm test:domain-retention` runs fourteen checks with real journals, exclusive file locks,
+`pnpm test:domain-retention` runs nineteen checks with real journals, exclusive file locks,
 file revisions, cancellation and reopen. Authored documents exercise reference cycles,
 retained incoming edges, mandatory SKILL/request roots, incomplete provenance, changed
 previews, malformed configuration and external-source cleanup. No model response or
@@ -119,6 +151,11 @@ physical provider executes, and no user workspace record is deleted.
 Six session-owner checks additionally cover exact dependency sets, all published
 membership positions, unchanged request replay after rejected deletion, reverse identity
 conflicts, catalog integrity, legacy inline history, compaction and reopen.
+Five evidence-owner checks use the actual stored project PNG and authored verification
+documents. They exercise exact dependency sets, archived assignment sources, missing
+references, changed actor/scope/facts/visibility, immutable versions, image metadata,
+compaction and reopen. Eight sensor-record checks cover shared admission validation,
+including a file-backed child process under a 64 MiB heap limit.
 
 Application delivery still requires a complete EDH record-owner inventory, external
 ownership declarations, host idle admission and reviewed console selection. Session

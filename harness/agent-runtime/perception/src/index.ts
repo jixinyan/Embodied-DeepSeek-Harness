@@ -4,5 +4,9 @@ export interface PerceptionProvider {
   segment(request: SegmentationRequest): Promise<SegmentationResult>;
 }
 
-export { admitSensorSample, sensorImages } from './sensor-sample.js';
+export {
+  admitSensorSample,
+  sensorImages,
+  validateImageAttachmentReference,
+} from './sensor-sample.js';
 export { SensorSamples } from './sensor-samples.js';

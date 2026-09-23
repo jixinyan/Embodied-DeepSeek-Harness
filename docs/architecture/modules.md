@@ -178,6 +178,10 @@ SessionTaskHistory owns full published membership enumeration. The server's
 sessionRecordOwners declares Session/request/catalog dependencies and validates reverse
 task ownership before retention admission. Request identity records retain their replay
 sources; an archive/tombstone lifecycle remains required for deleting those sources.
+`evidenceRecordOwners` in the same application layer composes sensor, assignment and
+verification readers to declare run/evidence/boundary/context dependencies. Perception
+owns shared image metadata validation; the image provider owns byte integrity. These
+declarations do not authorize agent access or certify physical task completion.
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys
