@@ -87,6 +87,7 @@ export interface ServerDeployment {
   readonly providers?: readonly string[];
   readonly contextManagement?: ContextManagementOptions;
   readonly sessionHistory?: SessionHistoryOptions;
+  readonly assignmentLifetimeMs?: number;
   /** Optional version-pinned simulation/embodiment/policy stack. */
   readonly physicalProfile?: PhysicalRuntimeProfile;
   readonly physicalProviders?: PhysicalProfileValidators;
@@ -107,6 +108,13 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     throw new Error('Deployment requires an ID, version and description.');
   if (!['test_fixture', 'simulation', 'hardware'].includes(input.source))
     throw new Error('Invalid deployment evidence source.');
+  if (
+    input.assignmentLifetimeMs !== undefined &&
+    (!Number.isSafeInteger(input.assignmentLifetimeMs) ||
+      input.assignmentLifetimeMs < 1_000 ||
+      input.assignmentLifetimeMs > 86_400_000)
+  )
+    throw new Error('Assignment lifetime must be between one second and one day.');
   if (
     input.modelConfigurationDigest !== undefined &&
     (input.modelConfigurationDigest.length !== 64 ||
@@ -227,6 +235,9 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     description: input.description,
     defaultModel: input.defaultModel,
     sessionHistory,
+    ...(input.assignmentLifetimeMs === undefined
+      ? {}
+      : { assignmentLifetimeMs: input.assignmentLifetimeMs }),
     ...(contextManagement === undefined ? {} : { contextManagement }),
     ...(physicalProfile === undefined ? {} : { physicalProfile }),
     models,
@@ -245,6 +256,9 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     adapters,
     additionalTools,
     sessionHistory,
+    ...(input.assignmentLifetimeMs === undefined
+      ? {}
+      : { assignmentLifetimeMs: input.assignmentLifetimeMs }),
     ...(contextManagement === undefined ? {} : { contextManagement }),
     ...(physicalProfile === undefined ? {} : { physicalProfile }),
     teamFile: input.teamFile,

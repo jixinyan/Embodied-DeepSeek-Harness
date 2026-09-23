@@ -61,6 +61,11 @@ export class ContractValidator {
     if (!this.ajv.validateSchema(this.schema)) throw new Error(this.ajv.errorsText());
     this.lifecycle = this.schema['x-edh-lifecycle'] as typeof this.lifecycle;
   }
+  schemaDocument(name: ContractName): Record<string, unknown> {
+    const definitions = this.schema.$defs as Record<string, unknown>;
+    if (!Object.hasOwn(definitions, name)) throw new Error(`Unknown contract: ${name}`);
+    return { $ref: `#/$defs/${name}`, $defs: structuredClone(definitions) };
+  }
   issues(name: ContractName, value: unknown): ContractIssue[] {
     const definitions = this.schema.$defs as Record<string, unknown>;
     if (!Object.hasOwn(definitions, name)) throw new Error(`Unknown contract: ${name}`);

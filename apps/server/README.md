@@ -7,8 +7,11 @@ team configuration, UpperRun, a local domain store and an explicitly synthetic b
 - [application.ts](src/application.ts): role tools, task/verification/recovery coordination.
 - [native-worker.ts](src/native-worker.ts): retained native simulator process,
   task-scoped backend ports, bounded transport requests, camera attachment storage,
-  and confirmed process release. The session keeps one native scene across tasks;
+  control-step frame events, and confirmed process release. The session keeps one native scene across tasks;
   each task receives a separate run ID before its backend and UpperRun are created.
+- [evidence-images.ts](src/evidence-images.ts): image integrity checks for agent
+  evidence and event-bound operator replay frames. Replay URLs use the immutable
+  run event sequence and preserve debug-only frame visibility.
 - [http-server.ts](src/http-server.ts): admission, history, control endpoints and SSE subscriptions.
 - [user-sessions.ts](src/user-sessions.ts): retained environment lifetime, task admission
   and durable session-open request identity; [publication and checks](../../docs/implementation/user-sessions.md#session-open-request-identity).
@@ -39,6 +42,7 @@ models, tools and backend factories. `startDemoServer` supplies the CPU configur
 See the [deployment guide](../../docs/implementation/deployments.md) and runnable example.
 The native worker requires an explicit simulator, task catalog, policy service,
 scene configuration, and isolated runtime command. The default demo remains synthetic.
-The RoboCasa process check stores actual reset camera frames and native checks under
-`.local/work/native-worker-remote`; the learned policy has not completed an action in
-that check.
+The RoboCasa process checks store actual camera frames and native checks under
+`.local/work/native-worker-remote` and `.local/work/native-worker-gr00t-03`.
+The latter records six confirmed learned-policy commands and a native
+`task_success=false` result for that execution.

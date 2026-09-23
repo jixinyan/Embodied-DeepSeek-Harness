@@ -1,5 +1,5 @@
 import { spawn, type ChildProcess } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { createInterface } from 'node:readline';
 import type { Readable } from 'node:stream';
 import { isDeepStrictEqual } from 'node:util';
@@ -8,8 +8,9 @@ import type {
   ExecutionStatus,
   SubgoalRequest,
   CheckResult,
+  TaskScope,
 } from '@edh/contracts';
-import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
+import type { EmbodiedBackend, BackendFrame, BackendUpdate, SensorSample } from '@edh/execution';
 import { parseTaskCatalog, type TaskCatalogDefinition, type TaskDefinition } from '@edh/tasks';
 import type { DeploymentServices, SessionEnvironment } from './deployment.js';
 
@@ -54,6 +55,8 @@ interface WorkerDescription {
   active_view_directions: string[];
   clock_id: string;
   policy_id: string;
+  task_instruction?: string | null;
+  scene_metadata?: JsonObject | null;
 }
 
 interface WorkerObservation {
@@ -66,6 +69,7 @@ interface WorkerPublication {
   status: ExecutionStatus;
   observation: WorkerObservation;
   diagnostic?: string;
+  uncertain_actions: number;
   control?: {
     request_id: string;
     segment_id: string;
@@ -74,6 +78,17 @@ interface WorkerPublication {
     action_completed: boolean;
     raw_sim_steps: number;
   };
+}
+
+interface WorkerFramePublication {
+  run_task_id: string;
+  execution_id: string;
+  task_scope: TaskScope;
+  policy_request_id: string;
+  segment_id: string;
+  native_step_index: number;
+  simulation_time_s: number;
+  observation: WorkerObservation;
 }
 
 class NativeWorkerTransport {
@@ -89,6 +104,7 @@ class NativeWorkerTransport {
   >();
   private processing: Promise<void> = Promise.resolve();
   private listener: ((publication: WorkerPublication) => Promise<void>) | undefined;
+  private frameListener: ((publication: WorkerFramePublication) => Promise<void>) | undefined;
   private fault?: Error;
   private closeAcknowledged = false;
 
@@ -107,11 +123,13 @@ class NativeWorkerTransport {
     this.child.stderr?.on('data', (chunk: Buffer) => process.stderr.write(chunk));
     const lines = createInterface({ input: channel, crlfDelay: Infinity });
     lines.on('line', (line) => {
+      lines.pause();
       this.processing = this.processing
         .then(() => this.receive(line))
         .catch((error: unknown) => {
           this.disconnect(error instanceof Error ? error : new Error(String(error)));
-        });
+        })
+        .finally(() => lines.resume());
     });
     channel.on('end', () => {
       void this.processing.finally(() =>
@@ -138,6 +156,12 @@ class NativeWorkerTransport {
 
   setListener(listener: ((publication: WorkerPublication) => Promise<void>) | undefined): void {
     this.listener = listener;
+  }
+
+  setFrameListener(
+    listener: ((publication: WorkerFramePublication) => Promise<void>) | undefined,
+  ): void {
+    this.frameListener = listener;
   }
 
   get disconnected(): boolean {
@@ -173,6 +197,12 @@ class NativeWorkerTransport {
       const publication = object(message.data) as unknown as WorkerPublication;
       if (!this.listener) throw new Error('Native worker published outside an active task port.');
       await this.listener(publication);
+      return;
+    }
+    if (message.event === 'frame') {
+      const publication = object(message.data) as unknown as WorkerFramePublication;
+      if (!this.frameListener) throw new Error('Native frame has no admitted session task.');
+      await this.frameListener(publication);
       return;
     }
     const id = string(message.id);
@@ -265,6 +295,7 @@ class NativeTaskBackend implements EmbodiedBackend {
   private sequence = 0;
   private closed = false;
   private readonly listeners = new Set<(update: BackendUpdate) => void>();
+  private readonly frameListeners = new Set<(frame: BackendFrame) => void>();
 
   constructor(
     private readonly transport: NativeWorkerTransport,
@@ -284,6 +315,7 @@ class NativeTaskBackend implements EmbodiedBackend {
     private readonly onClose: () => void,
   ) {
     this.transport.setListener((publication) => this.publish(publication));
+    this.transport.setFrameListener((publication) => this.publishFrame(publication));
   }
 
   private async sample(
@@ -291,6 +323,10 @@ class NativeTaskBackend implements EmbodiedBackend {
     status?: ExecutionStatus,
     diagnostic?: string,
     control?: WorkerPublication['control'],
+    scope?: TaskScope,
+    visibility: 'agent' | 'debug_only' = 'agent',
+    uncertainActions = 0,
+    evidenceId?: string,
   ): Promise<SensorSample> {
     const fields = object(observation);
     const frames = object(fields.images);
@@ -331,6 +367,7 @@ class NativeTaskBackend implements EmbodiedBackend {
         catalogTaskId: this.catalogTaskId,
         runId: this.runId,
         observationId: string(fields.observation_id),
+        uncertainActions,
         ...(status
           ? { executionId: status.execution_id, rawSimSteps: status.raw_sim_steps ?? 0 }
           : {}),
@@ -346,12 +383,12 @@ class NativeTaskBackend implements EmbodiedBackend {
       },
       images: refs,
       evidence: {
-        id: string(fields.observation_id),
+        id: evidenceId ?? string(fields.observation_id),
         kind: 'image',
         source: `${this.provider}.camera`,
         created_at: string(fields.observed_at),
-        visibility: 'agent',
-        task_scope: status?.task_scope ?? { task_id: this.runId },
+        visibility,
+        task_scope: scope ?? status?.task_scope ?? { task_id: this.runId },
         observed_at: string(fields.observed_at),
         clock_id: status?.clock_id ?? this.clockId,
       },
@@ -363,6 +400,13 @@ class NativeTaskBackend implements EmbodiedBackend {
   private async publish(publication: WorkerPublication): Promise<void> {
     if (this.closed) throw new Error('Native task port received an update after close.');
     const fields = object(publication);
+    const uncertainActions = fields.uncertain_actions;
+    if (
+      typeof uncertainActions !== 'number' ||
+      !Number.isSafeInteger(uncertainActions) ||
+      uncertainActions < 0
+    )
+      throw new Error('Native worker uncertain action count is invalid.');
     const status = this.validator.parse('ExecutionStatus', fields.status) as ExecutionStatus;
     if (status.task_scope.task_id !== this.runId)
       throw new Error('Native update belongs to another session task.');
@@ -385,9 +429,64 @@ class NativeTaskBackend implements EmbodiedBackend {
       status,
       typeof fields.diagnostic === 'string' ? fields.diagnostic : undefined,
       fields.control as WorkerPublication['control'],
+      undefined,
+      'agent',
+      uncertainActions,
     );
     this.status = structuredClone(status);
     for (const listener of this.listeners) listener({ status: structuredClone(status), sample });
+  }
+
+  private async publishFrame(publication: WorkerFramePublication): Promise<void> {
+    if (this.closed || !this.frameListeners.size || !this.status)
+      throw new Error('Native frame arrived without an active run subscriber.');
+    const fields = object(publication) as unknown as WorkerFramePublication;
+    const scope = this.validator.parse('TaskScope', fields.task_scope) as TaskScope;
+    if (
+      fields.run_task_id !== this.runId ||
+      scope.task_id !== this.runId ||
+      !isDeepStrictEqual(scope, this.status.task_scope) ||
+      fields.execution_id !== this.status.execution_id
+    )
+      throw new Error('Native frame belongs to another run or execution.');
+    if (
+      !Number.isSafeInteger(fields.native_step_index) ||
+      fields.native_step_index < 1 ||
+      typeof fields.simulation_time_s !== 'number' ||
+      !Number.isFinite(fields.simulation_time_s) ||
+      fields.simulation_time_s < 0
+    )
+      throw new Error('Native frame step index or simulation time is invalid.');
+    const sample = await this.sample(
+      fields.observation as WorkerObservation,
+      undefined,
+      undefined,
+      undefined,
+      scope,
+      'debug_only',
+      0,
+      `frame:${string(object(fields.observation).observation_id)}`,
+    );
+    const frame: BackendFrame = {
+      sample: {
+        ...sample,
+        visualization: {
+          ...sample.visualization,
+          executionId: string(fields.execution_id),
+          policyRequestId: string(fields.policy_request_id),
+          segmentId: string(fields.segment_id),
+          nativeStepIndex: fields.native_step_index,
+          simulationTimeS: fields.simulation_time_s,
+        },
+      },
+      runId: this.runId,
+      executionId: string(fields.execution_id),
+      policyRequestId: string(fields.policy_request_id),
+      segmentId: string(fields.segment_id),
+      nativeStepIndex: fields.native_step_index,
+      simulationTimeS: fields.simulation_time_s,
+    };
+    for (const listener of this.frameListeners) listener(frame);
   }
 
   async start(
@@ -517,11 +616,17 @@ class NativeTaskBackend implements EmbodiedBackend {
     return () => this.listeners.delete(listener);
   }
 
+  subscribeFrames(listener: (frame: BackendFrame) => void): () => void {
+    this.frameListeners.add(listener);
+    return () => this.frameListeners.delete(listener);
+  }
+
   async close(): Promise<void> {
     if (this.closed) return;
     await this.transport.request('close_task');
     this.closed = true;
     this.transport.setListener(undefined);
+    this.transport.setFrameListener(undefined);
     this.onClose();
   }
 }
@@ -532,6 +637,8 @@ export async function createNativeWorkerEnvironment(
   validator: ContractValidator,
 ): Promise<SessionEnvironment> {
   parseTaskCatalog(configuration.catalog, validator);
+  if (Object.keys(configuration.catalog.tasks).length !== 1)
+    throw new Error('Native session must bind exactly one catalog task.');
   const timeouts = {
     observationTtlS: configuration.observationTtlS ?? 30,
     deviceTimeoutS: configuration.deviceTimeoutS ?? 30,
@@ -559,8 +666,36 @@ export async function createNativeWorkerEnvironment(
       description.policy_id !== configuration.policyId
     )
       throw new Error('Native worker initialized a different provider or task.');
+    const nativeInstruction = description.task_instruction;
+    const sceneMetadata = description.scene_metadata;
+    if (
+      typeof nativeInstruction !== 'string' ||
+      !nativeInstruction.trim() ||
+      nativeInstruction.length > 4000 ||
+      !sceneMetadata ||
+      typeof sceneMetadata !== 'object' ||
+      Array.isArray(sceneMetadata)
+    )
+      throw new Error('Native task instruction or scene metadata is unavailable.');
+    const resolvedCatalog: TaskCatalogDefinition = {
+      revision: `${configuration.catalog.revision}-${createHash('sha256')
+        .update(JSON.stringify(sceneMetadata))
+        .digest('hex')
+        .slice(0, 16)}`,
+      tasks: Object.fromEntries(
+        Object.entries(configuration.catalog.tasks).map(([id, task]) => [
+          id,
+          {
+            ...task,
+            instruction: nativeInstruction,
+            goal: { ...task.goal, configuration: JSON.stringify(sceneMetadata) },
+          },
+        ]),
+      ),
+    };
+    parseTaskCatalog(resolvedCatalog, validator);
     const checks = new Set(description.supported_check_ids);
-    for (const task of Object.values(configuration.catalog.tasks)) {
+    for (const task of Object.values(resolvedCatalog.tasks)) {
       for (const goal of [task.goal, ...(task.predefinedGoals ?? [])]) {
         const success =
           'all' in goal.successContract ? goal.successContract.all : goal.successContract.any;
@@ -572,7 +707,7 @@ export async function createNativeWorkerEnvironment(
     }
     let active: NativeTaskBackend | undefined;
     return {
-      describeTasks: () => structuredClone(configuration.catalog),
+      describeTasks: () => structuredClone(resolvedCatalog),
       async createTaskBackend(
         taskId: string,
         options: { signal: AbortSignal; runId: string; task?: TaskDefinition },
@@ -580,9 +715,9 @@ export async function createNativeWorkerEnvironment(
         options.signal.throwIfAborted();
         if (
           active ||
-          !Object.hasOwn(configuration.catalog.tasks, taskId) ||
+          !Object.hasOwn(resolvedCatalog.tasks, taskId) ||
           (options.task !== undefined &&
-            !isDeepStrictEqual(options.task, configuration.catalog.tasks[taskId]))
+            !isDeepStrictEqual(options.task, resolvedCatalog.tasks[taskId]))
         )
           throw new Error('Native session task is unavailable.');
         await transport.request(

@@ -742,7 +742,9 @@ function render() {
   text(
     'stop-reason',
     execution?.stop_reason?.replaceAll('_', ' ') ??
-      'Action gate integration is planned for physical providers.',
+      (current.source === 'simulation'
+        ? 'No native execution has started.'
+        : 'No execution has started.'),
   );
   $('budget').value = execution?.control_steps ?? 0;
   text('attempt', `ATTEMPT ${current.attempt}`);
@@ -997,10 +999,11 @@ const renderClarification = bindClarification($('user-clarification'), api, acti
 for (const command of ['pause', 'resume', 'stop'])
   $(command).onclick = () =>
     action(async () => {
-      await api(`/api/runs/${current.id}/${command}`, {});
-      current = await api(`/api/runs/${current.id}`);
-      render();
-      await refreshHistory();
+      const runId = current.id;
+      const revision = loadRevision;
+      await api(`/api/runs/${runId}/${command}`, {});
+      if (revision !== loadRevision || current?.id !== runId) return;
+      await loadRun(runId);
     });
 $('refresh-history').onclick = () => refreshHistory().catch((e) => error(e.message));
 $('sensor-view').onchange = showSensor;

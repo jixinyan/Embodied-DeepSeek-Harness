@@ -14,6 +14,15 @@ export interface BackendUpdate {
   status: ExecutionStatus;
   sample: SensorSample;
 }
+export interface BackendFrame {
+  sample: SensorSample;
+  runId: string;
+  executionId: string;
+  policyRequestId: string;
+  segmentId: string;
+  nativeStepIndex: number;
+  simulationTimeS: number;
+}
 export interface BackendCallOptions {
   /** Native DSH cancellation; providers must forward it to cooperative remote work. */
   signal?: AbortSignal;
@@ -53,5 +62,6 @@ export interface EmbodiedBackend {
     options?: BackendCheckOptions,
   ): BackendCheckResult | Promise<BackendCheckResult>;
   subscribe(listener: (update: BackendUpdate) => void): () => void;
+  subscribeFrames?(listener: (frame: BackendFrame) => void): () => void;
   close(): Promise<void>;
 }

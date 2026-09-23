@@ -1,4 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
+import { modelToolContractSchema } from './model-tool-schema.js';
 import { admitSensorSample, sensorImages, SensorSamples } from '@edh/perception';
 import { randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
@@ -27,7 +28,7 @@ import { AssignmentEvidenceGrants, SkillLibrary } from '@edh/memory';
 import { VerificationBoundaries, VerificationContexts } from '@edh/verification';
 import { skillSourceLimitations } from './skill-provenance.js';
 import { UserClarifications, ClarificationConflict, readClarification } from './clarifications.js';
-import type { EmbodiedBackend, BackendUpdate, SensorSample } from '@edh/execution';
+import type { EmbodiedBackend, BackendFrame, BackendUpdate, SensorSample } from '@edh/execution';
 import {
   TaskGoals,
   RunHistory,
@@ -128,10 +129,12 @@ export class UpperRun {
   private closePromise: Promise<void> | undefined;
   private readonly lifecycleErrors: unknown[] = [];
   private unsubscribe: () => void;
+  private unsubscribeFrames: () => void = () => {};
   private readonly goals: TaskGoals;
   private goal: GoalBinding;
   private attemptSequence = 1;
   private readonly recoveries = new Map<string, RecoveryObservation>();
+  private planToolSchema: Record<string, unknown> | undefined;
   constructor(private readonly options: ApplicationOptions) {
     taskContextSummary(options.taskContext ?? []);
     this.goals = new TaskGoals(
@@ -339,6 +342,15 @@ export class UpperRun {
         this.spawn(this.fail(error));
       }
     });
+    if (options.backend.subscribeFrames)
+      this.unsubscribeFrames = options.backend.subscribeFrames((frame) => {
+        try {
+          this.backendFrame(frame);
+        } catch (error) {
+          this.spawn(this.fail(error));
+          throw error;
+        }
+      });
   }
   snapshot(): RunState {
     return this.history.restore(this.state);
@@ -568,6 +580,7 @@ export class UpperRun {
     return a;
   }
   async start(): Promise<void> {
+    this.planToolSchema = await modelToolContractSchema(this.options.validator, 'PlanDocument');
     this.event('run.created', {
       source: this.state.source,
       scenario: this.state.scenario,
@@ -602,6 +615,8 @@ export class UpperRun {
         } else {
           const properties = CORE_TOOL_PARAMETERS[logical];
           if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
+          if (logical === 'planning.update' && !this.planToolSchema)
+            throw new Error('PlanDocument tool schema has not been prepared.');
           native = {
             name: logical.replaceAll('.', '__'),
             description:
@@ -623,7 +638,9 @@ export class UpperRun {
                         ],
                       },
                     }
-                  : properties,
+                  : logical === 'planning.update'
+                    ? { ...properties, plan: this.planToolSchema! }
+                    : properties,
               required: Object.keys(properties).filter(
                 (key) => !CORE_TOOL_OPTIONAL_PARAMETERS[logical]?.includes(key),
               ),
@@ -1039,6 +1056,11 @@ export class UpperRun {
       case 'files.search':
         return { files: this.files.search(a.id, s('query')) };
       case 'team.delegate': {
+        if (
+          s('member') === this.sessions.team.definition.bindings.final_verifier &&
+          this.state.state === 'verifying'
+        )
+          throw new Error('Formal verification is already assigned at this stopped boundary.');
         const images = sensorImages(this.permit(a, args.evidenceRefs as string[]));
         const target = await this.assignment(
           s('member'),
@@ -1100,8 +1122,38 @@ export class UpperRun {
           throw new Error('Run ended during active observation.');
         return this.observe(a, sample);
       }
-      case 'execution.query':
-        return { execution: this.options.backend.query() ?? null };
+      case 'execution.query': {
+        const execution = this.options.backend.query() ?? null;
+        const formal =
+          execution && this.gates.requiresVerification(execution)
+            ? Object.values(this.state.assignments).find(
+                (candidate) =>
+                  candidate.verificationContextStored &&
+                  isDeepStrictEqual(candidate.brief?.task_scope, execution.task_scope),
+              )
+            : undefined;
+        const verdict = execution
+          ? this.state.verdicts.findLast(
+              (candidate) =>
+                candidate.execution_id === execution.execution_id &&
+                candidate.boundary_event_id === execution.boundary_event_id,
+            )
+          : undefined;
+        return {
+          execution,
+          formalVerification:
+            execution && this.gates.requiresVerification(execution)
+              ? {
+                  assignmentId: formal?.id ?? null,
+                  status: verdict ? 'completed' : 'pending',
+                  verdictStatus: verdict?.status ?? null,
+                  nextStep: verdict
+                    ? 'The formal verdict is published. Finish this response to receive its follow-up.'
+                    : 'The host owns formal verification. Finish this response and wait for its follow-up.',
+                }
+              : null,
+        };
+      }
       case 'execution.start': {
         this.owner(a);
         this.readyGoal(this.goal.id);
@@ -1631,6 +1683,8 @@ export class UpperRun {
       execution: update.status,
       sensorSequence: update.sample.sequence,
     });
+    if (this.gates.requiresVerification(update.status) && !terminal(this.state.state))
+      this.grants.extend(this.state.decisionAssignmentId, [update.sample.evidence.id]);
     if (update.status.state !== 'running')
       this.endMonitor(update.status.stop_reason ?? update.status.state);
     if (terminal(this.state.state)) return;
@@ -1642,6 +1696,41 @@ export class UpperRun {
       this.latestMonitor = update;
       if (!this.monitorBusy) this.spawn(this.monitor());
     }
+  }
+  private backendFrame(frame: BackendFrame): void {
+    if (this.closed) throw new Error('Native frame arrived after run close.');
+    const request = this.state.requests.at(-1);
+    const execution = this.state.executions.find(
+      (candidate) => candidate.execution_id === frame.executionId,
+    );
+    if (
+      frame.runId !== this.state.id ||
+      !request ||
+      !execution ||
+      request.task_id !== this.state.id ||
+      !isDeepStrictEqual(frame.sample.evidence.task_scope, execution.task_scope) ||
+      frame.sample.evidence.visibility !== 'debug_only' ||
+      !Number.isSafeInteger(frame.nativeStepIndex) ||
+      frame.nativeStepIndex < 1 ||
+      !Number.isFinite(frame.simulationTimeS) ||
+      frame.simulationTimeS < 0 ||
+      frame.sample.visualization.executionId !== frame.executionId ||
+      frame.sample.visualization.policyRequestId !== frame.policyRequestId ||
+      frame.sample.visualization.segmentId !== frame.segmentId ||
+      frame.sample.visualization.nativeStepIndex !== frame.nativeStepIndex ||
+      frame.sample.visualization.simulationTimeS !== frame.simulationTimeS
+    )
+      throw new Error('Native frame metadata conflicts with the admitted execution.');
+    const sample = this.retainSample(frame.sample);
+    this.event('simulation.frame', {
+      sample,
+      runId: frame.runId,
+      executionId: frame.executionId,
+      policyRequestId: frame.policyRequestId,
+      segmentId: frame.segmentId,
+      nativeStepIndex: frame.nativeStepIndex,
+      simulationTimeS: frame.simulationTimeS,
+    });
   }
   private endMonitor(reason: string): void {
     this.monitorEpoch++;
@@ -1732,15 +1821,31 @@ export class UpperRun {
     }
   }
   private async formal(update: BackendUpdate): Promise<void> {
+    const boundarySample = this.evidence.read(update.sample.evidence.id);
+    if (
+      !boundarySample ||
+      boundarySample.evidence.visibility !== 'agent' ||
+      !isDeepStrictEqual(boundarySample, update.sample)
+    )
+      throw new Error('Formal boundary evidence is unavailable or changed.');
     const brief = this.brief(
       this.sessions.team.definition.bindings.final_verifier,
       'Perform mandatory formal verification at this stopped execution boundary.',
+      undefined,
+      '',
+      [update.sample.evidence.id],
     );
+    brief.known_facts.push({
+      statement: update.sample.description,
+      observed_at: update.sample.evidence.observed_at,
+      evidence_refs: [update.sample.evidence.id],
+    });
     brief.task_scope = structuredClone(update.status.task_scope);
     const a = await this.sessions.create(
       this.sessions.team.definition.bindings.final_verifier,
       brief,
     );
+    this.observe(a, update.sample);
     this.checks.open(a.id, {
       requestId: randomUUID(),
       executionId: update.status.execution_id,
@@ -1757,8 +1862,14 @@ export class UpperRun {
     });
     await this.sessions.deliver(
       a.id,
-      { kind: 'formal-verification', brief: a.brief, execution: update.status },
+      {
+        kind: 'formal-verification',
+        brief: a.brief,
+        execution: update.status,
+        sample: update.sample,
+      },
       'execution-boundary',
+      sensorImages([update.sample]),
     );
     if (
       !terminal(this.state.state) &&
@@ -1839,6 +1950,7 @@ export class UpperRun {
       for (const recovery of this.recoveries.values())
         if (recovery.timer) clearTimeout(recovery.timer);
       await cleanup(() => this.unsubscribe());
+      await cleanup(() => this.unsubscribeFrames());
       await cleanup(() => this.options.backend.close());
       await cleanup(() => this.sessions.close());
       await cleanup(() => this.settle());

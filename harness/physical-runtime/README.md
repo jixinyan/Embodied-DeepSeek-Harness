@@ -6,10 +6,12 @@ Execution includes a deterministic action gate and bounded PolicyRollout composi
 The native worker owns a simulator and its renderer on one Python execution thread,
 while policy inference runs asynchronously. Its host connection carries bounded
 requests and publishes status after actual control-command boundaries. A retained
-scene can serve successive session tasks with distinct run identities. RoboCasa
-reset, three-camera capture, native checks, and host process-fault handling have
-been exercised in the isolated GPU environment. A learned-policy action remains
-pending service acceptance.
+scene can serve successive session tasks with distinct run identities. Native
+frame events carry the execution, policy request, segment, physical step, and
+simulation time for run history and operator replay. RoboCasa reset,
+three-camera capture, native checks, host process-fault handling, and six
+confirmed GR00T policy commands have been exercised in the isolated GPU
+environment. That execution's native `task_success` check returned false.
 See the [adapter guide and runnable example](../../docs/implementation/model-policy-adapters.md).
 
 Executable boundary validation now uses `jsonschema`. Follow the CPU-only

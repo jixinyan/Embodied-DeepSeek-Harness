@@ -11,6 +11,8 @@ class NativeEnvironmentDescription:
     state_channels: tuple[str, ...]
     supported_check_ids: tuple[str, ...]
     active_view_directions: tuple[str, ...]
+    task_instruction: str | None = None
+    scene_metadata: Mapping[str, object] | None = None
 
 
 @dataclass(frozen=True)
@@ -23,12 +25,23 @@ class NativeObservation:
 
 
 @dataclass(frozen=True)
+class NativeFrame:
+    observation_id: str
+    observed_at: str
+    images: Mapping[str, bytes]
+    native_step_index: int
+    simulation_time_s: float
+
+
+@dataclass(frozen=True)
 class NativeStep:
     observation: NativeObservation
     executed_actions: int
     action_completed: bool
     raw_sim_steps: int
     episode_terminated: bool
+    native_frames: tuple[NativeFrame, ...] = ()
+    interruption_reason: str | None = None
 
 
 @dataclass(frozen=True)
@@ -43,7 +56,12 @@ class NativeEnvironment(Protocol):
     def reset(self, task_id: str, configuration: Mapping[str, object]) -> NativeObservation: ...
     def bind_task(self, task_id: str) -> None: ...
     def observe(self) -> NativeObservation: ...
-    def step(self, action: Sequence[float], should_stop: Callable[[], bool]) -> NativeStep: ...
+    def step(
+        self,
+        action: Sequence[float],
+        should_stop: Callable[[], bool],
+        on_live_frame: Callable[[NativeFrame], bool] | None = None,
+    ) -> NativeStep: ...
     def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]: ...
     def turn_view(self, direction: str) -> NativeObservation: ...
     def close(self) -> None: ...

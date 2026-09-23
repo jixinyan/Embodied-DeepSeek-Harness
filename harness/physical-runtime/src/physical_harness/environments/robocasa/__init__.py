@@ -17,6 +17,7 @@ from robosuite import macros
 from physical_harness.environments import (
     NativeCheck,
     NativeEnvironmentDescription,
+    NativeFrame,
     NativeObservation,
     NativeStep,
 )
@@ -61,6 +62,8 @@ class RoboCasaEnvironment:
             raise RuntimeError("Installed RoboCasa, robosuite or MuJoCo version differs from this adapter mapping.")
         self._env = None
         self._task_id: str | None = None
+        self._simulation_time_s = 0.0
+        self._scene_parameters: dict[str, object] | None = None
 
     @staticmethod
     def _scene_configuration(configuration: Mapping[str, object]) -> dict[str, object]:
@@ -131,6 +134,20 @@ class RoboCasaEnvironment:
 
     def describe(self) -> NativeEnvironmentDescription:
         self._check_native_contract()
+        env = self._require_env()
+        metadata = env.get_ep_meta()
+        instruction = metadata.get("lang")
+        if not isinstance(instruction, str) or not instruction.strip() or len(instruction) > 4000:
+            raise RuntimeError("RoboCasa episode metadata has no valid task instruction.")
+        if self._scene_parameters is None:
+            raise RuntimeError("RoboCasa scene configuration is unavailable.")
+        scene_metadata = {
+            "native_task_id": self._task_id,
+            "configuration": deepcopy(self._scene_parameters),
+            "layout_id": metadata["layout_id"],
+            "style_id": metadata["style_id"],
+            "fixture_refs": deepcopy(metadata["fixture_refs"]),
+        }
         return NativeEnvironmentDescription(
             provider="robocasa",
             embodiment_id="robocasa.pandaomron",
@@ -139,6 +156,8 @@ class RoboCasaEnvironment:
             state_channels=STATE_CHANNELS,
             supported_check_ids=("task_success",),
             active_view_directions=(),
+            task_instruction=instruction,
+            scene_metadata=scene_metadata,
         )
 
     def _observation(self, raw: Mapping[str, object]) -> NativeObservation:
@@ -182,6 +201,8 @@ class RoboCasaEnvironment:
             **scene,
         )
         self._task_id = task_id
+        self._scene_parameters = scene
+        self._simulation_time_s = 0.0
         raw = self._env.reset()
         self._check_native_contract()
         return self._observation(raw)
@@ -196,7 +217,12 @@ class RoboCasaEnvironment:
         raw = env.viewer._get_observations(force_update=True) if env.viewer_get_obs else env._get_observations(force_update=True)
         return self._observation(raw)
 
-    def step(self, action: Sequence[float], should_stop: Callable[[], bool]) -> NativeStep:
+    def step(
+        self,
+        action: Sequence[float],
+        should_stop: Callable[[], bool],
+        on_live_frame: Callable[[NativeFrame], bool] | None = None,
+    ) -> NativeStep:
         env = self._require_env()
         if should_stop():
             return NativeStep(self.observe(), 0, False, 0, False)
@@ -206,10 +232,17 @@ class RoboCasaEnvironment:
             raise ValueError("RoboCasa base_mode must be -1 or 1.")
         before = float(env.sim.data.time)
         raw, _reward, done, _info = env.step(np.asarray(action, dtype=np.float64))
-        raw_steps = round((float(env.sim.data.time) - before) / env.model_timestep)
+        elapsed = float(env.sim.data.time) - before
+        raw_steps = round(elapsed / env.model_timestep)
         if raw_steps <= 0:
             raise RuntimeError("RoboCasa did not advance simulation time for the control action.")
-        return NativeStep(self._observation(raw), 1, True, raw_steps, bool(done))
+        self._simulation_time_s += elapsed
+        observation = self._observation(raw)
+        frame = NativeFrame(
+            observation.observation_id, observation.observed_at, observation.images,
+            raw_steps, self._simulation_time_s,
+        )
+        return NativeStep(observation, 1, True, raw_steps, bool(done), (frame,))
 
     def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]:
         env = self._require_env()

@@ -104,7 +104,14 @@ class NativeActionDevice:
                 with self._lock:
                     self._uncertain_actions += 1
                 raise RuntimeError("Native simulator reported motion without an admitted action.")
-            if step.executed_actions == 1 and not step.action_completed and not self._should_stop(execution_id, generation):
+            if step.interruption_reason is not None and step.interruption_reason != "recording_capacity_exhausted":
+                with self._lock:
+                    self._uncertain_actions += 1
+                raise RuntimeError("Native simulator returned an unsupported interruption reason.")
+            if step.executed_actions == 1 and not step.action_completed and not (
+                self._should_stop(execution_id, generation)
+                or step.interruption_reason == "recording_capacity_exhausted"
+            ):
                 with self._lock:
                     self._uncertain_actions += 1
                 raise RuntimeError("Native action stopped early without a matching stop request.")

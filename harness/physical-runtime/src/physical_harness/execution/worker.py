@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import base64
 from datetime import datetime, timezone
+import faulthandler
 import json
 import math
 import os
@@ -13,7 +14,7 @@ import traceback
 from typing import Any, Awaitable, Callable
 from uuid import uuid4
 
-from physical_harness.environments import NativeEnvironment, NativeObservation
+from physical_harness.environments import NativeEnvironment, NativeFrame, NativeObservation
 from physical_harness.execution.action_gate import ActionGate
 from physical_harness.execution.native_device import NativeActionDevice
 from physical_harness.execution.policy_observation import encode_policy_observation
@@ -29,6 +30,19 @@ def require_object(value: Any) -> dict[str, Any]:
     if type(value) is not dict:
         raise ValueError("Expected a JSON object.")
     return value
+
+
+def record_policy_request(ticket: dict[str, Any], directory: Path) -> None:
+    request_id = ticket["request_id"]
+    if not isinstance(request_id, str) or not request_id.isascii() or not all(
+        character in "0123456789abcdef-" for character in request_id
+    ):
+        raise ValueError("Policy request identity is invalid for local recording.")
+    target = directory / f"{request_id}.json"
+    descriptor = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as output:
+        json.dump(ticket, output, allow_nan=False, separators=(",", ":"))
+        output.write("\n")
 
 
 class NativeWorkerSession:
@@ -119,13 +133,14 @@ class NativeWorkerSession:
         publication = {
             "status": self._status_for(observation),
             "observation": self._observation_wire(observation),
+            "uncertain_actions": self._require_device().uncertain_actions,
         }
         if self._failure_detail is not None:
             publication["diagnostic"] = self._failure_detail
         return publication
 
     @staticmethod
-    def _observation_wire(observation: NativeObservation) -> dict[str, Any]:
+    def _observation_wire(observation: NativeObservation | NativeFrame) -> dict[str, Any]:
         return {
             "observation_id": observation.observation_id,
             "observed_at": observation.observed_at,
@@ -192,6 +207,8 @@ class NativeWorkerSession:
             "camera_names": self._description.camera_names,
             "supported_check_ids": self._description.supported_check_ids,
             "active_view_directions": self._description.active_view_directions,
+            "task_instruction": self._description.task_instruction,
+            "scene_metadata": self._description.scene_metadata,
             "native_task_id": self._native_task_id,
             "clock_id": self._clock_id,
             "policy_id": self._policy_id,
@@ -277,6 +294,11 @@ class NativeWorkerSession:
                     self._request["instruction"], observation.observation_id, policy_observation,
                     observed_monotonic=observation.observed_monotonic,
                 )
+                record_directory = os.environ.get("EDH_POLICY_REQUEST_RECORD_DIR")
+                if record_directory is not None:
+                    await asyncio.to_thread(
+                        record_policy_request, ticket, Path(record_directory).resolve(strict=True)
+                    )
                 self._policy_calls += 1
                 async with asyncio.timeout(gate.ticket_remaining_time()):
                     chunk = await self._policy.infer(ticket)
@@ -319,6 +341,30 @@ class NativeWorkerSession:
             "action_completed": step.action_completed,
             "raw_sim_steps": step.raw_sim_steps,
         }
+        if len(step.native_frames) > 300:
+            raise RuntimeError("Native action exceeded the bounded frame recording capacity.")
+        prior_step_index = 0
+        prior_simulation_time = -1.0
+        for frame in step.native_frames:
+            if (frame.native_step_index <= prior_step_index or
+                    frame.native_step_index > step.raw_sim_steps or
+                    not math.isfinite(frame.simulation_time_s) or
+                    frame.simulation_time_s <= prior_simulation_time):
+                raise RuntimeError("Native frame sequence or simulation time is invalid.")
+            prior_step_index = frame.native_step_index
+            prior_simulation_time = frame.simulation_time_s
+            await self._emit({"event": "frame", "data": {
+                "run_task_id": self._run_task_id,
+                "execution_id": gate.snapshot()["execution_id"],
+                "task_scope": gate_scope(self._request),
+                "policy_request_id": segment["request_id"],
+                "segment_id": receipt["segment_id"],
+                "native_step_index": frame.native_step_index,
+                "simulation_time_s": frame.simulation_time_s,
+                "observation": self._observation_wire(frame),
+            }})
+        if step.interruption_reason is not None:
+            raise RuntimeError(f"Native action interrupted: {step.interruption_reason}.")
         if device.executed_actions - self._last_monitor_action < self._monitor_every_actions:
             return
         if device.executed_actions >= self._request["budget"]["max_control_steps"]:
@@ -491,6 +537,20 @@ def gate_scope(request: dict[str, Any] | None) -> dict[str, str]:
 
 async def serve() -> None:
     loop = asyncio.get_running_loop()
+    trace_after = os.environ.get("EDH_WORKER_TRACE_AFTER_S")
+    if trace_after is not None:
+        interval = float(trace_after)
+        if not math.isfinite(interval) or not 1 <= interval <= 300:
+            raise ValueError("Worker diagnostic interval must be 1 to 300 seconds.")
+        faulthandler.dump_traceback_later(interval, repeat=True, file=sys.stderr)
+
+        def dump_tasks() -> None:
+            for task in asyncio.all_tasks(loop):
+                print(f"Worker coroutine {task.get_name()}: {task!r}", file=sys.stderr)
+                task.print_stack(limit=8, file=sys.stderr)
+            loop.call_later(interval, dump_tasks)
+
+        loop.call_later(interval, dump_tasks)
     transport, protocol = await loop.connect_write_pipe(
         asyncio.streams.FlowControlMixin, os.fdopen(3, "wb", buffering=0)
     )

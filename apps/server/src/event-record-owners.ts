@@ -158,8 +158,10 @@ export class RunEventReferences {
     const sample = (value: unknown) => {
       const fields = object.parse(value);
       const ref = this.validator.parse('EvidenceRef', fields.evidence);
-      if (!isDeepStrictEqual(evidence(ref.id), value))
+      const stored = evidence(ref.id);
+      if (!isDeepStrictEqual(stored, value))
         throw new Error('Event sensor snapshot conflicts with its source.');
+      return stored;
     };
     const brief = (value: unknown) => {
       const valueBrief = this.validator.parse('InvocationBrief', value);
@@ -300,6 +302,31 @@ export class RunEventReferences {
         case 'execution.updated':
           execution(detail.execution);
           break;
+        case 'simulation.frame': {
+          if (detail.runId !== runId) throw new Error('Simulation frame belongs to another run.');
+          const executionId = id.parse(detail.executionId);
+          const status = state.executions.find((item) => item.execution_id === executionId);
+          if (!status) throw new Error('Simulation frame has no admitted execution source.');
+          const policyRequestId = id.parse(detail.policyRequestId);
+          const segmentId = id.parse(detail.segmentId);
+          const nativeStepIndex = count.positive().parse(detail.nativeStepIndex);
+          const simulationTimeS = z.number().finite().nonnegative().parse(detail.simulationTimeS);
+          const frame = sample(detail.sample);
+          if (
+            !frame ||
+            frame.evidence.visibility !== 'debug_only' ||
+            !isDeepStrictEqual(frame.evidence.task_scope, status.task_scope) ||
+            frame.visualization.executionId !== executionId ||
+            frame.visualization.policyRequestId !== policyRequestId ||
+            frame.visualization.segmentId !== segmentId ||
+            frame.visualization.nativeStepIndex !== nativeStepIndex ||
+            frame.visualization.simulationTimeS !== simulationTimeS
+          )
+            throw new Error('Simulation frame metadata conflicts with its execution.');
+          for (const image of frame.images ?? [])
+            references.add(keyFor('sensor-image:', runId, image.attachmentId));
+          break;
+        }
         case 'verification.completed':
           verdict(detail.result);
           break;

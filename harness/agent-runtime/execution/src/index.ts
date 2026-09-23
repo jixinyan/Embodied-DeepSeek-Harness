@@ -28,6 +28,7 @@ export type {
   EmbodiedBackend,
   SensorSample,
   BackendUpdate,
+  BackendFrame,
   BackendCallOptions,
   BackendResumeOptions,
   BackendCheckOptions,

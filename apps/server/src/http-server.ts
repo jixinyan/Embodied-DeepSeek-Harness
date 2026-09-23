@@ -14,7 +14,7 @@ import { consoleContentSecurityPolicy, readConsoleAsset } from './console-assets
 import { admitSessionTask } from './task-admission.js';
 import { RunEventStream } from './run-event-stream.js';
 import { HttpError, assertLocalRequest, readJsonBody as body } from './local-http.js';
-import { serveEvidenceImage } from './evidence-images.js';
+import { serveEvidenceImage, serveReplayFrameImage } from './evidence-images.js';
 import { readSessionAudit } from './session-audit-view.js';
 import { readRoleReports } from './report-view.js';
 import { readAssignmentDetails } from './assignment-view.js';
@@ -377,6 +377,16 @@ async function startApplication(
         const url = new URL(req.url ?? '/', `http://${req.headers.host}`);
         const method = req.method ?? 'GET';
         if (
+          await serveReplayFrameImage(
+            req,
+            res,
+            url,
+            { store, validator, images: services.images },
+            shutdown.signal,
+          )
+        )
+          return;
+        if (
           await serveEvidenceImage(
             req,
             res,
@@ -624,6 +634,9 @@ async function startApplication(
                   predefinedGoals: submission.predefinedGoals,
                   additionalTools: deployment.additionalTools,
                   sessionHistory: deployment.sessionHistory,
+                  ...(deployment.assignmentLifetimeMs === undefined
+                    ? {}
+                    : { assignmentLifetimeMs: deployment.assignmentLifetimeMs }),
                   backend,
                   instruction: submission.instruction,
                   taskContext: submission.context,
@@ -727,6 +740,9 @@ async function startApplication(
                 predefinedGoals: task.predefinedGoals ?? [],
                 additionalTools: deployment.additionalTools,
                 sessionHistory: deployment.sessionHistory,
+                ...(deployment.assignmentLifetimeMs === undefined
+                  ? {}
+                  : { assignmentLifetimeMs: deployment.assignmentLifetimeMs }),
                 backend,
                 instruction: task.instruction,
                 scenario: data.scenario as string,
