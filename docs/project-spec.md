@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.54 · 2026-09-23
+Version: v1.55 · 2026-09-23
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -26,6 +26,12 @@ are SVG assets; include their directory when handing over this document.
 ## 0. Handoff entry point
 
 ### 0.1 Current work and next action
+
+The active scope covers the complete upper agent workflow, all three simulation
+providers and actual VLM/policy integration tests. Installation, native SDK checks,
+transport integration and model-driven task acceptance have separate evidence gates.
+The [live integration acceptance plan](implementation/live-integration.md) defines
+the required checks and the current provider matrix.
 
 GPU-host access is now available for simulation integration. The active delivery
 priority is a real environment-to-console workflow, retaining DSH role orchestration,

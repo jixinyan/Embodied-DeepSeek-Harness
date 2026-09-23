@@ -1,10 +1,18 @@
 # Implementation progress
 
-Spec: v1.54. Current checkpoint: **isolated GPU deployment and RoboCasa task reset acceptance**.
+Spec: v1.55. Current checkpoint: **live model, worker and three-simulator integration**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Active work covers the DSH-backed upper loop, a real physical worker, BEHAVIOR-1K,
+RoboCasa, RoboTwin, and actual VLM/policy services. Implementations must preserve
+independent role contexts, Planner decision ownership, asynchronous verification,
+ActionGate admission and verified recovery experience. The
+[live integration acceptance plan](live-integration.md) distinguishes provider
+installation, native execution and complete application acceptance. No new live
+integration is considered verified until its actual checks pass.
 
 RoboCasa 1.0.1, robosuite 1.5.2 and MuJoCo 3.3.1 are installed in an isolated
 Python 3.11.16 environment on the GPU host. All 139 installed distributions pass

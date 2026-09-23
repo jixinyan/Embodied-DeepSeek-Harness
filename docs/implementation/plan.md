@@ -11,6 +11,11 @@ A checklist or document change never substitutes for execution evidence.
 
 ## Current delivery priority
 
+Complete the [live integration acceptance plan](live-integration.md) for the upper
+agent workflow and all three simulation providers with actual VLM and policy services.
+Retain the individual evidence gates; a successful SDK reset does not complete a
+provider's worker, policy or console acceptance.
+
 Use the available GPU host to integrate a real-simulation MVP through isolated
 simulator, model and policy environments. Validate native rendering and task reset,
 connect the worker and action gate, then exercise actual model-driven task execution
