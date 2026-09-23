@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { ContractValidator, type PlanDocument } from '@edh/contracts';
+import { ContractValidationError, ContractValidator, type PlanDocument } from '@edh/contracts';
 import { TaskGoals, parseGoalBinding, type GoalBinding } from '@edh/tasks';
 import { TaskPlans } from '@edh/planning';
 import { LocalStore } from '@edh/storage';
@@ -89,6 +89,16 @@ test('goal bindings validate all configuration fields and preserve detached sour
     { ...root, successContract: { ...root.successContract, all: [permitted, permitted] } },
   ];
   for (const input of invalid) assert.throws(() => parseGoalBinding(input, validator));
+  assert.throws(
+    () =>
+      parseGoalBinding({ ...root, budget: { ...root.budget, max_control_steps: 0 } }, validator),
+    (error) => {
+      assert(error instanceof ContractValidationError);
+      assert.equal(error.contract, 'Budget');
+      assert(error.issues.some((issue) => issue.path === '/max_control_steps'));
+      return true;
+    },
+  );
   assert.deepEqual(
     parseGoalBinding({ ...root, capabilities: [], entities: {}, taskSemantics: [] }, validator),
     { ...root, capabilities: [], entities: {}, taskSemantics: [] },

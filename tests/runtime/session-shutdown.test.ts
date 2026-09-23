@@ -1,10 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
-import { TeamSessions } from '@edh/communication';
+import { TeamSessions, type SessionHooks } from '@edh/communication';
+import { LocalStore, SessionAudits } from '@edh/storage';
 import type { LlmAdapter } from '@deepseek-ai/dsh-llm';
 import { ScriptedModel, textResponse } from './scripted-model.js';
 import { ContractValidator, type InvocationBrief } from '@edh/contracts';
@@ -13,7 +14,7 @@ import { createDshHost } from '../../apps/server/src/runtime.js';
 import { CORE_TOOLS } from '../../apps/server/src/application.js';
 import { FixtureModel } from '../../apps/server/src/fixture-model.js';
 
-async function setup(audit: () => void, model: LlmAdapter = new FixtureModel(0)) {
+async function setup(audit: SessionHooks['audit'], model: LlmAdapter | null = new FixtureModel(0)) {
   const validator = new ContractValidator(
     JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
   );
@@ -27,7 +28,7 @@ async function setup(audit: () => void, model: LlmAdapter = new FixtureModel(0))
     providers: [],
   }).inspect('examples/teams/console-demo.yaml');
   const team = { ...loaded, teamRunId: randomUUID() };
-  const host = await createDshHost([{ providers: ['fixture'], adapter: model }]);
+  const host = await createDshHost(model ? [{ providers: ['fixture'], adapter: model }] : []);
   const sessions = new TeamSessions(
     host,
     team,
@@ -200,23 +201,26 @@ test(
     const ready = new Promise<void>((resolve) => {
       entered = resolve;
     });
-    const model = new ScriptedModel([
-      async function* (options) {
-        entered();
-        await setTimeout(10000, undefined, options.signal ? { signal: options.signal } : {});
-        yield* textResponse('Must be cancelled by shutdown.')(options);
-      },
-    ]);
-    const { host, sessions, brief } = await setup(() => {
-      throw new Error('Final audit failed.');
-    }, model);
+    await mkdir('.local/work', { recursive: true });
+    const directory = await mkdtemp(resolve('.local/work/session-shutdown-'));
+    const store = new LocalStore(directory);
+    const audits = new SessionAudits(store);
+    const { host, sessions, brief } = await setup(
+      (id, session) => audits.appendNative('shutdown-acceptance', id, session),
+      null,
+    );
+    brief.assignment_id = randomUUID();
+    host.on('agent/pre-step', async ({ signal }, next) => {
+      entered();
+      await setTimeout(10000, undefined, { signal });
+      return next();
+    });
+    let hold: ReturnType<LocalStore['holdWrites']> | undefined;
     try {
       const assignment = await sessions.create('lead', brief);
-      const delivery = assert.rejects(
-        sessions.deliver(assignment.id, {}, 'user'),
-        /Final audit failed/,
-      );
+      const delivery = assert.rejects(sessions.deliver(assignment.id, {}, 'user'), /suspended/);
       await ready;
+      hold = store.holdWrites();
       const finishing = assert.rejects(sessions.finish(assignment.id, 'done'), AggregateError);
       await assert.rejects(sessions.close(), (error) => {
         assert(error instanceof AggregateError);
@@ -225,13 +229,16 @@ test(
           1,
           'Retirement and completion share the same cleanup failure.',
         );
-        assert.match(error.errors[0].message, /Final audit failed/);
+        assert.match(error.errors[0].message, /suspended/);
         return true;
       });
       await Promise.all([delivery, finishing]);
       assert.equal(host.agents.list().length, 0);
     } finally {
+      hold?.release();
       await host.fiber.dispose();
+      store.close();
+      await rm(directory, { recursive: true, force: true });
     }
   },
 );

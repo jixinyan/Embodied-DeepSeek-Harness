@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
-import { ContractValidator } from '@edh/contracts';
+import { ContractValidationError, ContractValidator } from '@edh/contracts';
 import { LocalStore, SessionAudits } from '@edh/storage';
 import { FixtureBackend } from '../../apps/server/src/fixture-backend.js';
 import { createDemoDeployment } from '../../apps/server/src/demo-deployment.js';
@@ -131,7 +131,12 @@ test('invalid deployment and role bindings fail before locking or modifying the 
           },
         },
       }),
-      /budget/,
+      (error) => {
+        assert(error instanceof ContractValidationError);
+        assert.equal(error.contract, 'Budget');
+        assert(error.issues.some((issue) => issue.path === '/max_control_steps'));
+        return true;
+      },
     );
     await assert.rejects(
       startServer({

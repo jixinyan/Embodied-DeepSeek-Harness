@@ -16,6 +16,12 @@ reopen. No model or physical provider executes. A complete EDH ownership policy,
 idle admission and console selection remain pending.
 [API, ownership responsibilities and acceptance](domain-retention.md).
 
+Shutdown acceptance uses a real native pre-step cancellation and an actual journal
+write hold to check retirement cleanup and deduplicated audit failures. No model
+adapter is registered for that check. Budget rejection asserts the structured
+ContractValidationError and offending field. These checks do not establish live
+model/provider task acceptance.
+
 SKILL source inspection now reads every published recovery event index and its source
 run event individually. Returned dependencies include their keys/versions. Missing
 indexes or event bodies mark the source incomplete; rewritten versions, unordered or
