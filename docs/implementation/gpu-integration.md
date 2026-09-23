@@ -266,12 +266,22 @@ recorded simulation time. Policy request identities, checkpoint provenance and
 image hashes are retained. This replay preserves the failed outcome.
 
 Camera synchronization is measured separately from control frequency. The native
-RoboCasa control frequency is 20 Hz of simulation time. In subsequent run
-`8c08ebd4-7e5e-449a-82b1-d8d55f589b33`, 64 host frame events span approximately
-57.5 wall-clock seconds, about 1.1 events/s, with sampled capture-to-event delays
-of 1.9–4.0 seconds. These values do not measure browser display FPS. Browser
-decoded-frame metrics and image persistence optimizations require fresh live
-measurement before a faster end-to-end rate can be claimed.
+RoboCasa control frequency is 20 Hz of simulation time. In run
+`bc80d2aa-d6e4-4a38-b370-9efedc887936`, the first 581 recorded control frames span
+approximately 139.4 wall-clock seconds, about 4.1 published frames/s. Browser DOM
+checks during motion observed five-second display windows at 4.2 and 6.0 frames/s,
+request-to-decode times of 22.1 and 22.9 ms, and capture-to-decode times of 741 and
+331 ms. All three 256 × 256 images decoded successfully and matched the displayed
+frame number. These samples are not a sustained FPS guarantee or latency percentile.
+Capture-to-decode compares the worker host clock with the browser host clock.
+
+The console publishes all three decoded images together, preserves its image
+elements and keeps only the latest waiting display update. Operator frames use
+their exact recorded `simulation.frame` image routes; selecting Lead showed its
+actual initial observation while the operator stream continued. No operator frame
+was added to Lead's context by that selection. Original frame records remain
+available for replay. Browser measurements are retained in
+`.local/work/live-robocasa-server-05/browser-observations.md`.
 
 ## RoboTwin rendering check
 

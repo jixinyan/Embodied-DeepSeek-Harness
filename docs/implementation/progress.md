@@ -51,6 +51,15 @@ retains 399 events, 204 original images and three timestamp-verified camera vide
 Successful task and recovery acceptance remain pending.
 [Deployment isolation, source pins and actual checks](gpu-integration.md).
 
+Live camera display now uses decoded three-camera updates with a bounded latest
+waiting frame and persistent image elements. Operator-only simulation frames are
+available through their recorded event identities while Agent received views retain
+explicit context semantics. A real moving RoboCasa run publishes about 4.1 frames/s
+across 581 controls. Browser samples show 4.2–6.0 frames/s, 22–23 ms image loading
+and 0.33–0.74 s capture-to-decode delay. These are observed samples, not fixed rates.
+Cancelling a read-only native capture also passes a real check: subsequent capture,
+GR00T control, GT verification and confirmed stop remain available.
+
 RoboTwin's pinned SAPIEN renderer passes native GPU rendering and 100 physics
 steps on the allocated device, with matching reported PCI identity. Its actual
 `adjust_bottle` reset also passes with Aloha AgileX, three 640 × 480 camera images,
@@ -61,7 +70,7 @@ SHA256 values match the fixed upstream revision. All three simulators use dedica
 `data/` directories, and RoboCasa's native reset/render checks pass after relocation.
 RoboCasa camera preprocessing matches the official evaluation wrapper exactly:
 all three decoded EDH PNG arrays pass numerical equality against the same native
-reset observations. RoboTwin policy inference remains pending its actual task reset.
+reset observations. RoboTwin policy inference from its actual task remains pending.
 
 An isolated Qwen VLM served by vLLM now passes actual image/tool checks on an available
 GPU. Native API completion returns `tool_calls` followed by `stop`. Independent native
