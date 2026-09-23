@@ -32,6 +32,9 @@ providers and actual VLM/policy integration tests. Installation, native SDK chec
 transport integration and model-driven task acceptance have separate evidence gates.
 The [live integration acceptance plan](implementation/live-integration.md) defines
 the required checks and the current provider matrix.
+The [DSH release adaptation guide](implementation/dsh-release-adaptation.md) records
+reviewed upstream changes, absorbed mechanisms and compatibility requirements for
+the existing model providers, role lifecycle and persisted history.
 
 GPU-host access is now available for simulation integration. The active delivery
 priority is a real environment-to-console workflow, retaining DSH role orchestration,

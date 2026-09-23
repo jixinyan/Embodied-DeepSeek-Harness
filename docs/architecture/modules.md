@@ -4,7 +4,9 @@ EDH is the product and repository owner. Selected runtime implementations are ab
 from DSH into these modules. Step 00 verifies the original loop and scoped lifecycle;
 upper Team, planning, verification and experience services now run with CPU fixtures.
 OpenAI-compatible model transport, WebSocket policy transport and action admission
-are executable with local protocol/CPU tests. Simulator and hardware modules remain interfaces.
+are executable with local protocol/CPU tests. The RoboCasa native adapter and action device
+also pass GPU rendering and manual-control boundary checks. BEHAVIOR-1K, RoboTwin,
+learned-policy execution and the complete worker-to-host workflow are under integration.
 See the [adapter boundaries](../implementation/model-policy-adapters.md).
 
 ![Architecture](assets/framework-overview.svg)

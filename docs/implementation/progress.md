@@ -29,10 +29,21 @@ The official kitchen asset downloader completed successfully. A real RoboCasa
 `OpenCabinet` task reset passed with PandaOmron, the pretrain split and seed 0.
 Three native 256 × 256 RGB camera observations passed shape, type and nonuniformity
 checks; the checker recorded the task instruction, initial success value, 12-dimensional
-action limits, controller layout and 20 Hz control frequency. No robot control action
-or learned policy executed. Simulator adapters, worker transport, learned-policy
-inference and end-to-end task acceptance remain pending.
+action limits, controller layout and 20 Hz control frequency. The native RoboCasa adapter
+and ActionGate device now also pass actual manual-control checks: pause and resume,
+budget exhaustion, consecutive executions within one retained scene, and interruption
+of an action sequence with stable simulation time after confirmed stop. Actual completed
+actions and internal physics steps are recorded on the simulator owner thread, including
+when an asynchronous caller is cancelled. These checks use explicit manual controls.
+Learned-policy inference, worker transport and end-to-end task acceptance remain pending.
 [Deployment isolation, source pins and actual checks](gpu-integration.md).
+
+The latest upstream DSH release review targets `dsh-v0.1.7-rc.1`
+(`46a7f68b0922371ce7144b668b90e377d8e799f4`, 2026-09-23 prerelease).
+Serial agent initialization, output-aware compaction, cancellation records and nested
+secret redaction are being adapted with exact source provenance. The
+[release adaptation guide](dsh-release-adaptation.md) records the model, image and
+stored-history compatibility boundaries and required acceptance checks.
 
 RunEventReferences declares event and message dependencies using the existing domain
 readers. It covers delegation, observations, reports, verification, recovery pages,
