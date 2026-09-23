@@ -14,6 +14,8 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const baseURL = process.env.EDH_MODEL_BASE_URL;
 const model = process.env.EDH_MODEL;
 const cameraPath = process.env.EDH_CAMERA_PATH;
+const contextWindow = 32768;
+const maxTokens = 2048;
 if (!baseURL || !model || !cameraPath)
   throw new Error('Set EDH_MODEL_BASE_URL, EDH_MODEL and EDH_CAMERA_PATH.');
 
@@ -31,7 +33,7 @@ try {
   assert.equal(camera.height, 256);
   const adapter = new OpenAICompatibleAdapter({
     baseURL,
-    models: [{ id: model, inputModalities: ['text', 'image'], maxTokens: 2048 }],
+    models: [{ id: model, inputModalities: ['text', 'image'], contextWindow, maxTokens }],
     timeoutMs: 180_000,
     resolveImage: (ref, signal) =>
       images.readImageRequest(ref, { maxPixels: 1024 * 1024, maxBytes: 2 * 1024 * 1024 }, signal),
@@ -119,6 +121,8 @@ try {
         evaluation: 'Two independent DSH turns over a static RoboCasa reset camera frame',
         camera: cameraPath,
         model,
+        context_window: contextWindow,
+        max_completion_tokens: maxTokens,
         planner,
         verifier,
       },
