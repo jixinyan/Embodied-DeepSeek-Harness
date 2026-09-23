@@ -44,6 +44,9 @@ task reset and learned-policy control remain pending. The selected RoboTwin pi0.
 checkpoint and processor weights are downloaded under `checkpoints/`; their
 SHA256 values match the fixed upstream revision. All three simulators use dedicated
 `data/` directories, and RoboCasa's native reset/render checks pass after relocation.
+RoboCasa camera preprocessing matches the official evaluation wrapper exactly:
+all three decoded EDH PNG arrays pass numerical equality against the same native
+reset observations. Actual learned-policy inference remains a separate gate.
 
 An isolated Qwen VLM served by vLLM now passes actual image/tool checks on an available
 GPU. Native API completion returns `tool_calls` followed by `stop`. Independent native

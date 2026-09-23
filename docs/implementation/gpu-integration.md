@@ -190,6 +190,15 @@ same scene, and interruption during a multi-action sequence. The simulator clock
 remains unchanged after confirmed stop. These controls establish the device boundary;
 learned-policy task completion and the complete console workflow remain pending.
 
+Camera preprocessing also passes a numerical comparison on one actual
+`RoboCasaGymEnv` OpenCabinet reset with PandaOmron, pretrain split and seed 0.
+For `robot0_agentview_left`, `robot0_agentview_right` and `robot0_eye_in_hand`,
+the decoded EDH PNG is exactly equal to the corresponding official
+`get_basic_observation` array. All arrays are 256 × 256 × 3 `uint8`, with the
+native `opengl` convention accounted for by the simulator adapter. The policy
+consumes those PNG pixels directly. Evidence is retained at
+`.local/work/robocasa-camera-parity/result.json`; this check executes no policy.
+
 ## RoboTwin rendering check
 
 The pinned SAPIEN `3.0.0b1` renderer passes an actual native check on the assigned
