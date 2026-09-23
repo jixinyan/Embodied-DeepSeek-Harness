@@ -41,6 +41,25 @@ nonfinite output, or actions outside the controller bounds. It converts the
 checkpoint's gripper and control-mode probabilities with the official PandaOmron
 threshold of 0.5.
 
+To check cancellation admission against the loaded model, preserve two complete
+PolicyRequest records from a native worker run and execute:
+
+```sh
+python examples/policies/check_gr00t_cancellation.py \
+  --first-request /path/to/first-request.json \
+  --second-request /path/to/second-request.json \
+  --uri ws://127.0.0.1:8003
+```
+
+The check closes the first client during inference, requires concurrent admission
+to fail, and then requires a complete 12-channel response after the running GPU
+call finishes. It sends requests only to the policy service and never issues a
+simulator control command. The recorded observation may be older than a motion
+ticket, so its output is not eligible for execution. On 2026-09-23 this check
+passed with two recorded RoboCasa worker requests: the concurrent request was
+rejected, and the later request returned 16 native actions with the original
+`ActionSpec`.
+
 ## LeRobot π0.5 for RoboTwin Aloha-AgileX
 
 The adapter in `lerobot_pi05_robotwin.py` uses `huggingface/lerobot` version 0.6.1
