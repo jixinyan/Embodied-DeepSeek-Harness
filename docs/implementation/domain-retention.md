@@ -62,7 +62,7 @@ legacy accepted format and the current two-write publication sequence.
 These owners describe framework-defined relationships. Deployments with custom record
 references inside configuration/catalog text must extend the corresponding owner or
 declare those references through an external source. Owner prefixes cannot overlap.
-Run, event, configuration, file and native-audit owners remain required
+Event, submission, plan, file, clarification and native-audit owners remain required
 for a complete application journal. This pack does not authorize deleting a session:
 the retained request record continues to require its replay source. Removing such
 history requires an explicit archived-identity lifecycle and corresponding reader support.
@@ -172,8 +172,54 @@ final numeric event index.
 
 These owners declare typed framework references. Custom semantic references inside
 context, event detail, report results, free text or agent files require deployment-owned
-declarations. Event-body ownership, complete run/configuration ownership and native
-session/audit ownership remain separate integration work.
+declarations. Event-body ownership and native session/audit ownership remain separate
+integration work.
+
+## Run, configuration and restart owners
+
+`runRecordOwners(store, validator, options?)` supplies three owners:
+
+| Namespace | Declared dependencies |
+| --- | --- |
+| `run:` | Published event bodies, assignment archives, evidence, reports, verification contexts/results/boundaries, recovery, SKILLs, current clarification, selected historical tasks, session membership and retained configuration/submission/plan/audit records |
+| `run-config:` | Source run and its published session ownership/membership when present |
+| `run-interruption:` | Source run, with immutable restart annotation identity checks |
+
+Run inspection validates the stored projection and traverses every published event
+through bounded RunHistory pages. Missing events and rewritten immutable bodies fail.
+Unpublished event suffixes remain outside the run's published dependency set and
+require their own owner. Running, paused and verifying run records are mandatory
+retentions. Host idle/drain admission remains required for the complete lifecycle.
+
+Assignment sources can be inline or archived. Their identity, caller/recipient Team,
+evidence, published report and formal verification context must agree. Requests retain
+their decision owner and evidence. Each execution requires a unique admitted request
+for its goal/attempt/recovery; each verdict retains its verifier and matching execution
+scope. Last sensor snapshots must equal their retained SensorSamples. Debug-only
+execution observations remain valid; consumed agent observations require agent visibility.
+
+Stored configurations have immutable version 1 and must match run source mode, Team ID
+and Team source digest. Recorded members and the decision owner must exist in that Team.
+A session task's entire configuration must equal its source session configuration.
+Standalone runs remain supported, including library-created runs without an HTTP
+configuration record. Existing restart annotations require immutable version 1, the
+next sequence after ordinary run history and `run.interrupted` type with a reason.
+
+Explicitly selected task context retains its source run, same-session ownership and
+published membership, selected verdict archive and referenced SKILLs. Its source
+revision cannot be newer than the current journal record; later cleanup revisions
+remain compatible. Instruction, origin and selected verdict contents must agree with
+their retained sources. A context snapshot remains a historical observation; it does
+not certify the environment's current state.
+
+Legacy inline events have no separate event-body owner. Nonempty inline history therefore
+requires `options.inlineEventReferences`, containing an explicit `version` and synchronous
+`inspect(event, runId)` callback returning complete journal keys. The inspector version
+contributes to the run owner's policy version. This preserves inline event payload
+references without rewriting history. The inspector must handle every event type and
+extension payload present in that deployment. Missing or malformed declarations fail.
+The built-in event payload inventory and separately stored event owners remain pending.
+Custom references inside configuration or free text still require deployment declarations.
 
 ## Mandatory retained records
 
@@ -219,7 +265,7 @@ for [publication and recovery semantics](storage-maintenance.md#record-retiremen
 
 ## Acceptance and integration work
 
-`pnpm test:domain-retention` runs thirty-four checks with real journals, exclusive file locks,
+`pnpm test:domain-retention` runs forty-two checks with real journals, exclusive file locks,
 file revisions, cancellation and reopen. Authored documents exercise reference cycles,
 retained incoming edges, mandatory SKILL/request roots, incomplete provenance, changed
 previews, malformed configuration and external-source cleanup. No model response or
@@ -243,6 +289,11 @@ or rewritten intermediate records, explicit legacy history, unpublished suffixes
 canonical identities, debug-only execution telemetry, compaction and reopen. These
 checks use authored documents and actual journal operations; no model or physical
 provider executes.
+Eight run-owner checks cover 130 published events across multiple pages, immutable
+source failures, unpublished suffixes, inline and archived assignments, request and
+verdict sources, configuration/session agreement, selected historical task context,
+membership migration, restart annotations, inline payload declarations, clarification,
+compaction and reopen. They use authored documents and actual journal operations.
 
 Application delivery still requires a complete EDH record-owner inventory, external
 ownership declarations, host idle admission and reviewed console selection. Session

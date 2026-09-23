@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.51 · 2026-09-22
+Version: v1.52 · 2026-09-23
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -52,6 +52,8 @@ Report owners retain sender/recipient, evidence, version history and receipts, s
 validated report readers and predecessor checks with ordinary history inspection.
 Assignment/recovery owners retain explicit delegation, evidence, formal-result and
 ordered event sources, including both failed and successful recovery provenance.
+Run/configuration/restart owners retain published history, typed task sources and
+selected historical context, with same-session and immutable configuration checks.
 Remaining record owners, host idle admission and reviewed console selection remain pending;
 see [domain retention](implementation/domain-retention.md).
 Live VLM and

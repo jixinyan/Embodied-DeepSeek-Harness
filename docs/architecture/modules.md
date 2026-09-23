@@ -188,8 +188,11 @@ immutable receipts and predecessor checks; native DSH continues to own message d
 `taskRecordOwners` composes assignment, recovery, report, evidence and verdict readers
 to declare archived delegation and recovery dependencies. It checks explicit failed
 and successful sources and every published recovery index, preserving source histories
-needed by retained assignments and experience. Run/event/configuration and native-audit
-owners remain required for a complete application retention policy.
+needed by retained assignments and experience. `runRecordOwners` declares run projection,
+configuration and restart dependencies, including selected historical task context and
+published session membership. Its inline event inspector is explicitly versioned.
+Event/submission/plan/file/clarification and native-audit owners remain required for a
+complete application retention policy.
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys

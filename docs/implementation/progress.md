@@ -1,10 +1,22 @@
 # Implementation progress
 
-Spec: v1.51. Current checkpoint: **assignment and recovery reference owners**.
+Spec: v1.52. Current checkpoint: **run, configuration and restart reference owners**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Three run owners now declare the run projection, configuration and restart annotation
+dependencies. Published events, typed task sources, exact sensor snapshots, selected
+historical task context and same-session ownership are checked. Nonempty legacy inline
+events require versioned payload reference inspection. Forty-two retention checks pass
+using authored documents and real journals, including 130-event history, missing or
+rewritten sources, configuration conflicts, membership migration and reopen. No model
+or physical provider executes. Event/submission/plan/file/clarification/native-audit
+owners, archived identity lifecycle and reviewed host/console admission remain pending.
+[Run source rules](domain-retention.md#run-configuration-and-restart-owners).
+TypeScript, changed-source formatting and 577 local documentation links pass. The
+preceding `546be3e` checkpoint passed GitHub Framework checks.
 
 Three task owners now declare assignment archive, recovery and recovery-event sources.
 Brief facts, last observations, callers, reports and verification contexts retain their
@@ -14,7 +26,7 @@ Pending recovery and explicit legacy inline sources remain inspectable. Thirty-f
 retention checks pass using authored documents and real journals; no model or physical
 provider executes. The preceding `a957c9c` checkpoint passed GitHub Framework checks.
 TypeScript, changed-source formatting and 574 local documentation links pass.
-Run/event/configuration/file/native-audit owners, archived identity lifecycle and
+Event/submission/plan/file/clarification/native-audit owners, archived identity lifecycle and
 reviewed host/console admission remain pending.
 [Task source rules](domain-retention.md#assignment-and-recovery-owners).
 
@@ -24,7 +36,7 @@ receipts, latest logical/CAS versions and predecessor identity/status. Retention
 history readers share that predecessor check. Current-only legacy report sources
 remain readable. Twenty-five retention checks and seven report-history checks pass
 using authored documents, real journals, HTTP and constrained-heap processes. No model
-or physical provider executes. Complete run/event/configuration/file/audit ownership,
+or physical provider executes. Complete event/submission/plan/file/clarification/audit ownership,
 archived identity lifecycle and reviewed host/console admission remain pending.
 [Report source rules](domain-retention.md#report-and-receipt-owners).
 TypeScript, changed-source formatting and 571 local documentation links pass. The
@@ -37,7 +49,7 @@ reference validation is exported by perception and reused by ownership inspectio
 Nineteen domain-retention and eight sensor-record checks pass with real journals, the
 project PNG and authored documents. No model or physical provider executes. TypeScript
 and changed-source formatting pass. The preceding `c4e12aa` checkpoint passed GitHub
-Framework checks. Complete run/event/configuration/file/audit ownership, archived
+Framework checks. Complete event/submission/plan/file/clarification/audit ownership, archived
 identity lifecycle and reviewed host/console admission remain pending.
 [Evidence ownership and acceptance](domain-retention.md#evidence-and-verification-owners).
 
@@ -46,8 +58,8 @@ requests, task requests, task catalogs, published membership and reverse run own
 SessionTaskHistory enumerates complete published history with immutable identity and
 position checks, including missing intermediate records. Legacy inline histories remain
 readable. Retained request records continue to protect replay sources. Fourteen domain
-retention checks pass using authored documents, real journals and file locks. Run,
-event, configuration, file and audit ownership plus reviewed host/console
+retention checks pass using authored documents, real journals and file locks. Event,
+submission, plan, file, clarification and audit ownership plus reviewed host/console
 admission remain pending. [Owner inventory](domain-retention.md#session-and-request-owners).
 Seven session-history and seven request-replay checks also pass, including 2,000
 stored task memberships, SQLite history consistency and journal reopen. TypeScript,

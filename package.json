@@ -42,7 +42,7 @@
     "test:skill-sections": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/skill-sections.test.ts",
     "test:image-collection": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/image-object-collection.test.ts",
     "test:image-retention": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/image-retention.test.ts",
-    "test:domain-retention": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/domain-retention.test.ts tests/runtime/session-record-owners.test.ts tests/runtime/evidence-record-owners.test.ts tests/runtime/report-record-owners.test.ts tests/runtime/task-record-owners.test.ts",
+    "test:domain-retention": "tsx --tsconfig tsconfig.runtime.json --test tests/runtime/domain-retention.test.ts tests/runtime/session-record-owners.test.ts tests/runtime/evidence-record-owners.test.ts tests/runtime/report-record-owners.test.ts tests/runtime/task-record-owners.test.ts tests/runtime/run-record-owners.test.ts",
     "test:console": "tsx --experimental-eventsource --tsconfig tsconfig.runtime.json --test tests/console/*.test.*",
     "test:launcher": "node --test tests/desktop/*.test.mjs",
     "format:desktop": "prettier --check apps/desktop tests/desktop tests/desktop-ui",
