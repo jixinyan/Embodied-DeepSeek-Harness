@@ -82,10 +82,11 @@ revision is recorded only when every hash matches the checked manifest; another
 compatible checkpoint records a local `checkpoint_digest`, its individual weight
 hashes, and a null revision. Service startup also records the listening address.
 
-On 2026-09-23, the GR00T service loaded on an NVIDIA H20G and processed one
-genuine RoboCasa OpenCabinet observation into 16 native 12-channel actions in
-54.047 seconds. A simulator action receipt and task completion were not confirmed
-in that check. The LeRobot π0.5 service loaded its complete weights, local
-tokenizer, and saved processors and listened on an NVIDIA H20G. Its first
+On 2026-09-23, the GR00T service loaded on an NVIDIA H20G and processed a
+genuine RoboCasa OpenCabinet observation into 16 native 12-channel actions.
+In a complete worker check, RoboCasa confirmed six native control commands and
+150 MuJoCo physics steps for the same execution; the environment reported
+`task_success=false`. The LeRobot π0.5 service loaded its complete weights,
+local tokenizer, and saved processors and listened on an NVIDIA H20G. Its
 RoboTwin observation-to-action check awaits a native simulator reset. The
 deployment keeps raw service logs under its ignored `.local/work` directory.
