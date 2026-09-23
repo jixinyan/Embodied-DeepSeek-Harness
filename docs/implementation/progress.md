@@ -12,6 +12,11 @@ dependency consistency. A real MuJoCo check advances 100 physics steps and rende
 a nonuniform RGB frame using the NVIDIA GPU. GLVND libraries use a deployment-owned
 prefix; system Python, global libraries and drivers remain unchanged. Node.js and
 pnpm also use a dedicated prefix, and remote TypeScript checking passes.
+The installation checker reports Python isolation and actual renderer identity. Vendor
+assertions are optional; device selection comes from the deployment environment.
+An explicit GPU 1 selection passes the same native rendering check. Shared runtime
+code has no host path, GPU model or CUDA device binding. Other GPU models remain
+unverified. The `489edc3` checkpoint passed GitHub Framework checks.
 Kitchen assets and task reset are in progress. Simulator adapters, worker transport,
 learned-policy inference and end-to-end task acceptance remain pending.
 [Deployment isolation, source pins and actual checks](gpu-integration.md).

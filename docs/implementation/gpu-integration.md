@@ -38,7 +38,7 @@ tools and Node.js 24.21.0 / pnpm 11.19.0 also have dedicated installation prefix
 System Python packages, existing environments, drivers and shell startup files remain
 unchanged. Record the installed distributions in local deployment evidence.
 
-The NVIDIA driver is a shared host prerequisite. User-space GLVND libraries may be
+The selected GPU's driver is a shared host prerequisite. User-space GLVND libraries may be
 provided from a project-owned prefix. On Ubuntu 22.04 amd64, the following downloads
 and extracts distribution packages without installing them into the operating system:
 
@@ -59,15 +59,37 @@ change global linker configuration or replace system libraries. Other operating
 systems require their own compatible graphics packages. Python environments isolate
 dependencies; process permissions and device access remain host responsibilities.
 
+## GPU portability
+
+EDH's upper runtime, shared protocol, model HTTP transport, policy WebSocket transport
+and action gate have no GPU model, GPU vendor, CUDA architecture or host-path requirement.
+Simulator and inference providers own their device dependencies. Keep device selection,
+rendering backend, precision, memory limits and service addresses in deployment/provider
+configuration. Capability validation must reject unsupported combinations before a session
+starts; failure must not silently select another device or execution backend.
+
+The EGL checker accepts any functioning OpenGL vendor. `MUJOCO_EGL_DEVICE_ID` selects
+a device; `--expect-vendor` optionally asserts the deployment's intended vendor. It
+records the actual driver and device selection. A rendering pass alone does not certify
+hardware acceleration or learned-policy execution. The Ubuntu GLVND commands above are
+an OS-specific installation recipe, not a framework-wide dependency.
+
+Provider support follows the upstream simulator/model requirements. A GPU that runs
+MuJoCo may not satisfy Isaac Sim's rendering requirements or a policy's CUDA kernels.
+The recorded NVIDIA host check establishes one tested deployment. Other GPUs require
+the same actual installation, rendering and inference checks before being marked verified.
+
 ## RoboCasa installation check
 
 Install the pinned RoboCasa and robosuite sources with all declared dependencies in
 Python 3.11, then install `harness/physical-runtime` in that environment. Download the
-official kitchen assets with `python -m robocasa.scripts.download_kitchen_assets`.
+official kitchen assets with `python -I -m robocasa.scripts.download_kitchen_assets`.
 Keep temporary files and generated reports under the ignored project `.local/` directory.
+Use the environment's Python executable. `-I` also excludes `PYTHONPATH`, the user
+package directory and the current directory from ordinary module search.
 
 The [installation checker](../../scripts/check-robocasa-installation.py) runs real MuJoCo
-physics and EGL rendering, verifies the renderer reports NVIDIA, and saves the actual
+physics and EGL rendering, records the actual OpenGL vendor, and saves the actual
 rendered frame plus numeric state changes. With the assets installed it also creates
 the selected RoboCasa task, resets PandaOmron, captures its three cameras and records
 the native action limits, controller layout, task instruction and initial success check.
@@ -77,11 +99,12 @@ failure or invalid observations. It does not invoke a learned policy.
 ```sh
 mkdir -p .local/work
 TMPDIR="$PWD/.local/work" MUJOCO_GL=egl MUJOCO_EGL_DEVICE_ID=0 \
-  python scripts/check-robocasa-installation.py \
+  python -I scripts/check-robocasa-installation.py \
   --output-directory .local/work/robocasa-installation
 ```
 
 Use `--renderer-only` to check MuJoCo physics and GPU rendering without kitchen assets.
+For a deployment that requires NVIDIA rendering, add `--expect-vendor NVIDIA`.
 The complete check accepts `--environment` and `--seed`. All result files remain local;
 an installation check does not establish task completion or console integration.
 
@@ -93,6 +116,8 @@ the body's height changed from `1.0` to `0.8018380000000003`. It produced a nonu
 256 × 256 RGB image using `NVIDIA H20G/PCIe/SSE2`, with NVIDIA OpenGL 4.6.0 and driver
 580.105.08. GLVND 1.4.0-1 was loaded from the deployment-owned prefix.
 The remote EDH checkout also passed TypeScript checking using its dedicated Node prefix.
+The checker reports isolated Python mode with the user package directory disabled.
+Selecting EGL device `1` with an explicit NVIDIA vendor expectation also passes.
 
 Kitchen asset installation and RoboCasa task reset remain in progress. No learned
 policy, upper VLM, robot task or complete console workflow has passed GPU acceptance.

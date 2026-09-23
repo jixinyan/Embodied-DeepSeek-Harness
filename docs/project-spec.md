@@ -39,6 +39,10 @@ environment. Host system Python, existing environments and global graphics libra
 remain unchanged. The GPU deployment has verified native MuJoCo physics and NVIDIA
 EGL rendering in the RoboCasa environment. Source pins, setup requirements and exact
 acceptance boundaries are recorded in [GPU integration](implementation/gpu-integration.md).
+Shared runtime code must remain independent of GPU model, vendor, device index and
+host directory layout. Providers declare their actual device requirements; deployment
+configuration selects compatible devices, rendering and inference settings. Each supported
+combination needs its own acceptance evidence, and unsupported combinations fail admission.
 
 The runtime choice is settled: reuse DSH, with EDH-owned composition and embodied
 behavior. Upper Team/Role, tools, TODOs, plans/files, verification, recovery, SKILL

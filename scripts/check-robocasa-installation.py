@@ -1,6 +1,8 @@
 import argparse
 import json
 import os
+import site
+import sys
 from importlib.metadata import version
 from pathlib import Path
 
@@ -10,7 +12,7 @@ from OpenGL import GL
 from PIL import Image
 
 
-def renderer_check(output: Path) -> dict:
+def renderer_check(output: Path, expected_vendor: str | None) -> dict:
     model = mujoco.MjModel.from_xml_string(
         '<mujoco><worldbody><light pos="0 0 3"/>'
         '<geom type="plane" size="2 2 .1" rgba=".2 .3 .4 1"/>'
@@ -34,8 +36,10 @@ def renderer_check(output: Path) -> dict:
             "renderer": GL.glGetString(GL.GL_RENDERER).decode(),
             "version": GL.glGetString(GL.GL_VERSION).decode(),
         }
-        if "NVIDIA" not in driver["vendor"]:
-            raise RuntimeError("The selected renderer does not report NVIDIA GPU execution.")
+        if expected_vendor and expected_vendor.casefold() not in driver["vendor"].casefold():
+            raise RuntimeError(
+                f"Expected renderer vendor {expected_vendor!r}; received {driver['vendor']!r}."
+            )
         Image.fromarray(pixels).save(output / "renderer.png")
     return {
         "physics_steps": 100,
@@ -43,6 +47,9 @@ def renderer_check(output: Path) -> dict:
         "final_height": float(data.qpos[2]),
         "frame": "renderer.png",
         "driver": driver,
+        "expected_vendor": expected_vendor,
+        "backend": os.environ["MUJOCO_GL"],
+        "egl_device_id": os.environ.get("MUJOCO_EGL_DEVICE_ID"),
     }
 
 
@@ -95,22 +102,30 @@ def environment_check(output: Path, name: str, seed: int) -> dict:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Check actual GPU rendering and RoboCasa reset.")
+    parser = argparse.ArgumentParser(description="Check actual EGL rendering and RoboCasa reset.")
     parser.add_argument("--output-directory", type=Path, required=True)
     parser.add_argument("--renderer-only", action="store_true")
+    parser.add_argument("--expect-vendor", help="Optional case-insensitive OpenGL vendor substring.")
     parser.add_argument("--environment", default="OpenCabinet")
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
     if os.environ.get("MUJOCO_GL") != "egl":
-        raise RuntimeError("Run this GPU check with MUJOCO_GL=egl.")
+        raise RuntimeError("Run this headless EGL check with MUJOCO_GL=egl.")
     output = args.output_directory.resolve()
     output.mkdir(parents=True, exist_ok=True)
     report = {
+        "python": {
+            "executable": sys.executable,
+            "prefix": sys.prefix,
+            "base_prefix": sys.base_prefix,
+            "isolated_mode": bool(sys.flags.isolated),
+            "user_site_enabled": site.ENABLE_USER_SITE,
+        },
         "packages": {
             name: version(name)
             for name in ["robocasa", "robosuite", "mujoco", "numpy", "edh-physical-harness"]
         },
-        "renderer": renderer_check(output),
+        "renderer": renderer_check(output, args.expect_vendor),
     }
     if not args.renderer_only:
         report["environment"] = environment_check(output, args.environment, args.seed)

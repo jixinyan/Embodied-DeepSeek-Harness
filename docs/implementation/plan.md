@@ -11,9 +11,11 @@ A checklist or document change never substitutes for execution evidence.
 
 ## Current delivery priority
 
-Complete and harden the upper application using actual storage, transport and browser
-checks, with live model acceptance before claiming model-driven operation. Then bind
-the physical runtime for one real-simulation MVP. The unified console provides
+Use the available GPU host to integrate a real-simulation MVP through isolated
+simulator, model and policy environments. Validate native rendering and task reset,
+connect the worker and action gate, then exercise actual model-driven task execution
+through the console. The [GPU integration sequence](gpu-integration.md) specifies
+source pins, environment isolation and acceptance evidence. The unified console provides
 session control, compatible configuration and observable agent/task state. The [current progress](progress.md)
 lists the exact status and next sequential actions. F1–F7 remain the full acceptance
 matrix: partial upper slices do not establish physical-provider readiness.
