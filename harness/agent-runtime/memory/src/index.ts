@@ -40,6 +40,7 @@ export { AssignmentEvidenceGrants } from './evidence-grants.js';
 export {
   installContextManagement,
   contextManagementOptions,
+  validateCompactionRoute,
   type ContextManagementOptions,
 } from './context.js';
 

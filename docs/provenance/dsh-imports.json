@@ -26,6 +26,23 @@
         "harness/agent-runtime/agents/src/dsh/loop/agent.ts"
       ],
       "patch": "Await serial agent creation before driver admission, preserve initialization failures, and copy cancellation causes into turn-end records while retaining EDH session ownership."
+    },
+    {
+      "tag": "dsh-v0.1.7-rc.1",
+      "release_commit": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+      "upstream_commits": [
+        "0fadb08fbdd3316c4605fc4e6be96cb9990b56c6",
+        "b02b20d7135ebd0f3d1848ef3af5b25aef852e27",
+        "555b664b08db05e1cf8eeebb7eb00960ddf785b7",
+        "9b016b642503ff798faec65c860e948cc14f99cc",
+        "ec7030afd3643773a96198f9d1c8e9c7fc5e3da1"
+      ],
+      "destinations": [
+        "harness/agent-runtime/memory/src/dsh/compaction-basic/types.ts",
+        "harness/agent-runtime/memory/src/dsh/compaction-basic/config.ts",
+        "harness/agent-runtime/memory/src/dsh/compaction-basic/index.ts"
+      ],
+      "patch": "Reserve routed output and pressure headroom while retaining EDH summary instructions; validate first-turn and dynamic request budgets before inference."
     }
   ],
   "packages": [
@@ -1051,15 +1068,15 @@
       "source": "packages/compaction/compaction-basic/src/types.ts",
       "destination": "harness/agent-runtime/memory/src/dsh/compaction-basic/types.ts",
       "source_sha256": "0b2c6dc3839bb43544b1dd9dbf678918578ff88ea00100eac1c0c2e7153ce0b4",
-      "local_sha256": "0b2c6dc3839bb43544b1dd9dbf678918578ff88ea00100eac1c0c2e7153ce0b4",
-      "modifications": []
+      "local_sha256": "3cdbdf097b476cbc4f13ce3498fe538f9480dbbb22378ddbdab04f6608e7907c",
+      "modifications": ["Declare routed output reservation and configurable pressure headroom."]
     },
     {
       "source": "packages/compaction/compaction-basic/src/config.ts",
       "destination": "harness/agent-runtime/memory/src/dsh/compaction-basic/config.ts",
       "source_sha256": "d4d63fe3a6e7b3d00c91aafcba86cf5a9f5417739c406b26d87dac470f738681",
-      "local_sha256": "d4d63fe3a6e7b3d00c91aafcba86cf5a9f5417739c406b26d87dac470f738681",
-      "modifications": []
+      "local_sha256": "0ca5112a4d654fc9100c33e8c797887282fbb5d60ec805912f6b39e9b87dadc3",
+      "modifications": ["Resolve pressure against the message budget after output reservation and headroom."]
     },
     {
       "source": "packages/compaction/compaction-basic/src/summarizer.ts",
@@ -1081,8 +1098,8 @@
       "source": "packages/compaction/compaction-basic/src/index.ts",
       "destination": "harness/agent-runtime/memory/src/dsh/compaction-basic/index.ts",
       "source_sha256": "f824fc6f586c6ec7ae26442656d789accd0b5124924886e91b480bc587b1491d",
-      "local_sha256": "f824fc6f586c6ec7ae26442656d789accd0b5124924886e91b480bc587b1491d",
-      "modifications": []
+      "local_sha256": "258f076fe96d2486799c55c61752775cbb4a77ad1024a0d23ebf52e0c61866c6",
+      "modifications": ["Reserve request output, inspect the initial agent route, and reject invalid dynamic request budgets before inference."]
     },
     {
       "source": "packages/compaction/compaction-tool-result-pruner/src/types.ts",

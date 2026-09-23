@@ -12,7 +12,7 @@ model-visible surface replacement. No second transcript manager is introduced.
 const deployment = {
   // Existing models, adapters, tasks, team and provider bindings...
   contextManagement: {
-    compaction: { thresholdRatio: 0.7, retainRatio: 0.15, maxTokens: 4096 },
+    compaction: { thresholdRatio: 0.7, retainRatio: 0.15, headroomTokens: 4096, maxTokens: 8192 },
     visualHistory: { maxImages: 12 }, // Optional; keep below the adapter request limit.
     // pruneToolResults: { ... } // Optional native pruning configuration.
   },
@@ -20,11 +20,22 @@ const deployment = {
 ```
 
 This is an excerpt of `ServerDeployment`, not a standalone deployment. Declare each
-model's actual `contextWindow` in its adapter metadata. Automatic mode rejects
-missing capacity before opening or reconciling run history. Model metadata lookup
+model's actual `contextWindow` and output default in its adapter metadata.
+Automatic mode validates the resolved output reservation, pressure headroom and
+retention budget before opening or reconciling run history. Model metadata lookup
 is not an inference or health check. The normalized policy is frozen into the public
-configuration and deployment digest. Unknown policy fields and invalid native
-threshold/retention combinations fail preflight.
+configuration and deployment digest. Unknown policy fields and invalid budgets
+fail preflight. A later explicit request cap is checked at the native request
+boundary before inference.
+
+EDH deployments with context management default to `headroomTokens: 4096` and
+summary `maxTokens: 8192`; either can be configured. The native compaction service
+retains its `65536` headroom default when mounted directly outside EDH deployment
+normalization. Pressure uses the lower of the configured window fraction and the
+context budget after reserving the effective request output cap and headroom.
+Retention ratios use the context budget after the output reservation. A 32768-token
+window with a 2048-token output cap and EDH defaults begins pressure at 26214
+tokens and retains about 4915 recent tokens at the default ratio.
 
 Omitting `contextManagement` leaves the previous host behavior unchanged. Setting
 `compaction.auto: false` mounts measurement, scoped facts and manual maintenance

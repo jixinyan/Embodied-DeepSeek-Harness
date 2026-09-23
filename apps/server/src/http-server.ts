@@ -48,7 +48,7 @@ import {
   type LocalImageOptions,
   type ImageStorageMaintenance,
 } from '@edh/storage';
-import { SkillLibrary } from '@edh/memory';
+import { SkillLibrary, validateCompactionRoute } from '@edh/memory';
 import { RunHistory, RecoveryHistory, type RunState } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
 import { UpperRun, terminal } from './application.js';
@@ -215,10 +215,12 @@ async function startApplication(
     if (deployment.contextManagement && deployment.contextManagement.compaction?.auto !== false) {
       for (const route of Object.values(deployment.metadata.models)) {
         const model = await host.llm.resolveModelInfo(route.provider, route.model);
-        if (!model.context?.contextWindow)
-          throw new Error(
-            `Automatic compaction requires contextWindow for ${route.provider}/${route.model}.`,
-          );
+        validateCompactionRoute(
+          deployment.contextManagement.compaction ?? {},
+          route,
+          model.context?.contextWindow,
+          model.defaultMaxTokens,
+        );
       }
     }
     const store = (ownedStore = new LocalStore(options.dataDirectory));

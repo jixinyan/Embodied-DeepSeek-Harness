@@ -122,7 +122,13 @@ test('native compaction shrinks balanced history, keeps audit and resumes the sa
 
 test('automatic DSH pressure compaction runs between native steps', async () => {
   const f = await setup({
-    compaction: { thresholdRatio: 0.6, retainTokens: 0, maxTokens: 512, compactionRetries: 0 },
+    compaction: {
+      thresholdRatio: 0.6,
+      headroomTokens: 512,
+      retainTokens: 0,
+      maxTokens: 512,
+      compactionRetries: 0,
+    },
   });
   try {
     await f.send('goal place-cup ' + 'pressure '.repeat(2000));
