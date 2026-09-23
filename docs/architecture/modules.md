@@ -185,6 +185,11 @@ declarations do not authorize agent access or certify physical task completion.
 `reportRecordOwners` composes AssignmentReports and assignment/evidence readers to
 declare report and receipt dependencies. Communication owns stored report validation,
 immutable receipts and predecessor checks; native DSH continues to own message delivery.
+`taskRecordOwners` composes assignment, recovery, report, evidence and verdict readers
+to declare archived delegation and recovery dependencies. It checks explicit failed
+and successful sources and every published recovery index, preserving source histories
+needed by retained assignments and experience. Run/event/configuration and native-audit
+owners remain required for a complete application retention policy.
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys

@@ -62,7 +62,7 @@ legacy accepted format and the current two-write publication sequence.
 These owners describe framework-defined relationships. Deployments with custom record
 references inside configuration/catalog text must extend the corresponding owner or
 declare those references through an external source. Owner prefixes cannot overlap.
-Run, assignment, recovery, file and native-audit owners remain required
+Run, event, configuration, file and native-audit owners remain required
 for a complete application journal. This pack does not authorize deleting a session:
 the retained request record continues to require its replay source. Removing such
 history requires an explicit archived-identity lifecycle and corresponding reader support.
@@ -129,6 +129,52 @@ Delivery and acknowledgement records refer back to their report. The report reta
 existing receipts, so they form a deletion group. No acknowledgement or delivery
 state establishes physical success. Native DSH delivery behavior is unchanged.
 
+## Assignment and recovery owners
+
+`taskRecordOwners(store, validator)` supplies three owners:
+
+| Namespace | Declared dependencies |
+| --- | --- |
+| `assignment-history:` | Source run, archived caller/recipient when applicable, brief and known-fact evidence, last observation, report, formal verification context and scoped recovery |
+| `recovery:` | Source run, failed and successful accepted verdicts, their verifier archives/evidence, decision owner, failed request/execution sources, stopped boundary and every published recovery event index/source event |
+| `recovery-event:` | Explicit source recovery and run, plus the referenced published run event when stored separately |
+
+Assignment inspection uses AssignmentHistory and checks the run's published identity,
+native session, member, model, tools, status, caller and observation. Role callers and
+recipients must belong to the same Team; the caller's native identity must agree.
+Archived reports must agree with the current published report and version. A published
+verification-context marker requires its matching scoped record. Evidence from briefs,
+known facts, reports and last observations must remain available and agent-visible.
+An archive written before the compact run summary can be inspected when its complete
+assignment still agrees with the run's inline assignment.
+
+Recovery inspection requires an explicit source run and original goal. Its failed
+verdict must match exactly one accepted run verdict. A successful result, when present,
+must refer to the same goal and criteria, another attempt and this recovery identity.
+Pending or interrupted recovery retains failed provenance without requiring a successful
+result. Decision-owner, failed-request and failed-execution fields are validated when
+present; older documents can omit those context fields. A request must agree with the
+stored request, its decision owner and the failed goal/attempt. Execution snapshots
+must preserve execution identity and task scope. Archived verdicts and verifier
+assignments retain their source records.
+Execution telemetry can reference debug-only samples; retaining those sources does
+not grant agent access. Briefs, known facts, reports and verdict evidence still require
+agent-visible samples.
+
+Each published recovery index must have immutable version 1, an increasing sequence
+and an existing published run event with immutable version 1. Inline histories retain
+their source run and must agree with the corresponding run-event bodies. Their original
+representation remains unchanged. A recovery without an explicit run identity requires
+source restoration before retention admission. Unpublished index suffixes are excluded
+from the recovery's published dependency set; each suffix still declares its own source
+recovery and event. Canonical keys distinguish recovery IDs containing colons from the
+final numeric event index.
+
+These owners declare typed framework references. Custom semantic references inside
+context, event detail, report results, free text or agent files require deployment-owned
+declarations. Event-body ownership, complete run/configuration ownership and native
+session/audit ownership remain separate integration work.
+
 ## Mandatory retained records
 
 Both preview and deletion apply these checks:
@@ -173,7 +219,7 @@ for [publication and recovery semantics](storage-maintenance.md#record-retiremen
 
 ## Acceptance and integration work
 
-`pnpm test:domain-retention` runs twenty-five checks with real journals, exclusive file locks,
+`pnpm test:domain-retention` runs thirty-four checks with real journals, exclusive file locks,
 file revisions, cancellation and reopen. Authored documents exercise reference cycles,
 retained incoming edges, mandatory SKILL/request roots, incomplete provenance, changed
 previews, malformed configuration and external-source cleanup. No model response or
@@ -191,6 +237,12 @@ history, receipts, current-only legacy sources, changed identities, invalid pers
 formats and final-report history boundaries. Seven report-history checks additionally
 exercise actual HTTP and a child process with more than 100 MiB of authored reports
 under a 64 MiB V8 old-space limit. No model or physical provider executes.
+Nine task-owner checks cover brief/known-fact evidence, caller archives, reports,
+formal contexts, failed-to-successful recovery provenance, pending recovery, missing
+or rewritten intermediate records, explicit legacy history, unpublished suffixes,
+canonical identities, debug-only execution telemetry, compaction and reopen. These
+checks use authored documents and actual journal operations; no model or physical
+provider executes.
 
 Application delivery still requires a complete EDH record-owner inventory, external
 ownership declarations, host idle admission and reviewed console selection. Session
