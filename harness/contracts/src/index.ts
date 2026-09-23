@@ -4,6 +4,7 @@ export type * from './generated.js';
 export {
   ContractValidator,
   ContractValidationError,
+  isWireTimestamp,
   type ContractIssue,
   type ContractName,
 } from './validation.js';

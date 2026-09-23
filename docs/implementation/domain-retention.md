@@ -62,7 +62,7 @@ legacy accepted format and the current two-write publication sequence.
 These owners describe framework-defined relationships. Deployments with custom record
 references inside configuration/catalog text must extend the corresponding owner or
 declare those references through an external source. Owner prefixes cannot overlap.
-Run, assignment, recovery, report, file and native-audit owners remain required
+Run, assignment, recovery, file and native-audit owners remain required
 for a complete application journal. This pack does not authorize deleting a session:
 the retained request record continues to require its replay source. Removing such
 history requires an explicit archived-identity lifecycle and corresponding reader support.
@@ -98,6 +98,36 @@ retention admission; this pack does not create evidence or infer an absent verif
 history. Custom semantic dependencies in arbitrary text still require deployment-owned
 reference declarations. Original-image collection remains a separate operation and
 continues to retain images referenced by the remaining journal.
+
+## Report and receipt owners
+
+`reportRecordOwners(store, validator)` supplies four owners:
+
+| Namespace | Declared dependencies |
+| --- | --- |
+| `report:` | Source run, sender/recipient assignment archives when present, evidence, predecessor, retained delivery/acknowledgement and its current immutable archive when available |
+| `report-record:` | Source run, sender/recipient archives when present, evidence, predecessor and retained delivery/acknowledgement |
+| `report-delivery:` | The matching immutable report, or the explicit legacy latest-report source |
+| `report-ack:` | The matching report source with sender/recipient receipt identity checks |
+
+The sender must match the report's native session, Team, task scope and fixed recipient.
+A role recipient must belong to the same run and Team. Evidence must be retained,
+agent-visible and scoped to the report's run. Recovery identities in report scopes are
+also dependencies. Report predecessors preserve actor, recipient and scope, decrease
+the version by exactly one, and have `insufficient_context` status. A final report
+cannot acquire a later revision. Custom semantic references in result bodies or text
+remain the deployment's responsibility.
+
+The owners reuse AssignmentReports readers and its predecessor inspection. Those
+readers validate stored report/receipt shapes, immutable versions and the latest
+report's logical/CAS version. An existing current archive must match its published
+body exactly. Legacy latest-only records remain readable and retain their explicit
+source; missing earlier history is not synthesized. Archived reports outside the
+published chain remain outside acknowledgement admission.
+
+Delivery and acknowledgement records refer back to their report. The report retains
+existing receipts, so they form a deletion group. No acknowledgement or delivery
+state establishes physical success. Native DSH delivery behavior is unchanged.
 
 ## Mandatory retained records
 
@@ -143,7 +173,7 @@ for [publication and recovery semantics](storage-maintenance.md#record-retiremen
 
 ## Acceptance and integration work
 
-`pnpm test:domain-retention` runs nineteen checks with real journals, exclusive file locks,
+`pnpm test:domain-retention` runs twenty-five checks with real journals, exclusive file locks,
 file revisions, cancellation and reopen. Authored documents exercise reference cycles,
 retained incoming edges, mandatory SKILL/request roots, incomplete provenance, changed
 previews, malformed configuration and external-source cleanup. No model response or
@@ -156,6 +186,11 @@ documents. They exercise exact dependency sets, archived assignment sources, mis
 references, changed actor/scope/facts/visibility, immutable versions, image metadata,
 compaction and reopen. Eight sensor-record checks cover shared admission validation,
 including a file-backed child process under a 64 MiB heap limit.
+Six report-owner checks cover sender/recipient archives, explicit evidence, report
+history, receipts, current-only legacy sources, changed identities, invalid persisted
+formats and final-report history boundaries. Seven report-history checks additionally
+exercise actual HTTP and a child process with more than 100 MiB of authored reports
+under a 64 MiB V8 old-space limit. No model or physical provider executes.
 
 Application delivery still requires a complete EDH record-owner inventory, external
 ownership declarations, host idle admission and reviewed console selection. Session

@@ -18,6 +18,8 @@ team configuration, UpperRun, a local domain store and an explicitly synthetic b
   reference declarations and task ownership checks for retention assembly.
 - [evidence-record-owners.ts](src/evidence-record-owners.ts): sensor and verification
   dependencies, scoped source checks and accepted-verdict agreement.
+- [report-record-owners.ts](src/report-record-owners.ts): report authors, recipients,
+  history, evidence and delivery/acknowledgement dependencies.
 - [run-event-stream.ts](src/run-event-stream.ts): bounded event batches, current projections and connection backpressure.
 - [fixture-model.ts](src/fixture-model.ts) / [fixture-backend.ts](src/fixture-backend.ts): keyless test dependencies.
 

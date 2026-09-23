@@ -85,6 +85,16 @@ transactions and resumable DSH sessions remain future work.
 
 ## Bounded history reads
 
+Stored report bodies, delivery states and acknowledgements are validated on read.
+Latest logical versions must equal their journal CAS versions. `readRecord(reportId)`
+validates an immutable archive's identity, version and AgentReport shape. If the
+current report has an archive, both bodies must agree exactly. Acknowledgements retain
+immutable record versions, matching report IDs, bounded summaries and valid UTC times.
+Delivery publication validates its shape before writing. `predecessor(record)` shares
+link validation between history readers and retention inspection; a predecessor must
+be an insufficient-context report from the same author, recipient and task scope.
+Legacy current-only histories remain readable at their earliest available revision.
+
 `AssignmentReports.iterate` traverses the published chain newest first, holding the
 current record and its predecessor. Each link must preserve report ID, assignment,
 agent, Team, task scope and recipient while decreasing the version by exactly one.
@@ -137,3 +147,5 @@ delivery state. This measures report-history memory behavior; live model task be
 and whole-application memory remain separate acceptance requirements.
 
 See [upper runtime](upper-runtime.md) and [progress](progress.md).
+Application retention declarations are described in
+[report and receipt owners](domain-retention.md#report-and-receipt-owners).

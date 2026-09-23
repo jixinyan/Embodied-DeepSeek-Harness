@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
-import { ContractValidator, type AgentReport } from '@edh/contracts';
+import { z } from 'zod';
+import { ContractValidator, isWireTimestamp, type AgentReport } from '@edh/contracts';
 import { LocalStore } from '@edh/storage';
 import { validateJsonSchemaValue, type ObjectJsonSchema } from '@edh/tools';
 import type { Assignment } from './sessions.js';
@@ -39,48 +40,112 @@ export interface ReportPage {
   beforeReportId: string | null;
   nextBeforeReportId: string | null;
 }
+const identifier = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\s\S])/);
+const acceptedSchema = z
+  .object({
+    id: identifier,
+    version: z.number().int().positive().safe(),
+    recipient: identifier,
+    report: z.unknown(),
+    previousReportId: identifier.optional(),
+  })
+  .strict();
+const deliverySchema = z
+  .object({
+    state: z.enum(['queued', 'settled', 'recorded', 'failed', 'interrupted']),
+    error: z.string().optional(),
+  })
+  .strict();
+const acknowledgementSchema = z
+  .object({
+    reportId: identifier,
+    assignmentId: identifier,
+    recipientAssignmentId: identifier,
+    disposition: z.enum(['accepted', 'rejected']),
+    summary: z
+      .string()
+      .refine((value) => value.trim().length > 0 && Buffer.byteLength(value) <= 12000),
+    acknowledgedAt: z.string().refine(isWireTimestamp),
+  })
+  .strict();
 /** Assignment identity comes from the authenticated native tool scope, never model fields. */
 export class AssignmentReports {
   constructor(
     private readonly store: LocalStore,
     private readonly validator: ContractValidator,
   ) {}
+  private validate(value: unknown): AcceptedReport {
+    const record = acceptedSchema.parse(value);
+    if (record.version === 1 && record.previousReportId !== undefined)
+      throw new Error('Incomplete published report history: predecessor identity conflicts.');
+    return {
+      id: record.id,
+      version: record.version,
+      recipient: record.recipient,
+      report: this.validator.parse('AgentReport', record.report),
+      ...(record.previousReportId === undefined
+        ? {}
+        : { previousReportId: record.previousReportId }),
+    };
+  }
   read(assignmentId: string): AcceptedReport | undefined {
-    return this.store.get<AcceptedReport>(`report:${assignmentId}`)?.value;
+    identifier.parse(assignmentId);
+    const row = this.store.get(`report:${assignmentId}`);
+    if (!row) return undefined;
+    const record = this.validate(row.value);
+    if (record.report.assignment_id !== assignmentId || row.version !== record.version)
+      throw new Error('Invalid published report identity or version.');
+    const archived = this.readRecord(record.id);
+    if (archived && !isDeepStrictEqual(archived, record))
+      throw new Error('Incomplete published report history: current archive conflicts.');
+    return record;
+  }
+  readRecord(reportId: string): AcceptedReport | undefined {
+    identifier.parse(reportId);
+    const row = this.store.get(`report-record:${reportId}`);
+    if (!row) return undefined;
+    const record = this.validate(row.value);
+    if (row.version !== 1 || record.id !== reportId)
+      throw new Error(
+        'Incomplete published report history: archive identity or immutable version conflicts.',
+      );
+    return record;
   }
   delivery(reportId: string): ReportDelivery | undefined {
-    return this.store.get<ReportDelivery>(`report-delivery:${reportId}`)?.value;
+    identifier.parse(reportId);
+    const row = this.store.get(`report-delivery:${reportId}`);
+    if (!row) return undefined;
+    const record = deliverySchema.parse(row.value);
+    return { state: record.state, ...(record.error === undefined ? {} : { error: record.error }) };
   }
   markDelivery(reportId: string, delivery: ReportDelivery): void {
+    identifier.parse(reportId);
+    const checked = deliverySchema.parse(delivery);
     const key = `report-delivery:${reportId}`;
-    this.store.put(key, delivery, this.store.get(key)?.version ?? 0);
+    this.store.put(key, checked, this.store.get(key)?.version ?? 0);
+  }
+  predecessor(value: AcceptedReport): AcceptedReport | undefined {
+    const current = this.validate(value);
+    if (!current.previousReportId) return undefined;
+    const previous = this.readRecord(current.previousReportId);
+    if (
+      !previous ||
+      previous.report.assignment_id !== current.report.assignment_id ||
+      previous.version !== current.version - 1 ||
+      previous.recipient !== current.recipient ||
+      previous.report.agent_id !== current.report.agent_id ||
+      previous.report.team_run_id !== current.report.team_run_id ||
+      previous.report.status !== 'insufficient_context' ||
+      !isDeepStrictEqual(previous.report.task_scope, current.report.task_scope)
+    )
+      throw new Error('Incomplete published report history.');
+    return previous;
   }
   *iterate(assignmentId: string): Generator<AcceptedReport> {
     let current = this.read(assignmentId);
     while (current) {
-      if (
-        current.report.assignment_id !== assignmentId ||
-        !Number.isSafeInteger(current.version) ||
-        current.version < 1
-      )
-        throw new Error('Invalid published report identity or version.');
       yield current;
-      if (!current.previousReportId) break;
-      const previous = this.store.get<AcceptedReport>(
-        `report-record:${current.previousReportId}`,
-      )?.value;
-      if (
-        !previous ||
-        previous.id !== current.previousReportId ||
-        previous.report.assignment_id !== assignmentId ||
-        previous.version !== current.version - 1 ||
-        previous.recipient !== current.recipient ||
-        previous.report.agent_id !== current.report.agent_id ||
-        previous.report.team_run_id !== current.report.team_run_id ||
-        !isDeepStrictEqual(previous.report.task_scope, current.report.task_scope)
-      )
-        throw new Error('Incomplete published report history.');
-      current = previous;
+      current = this.predecessor(current);
     }
   }
   history(assignmentId: string): AcceptedReport[] {
@@ -135,7 +200,13 @@ export class AssignmentReports {
     };
   }
   acknowledgement(reportId: string): ReportAcknowledgement | undefined {
-    return this.store.get<ReportAcknowledgement>(`report-ack:${reportId}`)?.value;
+    identifier.parse(reportId);
+    const row = this.store.get(`report-ack:${reportId}`);
+    if (!row) return undefined;
+    const record = acknowledgementSchema.parse(row.value);
+    if (row.version !== 1 || record.reportId !== reportId)
+      throw new Error('Report acknowledgement identity or immutable version conflicts.');
+    return record;
   }
   acknowledge(
     assignmentId: string,

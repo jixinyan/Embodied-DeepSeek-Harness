@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.49 · 2026-09-22
+Version: v1.50 · 2026-09-22
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -48,6 +48,8 @@ preservation, durable request identities and leased external sources. Session/re
 owners now inspect complete task membership, reverse ownership and catalog dependencies.
 Evidence/verification owners inspect image metadata, stopped boundaries, formal contexts
 and accepted-verdict sources through their existing readers.
+Report owners retain sender/recipient, evidence, version history and receipts, sharing
+validated report readers and predecessor checks with ordinary history inspection.
 Remaining record owners, host idle admission and reviewed console selection remain pending;
 see [domain retention](implementation/domain-retention.md).
 Live VLM and

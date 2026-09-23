@@ -182,6 +182,9 @@ sources; an archive/tombstone lifecycle remains required for deleting those sour
 verification readers to declare run/evidence/boundary/context dependencies. Perception
 owns shared image metadata validation; the image provider owns byte integrity. These
 declarations do not authorize agent access or certify physical task completion.
+`reportRecordOwners` composes AssignmentReports and assignment/evidence readers to
+declare report and receipt dependencies. Communication owns stored report validation,
+immutable receipts and predecessor checks; native DSH continues to own message delivery.
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys

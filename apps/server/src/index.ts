@@ -26,3 +26,4 @@ export {
 export type { TaskDefinition, TaskCatalogDefinition } from '@edh/tasks';
 export { sessionRecordOwners } from './session-record-owners.js';
 export { evidenceRecordOwners } from './evidence-record-owners.js';
+export { reportRecordOwners } from './report-record-owners.js';
