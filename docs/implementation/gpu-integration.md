@@ -53,6 +53,13 @@ to the dedicated data directory. Preserve incomplete downloads and their metadat
 changing locations; coordinate active writers before moving files. Large assets,
 weights, download caches and private license material stay outside Git.
 
+The checked deployment stores RoboCasa assets in `data/robocasa/assets`, with its
+upstream `robocasa/models/assets` path linked to that directory. RoboTwin's objects,
+background textures and embodiments reside in `data/robotwin/`, with corresponding
+source-relative links. BEHAVIOR downloads target `data/behavior/downloads/`.
+RoboCasa passed native GPU rendering, OpenCabinet reset and all three camera checks
+after relocation; the local report is `.local/work/robocasa-installation-gpu5/result.json`.
+
 ### Dependencies and graphics
 
 Use dedicated environments for RoboCasa, BEHAVIOR, RoboTwin, the upper VLM service
@@ -205,8 +212,15 @@ Both sessions use image attachment
 These checks use a static native reset frame. Formal GT verification and model-driven
 robot task completion require the complete physical worker workflow.
 
-The GPU 7 result files are `.local/work/qwen38-native-gpu7.json` and
-`.local/work/qwen38-dsh-gpu7.json` in the remote EDH checkout. The inference service
+The complete selected DSH release adaptation passes the same actual checks at EDH
+commit `1a571e2215022a49072471ee60699b651e6d4e44`. The DSH check enables native
+context management with a 32,768-token capacity, 2,048-token output cap, 4,096-token
+headroom, pressure ratio 0.7, retention ratio 0.15, summary limit 8,192 and a 12-image
+visual-history limit. Both short role rounds complete; they do not trigger automatic
+summarization.
+
+The GPU 7 release-check result files are `.local/work/qwen38-native-rc1-gpu7.json` and
+`.local/work/qwen38-dsh-rc1-gpu7.json` in the remote EDH checkout. The inference service
 log is `.local/work/vlm-8002-gpu7.log`. They remain deployment-local evidence.
 
 ## Integration sequence and acceptance

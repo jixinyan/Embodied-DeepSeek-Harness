@@ -52,7 +52,9 @@ Serial agent initialization, output-aware compaction, cancellation records and n
 secret redaction are implemented with exact source provenance. Native initialization,
 disposal, HTTP cancellation, secret traversal and budget-admission checks pass.
 An oversized initial or dynamically selected output cap fails before HTTP transport;
-disabling automatic compaction retains direct transport behavior. The
+disabling automatic compaction retains direct transport behavior. Actual GPU VLM
+image/tool checks also pass with native context management enabled at `1a571e2`;
+these short rounds do not exercise automatic summarization. The
 [release adaptation guide](dsh-release-adaptation.md) records the model, image and
 stored-history compatibility boundaries and required acceptance checks.
 
