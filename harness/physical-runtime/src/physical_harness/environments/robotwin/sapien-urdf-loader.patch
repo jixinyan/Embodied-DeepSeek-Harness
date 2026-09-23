@@ -1,0 +1,18 @@
+diff --git a/sapien/wrapper/urdf_loader.py b/sapien/wrapper/urdf_loader.py
+--- a/sapien/wrapper/urdf_loader.py
++++ b/sapien/wrapper/urdf_loader.py
+@@ -664,11 +664,11 @@
+         self.package_dir = package_dir
+         self.urdf_dir = os.path.dirname(urdf_file)
+ 
+-        with open(urdf_file, "r") as f:
++        with open(urdf_file, "r", encoding="utf-8") as f:
+             urdf_string = f.read()
+ 
+         if srdf_file is None:
+-            srdf_file = urdf_file[:-4] + "srdf"
++            srdf_file = urdf_file[:-4] + ".srdf"
+         if os.path.isfile(srdf_file):
+-            with open(srdf_file, "r") as f:
++            with open(srdf_file, "r", encoding="utf-8") as f:
+                 self.ignore_pairs = self.parse_srdf(f.read())

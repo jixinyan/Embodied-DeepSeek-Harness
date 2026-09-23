@@ -1,0 +1,11 @@
+diff --git a/OmniGibson/setup.py b/OmniGibson/setup.py
+--- a/OmniGibson/setup.py
++++ b/OmniGibson/setup.py
+@@ -56,6 +56,6 @@ setup(
+         "websockets>=15.0.1",
+         "omegaconf>=2.3.0",
+-        "lerobot[dataset] @ git+https://github.com/wensi-ai/lerobot@release/b1k",
++        "lerobot[dataset] @ git+https://github.com/wensi-ai/lerobot@436812bd8ee39b768c645c248c91f1330834e687",
+     ],
+     extras_require={
+         "dev": [

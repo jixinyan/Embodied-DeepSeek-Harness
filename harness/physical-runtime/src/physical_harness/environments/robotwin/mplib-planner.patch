@@ -1,0 +1,9 @@
+diff --git a/mplib/planner.py b/mplib/planner.py
+--- a/mplib/planner.py
++++ b/mplib/planner.py
+@@ -805,4 +805,4 @@
+             collide = self.planning_world.is_state_colliding()
+ 
+-            if np.linalg.norm(delta_twist) < 1e-4 or collide or not within_joint_limit:
++            if np.linalg.norm(delta_twist) < 1e-4 or not within_joint_limit:
+                 return {"status": "screw plan failed"}

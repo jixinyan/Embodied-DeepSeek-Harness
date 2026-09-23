@@ -1,0 +1,130 @@
+diff --git a/envs/_base_task.py b/envs/_base_task.py
+--- a/envs/_base_task.py
++++ b/envs/_base_task.py
+@@ -207,7 +207,8 @@ class Base_Task(gym.Env):
+         from sapien.render import set_global_config
+ 
+         set_global_config(max_num_materials=50000, max_num_textures=50000)
+-        self.renderer = sapien.SapienRenderer()
++        render_device = os.environ["ROBOTWIN_RENDER_DEVICE"]
++        self.renderer = sapien.render.SapienRenderer(sapien.Device(render_device))
+         # give renderer to sapien sim
+         self.engine.set_renderer(self.renderer)
+ 
+@@ -218,7 +219,11 @@ class Base_Task(gym.Env):
+ 
+         # declare sapien scene
+         scene_config = sapien.SceneConfig()
+-        self.scene = self.engine.create_scene(scene_config)
++        sapien.physx.set_scene_config(scene_config)
++        self.scene = sapien.Scene([
++            sapien.physx.PhysxCpuSystem(),
++            sapien.render.RenderSystem(render_device),
++        ])
+         # set simulation timestep
+         self.scene.set_timestep(kwargs.get("timestep", 1 / 250))
+         # add ground to scene
+@@ -1476,9 +1481,11 @@ class Base_Task(gym.Env):
+ 
+         return True  # TODO: maybe need try error
+ 
+-    def take_action(self, action, action_type:Literal['qpos', 'ee']='qpos'):  # action_type: qpos or ee
++    def take_action(self, action, action_type:Literal['qpos', 'ee']='qpos', should_stop=None, on_physics_step=None):  # action_type: qpos or ee
++        if should_stop is not None and should_stop():
++            return 0, False
+         if self.take_action_cnt == self.step_lim or self.eval_success:
+-            return
++            return 0, False
+ 
+         eval_video_freq = 1  # fixed
+         if (self.eval_video_path is not None and self.take_action_cnt % eval_video_freq == 0):
+@@ -1539,37 +1546,21 @@ class Base_Task(gym.Env):
+             # TODO
+             topp_left_flag, topp_right_flag = True, True
+ 
+-            try:
+-                times, left_pos, left_vel, acc, duration = (self.robot.left_mplib_planner.TOPP(left_path,
+-                                                                                            1 / 250,
+-                                                                                            verbose=True))
+-                left_result = dict()
+-                left_result["position"], left_result["velocity"] = left_pos, left_vel
+-                left_n_step = left_result["position"].shape[0]
+-            except Exception as e:
+-                # print("left arm TOPP error: ", e)
+-                topp_left_flag = False
+-                left_n_step = 50  # fixed
+-
++            times, left_pos, left_vel, acc, duration = self.robot.left_mplib_planner.TOPP(
++                left_path, 1 / 250, verbose=True
++            )
++            left_result = {"position": left_pos, "velocity": left_vel}
++            left_n_step = left_result["position"].shape[0]
+             if left_n_step == 0:
+-                topp_left_flag = False
+-                left_n_step = 50  # fixed
+-
+-            try:
+-                times, right_pos, right_vel, acc, duration = (self.robot.right_mplib_planner.TOPP(right_path,
+-                                                                                                1 / 250,
+-                                                                                                verbose=True))
+-                right_result = dict()
+-                right_result["position"], right_result["velocity"] = right_pos, right_vel
+-                right_n_step = right_result["position"].shape[0]
+-            except Exception as e:
+-                # print("right arm TOPP error: ", e)
+-                topp_right_flag = False
+-                right_n_step = 50  # fixed
++                raise RuntimeError("RoboTwin left arm TOPP returned no physics steps.")
+ 
++            times, right_pos, right_vel, acc, duration = self.robot.right_mplib_planner.TOPP(
++                right_path, 1 / 250, verbose=True
++            )
++            right_result = {"position": right_pos, "velocity": right_vel}
++            right_n_step = right_result["position"].shape[0]
+             if right_n_step == 0:
+-                topp_right_flag = False
+-                right_n_step = 50  # fixed
++                raise RuntimeError("RoboTwin right arm TOPP returned no physics steps.")
+         
+         elif action_type == 'ee':
+ 
+@@ -1625,9 +1616,14 @@ class Base_Task(gym.Env):
+         right_gripper = np.array(right_gripper)
+ 
+         now_left_id, now_right_id = 0, 0
++        raw_sim_steps = 0
+ 
+         # ========== Control Loop ==========
+         while now_left_id < left_n_step or now_right_id < right_n_step:
++            if should_stop is not None and should_stop():
++                if raw_sim_steps == 0:
++                    self.take_action_cnt -= 1
++                return raw_sim_steps, False
+ 
+             if (now_left_id < left_n_step and now_left_id / left_n_step <= now_right_id / right_n_step):
+                 if topp_left_flag:
+@@ -1652,18 +1648,23 @@ class Base_Task(gym.Env):
+                 now_right_id += 1
+ 
+             self.scene.step()
++            raw_sim_steps += 1
+             self._update_render()
++            if on_physics_step is not None:
++                if on_physics_step(raw_sim_steps) is False:
++                    return raw_sim_steps, False
+                 
+             if self.check_success():
+                 self.eval_success = True
+                 self.get_obs() # update obs
+                 if (self.eval_video_path is not None):
+                     self.eval_video_ffmpeg.stdin.write(self.now_obs["observation"]["head_camera"]["rgb"].tobytes())
+-                return
++                return raw_sim_steps, True
+ 
+         self._update_render()
+         if self.render_freq:  # UI
+             self.viewer.render()
++        return raw_sim_steps, True
+ 
+ 
+     def save_camera_images(self, task_name, step_name, generate_num_id, save_dir="./camera_images"):
