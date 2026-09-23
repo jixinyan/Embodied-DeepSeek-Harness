@@ -40,7 +40,11 @@ three image attachments, two independent task run IDs in one scene, native
 `task_success=false`, and policy connection failure with a confirmed terminal
 device boundary. Interrupted initialization rejects pending requests and leaves
 resource release unconfirmed. These worker checks execute zero learned-policy
-actions. Learned-policy inference and end-to-end task acceptance remain pending.
+actions. A subsequent actual GR00T worker check passes six confirmed controls,
+150 MuJoCo physics steps, corresponding camera frames, confirmed pause/stop and
+a second task in the same scene. Its native `task_success` remains `false`.
+The report retains its base revision and working changes; complete Planner/Verifier
+task acceptance and console replay remain pending.
 [Deployment isolation, source pins and actual checks](gpu-integration.md).
 
 RoboTwin's pinned SAPIEN renderer passes native GPU rendering and 100 physics
@@ -51,7 +55,7 @@ SHA256 values match the fixed upstream revision. All three simulators use dedica
 `data/` directories, and RoboCasa's native reset/render checks pass after relocation.
 RoboCasa camera preprocessing matches the official evaluation wrapper exactly:
 all three decoded EDH PNG arrays pass numerical equality against the same native
-reset observations. Actual learned-policy inference remains a separate gate.
+reset observations. RoboTwin policy inference remains pending its actual task reset.
 
 An isolated Qwen VLM served by vLLM now passes actual image/tool checks on an available
 GPU. Native API completion returns `tool_calls` followed by `stop`. Independent native

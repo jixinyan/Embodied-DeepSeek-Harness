@@ -225,6 +225,31 @@ Fourteen session-request and task-history checks also pass against real local jo
 including compaction/reopen, interrupted publication and 2,000 task memberships.
 These storage checks do not execute a model or simulator.
 
+## RoboCasa learned-policy controls
+
+The checkpoint-backed GR00T service consumes an actual RoboCasa observation and
+returns a finite 16 × 12 native action chunk. Its initial request
+`275d7fbe-a231-42f7-b510-639a872036f2` takes 54.047 seconds; deployment timeouts
+must accommodate the measured startup behavior while preserving observation expiry.
+The source, checkpoint and transforms are recorded in the
+[RoboCasa policy profile](../../examples/policies/gr00t-n1d6-robocasa.json).
+
+A subsequent real worker check passes with execution
+`b26f4ff0-0a1c-4891-99f9-4a27f2b85351` and policy request
+`dd63803c-e6f7-4490-badc-9a493426400f`. ActionGate admits six confirmed controls;
+the simulator advances 150 MuJoCo physics steps and supplies the corresponding
+camera frames. Unknown-action count is zero. Pause and stop both receive native
+confirmation. A second run ID retains the same scene and closes successfully.
+The limited native check returns `task_success=false`.
+
+The local report at `.local/work/native-worker-gr00t-03/result.json` records a
+passing exit status, base revision `478299e` and the exact list of working changes.
+`process.log` and `images/` are retained in that same attempt directory. The
+service-side record is preserved in the GPU host's
+`.local/work/gr00t-service-pre-provenance.log`.
+This is policy-to-simulator acceptance. Planner-driven execution, asynchronous
+Verifier behavior, accepted task success and console replay remain pending.
+
 ## RoboTwin rendering check
 
 The pinned SAPIEN `3.0.0b1` renderer passes an actual native check on the assigned
@@ -290,7 +315,9 @@ The saved pre/postprocessor initializes offline against these local files.
 Credentials stay outside the repository and run exports.
 
 The actual service runs on the allocated GPU 4 and reports its model/tokenizer
-identities in `.local/work/lerobot-pi05-service.log` on the GPU host. It accepts
+identities in `.local/work/lerobot-pi05-service.log` on the GPU host. The initial
+load report is preserved in `.local/work/lerobot-pi05-service-pre-provenance.log`.
+It accepts
 three 640 × 480 RGB cameras and a fourteen-value native state vector. Service
 startup does not yet certify inference from a real RoboTwin task, valid admitted
 actions or task completion; those checks remain pending.
