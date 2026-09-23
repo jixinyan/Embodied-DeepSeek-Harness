@@ -1,1 +1,227 @@
-"""robocasa adapter placeholder. Not implemented or supported yet."""
+from __future__ import annotations
+
+from copy import deepcopy
+from datetime import datetime, timezone
+from importlib.metadata import version
+from io import BytesIO
+import math
+import time
+from typing import Callable, Mapping, Sequence
+from uuid import uuid4
+
+import numpy as np
+from PIL import Image
+from robocasa.utils.env_utils import create_env
+from robosuite import macros
+
+from physical_harness.environments import (
+    NativeCheck,
+    NativeEnvironmentDescription,
+    NativeObservation,
+    NativeStep,
+)
+from physical_harness.validation import ContractValidator
+
+
+CAMERA_NAMES = (
+    "robot0_agentview_left",
+    "robot0_agentview_right",
+    "robot0_eye_in_hand",
+)
+STATE_CHANNELS = (
+    "robot0_gripper_qpos",
+    "robot0_base_pos",
+    "robot0_base_quat",
+    "robot0_base_to_eef_pos",
+    "robot0_base_to_eef_quat",
+)
+STATE_CHANNEL_SIZES = (2, 3, 4, 3, 4)
+ACTION_CHANNELS = (
+    "right_0", "right_1", "right_2", "right_3", "right_4", "right_5",
+    "right_gripper", "base_0", "base_1", "base_2", "torso", "base_mode",
+)
+ACTION_SPEC = {
+    "schema_version": "physical.action_spec.v1",
+    "embodiment_id": "robocasa.pandaomron",
+    "version": "robocasa-1.0.1-pandaomron-hybrid-v1",
+    "coordinate_frame": "robosuite.pandaomron.native",
+    "control_mode": "robosuite.hybrid_mobile_base",
+    "frequency_hz": 20,
+    "channels": [
+        {"name": name, "quantity": "normalized", "unit": "dimensionless", "minimum": -1, "maximum": 1}
+        for name in ACTION_CHANNELS
+    ],
+}
+
+
+class RoboCasaEnvironment:
+    def __init__(self, validator: ContractValidator) -> None:
+        validator.parse("ActionSpec", ACTION_SPEC)
+        if (version("robocasa"), version("robosuite"), version("mujoco")) != ("1.0.1", "1.5.2", "3.3.1"):
+            raise RuntimeError("Installed RoboCasa, robosuite or MuJoCo version differs from this adapter mapping.")
+        self._env = None
+        self._task_id: str | None = None
+
+    @staticmethod
+    def _scene_configuration(configuration: Mapping[str, object]) -> dict[str, object]:
+        allowed = {
+            "seed", "split", "layout_ids", "style_ids", "layout_and_style_ids",
+            "generative_textures", "randomize_cameras",
+        }
+        if set(configuration) - allowed:
+            raise ValueError("Unknown RoboCasa scene configuration field.")
+        seed = configuration.get("seed", 0)
+        split = configuration.get("split", "pretrain")
+        if type(seed) is not int or seed < 0:
+            raise ValueError("RoboCasa seed must be a nonnegative integer.")
+        if split not in (None, "pretrain", "target", "all"):
+            raise ValueError("Unsupported RoboCasa split.")
+        scene_fields = ("layout_ids", "style_ids", "layout_and_style_ids")
+        if split is not None and any(key in configuration for key in scene_fields):
+            raise ValueError("Explicit RoboCasa scene selection requires split=null.")
+        if "layout_and_style_ids" in configuration and any(key in configuration for key in ("layout_ids", "style_ids")):
+            raise ValueError("RoboCasa scene pairs cannot be combined with layout/style lists.")
+        selected: dict[str, object] = {"seed": seed, "split": split}
+        for key in ("layout_ids", "style_ids"):
+            if key in configuration:
+                value = configuration[key]
+                if not isinstance(value, list) or not value or any(type(item) is not int or item < 0 for item in value):
+                    raise ValueError(f"RoboCasa {key} must be a nonempty list of nonnegative integers.")
+                selected[key] = list(value)
+        if "layout_and_style_ids" in configuration:
+            value = configuration["layout_and_style_ids"]
+            if not isinstance(value, list) or not value or any(
+                not isinstance(item, list) or len(item) != 2 or any(type(part) is not int or part < 0 for part in item)
+                for item in value
+            ):
+                raise ValueError("RoboCasa scene pairs must contain nonnegative layout/style IDs.")
+            selected["layout_and_style_ids"] = [tuple(item) for item in value]
+        for key in ("generative_textures", "randomize_cameras"):
+            if key in configuration:
+                if type(configuration[key]) is not bool:
+                    raise ValueError(f"RoboCasa {key} must be boolean.")
+                selected[key] = configuration[key]
+        return selected
+
+    def _require_env(self):
+        if self._env is None:
+            raise RuntimeError("RoboCasa task has not been reset.")
+        return self._env
+
+    def _check_native_contract(self) -> None:
+        env = self._require_env()
+        controller = env.robots[0].composite_controller
+        layout = controller.get_action_info_dict()
+        expected = {
+            "Action Dimension": (12,),
+            "right": (0, 6),
+            "right_gripper": (6, 7),
+            "base": (7, 10),
+            "torso": (10, 11),
+        }
+        if controller.name != "HYBRID_MOBILE_BASE" or layout != expected:
+            raise RuntimeError("RoboCasa controller layout does not match the declared action mapping.")
+        low, high = env.action_spec
+        if env.action_dim != 12 or low.shape != (12,) or high.shape != (12,):
+            raise RuntimeError("RoboCasa action dimensions do not match the declared ActionSpec.")
+        if not np.array_equal(low, np.full(12, -1)) or not np.array_equal(high, np.ones(12)):
+            raise RuntimeError("RoboCasa action limits do not match the declared ActionSpec.")
+        if env.control_freq != 20:
+            raise RuntimeError("RoboCasa control frequency does not match the declared ActionSpec.")
+
+    def describe(self) -> NativeEnvironmentDescription:
+        self._check_native_contract()
+        return NativeEnvironmentDescription(
+            provider="robocasa",
+            embodiment_id="robocasa.pandaomron",
+            action_spec=deepcopy(ACTION_SPEC),
+            camera_names=CAMERA_NAMES,
+            state_channels=STATE_CHANNELS,
+            supported_check_ids=("task_success",),
+            active_view_directions=(),
+        )
+
+    def _observation(self, raw: Mapping[str, object]) -> NativeObservation:
+        observed_monotonic = time.monotonic()
+        observed_at = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+        images: dict[str, bytes] = {}
+        for camera in CAMERA_NAMES:
+            pixels = raw[f"{camera}_image"]
+            if not isinstance(pixels, np.ndarray) or pixels.shape != (256, 256, 3) or pixels.dtype != np.uint8:
+                raise RuntimeError(f"RoboCasa camera {camera} returned an invalid RGB frame.")
+            if macros.IMAGE_CONVENTION == "opengl":
+                pixels = pixels[::-1]
+            elif macros.IMAGE_CONVENTION != "opencv":
+                raise RuntimeError("Unsupported robosuite image convention.")
+            output = BytesIO()
+            Image.fromarray(pixels).save(output, format="PNG")
+            if output.tell() > 1024 * 1024:
+                raise RuntimeError("RoboCasa camera frame exceeds the policy observation limit.")
+            images[camera] = output.getvalue()
+        state: dict[str, tuple[float, ...]] = {}
+        for channel, expected_size in zip(STATE_CHANNELS, STATE_CHANNEL_SIZES):
+            value = raw[channel]
+            if not isinstance(value, np.ndarray) or value.shape != (expected_size,) or not np.isfinite(value).all():
+                raise RuntimeError(f"RoboCasa state channel {channel} is invalid.")
+            state[channel] = tuple(float(item) for item in value)
+        return NativeObservation(str(uuid4()), observed_at, observed_monotonic, images, state)
+
+    def reset(self, task_id: str, configuration: Mapping[str, object]) -> NativeObservation:
+        if not task_id or not isinstance(task_id, str):
+            raise ValueError("RoboCasa task ID must be nonempty.")
+        scene = self._scene_configuration(configuration)
+        if self._env is not None:
+            raise RuntimeError("RoboCasa session is already initialized; task admission preserves its scene.")
+        self._env = create_env(
+            env_name=task_id,
+            robots="PandaOmron",
+            camera_names=list(CAMERA_NAMES),
+            camera_widths=256,
+            camera_heights=256,
+            render_onscreen=False,
+            **scene,
+        )
+        self._task_id = task_id
+        raw = self._env.reset()
+        self._check_native_contract()
+        return self._observation(raw)
+
+    def bind_task(self, task_id: str) -> None:
+        self._require_env()
+        if task_id != self._task_id:
+            raise ValueError("RoboCasa session cannot change its native task without an explicit reset.")
+
+    def observe(self) -> NativeObservation:
+        env = self._require_env()
+        raw = env.viewer._get_observations(force_update=True) if env.viewer_get_obs else env._get_observations(force_update=True)
+        return self._observation(raw)
+
+    def step(self, action: Sequence[float], should_stop: Callable[[], bool]) -> NativeStep:
+        env = self._require_env()
+        if should_stop():
+            return NativeStep(self.observe(), 0, False, 0, False)
+        if len(action) != 12 or any(type(value) not in (int, float) or not math.isfinite(value) or abs(value) > 1 for value in action):
+            raise ValueError("RoboCasa action must contain 12 finite normalized values.")
+        if abs(action[11]) != 1:
+            raise ValueError("RoboCasa base_mode must be -1 or 1.")
+        before = float(env.sim.data.time)
+        raw, _reward, done, _info = env.step(np.asarray(action, dtype=np.float64))
+        raw_steps = round((float(env.sim.data.time) - before) / env.model_timestep)
+        if raw_steps <= 0:
+            raise RuntimeError("RoboCasa did not advance simulation time for the control action.")
+        return NativeStep(self._observation(raw), 1, True, raw_steps, bool(done))
+
+    def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]:
+        env = self._require_env()
+        if not check_ids or any(check_id != "task_success" for check_id in check_ids):
+            raise ValueError("Unsupported RoboCasa check ID.")
+        return tuple(NativeCheck(check_id, bool(env._check_success())) for check_id in check_ids)
+
+    def turn_view(self, direction: str) -> NativeObservation:
+        raise ValueError(f"RoboCasa active view direction is unsupported: {direction}")
+
+    def close(self) -> None:
+        env, self._env = self._env, None
+        self._task_id = None
+        if env is not None:
+            env.close()

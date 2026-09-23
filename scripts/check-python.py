@@ -1,4 +1,3 @@
-"""Compile/import CPU modules without installing optional providers."""
 import importlib
 import sys
 from pathlib import Path
@@ -9,16 +8,32 @@ sys.dont_write_bytecode = True
 root = Path(__file__).resolve().parents[1]
 source = root / "harness/physical-runtime/src"
 sys.path.insert(0, str(source))
-count = 0
+compiled = 0
 for file in sorted(source.rglob("*.py")):
     compile(file.read_text(), str(file), "exec")
-    parts = list(file.relative_to(source).with_suffix("").parts)
-    if parts[-1] == "__init__":
-        parts.pop()
-    importlib.import_module(".".join(parts))
-    count += 1
+    compiled += 1
+core_modules = (
+    "physical_harness",
+    "physical_harness.validation",
+    "physical_harness.physical_boundary",
+    "physical_harness.wire",
+    "physical_harness.lifecycle",
+    "physical_harness.environments",
+    "physical_harness.execution",
+    "physical_harness.execution.action_gate",
+    "physical_harness.execution.policy_rollout",
+    "physical_harness.policies",
+    "physical_harness.policies.client",
+    "physical_harness.policies.server",
+    "physical_harness.perception",
+    "physical_harness.verification",
+    "physical_harness.backends",
+    "physical_harness.embodiments",
+)
+for module in core_modules:
+    importlib.import_module(module)
 for file in (root / "docs/architecture/assets").glob("*.svg"):
     ET.parse(file)
 ET.parse(root / "tests/fixtures/cup-scene.svg")
-print(f"Compiled/imported {count} Python modules; SVG XML valid.")
-print("No worker, simulator, policy or hardware behavior was exercised.")
+print(f"Compiled {compiled} Python files and imported {len(core_modules)} base modules; SVG XML valid.")
+print("No worker, simulator, learned policy or hardware behavior was exercised.")
