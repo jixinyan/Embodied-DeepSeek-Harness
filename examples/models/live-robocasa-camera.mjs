@@ -7,6 +7,7 @@ import { createUserMessage } from '@deepseek-ai/dsh-llm';
 import { defineTool } from '@edh/tools';
 import { LocalImageStore } from '@edh/storage';
 import { OpenAICompatibleAdapter } from '@edh/models';
+import { contextManagementOptions } from '@edh/memory';
 import { createDshHost } from '../../apps/server/src/runtime.ts';
 import { createDshSession } from '../../harness/agent-runtime/agents/src/runtime.ts';
 
@@ -16,12 +17,16 @@ const model = process.env.EDH_MODEL;
 const cameraPath = process.env.EDH_CAMERA_PATH;
 const contextWindow = 32768;
 const maxTokens = 2048;
+const contextManagement = contextManagementOptions({
+  compaction: { thresholdRatio: 0.7, retainRatio: 0.15, headroomTokens: 4096, maxTokens: 8192 },
+  visualHistory: { maxImages: 12 },
+});
 if (!baseURL || !model || !cameraPath)
   throw new Error('Set EDH_MODEL_BASE_URL, EDH_MODEL and EDH_CAMERA_PATH.');
 
 const directory = resolve(root, '.local/work/live-robocasa-vlm');
 await mkdir(directory, { recursive: true });
-const host = await createDshHost([]);
+const host = await createDshHost([], contextManagement);
 try {
   const images = new LocalImageStore(host, { directory });
   const camera = await images.saveImage({
@@ -123,6 +128,7 @@ try {
         model,
         context_window: contextWindow,
         max_completion_tokens: maxTokens,
+        context_management: contextManagement,
         planner,
         verifier,
       },
