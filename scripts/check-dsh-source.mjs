@@ -9,6 +9,33 @@ const locked = JSON.parse(await readFile('docs/provenance/dsh-source-lock.json',
 assert.equal(imported.commit, locked.commit);
 const files = new Set(imported.files.map((file) => file.destination));
 assert.equal(files.size, imported.files.length, 'Duplicate import destinations');
+const commitId = /^[0-9a-f]{40}$/;
+const adaptedDestinations = new Set();
+for (const adaptation of imported.release_adaptations ?? []) {
+  assert.equal(adaptation.tag, 'dsh-v0.1.7-rc.1', 'Unexpected DSH release tag');
+  assert.equal(
+    adaptation.release_commit,
+    '46a7f68b0922371ce7144b668b90e377d8e799f4',
+    'Unexpected DSH release commit',
+  );
+  assert(commitId.test(adaptation.release_commit), 'Invalid DSH release commit');
+  assert(Array.isArray(adaptation.upstream_commits) && adaptation.upstream_commits.length > 0);
+  assert.equal(new Set(adaptation.upstream_commits).size, adaptation.upstream_commits.length);
+  for (const commit of adaptation.upstream_commits) {
+    assert(commitId.test(commit), `Invalid upstream commit: ${commit}`);
+  }
+  assert(Array.isArray(adaptation.destinations) && adaptation.destinations.length > 0);
+  assert.equal(typeof adaptation.patch, 'string');
+  assert(adaptation.patch.trim().length > 0, 'Missing release patch explanation');
+  for (const destination of adaptation.destinations) {
+    assert(files.has(destination), `Unrecorded release destination: ${destination}`);
+    assert(!adaptedDestinations.has(destination), `Duplicate release destination: ${destination}`);
+    adaptedDestinations.add(destination);
+    const file = imported.files.find((item) => item.destination === destination);
+    assert.notEqual(file.source_sha256, file.local_sha256, `Unmodified release destination: ${destination}`);
+    assert(file.modifications.length > 0, `Missing patch explanation: ${destination}`);
+  }
+}
 const used = new Set();
 for (const file of imported.files) {
   const contents = await readFile(file.destination);

@@ -3,6 +3,15 @@
   "commit": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
   "selection": "Transitive TypeScript imports, exports, type imports and module augmentations from the five audited seeds plus session-projection. Optional manifest peers not imported by this graph are excluded. The unmodified cooperative timeout policy is additionally imported for the upper application. Context integration additionally imports the unchanged compaction services and replay-aware token meter, plus command identity and retry event types only (no command/retry service). Image integration imports six local attachment primitives used by the EDH image service.",
   "attachment_scope": "The LLM uses the native attachment interface. The local image provider uses pinned source primitives and is mounted explicitly by deployment-owned contexts.",
+  "release_adaptations": [
+    {
+      "tag": "dsh-v0.1.7-rc.1",
+      "release_commit": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+      "upstream_commits": ["601d6761e49b2d93762332cffb832b95bda22f52"],
+      "destinations": ["harness/agent-runtime/foundation/src/dsh/settings/redact.ts"],
+      "patch": "Traverse union, intersection and transform schema nodes and merge repeated secret paths without changing the pinned source baseline."
+    }
+  ],
   "packages": [
     {
       "name": "@deepseek-ai/dsh-attachment-local",
@@ -763,8 +772,10 @@
       "source": "packages/settings/settings/src/redact.ts",
       "destination": "harness/agent-runtime/foundation/src/dsh/settings/redact.ts",
       "source_sha256": "786f9971d506da44461d96bf45c497fdfc03115edebd2873a04ccc637e98b78c",
-      "local_sha256": "786f9971d506da44461d96bf45c497fdfc03115edebd2873a04ccc637e98b78c",
-      "modifications": []
+      "local_sha256": "901ab42027b7c1bc97451705977fd811dd860c7e69efec7d74ce49db446967dc",
+      "modifications": [
+        "Traverse union, intersection and transform schema nodes and merge repeated secret paths."
+      ]
     },
     {
       "source": "packages/settings/settings/src/types.ts",
