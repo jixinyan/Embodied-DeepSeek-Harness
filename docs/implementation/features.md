@@ -6,7 +6,7 @@ Snapshot: 2026-09-23. Upper runtime, model transport and standalone policy/actio
 
 | Working capability                                                                                        | Inspect the implementation / evidence                                                                                                                |
 | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Isolated GPU installation and actual NVIDIA MuJoCo physics/rendering check | [Deployment evidence and remaining simulator acceptance](gpu-integration.md) |
+| Isolated GPU installation, actual NVIDIA MuJoCo physics/rendering and RoboCasa native scene reset with three camera observations | [Deployment evidence and remaining simulator acceptance](gpu-integration.md) |
 | Native desktop launcher, selected deployment configuration and owned service lifecycle | [Launcher, packaging and acceptance limits](../../apps/desktop/README.md) |
 | Declarative cloud API / vLLM model bindings, private authentication and image-service assembly | [Configuration and native-service acceptance](model-configuration.md) |
 | Original DSH loop, tool validation, sessions, timeout and cancellation                                    | [Host](../../apps/server/src/runtime.ts), [native tests](../../tests/runtime/native-tools.test.ts)                                                   |

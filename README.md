@@ -29,7 +29,9 @@ selected DeepSeek Harness implementations, with traceable provenance.
 > **Early development: the upper workflow and local console are runnable.**
 > DSH-backed roles, native tools/TODOs, formal verification, recovery and SKILL
 > publication run with an explicitly synthetic CPU backend and scripted model.
-> Real simulation, learned policies, live VLM evaluation and hardware remain pending.
+> RoboCasa's native `OpenCabinet` scene reset and three GPU-rendered cameras pass
+> installation checks. EDH simulator adapters, learned policies, live VLM evaluation
+> and hardware integration remain pending.
 
 ![Current implementation](docs/architecture/assets/implementation-status.svg)
 
@@ -103,8 +105,9 @@ remote OpenAI-compatible model example and a runnable WebSocket policy-to-action
 CPU example. The host-to-Python worker bridge and real provider integration remain next.
 
 The [GPU integration guide](docs/implementation/gpu-integration.md) records isolated
-environments, pinned simulator sources and actual NVIDIA rendering acceptance. Real
-simulator-to-policy task completion remains pending.
+environments, pinned simulator sources, actual NVIDIA rendering and a RoboCasa task
+reset with three native camera observations. Simulator-to-policy task completion
+remains pending.
 
 ## Design commitments
 

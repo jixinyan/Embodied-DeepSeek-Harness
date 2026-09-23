@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.54. Current checkpoint: **isolated GPU deployment and native renderer acceptance**.
+Spec: v1.54. Current checkpoint: **isolated GPU deployment and RoboCasa task reset acceptance**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -17,8 +17,13 @@ assertions are optional; device selection comes from the deployment environment.
 An explicit GPU 1 selection passes the same native rendering check. Shared runtime
 code has no host path, GPU model or CUDA device binding. Other GPU models remain
 unverified. The `489edc3` checkpoint passed GitHub Framework checks.
-Kitchen assets and task reset are in progress. Simulator adapters, worker transport,
-learned-policy inference and end-to-end task acceptance remain pending.
+The official kitchen asset downloader completed successfully. A real RoboCasa
+`OpenCabinet` task reset passed with PandaOmron, the pretrain split and seed 0.
+Three native 256 × 256 RGB camera observations passed shape, type and nonuniformity
+checks; the checker recorded the task instruction, initial success value, 12-dimensional
+action limits, controller layout and 20 Hz control frequency. No robot control action
+or learned policy executed. Simulator adapters, worker transport, learned-policy
+inference and end-to-end task acceptance remain pending.
 [Deployment isolation, source pins and actual checks](gpu-integration.md).
 
 RunEventReferences declares event and message dependencies using the existing domain

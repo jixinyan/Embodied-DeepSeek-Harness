@@ -119,8 +119,27 @@ The remote EDH checkout also passed TypeScript checking using its dedicated Node
 The checker reports isolated Python mode with the user package directory disabled.
 Selecting EGL device `1` with an explicit NVIDIA vendor expectation also passes.
 
-Kitchen asset installation and RoboCasa task reset remain in progress. No learned
-policy, upper VLM, robot task or complete console workflow has passed GPU acceptance.
+The official `download_kitchen_assets --type all` command completed with exit code 0.
+The full checker then completed with exit code 0 using EGL device `0`, an explicit
+NVIDIA vendor expectation and the isolated Python 3.11.16 environment. Its report
+records `isolated_mode: true` and `user_site_enabled: false`. RoboCasa created and reset
+`OpenCabinet` with `PandaOmron`, the `pretrain` split and seed `0`. The task instruction
+was `Open the cabinet door.` and the initial success check returned `false`. All three
+native camera images (`robot0_agentview_left`, `robot0_agentview_right` and
+`robot0_eye_in_hand`) passed 256 × 256 RGB shape, `uint8` type and nonuniformity checks.
+The checker saved these images, the renderer image and `result.json` under the ignored
+`.local/work/robocasa-installation/` directory on the GPU host.
+
+The native action dimension is 12, with lower and upper limits of -1 and 1 in every
+dimension and a 20 Hz control frequency. The controller reports `right: [0, 6]`,
+`right_gripper: [6, 7]`, `base: [7, 10]` and `torso: [10, 11]`. The installed
+robosuite `HYBRID_MOBILE_BASE` controller uses the remaining action index 11 for
+`base_mode`; its native `get_action_info_dict()` leaves that index out of the named
+segments. The future canonical ActionSpec must include this controller mode channel
+when admitting PandaOmron actions. These are installation and reset observations,
+not an admitted EDH action mapping. The checker reports `policy_executed: false`.
+No robot control step, learned policy, upper VLM, robot task completion or complete
+console workflow has passed GPU acceptance.
 
 ## Integration sequence and acceptance
 
