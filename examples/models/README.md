@@ -21,7 +21,10 @@ vLLM 0.30.0, PyTorch 2.13.0 and Transformers 5.17.0. The locally supplied
 checkpoint reports `model_type=qwen3_5` and
 `Qwen3_5ForConditionalGeneration`. It was served as `qwen3.8-27b` through
 Chat Completions on loopback port 8002. The deployment used a 32,768-token
-model context and a 2,048-token completion limit in DSH.
+model context and a 2,048-token completion limit in DSH. The DSH check installs
+context management with a compaction threshold of 0.7, a retention ratio of
+0.15, 4,096 headroom tokens, an 8,192-token compaction response limit and a
+12-image visual history limit. Its short test turns do not trigger compaction.
 
 From the repository root, with the isolated vLLM executable and checkpoint
 paths supplied by the deployment:
@@ -29,8 +32,8 @@ paths supplied by the deployment:
 ```sh
 mkdir -p .local/work
 export TMPDIR="$PWD/.local/work"
-export HF_HOME="$PWD/.local/work/hf"
-export VLLM_CACHE_ROOT="$PWD/.local/work/vllm-cache"
+export HF_HOME="<workspace>/cache/huggingface"
+export VLLM_CACHE_ROOT="<workspace>/cache/vllm"
 export CUDA_VISIBLE_DEVICES="<selected-gpu>"
 export VLLM_USE_FLASHINFER_SAMPLER=0
 "<vllm-environment>/bin/vllm" serve "<checkpoint>" \
