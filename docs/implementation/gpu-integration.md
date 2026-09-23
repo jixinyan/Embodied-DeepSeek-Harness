@@ -31,6 +31,30 @@ BEHAVIOR inherits the [Isaac Sim rendering requirements](https://behavior.stanfo
 
 ## Environment isolation
 
+### Workspace storage
+
+Keep deployment resources in separate directories under a configurable workspace root:
+
+| Directory | Contents |
+| --- | --- |
+| `code/` | EDH and pinned upstream source checkouts |
+| `data/robocasa/` | RoboCasa kitchen scenes, textures and object assets |
+| `data/behavior/` | BEHAVIOR scene, object, robot and task assets |
+| `data/robotwin/` | RoboTwin objects, backgrounds and embodiment assets |
+| `checkpoints/` | Model weights, processors, normalization statistics and checkpoint metadata |
+| `envs/` | Isolated Python environments, Node.js and deployment graphics libraries |
+| `.cache/` | Dependency and download caches |
+| EDH `.local/work/` | Local acceptance reports, logs and intermediate checks |
+
+Download assets directly into their provider's data directory and weights into their
+checkpoint directory. Use upstream-supported configuration to select resource paths.
+When an upstream package requires a source-relative assets directory, link that path
+to the dedicated data directory. Preserve incomplete downloads and their metadata when
+changing locations; coordinate active writers before moving files. Large assets,
+weights, download caches and private license material stay outside Git.
+
+### Dependencies and graphics
+
 Use dedicated environments for RoboCasa, BEHAVIOR, RoboTwin, the upper VLM service
 and each policy service. The inspected GPU deployment uses an isolated Python 3.11.16
 environment for RoboCasa, with `include-system-site-packages = false`. Its bootstrap
