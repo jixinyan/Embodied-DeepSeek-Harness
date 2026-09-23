@@ -10,6 +10,22 @@
       "upstream_commits": ["601d6761e49b2d93762332cffb832b95bda22f52"],
       "destinations": ["harness/agent-runtime/foundation/src/dsh/settings/redact.ts"],
       "patch": "Traverse union, intersection and transform schema nodes and merge repeated secret paths without changing the pinned source baseline."
+    },
+    {
+      "tag": "dsh-v0.1.7-rc.1",
+      "release_commit": "46a7f68b0922371ce7144b668b90e377d8e799f4",
+      "upstream_commits": [
+        "9b7a8ccc9fabc2e87386acf7f8b0741baf978022",
+        "0fb509f54497623f16f3dc402d8340d820c1c0d5",
+        "35f3abf1fa76a9de9110fb24cb7f489c2ba0d14e"
+      ],
+      "destinations": [
+        "harness/agent-runtime/agents/src/dsh/agent/index.ts",
+        "harness/agent-runtime/agents/src/dsh/agent/runtime-types.ts",
+        "harness/agent-runtime/agents/src/dsh/loop/index.ts",
+        "harness/agent-runtime/agents/src/dsh/loop/agent.ts"
+      ],
+      "patch": "Await serial agent creation before driver admission, preserve initialization failures, and copy cancellation causes into turn-end records while retaining EDH session ownership."
     }
   ],
   "packages": [
@@ -369,8 +385,8 @@
       "source": "packages/core/agent-loop/src/agent.ts",
       "destination": "harness/agent-runtime/agents/src/dsh/loop/agent.ts",
       "source_sha256": "01109eaef935ea2b8e401af07d64724ab52f24c37482f9e0cf77ed6ca8fd80c0",
-      "local_sha256": "01109eaef935ea2b8e401af07d64724ab52f24c37482f9e0cf77ed6ca8fd80c0",
-      "modifications": []
+      "local_sha256": "b360795647d48acae74f5fabc76b2be39bc609572e6909061b5ec6692e1bc4e5",
+      "modifications": ["Copy declared cancellation cause fields and suppress wake after disposed maintenance."]
     },
     {
       "source": "packages/core/agent-loop/src/assistant-stream.ts",
@@ -390,8 +406,8 @@
       "source": "packages/core/agent-loop/src/index.ts",
       "destination": "harness/agent-runtime/agents/src/dsh/loop/index.ts",
       "source_sha256": "c647e143019154e10025b05015d9d530c191c75844242a1b0c9f7fb0b93d129a",
-      "local_sha256": "c647e143019154e10025b05015d9d530c191c75844242a1b0c9f7fb0b93d129a",
-      "modifications": []
+      "local_sha256": "f44565b716784ac223d6fb4991eb143714e1bb209691b301a2d4778f2872a2e1",
+      "modifications": ["Await serial agent creation inside maintenance and retain EDH-owned session publication and cleanup."]
     },
     {
       "source": "packages/core/agent-loop/src/runtime-context.ts",
@@ -432,8 +448,8 @@
       "source": "packages/core/agent/src/index.ts",
       "destination": "harness/agent-runtime/agents/src/dsh/agent/index.ts",
       "source_sha256": "ad1e057330eaa2c651266803906f80ec0215a52035f51dfe2088f69bf4daf9ec",
-      "local_sha256": "ad1e057330eaa2c651266803906f80ec0215a52035f51dfe2088f69bf4daf9ec",
-      "modifications": []
+      "local_sha256": "54609033c5eb417d93816f1de39419b2a68105e71a9c7e7b7cb2be1ef6492563",
+      "modifications": ["Await ordered agent creation listeners and retain scoped registry ownership."]
     },
     {
       "source": "packages/core/agent/src/model-selection.ts",
@@ -453,8 +469,8 @@
       "source": "packages/core/agent/src/runtime-types.ts",
       "destination": "harness/agent-runtime/agents/src/dsh/agent/runtime-types.ts",
       "source_sha256": "461be30d53a0f20351e5546fe5ba86e28e7181059b4d28fad823ddc463f46b67",
-      "local_sha256": "461be30d53a0f20351e5546fe5ba86e28e7181059b4d28fad823ddc463f46b67",
-      "modifications": []
+      "local_sha256": "a6ff3e9c7a261df2af4d642883cc3548f1d48b7923fa61616545511dc30c2860",
+      "modifications": ["Declare serial agent creation with source and cancellation signal and remove session-start event."]
     },
     {
       "source": "packages/core/agent/src/types.ts",

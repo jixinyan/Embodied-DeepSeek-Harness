@@ -190,18 +190,17 @@ declare module './types.ts' {
 
 declare module '@deepseek-ai/cordis' {
   interface Events {
-    // ---- lifecycle (emit) ----
+    // ---- lifecycle ----
     /**
-     * A fully configured agent and live session were published. Setup is
-     * composition-only; `agent/session-start` is the first startup-driving extension point.
-     * Synchronous listener failure vetoes publication, while returned-promise
-     * rejection is reported. Detach requested during dispatch waits until every
-     * creation listener has observed the stable entry.
+     * A fully configured agent and live session were published. Listeners run
+     * in order and are awaited before creation resolves. A throw or rejection
+     * vetoes publication and skips later listeners. Disposal waits for dispatch
+     * to settle; a listener must not await its own owner's disposal.
      * @param payload.agent - the newly registered agent with its live session and completed setup.
      * Scope-filtered dispatch (`@deepseek-ai/dsh-scope`): agent-scoped listeners receive only that agent.
-     * @mode emit
+     * @mode serial
      */
-    'agent/created'(this: Scoped<Agent>, payload: { agent: Agent }): void
+    'agent/created'(this: Scoped<Agent>, payload: { agent: Agent; source: SessionStartSource; signal?: AbortSignal }): void | Promise<void>
     /**
      * An agent left the registry; AgentLoop emits this after driver quiescence
      * and scoped-registration unwind, but before session detachment. Custom
@@ -248,19 +247,6 @@ declare module '@deepseek-ai/cordis' {
      * @mode emit
      */
     'agent/inbox/discarded'(this: Scoped<Agent>, payload: { agent: Agent; message: UserMessage }): void
-    // ---- session lifecycle (emit) ----
-    /**
-     * The session lifecycle began, once before the first turn. Use
-     * `agent.inject()` to seed model-facing context. This is a notification, not
-     * a veto; disposal requested by a lifecycle owner is rechecked before the
-     * driver starts.
-     * @param payload.agent - the agent whose session lifecycle began.
-     * @param payload.source - why the session started (fresh startup, resume, …).
-     * Scope-filtered dispatch (`@deepseek-ai/dsh-scope`): agent-scoped listeners receive only that agent.
-     * @mode emit
-     */
-    'agent/session-start'(this: Scoped<Agent>, payload: { agent: Agent; source: SessionStartSource }): void
-
     // ---- the machine's extension points ----
     /**
      * Reject a proposed step or replace the messages that enter it. Calling
