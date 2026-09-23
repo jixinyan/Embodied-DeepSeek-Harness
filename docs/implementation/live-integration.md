@@ -67,3 +67,32 @@ ignored local acceptance directory. Public progress records describe the observe
 result and remaining gate without publishing private paths, credentials or weights.
 Commit verified implementation checkpoints with their module documentation. Update the
 provider matrix only after the corresponding real acceptance has completed.
+
+## End-to-end visual delivery
+
+After implementation and actual integration acceptance, deliver a replay of a real
+console-launched simulation task. Preserve the source run and export these artifacts:
+
+- A playable simulation rollout video generated from the actual camera frames, with
+  capture timestamps and the original frame sequence retained separately.
+- A synchronized inspectable timeline of Planner input images, public model output,
+  plans/TODOs, native tool calls/results, policy requests/chunks, ActionGate decisions,
+  executed controls, monitor events and formal GT-backed verification.
+- An SVG flow diagram showing the actual participating roles, services and message
+  paths, with links from the replay to corresponding recorded events.
+- A run manifest containing the EDH revision, source/checkpoint revisions, deployment
+  configuration identity, task/seed, environment/embodiment, final GT result and paths
+  to the original logs and frame metadata.
+
+Use run, assignment, execution, observation and tool-call identities to correlate
+events. Distinguish wall-clock time, simulator time and recorded action counts.
+Playback may change speed, but must preserve its mapping to the original timestamps.
+Model text comes from the actual provider; absent reasoning is not synthesized.
+Replay data comes from the authoritative records and images, without a separate
+invented event stream.
+
+If a real failure and Planner-directed recovery occur, include the Evolver handoff,
+subsequent evidence and resulting SKILL only when the original goal has a formally
+accepted success. Show the observed outcome for every recorded attempt. A failed
+rollout remains failed in the replay. The complete visual delivery is pending until
+the console, real model, policy, worker and simulator execute together.
