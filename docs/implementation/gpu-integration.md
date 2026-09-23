@@ -74,6 +74,19 @@ records the actual driver and device selection. A rendering pass alone does not 
 hardware acceleration or learned-policy execution. The Ubuntu GLVND commands above are
 an OS-specific installation recipe, not a framework-wide dependency.
 
+Inspect both compute processes and memory occupancy immediately before assigning a
+device. Zero instantaneous utilization can still mean another task owns that device.
+Independent simulator and inference checks should run concurrently on available
+devices. Keep each assignment in the process environment and deployment record;
+stop only processes owned by the current EDH deployment when moving a service.
+
+The 2026-09-23 deployment check found other tasks on GPUs 0–2 and available devices
+3–7. EDH's current allocation uses GPU 7 for the VLM, GPU 3 for RoboCasa GR00T,
+GPU 4 for RoboTwin pi0.5, and GPUs 5–6 for simulator checks. RoboCasa and BEHAVIOR
+use GPU 5 at separate scheduled times; RoboTwin uses GPU 6. Policy and simulator
+entries describe allocation while installation proceeds; actual readiness is recorded
+by the acceptance results. Recheck availability before each service starts.
+
 Provider support follows the upstream simulator/model requirements. A GPU that runs
 MuJoCo may not satisfy Isaac Sim's rendering requirements or a policy's CUDA kernels.
 The recorded NVIDIA host check establishes one tested deployment. Other GPUs require
@@ -98,7 +111,7 @@ failure or invalid observations. It does not invoke a learned policy.
 
 ```sh
 mkdir -p .local/work
-TMPDIR="$PWD/.local/work" MUJOCO_GL=egl MUJOCO_EGL_DEVICE_ID=0 \
+TMPDIR="$PWD/.local/work" MUJOCO_GL=egl MUJOCO_EGL_DEVICE_ID="${EDH_RENDER_DEVICE:?Select an available rendering device}" \
   python -I scripts/check-robocasa-installation.py \
   --output-directory .local/work/robocasa-installation
 ```

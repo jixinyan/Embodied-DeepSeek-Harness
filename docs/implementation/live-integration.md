@@ -50,7 +50,7 @@ reuse requires its own task and provenance evidence.
 
 | Provider | Native installation/reset | EDH worker and action admission | Actual policy and upper VLM task |
 | --- | --- | --- | --- |
-| RoboCasa 1.0.1 / PandaOmron | Passed: OpenCabinet reset, three cameras, native action metadata | In progress | Pending |
+| RoboCasa 1.0.1 / PandaOmron | Passed: OpenCabinet reset, three cameras and manual control | Native ActionGate pause/resume, budget and consecutive executions passed; worker transport pending | Static-image VLM/tool checks passed; learned-policy task pending |
 | BEHAVIOR-1K v3.9.2 / R1Pro | Pending | Pending | Pending |
 | RoboTwin stable release / configured arms | Pending | Pending | Pending |
 
