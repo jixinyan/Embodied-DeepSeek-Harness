@@ -1,0 +1,81 @@
+{
+  "id": "gr00t-n1d6-robocasa-pandaomron",
+  "upstream": {
+    "policy_repository": "NVIDIA/Isaac-GR00T",
+    "policy_revision": "9b37aa1ce69c73c6d165233fa88128283bba4508",
+    "simulator_repository": "robocasa/robocasa",
+    "simulator_revision": "4f8a2980def75a55dff96b990745b83540425f09",
+    "checkpoint_id": "nvidia/GR00T-N1.6-3B",
+    "checkpoint_revision": "d0814e7ecb19202e7c8468b46098b0b7ef3a6d61",
+    "checkpoint_files_sha256": {
+      "config.json": "f2702d11bbde7ebf250b81f28bbef606bf1aa2acdb5ce4f5304a2a29054c3c7b",
+      "model-00001-of-00002.safetensors": "9710d31d331b79cfa229fd23605ba9ad47e207cb0f4c7722fe0bacdc666c8326",
+      "model-00002-of-00002.safetensors": "eb79bbd7893068897cda18c86ed91064e92e20e356dea97bc398bf9c8bf2fa35",
+      "model.safetensors.index.json": "4baab54d48f5492daeea0a18d29bf8956661367820d6a19feb0dab10848ef5ab",
+      "processor_config.json": "3c38bc24a9bbb333a567f9093abb959c1205a04acdb0a0229f86262ada4e0274",
+      "statistics.json": "cefa9f4c612a350a4d406a501c6640d0a2371004d63d7b7e3c9703aac41a455b"
+    },
+    "embodiment_tag": "ROBOCASA_PANDA_OMRON"
+  },
+  "observation": {
+    "schema_version": "edh.policy_observation.v1",
+    "image_format": "256x256 RGB uint8 PNG in RoboCasa PandaOmron camera orientation",
+    "cameras": {
+      "robot0_agentview_left": "res256_image_side_0",
+      "robot0_agentview_right": "res256_image_side_1",
+      "robot0_eye_in_hand": "res256_image_wrist_0"
+    },
+    "proprioception": {
+      "robot0_base_to_eef_pos": "end_effector_position_relative",
+      "robot0_base_to_eef_quat": "end_effector_rotation_relative",
+      "robot0_gripper_qpos": "gripper_qpos",
+      "robot0_base_pos": "base_position",
+      "robot0_base_quat": "base_rotation"
+    },
+    "language": "PolicyRequest.instruction"
+  },
+  "action": {
+    "horizon": 16,
+    "model_groups": [
+      "end_effector_position",
+      "end_effector_rotation",
+      "gripper_close",
+      "base_motion",
+      "control_mode"
+    ],
+    "native_channels": [
+      "right_0",
+      "right_1",
+      "right_2",
+      "right_3",
+      "right_4",
+      "right_5",
+      "right_gripper",
+      "base_0",
+      "base_1",
+      "base_2",
+      "torso",
+      "base_mode"
+    ],
+    "conversion": {
+      "right_0_through_right_2": "end_effector_position[0:3]",
+      "right_3_through_right_5": "end_effector_rotation[0:3]",
+      "right_gripper": "gripper_close < 0.5 ? -1 : 1",
+      "base_0_through_base_2": "base_motion[0:3]",
+      "torso": "base_motion[3]",
+      "base_mode": "control_mode < 0.5 ? -1 : 1"
+    },
+    "action_spec": {
+      "schema_version": "physical.action_spec.v1",
+      "embodiment_id": "robocasa.pandaomron",
+      "version": "robocasa-1.0.1-pandaomron-hybrid-v1",
+      "coordinate_frame": "robosuite.pandaomron.native",
+      "control_mode": "robosuite.hybrid_mobile_base",
+      "frequency_hz": 20,
+      "channel_quantity": "normalized",
+      "channel_unit": "dimensionless",
+      "channel_minimum": -1,
+      "channel_maximum": 1
+    }
+  }
+}

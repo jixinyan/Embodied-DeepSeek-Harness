@@ -1,0 +1,59 @@
+{
+  "id": "lerobot-pi05-robotwin-aloha-agilex",
+  "upstream": {
+    "policy_repository": "huggingface/lerobot",
+    "policy_version": "0.6.1",
+    "policy_revision": "7e241bd630a3719a56157a497ce5d08f244784f1",
+    "simulator_repository": "RoboTwin-Platform/RoboTwin",
+    "simulator_revision": "bf44be51cf5717a5595ce59447f2cf5263d2aa95",
+    "checkpoint_id": "SidneyXie/pi05_robotwin",
+    "checkpoint_revision": "e49e2ab6c11f07511573b67261bd129e88d0a416",
+    "checkpoint_files_sha256": {
+      "config.json": "e6ce5bd5aef6640db61f2dbe41178a1aa669821c403b0b1f3cc34fe48bbc83a6",
+      "model.safetensors": "9a5381c3260fc58fdb4b90d17b93f9090bcbfbcd8e0287f9bf2acea2477a2bc3",
+      "policy_postprocessor.json": "b381ea40d9ac6d3be9c0161f0ecbb323c17a794ac5c9887c8a67b8e162fc1db6",
+      "policy_postprocessor_step_0_unnormalizer_processor.safetensors": "03f5dcff1c71f45d35caa328581a195754a95b8a176ab91760ed7fed3e1e9b4e",
+      "policy_preprocessor.json": "47a1a4a378ede8d55f7500921f16e212efaddf12278946790ba870c41b01a8cb",
+      "policy_preprocessor_step_3_normalizer_processor.safetensors": "209b233200b259fd339f913321085373a7283c9c739c230807d8677ab315cab7"
+    },
+    "tokenizer_id": "google/paligemma-3b-pt-224",
+    "tokenizer_revision": "35e4f46485b4d07967e7e9935bc3786aad50687c",
+    "license": "Apache-2.0",
+    "training_dataset": "lerobot/robotwin_unified"
+  },
+  "observation": {
+    "schema_version": "edh.policy_observation.v1",
+    "image_format": "640x480 RGB uint8 PNG",
+    "cameras": {
+      "head_camera": "observation.images.cam_high",
+      "left_camera": "observation.images.cam_left_wrist",
+      "right_camera": "observation.images.cam_right_wrist"
+    },
+    "proprioception": {
+      "joint_action.vector": "observation.state"
+    },
+    "language": "PolicyRequest.instruction -> task"
+  },
+  "action": {
+    "horizon": 50,
+    "representation": "absolute joint-space targets with saved MEAN_STD postprocessing",
+    "native_channels": [
+      "fl_joint1", "fl_joint2", "fl_joint3", "fl_joint4", "fl_joint5", "fl_joint6", "fl_joint7",
+      "fr_joint1", "fr_joint2", "fr_joint3", "fr_joint4", "fr_joint5", "fr_joint6", "fr_joint7"
+    ],
+    "action_spec": {
+      "schema_version": "physical.action_spec.v1",
+      "embodiment_id": "robotwin.aloha-agilex",
+      "version": "robotwin-bf44be51-qpos-v1",
+      "coordinate_frame": "robotwin.aloha-agilex.joint",
+      "control_mode": "robotwin.qpos_target",
+      "frequency_hz": null,
+      "arm_unit": "radian",
+      "arm_minimum": -10,
+      "arm_maximum": 10,
+      "gripper_unit": "dimensionless",
+      "gripper_minimum": 0,
+      "gripper_maximum": 1
+    }
+  }
+}
