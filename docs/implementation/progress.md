@@ -1,10 +1,20 @@
 # Implementation progress
 
-Spec: v1.53. Current checkpoint: **event reference ownership and GPU integration preparation**.
+Spec: v1.54. Current checkpoint: **isolated GPU deployment and native renderer acceptance**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+RoboCasa 1.0.1, robosuite 1.5.2 and MuJoCo 3.3.1 are installed in an isolated
+Python 3.11.16 environment on the GPU host. All 139 installed distributions pass
+dependency consistency. A real MuJoCo check advances 100 physics steps and renders
+a nonuniform RGB frame using the NVIDIA GPU. GLVND libraries use a deployment-owned
+prefix; system Python, global libraries and drivers remain unchanged. Node.js and
+pnpm also use a dedicated prefix, and remote TypeScript checking passes.
+Kitchen assets and task reset are in progress. Simulator adapters, worker transport,
+learned-policy inference and end-to-end task acceptance remain pending.
+[Deployment isolation, source pins and actual checks](gpu-integration.md).
 
 RunEventReferences declares event and message dependencies using the existing domain
 readers. It covers delegation, observations, reports, verification, recovery pages,
@@ -18,7 +28,7 @@ The preceding `81e6e90` checkpoint passed GitHub Framework checks.
 The user has authorized GPU-host inspection and simulation integration. The next delivery
 priority is a real simulator-to-console workflow through the existing policy transport
 and action gate, with explicit environment, embodiment and checkpoint compatibility.
-BEHAVIOR-1K, RoboCasa and RoboTwin remain required targets. Environment installation,
+BEHAVIOR-1K, RoboCasa and RoboTwin remain required targets. Complete simulator preparation,
 worker integration and real provider acceptance are pending. Remaining upper retention
 owners and reviewed deletion admission remain tracked separately.
 

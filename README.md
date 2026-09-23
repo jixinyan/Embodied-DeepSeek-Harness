@@ -102,6 +102,10 @@ The [adapter guide](docs/implementation/model-policy-adapters.md) includes a loc
 remote OpenAI-compatible model example and a runnable WebSocket policy-to-action-gate
 CPU example. The host-to-Python worker bridge and real provider integration remain next.
 
+The [GPU integration guide](docs/implementation/gpu-integration.md) records isolated
+environments, pinned simulator sources and actual NVIDIA rendering acceptance. Real
+simulator-to-policy task completion remains pending.
+
 ## Design commitments
 
 - Define teams through role files and bindings; roles are not a fixed enum.

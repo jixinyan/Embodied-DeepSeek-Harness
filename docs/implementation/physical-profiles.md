@@ -83,17 +83,20 @@ Required tool IDs must be registered. The existing owner/verification gates stil
 
 ## Planned providers and source audit
 
-Official release listings checked on 2026-09-19 identify these simulation baselines:
+Official source and release listings checked on 2026-09-23 identify these simulation baselines:
 
 | Project | Release | Immutable revision |
 | --- | --- | --- |
 | [BEHAVIOR-1K](https://github.com/StanfordVL/BEHAVIOR-1K/releases/tag/v3.9.2) | `v3.9.2` | `b1979916ec1549b10a4e65e630bc6504a9af1b00` |
-| [RoboCasa](https://github.com/robocasa/robocasa/releases/tag/v1.0) | `v1.0` / RoboCasa365 | `8f3c96ec8d1bfcd8126cad2bca887da98d30e997` |
+| [RoboCasa](https://github.com/robocasa/robocasa) | Source version `1.0.1` / RoboCasa365 | `4f8a2980def75a55dff96b990745b83540425f09` |
 | [RoboTwin](https://github.com/RoboTwin-Platform/RoboTwin/releases/tag/release) | `release` / Stable Version | `bf44be51cf5717a5595ce59447f2cf5263d2aa95` |
 
 These are reference pins, not executable robot profiles. R1Pro and the specific arm
 models need actual camera/joint/controller/task configuration from the chosen provider.
 No generic four-channel ActionSpec or camera list is assigned to those robots.
+RoboCasa's GitHub release tag remains `v1.0`; the inspected source declares `1.0.1`.
+The [GPU integration guide](gpu-integration.md) records its pinned robosuite dependency
+and the real renderer/environment installation check.
 
 [openpi](https://github.com/Physical-Intelligence/openpi/blob/main/docs/remote_inference.md)
 uses WebSocket for remote policy inference. Its inspected source revision is

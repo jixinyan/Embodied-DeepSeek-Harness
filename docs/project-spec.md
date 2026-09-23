@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.53 · 2026-09-23
+Version: v1.54 · 2026-09-23
 
 Status: upper application and console run with CPU fixtures; real physical integration pending.
 
@@ -34,6 +34,12 @@ versions and checkpoint/embodiment compatibility must be recorded from actual up
 sources and validated on the host. BEHAVIOR-1K, RoboCasa and RoboTwin remain integration
 targets; installed dependencies alone do not establish a working provider.
 
+Each simulator, upper model service and policy service uses an isolated dependency
+environment. Host system Python, existing environments and global graphics libraries
+remain unchanged. The GPU deployment has verified native MuJoCo physics and NVIDIA
+EGL rendering in the RoboCasa environment. Source pins, setup requirements and exact
+acceptance boundaries are recorded in [GPU integration](implementation/gpu-integration.md).
+
 The runtime choice is settled: reuse DSH, with EDH-owned composition and embodied
 behavior. Upper Team/Role, tools, TODOs, plans/files, verification, recovery, SKILL
 storage and a console now run with a scripted model and CPU fixture backend.
@@ -47,8 +53,8 @@ model aliases, image capabilities and endpoint-specific request options. The con
 image service resolves request images, and a non-secret configuration digest contributes
 to deployment identity. See [model configuration](implementation/model-configuration.md).
 WebSocket policy transport and a deterministic action gate run independently with CPU
-acceptance. Current work prioritizes unimplemented upper capabilities before further
-optimization, including domain retention and restart lifecycle. Atomic record retirement
+acceptance. Current work prioritizes GPU integration; unfinished upper capabilities,
+including domain retention and restart lifecycle, remain tracked. Atomic record retirement
 and live history-index reconciliation are implemented at the storage boundary. Application
 retention has a configured controller for declared record references, SKILL-source
 preservation, durable request identities and leased external sources. Session/request
