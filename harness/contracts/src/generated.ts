@@ -412,7 +412,7 @@ export interface ActionSpec {
   embodiment_id: string;
   version: string;
   coordinate_frame: string;
-  control_mode: "joint_position" | "joint_velocity" | "end_effector_delta";
+  control_mode: string;
   frequency_hz: number;
   /**
    * @minItems 1

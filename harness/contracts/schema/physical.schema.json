@@ -2447,11 +2447,9 @@
           "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\\s\\S])"
         },
         "control_mode": {
-          "enum": [
-            "joint_position",
-            "joint_velocity",
-            "end_effector_delta"
-          ]
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^(?:joint_position|joint_velocity|end_effector_delta|[a-z][a-z0-9_]*(?:[.][a-z][a-z0-9_]*)+)$(?![\\s\\S])"
         },
         "frequency_hz": {
           "type": "number",
@@ -2501,8 +2499,20 @@
                 }
               }
             }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "control_mode": {
+                "enum": [
+                  "joint_position",
+                  "end_effector_delta"
+                ]
+              }
+            }
           },
-          "else": {
+          "then": {
             "properties": {
               "channels": {
                 "items": {

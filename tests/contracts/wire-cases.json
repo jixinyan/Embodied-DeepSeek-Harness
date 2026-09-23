@@ -1710,6 +1710,40 @@
       ]
     },
     {
+      "name": "namespaced provider control mode with normalized channel",
+      "base": "action",
+      "valid": true,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/control_mode",
+          "value": "robosuite.hybrid_mobile_base"
+        },
+        {
+          "op": "replace",
+          "path": "/channels/0/quantity",
+          "value": "normalized"
+        },
+        {
+          "op": "replace",
+          "path": "/channels/0/unit",
+          "value": "dimensionless"
+        }
+      ]
+    },
+    {
+      "name": "provider control mode requires a namespace",
+      "base": "action",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/control_mode",
+          "value": "hybrid_mobile_base"
+        }
+      ]
+    },
+    {
       "name": "PolicyRequest canonical wire",
       "base": "policy_request",
       "valid": true,
