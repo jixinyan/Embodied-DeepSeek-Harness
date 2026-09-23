@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="1030" viewBox="0 0 1360 1030" role="img" aria-labelledby="title desc"><title id="title">EDH upper runtime and remaining physical integration</title><desc id="desc">Running DSH upper services, the verified recovery sequence, synthetic backend boundary, and pending physical integration. Eighty-nine runtime tests and standalone policy/gate acceptance. Unified console layout implemented.</desc><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#588578"/></marker></defs><rect width="1360" height="1030" fill="#f5f7f8"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="1030" viewBox="0 0 1360 1030" role="img" aria-labelledby="title desc"><title id="title">EDH upper runtime and remaining physical integration</title><desc id="desc">Running DSH upper services and recovery workflow with CPU fixtures. Native RoboCasa manual control and actual Qwen image/tool checks pass. Learned-policy tasks and complete worker integration remain pending.</desc><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8" fill="#588578"/></marker></defs><rect width="1360" height="1030" fill="#f5f7f8"/>
 <text x="36" y="48" font-family="Arial, sans-serif" font-size="32" fill="#30434b" font-weight="700">Embodied DeepSeek Harness</text>
 <text x="36" y="80" font-family="Arial, sans-serif" font-size="21" fill="#30434b" font-weight="400">Runnable upper system / implementation boundary</text>
 <text x="1100" y="47" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">2026-09-19</text>
@@ -60,18 +60,18 @@
 <text x="54" y="816" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Failure / retry / success / unknown</text>
 <text x="54" y="843" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Not a robot or simulation result</text>
 <rect x="477" y="700" width="406" height="176" rx="12" fill="#fff5e7" stroke="#d3dfda"/>
-<text x="495" y="731" font-family="Arial, sans-serif" font-size="21" fill="#936222" font-weight="700">Physical runtime: pending</text>
-<text x="495" y="762" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Worker bridge / resources / watchdog</text>
-<text x="495" y="789" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Gate + WS transport: CPU-tested</text>
-<text x="495" y="816" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Simulation + VLA / VLN + perception</text>
-<text x="495" y="843" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Hardware and transfer evaluation</text>
+<text x="495" y="731" font-family="Arial, sans-serif" font-size="21" fill="#936222" font-weight="700">Native control: checked</text>
+<text x="495" y="762" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">RoboCasa cameras + manual controls</text>
+<text x="495" y="789" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Gate pause / resume / budget checked</text>
+<text x="495" y="816" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Worker + learned-policy tasks pending</text>
+<text x="495" y="843" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">BEHAVIOR / RoboTwin in progress</text>
 <rect x="918" y="700" width="406" height="176" rx="12" fill="#fff5e7" stroke="#d3dfda"/>
-<text x="936" y="731" font-family="Arial, sans-serif" font-size="21" fill="#936222" font-weight="700">Upper follow-on work</text>
-<text x="936" y="762" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Live model deployment / evaluation</text>
-<text x="936" y="789" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Delivery recovery and longer runs</text>
-<text x="936" y="816" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Long-run retention and reconciliation</text>
-<text x="936" y="843" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Session launcher; CPU fixture data</text>
-<text x="36" y="922" font-family="Arial, sans-serif" font-size="21" fill="#30434b" font-weight="700">89 runtime tests  ·  256 shared cases  ·  17 policy/gate tests  ·  122 pinned DSH files</text>
+<text x="936" y="731" font-family="Arial, sans-serif" font-size="21" fill="#936222" font-weight="700">Live VLM: checked</text>
+<text x="936" y="762" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Qwen + real RoboCasa camera image</text>
+<text x="936" y="789" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Independent Planner / Verifier rounds</text>
+<text x="936" y="816" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Native DSH image + tool-call results</text>
+<text x="936" y="843" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Full physical workflow pending</text>
+<text x="36" y="922" font-family="Arial, sans-serif" font-size="21" fill="#30434b" font-weight="700">128 pinned DSH files  ·  Native control checks  ·  Actual VLM image/tool rounds</text>
 <text x="36" y="959" font-family="Arial, sans-serif" font-size="19" fill="#30434b" font-weight="400">TODO completion is agent-reported progress. Physical success requires accepted verification.</text>
-<text x="36" y="993" font-family="Arial, sans-serif" font-size="18" fill="#30434b" font-weight="400">pnpm demo   |   http://127.0.0.1:4317   |   All physical-looking data is explicitly synthetic.</text>
+<text x="36" y="993" font-family="Arial, sans-serif" font-size="18" fill="#30434b" font-weight="400">pnpm demo   |   http://127.0.0.1:4317   |   Default console demo uses CPU fixtures.</text>
 </svg>

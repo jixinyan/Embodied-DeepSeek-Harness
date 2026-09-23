@@ -148,11 +148,42 @@ dimension and a 20 Hz control frequency. The controller reports `right: [0, 6]`,
 `right_gripper: [6, 7]`, `base: [7, 10]` and `torso: [10, 11]`. The installed
 robosuite `HYBRID_MOBILE_BASE` controller uses the remaining action index 11 for
 `base_mode`; its native `get_action_info_dict()` leaves that index out of the named
-segments. The future canonical ActionSpec must include this controller mode channel
-when admitting PandaOmron actions. These are installation and reset observations,
-not an admitted EDH action mapping. The checker reports `policy_executed: false`.
-No robot control step, learned policy, upper VLM, robot task completion or complete
-console workflow has passed GPU acceptance.
+segments. EDH's `robosuite.hybrid_mobile_base` ActionSpec includes all twelve channels
+and validates their units, bounds and order. The installation checker reports
+`policy_executed: false`.
+
+The [native control checker](../../scripts/check-robocasa-gate.py) additionally runs
+explicit manual controls through the real ActionGate and RoboCasa adapter. It checks
+confirmed pause, resume, control-step budget exhaustion, a second execution in the
+same scene, and interruption during a multi-action sequence. The simulator clock
+remains unchanged after confirmed stop. These controls establish the device boundary;
+learned-policy task completion and the complete console workflow remain pending.
+
+## Live VLM image and tool checks
+
+An isolated vLLM 0.30.0 service loads the deployment's Qwen3.8-27B checkpoint and
+serves `qwen3.8-27b` over loopback OpenAI-compatible HTTP. The checked configuration
+uses a 32,768-token context window, BF16, `FLASH_ATTN`, eight maximum sequences,
+the `qwen3_coder` tool parser and `qwen3` reasoning parser. Device selection belongs
+to the launch process. The current service runs on an available GPU 7.
+
+[The native API check](../../examples/models/check-qwen38-native.py) supplies the
+actual RoboCasa `robot0_agentview_left` PNG, receives `perception__capture`, and
+receives a visual response after its tool result. Recorded finish reasons are
+`tool_calls` and `stop`.
+
+[The DSH check](../../examples/models/live-robocasa-camera.mjs) creates independent
+Planner and Verifier sessions. Each invokes its configured camera tool once, receives
+the stored image attachment and completes its turn. Assertions check matching
+tool-call/result identifiers, the image reference and `turn/end=completed`.
+Both sessions use image attachment
+`sha256:b46b25d0f6ddf6d9b9e6098c6e8504a834d5830400f2827fefd38ed210ee3202`.
+These checks use a static native reset frame. Formal GT verification and model-driven
+robot task completion require the complete physical worker workflow.
+
+The GPU 7 result files are `.local/work/qwen38-native-gpu7.json` and
+`.local/work/qwen38-dsh-gpu7.json` in the remote EDH checkout. The inference service
+log is `.local/work/vlm-8002-gpu7.log`. They remain deployment-local evidence.
 
 ## Integration sequence and acceptance
 
@@ -175,7 +206,7 @@ console workflow has passed GPU acceptance.
    selection exposes only combinations whose adapter, embodiment, sensors, action mapping
    and checkpoint declarations match.
 
-The host-to-worker bridge, simulator adapters and learned-policy task acceptance remain
+The host-to-worker bridge, remaining simulator providers and learned-policy task acceptance remain
 required. Existing checkpoint directories must be checked against their manifests and
 deployment metadata before advertising compatibility. Retention owner completion and
 reviewed deletion admission remain tracked in [domain retention](domain-retention.md).

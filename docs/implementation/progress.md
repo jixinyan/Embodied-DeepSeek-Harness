@@ -38,6 +38,14 @@ when an asynchronous caller is cancelled. These checks use explicit manual contr
 Learned-policy inference, worker transport and end-to-end task acceptance remain pending.
 [Deployment isolation, source pins and actual checks](gpu-integration.md).
 
+An isolated Qwen VLM served by vLLM now passes actual image/tool checks on an available
+GPU. Native API completion returns `tool_calls` followed by `stop`. Independent native
+DSH Planner and Verifier sessions each call one camera tool, receive the actual RoboCasa
+image attachment and finish with `turn/end=completed`. The checks validate matching
+call/result identifiers and image identity. They use a static native reset frame;
+model-driven robot execution and formal GT verification remain pending.
+[Live VLM evidence](gpu-integration.md#live-vlm-image-and-tool-checks).
+
 The latest upstream DSH release review targets `dsh-v0.1.7-rc.1`
 (`46a7f68b0922371ce7144b668b90e377d8e799f4`, 2026-09-23 prerelease).
 Serial agent initialization, output-aware compaction, cancellation records and nested

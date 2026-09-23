@@ -7,6 +7,8 @@ Snapshot: 2026-09-23. Upper runtime, model transport and standalone policy/actio
 | Working capability                                                                                        | Inspect the implementation / evidence                                                                                                                |
 | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Isolated GPU installation, actual NVIDIA MuJoCo physics/rendering and RoboCasa native scene reset with three camera observations | [Deployment evidence and remaining simulator acceptance](gpu-integration.md) |
+| Native RoboCasa ActionGate pause/resume, budget exhaustion and retained-scene execution with manual controls | [Native control checks](../../scripts/check-robocasa-gate.py) |
+| Actual local Qwen VLM consuming a RoboCasa image through independent native DSH Planner and Verifier tool rounds | [Live VLM acceptance](gpu-integration.md#live-vlm-image-and-tool-checks) |
 | Native desktop launcher, selected deployment configuration and owned service lifecycle | [Launcher, packaging and acceptance limits](../../apps/desktop/README.md) |
 | Declarative cloud API / vLLM model bindings, private authentication and image-service assembly | [Configuration and native-service acceptance](model-configuration.md) |
 | Original DSH loop, tool validation, sessions, timeout and cancellation                                    | [Host](../../apps/server/src/runtime.ts), [native tests](../../tests/runtime/native-tools.test.ts)                                                   |
@@ -64,9 +66,9 @@ See [goal validation](../../harness/agent-runtime/tasks/README.md#goal-binding-a
 
 ## Still outside the working boundary
 
-- Live model deployment/evaluation; concurrent physical goals and nested independent recovery chains.
-- Host-to-Python worker transport, shared device resources/watchdog and real physical stop acknowledgement. Standalone policy transport and action admission are CPU-tested.
-- Actual BEHAVIOR/RoboCasa/RoboTwin, VLA/VLN, SAM/depth and hardware adapters.
+- Model-driven physical task evaluation; concurrent physical goals and nested independent recovery chains.
+- Host-to-Python worker transport, shared device resources/watchdog and hardware stop acknowledgement. Native RoboCasa stop admission is checked with manual controls.
+- BEHAVIOR/RoboTwin native acceptance, learned-policy tasks, SAM/depth and hardware adapters.
 - Resumable model sessions, distributed/exactly-once delivery, scalable retention and multi-user hosting.
 - Further console usability and actual sensor-provider integration; the unified workspace and scoped image renderer are implemented.
 
