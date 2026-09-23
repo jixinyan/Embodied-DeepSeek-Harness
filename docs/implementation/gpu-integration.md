@@ -211,6 +211,10 @@ Both sessions use image attachment
 `sha256:b46b25d0f6ddf6d9b9e6098c6e8504a834d5830400f2827fefd38ed210ee3202`.
 These checks use a static native reset frame. Formal GT verification and model-driven
 robot task completion require the complete physical worker workflow.
+The task's recorded reset GT is `false`. The visual review mentions an apparently
+open lower cabinet; that prose is not a task verdict and does not establish success
+of the configured OpenCabinet goal. The check certifies image/tool delivery and turn
+completion, without scoring visual accuracy or granting verification authority.
 
 The complete selected DSH release adaptation passes the same actual checks at EDH
 commit `1a571e2215022a49072471ee60699b651e6d4e44`. The DSH check enables native
