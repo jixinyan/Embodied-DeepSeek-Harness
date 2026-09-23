@@ -54,7 +54,8 @@ disposal, HTTP cancellation, secret traversal and budget-admission checks pass.
 An oversized initial or dynamically selected output cap fails before HTTP transport;
 disabling automatic compaction retains direct transport behavior. Actual GPU VLM
 image/tool checks also pass with native context management enabled at `1a571e2`;
-these short rounds do not exercise automatic summarization. The
+these short rounds do not exercise automatic summarization. The complete GitHub
+Framework checks pass at `4b1fd1d`, including all 387 runtime checks. The
 [release adaptation guide](dsh-release-adaptation.md) records the model, image and
 stored-history compatibility boundaries and required acceptance checks.
 

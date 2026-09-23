@@ -112,9 +112,9 @@ Native DSH admission with the OpenAI-compatible adapter rejects oversized initia
 dynamic request caps before any HTTP request; disabling automatic compaction permits
 transport. The test endpoint supplies no generated model responses.
 
-TypeScript integration, formatting, source provenance and local documentation checks
-pass. A full concurrent runtime run reported timeouts; the affected console, upper-run
-and user-session suites passed individual reruns. This is not a full-suite pass.
+The complete GitHub Framework checks pass at EDH commit `4b1fd1d`, including
+TypeScript, formatting, source provenance, documentation, Python, runtime, contract,
+console and launcher checks. The runtime suite contains 387 passing checks.
 Live VLM image/tool rounds also pass on the complete release adaptation at EDH
 commit `1a571e2`, with native context management enabled. Independent Planner and
 Verifier sessions each consume the real camera attachment and finish successfully.
