@@ -1744,6 +1744,35 @@
       ]
     },
     {
+      "name": "variable-duration provider mode has no control-command frequency",
+      "base": "action",
+      "valid": true,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/control_mode",
+          "value": "robotwin.qpos_target"
+        },
+        {
+          "op": "replace",
+          "path": "/frequency_hz",
+          "value": null
+        }
+      ]
+    },
+    {
+      "name": "common control mode requires a control-command frequency",
+      "base": "action",
+      "valid": false,
+      "patches": [
+        {
+          "op": "replace",
+          "path": "/frequency_hz",
+          "value": null
+        }
+      ]
+    },
+    {
       "name": "PolicyRequest canonical wire",
       "base": "policy_request",
       "valid": true,

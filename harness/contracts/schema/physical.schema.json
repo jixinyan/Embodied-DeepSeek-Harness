@@ -2452,7 +2452,10 @@
           "pattern": "^(?:joint_position|joint_velocity|end_effector_delta|[a-z][a-z0-9_]*(?:[.][a-z][a-z0-9_]*)+)$(?![\\s\\S])"
         },
         "frequency_hz": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "exclusiveMinimum": 0
         },
         "channels": {
@@ -2475,6 +2478,27 @@
       "additionalProperties": false,
       "title": "ActionSpec",
       "allOf": [
+        {
+          "if": {
+            "properties": {
+              "control_mode": {
+                "enum": [
+                  "joint_position",
+                  "joint_velocity",
+                  "end_effector_delta"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "frequency_hz": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          }
+        },
         {
           "if": {
             "properties": {

@@ -413,7 +413,7 @@ export interface ActionSpec {
   version: string;
   coordinate_frame: string;
   control_mode: string;
-  frequency_hz: number;
+  frequency_hz: number | null;
   /**
    * @minItems 1
    */

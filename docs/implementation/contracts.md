@@ -67,7 +67,9 @@ an explicit asset. Python `WireObject` annotations alone do not validate anythin
 - `ActionSpec` specifies embodiment/version, frame, mode, frequency and named bounded
   channels. Position/delta channels use meters or radians; velocity channels use
   meters/second or radians/second. Normalized channels use dimensionless values.
-  These declarations do not implement calibration, transforms or a policy adapter.
+  Namespaced provider control modes require installed adapter validation; they may
+  declare `frequency_hz: null` for variable-duration native commands. These
+  declarations do not implement calibration, transforms or a policy adapter.
 - Role defaults are schema annotations, not inserted values. Step 02 resolves defaults,
   role paths, aliases, toolsets, providers and responsibilities into a frozen snapshot.
 

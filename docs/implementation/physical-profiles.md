@@ -17,6 +17,12 @@ requires exact equality of canonical action channels, frame, units, limits, freq
 version, and checks policy observation mappings against declared sensor channels.
 `acceptedInstruction` must be `subgoal`. Transport names are open identifiers: a new
 client protocol does not require editing a framework-wide enum.
+`ActionSpec.control_mode` accepts the common joint/end effector modes and namespaced
+provider identifiers such as `robosuite.hybrid_mobile_base`. A namespaced mode may set
+`frequency_hz` to `null` when one native command has variable duration; a positive
+number denotes actual control-command cadence. The simulator and policy validators
+must both require the exact installed controller, channel order, scales and frame.
+A syntactically valid provider identifier does not register or certify that mode.
 
 The deployment must register `physicalProviders.simulations[provider]` and
 `physicalProviders.policies[provider]` synchronous validators. They must reject
