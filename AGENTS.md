@@ -15,7 +15,8 @@ requirement or deployment binding is unclear.
   standalone action admission are CPU-tested. Native RoboCasa reset, manual control
   through ActionGate and live VLM image/tool rounds are verified. Native worker reset,
   image transport and connection-failure boundaries pass real process checks.
-  Learned-action worker acceptance and remaining physical providers are pending.
+  Real GR00T worker controls and confirmed pause/stop pass; the recorded task-success
+  check remains false. Complete Planner/Verifier tasks and remaining providers are pending.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.
 - Reuse DSH tool registration/dispatch/validation, sessions, inbox/followup, model
@@ -71,5 +72,5 @@ requirement or deployment binding is unclear.
 
 Read `docs/implementation/model-policy-adapters.md` for executable endpoint and
 action-gate components. Native worker transport has partial real acceptance;
-learned-policy and complete provider workflows remain pending. Do not replace native
+GR00T controls pass and complete provider workflows remain pending. Do not replace native
 DSH model/tool behavior or bypass the action gate.

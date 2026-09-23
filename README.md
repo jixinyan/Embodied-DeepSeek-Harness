@@ -29,10 +29,12 @@ selected DeepSeek Harness implementations, with traceable provenance.
 > **Early development: the upper workflow and local console are runnable.**
 > DSH-backed roles, native tools/TODOs, formal verification, recovery and SKILL
 > publication run with an explicitly synthetic CPU backend and scripted model.
-> RoboCasa's native `OpenCabinet` adapter passes GPU camera and manual-control
-> ActionGate checks. A local Qwen VLM completes native DSH image/tool rounds for
-> independent Planner and Verifier sessions. Learned-policy tasks, the complete
-> worker-to-console workflow and hardware integration remain pending.
+> RoboCasa's native `OpenCabinet` adapter passes GPU camera and ActionGate checks,
+> including six confirmed GR00T controls and 150 physics steps through the native
+> worker. Its recorded task-success check is false. A local Qwen VLM completes
+> native DSH image/tool rounds for independent Planner and Verifier sessions.
+> Complete model-driven task verification, console rollout replay, BEHAVIOR-1K,
+> RoboTwin task execution and hardware integration remain pending.
 
 ![Current implementation](docs/architecture/assets/implementation-status.svg)
 
@@ -103,7 +105,9 @@ model aliases and application-owned image resolution through the native DSH adap
 
 The [adapter guide](docs/implementation/model-policy-adapters.md) includes a local vLLM /
 remote OpenAI-compatible model example and a runnable WebSocket policy-to-action-gate
-CPU example. The host-to-Python worker bridge and real provider integration remain next.
+CPU example. The host-to-Python worker bridge has actual RoboCasa reset, image
+transport, learned control and confirmed-stop acceptance. Complete live task
+acceptance is tracked in the [integration guide](docs/implementation/live-integration.md).
 
 The [GPU integration guide](docs/implementation/gpu-integration.md) records isolated
 environments, pinned simulator sources, actual NVIDIA rendering and a RoboCasa task
