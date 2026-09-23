@@ -47,7 +47,6 @@ function viewFor(container) {
     displayedKey: null,
     generation: 0,
     controller: null,
-    loadingSequence: null,
     queued: null,
     figures: [],
     urls: [],
@@ -67,7 +66,6 @@ function clear(container, view) {
   view.generation++;
   view.controller?.abort();
   view.controller = null;
-  view.loadingSequence = null;
   view.queued = null;
   if (view.idleTimer !== null) view.clearTimeout(view.idleTimer);
   view.idleTimer = null;
@@ -146,7 +144,6 @@ async function publish(container, view, sources, frame, key, generation, control
     container.dataset.imageError = failure.reason.message;
     if (!view.figures.length) container.replaceChildren(view.metrics);
     view.controller = null;
-    view.loadingSequence = null;
     startQueued(container, view);
     return;
   }
@@ -216,7 +213,6 @@ async function publish(container, view, sources, frame, key, generation, control
     container.hidden = false;
     onDisplayed(frame);
     view.controller = null;
-    view.loadingSequence = null;
     view.requestAnimationFrame(() => release(previousUrls, view));
     startQueued(container, view);
   });
@@ -232,7 +228,6 @@ function startLoading(container, view, task) {
   view.generation++;
   const controller = new AbortController();
   view.controller = controller;
-  view.loadingSequence = task.frame.sequence;
   container.hidden = false;
   if (!view.figures.length) {
     view.metrics.textContent = 'Loading camera images…';
@@ -287,14 +282,13 @@ export function renderSensorImages(
   if (key === view.desiredKey) return sources.length;
   view.desiredKey = key;
   if (view.controller) {
-    if (frame.sequence > view.loadingSequence) {
+    if (selectionKey === 'latest') {
       view.queued = { sources, frame, key, onDisplayed };
       return sources.length;
     }
     view.generation++;
     view.controller.abort();
     view.controller = null;
-    view.loadingSequence = null;
     view.queued = null;
   }
   if (key !== view.displayedKey)
