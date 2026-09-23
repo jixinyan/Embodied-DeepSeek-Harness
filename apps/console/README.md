@@ -62,11 +62,13 @@ console loads the active session's tasks, confirms the catalog digest on submiss
 and disables submission while the catalog is loading or unavailable. Reload task
 catalog retries an explicit read. See [catalog behavior](../../docs/implementation/session-task-catalogs.md).
 The [desktop launcher](../desktop/README.md) selects a configured deployment and starts
-the local server. Actual provider discovery and live deployment acceptance remain pending.
+the local server. A RoboCasa OpenCabinet session has completed a real policy-driven
+rollout and formal failed verification through this console; other physical
+providers retain their own acceptance status.
 Active-task clarification has an inline response panel with persisted drafts,
 immutable accepted responses and delivery status; live-model continuation remains
 unverified. See the [interaction guide](../../docs/implementation/user-clarification.md).
-No actual simulator or robot is connected. See the [session guide](../../docs/implementation/user-sessions.md).
+See the [session guide](../../docs/implementation/user-sessions.md).
 
 ## Team and workflow visualization
 
@@ -122,14 +124,21 @@ independent of event eviction. Browsing history keeps live state updates connect
 ## Observation images
 
 `sensor-images.js` renders the selected latest or agent-seen observation using scoped
-run/evidence/image URLs. Each image has a loading state, decoded dimensions or a read
-error; repeated projection refreshes preserve the existing image elements. Empty and
+run/evidence/image URLs. Referenced camera images are requested and decoded in parallel.
+The viewer publishes one complete decoded observation in a browser frame, retains its
+visible image elements across updates, and cancels superseded requests. Empty and
 restricted samples clear the viewer. Source labels identify test images explicitly.
+The visible image status reports local request-to-decode time and display frames per
+second based on published frames. Camera age compares the capture host clock with
+the browser clock, so it requires synchronized host clocks. The outer frame label
+tracks the last fully displayed observation.
 The server checks persisted ownership, reference association and evidence visibility
 before reading bytes. See the [image guide](../../docs/implementation/image-storage.md).
 
-Component acceptance uses an actual repository PNG, real local storage/HTTP and browser
-DOM checks. Camera streaming, live VLM behavior and physical execution remain unverified.
+Component acceptance uses actual image storage and browser DOM checks. A live
+RoboCasa run has supplied native camera observations, VLM decisions and policy
+controls; its formal task result was failed. Other provider results are recorded
+in the implementation progress document.
 
 ## Native session audits
 

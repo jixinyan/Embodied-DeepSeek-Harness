@@ -47,5 +47,6 @@ test('static routes expose only public assets and Mermaid ESM files', async () =
   ])
     assert.equal(await readConsoleAsset(root, path), undefined, path);
   assert.ok(consoleContentSecurityPolicy.includes("script-src 'self';"));
+  assert.ok(consoleContentSecurityPolicy.includes("img-src 'self' data: blob:;"));
   assert.ok(consoleContentSecurityPolicy.includes("object-src 'none'"));
 });

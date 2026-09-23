@@ -244,7 +244,16 @@ function showSensor() {
       : (archived?.observation ?? current?.agentSeen[selection]);
   const frame = displayedFrame;
   const fixture = (frame?.source ?? current?.source ?? config.mode) === 'test_fixture';
-  const imageCount = renderSensorImages($('sensor-images'), current?.id, frame);
+  const imageContainer = $('sensor-images');
+  const runId = current?.id;
+  const imageCount = renderSensorImages(imageContainer, runId, frame, () => {
+    if (
+      current?.id === runId &&
+      $('sensor-view').value === selection &&
+      displayedFrame?.evidence.id === frame.evidence.id
+    )
+      text('frame-number', `FRAME ${String(frame.sequence).padStart(4, '0')}`);
+  });
   $('sensor-svg').toggleAttribute(
     'hidden',
     !fixture || imageCount > 0 || archivedSensor.loading || Boolean(archivedSensor.error),
@@ -279,7 +288,16 @@ function showSensor() {
       ? 'Latest sensor'
       : `${current?.assignments[selection]?.member ?? 'Agent'} received`,
   );
-  text('frame-number', frame ? `FRAME ${String(frame.sequence).padStart(4, '0')}` : 'NO FRAME');
+  text(
+    'frame-number',
+    imageCount
+      ? imageContainer.dataset.displayedSequence
+        ? `FRAME ${String(imageContainer.dataset.displayedSequence).padStart(4, '0')}`
+        : 'LOADING FRAME'
+      : frame
+        ? `FRAME ${String(frame.sequence).padStart(4, '0')}`
+        : 'NO FRAME',
+  );
   text(
     'latest-frame',
     current?.latestSensor

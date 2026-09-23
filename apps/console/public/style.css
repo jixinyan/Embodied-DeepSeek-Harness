@@ -775,6 +775,13 @@ progress::-moz-progress-bar {
 .sensor-image[data-state='error'] img {
   display: none;
 }
+.sensor-performance {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #52636d;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
 .scene svg {
   width: 100%;
   display: block;
