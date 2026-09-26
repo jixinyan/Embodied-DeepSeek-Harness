@@ -36,7 +36,7 @@ responses cannot establish these gates.
 | Policy | Load the selected checkpoint and transforms; consume a real instruction, camera/state observation; return finite actions with documented native semantics. |
 | Simulator | Reset the selected task/embodiment; capture valid camera/state observations; execute admitted native control steps; query its actual success checks. |
 | Worker | Start a job; publish ordered status; confirm pause at the command boundary; reject stale actions/resume; enforce step/time budgets and disconnect handling. |
-| Verification | Monitor real observations asynchronously; trigger formal verification after budget expiry; check GT only for the confirmed stopped execution/boundary. |
+| Verification | Start a fresh formal assignment after an eligible execution ends with a confirmed boundary; check scoped before/after evidence and limited GT for that boundary. Running observations remain outside the Verifier assignment. |
 | Planner | Receive images and scoped evidence; select subgoals and tools; own subsequent resume, retry or replan decisions through the native loop. |
 | Recovery | Observe a genuine failed attempt and Planner recovery decision; give Evolver the explicit prior attempt; record subsequent execution; publish a SKILL only after original-goal formal success. |
 | Session and console | Select a compatible deployment; run multiple tasks with one environment; expose real sensor/agent/tool/task state; release resources on session end. |
@@ -77,7 +77,7 @@ console-launched simulation task. Preserve the source run and export these artif
   capture timestamps and the original frame sequence retained separately.
 - A synchronized inspectable timeline of Planner input images, public model output,
   plans/TODOs, native tool calls/results, policy requests/chunks, ActionGate decisions,
-  executed controls, monitor events and formal GT-backed verification.
+  executed controls and formal GT-backed verification. Historical monitor events retain their original audit identity.
 - An SVG flow diagram showing the actual participating roles, services and message
   paths, with links from the replay to corresponding recorded events.
 - A run manifest containing the EDH revision, source/checkpoint revisions, deployment

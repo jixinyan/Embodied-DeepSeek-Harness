@@ -68,7 +68,7 @@ See [session guide](user-sessions.md) and [legacy migration audit](legacy-migrat
    test startup, disconnection, cancellation and shutdown without replaying motion.
 4. Add owned resource leases and a worker watchdog that runs independently of policy
    inference, including between rollout steps. Publish gate and actual device state
-   separately; budget boundaries must wake the assigned formal verifier.
+   separately; a confirmed eligible budget end must start a fresh formal verifier.
 5. Validate the same path in the console with a CPU worker, then bind actual sensor
    images, one simulator and an instruction-consuming policy server. Record separate
    live model, robotics and stop-latency acceptance evidence.
@@ -88,7 +88,7 @@ runnable examples. Steps 3–5 are incomplete even though transport tests pass.
 | 05 | Planning/files and default roles | 04 | W04 | Persistent upper-level work |
 | 06 | CPU worker, resources and hardware contracts | 05 | W05 / M0 | Nonblocking jobs and confirmed device state |
 | 07 | Perception, active observation and provider replacement | 06 | W05 | Tool-based observation tasks |
-| 08 | Async Verifier and mandatory formal checking | 07 | W06 | Authoritative post-budget outcomes |
+| 08 | Post-execution Verifier and mandatory formal checking | 07 | W06 | Authoritative post-budget outcomes |
 | 09 | Owner retry/replan and recovery linkage | 08 | W06 | Original-goal recovery tracking |
 | 10 | Evolver and skill storage/retrieval | 09 | W06 | Traceable recovery knowledge |
 | 11 | Full CPU acceptance slice | 10 | W01–W06 integration gate | Stable target for console and simulator integration |
@@ -241,24 +241,24 @@ embodiment and backend modules.
    resources only after confirmed release/stop, never based on model prose.
 4. Implement idempotent acceptance, duplicate queries and reconciliation after disconnection.
    Budget expiry stops new actions and emits a durable boundary event.
-5. Test at least two capability profiles: independent gimbal and base-dependent viewpoint
-   change. Include a backend that cannot resume in place.
+5. Validate supported capability profiles against actual provider declarations and
+   device behavior, including viewpoint resources and resume support.
 
-**Deliver:** Nonblocking worker bridge, resource coordination and hardware-contract doubles.
+**Deliver:** Nonblocking worker bridge, resource coordination and real-provider boundary evidence.
 
 **Gate:** One idempotency key starts one job; request differs from confirmed pause;
 reconnect does not replay motion; action chunks do not create new attempts; exhausted
-budgets stop control. These tests do not establish real-hardware support.
+budgets stop control. Simulator evidence does not establish real-hardware support.
 
 ## Step 07 — Connect perception and active observation tools
 
 **Prerequisite:** Step 06. Locations: `harness/agent-runtime/perception/`, `harness/agent-runtime/observation/`
 and Python providers.
 
-1. Implement capture, segmentation and depth/localization contracts with readable images
-   and known calibration fixtures. Check observation, mask, overlay, entity and frame linkage.
-2. Bind two CPU test segmentation providers to the same logical tool. Change only the
-   provider binding, keeping role and observation fixed; label them as test implementations.
+1. Implement capture, segmentation and depth/localization contracts with readable native
+   images and provider calibration. Check observation, mask, overlay, entity and frame linkage.
+2. Bind selected actual segmentation providers to the same logical tool where installed.
+   Change only the provider binding, keeping role and observation fixed.
 3. Map active-view intent to actual device actions/resources. Return achieved pose and
    a new observation; “look left” can require different resources on different bodies.
 4. Store/report perception evidence without global cross-task scene-memory side effects.
@@ -270,27 +270,28 @@ and Python providers.
 explicit unavailability. Conflicting base observation/policy control cannot run together.
 Every candidate can be traced to the input frame and output evidence.
 
-## Step 08 — Implement async Verifier and mandatory formal checking
+## Step 08 — Implement post-execution Verifier and mandatory formal checking
 
 **Prerequisite:** Step 07. Locations: `harness/agent-runtime/verification/`, `harness/agent-runtime/tasks/`
 and Python fact providers.
 
-1. Start Verifier as an independent DSH agent with its brief. Coalesce latest frames/clips,
-   allow one in-flight model request and retain critical execution events separately.
-2. Implement feedback and authorized pause requests with observation time/sequence/attempt.
-   Do not grant retry/replan authority.
-3. Persist verification requests at budget expiry and other execution boundaries even
-   when Planner does not call a verification tool. An old in-flight monitor response
-   cannot substitute for fresh formal evidence.
+1. Persist a verification request after an eligible `ended` state and confirmed device
+   boundary. Eligible reasons are `policy_stop`, `episode_terminated`, and
+   `budget_exhausted`; ordinary pauses remain with Planner and do not start Verifier.
+2. Start a fresh independent DSH Verifier assignment with goal, criterion, budget,
+   execution report, boundary and authorized before/after evidence. Running frames
+   stay outside that assignment.
+3. Preserve failed or unknown status for external cancellation and backend failure.
+   Budget expiry creates a formal request even without a Planner tool call.
 4. Connect limited GT tools and formal reports. Check final owner, version, coverage and
    factual consistency. Preserve unknown for missing evidence, unsupported checks or
    uncertain device state.
 
-**Deliver:** Concurrent monitoring, pause feedback, forced verification and verdict gates.
+**Deliver:** Post-execution formal verification and verdict gates.
 
-**Gate:** Feedback arrives during execution; budget expiry always creates a formal request;
-stale frames/attempts or non-owner verdicts are rejected. Explicit GT false cannot become
-passed. A pending monitor request must not swallow a termination/verification event.
+**Gate:** No Verifier assignment receives running frames; confirmed eligible budget end
+always creates a formal request. Stale evidence/attempts or non-owner verdicts are
+rejected. Explicit GT false cannot become passed.
 
 ## Step 09 — Implement Planner decisions and recovery linkage
 
@@ -333,14 +334,14 @@ cannot publish success skills. Duplicate completion does not produce duplicate v
 Fresh compatible Planner/Verifier assignments can explicitly retrieve knowledge;
 incompatible skills cannot become universal rules or change authoritative criteria.
 
-## Step 11 — Pass the complete CPU acceptance slice
+## Step 11 — Pass the complete real-provider acceptance slice
 
 **Prerequisite:** Recorded gates for Steps 00–10. Locations: task integration tests,
 `tests/contracts/`, `tests/integration/` and `examples/`.
 
-1. Implement spec Section 16.3 as one reproducible run: custom scene role, perception,
-   attempt_1 failure, Planner retry, independent Evolver, formal attempt_2 success,
-   then skill retrieval in a fresh task.
+1. Implement spec Section 16.3 with actual VLM, policy and simulator providers.
+   Record a genuine failed attempt, Planner retry, independent Evolver and formal
+   original-goal success before claiming recovery or SKILL acceptance.
 2. Inspect actual DSH model-adapter briefs/tool schemas/messages. Save media references,
    the event chain and final report rather than checking only helper flags.
 3. Add failure variants for duplication, stale verdicts, disconnect, unconfirmed pause,
@@ -348,11 +349,11 @@ incompatible skills cannot become universal rules or change authoritative criter
 4. Document actual installation/run commands, expected outputs and diagnostics. Run
    affected checks and separate upstream baseline issues from new failures.
 
-**Deliver:** GPU-free framework demonstration, integration acceptance and readable evidence.
+**Deliver:** Real-provider integration acceptance and readable evidence.
 
-**Gate:** A fresh checkout reproduces the same states/events without model keys, SAM or
-simulators. Label all results as test fixtures. Only then use the protocol as the stable
-integration target for production UI and actual environments.
+**Gate:** A configured deployment reproduces accepted task and device events with
+source/checkpoint revisions, actual sensor media and native control receipts. An
+unsuccessful real attempt leaves success-dependent gates pending.
 
 ## Step 12 — Connect the physical console to framework data
 
@@ -365,11 +366,11 @@ integration target for production UI and actual environments.
 3. Display streams/overlays, private sessions, effective tools, device state, verdicts
    and recovery; compare current sensor frames with actual agent-seen evidence.
 4. Add read-only history, stale/disconnected signals, skill sources and retrieval records.
-   Clearly distinguish fixtures, replay and actual runs.
+   Clearly distinguish historical fixtures, replay and actual runs.
 
-**Deliver:** Event-backed console on CPU fixtures/replay; actual sensors connect in Step 13.
+**Deliver:** Event-backed console with actual run and replay records.
 
-**Gate:** Users operate and inspect the Step 11 scenario; a new scene member appears without
+**Gate:** Users operate and inspect the Step 11 real run; a new scene member appears without
 special UI code. Unconfirmed pause is not shown as paused. Replay emits no physical
 commands and debug GT does not leak to agents. Refresh/reconnect restores state.
 
@@ -389,7 +390,7 @@ modules and deployment examples.
    for real-policy acceptance. Training/fine-tuning is separate work.
 4. Migrate perception/active observation and verify actual base/head effects. If SAM is
    selected, pin its code/checkpoint and run the tool contracts; otherwise keep it optional.
-5. Run real simulated single/multiple subgoals, budget checks, asynchronous pause and
+5. Run real simulated single/multiple subgoals, budget checks, confirmed pause and
    recovery, with actual sensor/state data in the console and all three default roles.
 
 **Deliver:** One working BEHAVIOR/body/policy configuration, instructions, evidence and limits.
@@ -402,20 +403,21 @@ are correct. Label intentionally injected faults and exclude them from natural s
 
 **Prerequisite:** Step 13 and continued passage of affected earlier checks.
 
-1. Map every spec Section 13.1 requirement to actual test/run evidence, including hardware
-   contract doubles for disconnect/reconnect/stop; separate their coverage from real simulation.
+1. Map every spec Section 13.1 requirement to actual run evidence. Validate
+   disconnect/reconnect/stop on supported simulator or hardware providers and identify
+   the provider for each result.
 2. Evaluate fixed tasks/policy/budgets/GT visibility with at least no-experience versus
    retrieved-skill conditions. Preserve raw results and metrics; a few demos do not prove transfer.
 3. Provide complete default-team/custom-role/provider-swap/CPU/BEHAVIOR examples and
    replace hypothetical commands with verified ones.
-4. Reproduce CPU quickstart on a fresh checkout and simulation in a suitable environment.
+4. Reproduce installation and simulation in a suitable environment.
    Record config/dependency/model versions, attribution, limitations and next unfinished work.
 5. Prepare acceptance and release-candidate records. Outstanding release/deployment choices
    follow spec Section 14; completion does not automatically publish packages or run hardware.
 
 **Deliver:** v1 code, examples, tests, evidence, initial evaluation and self-contained documentation.
 
-**Gate:** M0–M3 each have locatable evidence. Keep CPU fixtures, actual simulation and
+**Gate:** M0–M3 each have locatable evidence. Keep historical CPU fixtures, actual simulation and
 unverified hardware separate. Without a real simulation loop, report partial delivery,
 not completed v1.
 

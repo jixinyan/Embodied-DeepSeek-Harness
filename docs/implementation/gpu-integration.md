@@ -211,7 +211,7 @@ and a native stopped-boundary check returns `task_success=false`.
 The policy endpoint is unavailable in this check. Its connection error reaches
 the host with the actual diagnostic, zero executed controls and an
 `ended`/`device_confirmed=true` status. This establishes failure propagation;
-learned-policy inference, in-chunk monitoring and the complete upper task remain
+learned-policy inference, post-execution formal verification and the complete upper task remain
 pending. A separate interruption during initialization rejects the pending request
 and preserves unconfirmed resource release. Normal close requires its acknowledgement
 and worker process exit.

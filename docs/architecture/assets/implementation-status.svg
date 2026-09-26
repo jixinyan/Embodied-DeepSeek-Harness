@@ -28,7 +28,7 @@
 <text x="54" y="439" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Budgeted nonblocking execution</text>
 <rect x="372" y="350" width="300" height="125" rx="12" fill="#edf7f1" stroke="#d3dfda"/>
 <text x="390" y="381" font-family="Arial, sans-serif" font-size="21" fill="#27674b" font-weight="700">Formal verification</text>
-<text x="390" y="412" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Async monitoring while running</text>
+<text x="390" y="412" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Formal checks after confirmed end</text>
 <text x="390" y="439" font-family="Arial, sans-serif" font-size="17" fill="#30434b" font-weight="400">Budget boundary must be checked</text>
 <rect x="708" y="350" width="300" height="125" rx="12" fill="#edf7f1" stroke="#d3dfda"/>
 <text x="726" y="381" font-family="Arial, sans-serif" font-size="21" fill="#27674b" font-weight="700">Planner replan / retry</text>

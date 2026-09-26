@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.56. Current checkpoint: **live model, worker and three-simulator integration**.
+Spec: v1.57. Current checkpoint: **live model, worker and three-simulator integration**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -24,12 +24,23 @@ The OpenAI-compatible adapter now accepts vLLM's `delta.reasoning` alongside nat
 `reasoning_content`. Actual streamed inference and persisted DSH Session checks pass
 at `3519e34`. Console run `2f06c665-e0ff-4457-be9c-2b0a01aa6db5` also records
 provider reasoning through the complete application path, with camera, planning,
-TODO and skill-search calls. That run's physical outcome remains pending. The older
+TODO and skill-search calls. That run ended with `task_success=false` after 1,050 native
+controls and then `UND_ERR_SOCKET`; its physical outcome is failed. The older
 bc80 recording retains its original missing-reasoning limitation.
+
+The previous workflow also produced RoboCasa run
+`0e9ceb4b-65df-4fa2-be06-4cd7658d4fd4`: two attempts each recorded 1,050
+controls, 66 policy calls and 26,250 physics steps. Both formal GT checks returned
+false. Planner accepted `tasks.retry` after the first failure and Evolver ran; the
+run recorded no `UND_ERR_SOCKET`. After the second verdict, user API cancellation
+closed the Session and released the GPU0 worker allocation. This records the previous
+running-monitor workflow; the post-execution-only Verifier sequence still requires
+implementation and real-run acceptance. The `31aded4` replay export is a 172.1-second
+1080p MP4 derived from recorded frames.
 
 Active work covers the DSH-backed upper loop, a real physical worker, BEHAVIOR-1K,
 RoboCasa, RoboTwin, and actual VLM/policy services. Implementations must preserve
-independent role contexts, Planner decision ownership, asynchronous verification,
+independent role contexts, Planner decision ownership, post-execution formal verification,
 ActionGate admission and verified recovery experience. The
 [live integration acceptance plan](live-integration.md) distinguishes provider
 installation, native execution and complete application acceptance. No new live
@@ -506,7 +517,7 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 | Tools               | Native tool API, role exposure and owner checks; trusted custom native tools share run lifetime and activity tracking                                                                                             |
 | Planning/files      | Original DSH TODO; versioned dependency plans, immutable executed/final criteria, registered subgoal checks, owner-selected goals and private files                                                               |
 | Execution boundary  | Replaceable EmbodiedBackend port, nonblocking fixture jobs, budgets, pause/confirmed fixture stop and owner-only resume                                                                                           |
-| Verification        | One independent monitor assignment per running segment, cancellation/retirement at pause/end and fresh mandatory formal verification at execution boundaries; unknown cannot become success                       |
+| Verification        | Historical runs include running monitor assignments and fresh formal boundary checks; post-execution-only scheduling awaits implementation and actual acceptance. Unknown cannot become success.                       |
 | Recovery            | Formal failure followed by Planner replan/retry opens one recovery and Evolver; explicit progress batches continue until original-goal success                                                                    |
 | Experience          | Versioned SKILL export/search/load; failure signals, possible causes, avoid rules, success/verification guidance and provenance; fixture skills labeled and separated                                             |
 | Persistence         | Single-writer CAS journal, fsync, integrity checks, torn-tail recovery, separate immutable events and run projections; read-only historical session audits                                                        |

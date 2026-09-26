@@ -157,7 +157,7 @@ All cases are synthetic. See [setup](../development/setup.md) for pinned depende
 
 Authentication, state storage, compare-and-swap/idempotency, assignment permissions,
 evidence access, event-type payload registration, actual pause acknowledgements,
-monitor scheduling, owner retry coordination and SKILL publication are still future
+post-execution Verifier scheduling, owner retry coordination and SKILL publication are still future
 service work. A hostile caller can fabricate IDs or facts; schema validity is not
 proof of authority. Current gates are callable building blocks, not enforcement in a
 running physical system. Steps 04 and 06–10 must integrate them before physical claims.

@@ -8,7 +8,7 @@
 <path d="M403 182H319" class="line"/><text x="334" y="170" class="small">call</text><path d="M316 258H400" class="line"/><text x="329" y="245" class="small">images</text>
 <rect x="840" y="142" width="304" height="156" rx="14" class="box"/><text x="860" y="175" class="heading">Tools / policy execution</text><text x="860" y="206" class="body">Subgoal → policy → action gate</text><text x="860" y="235" class="body">→ simulation / embodiment</text><text x="860" y="270" class="small">Budgeted jobs; gate can interrupt</text>
 <path d="M753 220H837" class="line"/><text x="771" y="206" class="small">decision</text>
-<rect x="840" y="395" width="304" height="155" rx="14" class="box"/><text x="860" y="429" class="heading">Verifier</text><text x="860" y="460" class="body">Async monitoring; may pause</text><text x="860" y="490" class="body">Formal checks at budget boundaries</text><text x="860" y="521" class="small">No retry, replan or resume decisions</text>
+<rect x="840" y="395" width="304" height="155" rx="14" class="box"/><text x="860" y="429" class="heading">Verifier</text><text x="860" y="460" class="body">Checks after confirmed end</text><text x="860" y="490" class="body">Formal facts and limited GT</text><text x="860" y="521" class="small">No retry, replan or resume decisions</text>
 <path d="M992 298V392" class="line"/><text x="1008" y="350" class="small">observations</text>
 <path d="M840 466H576V317" class="line"/><text x="601" y="454" class="small">checked images + verdict</text>
 <path d="M992 142V109H176V139" class="line"/><text x="822" y="99" class="small">new observations</text>

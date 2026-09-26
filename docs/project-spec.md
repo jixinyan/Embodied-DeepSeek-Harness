@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.56 · 2026-09-26
+Version: v1.57 · 2026-09-26
 
 Status: upper application and console run with CPU fixtures; native RoboCasa control and live VLM tool rounds pass; full physical workflow pending.
 
@@ -99,10 +99,10 @@ has native/file/HTTP and console component acceptance; live task continuation re
 required. Physical
 integration now has a host-to-Python worker bridge with actual reset, image transport,
 independent task identities and connection-failure checks. Learned-policy execution,
-asynchronous monitoring during native controls and complete task acceptance remain
+post-execution formal verification and complete task acceptance remain
 required. See the
 [adapter guide and SVG](implementation/model-policy-adapters.md) for exact contracts,
-commands, examples and unimplemented integration. The execution port requires a formally checked pause and explicit Planner resume,
+commands, examples and unimplemented integration. The execution port requires a confirmed pause and explicit Planner resume,
 with execution/boundary/state-version preconditions and a matching published backend
 update. An owner ID in a prior subgoal is not a new authorization. See the
 [execution contract](../harness/agent-runtime/execution/README.md).
@@ -239,7 +239,8 @@ and type declarations do not satisfy Step 00's runtime-integration acceptance ga
 - Register all tools through the catalog. Policy execution is one tool category;
   a perception model can be a provider without being an agent.
 - The upper decision owner exclusively controls retry, replan and resume. Verifier
-  may pause and verify; budget exhaustion must enter formal verification.
+  begins after an eligible execution has ended at a confirmed device boundary.
+  Budget exhaustion must enter formal verification.
 - Limited GT checks are agent-visible. Complete hidden state is debug-only;
   Evolver cannot bypass visibility through the evidence store.
 - An explicit retry starts recovery recording. Publish successful experience only
@@ -265,8 +266,8 @@ Build an open-source embodied task framework using DSH runtime implementations.
 Users organize agent teams with concise role definitions and team configuration,
 then issue tasks through a physical control console. An upper VLM uses planning,
 files, communication, perception, active observation and execution tools to complete
-long-horizon tasks in simulation or on hardware. Verifier monitors execution and
-checks outcomes; the upper decision owner chooses retries and replans. Evolver
+long-horizon tasks in simulation or on hardware. Verifier checks outcomes after
+eligible execution ends; the upper decision owner chooses retries and replans. Evolver
 tracks explicit recovery attempts and turns formally verified recovery into reusable
 `SKILL.md` knowledge.
 
@@ -286,7 +287,7 @@ transfer, but policy/hardware compatibility still requires validation.
 | User-defined agent teams | ROLE.md specifies responsibility/tools; team.yaml binds members and decision roles | Add or replace a role through configuration without modifying fixed agent types or routing |
 | Complete, open tool surface | One catalog covers planning/files, SAM-like perception, active observation, policies and checks | Compose a new role from existing tools; expose a new perception provider to compatible roles |
 | Independent contexts and explicit cooperation | Fresh delegation sessions, complete task briefs, direct messaging and subscriptions | Actual model-input checks demonstrate that only explicitly delivered/read information is visible |
-| Concurrent execution and verification | Monitor during policy execution, allow pause, require a verification round at budget expiry | Trace execution, monitor feedback, pause acknowledgement and final verdict on one timeline |
+| Execution followed by independent verification | Record policy execution and its confirmed end before creating Verifier; require formal checking after budget expiry | Trace execution, final report, confirmed boundary, checks and verdict on one timeline |
 | Learning from successful retries | Retry starts Evolver; original-goal recovery success enables skill creation | Trace every skill to failure, changes, attempts and success evidence |
 | Replaceable policies, environments and bodies | Separate semantic contracts from concrete adapters with declared compatibility | Add a second configuration without modifying the general core |
 | Physical task observability | Console displays sensors, agents, devices, messages, evidence and experience | Explain why motion stopped, who requested a retry and which skill was used |
@@ -311,8 +312,10 @@ novelty or already demonstrated cross-environment generalization.
    Evolver and event handlers cannot autonomously create a new task attempt.
 5. **Verification belongs to an agent.** Simulation GT is the verifier's fact tool,
    not a hidden task decision that bypasses the verifier.
-6. **Verifier monitors asynchronously and may pause.** Budget expiry forces formal
-   verification. A pause request and confirmed device pause are distinct records.
+6. **Verifier starts after eligible execution ends.** It receives a fresh brief,
+   final execution report and authorized evidence only after the device boundary is
+   confirmed. Budget expiry forces formal verification. Ordinary pause remains a
+   Planner-controlled execution state and does not create a verifier assignment.
 7. **Retry triggers Evolver.** Skills require formal recovery-goal confirmation and
    serve the upper planner/verifier; VLA/VLN consumption of Markdown is not required.
 8. **Agents compose through teams and roles.** Users define responsibilities, tools
@@ -336,7 +339,7 @@ novelty or already demonstrated cross-environment generalization.
 | One real simulator task loop, prioritizing the legacy BEHAVIOR path | Full RoboCasa/RoboTwin and further environment adapters |
 | A second configuration to test interfaces, with test/real status distinguished | Broader cross-environment and cross-embodiment transfer evaluation |
 | Replaceable subgoal-policy interface, asynchronous jobs and hardware contract tests | Fine-tuning, real robot trials and other control policies |
-| GT-assisted monitoring and formal verification | Real-device visual/sensor evidence providers |
+| Post-execution formal verification with limited GT | Real-device visual/sensor evidence providers |
 | Retry → Evolver → evidenced SKILL → later retrieval | Larger-scale automated skill evaluation and transfer validation |
 | Production console following the approved prototype direction | Teleoperation and additional robot-specific panels |
 
@@ -371,8 +374,10 @@ explicit calls and messages.
 The Planner directly perceives images, plans and makes execution decisions in a
 ReAct-style observe/decide/act/observe loop using native DSH. Perception tool results
 return images to that Planner; optional specialist agents are helpers, not a mandatory
-visual interpretation stage. Verifier supplies checked images and authoritative results
-for the Planner's next decision. See the [illustrated loop](implementation/model-policy-adapters.md).
+visual interpretation stage. After eligible execution ends, Verifier receives
+authorized stopped-boundary evidence and supplies checked images and authoritative
+results for the Planner's next decision. See the
+[illustrated loop](implementation/model-policy-adapters.md).
 
 v1 defaults to one Planner per task, owning its physical decisions. The user-facing
 coordinator and physical planner may be the same instance. An optional reception or
@@ -403,14 +408,20 @@ and caller relationship. Section 11 defines authoring.
 | Default | Inputs | Output/capabilities | Excluded responsibility |
 | --- | --- | --- | --- |
 | Planner | User goal, capability catalog, explicit observations, verifier feedback and retrieved skills | Plans, files, perception/active observation, subgoals, execution decisions, delegation and reports | Fabricating formal verdicts |
-| Verifier | Goal/criteria, current attempt, observation entry point, relevant skills and check permissions | Monitor feedback, pause requests, formal verdict and necessary facts | Retry, replan or autonomous resume |
+| Verifier | Goal/criteria, final execution report, confirmed ended boundary, authorized before/after evidence and check permissions | Independent formal verdict, checked observations and necessary facts | Executing actions, viewing in-flight frames, retry, replan or resume |
 | Evolver | Original failure, recovery goal, upper-level changes, related records/events | Evidenced skill bundle, version and summary | Robot control or changing task criteria |
 
-The host builds an explicit verifier brief from the Planner-selected goal, admitted
-execution request, criteria and current attempt. The monitor names the Planner as its
-caller and receives explicit sensor updates. A stopped boundary creates a separate
-formal-verification assignment with its own brief and boundary record; it does not
-inherit either the Planner conversation or the monitor history.
+Planner directly calls `execution.start`; the physical worker/policy returns
+execution status and observations. The default workflow has no independent Executor
+agent. Verifier begins only after an eligible policy execution has ended and its
+device boundary is confirmed.
+
+The host builds a fresh verifier brief after an eligible execution has ended and
+the device confirms its stop boundary. It includes the Planner-selected goal,
+admitted request, criteria, attempt, final execution report, resource budget,
+execution status and authorized before/after evidence. The Verifier does not inherit
+the Planner conversation or receive frames while execution is running. Ordinary
+paused states retain their execution scope and do not create a verifier assignment.
 
 A final role report closes new work admission and retires the native handle after
 its current turn reaches quiescence, preserving the receipt, output, audit and report.
@@ -454,7 +465,7 @@ explicit authorized references if the model is slow.
 
 | Field | Content | Example |
 | --- | --- | --- |
-| objective | What this assignment must accomplish | Monitor this placement and verify its criteria after execution |
+| objective | What this assignment must accomplish | Check this placement against its criterion after confirmed execution end |
 | task_scope | Task, goal, attempt and relevant recovery IDs | `task_42 / goal_store / attempt_2` |
 | expected_output | Output schema and recipient | `VerificationResult.v1 → planner_1` |
 | entities | Object-role bindings and their sources | `object=cup_17; container=cabinet_2` |
@@ -463,7 +474,7 @@ explicit authorized references if the model is slow.
 | history_summary | Relevant preceding work | First attempt left the cup on the table; Planner chose a change |
 | changes | What differs this time | Explicitly bind the left cup, rather than saying only “try again” |
 | evidence_refs | Authorized records, frame/stream or event ranges | Failure clip, event interval and camera stream |
-| tools_and_limits | Allowed tools/actions and budget | Observe, run checks and pause; no new subgoal execution |
+| tools_and_limits | Allowed tools/actions and budget | Read authorized evidence and run checks; no subgoal execution |
 
 The caller is responsible for semantic sufficiency. Schemas validate shape and
 references, not whether context is enough. A recipient lacking information sends
@@ -533,11 +544,10 @@ Timestamps support freshness, not a strict global order across devices.
 | --- | --- | --- | --- |
 | `agent.invoke` | Calling agent through validated runtime | New agent | Complete brief and independent context |
 | `context.request / response` | Recipient/caller | Counterparty | Explicit missing information, not copied parent history |
-| `execution.started / progress` | Execution service | Planner, Verifier, UI | Actual execution state |
-| `execution.pause_requested / paused` | Requester/execution service | Planner, Verifier, UI | Intent and confirmed device state separately |
-| `execution.budget_exhausted / ended` | Execution service | Verification trigger and relevant agents | Stop reason, not automatic task failure |
-| `monitor.feedback` | Verifier | Planner, UI and authorized Evolver during recovery | Progress/deviation/possible completion linked to observations |
-| `verification.requested / completed` | Lifecycle coordinator/Verifier | Verifier, then Planner/Evolver/UI | Formal checks and evidence |
+| `execution.started / progress` | Execution service | Planner and UI | Actual execution state; in-flight frames stay outside Verifier context |
+| `execution.pause_requested / paused` | Requester/execution service | Planner and UI | Intent and confirmed device state separately; ordinary pause does not start verification |
+| `execution.budget_exhausted / ended` | Execution service | Verification admission and relevant agents | Confirmed end and stop reason; no automatic success |
+| `verification.requested / checked / completed` | Lifecycle coordinator/Verifier | Verifier, then Planner/Evolver/UI | Post-end formal checks, scoped evidence and verdict |
 | `retry.requested` | Planner | Execution/recovery coordination | Original goal, changes and failure source |
 | `retry.started` | Runtime after accepting retry | Evolver, UI | Recovery-chain start, never inferred from prose |
 | `recovery.resolved` | Correlator using the original-goal verdict | Evolver, Planner, UI | Original recovery goal passed or was abandoned |
@@ -556,10 +566,11 @@ Physical operations use execution IDs and idempotency keys. After an uncertain
 connection failure, query the job before proceeding. If state cannot be established,
 report unknown; do not blindly resend motion.
 
-Do not broadcast every sensor frame to each LLM. Messages carry stream references,
-selected frames or short clips. Dropping stale frames must not discard critical
-execution events. Retain links between durable events and actual model-visible inputs
-so audits distinguish what the system knew from what a particular agent saw.
+Do not broadcast every sensor frame to each LLM. During execution, operator replay
+and authorized Planner observations may use recorded frames; Verifier receives no
+in-flight frame messages. Its fresh post-end brief names authorized before/after
+evidence. Retain links between durable events and actual model-visible inputs so
+audits distinguish what the system knew from what a particular agent saw.
 
 ## 6. Subgoals and execution contracts
 
@@ -617,63 +628,65 @@ come from the task, not an extra universal preference such as releasing the grip
 | Data | States/content |
 | --- | --- |
 | ExecutionStatus | accepted / running / pausing / paused / ended; counts, device state, observation references |
-| StopReason | policy_stop / budget_exhausted / verifier_pause / user_stop / backend_error / episode_terminated |
+| StopReason | policy_stop / budget_exhausted / user_stop / backend_error / episode_terminated |
 | VerificationResult | pending / running / passed / failed / unknown; checks, evidence, observation time, criterion version |
 | PlannerDecision | resume / retry / replan / finish / abandon; cited feedback and new goals |
 
-Policy self-reported success may be diagnostic only. Authoritative completion requires
-the designated verifier's verdict for the correct attempt, criterion version and
-execution-boundary evidence.
+Policy or execution self-reported success may be diagnostic only. Authoritative
+completion requires the designated verifier's verdict for the correct attempt,
+criterion version and confirmed ended-boundary evidence. External cancellation and
+backend errors retain failed or unknown execution outcomes; neither implies success.
 
 ### 6.4 Budgets, pause and verification gates
 
 1. Accept a request and return a job handle without blocking Planner for the rollout.
-2. Advance policy actions and emit observations/status while Verifier monitors.
+2. Advance policy actions and emit observations/status for execution records, the
+   operator and authorized Planner tools. No Verifier assignment or frame delivery
+   runs concurrently with policy execution.
 3. Translate authorized pause requests to supported device pause/stop behavior and
-   acknowledgement. `pause_requested` must not be displayed as `paused`.
-4. At budget expiry, stop issuing actions, record the boundary and force a formal
-   verification request. Early stops, errors and pauses also enter state reconciliation
-   and verification closeout.
-5. Use observations/checks available after the boundary. Without reliable fresh
-   evidence, return unknown rather than reusing an old monitor result as final truth.
+   acknowledgement. `pause_requested` must not be displayed as `paused`. An ordinary
+   confirmed pause permits Planner-authorized resume within the remaining budget;
+   it does not create a formal verification round.
+4. On `policy_stop`, `episode_terminated` or `budget_exhausted`, stop issuing actions,
+   record an `ended` state and confirmed device boundary, then create one fresh formal
+   verifier assignment. Budget expiry requires that verification even without a
+   model tool request. External cancellation and backend errors retain their own
+   failed or unknown outcomes.
+5. Give the Verifier the final report, request, budget, status and authorized
+   before/after evidence. Check current facts for the ended boundary. Without
+   reliable evidence, return unknown.
 6. Planner decides what follows. Pending/unknown verification cannot silently become
    passed; request more checks or explicitly handle uncertainty.
-7. Only Planner resumes. A backend unable to resume in place reports stopped; restarting
-   a policy requires Planner to create a new attempt.
+7. Only Planner resumes an ordinary pause or creates a new attempt after a final
+   result. A backend unable to resume in place reports stopped.
 
 Transport redelivery is not physical action retry. After process restart, query jobs
 and devices first. Explicit user termination may cancel agents; record cancellation
 or unknown verification rather than fabricated success.
 
-## 7. Verifier: asynchronous monitoring and formal verification
+## 7. Verifier: post-execution formal verification
 
-Each new verifier assignment receives a fresh context with goal, criteria, execution
-configuration, necessary history and authorized evidence. The current upper runner
-continues one monitor assignment across explicit frame messages during a continuous
-running segment. Pause/end cancels and retires that monitor. Formal verification is
-a separate fresh assignment with an explicit stopped-boundary brief; resumed execution
-creates a fresh monitor. No conversation history is implicitly shared. An accepted
-pause request belongs to the run and outlives monitor cancellation; the provider must
-bound its acknowledgement latency and report actual confirmed stop state.
+Each eligible ended execution creates a fresh Verifier assignment after the device
+confirms its stop boundary. Its explicit brief identifies the goal, criterion version,
+attempt, final execution report, request, consumed budget, stopped status and authorized
+evidence. No conversation history is implicitly shared. Running controls, ordinary
+pauses and their frames do not create or update a Verifier assignment. Device-local
+control and connection-failure handling continue without waiting for a model round trip.
 
-### 7.1 Monitoring during execution
+### 7.1 Assignment timing and evidence
 
-Support latest-frame, short-clip and execution-event triggers. v1 permits at most
-one in-flight model request per verifier; merge subsequent frames into the next fresh
-observation while retaining critical events. The current upper runner coalesces
-pending frames to the latest available sample and rejects monitoring work whose
-creation completes after its execution boundary has changed. It retires native handles
-while preserving assignment identity and audits. Long-run context compaction remains
-pending. Configurable intervals, observation-lag policies and model-budget displays
-remain targets beyond this lifecycle implementation.
+The admission gate accepts `ended` executions whose stop reason is `policy_stop`,
+`episode_terminated` or `budget_exhausted`, with matching task, execution and confirmed
+boundary identities. A `paused` execution may be resumed by Planner within its
+remaining budget. User cancellation, backend failure and uncertain device state
+retain explicit failed or unknown outcomes. They never become task success through
+a policy report or an old observation.
 
-Feedback is progress/deviation/possibly_complete/insufficient_evidence with frame or
-event references. Possible completion or clear deviation may trigger pause; formal
-verification still determines success. Verifier does not create subgoals or choose retries.
-
-“Real time” means monitoring concurrently with execution, not every-frame VLM inference
-or hard-real-time control. Device-local control and connection-failure handling cannot
-wait for an LLM network round trip.
+The Verifier reads only evidence authorized for this stopped boundary. Before/after
+images may support comparison when camera pose, object identity and timing are
+recorded; perspective changes must be identified. It may request a fresh post-stop
+capture or permitted limited fact check. The report's claimed success is evidence
+to examine, not a verdict. Verifier does not create subgoals or choose retries.
 
 ### 7.2 Formal verification and GT visibility
 
@@ -1054,7 +1067,7 @@ and achieved pose, completion/failure reason, new observation and actual time/st
 Acceptance of a request does not mean the camera reached its destination.
 
 Role configuration and the current InvocationBrief jointly authorize observation
-motion. Planner has this capability by default; Verifier defaults to reading, pausing
+motion. Planner has this capability by default; Verifier defaults to reading
 and checking. If a team gives active observation to Verifier or a user role, the brief
 must authorize the actual device-action range. Resource scheduling still applies;
 route changes, retry and policy resume remain decision-owner actions.
@@ -1124,7 +1137,7 @@ production components connect to real events and observation services.
 | Tool calls | Category, provider, source observation, annotated results, actual resources and state |
 | Embodiment | Connection, actuator state, job, budgets and confirmed pause/stop; render according to device capabilities |
 | Subgoals/recovery | Goals, attempts, changes, decision ownership and original recovery-goal state |
-| Verification | Monitor versus formal verdict, individual checks, GT source, unknown reasons and evidence |
+| Verification | Post-end assignment, individual checks, GT source, unknown reasons and evidence |
 | Experience | Evolver trigger, read evidence, output skill version/scope and later retrieval |
 | Timeline | Causally linked user input, messages, execution, pause, checks, retries and skills |
 
@@ -1138,7 +1151,7 @@ History is read-only and clearly labels attempt/time. Playback position is not c
 device state. Label debug GT as agent-invisible; screenshots of mixed UI must not leak
 hidden state into agent input.
 
-The message view should answer: Why did Verifier pause? Why did Planner retry? Which
+The message view should answer: Why did execution stop? Why did Planner retry? Which
 failure did Evolver use? What context did this new agent actually receive? Show explicit
 decision explanations, tool calls and evidence, not inferred private model reasoning.
 
@@ -1263,7 +1276,7 @@ configuration, not public role instructions. The repository example resolves its
 path relative to `examples/teams/household.yaml`.
 
 Default collaboration: entrypoint receives the task; decision_owner may delegate to
-members; final_verifier gets a complete brief before execution; recovery_evolver gets
+members; final_verifier gets a complete brief after eligible execution ends; recovery_evolver gets
 one on retry. Matching events reach the active assignment in the relevant scope. Adding
 scene makes it addressable, not automatically active or subscribed to the whole history.
 
@@ -1391,7 +1404,7 @@ validation is Step 01. Do not maintain incompatible manual DTO definitions.
 | Perception/SAM/depth | Capture, segmentation, overlays and localization | Replaceable providers, explicit observation/calibration, no global spatial-memory side effects |
 | rotate_camera | Active viewpoint acquisition | Resolve actual head/base resources and report achieved pose |
 | ExecutionReport | Execution summary and final observation | Policy success is diagnostic; formal verification is separate |
-| Verification/rollout monitor | Independent checks, in-flight observations and interruption paths | DSH verifier, mandatory budget trigger, separate facts and recovery suggestions |
+| Verification | Independent post-end checks with confirmed boundary evidence | DSH verifier, mandatory budget trigger, separate facts and recovery suggestions |
 | Verification bundle | Per-attempt evidence | Versioning, causality, device confirmation and actual model-visible inputs |
 | Policy registry/contracts | Type specifications, lazy loading and remote inference | Check units, frames, joints, frequency and compatibility |
 | Lessons | Failure evidence as input | Retry-driven Evolver and scoped successful-recovery skills |
@@ -1405,16 +1418,16 @@ support. Do not migrate autonomous local retries from old navigation/manipulatio
 ## 13. Milestones and acceptance
 
 These are capability groups; the implementation plan defines construction order.
-Later capabilities may first be developed on CPU doubles before real-environment
-acceptance. No timeline is estimated without staffing and compute information.
-M0–M3 form v1, hardware-interface doubles are exercised in M0/M2, M4 evaluates broader
+Contract and stored-data validation can run without a simulator; physical capability
+acceptance requires actual model, policy and simulator execution. No timeline is estimated without staffing and compute information.
+M0–M3 form v1, M4 evaluates broader
 configurations, and M5 covers actual hardware.
 
 | Milestone | Deliverable | Completion evidence |
 | --- | --- | --- |
-| M0: Teams/tools/context | Loader, catalog, role factory, briefs, routing and test execution/perception/device backends | Config-only role addition, no inherited tools/history, no duplicate actions |
+| M0: Teams/tools/context | Loader, catalog, role factory, briefs, routing and provider capability checks | Config-only role addition, no inherited tools/history, no duplicate actions |
 | M1: Tools and simulation | Persistent plans/files, perception/active observation, BEHAVIOR worker, policy interface, GT verifier | Observe/plan/change view/execute; mandatory budget checks; actual resources and steps traceable |
-| M2: Async supervision/recovery | Nonblocking jobs, feedback, pause acknowledgement, owner retry/replan and recovery chains | In-flight feedback, owner-only attempts, failure recovery, test-backend disconnect/reconnect/stop handling |
+| M2: Post-execution verification/recovery | Nonblocking jobs, pause acknowledgement, formal post-end checks, owner retry/replan and recovery chains | Running/paused attempts never start Verifier; eligible confirmed ends do; owner-only attempts and actual provider stop handling |
 | M3: Experience/console | Retry Evolver, skill version retrieval and production UI | Traceable successful recovery; fresh next-task agent explicitly retrieves skill; UI explains the process |
 | M4: Extensibility | Second real environment/body, minimal DiMOS experiment and hardware contracts | Adapter addition without core changes; real/test/replay validation distinguished |
 | M5: Real hardware | Bound robot, compatible policy and real evidence provider | Actual task/stop/disconnection behavior and unknown handling reported independently |
@@ -1432,8 +1445,8 @@ when dependencies are available; otherwise report it unverified, not supported.
 | Insufficient context | Explicit context request rather than hidden access to other sessions |
 | Incompatible capabilities | Reject before execution with the missing camera/control/check mapping |
 | Budget exhaustion | Stop actions, preserve boundary and trigger formal verification even without a model tool request |
-| Stale monitor result | Old attempt/frame cannot complete the current attempt |
-| Verifier pause | Request and acknowledgement remain distinct; only Planner resumes or creates an attempt |
+| Stale evidence or verdict | Old attempt/frame cannot complete the current attempt |
+| Ordinary pause | Request and acknowledgement remain distinct; no Verifier starts, and only Planner resumes or creates an attempt |
 | Redelivery/reconnection | Idempotent job; query uncertainty before further physical commands |
 | GT isolation | Only authorized facts enter agents; debug state remains inaccessible |
 | Retry and learning | Only explicit upper retry starts Evolver; normal success does not; failed chains yield no successful skill |
@@ -1450,11 +1463,11 @@ when dependencies are available; otherwise report it unverified, not supported.
 ### 13.2 Evaluation
 
 Report task and first-attempt success, retry/replan counts, recovery success, control
-steps, wall time, model calls/cost, monitoring latency/observation lag, pause-ack latency
+steps, wall time, model calls/cost, post-end verification latency, pause-ack latency
 and verification coverage. Report unknown outcomes separately rather than dropping them.
 
-Compare no experience, raw episode records and distilled skills. Separately compare
-end-only verification with asynchronous monitoring plus final verification. Keep tasks,
+Compare no experience, raw episode records and distilled skills. Measure
+post-execution verification separately from execution throughput. Keep tasks,
 policy, budgets and GT visibility matched so extra oracle information is not credited
 to memory.
 
@@ -1474,7 +1487,7 @@ Bind the following to actual resources before dependent implementation:
   incompatible policies require a separate training/fine-tuning work package.
 - The next real environment/body after the initial configuration. BEHAVIOR, RoboCasa
   and RoboTwin are extension targets, not all currently supported.
-- Monitoring interval/lag, model/execution budgets and latency targets, based on measurement.
+- Post-end verification latency, model/execution budgets and latency targets, based on measurement.
 - Robot model, cameras, DiMOS/SDK/ROS2 backend and actual stop/resume/evidence capabilities.
 - Release details, dependency locks and model/data permissions. The name is now EDH and
   new scaffold code uses MIT; preserve upstream notices and distinguish code licenses
@@ -1511,7 +1524,7 @@ are superseded by the confirmed decisions here.
 
 Delivered: selective original DSH runtime, native tools/TODOs, immutable teams,
 independent role sessions, explicit context/evidence, versioned plans/files,
-async verification and recovery, failure-aware SKILLs, durable domain records and
+formal verification and recovery, failure-aware SKILLs, durable domain records and
 a runnable HTTP/SSE debugging console. These run with scripted model/backend
 fixtures, including sequential multi-goal recovery. OpenAI-compatible model transport,
 WebSocket policy transport and standalone action admission have local acceptance.
@@ -1560,8 +1573,22 @@ Legacy EAF paths are relative to a separately obtained legacy checkout:
 | SAM/depth providers | `src/eaf/agent/interfaces/sam_backend.py`, `src/eaf/agent/interfaces/da3_depth.py`, `src/eaf/agent/interfaces/lingbot_depth.py` | Replaceable lazy providers; recheck actual APIs/dependencies |
 | Active observation | `src/eaf/agent/interfaces/http_backend.py`, `src/eaf/sim/behavior/motion.py` | Actual base/head resources and achieved pose |
 | Subtasks/verification | `src/eaf/agent/orchestration/subtask_executor.py`, `src/eaf/agent/orchestration/verification.py`, `src/eaf/agent/orchestration/verify_bundle.py` | Explicit inputs, independent checks, evidence and async identities |
-| In-flight monitor | `src/eaf/agent/runtime/rollout_monitor.py` | Monitor abort is not device-stop confirmation |
+| In-flight monitor | `src/eaf/agent/runtime/rollout_monitor.py` | Historical reference only; current Verifier begins after confirmed execution end |
 | Policy/environment | `src/eaf/contracts.py`, `src/eaf/sim/schemas.py`, `src/eaf/sim/behavior/session.py` | Calls and budgets; no environment-private types in generic tools |
+
+The legacy prompt and orchestration sources provide behavior guidance without
+introducing their agent implementation into EDH:
+
+| Legacy source | Retained principle in EDH |
+| --- | --- |
+| `src/eaf/agent/agents/prompts/top.py` | Planner perceives and plans, gives one bounded action instruction with an explicit criterion, and changes its approach when it explicitly retries. |
+| `src/eaf/agent/agents/prompts/manip.py` and `nav.py` | The former execution agents returned a self-report and `final_observation_ref`. EDH directly calls a policy job; its stop reason, counts and final observation remain evidence, not a verified success claim. |
+| `src/eaf/agent/agents/prompts/verifier.py` | A fresh Verifier judges one criterion, treats execution claims as untrusted, accounts for camera-pose changes between authorized before/after evidence, and reports concrete facts with a reasoned basis. EDH also admits limited native GT checks under the current visibility rules. |
+| `src/eaf/agent/orchestration/subtask_executor.py` | The historical order was executor report, then independent verifier. EDH preserves this temporal boundary while Planner directly invokes the policy. |
+
+Evolver belongs to EDH's recovery mechanism: a formal failed verdict followed by
+Planner's explicit retry or replan starts its evidence record. A reusable SKILL is
+published only after formal success of the original recovery goal.
 
 ### 16.2 Initial work packages
 
@@ -1576,48 +1603,36 @@ does not satisfy functional completion.
 | W03 | DSH role factory and communication | Fresh scopes, nonblocking delegation, send/reply/context requests/subscriptions | No prompt/tool/workspace leakage; correlate brief and actual model input |
 | W04 | Upper-level tools | Persistent plan/todo mapping and scoped files/search | Plans survive turns, version conflicts rejected, private files explicitly handed over |
 | W05 | Full tool execution slice | CPU capture/segmentation, active observation, jobs/checks, results and resources | Scene-role report, head/base conflicts and no GPU dependency |
-| W06 | Verification and recovery | Mandatory formal checks, monitor, pause acknowledgement, owner retry and Evolver | Budget must verify; only owner creates attempts; original-goal success enables skills |
+| W06 | Verification and recovery | Mandatory post-end formal checks, pause acknowledgement, owner retry and Evolver | Budget must verify; only owner creates attempts; original-goal success enables skills |
 | W07 | UI and actual adapters | Team/role/tool console, BEHAVIOR/provider migration, optional SAM | Real events replace demo data; dependencies and unverified capabilities are explicit |
 
-W01–W06 schema/fixture/integration work can run without a GPU. Missing simulators or
-checkpoints block real-adapter acceptance, not prior CPU work. CPU checks do not prove
-policy effectiveness.
+W01–W06 schema and persisted-data validation can run without a GPU. Simulator and
+checkpoint availability determine actual physical acceptance. Structural checks do not
+prove policy effectiveness.
 
-### 16.3 Reproducible CPU acceptance scenario
+### 16.3 Real-environment acceptance scenario
 
-Use explicitly labeled test backends and scripted model responses to validate framework
-behavior, not intelligence:
+Use a real VLM, policy service and supported simulator with native observations,
+actions and limited GT. Preserve model requests, action receipts, boundary IDs,
+timestamps and provider source revisions:
 
-1. Load household-team with user-defined scene-analyst, selected perception tools and
-   the framework's minimum communication/reporting capability.
-2. Planner receives “Put the left blue cup in the cabinet,” writes a PlanDocument and
-   private progress note.
-3. Delegate via InvocationBrief. Scene gets only its role and explicit task context,
-   calls capture/segment and returns candidates/frame evidence; execution.start is unavailable.
-4. Planner submits attempt_1. Test policy advances declared control steps while Verifier
-   monitors. Budget expiry forces formal checking; test GT returns inside=false.
-5. Planner explicitly retries, records recovery_1 and briefs a fresh Evolver with failure
-   and changes. On attempt_2, final_verifier formally confirms inside=true for the original goal.
-6. Evolver writes a test-fixture skill and returns its reference. A new task's fresh
-   Planner sees it only after explicit skills.search/load.
-
-Expected event outline; monitoring/perception events may interleave:
-
-```text
-team.resolved → assignment.created(planner)
-plan.updated → assignment.created(scene) → tool.completed(segment) → agent.report(scene)
-assignment.created(verifier) → execution.started(attempt_1)
-execution.budget_exhausted → verification.requested → verification.completed(failed)
-retry.requested(planner) → retry.started(recovery_1) → assignment.created(evolver)
-execution.started(attempt_2) → execution.ended → verification.requested
-verification.completed(passed, original_goal) → recovery.resolved(success)
-experience.created(test_fixture) → agent.report(evolver)
-```
-
-Fix inputs/responses and inspect actual DSH model-adapter messages/tool schemas, not
-just a helper's fresh=true flag. Media must be readable images or explicit test types,
-not broken image references labeled as sensors. Keep fixture skills separate from
-real experience libraries.
+1. Resolve the actual task instruction, criterion, simulator scene, model binding and
+   policy ActionSpec. Planner captures a native observation, records its plan and
+   invokes `execution.start` for one bounded policy job.
+2. During `running` and an ordinary confirmed `paused` state, inspect the role
+   assignments and evidence grants: no Verifier exists or receives running frames.
+   Planner may resume the same job within its admitted budget.
+3. When the policy stops with `policy_stop`, `episode_terminated`, or
+   `budget_exhausted`, confirm the native device boundary and final execution report.
+   Start a fresh Verifier with the criterion, budget and authorized before/after
+   evidence. Record each limited GT result and its source.
+4. Interpret the actual formal verdict. A failed verdict permits Planner to decide
+   whether to retry or replan, which then starts Evolver. A successful original-goal
+   verdict permits a provenance-bound SKILL. If the real attempt does not succeed,
+   retain recovery and SKILL acceptance as pending.
+5. Confirm external cancellation and backend errors remain failed or unknown, and
+   verify final resource release. Inspect persisted DSH requests, tool calls, native
+   receipts and replay evidence rather than inferring success from model narration.
 
 ### 16.4 Build, checks and handoff report
 
@@ -1651,10 +1666,9 @@ complete the functional acceptance gates of Steps 00–16.
 ## Implementation update: upper application first (2026-09-08)
 
 The current implementation order prioritizes the DSH-backed upper application and
-console before physical runtime providers. The runnable CPU fixture validates role
+console before physical runtime providers. Historical CPU fixture results cover role
 isolation, native tool calls, planning/files, verification, recovery and experience
-publication. It is not evidence of model quality, simulation success or hardware
-readiness. See [progress](implementation/progress.md) for exact current capability.
+publication. See [progress](implementation/progress.md) for actual physical acceptance.
 
 The recovery activation point is now explicit: **formal failed subgoal -> decision
 owner accepts replan/retry -> explicit failed-attempt handoff -> Evolver records

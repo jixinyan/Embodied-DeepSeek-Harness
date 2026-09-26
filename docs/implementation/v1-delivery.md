@@ -16,7 +16,7 @@ tracks the remaining work across that behavior.
 | V01 | DSH agent runtime and replaceable models | Selected native DSH loop, tools, sessions and context management are mounted. Local Qwen/vLLM completes real image/tool rounds, persisted reasoning and rc.2 dynamic-tool checks. | Diagnose the recorded model connection failure and verify long-running task/recovery behavior. Exercise a configured cloud OpenAI-compatible endpoint when credentials are available. |
 | V02 | Composable teams and explicit communication | Team/ROLE loading, separate assignment contexts, briefs, reports, acknowledgements and tool exposure exist. | Verify custom roles and role/tool configuration changes with actual model sessions, including cancellation, explicit evidence transfer and role retirement. |
 | V03 | Planning and task decisions | Native TODOs, persistent plans, registered goals, owner-only selection/retry/replan/resume and user clarification exist. | Validate multi-subgoal completion and Planner-directed recovery with actual simulation. Task criteria must remain supplied by validated providers and explicit configuration. |
-| V04 | Async verification | Actual RoboCasa monitoring and post-budget formal GT failure are recorded. | Verify pause during policy inference/control, fresh formal checks, successful verdicts and scoped evidence reads across all three native providers. |
+| V04 | Post-execution verification | A RoboCasa run records a post-budget formal GT failure; its historical monitor events remain in that run's audit. | Admit a fresh Verifier only after `ended` with a confirmed boundary and an eligible stop reason; verify that ordinary pauses and running frames never create or update its assignment. Check successful and unknown verdicts, scoped before/after evidence and limited GT across all three native providers. |
 | V05 | Evolver and reusable SKILLs | Failure-aware Markdown storage, recovery linkage, metadata search, selective loading and provenance checks exist. | Record a genuine failure followed by a Planner recovery decision and formal original-goal success. Verify Evolver publication and explicit reuse in another session; evaluate transfer to another environment/body. Semantic ranking and richer retrieval are still unimplemented. |
 | V06 | Physical worker and action admission | Host/Python transport, retained environments, control generations, ActionGate budgets, real GR00T controls and confirmed RoboCasa pause/stop exist. | Complete independent watchdog and shared-resource arbitration; verify connection loss and stale action rejection under actual inference/control, with measured stop boundaries. |
 | V07 | RoboCasa / PandaOmron | Native reset, cameras, controller mapping and a 1,050-control Qwen/GR00T run are recorded. Formal GT is false. | Diagnose policy/task behavior and model failure; obtain reproducible successful task and recovery evidence. |
@@ -59,7 +59,7 @@ The console and exported replay must expose the following together:
   Missing model reasoning stays unavailable; the UI must not invent it.
 - Versioned task plans and TODO status as they existed at the selected time.
 - Tool inputs/results, execution/budget state, physical control counts and errors.
-- Async monitor activity, formal checks, accepted verdicts and recovery/SKILL events.
+- Confirmed execution boundaries, formal checks, accepted verdicts and recovery/SKILL events.
 - All recorded camera views with capture time, observation identity and simulation time.
 - A shared wall-clock cursor plus links to the original event and frame records.
 

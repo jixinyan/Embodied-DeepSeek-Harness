@@ -28,8 +28,16 @@ requirement or deployment binding is unclear.
 - PhysicalBoundaryValidator is for EDH domain/provider wire checks, not mandatory
   middleware for ordinary DSH tools or messages.
 - New delegations have independent contexts and explicit InvocationBriefs.
-- Only the decision owner may retry/replan/resume; verifier may pause.
-- Budget expiry requires formal verification. A stopped job is not success.
+- Planner directly starts policy jobs with `execution.start`; there is no separate
+  Executor agent in the default workflow.
+- Only the decision owner may retry/replan/resume. A confirmed ordinary pause stays
+  with Planner and does not start formal verification.
+- Running frames and status may reach Planner and operator audit, but do not create
+  or update a Verifier assignment.
+- A fresh Verifier starts only after an eligible `ended` execution
+  (`policy_stop`, `episode_terminated`, or `budget_exhausted`) with a confirmed
+  device boundary. Budget expiry requires formal verification. Cancellation and
+  backend failure remain failed or unknown; a stopped job is not success.
 - Recovery SKILL publication requires original-goal formal success. Skills
   inform planning/verification, not low-level policy training or task criteria.
 - Tools include planning, files, perception and active observation as well as

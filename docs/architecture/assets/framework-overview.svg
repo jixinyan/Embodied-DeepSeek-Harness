@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1460" viewBox="0 0 1680 1460" role="img" aria-labelledby="title desc">
 <title id="title">Embodied DeepSeek Harness: framework overview</title>
-<desc id="desc">User-defined teams and independent role sessions use open tools, physical execution, asynchronous verification and source-linked recovery skills. This diagram describes target architecture, not implemented functionality.</desc>
+<desc id="desc">User-defined teams and independent role sessions use open tools, physical execution, post-execution formal verification and source-linked recovery skills. This diagram describes target architecture, not implemented functionality.</desc>
 <defs>
 <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#334155" /></marker>
 <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#2563eb" /></marker>
@@ -31,8 +31,8 @@
 <path d="M252 491 V518" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)" />
 <rect x="470" y="335" width="345" height="155" rx="16" fill="#f3f7ff" stroke="#c9d6e6" />
 <text x="488" y="373" class="head" style="fill:#2563eb">Verifier</text>
-<text x="488" y="414" class="body">Async monitor · may pause</text>
-<text x="488" y="447" class="body">Budget ends → formal check</text>
+<text x="488" y="414" class="body">Checks after confirmed end</text>
+<text x="488" y="447" class="body">Limited GT · scoped evidence</text>
 <path d="M642 491 V518" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-start="url(#arrow)" marker-end="url(#arrow)" />
 <rect x="860" y="335" width="345" height="155" rx="16" fill="#eefaf4" stroke="#c9d6e6" />
 <text x="878" y="373" class="head" style="fill:#087f5b">Evolver</text>
@@ -71,7 +71,7 @@
 <path d="M305 791 V915" fill="none" stroke="#334155" stroke-width="2.5" stroke-linejoin="round" marker-end="url(#arrow)" />
 <text x="330" y="833" class="label">Task / tool calls</text>
 <path d="M480 920 V815 H900 V794" fill="none" stroke="#b45309" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#orange)" />
-<text x="532" y="838" class="label" style="fill:#b45309">Budget ends → formal check</text>
+<text x="532" y="838" class="label" style="fill:#b45309">Confirmed eligible end → formal check</text>
 <path d="M900 646 V610 H642 V574" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#blue)" />
 <rect x="80" y="1060" width="970" height="48" rx="10" fill="#eaf0f8" stroke="#c9d6e6" />
 <text x="102" y="1092" class="small">Embodiment / backend adapters: capabilities · calibration · frames · units · device state</text>

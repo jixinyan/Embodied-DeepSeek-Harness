@@ -72,7 +72,7 @@ ImageAttachmentRefs. Native capture/active-view/evidence-read results include im
 content blocks; formal checks include checked images in the Verifier's tool result.
 A formal verdict delivers both that checked observation and its images to the Planner,
 which uses them alongside context and other agents' explicitly returned evidence.
-Async monitor assignments also receive their frame as image content, not only JSON.
+Formal Verifier assignments receive authorized before/after images after an eligible execution ends. Running frames remain available to the Planner and operator audit.
 The default Planner prompt and the single-goal CPU fixture observe before planning.
 
 Explicit role handoff can carry admitted images, but never transfers the caller's

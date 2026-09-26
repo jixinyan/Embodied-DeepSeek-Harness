@@ -130,27 +130,25 @@ plans, activity and embodied state together; long panels scroll and narrow scree
 stack sections. Native TODO resets with a new DSH turn; an older
 snapshot must remain labeled by its originating turn, never silently presented as new.
 
-## Monitor assignment lifetime
+## Post-execution Verifier assignment lifetime
 
-For example, 70 admitted observations of a running cup-placement attempt continue one
-Verifier assignment through native DSH followups. While a model request is active,
-pending frames coalesce to the latest sample; this is not every-frame VLM inference.
-The Planner is the monitor's explicit caller. The brief includes the goal, criteria,
-execution instruction and budget; images are explicitly delivered to that session.
+Planner starts a policy job and receives its execution status and observations. Running
+frames can support Planner decisions and the operator audit; they do not create a
+Verifier assignment or enter its context. An ordinary confirmed pause remains under
+Planner control and can be resumed within the admitted budget.
 
-Pause/end closes that monitor's message and tool admission and requests native cancel.
-An accepted pause request is tracked by the run and must outlive the monitor that
-it cancels; provider acknowledgement is not cancelled with that model request.
-Audit export and handle disposal happen independently of the mandatory formal round.
-Late creation at an obsolete boundary is retired without receiving an old frame.
-Planner-authorized resume creates a fresh monitoring context. A final role report also
-ends its monitor assignment; ordinary per-frame feedback should keep it available.
+When execution reaches an eligible `ended` state (`policy_stop`,
+`episode_terminated`, or `budget_exhausted`) and the device boundary is confirmed,
+the run persists `verification.requested` and starts a fresh Verifier assignment. Its
+brief carries the goal, one criterion at a time, budget, execution report, confirmed
+boundary and authorized before/after evidence. Limited GT reads use that same
+boundary. `verification.checked` and `verification.completed` record the formal result.
+External cancellation and backend failure retain failed or unknown status; they do
+not establish physical success.
 
-`monitor.started` identifies the execution segment and assignment. `agent.retired`
-records the reason and cleanup outcome; the console projection retains retired status.
-Assignment identity and audit remain readable after native handles are released.
-This prevents frame count from consuming the live-session limit, but does not implement
-context compaction or unlimited runs.
+The assignment retires after its final role report. `agent.retired` records cleanup,
+and its audit remains readable after native handles are released. The execution report
+is evidence for inspection, while the Verifier's checked facts determine the verdict.
 Current limits remain 64 live/creating sessions per team and 4,000 run events. Retired
 metadata and audits are retained. Final role reports and accepted formal verdicts now
 finish at quiescence. A successful Evolver is released after its recovery-success
