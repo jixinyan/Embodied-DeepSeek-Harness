@@ -2,9 +2,10 @@
 
 ## Release identity
 
-Reviewed release: [DSH v0.1.7-rc.1](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.1.7-rc.1),
-published on 2026-09-23 and marked as a prerelease by upstream.
-The immutable source revision is `46a7f68b0922371ce7144b668b90e377d8e799f4`.
+Latest reviewed release: [DSH v0.1.7-rc.2](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.1.7-rc.2),
+published on 2026-09-24 and marked as a prerelease by upstream.
+Its immutable source revision is `477b4f420553e8a52c2fbccc464d7561b239c443`.
+The preceding rc.1 review below used `46a7f68b0922371ce7144b668b90e377d8e799f4`.
 
 EDH's selected-source baseline is `d347e703908d0406b7a7ef80e3a0e594d86b2215`.
 [The import manifest](../provenance/dsh-imports.json) records the original source
@@ -12,6 +13,45 @@ and local hashes for 128 files. Release adaptations preserve those original
 identities and record the exact upstream changes applied to EDH-owned modules.
 The release tag identifies the reviewed source; it does not imply that EDH embeds
 the complete upstream distribution or accepts every upstream plugin unchanged.
+
+## rc.2 compatibility review
+
+The rc.2 comparison against rc.1 was inspected at both immutable revisions.
+The release changes relevant to EDH's selected runtime are these:
+
+- Runtime tool additions and removals now produce native `developer/message`
+  events, a `Session.toolHistory()` fold and provider-specific tool projections.
+  The relevant upstream commits are `bc8c0dbf403662daa62b7ddbb45c2e4abcf718fa`,
+  `1b0c2e5760`, `59318c1204` and `f6848ee921`. EDH's currently configured
+  OpenAI-compatible adapter has no `toolUpdate` capability and sends the full
+  current tool list on each request. The native scoped registry check in
+  `tests/runtime/dsh-release-rc2.test.ts` confirms that a new tool becomes
+  visible within the same Session and disappears after unregistering. It does
+  not exercise model dispatch or claim that a provider observed the update.
+  EDH does not advertise the upstream incremental update mode on its current
+  provider route.
+- Upstream commit `dc07e5a50dadcf03e3fb9e1b7c69bb2ba9550254` prevents
+  UTF-16 surrogate pairs from being split by output caps in persistent Bash,
+  PowerShell and string-replace tools. Those three tools are outside EDH's
+  selected source modules. EDH's active native tool-result pruner already
+  measures and slices Unicode code points. A real README-derived tool result
+  containing a supplementary character passes actual Session pruning, JSON
+  file serialization and Session restoration. This check covers the mounted
+  pruning path; it does not claim acceptance for tools EDH does not mount.
+- Upstream commit `193f9ce413077564c58fb7c1aeb6141f4a4a163c` bounds the
+  official DeepSeek Messages provider's `dsh_session_log` request extension
+  and lets the base request proceed if extension serialization fails. EDH's
+  current OpenAI-compatible adapter does not install that provider or request
+  extension. It retains its own `maxRequestBytes` policy and rc.1
+  output-aware compaction. This upstream extension behavior therefore has no
+  source path to import into the current EDH model route.
+
+No imported DSH source file changed for this review. The selected baseline,
+original hashes, local hashes and MIT notices remain unchanged in the
+[source import map](../provenance/dsh-imports.json). The rc.2 compatibility
+checks use actual DSH Session and tool services plus a persisted log file;
+they execute no model or simulator. Provider-side dynamic tool acceptance
+remains pending an available real model service.
 
 ## Runtime changes
 

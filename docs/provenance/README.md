@@ -27,6 +27,15 @@ token estimation. Only embodied summary instructions differ from pinned behavior
 the source map records that patch and both hashes. Retry/command identity types do
 not mount their optional services. See [context management](../implementation/context-management.md).
 
+The [rc.2 release review](../implementation/dsh-release-adaptation.md#rc2-compatibility-review)
+checks the selected runtime against immutable upstream revision
+`477b4f420553e8a52c2fbccc464d7561b239c443`. Its tool-update protocol requires
+a declared provider capability, its surrogate-safe output caps affect tools outside
+the selected source modules, and its long-log upload bound belongs to the official
+DeepSeek Messages extension. The current EDH route required no imported source
+change; the native Session, scoped registry and Unicode log-file checks record
+the inspected behavior. Provider-side dynamic tool acceptance remains pending.
+
 Image storage imports six attachment-local functions/modules from the same pinned
 revision. Filename sanitization preserves printable names; cached request-image reads
 fully decode and propagate invalid-cache errors. Both patches retain source and local
