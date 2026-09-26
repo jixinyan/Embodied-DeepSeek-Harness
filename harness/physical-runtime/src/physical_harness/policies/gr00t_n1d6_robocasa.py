@@ -114,6 +114,10 @@ class Gr00tN1d6RoboCasa:
             raise ValueError("Checkpoint has an incompatible RoboCasa action horizon.")
 
     def infer(self, request: dict[str, Any]) -> list[list[float]]:
+        actions, _ = self.infer_with_record(request)
+        return actions
+
+    def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
         _check_action_spec(request["action_spec"])
         observation = request["observation"]
         if observation.get("schema_version") != "edh.policy_observation.v1":
@@ -136,19 +140,19 @@ class Gr00tN1d6RoboCasa:
         horizon = groups["end_effector_position"].shape[0]
         if any(value.shape[0] != horizon for value in groups.values()):
             raise ValueError("GR00T returned inconsistent action horizons.")
-        count = min(request["max_actions"], horizon)
         native = np.concatenate(
             (
-                groups["end_effector_position"][:count],
-                groups["end_effector_rotation"][:count],
-                np.where(groups["gripper_close"][:count] < 0.5, -1.0, 1.0),
-                groups["base_motion"][:count],
-                np.where(groups["control_mode"][:count] < 0.5, -1.0, 1.0),
+                groups["end_effector_position"],
+                groups["end_effector_rotation"],
+                np.where(groups["gripper_close"] < 0.5, -1.0, 1.0),
+                groups["base_motion"],
+                np.where(groups["control_mode"] < 0.5, -1.0, 1.0),
             ),
             axis=1,
         )
-        if native.shape != (count, 12) or not np.isfinite(native).all():
+        if native.shape != (horizon, 12) or not np.isfinite(native).all():
             raise ValueError("GR00T returned invalid native RoboCasa actions.")
         if np.any(native < -1) or np.any(native > 1):
             raise ValueError("GR00T returned actions outside the native RoboCasa controller range.")
-        return native.astype(np.float64).tolist()
+        model_actions = native.astype(np.float64).tolist()
+        return model_actions[:request["max_actions"]], model_actions

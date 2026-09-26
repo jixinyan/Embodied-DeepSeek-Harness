@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.57. Current checkpoint: **live model, worker and three-simulator integration**.
+Spec: v1.58. Current checkpoint: **live model, worker and three-simulator integration**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 

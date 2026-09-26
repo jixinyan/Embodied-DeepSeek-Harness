@@ -20,6 +20,12 @@ const configured = JSON.parse(await readFile(workerConfigPath, 'utf8'));
 const worker = configured.worker;
 if (!worker || worker.provider !== 'robocasa')
   throw new Error('The live RoboCasa deployment requires a RoboCasa native worker.');
+const policyActionLimit = worker.policyMaxActionsPerInference;
+if (
+  policyActionLimit !== undefined &&
+  (!Number.isSafeInteger(policyActionLimit) || policyActionLimit < 1 || policyActionLimit > 512)
+)
+  throw new Error('RoboCasa policy action limit must contain 1 to 512 control commands.');
 const validator = new ContractValidator(
   JSON.parse(
     await readFile(resolve(root, 'harness/contracts/schema/physical.schema.json'), 'utf8'),
@@ -35,7 +41,7 @@ const server = await startServer({
   dataDirectory,
   deployment: ({ images }) => ({
     id: 'robocasa-live',
-    version: 'robocasa-1.0.1-gr00t-n1.6',
+    version: `robocasa-1.0.1-gr00t-n1.6${policyActionLimit === undefined ? '' : `-ac${policyActionLimit}`}`,
     source: 'simulation',
     description: 'RoboCasa native scene with GR00T policy and a live vision-language model',
     teamFile: resolve(root, 'examples/teams/robocasa-live.yaml'),

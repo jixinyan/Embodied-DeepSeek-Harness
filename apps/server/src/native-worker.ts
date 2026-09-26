@@ -41,6 +41,7 @@ export interface NativeWorkerConfiguration {
   readonly schemaPath: string;
   readonly policyId: string;
   readonly policyUri: string;
+  readonly policyMaxActionsPerInference?: number;
   readonly monitorEveryActions?: number;
   readonly observationTtlS?: number;
   readonly deviceTimeoutS?: number;
@@ -677,6 +678,13 @@ export async function createNativeWorkerEnvironment(
   };
   if (Object.values(timeouts).some((value) => !Number.isFinite(value) || value <= 0 || value > 300))
     throw new Error('Native policy and device timeouts must be positive and at most 300 seconds.');
+  const policyMaxActionsPerInference = configuration.policyMaxActionsPerInference ?? 512;
+  if (
+    !Number.isSafeInteger(policyMaxActionsPerInference) ||
+    policyMaxActionsPerInference < 1 ||
+    policyMaxActionsPerInference > 512
+  )
+    throw new Error('Native policy action limit must contain 1 to 512 control commands.');
   const transport = new NativeWorkerTransport(configuration);
   try {
     const description = object(
@@ -687,6 +695,7 @@ export async function createNativeWorkerEnvironment(
         policy_id: configuration.policyId,
         scene_configuration: configuration.sceneConfiguration,
         schema_path: configuration.schemaPath,
+        policy_max_actions_per_inference: policyMaxActionsPerInference,
         monitor_every_actions: configuration.monitorEveryActions ?? 1,
         ...(configuration.sourceRoot ? { source_root: configuration.sourceRoot } : {}),
       }),
@@ -708,11 +717,16 @@ export async function createNativeWorkerEnvironment(
       Array.isArray(sceneMetadata)
     )
       throw new Error('Native task instruction or scene metadata is unavailable.');
+    const sceneRevision = createHash('sha256')
+      .update(JSON.stringify(sceneMetadata))
+      .digest('hex')
+      .slice(0, 16);
+    const actionLimitRevision =
+      configuration.policyMaxActionsPerInference === undefined
+        ? ''
+        : `-ac${policyMaxActionsPerInference}`;
     const resolvedCatalog: TaskCatalogDefinition = {
-      revision: `${configuration.catalog.revision}-${createHash('sha256')
-        .update(JSON.stringify(sceneMetadata))
-        .digest('hex')
-        .slice(0, 16)}`,
+      revision: `${configuration.catalog.revision}-${sceneRevision}${actionLimitRevision}`,
       tasks: Object.fromEntries(
         Object.entries(configuration.catalog.tasks).map(([id, task]) => [
           id,

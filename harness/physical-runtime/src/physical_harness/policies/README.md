@@ -41,6 +41,15 @@ nonfinite output, or actions outside the controller bounds. It converts the
 checkpoint's gripper and control-mode probabilities with the official PandaOmron
 threshold of 0.5.
 
+The checkpoint produces 16 native actions per inference. The pinned GR00T
+RoboCasa evaluation executes eight actions before requesting another observation.
+Set `policyMaxActionsPerInference: 8` in the deployment's native worker
+configuration to use that cadence. The action gate includes the configured limit
+in each policy request and admits only the returned prefix. The service log keeps
+the complete 16-action model output, the returned prefix, and their counts under
+the same request and execution identifiers. An explicitly configured limit also
+changes the deployment version and resolved task catalog revision.
+
 To check cancellation admission against the loaded model, preserve two complete
 PolicyRequest records from a native worker run and execute:
 

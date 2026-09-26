@@ -36,6 +36,7 @@
   },
   "action": {
     "horizon": 16,
+    "official_sim_execution_steps_per_inference": 8,
     "model_groups": [
       "end_effector_position",
       "end_effector_rotation",

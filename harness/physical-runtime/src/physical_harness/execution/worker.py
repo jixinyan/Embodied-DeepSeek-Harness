@@ -70,6 +70,7 @@ class NativeWorkerSession:
         self._state_version = 0
         self._policy_calls = 0
         self._policy_timeout_s = 30.0
+        self._policy_max_actions_per_inference = 512
         self._monitor_every_actions = 1
         self._last_monitor_action = 0
         self._boundary_at: str | None = None
@@ -177,6 +178,9 @@ class NativeWorkerSession:
         self._monitor_every_actions = arguments.get("monitor_every_actions", 1)
         if type(self._monitor_every_actions) is not int or not 1 <= self._monitor_every_actions <= 512:
             raise ValueError("Monitor interval must contain 1 to 512 control commands.")
+        self._policy_max_actions_per_inference = arguments.get("policy_max_actions_per_inference", 512)
+        if type(self._policy_max_actions_per_inference) is not int or not 1 <= self._policy_max_actions_per_inference <= 512:
+            raise ValueError("Policy action limit must contain 1 to 512 control commands.")
         self._validator = ContractValidator.from_path(arguments["schema_path"])
         if provider == "robocasa":
             if "source_root" in arguments:
@@ -272,6 +276,7 @@ class NativeWorkerSession:
                 max_control_steps=request["budget"]["max_control_steps"],
                 max_wall_time_s=request["budget"]["max_wall_time_s"],
                 lease_valid=lambda: self._lease_active, max_segment_actions=1,
+                max_policy_actions=self._policy_max_actions_per_inference,
                 observation_ttl_s=arguments.get("observation_ttl_s", 30),
                 device_timeout_s=arguments.get("device_timeout_s", 30),
                 on_segment=self._on_segment,

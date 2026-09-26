@@ -1,8 +1,8 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.57 · 2026-09-26
+Version: v1.58 · 2026-09-26
 
-Status: upper application and console run with CPU fixtures; native RoboCasa control and live VLM tool rounds pass; full physical workflow pending.
+Status: native DSH, Qwen VLM, GR00T and RoboCasa complete actual control, pause/resume and post-execution failed verification with before/after images; successful tasks and complete three-provider acceptance remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -334,9 +334,9 @@ novelty or already demonstrated cross-environment generalization.
 | v1 | Later extensions |
 | --- | --- |
 | DSH integration, Team/Role loader, independent sessions, generic task messages/events | More complex multi-host agent deployment and workflow recovery |
-| Planning/files, pluggable perception/active observation, unified catalog | More perception providers, user tool packs and an extension marketplace |
+| Planning/files, pluggable perception/active observation, unified catalog; SAM 3.1 segmentation and YOLO26 depth integration with explicit model provenance | More perception providers, user tool packs and an extension marketplace |
 | Default Planner, Verifier and one Evolver assignment per recovery chain | More roles, specialist verifiers and multi-robot cooperation |
-| One real simulator task loop, prioritizing the legacy BEHAVIOR path | Full RoboCasa/RoboTwin and further environment adapters |
+| Real policy-to-console task loops for BEHAVIOR-1K, RoboCasa and RoboTwin with configuration-selected compatible tasks, embodiments and checkpoints | Further environment adapters |
 | A second configuration to test interfaces, with test/real status distinguished | Broader cross-environment and cross-embodiment transfer evaluation |
 | Replaceable subgoal-policy interface, asynchronous jobs and hardware contract tests | Fine-tuning, real robot trials and other control policies |
 | Post-execution formal verification with limited GT | Real-device visual/sensor evidence providers |

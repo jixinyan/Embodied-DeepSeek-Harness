@@ -35,9 +35,9 @@ async def main() -> None:
             raise RuntimeError("GR00T inference is already in progress.")
         started = monotonic()
         received_at = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
-        future = executor.submit(policy.infer, request)
+        future = executor.submit(policy.infer_with_record, request)
         future.add_done_callback(lambda _: admission.release())
-        actions = await asyncio.wrap_future(future)
+        actions, model_actions = await asyncio.wrap_future(future)
         print(json.dumps({
             "event": "policy_inference_completed",
             **identity,
@@ -49,6 +49,10 @@ async def main() -> None:
             "received_at": received_at,
             "completed_at": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
             "duration_s": monotonic() - started,
+            "requested_max_actions": request["max_actions"],
+            "model_horizon": len(model_actions),
+            "sent_actions": len(actions),
+            "model_actions": model_actions,
             "actions": actions,
         }), flush=True)
         return actions

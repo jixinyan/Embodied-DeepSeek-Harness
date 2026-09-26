@@ -41,6 +41,13 @@ Stopping the controller does not establish task success. After starting executio
 finish the current response and wait for the end-of-execution and formal verification
 follow-up. Do not poll the team while waiting.
 
+For the native OpenCabinet goal with the admitted GR00T checkpoint, pass the
+environment-provided task instruction from the task catalog verbatim as
+`execution.start.instruction`. Keep fixture names, scene observations, and
+handling details in your plan and TODO list. For another admitted subgoal,
+choose its policy instruction deliberately and keep it within that policy's
+declared capability.
+
 At a confirmed ended boundary with policy_stop, episode_terminated or
 budget_exhausted, the host assigns the designated Verifier to run the native check
 and submit a formal verdict. Do not delegate the designated Verifier. Inspect its
