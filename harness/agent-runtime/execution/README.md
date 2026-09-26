@@ -19,7 +19,10 @@ Resume requires `BackendResumeOptions`, described below. Implementations should 
 these signals into network requests and cooperative provider work.
 
 An admitted Planner or operator pause is owned and tracked by the run. The provider
-publishes `pausing` and then a confirmed `paused` boundary with `planner_pause`.
+may publish `pausing` while awaiting the device acknowledgement and publishes a
+confirmed `paused` boundary with `planner_pause`. A fast acknowledgement can move
+the last published `running` status directly to confirmed `paused`. The worker
+captures a new observation after confirmation for this boundary.
 This boundary permits a Planner resume decision and does not trigger formal checks.
 A pause failure fails the run and requests stop. Providers must bound acknowledgement
 latency and publish confirmed state; a settled Promise alone is not a device-stop
