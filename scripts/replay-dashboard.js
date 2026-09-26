@@ -164,7 +164,8 @@ const cameraNodes = manifest.videos.map((item) => {
   video.playsInline = true;
   card.append(video);
   const caption = text(card, 'div', '', 'caption');
-  text(caption, 'strong', item.camera);
+  const cameraName = text(caption, 'strong', item.camera);
+  cameraName.title = item.camera;
   const status = text(caption, 'small', 'Awaiting first recorded frame');
   const node = { item, video, status, requested: -1, displayed: -1 };
   video.addEventListener('seeked', () => {
