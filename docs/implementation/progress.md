@@ -96,8 +96,13 @@ call/result identifiers and image identity. They use a static native reset frame
 complete successful model-driven tasks and recovery remain pending.
 [Live VLM evidence](gpu-integration.md#live-vlm-image-and-tool-checks).
 
-The latest upstream DSH release review targets `dsh-v0.1.7-rc.1`
-(`46a7f68b0922371ce7144b668b90e377d8e799f4`, 2026-09-23 prerelease).
+The latest upstream DSH release review covers `dsh-v0.1.7-rc.2`
+(`477b4f420553e8a52c2fbccc464d7561b239c443`, 2026-09-24 prerelease).
+Actual vLLM acceptance confirms that a tool registered between two turns of the
+same DSH Session is called in the second turn. Native Unicode pruning and persisted
+Session restoration checks pass. The current OpenAI-compatible route continues to
+send its complete tool list. Release monitoring runs weekly.
+The preceding rc.1 adaptation provides the following absorbed changes:
 Serial agent initialization, output-aware compaction, cancellation records and nested
 secret redaction are implemented with exact source provenance. Native initialization,
 disposal, HTTP cancellation, secret traversal and budget-admission checks pass.
