@@ -34,11 +34,24 @@ controls, 66 policy calls and 26,250 physics steps. Both formal GT checks return
 false. Planner accepted `tasks.retry` after the first failure and Evolver ran; the
 run recorded no `UND_ERR_SOCKET`. After the second verdict, user API cancellation
 closed the Session and released the GPU0 worker allocation. This records the previous
-running-monitor workflow. The post-execution-only Verifier sequence is implemented
-at `c76af5f`, with native Planner pause records at `f6f674f` and paused observation
-access at `1720b67`. TypeScript, schema, formatting and structure checks pass;
-real-run acceptance of the new sequence is in progress. The `31aded4` replay export is a 172.1-second
-1080p MP4 derived from recorded frames.
+running-monitor workflow.
+
+Post-execution-only verification passes a real RoboCasa run at `3998fbc`:
+`1df69c9c-7db6-4ae1-9a1c-dd726f44c15c`. An operator pause confirms the device
+stopped after 112 controls and publishes a fresh observation. Planner queries the
+execution, captures the scene and explicitly resumes the same execution with its
+remaining budget. No Verifier assignment exists during running or paused states.
+After 256 controls, 17 GR00T calls and 6,400 MuJoCo steps, event 596 confirms
+`ended/budget_exhausted`; event 597 creates the single Verifier assignment with
+Planner as its caller. Native `verification.check` returns `task_success=false`,
+and the Verifier submits a failed verdict. Public stop/close requests then leave
+the Session closed with resources released and no native worker process. This
+validates scheduling, pause/resume and formal failure, with successful task completion
+still pending. Explicit task-scoped before-image delivery is under validation.
+Local evidence is retained in `.local/work/live-robocasa-server-10/`.
+
+TypeScript, schema, formatting and structure checks pass for the implementation.
+The `31aded4` replay export is a 172.1-second 1080p MP4 derived from recorded frames.
 
 Active work covers the DSH-backed upper loop, a real physical worker, BEHAVIOR-1K,
 RoboCasa, RoboTwin, and actual VLM/policy services. Implementations must preserve
@@ -518,8 +531,8 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 | Communication       | Versioned role reports/query, configured result schemas, explicit briefs, authenticated caller identity from tool scope, delegation/send/context exchange, evidence grants, native DSH delivery and audit exports |
 | Tools               | Native tool API, role exposure and owner checks; trusted custom native tools share run lifetime and activity tracking                                                                                             |
 | Planning/files      | Original DSH TODO; versioned dependency plans, immutable executed/final criteria, registered subgoal checks, owner-selected goals and private files                                                               |
-| Execution boundary  | Replaceable EmbodiedBackend port, nonblocking fixture jobs, budgets, pause/confirmed fixture stop and owner-only resume                                                                                           |
-| Verification        | Historical runs include running monitor assignments and fresh formal boundary checks; post-execution-only scheduling awaits implementation and actual acceptance. Unknown cannot become success.                       |
+| Execution boundary  | Replaceable EmbodiedBackend port, nonblocking jobs and budgets; real RoboCasa confirms device pause, fresh observation and Planner-owned resume within the same execution.                                                                                           |
+| Verification        | Real RoboCasa validates one fresh Verifier after confirmed budget end, zero Verifier assignments while running/paused, and a native failed GT verdict. Unknown cannot become success.                       |
 | Recovery            | Formal failure followed by Planner replan/retry opens one recovery and Evolver; explicit progress batches continue until original-goal success                                                                    |
 | Experience          | Versioned SKILL export/search/load; failure signals, possible causes, avoid rules, success/verification guidance and provenance; fixture skills labeled and separated                                             |
 | Persistence         | Single-writer CAS journal, fsync, integrity checks, torn-tail recovery, separate immutable events and run projections; read-only historical session audits                                                        |
