@@ -1,6 +1,9 @@
 # Current capability map
 
-Snapshot: 2026-09-23. Upper runtime, model transport and standalone policy/action admission are tested; live physical integration is pending.
+Snapshot: 2026-09-26. Upper runtime and real RoboCasa model/policy control are
+implemented; complete task/recovery and multi-provider acceptance remain open.
+The [v1 delivery register](v1-delivery.md) tracks all remaining implementation and
+actual validation requirements.
 
 ![Implemented capabilities and remaining work](../architecture/assets/implementation-status.svg)
 
@@ -67,10 +70,10 @@ See [goal validation](../../harness/agent-runtime/tasks/README.md#goal-binding-a
 ## Still outside the working boundary
 
 - Model-driven physical task evaluation; concurrent physical goals and nested independent recovery chains.
-- Host-to-Python worker transport, shared device resources/watchdog and hardware stop acknowledgement. Native RoboCasa stop admission is checked with manual controls.
-- BEHAVIOR/RoboTwin native acceptance, learned-policy tasks, SAM/depth and hardware adapters.
+- Shared device resource arbitration, independent watchdog and hardware stop acknowledgement. The native host/Python bridge and real RoboCasa policy/stop path are implemented.
+- BEHAVIOR clean lifecycle and learned controls, RoboTwin learned controls, successful policy tasks, SAM/depth and hardware adapters. Both providers return native reset observations.
 - Resumable model sessions, distributed/exactly-once delivery, scalable retention and multi-user hosting.
-- Further console usability and actual sensor-provider integration; the unified workspace and scoped image renderer are implemented.
+- Integrated agent/task/sensor replay and complete provider launch acceptance; the unified live workspace and actual RoboCasa image stream are implemented.
 
 The demo model and sensors are scripted/synthetic. Its upper workflow is runnable;
 it is not the requested final simulation MVP yet. See [progress](progress.md) for

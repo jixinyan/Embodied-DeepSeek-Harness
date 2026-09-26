@@ -11,6 +11,12 @@ A checklist or document change never substitutes for execution evidence.
 
 ## Current delivery priority
 
+The [v1 delivery register](v1-delivery.md) is the current cross-module acceptance
+checklist. It includes all three simulators, actual model/policy services, complete
+agent observability, perception, experience and lifecycle/maintenance work. The
+numbered construction steps below retain their dependency order; their historical
+fixture checkpoints do not establish current v1 completion.
+
 Complete the [live integration acceptance plan](live-integration.md) for the upper
 agent workflow and all three simulation providers with actual VLM and policy services.
 Retain the individual evidence gates; a successful SDK reset does not complete a

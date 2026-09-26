@@ -16,8 +16,9 @@ An actual RoboCasa GPU check used explicit manual inputs through `ActionGate`: a
 confirmed pause, resume and budget stop executed two control steps; another job
 continued the same scene; a stop during a 16-action chunk halted after one step.
 The scene remained stationary after its stop acknowledgement. These checks establish
-the native gate/device boundary without learned-policy inference. The host bridge,
-job event mapping, independent watchdog and resource arbiter remain open. See the
+the native gate/device boundary. The host bridge and job/frame event mapping also
+carry actual GR00T policy controls and stopped-boundary checks. The independent
+watchdog and shared resource arbiter remain open. See the
 [adapter guide](../../../../../docs/implementation/model-policy-adapters.md).
 
 `encode_policy_observation` admits named PNG RGB cameras and finite proprioception
@@ -25,5 +26,5 @@ arrays under byte, pixel and channel limits. The policy request carries the nati
 observation ID and acquisition time. It excludes simulator ground truth; that remains
 available only through the stopped-boundary formal `check` path. A real RoboCasa
 request with three camera images and five PandaOmron state arrays has been generated
-under ignored local deployment evidence. It has not yet received a learned-policy
-response.
+under ignored local deployment evidence. The full-horizon console run retains
+66 GR00T requests, 1,050 controls, 26,250 physics steps and formal native GT failure.

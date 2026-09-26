@@ -27,6 +27,11 @@ are SVG assets; include their directory when handing over this document.
 
 ### 0.1 Current work and next action
 
+The release objective is a complete v1 implementation of all agreed capabilities.
+The [v1 delivery register](implementation/v1-delivery.md) connects each remaining
+capability to its implementation and actual acceptance requirements, including the
+integrated agent/task/sensor visualization.
+
 The active scope covers the complete upper agent workflow, all three simulation
 providers and actual VLM/policy integration tests. Installation, native SDK checks,
 transport integration and model-driven task acceptance have separate evidence gates.

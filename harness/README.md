@@ -34,6 +34,8 @@ and experience. Naming only the Python worker “physical-harness” would hide 
 responsibilities. `agent-runtime` is broader than an agent-loop core; it also includes
 team cooperation, task orchestration and domain tools.
 
-**Status:** both runtime sides are interfaces only. DSH absorption, the worker transport,
-control loops and application startup are still unimplemented. Moving folders changes
-none of the functional acceptance states.
+**Status:** selected DSH services, application startup, native worker transport and
+policy control are implemented. A real RoboCasa console run records 1,050 GR00T
+controls and formal GT failure. RoboTwin and BEHAVIOR native resets return sensor
+observations; remaining provider, perception, lifecycle and successful recovery
+acceptance is tracked in the [v1 delivery register](../docs/implementation/v1-delivery.md).

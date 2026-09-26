@@ -1,7 +1,11 @@
 # Upper execution boundary
 
-[backend-port.ts](src/backend-port.ts) defines the currently used EmbodiedBackend port. The server composes a nonblocking CPU fixture for job/query/budget/pause/resume/check acceptance. The standalone Python policy transport/action gate is CPU-tested. The host-to-worker
-bridge and shared device resource arbitration remain unimplemented.
+[backend-port.ts](src/backend-port.ts) defines the EmbodiedBackend port. The
+[native worker client](../../../apps/server/src/native-worker.ts) connects it to
+the Python worker and its simulator owner thread. RoboCasa acceptance includes
+actual GR00T controls, camera events, cancellation, confirmed pause/stop and
+formal GT failure. Shared device resource arbitration and an independent device
+watchdog remain required by the [v1 register](../../../docs/implementation/v1-delivery.md).
 
 See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
@@ -22,10 +26,9 @@ latency and publish confirmed state; a settled Promise alone is not a device-sto
 confirmation. Stop/close also remain independent of an aborted model call. Cancellation
 does not establish that hardware stopped. An independent device watchdog remains pending.
 
-`query()` deliberately reads the client's immediate status projection. A future
-transport client must update that projection before notifying `subscribe` listeners;
-this method must not start a network request. Actual remote polling and stream
-reconciliation belong in that client. The server still uses the CPU fixture.
+`query()` reads the client's immediate status projection. The native transport
+updates that projection before notifying `subscribe` listeners; this method does
+not start a network request. Stream reconciliation belongs in that client.
 
 Formal `check` receives `executionId` and `boundaryId` alongside the cancellation
 signal. For example, a GT service receiving a cabinet check for boundary A must
@@ -62,7 +65,7 @@ The provider receives `executionId`, `boundaryId`, `stateVersion` and the native
 cancellation signal in `BackendResumeOptions`, alongside the authenticated owner's
 ID. It must check that boundary before motion, reject stale requests and publish
 the resulting status before resolving. Mapping this binding to the Python action
-gate's control generation is the future worker bridge's responsibility; a state
+gate's control generation is the native worker bridge's responsibility; a state
 version is not itself a robot controller generation.
 
 The upper host records `execution.resume-requested` and accepts a `paused -> running`

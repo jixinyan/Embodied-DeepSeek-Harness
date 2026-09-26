@@ -6,6 +6,12 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## Current delivery boundary
 
+The target is a complete v1 covering every agreed capability. The
+[v1 delivery register](v1-delivery.md) records implementation gaps, required real
+acceptance and the execution order. The current visual deliverable must combine
+model output, plans/TODOs, tools, role communication, verification and camera frames
+in one time-addressable view.
+
 Active work covers the DSH-backed upper loop, a real physical worker, BEHAVIOR-1K,
 RoboCasa, RoboTwin, and actual VLM/policy services. Implementations must preserve
 independent role contexts, Planner decision ownership, asynchronous verification,
