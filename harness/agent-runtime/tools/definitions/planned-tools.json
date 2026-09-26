@@ -60,7 +60,7 @@
     },
     {
       "id": "perception.segment_objects",
-      "status": "not_implemented"
+      "status": "upper_with_optional_provider"
     },
     {
       "id": "planning.read",

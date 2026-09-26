@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MIT
 import argparse
 import base64
 import hashlib
@@ -57,6 +58,8 @@ def main():
         "source_image_sha256": hashlib.sha256(image_bytes).hexdigest(),
         "prompt": args.prompt,
         "model": result["model"],
+        "session_id": result["session_id"],
+        "model_input": result["model_input"],
         "width": width,
         "height": height,
         "instance_count": len(instances),

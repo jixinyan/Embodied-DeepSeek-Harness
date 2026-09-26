@@ -1,6 +1,8 @@
+# SPDX-License-Identifier: MIT
 import argparse
 import base64
 import hashlib
+import inspect
 import io
 import math
 import re
@@ -74,6 +76,38 @@ def encoded_png(image: Image.Image) -> str:
     return base64.b64encode(output.getvalue()).decode("ascii")
 
 
+def adapt_multiplex_init_state(predictor):
+    expected = (
+        "resource_path",
+        "offload_video_to_cpu",
+        "async_loading_frames",
+        "use_torchcodec",
+        "use_cv2",
+        "input_is_mp4",
+    )
+    original = predictor.model.init_state
+    if tuple(inspect.signature(original).parameters) != expected:
+        raise ValueError("SAM 3.1 multiplex init_state signature changed.")
+    if hasattr(predictor, "video_loader_type"):
+        raise ValueError("SAM 3.1 predictor has an unsupported video loader option.")
+
+    def compatible_init_state(
+        resource_path,
+        offload_video_to_cpu=False,
+        offload_state_to_cpu=False,
+        async_loading_frames=False,
+    ):
+        if offload_state_to_cpu:
+            raise ValueError("SAM 3.1 multiplex does not support state offloading.")
+        return original(
+            resource_path=resource_path,
+            offload_video_to_cpu=offload_video_to_cpu,
+            async_loading_frames=async_loading_frames,
+        )
+
+    predictor.model.init_state = compatible_init_state
+
+
 def segment_once(predictor, request: SegmentRequest, work_root: Path, provenance: dict):
     encoded = request.image_base64
     image_bytes = base64.b64decode(encoded, validate=True)
@@ -94,6 +128,7 @@ def segment_once(predictor, request: SegmentRequest, work_root: Path, provenance
     with TemporaryDirectory(prefix="sam31-", dir=work_root) as directory:
         frame_path = Path(directory) / "0.jpg"
         image.save(frame_path, format="JPEG", quality=100, subsampling=0)
+        model_input_sha256 = hashlib.sha256(frame_path.read_bytes()).hexdigest()
         session_id = predictor.handle_request(
             {"type": "start_session", "resource_path": directory}
         )["session_id"]
@@ -148,6 +183,13 @@ def segment_once(predictor, request: SegmentRequest, work_root: Path, provenance
         )
     return {
         "model": provenance,
+        "session_id": session_id,
+        "source_image_sha256": hashlib.sha256(image_bytes).hexdigest(),
+        "model_input": {
+            "media_type": "image/jpeg",
+            "sha256": model_input_sha256,
+            "conversion": "Pillow RGB JPEG quality 100, subsampling 0",
+        },
         "width": width,
         "height": height,
         "instances": instances,
@@ -185,10 +227,12 @@ def main():
         use_fa3=False,
     )
     validate_loaded_checkpoint(args.checkpoint, predictor)
+    adapt_multiplex_init_state(predictor)
     provenance = {
         "provider": "sam3.1-object-multiplex",
         "source_revision": args.source_revision,
         "checkpoint_sha256": actual_digest,
+        "session_adapter": "sam31-multiplex-init-state-v1",
     }
     lock = Lock()
     app = FastAPI()

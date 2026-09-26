@@ -30,8 +30,40 @@ invalid records and reopen behavior. A process with a 64 MiB V8 old-space limit 
 and rereads 1,600 documents totaling more than 64 MiB. This tests metadata storage,
 not image bytes, whole-process RSS, sensor accuracy or model behavior.
 
-Custom perception tools remain ordinary native DSH tools. The deployment can use
-[LocalImageStore](../../../docs/implementation/image-storage.md) for real encoded bytes,
-normalization and model request projection. Camera/worker binding, console image routes,
-SAM, depth/localization and simulator providers still require actual integration.
-See the [Planner loop and image path](../../../docs/implementation/model-policy-adapters.md).
+`perception.segment_objects` is an optional native DSH tool. Its input names a granted
+`evidenceId`, an image `attachmentId` in that sample, and a `textPrompt`. UpperRun
+reads the authorized image, calls `Sam31HttpClient` on loopback HTTP, validates image
+identity and dimensions, and retains overlay and mask samples as new evidence. The
+calling assignment receives their references. The returned object IDs identify one
+SAM inference session; `resultId` links its masks and overlay. Stored visualization
+metadata keeps the source image hash, prompt, model revision, checkpoint hash, JPEG
+input hash, and session adapter. Dense masks remain image attachments and do not enter
+the model context as numeric arrays. Other assignments need an explicit evidence grant.
+
+The standalone service is
+[`sam31.py`](../../physical-runtime/src/physical_harness/perception/sam31.py).
+It uses the official SAM 3.1 multiplex builder and the local checkpoint selected by
+`--checkpoint`. The source revision and checkpoint SHA-256 are required at startup.
+The pinned source revision used for the recorded acceptance is
+`2345a4ad109ac29c569da749c91d84f10dc08c40`; the local checkpoint digest is
+`0567debeec80ba4ac6369540c6c248025283cb3ff2b92827509e57e2b3541cb6`.
+The service records `sam31-multiplex-init-state-v1`, a revision-gated session
+initialization adapter. It preserves the official prompt and close-session methods.
+The source and weights retain their original Meta terms; this standalone service has
+its own MIT source notice.
+
+An isolated Python environment with the pinned SAM source, PyTorch, FastAPI and
+Uvicorn runs the service. Set `TMPDIR` to a dedicated ignored work directory and
+choose the device with `CUDA_VISIBLE_DEVICES`. The service binds to `127.0.0.1` and
+accepts an explicit port. For the actual image check, run
+[`check_sam31.py`](../../../examples/perception/check_sam31.py) against that service
+with a native camera PNG, a prompt and an ignored output directory. A RoboCasa
+256 × 256 camera image with prompt `cabinet` produced two nonempty masks with areas
+6,953 and 17,627 pixels. The source image hash matched the camera attachment.
+This verifies the standalone model service and image output. An actual DSH assignment
+tool round with model-visible retained overlay remains to be checked.
+
+The deployment can use
+[LocalImageStore](../../../docs/implementation/image-storage.md) for encoded image
+bytes, normalization and model request projection. See the
+[Planner loop and image path](../../../docs/implementation/model-policy-adapters.md).

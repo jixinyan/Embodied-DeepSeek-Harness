@@ -19,6 +19,10 @@ export interface SegmentationOutput {
   provider: string;
   sourceRevision: string;
   checkpointSha256: string;
+  sessionAdapter: string;
+  sessionId: string;
+  sourceImageSha256: string;
+  modelInputSha256: string;
   width: number;
   height: number;
   overlayPng: Uint8Array;
@@ -54,6 +58,14 @@ function parseOutput(value: unknown): SegmentationOutput {
     typeof model.source_revision !== 'string' ||
     !/^[a-f0-9]{40}$/.test(model.source_revision) ||
     !digest(model.checkpoint_sha256) ||
+    model.session_adapter !== 'sam31-multiplex-init-state-v1' ||
+    typeof value.session_id !== 'string' ||
+    !/^[a-f0-9-]{36}$/.test(value.session_id) ||
+    !digest(value.source_image_sha256) ||
+    !object(value.model_input) ||
+    value.model_input.media_type !== 'image/jpeg' ||
+    !digest(value.model_input.sha256) ||
+    value.model_input.conversion !== 'Pillow RGB JPEG quality 100, subsampling 0' ||
     !boundedInt(value.width, 65_536) ||
     !boundedInt(value.height, 65_536) ||
     value.width === 0 ||
@@ -75,7 +87,8 @@ function parseOutput(value: unknown): SegmentationOutput {
       !Array.isArray(raw.bbox_xyxy) ||
       raw.bbox_xyxy.length !== 4 ||
       !raw.bbox_xyxy.every((coordinate) => boundedInt(coordinate, Math.max(width, height))) ||
-      !boundedInt(raw.area_pixels, width * height)
+      !boundedInt(raw.area_pixels, width * height) ||
+      raw.area_pixels === 0
     )
       throw new Error('Segmentation service returned an invalid instance.');
     const [left, top, right, bottom] = raw.bbox_xyxy as number[];
@@ -89,10 +102,16 @@ function parseOutput(value: unknown): SegmentationOutput {
       maskPng: imageBytes(raw.mask_png_base64),
     };
   });
+  if (new Set(instances.map((instance) => instance.objectId)).size !== instances.length)
+    throw new Error('Segmentation service repeated a session object ID.');
   return {
     provider: model.provider,
     sourceRevision: model.source_revision,
     checkpointSha256: model.checkpoint_sha256,
+    sessionAdapter: model.session_adapter,
+    sessionId: value.session_id,
+    sourceImageSha256: value.source_image_sha256,
+    modelInputSha256: value.model_input.sha256,
     width,
     height,
     overlayPng: imageBytes(value.overlay_png_base64),
@@ -132,8 +151,20 @@ export class Sam31HttpClient implements SegmentationEngine {
       signal: input.signal,
     });
     if (!response.ok) throw new Error(`SAM 3.1 service returned HTTP ${response.status}.`);
-    const bytes = await response.arrayBuffer();
-    if (bytes.byteLength > 64 * 1024 * 1024) throw new Error('SAM 3.1 response exceeds 64 MiB.');
-    return parseOutput(JSON.parse(Buffer.from(bytes).toString('utf8')));
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error('SAM 3.1 response has no body.');
+    const chunks: Uint8Array[] = [];
+    let received = 0;
+    while (true) {
+      const part = await reader.read();
+      if (part.done) break;
+      received += part.value.byteLength;
+      if (received > 64 * 1024 * 1024) {
+        await reader.cancel();
+        throw new Error('SAM 3.1 response exceeds 64 MiB.');
+      }
+      chunks.push(part.value);
+    }
+    return parseOutput(JSON.parse(Buffer.concat(chunks).toString('utf8')));
   }
 }

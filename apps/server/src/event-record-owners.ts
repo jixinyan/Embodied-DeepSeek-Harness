@@ -292,6 +292,7 @@ export class RunEventReferences {
           break;
         case 'perception.generated': {
           assignment(detail.assignmentId);
+          const resultId = id.parse(detail.resultId);
           const source = evidence(detail.sourceEvidenceId);
           const overlay = evidence(detail.overlayEvidenceId);
           const masks = evidence(detail.maskEvidenceId);
@@ -307,8 +308,11 @@ export class RunEventReferences {
             !isDeepStrictEqual(source.evidence.task_scope, masks.evidence.task_scope) ||
             overlay.visualization.sourceEvidenceId !== source.evidence.id ||
             masks.visualization.sourceEvidenceId !== source.evidence.id ||
+            overlay.visualization.resultId !== resultId ||
+            masks.visualization.resultId !== resultId ||
             overlay.visualization.sourceAttachmentId !== sourceAttachmentId ||
-            masks.visualization.sourceAttachmentId !== sourceAttachmentId
+            masks.visualization.sourceAttachmentId !== sourceAttachmentId ||
+            !isDeepStrictEqual(overlay.visualization, masks.visualization)
           )
             throw new Error('Perception event has conflicting source or result evidence.');
           break;

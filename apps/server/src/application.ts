@@ -2,7 +2,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { modelToolContractSchema } from './model-tool-schema.js';
 import { admitSensorSample, sensorImages, SensorSamples } from '@edh/perception';
 import type { SegmentationEngine } from '@edh/perception';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
 import type { Context } from '@deepseek-ai/cordis';
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools';
@@ -1132,6 +1132,10 @@ export class UpperRun {
         signal.throwIfAborted();
         if (prediction.width !== reference.width || prediction.height !== reference.height)
           throw new Error('Segmentation dimensions differ from the authorized image.');
+        if (
+          prediction.sourceImageSha256 !== createHash('sha256').update(original.data).digest('hex')
+        )
+          throw new Error('SAM 3.1 source image digest differs from the authorized image.');
         if (this.closed || terminal(this.state.state))
           throw new Error('Run ended during segmentation.');
         const overlay = await images.saveImage({
@@ -1160,6 +1164,7 @@ export class UpperRun {
         if (this.closed || terminal(this.state.state))
           throw new Error('Run ended during segmentation storage.');
         const createdAt = new Date().toISOString();
+        const resultId = randomUUID();
         const overlayEvidenceId = randomUUID();
         const maskEvidenceId = randomUUID();
         const evidence = {
@@ -1176,8 +1181,16 @@ export class UpperRun {
           source: source.source,
           description: 'SAM 3.1 predicted segmentation overlay.',
           visualization: {
+            resultId,
             sourceEvidenceId: source.evidence.id,
             sourceAttachmentId: reference.attachmentId,
+            sourceImageSha256: prediction.sourceImageSha256,
+            textPrompt: s('textPrompt'),
+            sourceRevision: prediction.sourceRevision,
+            checkpointSha256: prediction.checkpointSha256,
+            sessionAdapter: prediction.sessionAdapter,
+            modelInputSha256: prediction.modelInputSha256,
+            modelSessionId: prediction.sessionId,
           },
           images: [overlay],
         });
@@ -1187,13 +1200,22 @@ export class UpperRun {
           source: source.source,
           description: 'SAM 3.1 predicted object masks.',
           visualization: {
+            resultId,
             sourceEvidenceId: source.evidence.id,
             sourceAttachmentId: reference.attachmentId,
+            sourceImageSha256: prediction.sourceImageSha256,
+            textPrompt: s('textPrompt'),
+            sourceRevision: prediction.sourceRevision,
+            checkpointSha256: prediction.checkpointSha256,
+            sessionAdapter: prediction.sessionAdapter,
+            modelInputSha256: prediction.modelInputSha256,
+            modelSessionId: prediction.sessionId,
           },
           images: [...new Map(maskRefs.map((mask) => [mask.attachmentId, mask])).values()],
         });
         this.event('perception.generated', {
           assignmentId: a.id,
+          resultId,
           sourceEvidenceId: source.evidence.id,
           overlayEvidenceId,
           maskEvidenceId,
@@ -1201,6 +1223,7 @@ export class UpperRun {
         });
         this.grants.extend(a.id, [overlayEvidenceId, maskEvidenceId]);
         return {
+          resultId,
           sourceEvidenceId: source.evidence.id,
           sourceAttachmentId: reference.attachmentId,
           camera: reference.name ?? null,
@@ -1210,10 +1233,14 @@ export class UpperRun {
           provider: prediction.provider,
           sourceRevision: prediction.sourceRevision,
           checkpointSha256: prediction.checkpointSha256,
+          sessionAdapter: prediction.sessionAdapter,
+          sourceImageSha256: prediction.sourceImageSha256,
+          modelInputSha256: prediction.modelInputSha256,
+          modelInputConversion: 'Pillow RGB JPEG quality 100, subsampling 0',
           width: prediction.width,
           height: prediction.height,
           instances: prediction.instances.map((instance, index) => ({
-            objectId: instance.objectId,
+            sessionObjectId: instance.objectId,
             score: instance.score,
             bboxXyxy: instance.bboxXyxy,
             areaPixels: instance.areaPixels,
