@@ -66,7 +66,7 @@ const server = await startServer({
       },
     ],
     contextManagement,
-    assignmentLifetimeMs: 900_000,
+    assignmentLifetimeMs: 3_600_000,
     tasks: {},
     launchProfiles: {
       'robocasa-open-cabinet': {

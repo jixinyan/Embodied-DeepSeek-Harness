@@ -38,8 +38,14 @@ const environment = await createNativeWorkerEnvironment(
   validator,
 );
 const taskId = configuration.request.task_id;
+const selectedTask = environment.describeTasks().tasks[taskId];
+if (!selectedTask) throw new Error('Native session did not admit the configured task.');
 const firstRunId = randomUUID();
-const firstRequest = { ...configuration.request, task_id: firstRunId };
+const firstRequest = {
+  ...configuration.request,
+  task_id: firstRunId,
+  instruction: selectedTask.instruction,
+};
 const updates: Array<Record<string, unknown>> = [];
 const frames: Array<Record<string, unknown>> = [];
 const failures: unknown[] = [];
@@ -47,7 +53,7 @@ try {
   const backend = await environment.createTaskBackend(taskId, {
     signal: new AbortController().signal,
     runId: firstRunId,
-    task: configuration.worker.catalog.tasks[taskId],
+    task: selectedTask,
   });
   const unsubscribe = backend.subscribe((update) => {
     updates.push({
@@ -75,6 +81,13 @@ try {
   const before = await backend.capture();
   assert.equal(before.images?.length, 3);
   assert.equal(before.evidence.task_scope.task_id, firstRunId);
+  const cancelledCapture = new AbortController();
+  const cancelledCaptureResult = backend.capture({ signal: cancelledCapture.signal });
+  cancelledCapture.abort();
+  await assert.rejects(cancelledCaptureResult, /Native worker capture request cancelled/);
+  const captureAfterCancellation = await backend.capture();
+  assert.equal(captureAfterCancellation.images?.length, 3);
+  assert.equal(captureAfterCancellation.evidence.task_scope.task_id, firstRunId);
   const started = await backend.start(firstRequest);
   assert.equal(started.task_scope.task_id, firstRunId);
   if (configuration.runPolicyActions) {
@@ -111,7 +124,7 @@ try {
   const second = await environment.createTaskBackend(taskId, {
     signal: new AbortController().signal,
     runId: secondRunId,
-    task: configuration.worker.catalog.tasks[taskId],
+    task: selectedTask,
   });
   const unsubscribeSecondFrames = second.subscribeFrames?.((frame) => {
     frames.push({
@@ -155,6 +168,7 @@ try {
       observedAt: before.evidence.observed_at,
       images: before.images,
     },
+    captureAfterCancellation: captureAfterCancellation.evidence.id,
     firstExecution: started.execution_id,
     confirmedBoundary: stopped.boundary_event_id,
     nativeCheck: checked.facts,

@@ -170,6 +170,7 @@ export class UpperRun {
       requests: [],
       verdicts: [],
       latestSensor: null,
+      latestOperatorFrame: null,
       agentSeen: {},
       skillIds: [],
       error: null,
@@ -1123,7 +1124,28 @@ export class UpperRun {
         return this.observe(a, sample);
       }
       case 'execution.query': {
-        const execution = this.options.backend.query() ?? null;
+        const native = this.options.backend.query() ?? null;
+        if (native && native.task_scope.task_id !== this.state.id)
+          throw new Error('Native execution belongs to another run.');
+        const execution = native
+          ? (this.state.executions.findLast(
+              (candidate) =>
+                candidate.execution_id === native.execution_id &&
+                isDeepStrictEqual(candidate.task_scope, native.task_scope),
+            ) ?? null)
+          : null;
+        if (execution) {
+          for (const reference of execution.observation_refs) {
+            const sample = this.evidence.read(reference);
+            if (
+              !sample ||
+              sample.evidence.visibility !== 'agent' ||
+              !isDeepStrictEqual(sample.evidence.task_scope, execution.task_scope)
+            )
+              throw new Error('Published execution observation reference is unavailable.');
+          }
+          this.grants.extend(a.id, execution.observation_refs);
+        }
         const formal =
           execution && this.gates.requiresVerification(execution)
             ? Object.values(this.state.assignments).find(
@@ -1722,6 +1744,10 @@ export class UpperRun {
     )
       throw new Error('Native frame metadata conflicts with the admitted execution.');
     const sample = this.retainSample(frame.sample);
+    this.state.latestOperatorFrame = {
+      eventSequence: (this.state.eventCount ?? this.state.events.length) + 1,
+      sample: structuredClone(sample),
+    };
     this.event('simulation.frame', {
       sample,
       runId: frame.runId,

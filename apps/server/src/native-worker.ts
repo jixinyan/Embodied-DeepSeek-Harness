@@ -234,8 +234,14 @@ class NativeWorkerTransport {
     if (Buffer.byteLength(encoded) > 32 * 1024 * 1024)
       throw new Error('Native worker request exceeds the transport bound.');
     return new Promise((resolve, reject) => {
-      const onAbort = () =>
+      const onAbort = () => {
+        if (operation === 'capture' || operation === 'check') {
+          reject(new Error(`Native worker ${operation} request cancelled.`));
+          options.signal?.removeEventListener('abort', onAbort);
+          return;
+        }
         this.disconnect(new Error('Native worker request cancelled; device state is unknown.'));
+      };
       const timer = setTimeout(
         () =>
           this.disconnect(
@@ -296,6 +302,12 @@ class NativeTaskBackend implements EmbodiedBackend {
   private closed = false;
   private readonly listeners = new Set<(update: BackendUpdate) => void>();
   private readonly frameListeners = new Set<(frame: BackendFrame) => void>();
+  private lastFrameImages?: {
+    observationId: string;
+    observedAt: string;
+    encodedImages: Record<string, string>;
+    refs: NonNullable<SensorSample['images']>;
+  };
 
   constructor(
     private readonly transport: NativeWorkerTransport,
@@ -329,20 +341,39 @@ class NativeTaskBackend implements EmbodiedBackend {
     evidenceId?: string,
   ): Promise<SensorSample> {
     const fields = object(observation);
-    const frames = object(fields.images);
-    const refs = [];
-    for (const [camera, encoded] of Object.entries(frames)) {
-      if (!/^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$/.test(camera) || typeof encoded !== 'string')
-        throw new Error('Native camera frame metadata is invalid.');
-      const bytes = Buffer.from(encoded, 'base64');
-      if (!bytes.length || bytes.length > 1024 * 1024 || bytes.toString('base64') !== encoded)
-        throw new Error('Native camera frame encoding is invalid.');
-      refs.push(
-        await this.images.saveImage({ data: bytes, mediaType: 'image/png', name: `${camera}.png` }),
-      );
-    }
-    if (!refs.length || refs.length > 8)
+    const observationId = string(fields.observation_id);
+    const observedAt = string(fields.observed_at);
+    const cached = this.lastFrameImages;
+    let refs: NonNullable<SensorSample['images']>;
+    const entries = Object.entries(object(fields.images));
+    if (!entries.length || entries.length > 8)
       throw new Error('Native observation has no bounded camera frames.');
+    const reuseFrameImages =
+      visibility === 'agent' &&
+      cached?.observationId === observationId &&
+      cached.observedAt === observedAt &&
+      entries.length === Object.keys(cached.encodedImages).length &&
+      entries.every(([camera, encoded]) => cached.encodedImages[camera] === encoded);
+    if (reuseFrameImages) {
+      refs = structuredClone(cached.refs);
+    } else {
+      const inputs = entries.map(([camera, encoded]) => {
+        if (!/^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$/.test(camera) || typeof encoded !== 'string')
+          throw new Error('Native camera frame metadata is invalid.');
+        const bytes = Buffer.from(encoded, 'base64');
+        if (!bytes.length || bytes.length > 1024 * 1024 || bytes.toString('base64') !== encoded)
+          throw new Error('Native camera frame encoding is invalid.');
+        return { data: bytes, mediaType: 'image/png' as const, name: `${camera}.png` };
+      });
+      refs = await this.images.saveImages(inputs);
+      if (visibility === 'debug_only')
+        this.lastFrameImages = {
+          observationId,
+          observedAt,
+          encodedImages: Object.fromEntries(entries) as Record<string, string>,
+          refs: structuredClone(refs),
+        };
+    }
     if (
       control &&
       (!Array.isArray(control.action) ||
@@ -366,7 +397,7 @@ class NativeTaskBackend implements EmbodiedBackend {
         provider: this.provider,
         catalogTaskId: this.catalogTaskId,
         runId: this.runId,
-        observationId: string(fields.observation_id),
+        observationId,
         uncertainActions,
         ...(status
           ? { executionId: status.execution_id, rawSimSteps: status.raw_sim_steps ?? 0 }
@@ -383,13 +414,13 @@ class NativeTaskBackend implements EmbodiedBackend {
       },
       images: refs,
       evidence: {
-        id: evidenceId ?? string(fields.observation_id),
+        id: evidenceId ?? observationId,
         kind: 'image',
         source: `${this.provider}.camera`,
-        created_at: string(fields.observed_at),
+        created_at: observedAt,
         visibility,
         task_scope: scope ?? status?.task_scope ?? { task_id: this.runId },
-        observed_at: string(fields.observed_at),
+        observed_at: observedAt,
         clock_id: status?.clock_id ?? this.clockId,
       },
     };

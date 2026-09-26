@@ -66,6 +66,13 @@ const runSchema = z
     requests: z.array(z.unknown()),
     verdicts: z.array(z.unknown()),
     latestSensor: z.object({ evidence: z.object({ id }) }).nullable(),
+    latestOperatorFrame: z
+      .object({
+        eventSequence: counter.positive(),
+        sample: z.object({ evidence: z.object({ id }) }),
+      })
+      .nullable()
+      .optional(),
     agentSeen: z.record(id, z.unknown()),
     agentStreams: z.record(id, z.unknown()).optional(),
     skillIds: z.array(id),
@@ -346,6 +353,19 @@ export function runRecordOwners(
           throw new Error('Run sensor snapshot conflicts with its retained source.');
       };
       if (state.latestSensor) sampleSource(state.latestSensor, false);
+      if (state.latestOperatorFrame) {
+        const { eventSequence, sample } = state.latestOperatorFrame;
+        const event = history.page(state, eventSequence - 1, eventSequence, 1).events[0];
+        if (
+          !event ||
+          event.type !== 'simulation.frame' ||
+          event.detail.runId !== state.id ||
+          !isDeepStrictEqual(event.detail.sample, sample) ||
+          sample.evidence.visibility !== 'debug_only'
+        )
+          throw new Error('Latest operator frame conflicts with its published event.');
+        sampleSource(sample, false);
+      }
       for (const [assignmentId, sample] of Object.entries(state.agentSeen)) {
         assignment(state, assignmentId, references);
         sampleSource(sample, true);

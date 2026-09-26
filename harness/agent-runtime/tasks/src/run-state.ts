@@ -81,6 +81,7 @@ export interface RunState {
   requests: SubgoalRequest[];
   verdicts: RunVerdict[];
   latestSensor: SensorSample | null;
+  latestOperatorFrame?: { eventSequence: number; sample: SensorSample } | null;
   agentSeen: Record<string, SensorSample>;
   agentStreams?: Record<
     string,
