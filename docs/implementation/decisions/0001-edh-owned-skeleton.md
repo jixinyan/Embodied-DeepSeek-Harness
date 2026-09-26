@@ -10,8 +10,9 @@ Selected DSH implementations will become internal modules with provenance.
 Bootstrap scope is interfaces, schemas, source mappings, role/tool/team examples,
 SVG architecture and development scaffolding. DSH source migration and runtime
 verification are Step 00; no functional step is completed by scaffolding alone.
-All source workspaces are private. MIT is used for new scaffold code; preserve
-applicable upstream attribution when importing code. No artifact is published to
+All source workspaces are private. Follow the current
+[licensing scope](../../../THIRD_PARTY_NOTICES.md) and preserve applicable upstream
+attribution when importing code. No artifact is published to
 a package registry and no simulator/model dependency is installed in bootstrap.
 
 The repository spec is the implementation source of truth. The earlier Obsidian

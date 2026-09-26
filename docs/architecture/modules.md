@@ -55,7 +55,7 @@ frames remain available to the operator and authorized Planner tools.
 | `harness/agent-runtime/perception` | Model-facing capture/segmentation/depth/localization tool adapters | Shared global scene state | PerceptionProvider; Step 07 |
 | `harness/agent-runtime/observation` | Active-view intent, resource effects and achieved pose | Assumption that turn-view only moves a camera | ActiveObservation; Step 07 |
 | `harness/agent-runtime/verification` | Post-execution formal-verdict coordination | In-flight observation, retry, replan or ground-truth fabrication | VerificationCoordinator; Step 08 |
-| `harness/agent-runtime/memory` | Authorized evidence access, skills and recovery experience | Automatic shared prompts or VLA training | SkillStore/EvidenceReader; Step 10 |
+| `harness/agent-runtime/memory` | Authorized evidence access, skills, recovery experience and the planned initialized Session SceneState | Automatic shared prompts or VLA training | SkillStore/EvidenceReader; SceneState implementation pending; Step 10 |
 | `harness/agent-runtime/storage` | Persistence primitives used through scoped service boundaries | Bypass of evidence visibility | EventStore/AssetStore; Step 04 |
 | `harness/contracts` | Authoritative wire schema and generated declarations | Runtime semantic authorization | physical.schema.json; Step 01 |
 | `harness/physical-runtime/src/physical_harness/execution` | Actual action progression, budget and device job handling | Upper-level retry decision | ExecutionWorker; Step 06 |

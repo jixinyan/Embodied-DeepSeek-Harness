@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.58. Current checkpoint: **live model, worker and three-simulator integration**.
+Spec: v1.59. Current checkpoint: **live model, worker and three-simulator integration**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -71,6 +71,23 @@ these observations, calls the actual GT check and submits failed verdict
 `2940c04d-9832-49d9-b607-70444d0df50f` with `task_success=false`.
 The native input audit and run records are retained under
 `.local/work/live-robocasa-server-11/`.
+
+At `6f2e2d3`, RoboCasa run `b35732fb-a365-45b0-8416-73b588198e26`
+uses the native instruction `Open the cabinet door.` and an eight-action inference
+limit. The first recorded response contains the native 16-action model output and
+the exact eight-action prefix transmitted for execution. The execution reaches
+1,050 controls, 132 policy calls and 26,250 physics steps, then publishes a confirmed
+budget end. Formal verdict `854524a6-c6a6-4586-9010-66ff41fb053b` is failed with
+native `task_success=false`. A subsequent Planner model request fails with
+`UND_ERR_SOCKET`; the local model tunnel is repaired after the remote service is
+confirmed healthy. No retry or successful recovery occurs in this run. Session
+`92261f45-1331-4512-befa-9322ec829eec` closes with resources released. Actual request,
+policy, verdict and close records are retained in `.local/work/live-robocasa-action8-01/`.
+
+The `6ea3c2b` SAM 3.1 implementation adds the native DSH segmentation tool,
+assignment-scoped camera selection, an independent HTTP service and retained mask
+and overlay images. TypeScript, formatting and Python syntax checks pass. Actual
+model inference and complete tool-round acceptance remain pending.
 
 Seven boundary-admission checks at `6354f1f` use the recorded RoboCasa statuses
 with the production validator and LocalStore. They cover eligible-end admission,

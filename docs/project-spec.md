@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.58 · 2026-09-26
+Version: v1.59 · 2026-09-26
 
 Status: native DSH, Qwen VLM, GR00T and RoboCasa complete actual control, pause/resume and post-execution failed verification with before/after images; successful tasks and complete three-provider acceptance remain pending.
 
@@ -793,12 +793,25 @@ Metadata and references link the failure, changes and verified recovery evidence
 | Category | Lifetime | Visibility |
 | --- | --- | --- |
 | Agent conversation | One assignment | That instance; not automatically copied |
+| Initialized SceneState | Retained Session environment and scene generation | Versioned, evidence-backed state; explicit role queries and console updates |
 | Task facts/entity bindings | Current task, with time and evidence | Briefs, messages or explicit queries |
 | Episode evidence/events | Persistent audit records | Scoped reads with preserved visibility |
 | Skill library | Cross-task knowledge | Explicit retrieval, compatibility filtering and on-demand loading |
 
 Task completion returns results and recovery/skill references. A fresh agent on the
 next task retrieves relevant knowledge rather than inheriting the previous conversation.
+
+Environment initialization creates a persistent `SceneState`. Initial permitted
+observations populate the visible scene; later observations, perception results and
+supported verification facts incrementally update that same state identity. Records
+retain observation time, coordinate frame, model provenance and uncertainty. Delayed
+results cannot overwrite newer current observations. Tasks in the same retained
+environment query its current revision; reset starts a new scene generation and
+preserves earlier records as history. Restart requires backend identity reconciliation
+before historical positions can be treated as current. Agent contexts remain
+independent and retrieve only explicitly requested information. The
+[scene-state design](implementation/spatial-memory-proposal.md) defines the accepted
+lifecycle and proposed interfaces; implementation and actual acceptance are pending.
 
 Sensor metadata is persisted through a run-scoped `SensorSamples` catalog. Each sample
 and its image references are immutable; repeated identical publication is idempotent.
@@ -1485,13 +1498,14 @@ Bind the following to actual resources before dependent implementation:
 
 - A subgoal-capable checkpoint, GPU, input/action specs and supported instruction granularity;
   incompatible policies require a separate training/fine-tuning work package.
-- The next real environment/body after the initial configuration. BEHAVIOR, RoboCasa
-  and RoboTwin are extension targets, not all currently supported.
+- Actual task, scene and body configurations for BEHAVIOR, RoboCasa and RoboTwin.
+  All three providers require complete real acceptance for v1.
 - Post-end verification latency, model/execution budgets and latency targets, based on measurement.
 - Robot model, cameras, DiMOS/SDK/ROS2 backend and actual stop/resume/evidence capabilities.
-- Release details, dependency locks and model/data permissions. The name is now EDH and
-  new scaffold code uses MIT; preserve upstream notices and distinguish code licenses
-  from model-weight or dataset terms.
+- Release details, dependency locks and model/data permissions. EDH-authored framework
+  code uses AGPL-3.0-only; the standalone SAM service and its invocation example retain
+  MIT. Preserve upstream notices and the independent terms of model weights and
+  datasets. Exact file scope is specified in the [license notices](../THIRD_PARTY_NOTICES.md).
 
 Filesystem skills and a single host/worker deployment are v1 defaults, not architectural
 limits. Changes to role ownership, context isolation or verification gates require a
