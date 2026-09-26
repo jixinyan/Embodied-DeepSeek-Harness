@@ -34,8 +34,10 @@ controls, 66 policy calls and 26,250 physics steps. Both formal GT checks return
 false. Planner accepted `tasks.retry` after the first failure and Evolver ran; the
 run recorded no `UND_ERR_SOCKET`. After the second verdict, user API cancellation
 closed the Session and released the GPU0 worker allocation. This records the previous
-running-monitor workflow; the post-execution-only Verifier sequence still requires
-implementation and real-run acceptance. The `31aded4` replay export is a 172.1-second
+running-monitor workflow. The post-execution-only Verifier sequence is implemented
+at `c76af5f`, with native Planner pause records at `f6f674f` and paused observation
+access at `1720b67`. TypeScript, schema, formatting and structure checks pass;
+real-run acceptance of the new sequence is in progress. The `31aded4` replay export is a 172.1-second
 1080p MP4 derived from recorded frames.
 
 Active work covers the DSH-backed upper loop, a real physical worker, BEHAVIOR-1K,
