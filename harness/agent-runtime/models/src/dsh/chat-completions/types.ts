@@ -138,6 +138,7 @@ export interface WireDelta {
    * open a reasoning block); absent entirely in non-thinking mode.
    */
   reasoning_content?: string | null
+  reasoning?: string | null
   tool_calls?: WireToolCallDelta[]
 }
 

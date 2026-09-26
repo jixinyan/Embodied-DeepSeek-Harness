@@ -64,6 +64,33 @@ function limit(value: number | undefined, fallback: number): number {
     throw new Error('Model transport limits must be positive bounded integers.');
   return result;
 }
+type RequestStage =
+  | 'credential resolution'
+  | 'request preparation'
+  | 'HTTP connection'
+  | 'SSE response';
+
+const transportCodes = new Set([
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'EHOSTUNREACH',
+  'ENETUNREACH',
+  'EPIPE',
+  'ETIMEDOUT',
+  'UND_ERR_CONNECT_TIMEOUT',
+  'UND_ERR_HEADERS_TIMEOUT',
+  'UND_ERR_SOCKET',
+]);
+
+function safeTransportCode(error: unknown): string | undefined {
+  if (!error || typeof error !== 'object') return undefined;
+  const code = 'code' in error ? error.code : undefined;
+  if (typeof code === 'string' && transportCodes.has(code)) return code;
+  const cause = 'cause' in error ? error.cause : undefined;
+  if (!cause || typeof cause !== 'object') return undefined;
+  const causeCode = 'code' in cause ? cause.code : undefined;
+  return typeof causeCode === 'string' && transportCodes.has(causeCode) ? causeCode : undefined;
+}
 /** Recognize only an explicit structured overflow; never expose provider error text. */
 async function contextOverflow(
   response: Response,
@@ -239,14 +266,17 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
     using requestDeadline = deadline(options.signal, this.timeout, 'MODEL_REQUEST_TIMEOUT');
     const { signal } = requestDeadline;
     let response: Response | undefined;
+    let stage: RequestStage = 'credential resolution';
     try {
       signal.throwIfAborted();
       const key = await this.config.apiKey?.(signal);
       signal.throwIfAborted();
       if (key !== undefined && !key.trim())
         throw new LlmError('Configured model credential is empty.', 'MISSING_CREDENTIAL');
+      stage = 'request preparation';
       const body = await this.request(options, signal);
       signal.throwIfAborted();
+      stage = 'HTTP connection';
       response = await fetch(this.endpoint, {
         method: 'POST',
         redirect: 'error',
@@ -293,6 +323,7 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
         !response.headers.get('content-type')?.toLowerCase().includes('text/event-stream')
       )
         throw new LlmError('Model endpoint did not return an SSE stream.', 'MALFORMED_RESPONSE');
+      stage = 'SSE response';
       let bytes = 0;
       const bounded = response.body.pipeThrough(
         new TransformStream<Uint8Array, Uint8Array<ArrayBuffer>>({
@@ -308,10 +339,23 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
     } catch (error) {
       if (options.signal?.aborted) throw options.signal.reason;
       if (timeoutOf(signal)) throw new LlmError('Model request timed out.', 'TIMEOUT');
-      if (error instanceof LlmError) throw error;
-      throw new LlmError('Model transport or response processing failed.', 'TRANSPORT_ERROR', {
-        cause: error,
-      });
+      if (error instanceof LlmError) {
+        if (error.code === 'MALFORMED_RESPONSE')
+          throw new LlmError('Model endpoint returned a malformed SSE response.', error.code, {
+            cause: error,
+            ...(response ? { status: response.status } : {}),
+          });
+        throw error;
+      }
+      const code = safeTransportCode(error);
+      throw new LlmError(
+        `Model request failed during ${stage}${code ? ` (${code})` : ''}.`,
+        'TRANSPORT_ERROR',
+        {
+          cause: error,
+          ...(response ? { status: response.status } : {}),
+        },
+      );
     } finally {
       if (response?.body && !response.body.locked) await response.body.cancel().catch(() => {});
     }

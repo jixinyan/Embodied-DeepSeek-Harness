@@ -1,11 +1,10 @@
 # Model endpoints, policy transport and action admission
 
-Status: 2026-09-23. Both adapters and the action gate are executable and tested with
-local HTTP/WebSocket peers. A live vLLM VLM passes real RoboCasa image and native DSH
-tool rounds. Native RoboCasa reset and manual ActionGate control also pass; learned
-policy tasks and hardware acceptance remain pending. The default console uses a CPU
-physical fixture. A host-to-Python execution worker bridge remains the next integration
-step. See [actual provider acceptance](live-integration.md). Profile selection and
+Status: 2026-09-26. The upper model adapter, policy transport and action gate have
+passed actual service checks. RoboCasa has completed a learned-policy control rollout
+through the native worker and console; its recorded task-success check was false.
+The other simulator providers and hardware retain their separate acceptance status in
+[actual provider acceptance](live-integration.md). Profile selection and
 compatibility preflight are documented in [physical stack profiles](physical-profiles.md).
 
 ![Model and policy boundaries](../architecture/assets/model-policy-adapters.svg)
@@ -20,7 +19,16 @@ uses this same adapter and includes configuration identity in deployment admissi
 extends the original DSH LlmAdapter. It uses absorbed DSH message/image serialization,
 SSE parsing and tool-call translation. The existing DSH agent loop still owns tool
 execution, follow-up, model retries and cancellation. The extra source imports and
-one strict stream-completion patch are recorded in [provenance](../provenance/dsh-imports.json).
+the stream-completion and vLLM reasoning-field patches are recorded in
+[provenance](../provenance/dsh-imports.json).
+
+The 2026-09-26 vLLM stream emitted `delta.reasoning` and `delta.content`; it did not
+emit `delta.reasoning_content`. The adapter accepts both documented wire shapes and
+stores the emitted reasoning as a native DSH reasoning block. A real
+`qwen3.8-27b` DSH session completed with one reasoning block and one assistant
+message. The raw stream and bounded check are retained under
+`.local/work/vlm-reasoning-probe.sse` and `.local/work/check-dsh-reasoning.ts`.
+`reasoning_tokens` alone remains usage metadata and is never presented as model text.
 
 Local vLLM and remote services use the same Chat Completions binding. Set `baseURL`
 to the API root, including `/v1` when required; the adapter appends
@@ -89,7 +97,10 @@ Reasoning-content history replay is opt-in (`passReasoningContent`); model outpu
 must never be presented as access to otherwise unavailable hidden reasoning.
 
 HTTP errors expose status, request ID and retry metadata without replaying provider
-error bodies. Redirects are rejected. Truncated streams, missing finish reasons,
+error bodies. Transport failures record a fixed processing stage, an admitted
+connection error code when present and the received HTTP status. They do not copy
+request bodies, credentials or raw response text into durable failures. Redirects
+are rejected. Truncated streams, missing finish reasons,
 oversized responses and deadlines fail explicitly rather than becoming successful
 answers. No automatic transport retry is added beneath DSH.
 
@@ -183,12 +194,13 @@ cancel/drain or robot-specific hold, declare committed segment size and measure
 stop latency. The gate cannot retract already committed external commands. Its
 `lease_valid` callback checks ownership; it is not a resource arbiter. The future
 worker must authenticate Planner resume authority and route pause/stop/budget states
-to the upper execution and verification services.
+to the upper execution and verification services. The RoboCasa native worker now
+implements this boundary; provider-specific interruption acceptance remains recorded
+in [live integration](live-integration.md).
 
 During a rollout step, inference and dispatch are bounded by observation and wall
-deadlines. Between steps the execution worker must run an independent budget/watchdog
-and stop on lease loss, process failure or shutdown. That worker and independent
-watchdog are not implemented by this standalone component. Async callbacks must
+deadlines. Between steps the deployment worker checks its budget and lease and stops
+on shutdown. Provider-specific watchdog acceptance is tracked separately. Async callbacks must
 cooperate; hardware needs its own command fencing/watchdog regardless of Python
 cancellation. Gate state is diagnostic local state, not a published ExecutionStatus
 or a formal VerificationResult.
@@ -204,14 +216,14 @@ resume races, lost acknowledgements, budgets, expiry, lease loss, malformed/over
 messages and shutdown failures. Eighteen shared schema cases cover new wire shapes
 in both TypeScript and Python. These establish transport/admission behavior only.
 
-Next: implement the host-to-worker bridge and resource/watchdog lifecycle, publish
-actual gate/device events to the console, then bind a chosen simulation and policy
-server. Validate real sensor attachments and live VLM tool use. Preserve mandatory
-Verifier rounds at budget boundaries and Planner-only retry/replan/resume.
+The RoboCasa host-to-worker bridge now publishes actual gate/device events to the
+console, and the formal Verifier has recorded a native failed task-success check at a
+confirmed budget boundary. Successful task completion and Planner recovery after that
+verdict remain acceptance targets.
 
 ## Upper resume authority
 
-Before the worker bridge is connected, its upper port now checks an exact formally
+The upper port checks an exact formally
 verified pause and records an explicit Planner resume decision. Providers receive
 execution/boundary/state-version preconditions and must publish the matching update
 before acknowledging. An unsolicited `running` update cannot borrow the owner ID

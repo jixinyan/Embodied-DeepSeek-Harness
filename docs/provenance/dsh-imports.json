@@ -1017,17 +1017,18 @@
       "source": "packages/llm/llm-deepseek/src/translate.ts",
       "destination": "harness/agent-runtime/models/src/dsh/chat-completions/translate.ts",
       "source_sha256": "66e8b1f96a90404d4e5ca67fc85b9e37a96bbee78ed52521e7b8fdc3f336ba32",
-      "local_sha256": "7eb0510cf4c1044d7c8ed76105262d6a0e449f148fcac6f9be998f7399cc1b39",
+      "local_sha256": "a07279692cdb165c50dda25b4a9748a4708ff31e29fc865b4117f0e4a16d0f35",
       "modifications": [
-        "Reject a DONE sentinel without a preceding finish reason instead of inferring successful completion."
+        "Reject a DONE sentinel without a preceding finish reason instead of inferring successful completion.",
+        "Accept the vLLM delta.reasoning field alongside native delta.reasoning_content when translating streamed reasoning blocks."
       ]
     },
     {
       "source": "packages/llm/llm-deepseek/src/types.ts",
       "destination": "harness/agent-runtime/models/src/dsh/chat-completions/types.ts",
       "source_sha256": "aa481d7bdf68e1f22f36286ae64ef6eb522afe3010545872d1d05899d825ad1e",
-      "local_sha256": "aa481d7bdf68e1f22f36286ae64ef6eb522afe3010545872d1d05899d825ad1e",
-      "modifications": []
+      "local_sha256": "7c6bdae0eb2a921584248a6493a9f9e46e9e160c20711f7967bdfa45dbb0fe7b",
+      "modifications": ["Declare the vLLM delta.reasoning field in the streamed choice type."]
     },
     {
       "source": "packages/compaction/compaction/src/brand.ts",
