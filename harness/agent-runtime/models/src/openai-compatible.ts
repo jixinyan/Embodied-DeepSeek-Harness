@@ -41,6 +41,7 @@ export interface OpenAICompatibleOptions {
   maxTokensField?: 'max_tokens' | 'max_completion_tokens';
   /** Opt in only when the endpoint explicitly requires reasoning_content replay. */
   passReasoningContent?: boolean;
+  connectionMode?: 'pooled' | 'close-after-response';
   /** Server-specific generation options, e.g. vLLM chat_template_kwargs. */
   extraBody?: Readonly<Record<string, unknown>>;
 }
@@ -152,6 +153,13 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
       throw new Error(
         'Model baseURL must be an HTTP(S) API root without credentials, query or fragment.',
       );
+    if (
+      options.connectionMode !== undefined &&
+      !['pooled', 'close-after-response'].includes(options.connectionMode)
+    )
+      throw new Error('Model connection mode is unsupported.');
+    if (options.connectionMode === 'close-after-response' && url.protocol !== 'http:')
+      throw new Error('Closing each model connection requires an HTTP endpoint.');
     this.endpoint = url.toString().replace(/\/$/, '') + '/chat/completions';
     this.config = { ...options };
     this.models = structuredClone(options.models);
@@ -284,6 +292,7 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'text/event-stream',
+          ...(this.config.connectionMode === 'close-after-response' ? { Connection: 'close' } : {}),
           ...(key ? { Authorization: `Bearer ${key}` } : {}),
         },
         body,

@@ -56,6 +56,7 @@ const server = await startServer({
             },
           ],
           timeoutMs: 180_000,
+          connectionMode: 'close-after-response',
           resolveImage: (ref, signal) =>
             images.readImageRequest(
               ref,

@@ -91,7 +91,10 @@ admitted image references and the matching resolver can now exercise the upper p
 resolution and credential callbacks must cooperate with cancellation.
 
 Optional settings include `systemRole`, `maxTokensField`, `timeoutMs`, image count
-and request/response byte bounds. `extraBody` supports endpoint-specific options
+and request/response byte bounds. HTTP deployments through a local transport may set
+`connectionMode: 'close-after-response'` so each model request opens its own connection;
+the adapter admits that setting only for HTTP endpoints and does not replay failed
+requests. `extraBody` supports endpoint-specific options
 such as vLLM template arguments, but cannot replace messages, model identity or tools.
 Reasoning-content history replay is opt-in (`passReasoningContent`); model output
 must never be presented as access to otherwise unavailable hidden reasoning.
