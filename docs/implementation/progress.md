@@ -8,8 +8,11 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 The active goal is to complete and verify all agreed v1 capabilities. SAM 3.1
 segmentation and YOLO26 depth are selected for replaceable perception services.
-Their implementation and actual model acceptance are pending. Spatial-memory
-representation requires a user decision before dependent implementation proceeds.
+Their implementation and actual model acceptance are pending. The user selected
+an initialized, continuously updated Session scene state for spatial memory. The
+[spatial-memory design](spatial-memory-proposal.md) specifies initialization,
+incremental observations, revisions, reset and evidence handling; runtime
+implementation and actual acceptance are pending.
 Independent simulator, policy, lifecycle and release work continues against the
 v1 acceptance register.
 
