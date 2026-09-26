@@ -8,6 +8,14 @@ instruction, budget, execution counters, stop reason, one selected before observ
 when available, the final boundary observation, and authorized check results. Other
 admitted before observations remain available by evidence reference.
 
+Before observations must appear in the execution request's explicit context references,
+be agent-visible, belong to the same task and predate or match the execution request
+time. Any supplied goal, attempt or recovery scope must match the request. A task-level
+baseline may provide visual context while retaining its original scope, source and
+timestamp. The latest eligible observation with images is attached together with the
+final boundary images. Formal checks use the ended execution's complete scope and
+stopped boundary; a contextual baseline does not establish a current success fact.
+
 ## Formal-check context lifetime
 
 `VerificationBoundaries` records formal admission by run, execution and boundary ID.
