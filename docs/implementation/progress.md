@@ -47,8 +47,26 @@ Planner as its caller. Native `verification.check` returns `task_success=false`,
 and the Verifier submits a failed verdict. Public stop/close requests then leave
 the Session closed with resources released and no native worker process. This
 validates scheduling, pause/resume and formal failure, with successful task completion
-still pending. Explicit task-scoped before-image delivery is under validation.
+still pending.
 Local evidence is retained in `.local/work/live-robocasa-server-10/`.
+
+The `0ec010a` repeat, run `3b10d1f3-dc53-4cb1-ad4d-8f6c8b1e2bb2`, also
+confirms pause at 185 controls and Planner resume of the same execution. Event 598
+ends at 256 controls, 17 policy calls and 6,400 physics steps; event 599 creates
+the only Verifier. Its first native DSH model-input message contains six image
+blocks: three cameras before execution and three after confirmed end. The before
+sample retains its task-only scope, original timestamp and `robocasa.camera`
+source; the after sample retains the complete goal/attempt scope. The model compares
+these observations, calls the actual GT check and submits failed verdict
+`2940c04d-9832-49d9-b607-70444d0df50f` with `task_success=false`.
+The native input audit and run records are retained under
+`.local/work/live-robocasa-server-11/`.
+
+Seven boundary-admission checks at `6354f1f` use the recorded RoboCasa statuses
+with the production validator and LocalStore. They cover eligible-end admission,
+running/paused rejection, unconfirmed and external stop rejection, identity
+conflicts, write exclusion, immutable records and historical reads after reopening.
+These component checks do not execute models or simulate a physical task.
 
 TypeScript, schema, formatting and structure checks pass for the implementation.
 The `31aded4` replay export is a 172.1-second 1080p MP4 derived from recorded frames.
