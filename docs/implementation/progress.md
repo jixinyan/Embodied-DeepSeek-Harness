@@ -1,20 +1,26 @@
 # Implementation progress
 
-Spec: v1.59. Current checkpoint: **live model, worker and three-simulator integration**.
+Spec: v1.59. Current checkpoint: **SAM 3.1 real-image inference verified; development paused**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The active goal is to complete and verify all agreed v1 capabilities. SAM 3.1
+The v1 goal is paused at the user's request after the SAM 3.1 checkpoint.
+The [September 26 handoff](pause-2026-09-26.md) records the stopping point,
+preserved local work, service state and next action. No new acceptance runs or
+implementation work are scheduled as part of this checkpoint.
+
+The goal remains to complete and verify all agreed v1 capabilities. SAM 3.1
 segmentation and YOLO26 depth are selected for replaceable perception services.
-Their implementation and actual model acceptance are pending. The user selected
+Standalone SAM 3.1 inference passes on a real RoboCasa image; the complete native
+DSH tool round and YOLO26 depth acceptance remain pending. The user selected
 an initialized, continuously updated Session scene state for spatial memory. The
 [spatial-memory design](spatial-memory-proposal.md) specifies initialization,
 incremental observations, revisions, reset and evidence handling; runtime
 implementation and actual acceptance are pending.
-Independent simulator, policy, lifecycle and release work continues against the
-v1 acceptance register.
+Remaining simulator, policy, lifecycle and release work is tracked in the
+v1 acceptance register for resumption.
 
 The target is a complete v1 covering every agreed capability. The
 [v1 delivery register](v1-delivery.md) records implementation gaps, required real
@@ -84,10 +90,16 @@ confirmed healthy. No retry or successful recovery occurs in this run. Session
 `92261f45-1331-4512-befa-9322ec829eec` closes with resources released. Actual request,
 policy, verdict and close records are retained in `.local/work/live-robocasa-action8-01/`.
 
-The `6ea3c2b` SAM 3.1 implementation adds the native DSH segmentation tool,
-assignment-scoped camera selection, an independent HTTP service and retained mask
-and overlay images. TypeScript, formatting and Python syntax checks pass. Actual
-model inference and complete tool-round acceptance remain pending.
+The SAM 3.1 implementation adds the native DSH segmentation tool, assignment-scoped
+camera selection, an independent HTTP service and retained mask and overlay images.
+TypeScript, formatting and Python syntax checks pass. Standalone GPU inference on
+a real 256-by-256 RoboCasa left-camera PNG with the prompt `cabinet` returns two
+nonempty masks with areas 6,953 and 17,627 pixels. The retained report identifies
+SAM source `2345a4ad109ac29c569da749c91d84f10dc08c40`, checkpoint SHA-256
+`0567debeec80ba4ac6369540c6c248025283cb3ff2b92827509e57e2b3541cb6` and
+the `sam31-multiplex-init-state-v1` service adaptation. Evidence is retained in
+`.local/work/sam31-acceptance/result.json`. This proves actual image inference;
+the full native DSH assignment and model-visible retained overlay remain pending.
 
 Seven boundary-admission checks at `6354f1f` use the recorded RoboCasa statuses
 with the production validator and LocalStore. They cover eligible-end admission,
@@ -98,7 +110,7 @@ These component checks do not execute models or simulate a physical task.
 TypeScript, schema, formatting and structure checks pass for the implementation.
 The `31aded4` replay export is a 172.1-second 1080p MP4 derived from recorded frames.
 
-Active work covers the DSH-backed upper loop, a real physical worker, BEHAVIOR-1K,
+The remaining scope covers the DSH-backed upper loop, a real physical worker, BEHAVIOR-1K,
 RoboCasa, RoboTwin, and actual VLM/policy services. Implementations must preserve
 independent role contexts, Planner decision ownership, post-execution formal verification,
 ActionGate admission and verified recovery experience. The

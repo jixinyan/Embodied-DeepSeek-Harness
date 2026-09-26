@@ -42,6 +42,26 @@ and simulator assets retain their respective licenses. See the exact
 > returns native R1Pro observations and GT and passes clean shutdown.
 > Successful task recovery, remaining policy controls and hardware integration remain pending.
 
+### Verified checkpoint — September 26, 2026
+
+Development is paused at the user's requested checkpoint. SAM 3.1 standalone GPU
+inference passes on a real RoboCasa camera image: the prompt `cabinet` produces
+two nonempty masks, with retained source-image, checkpoint and result provenance.
+The native DSH segmentation tool is implemented; its complete live model/tool
+round remains unverified. TypeScript, tool/schema checks, Python syntax and
+formatting checks pass for the committed SAM changes (`a8e159b`).
+
+| Area | Current evidence | Remaining acceptance |
+| --- | --- | --- |
+| RoboCasa + GR00T + Qwen | Real Planner run: 1,050 controls, 132 policy calls, post-execution verification | Native task success and successful recovery; latest verdict is failed |
+| RoboTwin + π0.5 | Native reset/cameras and real policy inference; recorded gripper conversion check passes in local work | Complete learned-policy control and upper-agent workflow |
+| BEHAVIOR-1K + GR00T | Native reset/observations/GT and policy checkpoint loading | Simulator main-thread lifecycle and complete policy execution |
+| Perception | SAM 3.1 standalone image inference passes | Live DSH segmentation round and YOLO26 with predicted depth |
+| Spatial memory | Initialized, continuously updated Session `SceneState` design specified | Runtime implementation and real acceptance |
+
+The [pause handoff](docs/implementation/pause-2026-09-26.md) records evidence,
+uncommitted work and the next action. v1 acceptance remains incomplete.
+
 ![Current implementation](docs/architecture/assets/implementation-status.svg)
 
 The diagram shows actual capability. See [target architecture](docs/architecture/modules.md)
