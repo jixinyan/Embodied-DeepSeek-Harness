@@ -58,24 +58,18 @@ and active model context remain separate lifetime requirements.
 
 ## Acceptance
 
-The seven previously recorded `pnpm test:verification-boundaries` checks exercised
-production validation and actual LocalStore files under the earlier stopped-boundary
-rules. Their paused-admission and unconfirmed budget-end expectations no longer match
-the current gate. That historical acceptance covered:
+`pnpm test:verification-boundaries` uses `ExecutionStatus` values recorded in a real
+RoboCasa run (`1df69c9c-7db6-4ae1-9a1c-dd726f44c15c`), including its running,
+confirmed paused and confirmed budget-ended updates. The test passes those values
+through the production contract validator and actual LocalStore journal. It confirms
+that running and paused updates create no formal record, while the eligible end
+publishes one immutable record. Deliberately altered copies verify rejection of
+unconfirmed and external stops, conflicting scope or version, and boundary reuse.
+The same check covers independent run/execution identities, write exclusion,
+rewritten records, detached reads, journal compaction and reopening. A recorded
+paused boundary remains readable as history without creating a new assignment.
 
-- Independent run/execution identities using the same boundary label.
-- Continuous pause updates, detached reads and unchanged original publication.
-- Resume followed by a fresh stop, prior-boundary reuse and paused-to-ended identity.
-- Conflicting facts, scopes, versions and invalid running-state admission.
-- Write exclusion, missing source records and rewritten record versions.
-- Actual journal compaction and reopening without starting model work.
-- Budget-end admission with an unconfirmed device state and conflicting source identity.
-
-Current acceptance must use the present admission rules: eligible confirmed ends
-publish one immutable record and fresh Verifier request; ordinary pause and running
-updates publish no formal record; stale or reused identities fail; external stop and
-backend error do not create successful verdicts. Related historical checks exercised
-persisted verification contexts and native DSH role retirement. The old authored
-documents and seven checks do not establish the changed gate or actual provider
-ordering. Real model, policy and simulator execution with confirmed stop
-acknowledgement remains required.
+These checks validate boundary admission and persistence. The real run additionally
+confirmed pause, Planner resume, ended execution and subsequent formal Verifier
+ordering with native device acknowledgement. The actual Verifier outcome and native
+task result remain in that run's evidence records.
