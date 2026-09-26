@@ -23,6 +23,17 @@ def main() -> None:
     try:
         observation = environment.reset("picking_up_trash", {"instance_id": args.instance_id})
         description = environment.describe()
+        captured = environment.observe()
+        if captured.observation_id == observation.observation_id:
+            raise RuntimeError("BEHAVIOR capture reused the reset observation identity.")
+        if set(captured.images) != set(observation.images) or set(captured.state) != set(observation.state):
+            raise RuntimeError("BEHAVIOR capture differs from the declared sensor channels.")
+        for name, png in captured.images.items():
+            with Image.open(BytesIO(png)) as image:
+                image.load()
+                if image.format != "PNG" or image.mode != "RGB" or image.size != (256, 256):
+                    raise RuntimeError(f"BEHAVIOR capture camera {name} has an invalid frame.")
+            (args.output_directory / f"capture-{name}.png").write_bytes(png)
         checks = environment.check(("task_success",))
         cameras = {}
         for name, png in observation.images.items():
@@ -47,6 +58,8 @@ def main() -> None:
             "state": {name: list(values) for name, values in observation.state.items()},
             "observation_id": observation.observation_id,
             "observed_at": observation.observed_at,
+            "capture_observation_id": captured.observation_id,
+            "capture_observed_at": captured.observed_at,
             "checks": [
                 {"check_id": check.check_id, "value": check.value, "reason": check.reason}
                 for check in checks

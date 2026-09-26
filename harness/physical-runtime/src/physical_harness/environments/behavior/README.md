@@ -42,16 +42,18 @@ positions in radians with measured joint limits. The GR00T processor converts
 its relative torso and arm predictions to absolute commands before this native
 action interface receives them.
 
-On 2026-09-23, native reset of 2025 `picking_up_trash` instance 0 in
+On 2026-09-26, native reset of 2025 `picking_up_trash` instance 0 in
 `house_double_floor_lower` produced three 256×256 RGB PNG cameras, all 21
 finite state groups, a validated 23-channel `ActionSpec`, and a native
-`task_success=false` result. This was an observation and ground-truth check;
-no policy action or task completion was measured. The simulator process
-returned status 139 during `og.shutdown()`: OmniGibson 3.9.2's `cleanup()`
-raised `OSError: [Errno 39] Directory not empty` while removing its temporary
-skybox resource directory, followed by an Isaac Sim shutdown segmentation
-fault. The native session close and control-step acceptance remain unverified.
-The remote acceptance report is
-`/home/jixin/workspace/code/Embodied-DeepSeek-Harness/.local/work/behavior-adapter/result.json`;
-the process status and log are in the same `.local/work` directory as
-`behavior-adapter-1.status` and `behavior-adapter-1.log`.
+`task_success=false` result. A separate `observe()` call produced a new
+observation identity and another valid three-camera capture. The simulator
+process completed `close()` with status 0, and its GPU memory was released.
+The close sequence stops OmniGibson's USD watcher and calls
+`sim._partial_clear()` to release the loaded scene and skybox before the
+official `og.shutdown()` call. These cleanup calls follow the sequence used
+by OmniGibson 3.9.2's `og.clear()` without relaunching the simulator.
+This acceptance measured observation and ground truth; policy control and
+task completion remain unverified. The remote report, captured PNG files and
+process status are under
+`/home/jixin/workspace/code/Embodied-DeepSeek-Harness/.local/work/behavior-capture-shutdown-check`.
+The process log is the adjacent `behavior-capture-shutdown-check.log` file.

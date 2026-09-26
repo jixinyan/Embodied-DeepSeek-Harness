@@ -349,4 +349,8 @@ class BehaviorEnvironment:
         self._action_spec = None
         if self._og is not None:
             og, self._og = self._og, None
+            from omnigibson import lazy
+
+            lazy.omni.kit.viewport.menubar.core.utils.usd_watch.stop()
+            og.sim._partial_clear()
             og.shutdown()
