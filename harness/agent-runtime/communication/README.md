@@ -11,10 +11,10 @@ See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 ## Continuing and retiring assignments
 
 A fresh delegation creates an independent context. Explicit followup messages may
-continue that assignment; they do not import another agent's conversation. The async
-Verifier uses this native DSH path for successive admitted images during one running
-segment. Pausing retires the monitor; formal verification and resumed monitoring each
-receive fresh assignments with explicit context.
+continue that assignment; they do not import another agent's conversation. The host
+creates the designated Verifier only after an eligible completed execution boundary.
+It supplies selected before and final observations as explicit context. Running frame
+updates and ordinary pauses create no Verifier assignment.
 
 `TeamSessions.retire` closes message/tool admission and requests native cancellation
 immediately, then waits for quiescence, disposes the handle and exports the final audit.

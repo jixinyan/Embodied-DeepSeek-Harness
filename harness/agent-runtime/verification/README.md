@@ -1,17 +1,20 @@
 # Verification coordination
 
-UpperRun reuses one independent monitor assignment per continuous execution segment,
-retires it on pause/end, and creates a fresh formal-verifier assignment. Accepted formal verdicts close new
-work and release the verifier after its final native turn. It enforces limited evidence grants and mandatory boundary verification, and applies shared lifecycle gates. The current backend returns labeled fixture facts. Real GT/device evidence providers remain pending.
+UpperRun creates a fresh independent Verifier assignment after a confirmed ended
+execution reports `policy_stop`, `episode_terminated`, or `budget_exhausted`. Running
+updates and ordinary pauses do not start Verifier work. The accepted formal verdict
+releases the Verifier after its final native turn. The assignment receives the admitted
+instruction, budget, execution counters, stop reason, one selected before observation
+when available, the final boundary observation, and authorized check results. Other
+admitted before observations remain available by evidence reference.
 
 ## Formal-check context lifetime
 
 `VerificationBoundaries` records formal admission by run, execution and boundary ID.
-It preserves the original stopped status and admits repeated continuous-pause updates
-without scheduling another verifier. New stops require fresh identities within that
-execution; providers may reuse labels in different executions. Scope, stopped facts,
-source version and exact publication are checked before scheduling. Boundary records
-survive restart for inspection without activating model work. See
+It preserves the original ended status. New completed executions require fresh
+boundary identities. Scope, stop reason, device confirmation, source version and exact
+publication are checked before scheduling. Historical paused-boundary records remain
+readable after restart without activating model work. See
 [boundary admission and tests](../../../docs/implementation/verification-boundaries.md).
 
 `VerificationContexts` stores each assignment's request, execution, stopped boundary,
@@ -20,7 +23,7 @@ record. The active registry retains only assignment IDs and accepted record vers
 Sensor bodies remain in `SensorSamples` and are loaded when an active check needs them.
 Opening a context requires an existing source observation in the same task scope.
 Formal assignments inherit the admitted execution's complete scope, including its
-recovery identity even after that recovery has resolved while the execution is paused.
+recovery identity.
 Provider check updates require agent-visible evidence; facts cannot cite another
 sample or contain duplicate check IDs. Shared lifecycle gates still decide whether
 the facts justify the submitted outcome.

@@ -18,9 +18,9 @@ start receive optional `BackendCallOptions` containing the native DSH `AbortSign
 Resume requires `BackendResumeOptions`, described below. Implementations should forward
 these signals into network requests and cooperative provider work.
 
-An admitted pause is owned and tracked by the run, without the retiring monitor's
-cancellation signal. For example, a Verifier calls pause; the provider publishes
-pausing, which cancels that monitor, but the stop acknowledgement must still complete.
+An admitted Planner or operator pause is owned and tracked by the run. The provider
+publishes `pausing` and then a confirmed `paused` boundary with `planner_pause`.
+This boundary permits a Planner resume decision and does not trigger formal checks.
 A pause failure fails the run and requests stop. Providers must bound acknowledgement
 latency and publish confirmed state; a settled Promise alone is not a device-stop
 confirmation. Stop/close also remain independent of an aborted model call. Cancellation
@@ -56,10 +56,8 @@ image content. Return no raw bytes or arbitrary URLs in this metadata port. See 
 ## Bound resume decisions
 
 The native `execution.resume` tool admits one in-flight resume decision at a time.
-It requires the current attempt, an admitted `paused` state, device confirmation,
-remaining budget and a formal result for that exact execution/boundary. A formal
-`unknown` remains unknown: the Planner may decide to continue a confirmed stopped
-job, but the harness does not convert uncertainty into success or make that decision.
+It requires the current attempt, an admitted `paused` state, device confirmation
+and remaining budget. The Planner decides whether to continue the stopped job.
 
 The provider receives `executionId`, `boundaryId`, `stateVersion` and the native
 cancellation signal in `BackendResumeOptions`, alongside the authenticated owner's
@@ -75,10 +73,7 @@ call cannot dispatch another command. If the command was sent but its acknowledg
 is missing or invalid, the run fails and cleanup requests device stop. It does not
 replay the command. Actual device stop still depends on the provider acknowledgement.
 
-Example: the Verifier is checking paused boundary A while the Planner calls resume.
-The tool rejects it before contacting the backend. After A's formal result arrives,
-the Planner may explicitly call again. If the job resumes and pauses at B before the
-resume Promise resolves, B stays paused and receives its own verification round;
+If the job resumes and pauses at B before the resume Promise resolves, B stays paused;
 a late response cannot change the host state back to running.
 
 ## Provider status admission
@@ -95,11 +90,10 @@ last accepted status is historical evidence, not proof of current hardware state
 following a connection or protocol failure. Device/resource recovery is still a
 worker integration responsibility.
 
-Formal boundary IDs are scoped to a run and execution. Continuous paused updates must
-preserve the stopped boundary's time, scope, clock, control steps, confirmation and
-reason. Every new stop after resume and every paused-to-ended transition requires a
-fresh boundary ID within that execution. The upper host records admission before
-publishing the stopped status and scheduling the formal role. See
+Formal boundary IDs are scoped to a run and execution. Every completed execution
+requires a fresh boundary ID. The upper host records admission before publishing
+the ended status and scheduling the formal role. Historical paused-boundary records
+remain readable. See
 [boundary publication](../../../docs/implementation/verification-boundaries.md).
 
 Six additional upper tests cover pending formal checks, unsolicited resume, missing
