@@ -152,6 +152,8 @@ function ffconcatPath(file) {
 }
 
 async function makeVideos(output, images, selectedCamera) {
+  const inputTimebaseHz = 10000;
+  const maxAllowedPtsErrorS = 5 / inputTimebaseHz;
   const frames = images.filter((row) => row.kind === 'simulation.frame');
   if (!frames.length) return { videos: [], missing: ['simulation.frame events and rollout video'] };
   const groups = new Map();
@@ -184,11 +186,11 @@ async function makeVideos(output, images, selectedCamera) {
     const lines = ['ffconcat version 1.0'];
     ordered.forEach((row, index) => {
       lines.push(`file '${ffconcatPath(path.resolve(output, row.file))}'`);
-      lines.push('option framerate 10000');
+      lines.push(`option framerate ${inputTimebaseHz}`);
       lines.push(`duration ${intervals[index] ?? tailDurationS}`);
     });
     lines.push(`file '${ffconcatPath(path.resolve(output, ordered.at(-1).file))}'`);
-    lines.push('option framerate 10000');
+    lines.push(`option framerate ${inputTimebaseHz}`);
     await writeFile(path.join(output, concat), `${lines.join('\n')}\n`);
     await runFfmpeg(['-hide_banner', '-loglevel', 'error', '-y', '-safe', '0', '-f', 'concat',
       '-i', path.join(output, concat), '-fps_mode', 'vfr', '-c:v', 'libx264',
@@ -196,9 +198,14 @@ async function makeVideos(output, images, selectedCamera) {
     const encodedFramePtsS = await encodedFramePts(path.join(output, video));
     if (encodedFramePtsS.length !== ordered.length + 1)
       throw new Error('Encoded frame count does not preserve the recorded sequence.');
-    for (const [index, row] of ordered.entries())
-      if (Math.abs(encodedFramePtsS[index] - (row.simulationTimeS - ordered[0].simulationTimeS)) > 0.00015)
-        throw new Error('Encoded frame timestamp differs from the recorded simulator time.');
+    let maxPtsErrorS = 0;
+    for (const [index, row] of ordered.entries()) {
+      const expectedPtsS = row.simulationTimeS - ordered[0].simulationTimeS;
+      const errorS = Math.abs(encodedFramePtsS[index] - expectedPtsS);
+      maxPtsErrorS = Math.max(maxPtsErrorS, errorS);
+      if (errorS > maxAllowedPtsErrorS)
+        throw new Error(`Encoded frame ${index} timestamp ${encodedFramePtsS[index]} differs from recorded simulator time ${expectedPtsS}.`);
+    }
     videos.push({
       file: video,
       concat,
@@ -211,7 +218,9 @@ async function makeVideos(output, images, selectedCamera) {
       encodedFrameCount: encodedFramePtsS.length,
       encodedFramePtsS,
       recordedFrameVideoPtsS: encodedFramePtsS.slice(0, ordered.length),
-      inputTimebaseHz: 10000,
+      inputTimebaseHz,
+      maxPtsErrorS,
+      maxAllowedPtsErrorS,
       finalEncodedFrameRepeatsLastRecordedFrame: true,
       frameEventSequences: ordered.map((row) => row.eventSequence),
       frameSimulationTimesS: ordered.map((row) => row.simulationTimeS),

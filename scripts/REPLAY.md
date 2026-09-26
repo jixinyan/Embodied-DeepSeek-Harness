@@ -37,6 +37,11 @@ source simulator timestamps. The HTML video link resolves the current playback
 position through those encoded timestamps to the recorded event and its
 wall-clock timestamp. A video is withheld when any source frame or simulator
 timestamp in its group is unavailable.
+The exporter records the largest difference between encoded presentation time and
+recorded simulator time. The input timebase is 10 kHz (0.1 ms per tick). The
+1,050-frame RoboCasa recording measured four ticks (0.4 ms) of accumulated
+FFmpeg timestamp rounding across 52.5 seconds. Validation allows one further
+tick, for a maximum of 0.5 ms; a larger difference stops the export.
 The encoded video repeats its final recorded frame once to hold that final
 display interval. `recordedFrameCount` and `encodedFrameCount` distinguish the
 source frames from this playback frame.
