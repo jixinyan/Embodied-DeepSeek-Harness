@@ -53,7 +53,6 @@ export interface EmbodiedBackend {
     direction: 'left' | 'center' | 'right',
     options?: BackendCallOptions,
   ): Promise<SensorSample>;
-  /** 已接受的暂停请求须等待设备在限定时间内确认停止。 */
   pause(options?: BackendCallOptions): Promise<void>;
   resume(ownerId: string, options: BackendResumeOptions): Promise<void>;
   stop(): Promise<void>;
