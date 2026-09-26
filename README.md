@@ -22,7 +22,7 @@
 </p>
 
 EDH is an independent physical-agent framework designed around user-defined
-teams, explicit context handoff, replaceable tools and policies, asynchronous
+teams, explicit context handoff, replaceable tools and policies, post-execution
 verification, and reusable recovery experience. Its agent runtime incorporates
 selected DeepSeek Harness implementations, with traceable provenance.
 
@@ -121,7 +121,8 @@ remains pending.
 - Define teams through role files and bindings; roles are not a fixed enum.
 - Every new delegation gets a fresh context and an explicit task brief.
 - The upper decision owner controls retry, replan and resume.
-- The verifier can pause, monitors asynchronously, and must verify at budget expiry.
+- Planner directly starts policy jobs and owns pause/resume decisions. Verifier
+  starts after a confirmed execution end, including budget expiry.
 - Recovery skills serve planning and verification; publication requires formal
   success of the original recovery goal.
 - Simulation comes first; hardware contracts remain explicit and real-device
