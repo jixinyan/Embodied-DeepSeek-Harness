@@ -14,6 +14,7 @@ import type { ApplicationOptions } from './application.js';
 import { CORE_TOOLS } from './application.js';
 import type { ModelBinding } from './runtime.js';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
+import type { SegmentationEngine } from '@edh/perception';
 import {
   defaultSessionHistory,
   sessionHistoryOptions,
@@ -84,6 +85,7 @@ export interface ServerDeployment {
   readonly modelConfigurationDigest?: string;
   readonly tasks: Readonly<Record<string, TaskPreset>>;
   readonly additionalTools?: ApplicationOptions['additionalTools'];
+  readonly segmentation?: SegmentationEngine;
   readonly providers?: readonly string[];
   readonly contextManagement?: ContextManagementOptions;
   readonly sessionHistory?: SessionHistoryOptions;
@@ -246,7 +248,10 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
       : { modelConfigurationDigest: input.modelConfigurationDigest }),
     launchProfiles: launchMetadata,
     tasks: taskMetadata,
-    tools: [...CORE_TOOLS, ...Object.keys(additionalTools)],
+    tools: [
+      ...CORE_TOOLS.filter((tool) => tool !== 'perception.segment_objects' || input.segmentation),
+      ...Object.keys(additionalTools),
+    ],
     providers: [...(input.providers ?? [])],
   });
   return Object.freeze({
@@ -255,6 +260,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     launchProfiles: Object.freeze(launchProfiles),
     adapters,
     additionalTools,
+    segmentation: input.segmentation,
     sessionHistory,
     ...(input.assignmentLifetimeMs === undefined
       ? {}

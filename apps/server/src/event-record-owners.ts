@@ -290,6 +290,29 @@ export class RunEventReferences {
               for (const ref of this.validator.parse('CheckResult', fact).evidence_refs)
                 evidence(ref);
           break;
+        case 'perception.generated': {
+          assignment(detail.assignmentId);
+          const source = evidence(detail.sourceEvidenceId);
+          const overlay = evidence(detail.overlayEvidenceId);
+          const masks = evidence(detail.maskEvidenceId);
+          const sourceAttachmentId = id.parse(detail.sourceAttachmentId);
+          if (
+            !source.images?.some((image) => image.attachmentId === sourceAttachmentId) ||
+            source.evidence.visibility !== 'agent' ||
+            overlay.evidence.kind !== 'image' ||
+            masks.evidence.kind !== 'mask' ||
+            overlay.evidence.visibility !== 'agent' ||
+            masks.evidence.visibility !== 'agent' ||
+            !isDeepStrictEqual(source.evidence.task_scope, overlay.evidence.task_scope) ||
+            !isDeepStrictEqual(source.evidence.task_scope, masks.evidence.task_scope) ||
+            overlay.visualization.sourceEvidenceId !== source.evidence.id ||
+            masks.visualization.sourceEvidenceId !== source.evidence.id ||
+            overlay.visualization.sourceAttachmentId !== sourceAttachmentId ||
+            masks.visualization.sourceAttachmentId !== sourceAttachmentId
+          )
+            throw new Error('Perception event has conflicting source or result evidence.');
+          break;
+        }
         case 'execution.requested': {
           const request = this.validator.parse('SubgoalRequest', detail.request);
           if (request.task_id !== runId)

@@ -633,6 +633,8 @@ async function startApplication(
                   allowedSubgoalChecks: submission.allowedSubgoalChecks,
                   predefinedGoals: submission.predefinedGoals,
                   additionalTools: deployment.additionalTools,
+                  images: services.images,
+                  ...(deployment.segmentation ? { segmentation: deployment.segmentation } : {}),
                   sessionHistory: deployment.sessionHistory,
                   ...(deployment.assignmentLifetimeMs === undefined
                     ? {}
@@ -739,6 +741,8 @@ async function startApplication(
                 allowedSubgoalChecks: task.allowedSubgoalChecks ?? [],
                 predefinedGoals: task.predefinedGoals ?? [],
                 additionalTools: deployment.additionalTools,
+                images: services.images,
+                ...(deployment.segmentation ? { segmentation: deployment.segmentation } : {}),
                 sessionHistory: deployment.sessionHistory,
                 ...(deployment.assignmentLifetimeMs === undefined
                   ? {}

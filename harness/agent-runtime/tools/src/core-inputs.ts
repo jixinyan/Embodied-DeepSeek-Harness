@@ -39,6 +39,11 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
   'context.request': { assignmentId: str, message: str, evidenceRefs: strings },
   'context.respond': { assignmentId: str, message: str, evidenceRefs: strings },
   'perception.capture': {},
+  'perception.segment_objects': {
+    evidenceId: { type: 'string', minLength: 1, maxLength: 128 },
+    attachmentId: { type: 'string', minLength: 1, maxLength: 128 },
+    textPrompt: { type: 'string', minLength: 1, maxLength: 1024 },
+  },
   'observation.turn_view': { direction: { type: 'string', enum: ['left', 'center', 'right'] } },
   'execution.start': { instruction: str },
   'execution.query': {},

@@ -1,7 +1,9 @@
 import { isDeepStrictEqual } from 'node:util';
 import { modelToolContractSchema } from './model-tool-schema.js';
 import { admitSensorSample, sensorImages, SensorSamples } from '@edh/perception';
+import type { SegmentationEngine } from '@edh/perception';
 import { randomUUID } from 'node:crypto';
+import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
 import type { Context } from '@deepseek-ai/cordis';
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools';
 import {
@@ -80,6 +82,8 @@ export interface ApplicationOptions {
   validator: ContractValidator;
   store: LocalStore;
   backend: EmbodiedBackend;
+  images?: AttachmentStore;
+  segmentation?: SegmentationEngine;
   instruction: string;
   taskContext?: readonly TaskContextSummary[];
   scenario: string;
@@ -611,6 +615,11 @@ export class UpperRun {
         } else {
           const properties = CORE_TOOL_PARAMETERS[logical];
           if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
+          if (
+            logical === 'perception.segment_objects' &&
+            (!this.options.segmentation || !this.options.images)
+          )
+            throw new Error('Segmentation provider and image storage are unavailable.');
           if (logical === 'planning.update' && !this.planToolSchema)
             throw new Error('PlanDocument tool schema has not been prepared.');
           native = {
@@ -651,9 +660,11 @@ export class UpperRun {
                   'evidence.read',
                 ].includes(logical)
                   ? this.permit(a, [(value as unknown as SensorSample).evidence.id])
-                  : logical === 'verification.check' && this.checks.get(a.id)?.sample
-                    ? this.permit(a, [this.checks.get(a.id)!.sample.evidence.id])
-                    : [];
+                  : logical === 'perception.segment_objects'
+                    ? this.permit(a, [(value as { overlayEvidenceId: string }).overlayEvidenceId])
+                    : logical === 'verification.check' && this.checks.get(a.id)?.sample
+                      ? this.permit(a, [this.checks.get(a.id)!.sample.evidence.id])
+                      : [];
                 return [
                   { type: 'text' as const, text: JSON.stringify(value) },
                   ...sensorImages(samples).map((attachment) => ({
@@ -1103,6 +1114,112 @@ export class UpperRun {
         signal.throwIfAborted();
         if (this.closed || terminal(this.state.state)) throw new Error('Run ended during capture.');
         return this.observe(a, sample);
+      }
+      case 'perception.segment_objects': {
+        const segmentation = this.options.segmentation;
+        const images = this.options.images;
+        if (!segmentation || !images) throw new Error('Segmentation is unavailable.');
+        const source = this.permit(a, [s('evidenceId')])[0]!;
+        const reference = source.images?.find((image) => image.attachmentId === s('attachmentId'));
+        if (!reference) throw new Error('Camera attachment is not in the granted sample.');
+        const original = await images.readImage(reference, signal);
+        const prediction = await segmentation.segment({
+          image: original.data,
+          mediaType: original.ref.mediaType,
+          textPrompt: s('textPrompt'),
+          signal,
+        });
+        signal.throwIfAborted();
+        if (prediction.width !== reference.width || prediction.height !== reference.height)
+          throw new Error('Segmentation dimensions differ from the authorized image.');
+        if (this.closed || terminal(this.state.state))
+          throw new Error('Run ended during segmentation.');
+        const overlay = await images.saveImage({
+          data: prediction.overlayPng,
+          mediaType: 'image/png',
+          name: 'SAM 3.1 segmentation overlay',
+        });
+        const maskRefs = await Promise.all(
+          prediction.instances.map((instance) =>
+            images.saveImage({
+              data: instance.maskPng,
+              mediaType: 'image/png',
+              name: `SAM 3.1 object ${instance.objectId} mask`,
+            }),
+          ),
+        );
+        if (
+          overlay.width !== prediction.width ||
+          overlay.height !== prediction.height ||
+          maskRefs.some(
+            (mask) => mask.width !== prediction.width || mask.height !== prediction.height,
+          )
+        )
+          throw new Error('Stored segmentation images differ from the source dimensions.');
+        signal.throwIfAborted();
+        if (this.closed || terminal(this.state.state))
+          throw new Error('Run ended during segmentation storage.');
+        const createdAt = new Date().toISOString();
+        const overlayEvidenceId = randomUUID();
+        const maskEvidenceId = randomUUID();
+        const evidence = {
+          source: prediction.provider,
+          created_at: createdAt,
+          visibility: 'agent' as const,
+          task_scope: source.evidence.task_scope,
+          observed_at: source.evidence.observed_at,
+          clock_id: source.evidence.clock_id,
+        };
+        this.retainSample({
+          evidence: { ...evidence, id: overlayEvidenceId, kind: 'image' },
+          sequence: source.sequence,
+          source: source.source,
+          description: 'SAM 3.1 predicted segmentation overlay.',
+          visualization: {
+            sourceEvidenceId: source.evidence.id,
+            sourceAttachmentId: reference.attachmentId,
+          },
+          images: [overlay],
+        });
+        this.retainSample({
+          evidence: { ...evidence, id: maskEvidenceId, kind: 'mask' },
+          sequence: source.sequence,
+          source: source.source,
+          description: 'SAM 3.1 predicted object masks.',
+          visualization: {
+            sourceEvidenceId: source.evidence.id,
+            sourceAttachmentId: reference.attachmentId,
+          },
+          images: [...new Map(maskRefs.map((mask) => [mask.attachmentId, mask])).values()],
+        });
+        this.event('perception.generated', {
+          assignmentId: a.id,
+          sourceEvidenceId: source.evidence.id,
+          overlayEvidenceId,
+          maskEvidenceId,
+          sourceAttachmentId: reference.attachmentId,
+        });
+        this.grants.extend(a.id, [overlayEvidenceId, maskEvidenceId]);
+        return {
+          sourceEvidenceId: source.evidence.id,
+          sourceAttachmentId: reference.attachmentId,
+          camera: reference.name ?? null,
+          observedAt: source.evidence.observed_at,
+          overlayEvidenceId,
+          maskEvidenceId,
+          provider: prediction.provider,
+          sourceRevision: prediction.sourceRevision,
+          checkpointSha256: prediction.checkpointSha256,
+          width: prediction.width,
+          height: prediction.height,
+          instances: prediction.instances.map((instance, index) => ({
+            objectId: instance.objectId,
+            score: instance.score,
+            bboxXyxy: instance.bboxXyxy,
+            areaPixels: instance.areaPixels,
+            maskAttachmentId: maskRefs[index]!.attachmentId,
+          })),
+        };
       }
       case 'observation.turn_view': {
         this.owner(a);
