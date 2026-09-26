@@ -128,6 +128,7 @@ export class UpperRun {
   private goal: GoalBinding;
   private attemptSequence = 1;
   private readonly recoveries = new Map<string, RecoveryObservation>();
+  private readonly executionRequestedAt = new Map<string, string>();
   private planToolSchema: Record<string, unknown> | undefined;
   constructor(private readonly options: ApplicationOptions) {
     taskContextSummary(options.taskContext ?? []);
@@ -1194,6 +1195,7 @@ export class UpperRun {
         this.state.requests.push(request);
         this.state.state = 'running';
         this.event('execution.requested', { request });
+        this.executionRequestedAt.set(request.idempotency_key, this.state.updatedAt);
         return { execution: await this.options.backend.start(request, { signal }) };
       }
       case 'execution.pause':
@@ -1771,11 +1773,17 @@ export class UpperRun {
       !isDeepStrictEqual(boundarySample, update.sample)
     )
       throw new Error('Formal boundary evidence is unavailable or changed.');
+    const requestedAt = this.executionRequestedAt.get(request.idempotency_key);
+    if (!requestedAt) throw new Error('Execution request time is unavailable.');
     const beforeSamples = request.context_refs.flatMap((id) => {
       const sample = this.evidence.read(id);
+      const scope = sample?.evidence.task_scope;
       return sample?.evidence.visibility === 'agent' &&
-        isDeepStrictEqual(sample.evidence.task_scope, update.status.task_scope) &&
-        Date.parse(sample.evidence.observed_at) <= Date.parse(update.status.boundary_at!)
+        scope?.task_id === request.task_id &&
+        (scope.goal_id === undefined || scope.goal_id === request.goal_id) &&
+        (scope.attempt_id === undefined || scope.attempt_id === request.attempt_id) &&
+        (scope.recovery_id === undefined || scope.recovery_id === request.recovery_id) &&
+        Date.parse(sample.evidence.observed_at) <= Date.parse(requestedAt)
         ? [sample]
         : [];
     });
@@ -1804,6 +1812,9 @@ export class UpperRun {
           elapsedWallTimeS: update.status.elapsed_wall_time_s,
         },
         selectedBeforeObservationRef: selectedBefore?.evidence.id ?? null,
+        selectedBeforeObservationScope: selectedBefore?.evidence.task_scope ?? null,
+        selectedBeforeObservationSource: selectedBefore?.evidence.source ?? null,
+        selectedBeforeObservationTime: selectedBefore?.evidence.observed_at ?? null,
         otherAvailableBeforeObservationRefs: beforeSamples
           .filter((sample) => sample.evidence.id !== selectedBefore?.evidence.id)
           .map((sample) => sample.evidence.id),
