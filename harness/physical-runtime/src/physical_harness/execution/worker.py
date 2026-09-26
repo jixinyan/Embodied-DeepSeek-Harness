@@ -385,7 +385,7 @@ class NativeWorkerSession:
                 raise ValueError("Stop request belongs to another execution.")
             if gate.snapshot()["state"] == "ended":
                 return {"status": self._status, "observation": self._observation_wire(self._latest_observation)}
-            reason = "user_stop" if terminal else "verifier_pause"
+            reason = "user_stop" if terminal else "planner_pause"
             stopping = asyncio.create_task(gate.pause(reason, terminal=terminal))
             await asyncio.sleep(0)
             if gate.snapshot()["state"] == "pausing":
