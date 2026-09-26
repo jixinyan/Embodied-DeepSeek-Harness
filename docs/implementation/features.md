@@ -19,7 +19,7 @@ actual validation requirements.
 | User-defined teams, independent roles and completion with retained audits/reports                         | [Loader](../../harness/agent-runtime/teams/src/loader.ts), [sessions](../../harness/agent-runtime/communication/src/sessions.ts)                     |
 | Retired assignment grant release, native disposal and final cleanup-event audit | [Lifecycle and native/file checks](assignment-lifetime.md) |
 | Versioned formal-check contexts, referenced observations and retirement-bound active state | [Verification module and document/native acceptance](../../harness/agent-runtime/verification/README.md) |
-| Execution-scoped formal boundary admission, immutable stopped facts and explicit fresh-stop identity | [Provider rules and journal acceptance](verification-boundaries.md) |
+| Execution-scoped formal admission for eligible confirmed ends and explicit fresh-boundary identity | [Provider rules and historical journal checks](verification-boundaries.md); current gate needs separate acceptance |
 | Formal-check inspection with separate saved-fact/verdict states and source consistency checks | [Assignment API and document/browser acceptance](assignment-history.md#read-api-and-console) |
 | Immutable retired assignment archives, compact summaries and selected detail/TODO/observation reads | [History API and actual file/native acceptance](assignment-history.md) |
 | Bounded workspace session/task pages, session filters and independent active-session controls | [Workspace history API and document/HTTP acceptance](workspace-history.md) |

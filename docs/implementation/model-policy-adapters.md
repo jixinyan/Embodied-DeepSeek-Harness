@@ -226,8 +226,9 @@ verdict remain acceptance targets.
 
 ## Upper resume authority
 
-The upper port checks an exact formally
-verified pause and records an explicit Planner resume decision. Providers receive
+The upper port checks an exact provider-confirmed pause and records an explicit
+Planner resume decision within the admitted budget. An ordinary pause does not start
+a formal Verifier assignment. Providers receive
 execution/boundary/state-version preconditions and must publish the matching update
 before acknowledging. An unsolicited `running` update cannot borrow the owner ID
 from an old subgoal. See the [execution contract](../../harness/agent-runtime/execution/README.md)

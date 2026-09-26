@@ -63,9 +63,11 @@ work. Complete goal criteria become immutable on admission, even before executio
 3. Call `execution.start({ instruction })`. The selected binding supplies the
    SubgoalRequest's identity, criteria, budget and capabilities. The tool rechecks
    dependencies and rejects duplicate submission of an already-started attempt.
-4. At each stop/budget boundary, a fresh Verifier receives the current request's
-   criteria. Checking and submission are bound to that execution and boundary.
-   Old verifier assignments cannot pause or verify a later goal/attempt.
+4. After an eligible `ended` state with a confirmed device boundary, a fresh Verifier
+   receives the current request's criteria. Ordinary confirmed pauses remain with
+   Planner and do not create a formal assignment. Checking and submission are bound
+   to that execution and boundary. Old verifier assignments cannot verify a later
+   goal or attempt.
 5. Following formal failure, `tasks.replan` or `tasks.retry` must include an attempt
    summary and proposed changes. Replan before selecting a different repair goal.
    Returning to the failed goal restores its prior attempt; call `tasks.retry`
