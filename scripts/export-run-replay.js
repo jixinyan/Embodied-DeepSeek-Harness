@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
 import { execFile, spawn } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { chromium } from 'playwright-core';
+import { replayDocument } from './replay-dashboard-document.js';
 
 const execute = promisify(execFile);
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -17,6 +18,11 @@ function argumentsFrom(argv) {
     const value = argv[index + 1];
     if (!name?.startsWith('--') || !value) throw new Error('Expected --name value arguments.');
     options[name.slice(2)] = value;
+  }
+  if (options['from-export']) {
+    if (!options.output || options['base-url'] || options['run-id'])
+      throw new Error('Required: --from-export DIRECTORY --output DIRECTORY');
+    return options;
   }
   if (!options['base-url'] || !options['run-id'] || !options.output)
     throw new Error('Required: --base-url URL --run-id ID --output DIRECTORY');
@@ -270,34 +276,11 @@ async function renderFlow(output, source) {
   }
 }
 
-function htmlDocument(run, events, images, videos, missing) {
-  const payload = JSON.stringify({
-    run: { id: run.id, scenario: run.scenario, state: run.state }, events, images, videos, missing,
-  }).replaceAll('<', '\\u003c');
-  return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Recorded run ${run.id}</title><style>
-body{font:15px/1.5 system-ui,sans-serif;max-width:1100px;margin:0 auto;padding:24px;background:#f4f6f7;color:#18262c}
-header,article,aside{background:#fff;border:1px solid #d9e1e5;border-radius:10px;padding:18px;margin-bottom:18px}
-h1{margin:0 0 8px}small,summary{color:#52636d}a{color:#075d90}#events{display:grid;gap:9px}
-.event{padding:12px;border:1px solid #d9e1e5;border-radius:8px;background:#fff;scroll-margin-top:18px}
-.event:target{border:2px solid #007a87}pre{overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f6f7;padding:10px}
-img{max-width:100%;height:auto}video{max-width:100%;width:100%}.images{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-</style></head><body><header><h1>Recorded run</h1><div id="summary"></div><p><a href="flow.svg">Event flow SVG</a> · <a href="source/events.json">Original event JSON</a> · <a href="frames.json">Frame metadata</a> · <a href="manifest.json">Manifest</a></p></header>
-<aside id="availability"></aside><section id="videos"></section><section id="events"></section>
-<script type="application/json" id="record">${payload}</script><script>
-const data=JSON.parse(document.getElementById('record').textContent);
-const summary=document.getElementById('summary');
-summary.textContent=data.run.scenario+' · '+data.run.state+' · '+data.run.id+' · '+data.events.length+' recorded events';
-const availability=document.getElementById('availability');
-availability.textContent=data.missing.length?'Unavailable records: '+data.missing.join('; '):'All referenced replay records are available.';
-const videoSection=document.getElementById('videos');
-for(const item of data.videos){const box=document.createElement('article');const title=document.createElement('h2');title.textContent=item.camera+' · execution '+item.executionId;box.append(title);const video=document.createElement('video');video.controls=true;video.src=item.file;box.append(video);const caption=document.createElement('p');const link=document.createElement('a');link.href='#event-'+item.frameEventSequences[0];caption.append(link);box.append(caption);videoSection.append(box);video.addEventListener('timeupdate',()=>{let index=0;for(let next=1;next<item.recordedFrameVideoPtsS.length;next++){if(item.recordedFrameVideoPtsS[next]>video.currentTime)break;index=next;}const sequence=item.frameEventSequences[index];const event=data.events[sequence-1];link.href='#event-'+sequence;link.textContent='Frame event #'+sequence+' · simulator '+item.frameSimulationTimesS[index].toFixed(3)+' s · wall '+(event?.at??'unavailable');});}
-const eventSection=document.getElementById('events');
-for(const event of data.events){const box=document.createElement('article');box.className='event';box.id='event-'+event.sequence;const title=document.createElement('h3');title.textContent='#'+event.sequence+' '+event.type;box.append(title);const time=document.createElement('small');time.textContent=event.at;box.append(time);
-const refs=data.images.filter(row=>row.eventSequence===event.sequence&&row.file);if(refs.length){const gallery=document.createElement('div');gallery.className='images';for(const row of refs){const figure=document.createElement('figure');const img=document.createElement('img');img.src=row.file;img.alt=row.image.name;figure.append(img);const label=document.createElement('figcaption');label.textContent=row.image.name+' · observed '+(row.observedAt??'unavailable');figure.append(label);gallery.append(figure);}box.append(gallery);}
-const details=document.createElement('details');const label=document.createElement('summary');label.textContent='Recorded detail';details.append(label);const json=document.createElement('pre');json.textContent=JSON.stringify(event.detail,null,2);details.append(json);box.append(details);eventSection.append(box);}
-</script></body></html>`;
+async function writeDashboard(output, run, events, manifest) {
+  const payload = JSON.stringify({ run, events, manifest }).replaceAll('<', '\\u003c');
+  await writeFile(path.join(output, 'timeline.html'), replayDocument(run.id, payload));
+  for (const name of ['replay-dashboard.js', 'replay-dashboard.css'])
+    await copyFile(path.join(projectRoot, 'scripts', name), path.join(output, name));
 }
 
 async function policyLogEvidence(file, run, images, output) {
@@ -335,6 +318,29 @@ async function policyLogEvidence(file, run, images, output) {
 async function main() {
   const options = argumentsFrom(process.argv.slice(2));
   const output = path.resolve(options.output);
+  if (options['from-export']) {
+    const source = path.resolve(options['from-export']);
+    if (source !== output) throw new Error('Recorded-source dashboard regeneration requires the same output directory.');
+    const [run, events, manifest] = await Promise.all([
+      readFile(path.join(source, 'source/run.json'), 'utf8').then(JSON.parse),
+      readFile(path.join(source, 'source/events.json'), 'utf8').then(JSON.parse),
+      readFile(path.join(source, 'manifest.json'), 'utf8').then(JSON.parse),
+    ]);
+    if (!Array.isArray(events) || !events.length || run.id !== manifest.runId ||
+        manifest.eventCount !== events.length || !Array.isArray(manifest.videos) ||
+        !terminalStates.has(run.state))
+      throw new Error('Recorded export identity, event count, or terminal state is invalid.');
+    for (const [index, event] of events.entries()) {
+      if (event.sequence !== index + 1 || !Number.isFinite(Date.parse(event.at)) ||
+          index && Date.parse(event.at) < Date.parse(events[index - 1].at))
+        throw new Error('Recorded event order or timestamp is invalid.');
+    }
+    await mkdir(output, { recursive: true });
+    await writeDashboard(output, run, events, manifest);
+    console.log(JSON.stringify({ output, runId: run.id, events: events.length,
+      videos: manifest.videos.length, mode: 'recorded-source' }));
+    return;
+  }
   await mkdir(path.join(output, 'source'), { recursive: true });
   const runUrl = `${options.origin}/api/runs/${options['run-id']}?events=none`;
   const run = await jsonAt(runUrl);
@@ -388,7 +394,7 @@ async function main() {
       ...(policyLog ? [] : ['checkpoint revision', 'policy service raw log']), ...unavailable],
   };
   await writeFile(path.join(output, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-  await writeFile(path.join(output, 'timeline.html'), htmlDocument(run, events, images, videos, manifest.missing));
+  await writeDashboard(output, run, events, manifest);
   console.log(JSON.stringify({ output, runId: run.id, events: events.length, images: images.length,
     videos: videos.length, missing: manifest.missing }));
 }

@@ -35,7 +35,9 @@ every frame. It also records the actual encoded presentation timestamps from
 `ffprobe` with a 0.1-millisecond input timebase and checks them against the
 source simulator timestamps. The HTML video link resolves the current playback
 position through those encoded timestamps to the recorded event and its
-wall-clock timestamp. A video is withheld when any source frame or simulator
+wall-clock timestamp. The dashboard uses one wall-clock cursor to select the
+corresponding source frame from each video; simulator time remains separately
+labelled because it does not advance while model inference runs. A video is withheld when any source frame or simulator
 timestamp in its group is unavailable.
 The exporter records the largest difference between encoded presentation time and
 recorded simulator time. The input timebase is 10 kHz (0.1 ms per tick). The
@@ -49,10 +51,28 @@ source frames from this playback frame.
 The output includes `timeline.html`, `flow.mmd`, rendered `flow.svg`,
 `manifest.json`, `frames.json`, source `run.json` and `events.json`, the original
 PNG frames and observations, and MP4 videos when recorded frames permit them.
-The HTML timeline presents all published events, recorded details and available
-images in sequence. Diagram nodes link to those events. The manifest preserves
+The HTML dashboard keeps recorded model text, tool calls, agent status, role
+messages, plan and TODO snapshots, execution counters, native verification,
+and three camera streams together at the selected wall-clock time. It labels
+model reasoning text as unavailable when only token usage was recorded. The
+event list can filter the original events and open their full recorded detail.
+The original records remain linked from the dashboard. The manifest preserves
 the final run state and verdicts. It lists missing records and unknown provenance
 explicitly; a cancelled or failed run remains cancelled or failed. Source run
 revision and seed are reported as unavailable unless the authoritative run
 records supply them. The checkpoint revision and policy log are unavailable
 when no matching policy log is supplied.
+
+An already saved export can regenerate its dashboard without contacting the
+simulation host or re-encoding videos:
+
+```sh
+node scripts/export-run-replay.js \
+  --from-export .local/work/replay-<terminal-run-id> \
+  --output .local/work/replay-<terminal-run-id>
+```
+
+This mode validates the saved terminal run identity, event count, sequence, and
+timestamps, then writes `timeline.html` and its standalone CSS and JavaScript
+from the original saved records. It does not change source JSON, videos, frame
+images, or the recorded outcome.
