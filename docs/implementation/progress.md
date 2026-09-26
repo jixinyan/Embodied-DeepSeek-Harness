@@ -6,6 +6,13 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## Current delivery boundary
 
+The active goal is to complete and verify all agreed v1 capabilities. SAM 3.1
+segmentation and YOLO26 depth are selected for replaceable perception services.
+Their implementation and actual model acceptance are pending. Spatial-memory
+representation requires a user decision before dependent implementation proceeds.
+Independent simulator, policy, lifecycle and release work continues against the
+v1 acceptance register.
+
 The target is a complete v1 covering every agreed capability. The
 [v1 delivery register](v1-delivery.md) records implementation gaps, required real
 acceptance and the execution order. The current visual deliverable must combine
