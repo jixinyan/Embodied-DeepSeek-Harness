@@ -265,6 +265,23 @@ hold frame. FFprobe verifies every source frame timestamp within 0.15 ms of its
 recorded simulation time. Policy request identities, checkpoint provenance and
 image hashes are retained. This replay preserves the failed outcome.
 
+The full-horizon console run `bc80d2aa-d6e4-4a38-b370-9efedc887936` uses the
+official OpenCabinet horizon of 1,050 controls. Its 66 GR00T requests produce
+1,050 admitted controls and 26,250 physics steps, with 1,050 three-camera samples.
+The confirmed budget boundary receives a formally accepted `task_success=false`
+verdict. After receiving that result and acquiring fresh evidence, the Planner's
+model request terminates with `TRANSPORT_ERROR`. The recorded error does not retain
+its precise transport cause. This run publishes no retry or SKILL.
+
+The full-horizon replay at `.local/work/replay-bc80/` retains 2,300 events and
+3,165 original images. Its three camera videos each contain 1,050 source frames
+and a terminal hold frame. Browser DOM inspection confirms that all three videos
+load with 256 × 256 dimensions, 52.4997-second duration and no media error. The
+HTML timeline exposes all 2,300 original event entries, including the terminal
+role retirement. Its manifest explicitly reports unavailable authoritative
+run revision/seed fields and policy request/action-chunk events. Separate saved
+deployment and service evidence must be read alongside those declared gaps.
+
 Camera synchronization is measured separately from control frequency. The native
 RoboCasa control frequency is 20 Hz of simulation time. In run
 `bc80d2aa-d6e4-4a38-b370-9efedc887936`, the first 581 recorded control frames span
