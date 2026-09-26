@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.55. Current checkpoint: **live model, worker and three-simulator integration**.
+Spec: v1.56. Current checkpoint: **live model, worker and three-simulator integration**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -43,11 +43,15 @@ resource release unconfirmed. These worker checks execute zero learned-policy
 actions. A subsequent actual GR00T worker check passes six confirmed controls,
 150 MuJoCo physics steps, corresponding camera frames, confirmed pause/stop and
 a second task in the same scene. Its native `task_success` remains `false`.
-The report retains its base revision and working changes. A real console task now
-records Planner-selected execution, four GR00T calls, 64 admitted controls and
-1,600 physics steps. Formal verification accepted the native failed verdict.
-The task later exceeded its Planner assignment deadline. Its inspectable replay
-retains 399 events, 204 original images and three timestamp-verified camera videos.
+The report retains its base revision and working changes. The latest recorded console
+task, `bc80d2aa-d6e4-4a38-b370-9efedc887936`, contains Planner-selected execution,
+66 GR00T calls, 1,050 admitted controls and 26,250 physics steps. Formal verification
+accepted the native failed verdict at the budget boundary. The subsequent Planner
+model request ended with `TRANSPORT_ERROR`; its precise cause remains under investigation.
+Its inspectable replay retains 2,300 events, 3,165 original images and three camera
+videos with 1,050 source frames each. Browser checks confirm all three videos load
+with 256 × 256 dimensions and 52.4997-second durations. This run contains no Planner
+retry, Evolver recovery or published SKILL.
 Successful task and recovery acceptance remain pending.
 [Deployment isolation, source pins and actual checks](gpu-integration.md).
 
@@ -71,6 +75,12 @@ SHA256 values match the fixed upstream revision. All three simulators use dedica
 RoboCasa camera preprocessing matches the official evaluation wrapper exactly:
 all three decoded EDH PNG arrays pass numerical equality against the same native
 reset observations. RoboTwin policy inference from its actual task remains pending.
+
+BEHAVIOR-1K v3.9.2 resets the native `picking_up_trash` instance with R1Pro and
+returns three 256 × 256 cameras, 21 state groups, a 23-channel action specification
+and native GT failure. The process exits with status 139 during OmniGibson/Isaac Sim
+shutdown. Clean resource release, policy controls and complete application acceptance
+remain pending; the reset result alone does not establish those capabilities.
 
 An isolated Qwen VLM served by vLLM now passes actual image/tool checks on an available
 GPU. Native API completion returns `tool_calls` followed by `stop`. Independent native

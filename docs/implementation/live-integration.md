@@ -51,7 +51,7 @@ reuse requires its own task and provenance evidence.
 | Provider | Native installation/reset | EDH worker and action admission | Actual policy and upper VLM task |
 | --- | --- | --- | --- |
 | RoboCasa 1.0.1 / PandaOmron | Passed: OpenCabinet reset, three cameras and native control | Real GR00T actions, frame capture, confirmed pause/stop and consecutive task ports passed | Console Planner execution and formal GT failure recorded; successful task/recovery acceptance pending |
-| BEHAVIOR-1K v3.9.2 / R1Pro | Pending | Pending | Pending |
+| BEHAVIOR-1K v3.9.2 / R1Pro | Native picking_up_trash reset, three cameras and GT recorded; shutdown exits 139 | Clean lifecycle and policy control pending | Pending |
 | RoboTwin stable release / Aloha AgileX | Passed: adjust_bottle reset, three cameras, 14-channel state and native GT | Policy control and interruption pending | Pi0.5 weights and official tokenizer loaded; service listening; native-observation inference pending |
 
 See [GPU integration](gpu-integration.md) for immutable source pins, dependency
@@ -96,9 +96,13 @@ subsequent evidence and resulting SKILL only when the original goal has a formal
 accepted success. Show the observed outcome for every recorded attempt. A failed
 rollout remains failed in the replay. The complete visual delivery is pending until
 the required provider and recovery acceptance gates are satisfied. The recorded
-RoboCasa console run `598378e8-a56b-4629-b8a9-380dc1408fdd` already combines a real
+RoboCasa console run `bc80d2aa-d6e4-4a38-b370-9efedc887936` already combines a real
 Planner, GR00T controls, simulator images and accepted formal GT failure. Its replay
-contains 399 events, 204 original images and three camera videos. Every video retains
-64 source frames with verified encoded timestamps. The task ended with an assignment
-deadline failure; it establishes neither task success nor successful recovery.
+contains 2,300 events, 3,165 original images and three camera videos. Every video retains
+1,050 source frames. The run executes the official 1,050-control horizon and reaches
+formal verification at its confirmed stopped boundary. A later Planner model request
+ends with `TRANSPORT_ERROR`. The run contains no retry or recovery experience.
+The exported manifest identifies missing authoritative revision/seed fields and absent
+policy request/action-chunk events; separate service and configuration records retain
+additional provenance. These remain explicit evidence gaps in the complete delivery.
 See [replay export](../../scripts/REPLAY.md) for reproduction and evidence checks.

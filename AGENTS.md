@@ -16,8 +16,9 @@ requirement or deployment binding is unclear.
   through ActionGate and live VLM image/tool rounds are verified. Native worker reset,
   image transport and connection-failure boundaries pass real process checks.
   Real GR00T worker controls and confirmed pause/stop pass. A console Planner run
-  records 64 controls, formal GT failure and an inspectable camera/event replay.
-  RoboTwin native task reset passes; successful tasks/recovery and remaining
+  records 1,050 controls, formal GT failure, a later model transport failure and
+  an inspectable camera/event replay. RoboTwin native task reset passes; BEHAVIOR
+  native reset returns observations and GT but shutdown exits 139. Successful tasks/recovery and remaining
   provider control checks are pending.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.

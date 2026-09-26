@@ -7,9 +7,10 @@ OpenAI-compatible model transport, WebSocket policy transport and action admissi
 are executable with local protocol/CPU tests. The RoboCasa native adapter and action device
 also pass GPU rendering and manual-control boundary checks. The native worker passes
 actual reset, image transport and connection-failure checks. A console-driven
-Planner task records 64 GR00T controls and formal native GT failure; its replay
-preserves the camera frames and agent events. RoboTwin native task reset also
-passes. BEHAVIOR-1K, RoboTwin learned controls and successful upper task/recovery
+Planner task records 1,050 GR00T controls and formal native GT failure; its replay
+preserves the camera frames, agent events and subsequent model transport failure.
+RoboTwin native task reset passes. BEHAVIOR native reset returns R1Pro observations
+and GT, with shutdown still failing. BEHAVIOR lifecycle, RoboTwin learned controls and successful upper task/recovery
 acceptance remain under integration.
 See the [adapter boundaries](../implementation/model-policy-adapters.md).
 

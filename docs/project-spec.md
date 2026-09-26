@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.55 · 2026-09-23
+Version: v1.56 · 2026-09-26
 
 Status: upper application and console run with CPU fixtures; native RoboCasa control and live VLM tool rounds pass; full physical workflow pending.
 
@@ -1513,9 +1513,11 @@ WebSocket policy transport and standalone action admission have local acceptance
 Live VLM deployment and independent DSH image/tool rounds pass. Native RoboCasa
 reset, manual control, ActionGate pause/resume and budget exhaustion also pass.
 The native worker carries real GR00T actions and camera evidence. A console-driven
-Planner run executes 64 controls and receives a formally accepted native failed
-verdict; its event/camera replay preserves that outcome. RoboTwin native task reset
-passes. Concurrent physical goals, nested independent recovery chains, successful
+Planner run executes 1,050 controls and receives a formally accepted native failed
+verdict; its event/camera replay preserves that outcome and a subsequent model
+transport failure. RoboTwin native task reset passes. BEHAVIOR native reset returns
+R1Pro observations and GT; clean shutdown remains unverified. Concurrent physical
+goals, nested independent recovery chains, successful
 learned-policy tasks and remaining simulation/perception/hardware integration
 remain pending. SKILL source inspection, paged audits and explicit journal/image-cache
 maintenance are implemented; domain retention and full upper acceptance remain open.
