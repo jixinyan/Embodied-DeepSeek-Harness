@@ -1695,7 +1695,10 @@ export class UpperRun {
       execution: update.status,
       sensorSequence: update.sample.sequence,
     });
-    if (this.gates.requiresVerification(update.status) && !terminal(this.state.state))
+    if (
+      !terminal(this.state.state) &&
+      (update.status.state === 'paused' || this.gates.requiresVerification(update.status))
+    )
       this.grants.extend(this.state.decisionAssignmentId, [update.sample.evidence.id]);
     if (terminal(this.state.state)) return;
     if (update.status.state === 'ended' && update.status.stop_reason === 'backend_error') {
