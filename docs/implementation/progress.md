@@ -12,6 +12,21 @@ acceptance and the execution order. The current visual deliverable must combine
 model output, plans/TODOs, tools, role communication, verification and camera frames
 in one time-addressable view.
 
+The offline replay now provides a shared wall-clock cursor for model output,
+role status/messages, assignment-specific TODOs, plans, tools, execution, formal
+verification and camera videos. Real bc80 records pass browser DOM checks for
+backward/forward time selection, final control counts and verdict, camera frame
+agreement, category filtering and playback. The 1,440-pixel layout displays the four
+information panels together; the 511-pixel layout displays compact cameras and the
+first model response within the initial viewport.
+
+The OpenAI-compatible adapter now accepts vLLM's `delta.reasoning` alongside native
+`reasoning_content`. Actual streamed inference and persisted DSH Session checks pass
+at `3519e34`. Console run `2f06c665-e0ff-4457-be9c-2b0a01aa6db5` also records
+provider reasoning through the complete application path, with camera, planning,
+TODO and skill-search calls. That run's physical outcome remains pending. The older
+bc80 recording retains its original missing-reasoning limitation.
+
 Active work covers the DSH-backed upper loop, a real physical worker, BEHAVIOR-1K,
 RoboCasa, RoboTwin, and actual VLM/policy services. Implementations must preserve
 independent role contexts, Planner decision ownership, asynchronous verification,
