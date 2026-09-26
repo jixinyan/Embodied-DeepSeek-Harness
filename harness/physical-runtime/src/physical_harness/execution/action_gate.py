@@ -163,10 +163,10 @@ class ActionGate:
             self._busy = False
         return self.snapshot()
 
-    async def pause(self, reason: str = "verifier_pause", *, terminal: bool = False) -> dict[str, Any]:
+    async def pause(self, reason: str = "planner_pause", *, terminal: bool = False) -> dict[str, Any]:
         if self._state == "ended":
             return self.snapshot()
-        if reason not in ("verifier_pause", "user_stop", "budget_exhausted", "backend_error", "policy_stop", "episode_terminated"):
+        if reason not in ("verifier_pause", "planner_pause", "user_stop", "budget_exhausted", "backend_error", "policy_stop", "episode_terminated"):
             raise ValueError("Unknown stop reason.")
         if self._state == "paused" and not terminal:
             return self.snapshot()

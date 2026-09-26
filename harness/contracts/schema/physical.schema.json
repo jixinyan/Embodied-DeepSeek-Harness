@@ -1476,6 +1476,7 @@
             "policy_stop",
             "budget_exhausted",
             "verifier_pause",
+            "planner_pause",
             "user_stop",
             "backend_error",
             "episode_terminated"

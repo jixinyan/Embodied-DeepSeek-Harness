@@ -12,20 +12,6 @@ const recordSchema = z
   })
   .strict();
 
-function boundaryIdentity(status: ExecutionStatus) {
-  return {
-    executionId: status.execution_id,
-    scope: status.task_scope,
-    state: status.state,
-    boundaryId: status.boundary_event_id,
-    boundaryAt: status.boundary_at,
-    clockId: status.clock_id,
-    controlSteps: status.control_steps,
-    deviceConfirmed: status.device_confirmed,
-    stopReason: status.stop_reason,
-  };
-}
-
 export class VerificationBoundaries {
   constructor(
     private readonly store: LocalStore,
@@ -48,7 +34,7 @@ export class VerificationBoundaries {
     if (status.task_scope.task_id !== this.runId)
       throw new Error('Verification boundary belongs to another run.');
     if (status.state !== 'paused' && status.state !== 'ended')
-      throw new Error('Formal verification requires a stopped execution boundary.');
+      throw new Error('Historical verification record requires a stopped execution boundary.');
     return status;
   }
 
@@ -69,6 +55,12 @@ export class VerificationBoundaries {
 
   admit(previous: ExecutionStatus | undefined, value: ExecutionStatus): boolean {
     const status = this.validate(value);
+    if (
+      status.state !== 'ended' ||
+      !status.device_confirmed ||
+      !['policy_stop', 'episode_terminated', 'budget_exhausted'].includes(status.stop_reason ?? '')
+    )
+      throw new Error('Formal verification requires a confirmed completed execution boundary.');
     if (previous) {
       this.validator.parse('ExecutionStatus', previous);
       if (
@@ -79,18 +71,7 @@ export class VerificationBoundaries {
         throw new Error('Verification boundary transition identity or version conflicts.');
     }
     const saved = this.read(status.execution_id, status.boundary_event_id!);
-    if (saved) {
-      if (
-        !previous ||
-        previous.state !== 'paused' ||
-        status.state !== 'paused' ||
-        previous.state_version < saved.state_version ||
-        !isDeepStrictEqual(boundaryIdentity(previous), boundaryIdentity(saved)) ||
-        !isDeepStrictEqual(boundaryIdentity(status), boundaryIdentity(saved))
-      )
-        throw new Error('Execution must publish a fresh verification boundary.');
-      return false;
-    }
+    if (saved) throw new Error('Execution must publish a fresh verification boundary.');
     if (previous?.boundary_event_id === status.boundary_event_id)
       throw new Error('Previously admitted verification boundary record is missing.');
     this.store.put(

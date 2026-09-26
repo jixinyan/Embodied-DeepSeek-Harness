@@ -286,7 +286,13 @@ export interface ExecutionStatus {
   policy_calls: number;
   raw_sim_steps?: number;
   stop_reason?:
-    "policy_stop" | "budget_exhausted" | "verifier_pause" | "user_stop" | "backend_error" | "episode_terminated";
+    | "policy_stop"
+    | "budget_exhausted"
+    | "verifier_pause"
+    | "planner_pause"
+    | "user_stop"
+    | "backend_error"
+    | "episode_terminated";
   device_confirmed: boolean;
   observation_refs: string[];
   schema_version: "physical.execution.v1";

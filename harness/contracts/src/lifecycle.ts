@@ -44,7 +44,10 @@ export class LifecycleValidator {
   }
   requiresVerification(status: ExecutionStatus): boolean {
     this.contracts.parse('ExecutionStatus', status);
-    return status.state === 'paused' || status.state === 'ended';
+    return (
+      status.state === 'ended' &&
+      ['policy_stop', 'episode_terminated', 'budget_exhausted'].includes(status.stop_reason ?? '')
+    );
   }
   execution(
     request: SubgoalRequest,

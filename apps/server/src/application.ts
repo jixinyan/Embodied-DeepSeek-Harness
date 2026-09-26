@@ -117,12 +117,6 @@ export class UpperRun {
         observed: boolean;
       }
     | undefined;
-  private monitorEpoch = 0;
-  private monitorAssignment:
-    | { executionId: string; epoch: number; assignment: Assignment }
-    | undefined;
-  private monitorBusy = false;
-  private latestMonitor: BackendUpdate | undefined;
   private version = 0;
   private closed = false;
   private closing = false;
@@ -794,16 +788,6 @@ export class UpperRun {
     )
       throw new Error('Resume requires the current attempt at a confirmed paused boundary.');
     if (
-      !this.state.verdicts.some(
-        (result) =>
-          result.execution_id === execution.execution_id &&
-          result.boundary_event_id === execution.boundary_event_id &&
-          result.task_scope.attempt_id === request.attempt_id &&
-          ['passed', 'failed', 'unknown'].includes(result.status),
-      )
-    )
-      throw new Error('Resume must wait for formal verification of the current paused boundary.');
-    if (
       execution.control_steps >= request.budget.max_control_steps ||
       execution.elapsed_wall_time_s >= request.budget.max_wall_time_s
     )
@@ -1057,11 +1041,18 @@ export class UpperRun {
       case 'files.search':
         return { files: this.files.search(a.id, s('query')) };
       case 'team.delegate': {
+        const targetRole = this.sessions.team.members[s('member')];
+        const verifierRole =
+          this.sessions.team.members[this.sessions.team.definition.bindings.final_verifier];
         if (
-          s('member') === this.sessions.team.definition.bindings.final_verifier &&
-          this.state.state === 'verifying'
+          targetRole &&
+          (targetRole.definition.role_id === verifierRole?.definition.role_id ||
+            targetRole.definition.tools.includes('verification.check') ||
+            targetRole.definition.tools.includes('verification.submit'))
         )
-          throw new Error('Formal verification is already assigned at this stopped boundary.');
+          throw new Error(
+            'Formal verifier authority is assigned only by the host after execution ends.',
+          );
         const images = sensorImages(this.permit(a, args.evidenceRefs as string[]));
         const target = await this.assignment(
           s('member'),
@@ -1206,7 +1197,7 @@ export class UpperRun {
         return { execution: await this.options.backend.start(request, { signal }) };
       }
       case 'execution.pause':
-        if (a.id !== this.state.decisionAssignmentId) this.verifier(a);
+        this.owner(a);
         await this.pause();
         return { execution: this.options.backend.query() ?? null };
       case 'execution.resume':
@@ -1226,7 +1217,6 @@ export class UpperRun {
             ? Number(prior.attempt_id.slice('attempt-'.length))
             : ++this.attemptSequence;
           this.state.retryChanges = [];
-          this.latestMonitor = undefined;
           this.event('goal.selected', {
             goalId: next.id,
             attemptId: `attempt-${this.state.attempt}`,
@@ -1707,16 +1697,23 @@ export class UpperRun {
     });
     if (this.gates.requiresVerification(update.status) && !terminal(this.state.state))
       this.grants.extend(this.state.decisionAssignmentId, [update.sample.evidence.id]);
-    if (update.status.state !== 'running')
-      this.endMonitor(update.status.stop_reason ?? update.status.state);
     if (terminal(this.state.state)) return;
-    if (this.gates.requiresVerification(update.status)) {
-      if (update.status.state === 'paused') this.state.state = 'paused';
-      else this.state.state = 'verifying';
+    if (update.status.state === 'ended' && update.status.stop_reason === 'backend_error') {
+      this.spawn(this.fail(new Error('Backend ended execution with backend_error.')));
+    } else if (update.status.state === 'ended' && update.status.stop_reason === 'user_stop') {
+      this.state.state = 'unknown';
+      this.spawn(
+        this.cancelAndStop('run.abandoned', { reason: 'Execution ended by an external stop.' }),
+      );
+    } else if (this.gates.requiresVerification(update.status)) {
+      this.state.state = 'verifying';
       if (needsFormal) this.spawn(this.formal(update));
-    } else if (update.status.state === 'running' && update.status.control_steps > 0) {
-      this.latestMonitor = update;
-      if (!this.monitorBusy) this.spawn(this.monitor());
+    } else if (update.status.state === 'paused') {
+      this.state.state = 'paused';
+    } else if (update.status.state === 'ended') {
+      this.spawn(
+        this.fail(new Error('Execution ended without an eligible formal verification reason.')),
+      );
     }
   }
   private backendFrame(frame: BackendFrame): void {
@@ -1758,95 +1755,13 @@ export class UpperRun {
       simulationTimeS: frame.simulationTimeS,
     });
   }
-  private endMonitor(reason: string): void {
-    this.monitorEpoch++;
-    this.latestMonitor = undefined;
-    const current = this.monitorAssignment;
-    this.monitorAssignment = undefined;
-    if (current) this.spawn(this.sessions.retire(current.assignment.id, reason));
-  }
-  private async monitor(): Promise<void> {
-    this.monitorBusy = true;
-    try {
-      while (this.latestMonitor && !terminal(this.state.state)) {
-        let update = this.latestMonitor;
-        const epoch = this.monitorEpoch;
-        this.latestMonitor = undefined;
-        const current = this.options.backend.query();
-        if (current?.state !== 'running') break;
-        if (current.execution_id !== update.status.execution_id) continue;
-        let monitoring = this.monitorAssignment;
-        if (
-          !monitoring ||
-          monitoring.executionId !== current.execution_id ||
-          monitoring.epoch !== epoch
-        ) {
-          const request = this.currentRequest()!;
-          const owner = this.sessions.get(this.state.decisionAssignmentId);
-          const assignment = await this.assignment(
-            this.sessions.team.definition.bindings.final_verifier,
-            'Monitor this running execution assignment across explicit frame updates. Pause and report concerns; formal success is a separate assignment at a stopped boundary. Remain available between frames.',
-            owner,
-            JSON.stringify({
-              executionId: current.execution_id,
-              instruction: request.instruction,
-              budget: request.budget,
-              controlSteps: current.control_steps,
-              monitoringPhase: epoch,
-            }),
-          );
-          const latest = this.options.backend.query();
-          if (
-            epoch !== this.monitorEpoch ||
-            terminal(this.state.state) ||
-            this.closing ||
-            latest?.state !== 'running' ||
-            latest.execution_id !== current.execution_id
-          ) {
-            this.spawn(this.sessions.retire(assignment.id, 'boundary-before-monitor-start'));
-            continue;
-          }
-          monitoring = { executionId: current.execution_id, epoch, assignment };
-          this.monitorAssignment = monitoring;
-          this.event('monitor.started', {
-            assignmentId: assignment.id,
-            executionId: current.execution_id,
-            epoch,
-          });
-        }
-        const newer = this.latestMonitor as BackendUpdate | undefined;
-        if (newer?.status.execution_id === current.execution_id) {
-          update = newer;
-          this.latestMonitor = undefined;
-        }
-        const a = monitoring.assignment;
-        this.observe(a, update.sample);
-        try {
-          await this.sessions.deliver(
-            a.id,
-            { kind: 'monitor', brief: a.brief, sample: update.sample },
-            'execution-monitor',
-            sensorImages([update.sample]),
-          );
-        } catch (error) {
-          // Retirement at a control boundary cancels old observation work. Its audit is retained.
-          if (epoch === this.monitorEpoch && !terminal(this.state.state)) throw error;
-        }
-        const report = this.reports.read(a.id)?.report;
-        if (
-          report &&
-          report.status !== 'insufficient_context' &&
-          this.monitorAssignment?.assignment.id === a.id
-        ) {
-          this.monitorAssignment = undefined;
-          this.spawn(this.sessions.retire(a.id, 'monitor-reported-final'));
-        }
-      }
-    } finally {
-      this.monitorBusy = false;
-    }
-  }
   private async formal(update: BackendUpdate): Promise<void> {
+    const request = this.state.requests.findLast(
+      (candidate) =>
+        candidate.attempt_id === update.status.task_scope.attempt_id &&
+        candidate.goal_id === update.status.task_scope.goal_id,
+    );
+    if (!request) throw new Error('Formal verification request is unavailable.');
     const boundarySample = this.evidence.read(update.sample.evidence.id);
     if (
       !boundarySample ||
@@ -1854,18 +1769,56 @@ export class UpperRun {
       !isDeepStrictEqual(boundarySample, update.sample)
     )
       throw new Error('Formal boundary evidence is unavailable or changed.');
+    const beforeSamples = request.context_refs.flatMap((id) => {
+      const sample = this.evidence.read(id);
+      return sample?.evidence.visibility === 'agent' &&
+        isDeepStrictEqual(sample.evidence.task_scope, update.status.task_scope) &&
+        Date.parse(sample.evidence.observed_at) <= Date.parse(update.status.boundary_at!)
+        ? [sample]
+        : [];
+    });
+    beforeSamples.sort(
+      (a, b) =>
+        Date.parse(a.evidence.observed_at) - Date.parse(b.evidence.observed_at) ||
+        a.sequence - b.sequence,
+    );
+    const selectedBefore = beforeSamples.findLast((sample) => (sample.images?.length ?? 0) > 0);
+    const refs = [
+      ...new Set([...beforeSamples.map((sample) => sample.evidence.id), update.sample.evidence.id]),
+    ];
     const brief = this.brief(
       this.sessions.team.definition.bindings.final_verifier,
-      'Perform mandatory formal verification at this stopped execution boundary.',
-      undefined,
-      '',
-      [update.sample.evidence.id],
+      'Independently verify the admitted success criteria after this execution ended and stopped.',
+      this.sessions.get(this.state.decisionAssignmentId),
+      JSON.stringify({
+        instruction: request.instruction,
+        budget: request.budget,
+        execution: {
+          executionId: update.status.execution_id,
+          stopReason: update.status.stop_reason,
+          controlSteps: update.status.control_steps,
+          policyCalls: update.status.policy_calls,
+          rawSimSteps: update.status.raw_sim_steps ?? null,
+          elapsedWallTimeS: update.status.elapsed_wall_time_s,
+        },
+        selectedBeforeObservationRef: selectedBefore?.evidence.id ?? null,
+        otherAvailableBeforeObservationRefs: beforeSamples
+          .filter((sample) => sample.evidence.id !== selectedBefore?.evidence.id)
+          .map((sample) => sample.evidence.id),
+        unavailableBeforeObservationRefs: request.context_refs.filter(
+          (id) => !beforeSamples.some((sample) => sample.evidence.id === id),
+        ),
+        afterObservationRef: update.sample.evidence.id,
+      }),
+      refs,
     );
-    brief.known_facts.push({
-      statement: update.sample.description,
-      observed_at: update.sample.evidence.observed_at,
-      evidence_refs: [update.sample.evidence.id],
-    });
+    brief.known_facts = (selectedBefore ? [selectedBefore, update.sample] : [update.sample]).map(
+      (sample) => ({
+        statement: sample.description,
+        observed_at: sample.evidence.observed_at,
+        evidence_refs: [sample.evidence.id],
+      }),
+    );
     brief.task_scope = structuredClone(update.status.task_scope);
     const a = await this.sessions.create(
       this.sessions.team.definition.bindings.final_verifier,
@@ -1893,9 +1846,10 @@ export class UpperRun {
         brief: a.brief,
         execution: update.status,
         sample: update.sample,
+        beforeSample: selectedBefore ?? null,
       },
       'execution-boundary',
-      sensorImages([update.sample]),
+      sensorImages(selectedBefore ? [selectedBefore, update.sample] : [update.sample]),
     );
     if (
       !terminal(this.state.state) &&
@@ -1905,7 +1859,6 @@ export class UpperRun {
   }
   async pause(): Promise<void> {
     if (terminal(this.state.state)) throw new Error('Run has ended.');
-    // An accepted pause outlives the monitor it retires. Track its acknowledgement at run scope.
     const stopping = this.options.backend.pause();
     this.spawn(stopping);
     await stopping;
@@ -1938,7 +1891,6 @@ export class UpperRun {
     while (this.pending.size) await Promise.all([...this.pending]);
   }
   private async cancelAndStop(type: string, detail: Record<string, unknown>): Promise<void> {
-    this.endMonitor(type);
     const errors: unknown[] = [];
     try {
       this.clarifications.cancel('The task ended.');
