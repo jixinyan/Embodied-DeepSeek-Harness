@@ -10,7 +10,12 @@ import type { ResolvedPhysicalRuntimeProfile } from '@edh/execution';
 import { UserSessions, SessionConflict } from './user-sessions.js';
 import { SessionTaskCatalogs } from './session-task-catalog.js';
 import { validateLaunchSelection } from '../../console/public/launch-selection.js';
-import { consoleContentSecurityPolicy, readConsoleAsset } from './console-assets.js';
+import {
+  consoleContentSecurityPolicy,
+  ensureConsoleVendor,
+  readConsoleAsset,
+} from './console-assets.js';
+import { sourceCodeAvailability } from './source-code.js';
 import { admitSessionTask } from './task-admission.js';
 import { RunEventStream } from './run-event-stream.js';
 import { HttpError, assertLocalRequest, readJsonBody as body } from './local-http.js';
@@ -103,6 +108,7 @@ function json(res: ServerResponse, status: number, value: unknown): void {
 export async function startServer(options: LocalServerOptions) {
   if (options.mountImages && options.imageStorage)
     throw new Error('Configure the local image store or a custom image provider.');
+  await ensureConsoleVendor(options.root);
   const imageContext = new Context();
   try {
     const directory = resolve(options.dataDirectory);
@@ -244,7 +250,9 @@ async function startApplication(
       imageRetention
         ? { available: true, sourceIds: imageRetention.sourceIds }
         : { available: false, reason: 'Original-image retention ownership is not configured.' };
+    const sourceCode = await sourceCodeAvailability(options.root);
     const publicConfiguration = {
+      sourceCode,
       mode: deployment.metadata.source,
       deploymentId: deployment.metadata.id,
       deploymentVersion: deployment.metadata.version,

@@ -18,13 +18,18 @@
   <a href="docs/implementation/plan.md">Implementation plan</a> ·
   <a href="docs/implementation/progress.md">Current status</a> ·
   <a href="docs/implementation/features.md">Capability map</a> ·
-  <a href="LICENSE">MIT License</a>
+  <a href="LICENSE">AGPL-3.0 License</a>
 </p>
 
 EDH is an independent physical-agent framework designed around user-defined
 teams, explicit context handoff, replaceable tools and policies, post-execution
 verification, and reusable recovery experience. Its agent runtime incorporates
 selected DeepSeek Harness implementations, with traceable provenance.
+
+EDH-authored framework code is licensed under AGPL-3.0-only. The standalone
+SAM service and its invocation example retain MIT; upstream code, model weights
+and simulator assets retain their respective licenses. See the exact
+[licensing scope and notices](THIRD_PARTY_NOTICES.md).
 
 > **Early development: the upper workflow and local console are runnable.**
 > DSH-backed roles, native tools/TODOs, formal verification, recovery and SKILL

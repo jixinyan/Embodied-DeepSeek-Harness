@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { chromium } from 'playwright-core';
+import { buildConsoleVendor } from './build-console-vendor.mjs';
 import { replayDocument } from './replay-dashboard-document.js';
 
 const execute = promisify(execFile);
@@ -255,14 +256,16 @@ function flowSource(events) {
 }
 
 async function renderFlow(output, source) {
+  const vendor = await buildConsoleVendor(projectRoot);
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   try {
     const page = await browser.newPage();
     await page.setContent('<html><body></body></html>');
-    await page.addScriptTag({ path: path.join(projectRoot, 'apps/console/node_modules/mermaid/dist/mermaid.min.js') });
+    await page.addScriptTag({ path: vendor.bundle, type: 'module' });
+    await page.waitForFunction(() => Boolean(window.__edhMermaid));
     const svg = await page.evaluate(async (diagram) => {
-      window.mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' });
-      const rendered = (await window.mermaid.render('recorded-flow', diagram)).svg;
+      window.__edhMermaid.initialize({ startOnLoad: false, securityLevel: 'loose' });
+      const rendered = (await window.__edhMermaid.render('recorded-flow', diagram)).svg;
       const container = document.createElement('div');
       container.innerHTML = rendered;
       const root = container.querySelector('svg');
@@ -336,6 +339,7 @@ async function main() {
         throw new Error('Recorded event order or timestamp is invalid.');
     }
     await mkdir(output, { recursive: true });
+    await renderFlow(output, await readFile(path.join(output, 'flow.mmd'), 'utf8'));
     await writeDashboard(output, run, events, manifest);
     console.log(JSON.stringify({ output, runId: run.id, events: events.length,
       videos: manifest.videos.length, mode: 'recorded-source' }));

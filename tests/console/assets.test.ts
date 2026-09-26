@@ -24,7 +24,11 @@ test('console assets and the installed Mermaid module load with correct MIME typ
     ['/storage-maintenance.js', 'text/javascript'],
     ['/ocean.css', 'text/css'],
     ['/logo.png', 'image/png'],
-    ['/vendor/mermaid/mermaid.esm.min.mjs', 'text/javascript'],
+    ['/vendor/mermaid.mjs', 'text/javascript'],
+    ['/vendor/mermaid.mjs.LEGAL.txt', 'text/plain'],
+    ['/vendor/mermaid.manifest.json', 'application/json'],
+    ['/LICENSE', 'text/plain'],
+    ['/THIRD_PARTY_NOTICES.md', 'text/plain'],
   ]) {
     const asset = await readConsoleAsset(root, path!);
     assert.ok(asset);
@@ -33,7 +37,7 @@ test('console assets and the installed Mermaid module load with correct MIME typ
   }
 });
 
-test('static routes expose only public assets and Mermaid ESM files', async () => {
+test('static routes expose only public assets and the generated Mermaid bundle', async () => {
   for (const path of [
     '/package.json',
     '/../package.json',
@@ -44,6 +48,8 @@ test('static routes expose only public assets and Mermaid ESM files', async () =
     '/vendor/mermaid/mermaid.esm.min.mjs.map',
     '/vendor/mermaid/%2e%2e/other.mjs',
     '/vendor/mermaid//etc/other.mjs',
+    '/vendor/mermaid/mermaid.esm.min.mjs',
+    '/licenses/EDH-MIT.txt',
   ])
     assert.equal(await readConsoleAsset(root, path), undefined, path);
   assert.ok(consoleContentSecurityPolicy.includes("script-src 'self';"));

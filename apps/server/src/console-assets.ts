@@ -1,8 +1,21 @@
-import { readFile, realpath } from 'node:fs/promises';
-import { isAbsolute, relative, resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { buildConsoleVendor } from '../../../scripts/build-console-vendor.mjs';
 
 export const consoleContentSecurityPolicy =
   "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'";
+
+const vendorBuilds = new Map<string, ReturnType<typeof buildConsoleVendor>>();
+
+export function ensureConsoleVendor(root: string) {
+  const directory = resolve(root);
+  let built = vendorBuilds.get(directory);
+  if (!built) {
+    built = buildConsoleVendor(directory);
+    vendorBuilds.set(directory, built);
+  }
+  return built;
+}
 
 const publicFiles: Record<string, string> = {
   'index.html': 'text/html; charset=utf-8',
@@ -30,25 +43,30 @@ const publicFiles: Record<string, string> = {
 
 export async function readConsoleAsset(root: string, pathname: string) {
   const file = pathname === '/' ? 'index.html' : pathname.slice(1);
+  const legalFiles = {
+    '/LICENSE': 'LICENSE',
+    '/THIRD_PARTY_NOTICES.md': 'THIRD_PARTY_NOTICES.md',
+  } as const;
+  if (Object.hasOwn(legalFiles, pathname))
+    return {
+      bytes: await readFile(resolve(root, legalFiles[pathname as keyof typeof legalFiles])),
+      contentType: 'text/plain; charset=utf-8',
+    };
   if (Object.hasOwn(publicFiles, file))
     return {
       bytes: await readFile(resolve(root, 'apps/console/public', file)),
       contentType: publicFiles[file]!,
     };
-  const prefix = '/vendor/mermaid/';
-  if (!pathname.startsWith(prefix)) return undefined;
-  const name = pathname.slice(prefix.length);
-  if (
-    !/^[A-Za-z0-9_-][A-Za-z0-9_./-]*\.mjs$/.test(name) ||
-    name.split('/').some((part) => part === '..' || part === '.' || !part)
-  )
-    return undefined;
-  const directory = await realpath(resolve(root, 'apps/console/node_modules/mermaid/dist'));
-  const target = await realpath(resolve(directory, name));
-  const path = relative(directory, target);
-  if (path.startsWith('..') || isAbsolute(path)) return undefined;
+  const vendor = {
+    '/vendor/mermaid.mjs': ['bundle', 'text/javascript; charset=utf-8'],
+    '/vendor/mermaid.mjs.LEGAL.txt': ['legalNotices', 'text/plain; charset=utf-8'],
+    '/vendor/mermaid.manifest.json': ['manifest', 'application/json; charset=utf-8'],
+  } as const;
+  if (!Object.hasOwn(vendor, pathname)) return undefined;
+  const [name, contentType] = vendor[pathname as keyof typeof vendor];
+  const paths = await ensureConsoleVendor(root);
   return {
-    bytes: await readFile(target),
-    contentType: 'text/javascript; charset=utf-8',
+    bytes: await readFile(paths[name]),
+    contentType,
   };
 }

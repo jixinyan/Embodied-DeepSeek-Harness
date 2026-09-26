@@ -2,6 +2,8 @@ packages:
   - apps/*
   - harness/agent-runtime/*
   - harness/contracts
+overrides:
+  elkjs: 0.12.0
 allowBuilds:
   electron: true
   esbuild: true

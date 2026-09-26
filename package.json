@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "description": "Composable agent teams for embodied intelligence. DSH runtime integration baseline.",
-  "license": "MIT",
+  "license": "AGPL-3.0-only",
   "packageManager": "pnpm@11.19.0",
   "engines": {
     "node": ">=22.19.0"
@@ -55,6 +55,7 @@
   "devDependencies": {
     "@electron/packager": "20.3.0",
     "electron": "44.4.3",
+    "esbuild": "0.27.7",
     "playwright-core": "1.63.0",
     "@standard-schema/spec": "1.1.0",
     "@types/node": "22.19.0",

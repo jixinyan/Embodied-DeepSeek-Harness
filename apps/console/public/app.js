@@ -1141,6 +1141,16 @@ $('inspector').addEventListener('click', (e) => {
 });
 try {
   config = await api('/api/config');
+  const publishedSource = $('published-source');
+  const sourceUnavailable = $('source-unavailable');
+  if (config.sourceCode?.state === 'published' && config.sourceCode.url) {
+    publishedSource.href = config.sourceCode.url;
+    publishedSource.textContent = config.sourceCode.revision.slice(0, 12);
+    publishedSource.hidden = false;
+    sourceUnavailable.hidden = true;
+  } else {
+    sourceUnavailable.textContent = `Unavailable (${config.sourceCode?.state ?? 'unknown'})`;
+  }
   $('launch-profile').replaceChildren(
     ...Object.entries(config.launchProfiles ?? {}).map(([id, profile]) => {
       const option = document.createElement('option');
