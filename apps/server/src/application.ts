@@ -1198,7 +1198,7 @@ export class UpperRun {
       }
       case 'execution.pause':
         this.owner(a);
-        await this.pause();
+        await this.pause('planner', a.id);
         return { execution: this.options.backend.query() ?? null };
       case 'execution.resume':
         return this.resumeExecution(a, signal);
@@ -1859,8 +1859,17 @@ export class UpperRun {
     )
       throw new Error('Verifier did not produce a formal result.');
   }
-  async pause(): Promise<void> {
+  async pause(source: 'planner' | 'operator' = 'operator', assignmentId?: string): Promise<void> {
     if (terminal(this.state.state)) throw new Error('Run has ended.');
+    const execution = this.options.backend.query();
+    if (!execution) throw new Error('No execution is available to pause.');
+    if (execution.state === 'running' || execution.state === 'pausing')
+      this.event('execution.pause-requested', {
+        source,
+        executionId: execution.execution_id,
+        stateVersion: execution.state_version,
+        ...(assignmentId ? { assignmentId } : {}),
+      });
     const stopping = this.options.backend.pause();
     this.spawn(stopping);
     await stopping;

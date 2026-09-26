@@ -302,6 +302,21 @@ export class RunEventReferences {
         case 'execution.updated':
           execution(detail.execution);
           break;
+        case 'execution.pause-requested': {
+          const executionId = id.parse(detail.executionId);
+          const source = z.enum(['planner', 'operator']).parse(detail.source);
+          const stateVersion = z.number().int().positive().parse(detail.stateVersion);
+          if (
+            !state.executions.some(
+              (item) => item.execution_id === executionId && item.state_version >= stateVersion,
+            )
+          )
+            throw new Error('Pause request has no admitted execution status.');
+          if (source === 'planner') assignment(detail.assignmentId);
+          else if (detail.assignmentId !== undefined)
+            throw new Error('Operator pause request cannot claim a Planner assignment.');
+          break;
+        }
         case 'simulation.frame': {
           if (detail.runId !== runId) throw new Error('Simulation frame belongs to another run.');
           const executionId = id.parse(detail.executionId);
