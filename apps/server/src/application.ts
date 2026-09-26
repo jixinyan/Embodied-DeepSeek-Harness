@@ -1705,9 +1705,8 @@ export class UpperRun {
       this.spawn(this.fail(new Error('Backend ended execution with backend_error.')));
     } else if (update.status.state === 'ended' && update.status.stop_reason === 'user_stop') {
       this.state.state = 'unknown';
-      this.spawn(
-        this.cancelAndStop('run.abandoned', { reason: 'Execution ended by an external stop.' }),
-      );
+      this.state.error = 'Execution ended by an external stop.';
+      this.spawn(this.cancelAndStop('run.abandoned', { reason: this.state.error }));
     } else if (this.gates.requiresVerification(update.status)) {
       this.state.state = 'verifying';
       if (needsFormal) this.spawn(this.formal(update));
