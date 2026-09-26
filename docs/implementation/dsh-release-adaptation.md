@@ -26,10 +26,12 @@ The release changes relevant to EDH's selected runtime are these:
   OpenAI-compatible adapter has no `toolUpdate` capability and sends the full
   current tool list on each request. The native scoped registry check in
   `tests/runtime/dsh-release-rc2.test.ts` confirms that a new tool becomes
-  visible within the same Session and disappears after unregistering. It does
-  not exercise model dispatch or claim that a provider observed the update.
-  EDH does not advertise the upstream incremental update mode on its current
-  provider route.
+  visible within the same Session and disappears after unregistering. A live
+  two-turn Session using `qwen3.8-27b` through vLLM confirmed the provider
+  receives the newly registered tool on its next request: the model called
+  `read_current_repository_name`, and DSH executed it once against the real
+  `package.json`. Both turns completed. EDH does not advertise the upstream
+  incremental update mode on its current provider route.
 - Upstream commit `dc07e5a50dadcf03e3fb9e1b7c69bb2ba9550254` prevents
   UTF-16 surrogate pairs from being split by output caps in persistent Bash,
   PowerShell and string-replace tools. Those three tools are outside EDH's
@@ -49,9 +51,11 @@ The release changes relevant to EDH's selected runtime are these:
 No imported DSH source file changed for this review. The selected baseline,
 original hashes, local hashes and MIT notices remain unchanged in the
 [source import map](../provenance/dsh-imports.json). The rc.2 compatibility
-checks use actual DSH Session and tool services plus a persisted log file;
-they execute no model or simulator. Provider-side dynamic tool acceptance
-remains pending an available real model service.
+checks use actual DSH Session and tool services plus a persisted log file.
+`scripts/check-dsh-rc2-live-tools.ts` also verifies dynamic registration with
+the real local VLM service and writes the native tool call/result audit to
+`.local/work/dsh-rc2-live-tools.json`. This acceptance covers the full-tool-list
+OpenAI-compatible route; no simulator is involved.
 
 ## Runtime changes
 
