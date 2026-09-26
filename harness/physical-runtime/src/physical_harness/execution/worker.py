@@ -147,9 +147,12 @@ class NativeWorkerSession:
             "images": {name: base64.b64encode(data).decode("ascii") for name, data in observation.images.items()},
         }
 
-    async def _publish(self, observation: NativeObservation, control: dict[str, Any] | None = None) -> dict[str, Any]:
+    async def _publish(self, observation: NativeObservation, control: dict[str, Any] | None = None,
+                       *, require_running: bool = False) -> dict[str, Any] | None:
         async with self._publish_lock:
             snapshot = self._require_gate().snapshot()
+            if require_running and snapshot["state"] != "running":
+                return None
             if (snapshot["device_confirmed"] and self._last_boundary_publication is not None
                     and self._last_boundary_publication["status"]["boundary_event_id"] == snapshot["boundary_id"]):
                 return self._last_boundary_publication
@@ -289,6 +292,8 @@ class NativeWorkerSession:
         try:
             while gate.snapshot()["state"] == "running":
                 observation = await self._require_device().on_owner(self._environment.observe)
+                if gate.snapshot()["state"] != "running":
+                    return
                 policy_observation = encode_policy_observation(self._description, observation, self._native_task_id)
                 ticket = gate.request(
                     self._request["instruction"], observation.observation_id, policy_observation,
@@ -308,16 +313,18 @@ class NativeWorkerSession:
                     await gate.pause("policy_stop", terminal=True)
                 else:
                     await gate.execute(chunk)
-                latest = self._require_device().last_observation or observation
                 if self._require_device().last_step is not None and self._require_device().last_step.episode_terminated:
                     await gate.pause("episode_terminated", terminal=True)
                 if gate.snapshot()["state"] != "running":
                     self._last_monitor_action = self._require_device().executed_actions
-                    await self._publish(latest, self._last_control)
+                    if gate.snapshot()["stop_reason"] not in ("planner_pause", "user_stop"):
+                        await self._publish(
+                            await self._require_device().on_owner(self._environment.observe), self._last_control
+                        )
         except asyncio.CancelledError:
             if gate.snapshot()["state"] == "running":
                 await gate.pause("backend_error", terminal=True)
-            if gate.snapshot()["state"] in ("paused", "ended"):
+            if gate.snapshot()["state"] in ("paused", "ended") and gate.snapshot()["stop_reason"] not in ("planner_pause", "user_stop"):
                 await self._publish(await self._require_device().on_owner(self._environment.observe), self._last_control)
         except Exception as error:
             traceback.print_exception(error, file=sys.stderr)
@@ -375,8 +382,8 @@ class NativeWorkerSession:
         if observation is None:
             raise RuntimeError("Native action receipt has no captured observation.")
         self._last_monitor_action = device.executed_actions
-        if gate.snapshot()["state"] in ("running", "pausing"):
-            await self._publish(observation, self._last_control)
+        if gate.snapshot()["state"] == "running":
+            await self._publish(observation, self._last_control, require_running=True)
 
     async def pause(self, arguments: dict[str, Any], *, terminal: bool = False) -> dict[str, Any]:
         async with self._control_lock:
@@ -387,9 +394,6 @@ class NativeWorkerSession:
                 return {"status": self._status, "observation": self._observation_wire(self._latest_observation)}
             reason = "user_stop" if terminal else "planner_pause"
             stopping = asyncio.create_task(gate.pause(reason, terminal=terminal))
-            await asyncio.sleep(0)
-            if gate.snapshot()["state"] == "pausing":
-                await self._publish(self._latest_observation or await self._require_device().on_owner(self._environment.observe))
             await stopping
             observation = await self._require_device().on_owner(self._environment.observe)
             publication = await self._publish(observation, self._last_control)
