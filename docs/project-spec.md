@@ -1521,7 +1521,7 @@ The native worker carries real GR00T actions and camera evidence. A console-driv
 Planner run executes 1,050 controls and receives a formally accepted native failed
 verdict; its event/camera replay preserves that outcome and a subsequent model
 transport failure. RoboTwin native task reset passes. BEHAVIOR native reset returns
-R1Pro observations and GT; clean shutdown remains unverified. Concurrent physical
+R1Pro observations and GT with clean shutdown. Concurrent physical
 goals, nested independent recovery chains, successful
 learned-policy tasks and remaining simulation/perception/hardware integration
 remain pending. SKILL source inspection, paged audits and explicit journal/image-cache

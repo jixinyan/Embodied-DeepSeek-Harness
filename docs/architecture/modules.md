@@ -10,7 +10,7 @@ actual reset, image transport and connection-failure checks. A console-driven
 Planner task records 1,050 GR00T controls and formal native GT failure; its replay
 preserves the camera frames, agent events and subsequent model transport failure.
 RoboTwin native task reset passes. BEHAVIOR native reset returns R1Pro observations
-and GT, with shutdown still failing. BEHAVIOR lifecycle, RoboTwin learned controls and successful upper task/recovery
+and GT with clean shutdown. BEHAVIOR worker integration, RoboTwin learned controls and successful upper task/recovery
 acceptance remain under integration.
 See the [adapter boundaries](../implementation/model-policy-adapters.md).
 

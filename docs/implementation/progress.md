@@ -99,9 +99,9 @@ reset observations. RoboTwin policy inference from its actual task remains pendi
 
 BEHAVIOR-1K v3.9.2 resets the native `picking_up_trash` instance with R1Pro and
 returns three 256 × 256 cameras, 21 state groups, a 23-channel action specification
-and native GT failure. The process exits with status 139 during OmniGibson/Isaac Sim
-shutdown. Clean resource release, policy controls and complete application acceptance
-remain pending; the reset result alone does not establish those capabilities.
+and native GT failure. Independent native checks now complete a new capture and
+clean shutdown with exit status 0 and released GPU memory at `bff3492`. Policy
+controls and complete application acceptance remain pending.
 
 An isolated Qwen VLM served by vLLM now passes actual image/tool checks on an available
 GPU. Native API completion returns `tool_calls` followed by `stop`. Independent native

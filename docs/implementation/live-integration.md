@@ -51,7 +51,7 @@ reuse requires its own task and provenance evidence.
 | Provider | Native installation/reset | EDH worker and action admission | Actual policy and upper VLM task |
 | --- | --- | --- | --- |
 | RoboCasa 1.0.1 / PandaOmron | Passed: OpenCabinet reset, three cameras and native control | Real GR00T actions, frame capture, confirmed pause/stop and consecutive task ports passed | Console Planner execution and formal GT failure recorded; successful task/recovery acceptance pending |
-| BEHAVIOR-1K v3.9.2 / R1Pro | Native picking_up_trash reset, three cameras and GT recorded; shutdown exits 139 | Clean lifecycle and policy control pending | Pending |
+| BEHAVIOR-1K v3.9.2 / R1Pro | Native picking_up_trash reset, separate three-camera capture, GT and clean shutdown pass | Policy control and worker integration pending | Pending |
 | RoboTwin stable release / Aloha AgileX | Passed: adjust_bottle reset, three cameras, 14-channel state and native GT | Policy control and interruption pending | Pi0.5 weights and official tokenizer loaded; service listening; native-observation inference pending |
 
 See [GPU integration](gpu-integration.md) for immutable source pins, dependency

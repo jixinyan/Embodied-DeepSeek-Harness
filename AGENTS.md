@@ -18,7 +18,7 @@ requirement or deployment binding is unclear.
   Real GR00T worker controls and confirmed pause/stop pass. A console Planner run
   records 1,050 controls, formal GT failure, a later model transport failure and
   an inspectable camera/event replay. RoboTwin native task reset passes; BEHAVIOR
-  native reset returns observations and GT but shutdown exits 139. Successful tasks/recovery and remaining
+  native reset returns observations and GT with clean shutdown. Successful tasks/recovery and remaining
   provider control checks are pending.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.
