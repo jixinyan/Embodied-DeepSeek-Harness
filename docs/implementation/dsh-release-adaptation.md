@@ -2,7 +2,14 @@
 
 ## Release identity
 
-Latest reviewed release: [DSH v0.1.7-rc.2](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.1.7-rc.2),
+Latest discovery review: [DSH v0.2.0-rc.1](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.0-rc.1),
+published on 2026-09-28 at 12:36:21 UTC and marked as a prerelease.
+Its immutable source revision is `4878cdabd87d4041bdaff61d04c966883b9fd07a`.
+The official release list contains no stable release at this check.
+**Implementation remains paused at the user's request.** This review records
+applicable changes without modifying runtime code or claiming new acceptance.
+
+Latest completed compatibility review: [DSH v0.1.7-rc.2](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.1.7-rc.2),
 published on 2026-09-24 and marked as a prerelease by upstream.
 Its immutable source revision is `477b4f420553e8a52c2fbccc464d7561b239c443`.
 The preceding rc.1 review below used `46a7f68b0922371ce7144b668b90e377d8e799f4`.
@@ -13,6 +20,79 @@ and local hashes for 128 files. Release adaptations preserve those original
 identities and record the exact upstream changes applied to EDH-owned modules.
 The release tag identifies the reviewed source; it does not imply that EDH embeds
 the complete upstream distribution or accepts every upstream plugin unchanged.
+
+## v0.2.0-rc.1 discovery review — implementation pending
+
+The immutable comparison from `477b4f420553e8a52c2fbccc464d7561b239c443`
+to `4878cdabd87d4041bdaff61d04c966883b9fd07a` contains 261 commits.
+The review used the full Git comparison because the GitHub comparison API limits
+its file list to 300 entries. Intersecting that complete list with EDH's 128
+selected source files identifies five changed sources:
+
+| Upstream source | EDH destination |
+| --- | --- |
+| `packages/core/agent-loop/src/agent.ts` | `harness/agent-runtime/agents/src/dsh/loop/agent.ts` |
+| `packages/core/agent-loop/src/tool-calls.ts` | `harness/agent-runtime/agents/src/dsh/loop/tool-calls.ts` |
+| `packages/core/session/src/index.ts` | `harness/agent-runtime/storage/src/dsh/session/index.ts` |
+| `packages/core/session/src/repair.ts` | `harness/agent-runtime/storage/src/dsh/session/repair.ts` |
+| `packages/util/values/src/index.ts` | `harness/agent-runtime/foundation/src/dsh/values/index.ts` |
+
+### Pending tool-result recovery
+
+Upstream commit `6a6f350b9437cf24e34a34f39ee4dfd107897d0c` adds
+`ToolCallRecovery` to the live step boundary and reuses its pending-call tracking
+for interrupted-session repair. After started dispatches settle, a failed step
+records missing results before `step/end`, preserves completed results and
+propagates the original error. A recorded call without a durable result receives
+`TOOL_OUTCOME_UNKNOWN`; a requested call without a start record receives
+`TOOL_NOT_STARTED`. Result-recording failure retains both errors.
+
+EDH's current loop closes the step in `finally` without this live recovery;
+its existing crash-tail repair clears pending calls at closed boundaries.
+The source review therefore identifies an applicable adaptation. No new failure
+reproduction or runtime validation was performed during this paused review.
+
+The adaptation must preserve EDH's current message representation: its tool
+results are blocks inside a `role: user` message, while this upstream revision
+uses `role: tool`. Import the recovery behavior with the existing representation
+and source provenance. For execution tools, an unknown result requires inspection
+of execution identity, device state and ActionGate records before Planner decides
+the next action. Recording a missing result must never replay a robot action,
+confirm a stop, create a Verifier assignment or authorize retry.
+
+Required acceptance after resumption: actual DSH calls with durable audit records,
+failure after a recorded start, untouched completed results, matching subsequent
+model history, independent assignment scopes and no duplicate physical dispatch.
+Real model and simulator acceptance must be reported separately.
+
+### JSON validation portability
+
+Upstream commit `068c552b1e057aa580ef2875efdaafcdfa2aacfb` compares a
+candidate intrinsic constructor's text with the current engine's own constructor
+text. EDH retains the fixed V8-style text comparison. This is an applicable
+portability update to the selected value validator. EDH's Node-hosted runtime has
+no newly demonstrated failure; WebKit compatibility requires actual engine checks
+when development resumes, including continued rejection of custom prototypes.
+
+### Transport, context and storage assessment
+
+The source comparison leaves EDH's selected Chat Completions transport, local
+image primitives, compaction sources, tool runtime and agent initialization
+implementation unchanged. The selected Session change is the recovery mechanism
+described above. EDH's existing image evidence permissions, output headroom,
+independent role contexts and physical verification rules continue to apply.
+
+The release's image re-upload change batches exact rejected file generations into
+one locked DeepSeek upload-index update and preserves newer generations. This
+belongs to the official DeepSeek Files route; EDH's current OpenAI-compatible
+route resolves its own image attachments. Its configuration optimization is in
+the upstream profile `ConfigEditor`; the persistence inventory change compacts
+generated type graphs used by upstream tooling. Neither changes the selected EDH
+runtime format or requires a Session data migration for this review.
+
+Only this review document is updated. Imported source hashes and the adaptation
+manifest remain unchanged until an implementation is verified. Resume the release
+adaptation with live tool-result recovery, followed by value-validator portability.
 
 ## rc.2 compatibility review
 
