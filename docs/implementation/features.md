@@ -53,6 +53,8 @@ actual validation requirements.
 | Config-only physical stack profiles with simulator/embodiment/policy compatibility and prompt context     | [Profile guide](physical-profiles.md), [profile tests](../../tests/runtime/physical-profiles.test.ts)                                                |
 | OpenAI-compatible text/image streaming through the native DSH loop                                        | [Model adapter and guide](model-policy-adapters.md), [HTTP acceptance](../../tests/runtime/openai-compatible.test.ts)                                |
 | WebSocket policy client/server and generation-fenced action gate                                          | [Adapter guide](model-policy-adapters.md), [CPU/socket acceptance](../../harness/physical-runtime/tests/test_policy.py)                              |
+| External RoboDojo RPC reset/observation/action adapter                                                   | [RoboDojo backend](robodojo-backend.md); CPU checks and one real Isaac Sim reset/step pass, full rollout pending |
+| GPT-6 Astra Responses transport and LitchiAgent direct/hybrid DSH policy gateway                  | [Execution modes](litchi-execution-modes.md), [DshGptPolicy](../../harness/agent-runtime/execution/src/gpt-policy.ts); live cloud/lower-policy acceptance pending |
 | Live output, tools/results, TODO history, sensors, verdict and recovery inspection                        | [Console](../../apps/console/README.md), [API/restart tests](../../tests/runtime/console-server.test.ts)                                             |
 
 Run `pnpm demo` and select the labeled failure/recovery fixture. The observable

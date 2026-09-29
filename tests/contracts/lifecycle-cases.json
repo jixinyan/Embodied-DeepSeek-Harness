@@ -800,7 +800,7 @@
       "name": "requires_paused",
       "base": "requires_paused",
       "patches": [],
-      "expected": true
+      "expected": false
     },
     {
       "name": "requires_ended",

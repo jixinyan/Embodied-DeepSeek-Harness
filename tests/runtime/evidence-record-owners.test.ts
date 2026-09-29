@@ -40,7 +40,7 @@ async function documents(store: LocalStore, image?: ImageAttachmentRef) {
     schema_version: 'physical.execution.v1',
     execution_id: result.execution_id,
     task_scope: result.task_scope,
-    state: 'paused',
+    state: 'ended',
     state_version: 1,
     control_steps: 0,
     policy_calls: 0,
@@ -51,7 +51,7 @@ async function documents(store: LocalStore, image?: ImageAttachmentRef) {
     recorded_at: state.createdAt,
     boundary_event_id: result.boundary_event_id,
     boundary_at: state.createdAt,
-    stop_reason: 'user_stop',
+    stop_reason: 'budget_exhausted',
   });
   new VerificationBoundaries(store, validator, state.id).admit(undefined, status);
   const contexts = new VerificationContexts(store, validator, samples, state.id);

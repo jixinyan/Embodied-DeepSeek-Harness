@@ -8,6 +8,7 @@ import math
 from typing import Any, Protocol
 from urllib.parse import urlsplit
 
+from physical_harness.execution.modes import ExecutionMode, normalize_mode_response
 from physical_harness.validation import ContractValidator
 
 
@@ -63,7 +64,8 @@ def validate_response(validator: ContractValidator, request: dict[str, Any], res
 class WebSocketPolicyClient:
     """One in-flight inference per connection. Failures discard the connection; no implicit replay."""
     def __init__(self, uri: str, validator: ContractValidator, *, codec: PolicyCodec | None = None,
-                 api_key: str | None = None, timeout_s: float = 30, max_bytes: int = 32 * 1024 * 1024) -> None:
+                 api_key: str | None = None, timeout_s: float = 30, max_bytes: int = 32 * 1024 * 1024,
+                 execution_mode: ExecutionMode | str = ExecutionMode.POLICY) -> None:
         url = urlsplit(uri)
         if url.scheme not in ("ws", "wss") or not url.hostname or url.username or url.password or url.fragment:
             raise ValueError("Expected a ws(s) endpoint without embedded credentials or fragment.")
@@ -74,6 +76,7 @@ class WebSocketPolicyClient:
         self._uri, self._validator = uri, validator
         self._codec = codec or JsonPolicyCodec()
         self._api_key, self._timeout, self._max_bytes = api_key, timeout_s, max_bytes
+        self._execution_mode = ExecutionMode.parse(execution_mode)
         self._connection: Any = None
         self._active: asyncio.Task[Any] | None = None
         self._closed = False
@@ -109,7 +112,8 @@ class WebSocketPolicyClient:
                 await self._connection.send(encoded)
                 message = await self._connection.recv()
                 response = self._codec.decode(message, copy.deepcopy(bound))
-                return copy.deepcopy(validate_response(self._validator, bound, response))
+                normalized = normalize_mode_response(response, bound, self._execution_mode)
+                return copy.deepcopy(validate_response(self._validator, bound, normalized))
         except BaseException:
             # Closing after cancellation/timeout prevents a late response becoming the next result.
             try:

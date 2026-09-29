@@ -1,12 +1,14 @@
 # Implementation progress
 
-Spec: v1.59. Current checkpoint: **SAM 3.1 real-image inference verified; development paused**.
+Spec: v1.60. Current checkpoint: **RoboDojo boundary and mode envelopes verified; live Astra and full task acceptance pending**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The v1 goal is paused at the user's request after the SAM 3.1 checkpoint.
+The previous v1 goal was paused after the SAM 3.1 checkpoint. This checkpoint
+resumes implementation for the RoboDojo external backend, GPT-6 Astra Responses
+transport and LitchiAgent-derived direct/hybrid policy contracts.
 The [September 26 handoff](pause-2026-09-26.md) records the stopping point,
 preserved local work, service state and next action. No new acceptance runs or
 implementation work are scheduled as part of this checkpoint.
@@ -21,6 +23,45 @@ incremental observations, revisions, reset and evidence handling; runtime
 implementation and actual acceptance are pending.
 Remaining simulator, policy, lifecycle and release work is tracked in the
 v1 acceptance register for resumption.
+
+## 2026-09-30 RoboDojo and GPT policy checkpoint
+
+The checkout was fast-forwarded from `028c346` to `96d0a17`; `main` and
+`origin/main` are aligned. EDH now contains an external RoboDojo RPC environment
+adapter with bounded msgpack/zlib framing, identity checks, native reset,
+post-action RGB/state capture, one-action qpos stepping, terminal check and
+no-retry close behavior. The native worker accepts provider `robodojo` and echoes
+the selected `execution_mode` (`policy`, `direct` or `hybrid`) during
+initialization. The adapter does not copy RoboDojo's non-MIT source.
+
+The model configuration accepts `protocol: responses` and routes that endpoint to
+the DSH-native `OpenAIResponsesAdapter`. GPT-6 Astra streamed text, reasoning and
+function calls are translated into DSH chunks; DSH continues to own tool
+execution, cancellation and retries. The physical WebSocket policy boundary now
+normalizes LitchiAgent-style direct action and reviewed hybrid envelopes into the
+same ActionChunk before ActionGate; the selected mode and `0-shot`/textual/visual
+control context are passed with each policy observation. These CPU/protocol checks
+do not claim a live Astra request or successful physical task.
+
+`DshGptPolicy` is now an EDH execution module that implements the direct and hybrid
+tool sequences on top of the existing DSH session. Its tools can read admitted
+observations and propose actions, but have no device authority; the worker remains
+the only commit path. The lower-policy bridge still requires deployment wiring and
+is not represented as a completed cloud/model acceptance.
+
+The local RoboDojo Isaac Sim 5.1 server (RoboDojo revision `726e9aa`) passed a
+real EDH `build_tower` reset, metadata/action-spec inspection, three-camera RGB
+observation and one admitted qpos step on 2026-09-30. The step returned one
+executed action and one native simulation step; the episode was nonterminal and
+the native task-success check was false. Full pause/stop, learned-policy rollout,
+formal verification and task success remain pending.
+
+The RSI research boundary is recorded in
+[`docs/research/rsi-harness.md`](../research/rsi-harness.md): experiment identity,
+seeds, prompt/policy/mode revisions, proposals, committed prefixes, stop
+boundaries, evidence and formal verdicts remain versioned artifacts. A later RSI
+evolver may propose harness revisions, while Planner/Verifier ownership and the
+ActionGate commit boundary remain authoritative.
 
 The target is a complete v1 covering every agreed capability. The
 [v1 delivery register](v1-delivery.md) records implementation gaps, required real

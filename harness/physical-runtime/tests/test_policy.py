@@ -196,11 +196,11 @@ class SocketTests(unittest.IsolatedAsyncioTestCase):
         for s in self.servers: s.close()
         for s in self.servers: await s.wait_closed()
 
-    async def connect(self, infer, *, key=None, timeout=1):
+    async def connect(self, infer, *, key=None, timeout=1, execution_mode='policy'):
         server = await serve_policy(infer, VALIDATOR, api_key=key)
         self.servers.append(server)
         uri = f'ws://127.0.0.1:{server.sockets[0].getsockname()[1]}'
-        client = WebSocketPolicyClient(uri, VALIDATOR, api_key=key, timeout_s=timeout)
+        client = WebSocketPolicyClient(uri, VALIDATOR, api_key=key, timeout_s=timeout, execution_mode=execution_mode)
         self.clients.append(client)
         return client, uri
 
@@ -213,6 +213,28 @@ class SocketTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(d.actions), 4)
         self.assertEqual(status['stop_reason'], 'budget_exhausted')
         await rollout.close()
+
+    async def test_direct_mode_envelope_is_normalized_before_action_gate(self):
+        async def infer(r):
+            return {'mode': 'direct', 'request_id': r['request_id'], 'action': [0.2]}
+        client, _ = await self.connect(infer, execution_mode='direct')
+        d = Device(); g = gate(d, max_control_steps=1)
+        ticket = g.request('Move', 'obs1', {'execution_mode': 'direct'}, observed_monotonic=time.monotonic())
+        await g.execute(await client.infer(ticket))
+        self.assertEqual(d.actions, [[0.2]])
+
+    async def test_hybrid_mode_review_admits_only_the_safe_prefix(self):
+        async def infer(r):
+            return {
+                'mode': 'hybrid', 'request_id': r['request_id'],
+                'proposal': [[0.2], [0.3]],
+                'review': {'decision': 'allow', 'reason': 'grounded', 'confidence': 0.9, 'safe_steps': 1},
+            }
+        client, _ = await self.connect(infer, execution_mode='hybrid')
+        d = Device(); g = gate(d, max_control_steps=1)
+        ticket = g.request('Move', 'obs1', {'execution_mode': 'hybrid'}, observed_monotonic=time.monotonic())
+        await g.execute(await client.infer(ticket))
+        self.assertEqual(d.actions, [[0.2]])
 
     async def test_pause_during_inference_rejects_late_chunk_after_resume(self):
         entered = asyncio.Event(); release = asyncio.Event()

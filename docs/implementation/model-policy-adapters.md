@@ -1,6 +1,6 @@
 # Model endpoints, policy transport and action admission
 
-Status: 2026-09-26. The upper model adapter, policy transport and action gate have
+Status: 2026-09-30. The upper model adapter, policy transport and action gate have
 passed actual service checks. RoboCasa has completed a learned-policy control rollout
 through the native worker and console; its recorded task-success check was false.
 The other simulator providers and hardware retain their separate acceptance status in
@@ -89,6 +89,21 @@ the model fetch arbitrary local paths or URLs. The current fixture supplies sens
 metadata only, so the default example does not demonstrate a live camera pipeline. A deployment supplying
 admitted image references and the matching resolver can now exercise the upper path. Image
 resolution and credential callbacks must cooperate with cancellation.
+
+## GPT-6 Astra and policy execution modes
+
+An endpoint may set `protocol: responses` in model configuration. The
+`OpenAIResponsesAdapter` maps the provider's Responses SSE events into the same
+DSH stream vocabulary, including text, reasoning and function calls. DSH remains
+the only model/tool loop: the adapter does not execute tools and does not replay
+failed requests. GPT-6 Astra tool calling uses this protocol; see the official
+[GPT-6 Astra reference](https://developers.openai.com/api/docs/models/gpt-6-astra).
+
+Physical policy profiles select `policy.config.execution_mode` as `policy`,
+`direct` or `hybrid`. The WebSocket policy client normalizes direct actions and
+reviewed hybrid prefixes into the canonical ActionChunk before the unchanged
+ActionGate/device boundary. See the [execution-mode guide](litchi-execution-modes.md)
+and the [RoboDojo backend](robodojo-backend.md).
 
 Optional settings include `systemRole`, `maxTokensField`, `timeoutMs`, image count
 and request/response byte bounds. HTTP deployments through a local transport may set

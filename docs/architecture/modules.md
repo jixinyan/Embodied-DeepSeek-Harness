@@ -3,8 +3,9 @@
 EDH is the product and repository owner. Selected runtime implementations are absorbed
 from DSH into these modules. Step 00 verifies the original loop and scoped lifecycle;
 upper Team, planning, verification and experience services now run with CPU fixtures.
-OpenAI-compatible model transport, WebSocket policy transport and action admission
-are executable with local protocol/CPU tests. The RoboCasa native adapter and action device
+OpenAI-compatible and Responses model transport, WebSocket policy transport and action admission
+are executable with local protocol/CPU tests. WebSocket direct and reviewed hybrid envelopes
+normalize into the same canonical ActionChunk. The RoboCasa native adapter and action device
 also pass GPU rendering and manual-control boundary checks. The native worker passes
 actual reset, image transport and connection-failure checks. A console-driven
 Planner task records 1,050 GR00T controls and formal native GT failure; its replay
@@ -59,8 +60,8 @@ frames remain available to the operator and authorized Planner tools.
 | `harness/agent-runtime/storage` | Persistence primitives used through scoped service boundaries | Bypass of evidence visibility | EventStore/AssetStore; Step 04 |
 | `harness/contracts` | Authoritative wire schema and generated declarations | Runtime semantic authorization | physical.schema.json; Step 01 |
 | `harness/physical-runtime/src/physical_harness/execution` | Actual action progression, budget and device job handling | Upper-level retry decision | ExecutionWorker; Step 06 |
-| `harness/physical-runtime/src/physical_harness/policies` | Subgoal-to-action policy adapter | Agent orchestration | SubgoalPolicy; Step 13 |
-| `harness/physical-runtime/src/physical_harness/environments` | Simulator observation/action/task mapping | Environment-specific host protocol | EnvironmentAdapter; Step 13/15 |
+| `harness/physical-runtime/src/physical_harness/policies` | Subgoal-to-action policy adapter plus direct/hybrid GPT gateway normalization | Agent orchestration | SubgoalPolicy; Step 13 |
+| `harness/physical-runtime/src/physical_harness/environments` | Simulator observation/action/task mapping, including external RoboDojo RPC | Environment-specific host protocol implementation | EnvironmentAdapter; Step 13/15 |
 | `harness/physical-runtime/src/physical_harness/embodiments` | Capabilities, units, frames and action/observation specifications | Simulator lifecycle | EmbodimentAdapter; Step 06/13 |
 | `harness/physical-runtime/src/physical_harness/backends` | Device connection, commands and confirmed state | Agent-mediated emergency response | DeviceBackend; Step 06/16 |
 | `harness/physical-runtime/src/physical_harness/perception` | Optional model/provider execution | Host role permissions | PerceptionProvider; Step 07/13 |

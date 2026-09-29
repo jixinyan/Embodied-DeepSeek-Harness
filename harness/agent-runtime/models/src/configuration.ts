@@ -3,9 +3,11 @@ import { createHash } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { parse } from 'yaml';
 import { z } from 'zod';
-import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
+import type { AttachmentStore, ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import { LlmError } from '@deepseek-ai/dsh-llm';
 import { OpenAICompatibleAdapter, type OpenAICompatibleModel } from './openai-compatible.js';
+import { OpenAIResponsesAdapter } from './openai-responses.js';
+import type { LlmAdapter } from '@deepseek-ai/dsh-llm';
 
 const identifier = z
   .string()
@@ -30,6 +32,7 @@ const authentication = z.discriminatedUnion('type', [
 const endpoint = z
   .object({
     hosting: z.enum(['cloud_api', 'vllm']),
+    protocol: z.enum(['chat_completions', 'responses']).default('chat_completions'),
     baseURL: nonempty.refine((value) => {
       const url = URL.parse(value);
       return Boolean(
@@ -114,7 +117,7 @@ export function createConfiguredModels(
 ) {
   const config = parseModelConfiguration(input);
   const models: Record<string, { provider: string; model: string }> = Object.create(null);
-  const adapters: { providers: string[]; adapter: OpenAICompatibleAdapter }[] = [];
+  const adapters: { providers: string[]; adapter: LlmAdapter }[] = [];
   for (const [provider, value] of Object.entries(config.endpoints)) {
     const registered = new Map<string, OpenAICompatibleModel>();
     for (const [alias, entry] of Object.entries(config.models)) {
@@ -138,26 +141,45 @@ export function createConfiguredModels(
       !images
     )
       throw new Error(`Image-capable endpoint requires the application image service: ${provider}`);
-    const { hosting, authentication: auth, imageRequest, ...options } = value;
+    const { hosting, protocol, authentication: auth, imageRequest, ...options } = value;
     void hosting;
     if (auth.type === 'environment') credential(auth.variable);
+    const credentials =
+      auth.type === 'environment'
+        ? {
+            apiKey: (signal: AbortSignal) => {
+              signal.throwIfAborted();
+              return credential(auth.variable);
+            },
+          }
+        : {};
+    const common = {
+      baseURL: options.baseURL,
+      models: [...registered.values()],
+      timeoutMs: options.timeoutMs,
+      maxRequestBytes: options.maxRequestBytes,
+      maxResponseBytes: options.maxResponseBytes,
+      maxImagesPerRequest: options.maxImagesPerRequest,
+      ...credentials,
+      ...(images
+        ? {
+            resolveImage: (ref: ImageAttachmentRef, signal: AbortSignal) =>
+              images.readImageRequest(ref, imageRequest, signal),
+          }
+        : {}),
+    };
     adapters.push({
       providers: [provider],
-      adapter: new OpenAICompatibleAdapter({
-        ...options,
-        models: [...registered.values()],
-        ...(auth.type === 'environment'
-          ? {
-              apiKey: (signal: AbortSignal) => {
-                signal.throwIfAborted();
-                return credential(auth.variable);
-              },
-            }
-          : {}),
-        ...(images
-          ? { resolveImage: (ref, signal) => images.readImageRequest(ref, imageRequest, signal) }
-          : {}),
-      }),
+      adapter:
+        protocol === 'responses'
+          ? new OpenAIResponsesAdapter(common)
+          : new OpenAICompatibleAdapter({
+              ...common,
+              systemRole: options.systemRole,
+              maxTokensField: options.maxTokensField,
+              passReasoningContent: options.passReasoningContent,
+              extraBody: options.extraBody,
+            }),
     });
   }
   return {

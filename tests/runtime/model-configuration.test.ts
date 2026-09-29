@@ -17,6 +17,8 @@ import { createDshHost } from '../../apps/server/src/runtime.js';
 const variable = `EDH_MODEL_BINDING_ACCEPTANCE_${process.pid}`;
 const local = await readModelConfiguration('examples/models/local-vllm.yaml');
 const cloud = await readModelConfiguration('examples/models/cloud-api.yaml');
+const astra = await readModelConfiguration('examples/models/gpt6-astra.yaml');
+astra.endpoints.openai!.authentication = { type: 'environment', variable };
 cloud.endpoints.cloud!.authentication = { type: 'environment', variable };
 
 async function withImages(action: (images: LocalImageStore, directory: string) => Promise<void>) {
@@ -66,6 +68,23 @@ test('cloud and vLLM configurations bind image-capable models to the actual nati
     }
     assert.equal(bindings.defaultModel, 'local-brain');
     assert(!JSON.stringify(bindings.models).includes(process.env[variable]!));
+  });
+});
+
+test('Responses configuration binds GPT-6 Astra to the DSH adapter without creating a second loop', async () => {
+  await withImages(async (images) => {
+    const bindings = createConfiguredModels(astra, { images });
+    assert.deepEqual(
+      { ...bindings.models },
+      { astra: { provider: 'openai', model: 'gpt-6-astra' } },
+    );
+    const adapter = bindings.adapters[0]!.adapter;
+    const info = await adapter.resolveModel('openai', 'gpt-6-astra');
+    assert.deepEqual(info.inputModalities, ['text', 'image']);
+    assert.deepEqual(
+      info.reasoning?.efforts.map((effort) => effort.name),
+      ['low', 'medium', 'high', 'xhigh', 'max'],
+    );
   });
 });
 

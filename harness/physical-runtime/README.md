@@ -1,7 +1,8 @@
 # Physical runtime
 
 The Python package owns policy execution and environment/device/provider boundaries.
-The optional `policy` extra supplies a WebSocket inference client/server wrapper.
+The optional `policy` extra supplies a WebSocket inference client/server wrapper;
+the optional `robodojo` extra supplies the external RoboDojo RPC client.
 Execution includes a deterministic action gate and bounded PolicyRollout composition.
 The native worker owns a simulator and its renderer on one Python execution thread,
 while policy inference runs asynchronously. Its host connection carries bounded
@@ -12,7 +13,9 @@ simulation time for run history and operator replay. RoboCasa reset,
 three-camera capture, native checks, host process-fault handling, and six
 confirmed GR00T policy commands have been exercised in the isolated GPU
 environment. That execution's native `task_success` check returned false.
-See the [adapter guide and runnable example](../../docs/implementation/model-policy-adapters.md).
+RoboDojo uses a separate process and remains an external, separately licensed
+dependency. See the [adapter guide and runnable example](../../docs/implementation/model-policy-adapters.md)
+and the [RoboDojo backend guide](../../docs/implementation/robodojo-backend.md).
 
 Executable boundary validation now uses `jsonschema`. Follow the CPU-only
 [development setup](../../docs/development/setup.md), then run `pnpm test:contracts`

@@ -6,6 +6,14 @@ response and exposes a deployment-owned inference callback. The two providers be
 use a single inference thread and keep it reserved until GPU work finishes, including
 when the requesting client disconnects.
 
+When the request observation declares `execution_mode: direct` or `hybrid`,
+`serve_policy` also accepts a Litchi-style mode envelope. A direct envelope carries
+one canonical action; a hybrid envelope carries a lower-policy proposal and an
+`allow`/`intervene` review. The server validates the envelope and the client performs
+the final normalization before ActionGate. An intervention must include its direct
+replacement action. Existing learned-policy callbacks continue to return canonical
+action lists.
+
 ## GR00T N1.6 for RoboCasa PandaOmron
 
 The adapter in `gr00t_n1d6_robocasa.py` uses

@@ -34,13 +34,15 @@ export interface NativeWorkerConfiguration {
   readonly onProcessStarted?: (pid: number) => void;
   readonly cwd: string;
   readonly env: Readonly<Record<string, string>>;
-  readonly provider: 'robocasa' | 'robotwin' | 'behavior';
+  readonly provider: 'robocasa' | 'robotwin' | 'behavior' | 'robodojo';
   readonly nativeTaskId: string;
   readonly sourceRoot?: string;
   readonly sceneConfiguration: Readonly<Record<string, unknown>>;
   readonly schemaPath: string;
   readonly policyId: string;
   readonly policyUri: string;
+  /** `policy` for learned action chunks, `direct` or `hybrid` for GPT-backed gateways. */
+  readonly executionMode?: 'policy' | 'direct' | 'hybrid';
   readonly policyMaxActionsPerInference?: number;
   readonly monitorEveryActions?: number;
   readonly observationTtlS?: number;
@@ -56,6 +58,7 @@ interface WorkerDescription {
   active_view_directions: string[];
   clock_id: string;
   policy_id: string;
+  execution_mode: 'policy' | 'direct' | 'hybrid';
   task_instruction?: string | null;
   scene_metadata?: JsonObject | null;
 }
@@ -693,6 +696,7 @@ export async function createNativeWorkerEnvironment(
         native_task_id: configuration.nativeTaskId,
         policy_uri: configuration.policyUri,
         policy_id: configuration.policyId,
+        execution_mode: configuration.executionMode ?? 'policy',
         scene_configuration: configuration.sceneConfiguration,
         schema_path: configuration.schemaPath,
         policy_max_actions_per_inference: policyMaxActionsPerInference,
@@ -703,7 +707,8 @@ export async function createNativeWorkerEnvironment(
     if (
       description.provider !== configuration.provider ||
       description.native_task_id !== configuration.nativeTaskId ||
-      description.policy_id !== configuration.policyId
+      description.policy_id !== configuration.policyId ||
+      description.execution_mode !== (configuration.executionMode ?? 'policy')
     )
       throw new Error('Native worker initialized a different provider or task.');
     const nativeInstruction = description.task_instruction;

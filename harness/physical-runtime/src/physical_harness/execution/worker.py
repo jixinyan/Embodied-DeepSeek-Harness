@@ -16,6 +16,7 @@ from uuid import uuid4
 
 from physical_harness.environments import NativeEnvironment, NativeFrame, NativeObservation
 from physical_harness.execution.action_gate import ActionGate
+from physical_harness.execution.modes import ExecutionMode
 from physical_harness.execution.native_device import NativeActionDevice
 from physical_harness.execution.policy_observation import encode_policy_observation
 from physical_harness.policies.client import WebSocketPolicyClient
@@ -58,6 +59,8 @@ class NativeWorkerSession:
         self._seen_run_ids: set[str] = set()
         self._policy_uri: str | None = None
         self._policy_id: str | None = None
+        self._execution_mode = ExecutionMode.POLICY
+        self._control_mode = "0-shot"
         self._policy: WebSocketPolicyClient | None = None
         self._gate: ActionGate | None = None
         self._request: dict[str, Any] | None = None
@@ -172,9 +175,14 @@ class NativeWorkerSession:
         self._native_task_id = arguments["native_task_id"]
         self._policy_uri = arguments["policy_uri"]
         self._policy_id = arguments["policy_id"]
+        self._execution_mode = ExecutionMode.parse(arguments.get("execution_mode", "policy"))
         if not isinstance(self._policy_id, str) or not self._policy_id:
             raise ValueError("Native worker requires an explicit policy ID.")
         configuration = require_object(arguments["scene_configuration"])
+        control_mode = configuration.get("control_mode", "0-shot")
+        if control_mode not in ("0-shot", "textual-1-shot", "visual-1-shot"):
+            raise ValueError("Native control_mode must be 0-shot, textual-1-shot or visual-1-shot.")
+        self._control_mode = control_mode
         self._monitor_every_actions = arguments.get("monitor_every_actions", 1)
         if type(self._monitor_every_actions) is not int or not 1 <= self._monitor_every_actions <= 512:
             raise ValueError("Monitor interval must contain 1 to 512 control commands.")
@@ -195,6 +203,11 @@ class NativeWorkerSession:
         elif provider == "behavior":
             from physical_harness.environments.behavior import BehaviorEnvironment
             environment = BehaviorEnvironment(Path(arguments["source_root"]).resolve(strict=True), self._validator)
+        elif provider == "robodojo":
+            if "source_root" in arguments:
+                raise ValueError("RoboDojo is connected through its external RPC server, not a worker source_root.")
+            from physical_harness.environments.robodojo import RoboDojoEnvironment
+            environment = RoboDojoEnvironment(self._validator)
         else:
             raise ValueError("Unsupported native environment provider.")
         self._environment = environment
@@ -219,6 +232,7 @@ class NativeWorkerSession:
             "native_task_id": self._native_task_id,
             "clock_id": self._clock_id,
             "policy_id": self._policy_id,
+            "execution_mode": self._execution_mode.value,
         }
 
     async def start(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -284,6 +298,7 @@ class NativeWorkerSession:
             self._policy = WebSocketPolicyClient(
                 self._policy_uri, self._validator,
                 timeout_s=self._policy_timeout_s,
+                execution_mode=self._execution_mode,
             )
             observation = await self._device.on_owner(self._environment.observe)
             if not self._host_connected or not self._lease_active:
@@ -300,6 +315,8 @@ class NativeWorkerSession:
                 if gate.snapshot()["state"] != "running":
                     return
                 policy_observation = encode_policy_observation(self._description, observation, self._native_task_id)
+                policy_observation["execution_mode"] = self._execution_mode.value
+                policy_observation["control_mode"] = self._control_mode
                 ticket = gate.request(
                     self._request["instruction"], observation.observation_id, policy_observation,
                     observed_monotonic=observation.observed_monotonic,
@@ -418,7 +435,8 @@ class NativeWorkerSession:
             await self._require_gate().resume()
             self._last_boundary_publication = None
             self._policy = WebSocketPolicyClient(
-                self._policy_uri, self._validator, timeout_s=self._policy_timeout_s
+                self._policy_uri, self._validator, timeout_s=self._policy_timeout_s,
+                execution_mode=self._execution_mode,
             )
             observation = await self._require_device().on_owner(self._environment.observe)
             publication = await self._publish(observation)

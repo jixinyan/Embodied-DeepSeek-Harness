@@ -11,6 +11,10 @@
     }
   },
   "dependencies": {
+    "@edh/agents": "workspace:*",
+    "@edh/foundation": "workspace:*",
+    "@edh/models": "workspace:*",
+    "@edh/tools": "workspace:*",
     "@edh/contracts": "workspace:*",
     "@edh/storage": "workspace:*"
   }

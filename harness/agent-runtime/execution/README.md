@@ -109,3 +109,19 @@ Profile configuration is resolved before provider allocation. The shared schema 
 embodiment action/observation and checkpoint mapping boundary. Config-only switching
 requires installed adapters with synchronous validation; it does not imply a running
 simulator or checkpoint compatibility.
+
+## GPT direct and hybrid policy gateway
+
+[`DshGptPolicy`](src/gpt-policy.ts) is the EDH-owned Litchi-style gateway. It
+uses `createDshSession`, native DSH tool schemas, model cancellation and image
+attachments. `direct` mode offers grounded joint/EEF proposal tools. `hybrid`
+mode offers lower-policy proposal, review and approved-prefix tools. These tools
+return proposals; they never receive a device handle or dispatch a command. The
+Python policy client converts the resulting envelope into the canonical
+ActionChunk and ActionGate remains the sole commit boundary.
+
+The gateway accepts a deployment-provided read-only observation callback, an
+optional lower-policy proposer and provider-specific EEF transform. This keeps
+RoboDojo, RoboCasa and hardware mappings outside the DSH loop while allowing the
+same GPT-6 Astra Responses adapter to serve all three control modes. Unit tests
+exercise both direct and reviewed hybrid paths with a CPU model fixture.

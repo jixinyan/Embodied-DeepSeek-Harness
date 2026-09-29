@@ -45,3 +45,25 @@ export {
   type EmbodimentProfile,
   type PolicyProfile,
 } from './profiles.js';
+
+export type ExecutionMode = 'policy' | 'direct' | 'hybrid';
+
+/**
+ * Resolve the optional policy execution mode. Profiles remain schema-v1
+ * compatible because `policy.config` is provider-owned extensible metadata.
+ */
+export function resolveExecutionMode(profile: {
+  policy: { config: Record<string, unknown> };
+}): ExecutionMode {
+  const value = profile.policy.config.execution_mode ?? 'policy';
+  if (value !== 'policy' && value !== 'direct' && value !== 'hybrid')
+    throw new Error(`Unsupported policy execution mode: ${String(value)}.`);
+  return value;
+}
+
+export {
+  DshGptPolicy,
+  type GptPolicyOptions,
+  type GptPolicyResponse,
+  type GptControlMode,
+} from './gpt-policy.js';

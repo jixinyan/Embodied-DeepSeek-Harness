@@ -119,7 +119,7 @@ async function documents(store: LocalStore) {
       schema_version: 'physical.execution.v1',
       execution_id: result.execution_id,
       task_scope: scope,
-      state: 'paused',
+      state: 'ended',
       state_version: 1,
       control_steps: 0,
       policy_calls: 0,
@@ -130,7 +130,7 @@ async function documents(store: LocalStore) {
       recorded_at: state.createdAt,
       boundary_event_id: result.boundary_event_id,
       boundary_at: state.createdAt,
-      stop_reason: 'user_stop',
+      stop_reason: 'budget_exhausted',
     });
     new VerificationBoundaries(store, validator, state.id).admit(undefined, execution);
     const contexts = new VerificationContexts(store, validator, samples, state.id);

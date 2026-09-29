@@ -53,6 +53,7 @@ reuse requires its own task and provenance evidence.
 | RoboCasa 1.0.1 / PandaOmron | Passed: OpenCabinet reset, three cameras and native control | Real GR00T actions, frame capture, confirmed pause/stop and consecutive task ports passed | Console Planner execution and formal GT failure recorded; successful task/recovery acceptance pending |
 | BEHAVIOR-1K v3.9.2 / R1Pro | Native picking_up_trash reset, separate three-camera capture, GT and clean shutdown pass | Policy control and worker integration pending | Pending |
 | RoboTwin stable release / Aloha AgileX | Passed: adjust_bottle reset, three cameras, 14-channel state and native GT | Policy control and interruption pending | Pi0.5 weights and official tokenizer loaded; service listening; native-observation inference pending |
+| RoboDojo `build_tower` / dual ARX X5 | Passed: local Isaac Sim 5.1 reset, metadata, three RGB cameras and 14-channel action description | One EDH-admitted qpos step passed through the external RPC boundary; pause/stop and longer policy runs pending | No GPT-6 Astra or learned-policy rollout claimed; task success remains pending |
 
 See [GPU integration](gpu-integration.md) for immutable source pins, dependency
 isolation and completed native checks. Record model family, exact checkpoint,

@@ -1,0 +1,15 @@
+version: 1
+defaultModel: astra
+endpoints:
+  openai:
+    hosting: cloud_api
+    protocol: responses
+    baseURL: https://api.openai.com/v1
+    authentication:
+      type: environment
+      variable: OPENAI_API_KEY
+models:
+  astra:
+    endpoint: openai
+    model: gpt-6-astra
+    inputModalities: [text, image]
