@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="apps/console/public/logo.png" alt="Embodied DeepSeek Harness logo" width="300" />
+  <img src="apps/console/public/logo.png" alt="Embodied DeepSeek Harness logo" width="280" />
 </p>
 
 <h1 align="center">Embodied DeepSeek Harness</h1>
@@ -7,151 +7,117 @@
 <p align="center"><strong>Everything is a plugin.</strong><br />Composable agent teams for embodied intelligence.</p>
 
 <p align="center">
-  <a href="https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/workflows/scaffold.yml"><img src="https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/workflows/scaffold.yml/badge.svg?branch=main" alt="Framework checks on main" /></a>
-  <a href="docs/implementation/progress.md"><img src="docs/assets/badges/development.svg" alt="Stage: active development" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/framework-AGPL--3.0--only-blue" alt="Framework license: AGPL-3.0-only" /></a>
   <a href="docs/implementation/model-configuration.md"><img src="docs/assets/badges/models.svg" alt="Model adapters: cloud API and vLLM" /></a>
-  <a href="docs/implementation/features.md"><img src="docs/assets/badges/physical-runtime.svg" alt="Physical runtime: integration pending" /></a>
+  <a href="docs/provenance/README.md"><img src="https://img.shields.io/badge/runtime-DeepSeek%20Harness-2563eb" alt="Agent runtime: DeepSeek Harness" /></a>
 </p>
 
 <p align="center">
-  <a href="docs/project-spec.md">Project spec</a> ·
-  <a href="docs/implementation/plan.md">Implementation plan</a> ·
-  <a href="docs/implementation/progress.md">Current status</a> ·
-  <a href="docs/implementation/features.md">Capability map</a> ·
-  <a href="LICENSE">AGPL-3.0 License</a>
+  <a href="docs/project-spec.md">Project specification</a> ·
+  <a href="docs/architecture/modules.md">Module guide</a> ·
+  <a href="docs/implementation/robodojo-backend.md">RoboDojo integration</a> ·
+  <a href="docs/implementation/progress.md">Development records</a>
 </p>
 
-EDH is an independent physical-agent framework designed around user-defined
-teams, explicit context handoff, replaceable tools and policies, post-execution
-verification, and reusable recovery experience. Its agent runtime incorporates
-selected DeepSeek Harness implementations, with traceable provenance.
+EDH connects user-defined agent teams to interchangeable models, perception tools,
+execution policies, simulators and robot interfaces. Selected DeepSeek Harness
+implementations provide the agent loop, native tool calls and independent role
+sessions, with [source provenance](docs/provenance/README.md).
 
-EDH-authored framework code is licensed under AGPL-3.0-only. The standalone
-SAM service and its invocation example retain MIT; upstream code, model weights
-and simulator assets retain their respective licenses. See the exact
-[licensing scope and notices](THIRD_PARTY_NOTICES.md).
+## Framework architecture
 
-> **Early development: the upper workflow and local console are runnable.**
-> DSH-backed roles, native tools/TODOs, formal verification, recovery and SKILL
-> publication run with an explicitly synthetic CPU backend and scripted model.
-> RoboCasa's native `OpenCabinet` adapter passes GPU camera and ActionGate checks,
-> including a console-driven Qwen Planner run with 1,050 GR00T controls and 26,250
-> physics steps. Formal verification records native task failure; an inspectable
-> camera/event replay preserves that outcome and the later model transport failure.
-> RoboTwin's actual task reset and three-camera capture also pass. BEHAVIOR-1K
-> returns native R1Pro observations and GT and passes clean shutdown.
-> Successful task recovery, remaining policy controls and hardware integration remain pending.
+![Embodied DeepSeek Harness architecture](docs/architecture/assets/framework-overview.svg)
 
-### Verified checkpoint — September 26, 2026
+[Open the full-size architecture diagram](docs/architecture/assets/framework-overview.svg).
+The diagram describes component responsibilities and interaction boundaries.
+Implementation evidence and acceptance results live in the
+[development records](docs/implementation/progress.md) and
+[v1 acceptance register](docs/implementation/v1-delivery.md).
 
-Development is paused at the user's requested checkpoint. SAM 3.1 standalone GPU
-inference passes on a real RoboCasa camera image: the prompt `cabinet` produces
-two nonempty masks, with retained source-image, checkpoint and result provenance.
-The native DSH segmentation tool is implemented; its complete live model/tool
-round remains unverified. TypeScript, tool/schema checks, Python syntax and
-formatting checks pass for the committed SAM changes (`a8e159b`).
+## From instruction to verified experience
 
-| Area | Current evidence | Remaining acceptance |
-| --- | --- | --- |
-| RoboCasa + GR00T + Qwen | Real Planner run: 1,050 controls, 132 policy calls, post-execution verification | Native task success and successful recovery; latest verdict is failed |
-| RoboTwin + π0.5 | Native reset/cameras and real policy inference; recorded gripper conversion check passes in local work | Complete learned-policy control and upper-agent workflow |
-| BEHAVIOR-1K + GR00T | Native reset/observations/GT and policy checkpoint loading | Simulator main-thread lifecycle and complete policy execution |
-| Perception | SAM 3.1 standalone image inference passes | Live DSH segmentation round and YOLO26 with predicted depth |
-| Spatial memory | Initialized, continuously updated Session `SceneState` design specified | Runtime implementation and real acceptance |
+1. **Configure a Session.** Select a compatible environment, embodiment, execution
+   mode, checkpoint, model and team in the console. A Session can contain multiple
+   tasks in the same environment instance.
+2. **Observe and decide.** Planner receives images through explicit references,
+   uses perception tools, maintains the plan and TODOs, and chooses subgoals from
+   observations, task context and evidence returned by other roles.
+3. **Execute through ActionGate.** The physical worker obtains actions from a
+   learned policy, a DSH-backed Astra policy, or a reviewed hybrid proposal.
+   ActionGate checks identity, scope, generation, budgets and action validity before
+   each device command. Observations and command acknowledgements return as evidence.
+4. **Verify after execution.** An eligible execution end with a confirmed device
+   boundary creates an independent Verifier assignment. Planner owns subsequent
+   retry, replan and resume decisions.
+5. **Retain useful experience.** A retry starts Evolver with the failed attempt's
+   context. Evolver tracks recovery and extracts success cues, failure conditions
+   and verification knowledge. Publication requires formal success of the original
+   recovery goal. Agents retrieve relevant `SKILL.md` experience on demand across
+   Sessions.
 
-The [pause handoff](docs/implementation/pause-2026-09-26.md) records evidence,
-uncommitted work and the next action. v1 acceptance remains incomplete.
+## Extension points
 
-![Current implementation](docs/architecture/assets/implementation-status.svg)
-
-The diagram shows actual capability. See [target architecture](docs/architecture/modules.md)
-for the complete intended framework.
-
-## Find your way
-
-| Location | Responsibility |
+| Component | Configuration and responsibility |
 | --- | --- |
-| [apps/server](apps/server/README.md) | Application composition and host entry |
-| [apps/console](apps/console/README.md) | Physical control panel |
-| [apps/desktop](apps/desktop/README.md) | Desktop deployment selection and owned local-service startup |
-| [harness/agent-runtime](harness/agent-runtime/README.md) | Agents, teams, models, tools, tasks, verification and memory |
-| [harness/contracts](harness/contracts/README.md) | Shared schemas and generated wire types |
-| [harness/physical-runtime](harness/physical-runtime/README.md) | Policy, simulator, embodiment and hardware boundaries |
-| [examples](examples/README.md) | User-defined roles, teams, tools and skills |
-| [tests/runtime](tests/runtime/README.md) | Keyless DSH runtime acceptance; physical fixtures remain synthetic |
-| [docs](docs/README.md) | Architecture, decisions, implementation steps and handoff |
+| Agent teams | `team.yaml`, role prompts and tool bindings define independent roles with explicit context handoffs. |
+| Upper models | Model configuration binds cloud APIs or local vLLM services, including image-capable models. |
+| Tools | Native DSH tools cover planning, TODOs, files and communication; provider bindings add perception, active observation, execution and memory. |
+| Execution modes | `policy`, `direct` and `hybrid` select learned-policy control, Astra control or Astra-reviewed policy proposals. |
+| Policies | Client/server adapters connect checkpoints and policy services to the physical worker. |
+| Environments and embodiments | Backend adapters describe observations, actions, coordinate frames, units and device capabilities for RoboDojo, BEHAVIOR-1K, RoboCasa, RoboTwin and hardware integration. |
+| Memory | Session scene state and source-linked evidence represent the current environment; `SKILL.md` experience supports planning and verification across Sessions. |
+| Verification | Simulator task checks and hardware evidence providers supply scoped facts to the independent Verifier. |
 
-## Run the local demo
+Compatibility checks govern selectable Session configurations. Each environment,
+policy and hardware binding has its own installation and acceptance requirements;
+the [integration guide](docs/implementation/live-integration.md) records them.
 
-```sh
-pnpm install --frozen-lockfile
-pnpm demo
-```
+## Repository map
 
-Open `http://127.0.0.1:4317`. Inspect agent output, TODOs, native tool calls/results,
-explicit handoffs, verification and recovery. See the [upper-runtime guide](docs/implementation/upper-runtime.md).
-The multi-goal scenario demonstrates failed placement, an access prerequisite,
-placement recovery and final cabinet closure; see [the illustrated runtime guide](docs/implementation/multi-goal-runtime.md).
+| Directory | Responsibility |
+| --- | --- |
+| [apps/server](apps/server/README.md) | Application assembly, Session lifecycle and HTTP/SSE API |
+| [apps/console](apps/console/README.md) | Session launcher, cameras, agent output, plans, tools and execution timeline |
+| [apps/desktop](apps/desktop/README.md) | Desktop configuration selection and local-service lifecycle |
+| [harness/agent-runtime](harness/agent-runtime/README.md) | DSH runtime, agents, teams, models, tools, communication, planning, verification and memory |
+| [harness/physical-runtime](harness/physical-runtime/README.md) | Execution worker, ActionGate, policies, environments, embodiments and device interfaces |
+| [harness/contracts](harness/contracts/README.md) | Shared schemas, wire messages and generated types |
+| [examples](examples/README.md) | Deployment, role, team, tool, policy and skill definitions |
+| [docs](docs/README.md) | Specification, architecture, provenance, installation and validation records |
 
-The fixture is an integration demo; it does not control a real or simulated robot.
+## Configure and run
 
-## Open a configured deployment from the desktop
-
-`pnpm build:desktop` creates a native application under `dist/desktop/`. Open it,
-choose a local launch configuration, start the service and open the console. The
-application uses a prepared EDH checkout and a trusted deployment factory; it does
-not bundle model weights or physical providers. See the
-[desktop configuration and lifecycle guide](apps/desktop/README.md).
-
-## Run the checks
-
-Use Node.js 22.19+ (the bootstrap was checked on Node 25), pnpm 11.19.0 and
-Python 3.11+. From the repository root:
+Use Node.js 22.19+, pnpm 11.19.0 and Python 3.11+. Install the source workspaces:
 
 ```sh
 pnpm install --frozen-lockfile
 python3 -m venv .venv
 .venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e 'harness/physical-runtime[policy]'
-pnpm check
-pnpm test:runtime
 ```
 
-These commands check generated schema types, example structure/references,
-TypeScript, documentation links and Python importability, then execute upper-runtime
-integration tests and shared wire/lifecycle validation cases in both languages. `test:runtime` runs the runtime suite
-alone. The optional policy extra enables 17 WebSocket/action-gate tests. No live model API or simulator is started. API tests start a temporary local server. No GPU or key is needed.
-Python checks prefer `.venv/bin/python`, falling back to `python3`; override
-`EDH_PYTHON` if needed. `pnpm test:contracts` runs shared TS/Python wire cases.
+Provide model credentials through private environment variables and choose an
+installed physical deployment. The following guides describe configuration and
+startup:
 
-## Configure models and policies
+- [Cloud API and local vLLM model configuration](docs/implementation/model-configuration.md)
+- [Model, policy and ActionGate adapters](docs/implementation/model-policy-adapters.md)
+- [RoboDojo backend](docs/implementation/robodojo-backend.md)
+- [Astra direct and hybrid execution](docs/implementation/litchi-execution-modes.md)
+- [Isolated GPU environments and simulator installation](docs/implementation/gpu-integration.md)
+- [Desktop launcher](apps/desktop/README.md)
 
-Use the [model configuration guide](docs/implementation/model-configuration.md) for
-YAML/JSON cloud API and local vLLM bindings. Both support explicit credential handling,
-model aliases and application-owned image resolution through the native DSH adapter.
+For the local workflow demonstration, run `pnpm demo` and open
+`http://127.0.0.1:4317`. That demonstration uses a scripted model and a synthetic
+physical fixture. Live deployments use their configured model and native backend.
+See the [upper-runtime guide](docs/implementation/upper-runtime.md).
 
-The [adapter guide](docs/implementation/model-policy-adapters.md) includes a local vLLM /
-remote OpenAI-compatible model example and a runnable WebSocket policy-to-action-gate
-CPU example. The host-to-Python worker bridge has actual RoboCasa reset, image
-transport, learned control and confirmed-stop acceptance. Complete live task
-acceptance is tracked in the [integration guide](docs/implementation/live-integration.md).
+## License and source attribution
 
-The [GPU integration guide](docs/implementation/gpu-integration.md) records isolated
-environments, pinned simulator sources, actual NVIDIA rendering and a RoboCasa task
-reset with three native camera observations, native action admission and actual VLM
-image/tool checks. Simulator-to-policy task completion
-remains pending.
+EDH-authored framework code is licensed under AGPL-3.0-only. The standalone SAM
+service and its invocation example retain MIT. Upstream code, model weights and
+simulator assets retain their respective licenses; see
+[licensing scope and notices](THIRD_PARTY_NOTICES.md).
 
-## Design commitments
-
-- Define teams through role files and bindings; roles are not a fixed enum.
-- Every new delegation gets a fresh context and an explicit task brief.
-- The upper decision owner controls retry, replan and resume.
-- Planner directly starts policy jobs and owns pause/resume decisions. Verifier
-  starts after a confirmed execution end, including budget expiry.
-- Recovery skills serve planning and verification; publication requires formal
-  success of the original recovery goal.
-- Simulation comes first; hardware contracts remain explicit and real-device
-  support requires its own verification.
-
-See [DSH provenance](docs/provenance/README.md) for the pinned source baseline
-and the [integration guide](docs/implementation/dsh-integration.md). EDH is not an official DeepSeek product.
+See [DSH provenance](docs/provenance/README.md) and
+[LitchiAgent integration provenance](docs/provenance/litchi-robodojo.md).
+EDH is an independent project and is not an official DeepSeek product.
