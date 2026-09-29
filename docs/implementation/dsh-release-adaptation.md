@@ -2,9 +2,9 @@
 
 ## Release identity
 
-Latest discovery review: [DSH v0.2.0-rc.1](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.0-rc.1),
-published on 2026-09-28 at 12:36:21 UTC and marked as a prerelease.
-Its immutable source revision is `4878cdabd87d4041bdaff61d04c966883b9fd07a`.
+Latest discovery review: [DSH v0.2.0-rc.2](https://github.com/deepseek-ai/deepseek-harness/releases/tag/dsh-v0.2.0-rc.2),
+published on 2026-09-29 at 09:42:36 UTC and marked as a prerelease.
+Its immutable source revision is `639ed015397290b3745d163aafe02ffee4aa3f84`.
 The official release list contains no stable release at this check.
 **Implementation remains paused at the user's request.** This review records
 applicable changes without modifying runtime code or claiming new acceptance.
@@ -20,6 +20,57 @@ and local hashes for 128 files. Release adaptations preserve those original
 identities and record the exact upstream changes applied to EDH-owned modules.
 The release tag identifies the reviewed source; it does not imply that EDH embeds
 the complete upstream distribution or accepts every upstream plugin unchanged.
+
+## v0.2.0-rc.2 discovery review
+
+The complete Git comparison from `4878cdabd87d4041bdaff61d04c966883b9fd07a`
+to `639ed015397290b3745d163aafe02ffee4aa3f84` contains 187 commits and
+1,022 changed paths. Its intersection with all 128 source paths in the EDH
+import manifest is empty. The selected loop, tool runtime, model transport,
+context management, Session storage and attachment primitives have no additional
+source changes in this release. The two pending rc.1 adaptations below remain
+pending; this discovery review does not advance completed compatibility status.
+
+### Optional asynchronous questions
+
+The final source changes in `packages/interaction/tool-ask-user/src/` and
+`packages/interaction/user-questions/src/` introduce opt-in timed questions.
+Commit `3a296b16b400ad2125476464f21d3d15678788f0` introduces the mechanism;
+`24226a71642f44a023b27bed9250792e3707b79b` delivers late replies through
+`agent.steer`. The default tool remains blocking. Timed mode returns a pending
+result after its foreground wait; the question stays answerable. A Session
+projection tracks open, continued and settled questions, and reply admission
+prevents duplicate queued answers. The result explicitly states that timeout
+does not grant permission. Required answers can retain an indefinite wait.
+
+This is relevant to future operator interaction, but requires an explicit EDH
+integration across tool registration, question persistence, console presentation
+and assignment ownership. EDH's current `user.ask` description requires the
+decision owner and confirmed stopped execution, concludes the native turn and
+waits for an explicit response. Importing timed continuation must preserve that
+required-answer boundary, independent role contexts and Planner authority.
+Elapsed time cannot authorize execution or alter ActionGate or formal verification.
+No timed-question integration is implemented or accepted by this review.
+
+### Model compatibility and launch environment
+
+Commit `6ed596f71b7e90f5685dd4c04f5f612271aa1973` upgrades the upstream
+pi-ai adapter to 0.87.1. The final `catalog.ts` diff updates protocol capability
+classification, including Mistral; `replay.ts` retains the requested model
+identity and records `responseModel` separately. EDH's configured cloud and vLLM
+routes use its OpenAI-compatible adapter, with no pi-ai dependency in its lockfile.
+Their model identifiers and message serialization require no change from this
+release's pi-ai update.
+
+The reviewed `apps/desktop/src/login-shell-environment.ts` source loads the user's
+login-shell environment for the upstream graphical desktop launcher. EDH's
+deployment-owned launcher does not import that desktop entry point. Its isolated
+model and simulator environments retain their existing configuration ownership.
+
+This review updates documentation only. Runtime code, source provenance hashes,
+Session formats and physical behavior remain unchanged. Documentation structure
+and source provenance checks validate this checkpoint; no new model or simulator
+acceptance is claimed.
 
 ## v0.2.0-rc.1 discovery review — implementation pending
 
