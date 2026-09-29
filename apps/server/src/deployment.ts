@@ -49,6 +49,7 @@ export interface LaunchProfile {
   readonly environment: string;
   readonly embodiment: string;
   readonly policy: string;
+  readonly executionMode?: 'policy' | 'direct' | 'hybrid';
   readonly checkpoint: string;
   /** Default for roles without an explicit model binding. */
   readonly defaultModel: string;
@@ -200,6 +201,8 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
         profile.checkpoint,
       ].some((value) => typeof value !== 'string' || !value.trim()) ||
       !Object.hasOwn(models, profile.defaultModel) ||
+      (profile.executionMode !== undefined &&
+        !['policy', 'direct', 'hybrid'].includes(profile.executionMode)) ||
       typeof profile.createEnvironment !== 'function' ||
       !Array.isArray(profile.tasks) ||
       (profile.taskSource !== undefined &&
@@ -222,6 +225,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
         environment: profile.environment,
         embodiment: profile.embodiment,
         policy: profile.policy,
+        executionMode: profile.executionMode ?? 'policy',
         checkpoint: profile.checkpoint,
         defaultModel: profile.defaultModel,
         tasks: [...profile.tasks],

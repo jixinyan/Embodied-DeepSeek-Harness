@@ -106,6 +106,7 @@ function renderLauncher() {
   for (const [label, value] of Object.entries({
     Environment: profile?.environment,
     Embodiment: profile?.embodiment,
+    'Execution mode': profile ? (profile.executionMode ?? 'policy') : undefined,
     Policy: profile?.policy,
     Checkpoint: profile?.checkpoint,
     'Upper model': model ? `${model.provider} / ${model.model}` : undefined,
