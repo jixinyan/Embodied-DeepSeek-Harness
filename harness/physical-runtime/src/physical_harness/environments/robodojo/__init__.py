@@ -1,24 +1,21 @@
-"""External RoboDojo RPC environment adapter.
-
-The adapter owns only the EDH environment boundary.  RoboDojo remains an
-external process because its source is distributed under the RoboDojo
-Non-Commercial Research License.  The wire framing mirrors the inspected
-RoboDojo/GPT-as-Policy protocol (version 1, msgpack + zlib, NumPy extension
-type 42) without importing or vendoring that code.
-"""
-
 from __future__ import annotations
 
 from copy import deepcopy
+from collections import OrderedDict
 from datetime import datetime, timezone
 from io import BytesIO
 import math
+import json
 import socket
 import struct
 import time
 from typing import Any, Callable, Mapping, Sequence
 from uuid import uuid4
 import zlib
+
+import msgpack
+import numpy as np
+from PIL import Image
 
 from physical_harness.environments import (
     NativeCheck,
@@ -62,29 +59,13 @@ _MAX_BYTES = 128 * 1024 * 1024
 _ARRAY_EXT = 42
 
 
-def _msgpack() -> Any:
-    try:
-        import msgpack
-    except ImportError as error:  # pragma: no cover - exercised on an uninstalled host
-        raise RuntimeError(
-            "RoboDojo support requires the optional physical-runtime[robodojo] dependencies."
-        ) from error
-    return msgpack
-
-
-def _numpy() -> Any:
-    try:
-        import numpy as np
-    except ImportError as error:  # pragma: no cover - exercised on an uninstalled host
-        raise RuntimeError(
-            "RoboDojo support requires numpy in the physical runtime environment."
-        ) from error
-    return np
+def _json_array(value: Any) -> Any:
+    if isinstance(value, (np.ndarray, np.generic)):
+        return value.tolist()
+    raise TypeError(f"Unsupported policy tool result type: {type(value).__name__}")
 
 
 def _encode_array(value: Any) -> Any:
-    np = _numpy()
-    msgpack = _msgpack()
     if isinstance(value, np.ndarray):
         if value.dtype.kind not in "buif":
             raise TypeError(f"Unsupported RoboDojo array dtype: {value.dtype}")
@@ -101,8 +82,6 @@ def _encode_array(value: Any) -> Any:
 def _decode_array(code: int, payload: bytes) -> Any:
     if code != _ARRAY_EXT:
         raise ValueError("Unknown RoboDojo RPC extension")
-    msgpack = _msgpack()
-    np = _numpy()
     dtype_text, shape, data = msgpack.unpackb(payload, raw=False)
     dtype = np.dtype(dtype_text)
     if dtype.kind not in "buif" or len(shape) > 8 or any(type(item) is not int or item < 0 for item in shape):
@@ -139,7 +118,6 @@ class _RoboDojoRpc:
         stream = self._socket
         if stream is None:
             raise RuntimeError("RoboDojo RPC client is closed; reset requires a fresh client.")
-        msgpack = _msgpack()
         import uuid
 
         request_id = uuid.uuid4().hex
@@ -196,6 +174,12 @@ class RoboDojoEnvironment:
         self._terminated = False
         self._truncated = False
         self._configuration: dict[str, Any] | None = None
+        self._policy_context: dict[str, Any] | None = None
+        self._last_observation_id: str | None = None
+        self._source: str | None = None
+        self._prepared: dict[str, Any] | None = None
+        self._current_state: list[float] | None = None
+        self._observation_steps: OrderedDict[str, int] = OrderedDict()
 
     def _require_rpc(self) -> _RoboDojoRpc:
         if self._rpc is None:
@@ -213,9 +197,6 @@ class RoboDojoEnvironment:
 
     @staticmethod
     def _image(value: Any, camera: str) -> bytes:
-        np = _numpy()
-        from PIL import Image
-
         pixels = np.asarray(value)
         if pixels.ndim != 3 or pixels.shape[-1] < 3 or pixels.dtype != np.uint8:
             raise RuntimeError(f"RoboDojo camera {camera} returned an invalid RGB frame.")
@@ -230,7 +211,6 @@ class RoboDojoEnvironment:
             raw = self._require_rpc().request(
                 "teacher_observation", episode_id=self._episode_id, step_id=self._step_id
             )
-        np = _numpy()
         images: dict[str, bytes] = {}
         for camera in CAMERA_NAMES:
             if camera not in raw:
@@ -239,10 +219,87 @@ class RoboDojoEnvironment:
         states = np.asarray(raw.get("states"))
         if states.shape != (14,) or states.dtype.kind not in "buif" or not np.isfinite(states).all():
             raise RuntimeError("RoboDojo observation states must be a finite 14-value vector.")
+        self._current_state = states.tolist()
+        identity = str(uuid4())
+        self._last_observation_id = identity
+        self._observation_steps[identity] = self._step_id
+        if len(self._observation_steps) > 128:
+            self._observation_steps.popitem(last=False)
+        self._policy_context = {
+            "episode_id": self._episode_id,
+            "step_id": self._step_id,
+            "instruction": self._require_metadata()["instruction"],
+            "frame": "environment_origin",
+            "current_eef": {
+                arm: {"position": np.asarray(raw["eef_positions"])[index].tolist(),
+                      "quaternion_wxyz": np.asarray(raw["eef_quaternions_wxyz"])[index].tolist()}
+                for index, arm in enumerate(("left", "right"))
+            } if "eef_positions" in raw and "eef_quaternions_wxyz" in raw else None,
+            "remaining_steps": raw.get("remaining_steps"),
+        }
         return NativeObservation(
-            str(uuid4()), self._timestamp(), time.monotonic(), images,
+            identity, self._timestamp(), time.monotonic(), images,
             {"states": tuple(float(value) for value in states)},
         )
+
+    def policy_context(self, observation_id: str) -> dict[str, Any]:
+        if self._observation_steps.get(observation_id) != self._step_id or self._policy_context is None:
+            raise ValueError("Policy context requires the current observation.")
+        context = deepcopy(self._policy_context)
+        if self._require_metadata().get("supports_joint_control"):
+            context["current_joints"] = self.policy_tool(observation_id, "joint_state", {})["arms"]
+        return context
+
+    def policy_tool(self, observation_id: str, operation: str, arguments: Mapping[str, Any]) -> Any:
+        if self._observation_steps.get(observation_id) != self._step_id or self._terminated or self._truncated:
+            raise ValueError("Policy tool requires a current unfinished observation.")
+        allowed = {"grounding", "get_depth", "fk_preview", "joint_state", "prepare_targets",
+                   "prepare_joints", "eef_joint_target"}
+        if operation not in allowed or set(arguments) & {"episode_id", "step_id"}:
+            raise ValueError("Policy tool operation or identity is invalid.")
+        inputs = dict(arguments)
+        if operation == "fk_preview":
+            inputs["actions"] = np.asarray(inputs["actions"], dtype=np.float32)
+        result = self._require_rpc().request(
+            operation, episode_id=self._episode_id, step_id=self._step_id, **inputs
+        )
+        if operation in {"prepare_targets", "prepare_joints"}:
+            self._prepared = None
+            if result.get("ok") is True:
+                self._prepared = {"mode": "eef" if operation == "prepare_targets" else "joint",
+                                  "targets": deepcopy(inputs["targets"]), "result": deepcopy(result)}
+        return json.loads(json.dumps(result, default=_json_array, allow_nan=False))
+
+    def motion_status(self, motion: Mapping[str, Any]) -> dict[str, Any]:
+        if (self._prepared is None or motion["mode"] != self._prepared["mode"] or
+                motion["targets"] != self._prepared["targets"] or self._policy_context is None):
+            raise ValueError("Motion does not match the prepared target.")
+        arms = {}
+        for index, arm in enumerate(("left", "right")):
+            target = self._prepared["result"]["target_eef"][arm]
+            measured = self._policy_context["current_eef"][arm]
+            distance = float(np.linalg.norm(np.asarray(target["position"]) - measured["position"]))
+            q_target = np.asarray(target["quaternion_wxyz"], dtype=np.float64)
+            q_current = np.asarray(measured["quaternion_wxyz"], dtype=np.float64)
+            cosine = abs(float(np.dot(q_target, q_current) / (np.linalg.norm(q_target) * np.linalg.norm(q_current))))
+            angle = float(2 * np.arccos(np.clip(cosine, 0, 1)))
+            joint_error = float(np.max(np.abs(np.asarray(self._prepared["result"]["joint_targets"][arm]) -
+                self._current_state[index * 7:index * 7 + 6])))
+            arms[arm] = {"position_error_m": distance, "rotation_error_rad": angle,
+                         "joint_error_rad": joint_error,
+                         "reached": joint_error <= 0.01 if motion["mode"] == "joint" else distance <= 0.005 and angle <= 0.03}
+        return {"arms": arms, "reached": all(value["reached"] for value in arms.values()),
+                "error": sum(value["joint_error_rad"] if motion["mode"] == "joint" else
+                             value["position_error_m"] + 0.2 * value["rotation_error_rad"] for value in arms.values()),
+                "arrival_scope": "joint_angles" if motion["mode"] == "joint" else "link6_poses"}
+
+    def select_control_source(self, source: str, reason: str) -> None:
+        if source not in {"student", "gpt_eef", "gpt_joint"} or not isinstance(reason, str) or not reason.strip():
+            raise ValueError("Invalid control source or reason.")
+        if self._source != source:
+            self._require_rpc().request("switch_control_source", episode_id=self._episode_id,
+                                        step_id=self._step_id, source=source, reason=reason)
+            self._source = source
 
     def describe(self) -> NativeEnvironmentDescription:
         metadata = self._require_metadata()
@@ -257,10 +314,19 @@ class RoboDojoEnvironment:
         control_dt = metadata.get("control_dt")
         if not isinstance(control_dt, (int, float)) or not math.isfinite(float(control_dt)) or float(control_dt) <= 0:
             raise RuntimeError("RoboDojo control_dt is invalid.")
+        action_spec = deepcopy(ACTION_SPEC)
+        action_spec["frequency_hz"] = 1.0 / float(control_dt)
+        if metadata.get("supports_joint_control"):
+            joints = self._require_rpc().request("joint_state", episode_id=self._episode_id, step_id=self._step_id)
+            for arm_index, arm in enumerate(("left", "right")):
+                for joint_index, bounds in enumerate(joints["arms"][arm]["position_limits_rad"]):
+                    channel = action_spec["channels"][arm_index * 7 + joint_index]
+                    channel["minimum"], channel["maximum"] = bounds
+        self._validator.parse("ActionSpec", action_spec)
         return NativeEnvironmentDescription(
             provider="robodojo",
             embodiment_id="robodojo.dual-arx-x5",
-            action_spec=deepcopy(ACTION_SPEC),
+            action_spec=action_spec,
             camera_names=CAMERA_NAMES,
             state_channels=STATE_CHANNELS,
             supported_check_ids=("task_success",),
@@ -316,6 +382,7 @@ class RoboDojoEnvironment:
             if not isinstance(reset, dict) or not isinstance(reset.get("episode_id"), str):
                 raise RuntimeError("RoboDojo reset returned no episode identity.")
             self._episode_id = reset["episode_id"]
+            self._source = source
             self._step_id = int(reset.get("step_id", 0))
             self._task_id = task_id
             self._simulation_time_s = self._step_id * float(metadata["control_dt"])
@@ -358,13 +425,8 @@ class RoboDojoEnvironment:
             raise ValueError("RoboDojo action must contain 14 finite values.")
         if any(action[index] < 0 or action[index] > 1 for index in (6, 13)):
             raise ValueError("RoboDojo gripper targets must be in [0, 1].")
-        np = _numpy()
         result = self._require_rpc().request(
             "chunk_step", episode_id=self._episode_id, step_id=self._step_id,
-            # The source is selected at reset (or by the explicit
-            # switch_control_source operation).  RoboDojo's server adds that
-            # session-owned value to each receipt; sending it again here
-            # creates a duplicate keyword in the reference server.
             actions=np.asarray([action], dtype=np.float32),
         )
         steps = result.get("steps") if isinstance(result, dict) else None
@@ -401,5 +463,6 @@ class RoboDojoEnvironment:
         if rpc is not None:
             rpc.close()
         self._metadata = None
+        self._observation_steps.clear()
         self._episode_id = None
         self._task_id = None

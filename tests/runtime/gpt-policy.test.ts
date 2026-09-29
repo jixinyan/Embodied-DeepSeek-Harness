@@ -177,7 +177,7 @@ test('DshGptPolicy hybrid mode reviews a lower proposal and returns only the saf
     observation: { execution_mode: 'hybrid', control_mode: 'visual-1-shot' },
   });
   assert.equal(result.mode, 'hybrid');
-  if (result.mode === 'hybrid') {
+  if (result.mode === 'hybrid' && 'review' in result) {
     assert.equal(result.review.safe_steps, 2);
     assert.deepEqual(result.proposal, [
       [0.1, 0.2],

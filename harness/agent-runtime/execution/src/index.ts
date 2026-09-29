@@ -47,6 +47,11 @@ export {
 } from './profiles.js';
 
 export type ExecutionMode = 'policy' | 'direct' | 'hybrid';
+export {
+  serveGptPolicy,
+  requestPolicyProposal,
+  type GptPolicyServerOptions,
+} from './gpt-policy-server.js';
 
 const LITCHI_EXECUTION_MODES: Readonly<Record<string, ExecutionMode>> = {
   gpt_only: 'direct',

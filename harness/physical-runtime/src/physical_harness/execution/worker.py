@@ -62,6 +62,7 @@ class NativeWorkerSession:
         self._execution_mode = ExecutionMode.POLICY
         self._control_mode = "0-shot"
         self._policy: WebSocketPolicyClient | None = None
+        self._provider: str | None = None
         self._gate: ActionGate | None = None
         self._request: dict[str, Any] | None = None
         self._pump: asyncio.Task[None] | None = None
@@ -80,6 +81,7 @@ class NativeWorkerSession:
         self._lease_active = False
         self._host_connected = True
         self._failure_detail: str | None = None
+        self._last_motion: dict[str, Any] | None = None
         self._request_keys: dict[str, dict[str, Any]] = {}
         self._control_lock = asyncio.Lock()
         self._publish_lock = asyncio.Lock()
@@ -169,6 +171,7 @@ class NativeWorkerSession:
             return publication
 
     async def initialize(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        self._provider = arguments["provider"]
         if self._device is not None:
             raise RuntimeError("Native session is already initialized.")
         provider = arguments["provider"]
@@ -279,6 +282,7 @@ class NativeWorkerSession:
             self._started = time.monotonic()
             self._state_version = 0
             self._policy_calls = 0
+            self._last_motion = None
             self._last_monitor_action = 0
             self._boundary_at = None
             self._failure_detail = None
@@ -300,6 +304,7 @@ class NativeWorkerSession:
                 timeout_s=self._policy_timeout_s,
                 execution_mode=self._execution_mode,
             )
+            self._policy.tool_handler = self._policy_tool
             observation = await self._device.on_owner(self._environment.observe)
             if not self._host_connected or not self._lease_active:
                 raise RuntimeError("Native task lease ended during capture.")
@@ -317,6 +322,12 @@ class NativeWorkerSession:
                 policy_observation = encode_policy_observation(self._description, observation, self._native_task_id)
                 policy_observation["execution_mode"] = self._execution_mode.value
                 policy_observation["control_mode"] = self._control_mode
+                if self._last_motion is not None:
+                    policy_observation["movement"] = self._last_motion
+                if self._provider == "robodojo":
+                    policy_observation["control_context"] = await self._require_device().on_owner(
+                        self._environment.policy_context, observation.observation_id
+                    )
                 ticket = gate.request(
                     self._request["instruction"], observation.observation_id, policy_observation,
                     observed_monotonic=observation.observed_monotonic,
@@ -334,7 +345,19 @@ class NativeWorkerSession:
                 if not chunk["actions"]:
                     await gate.pause("policy_stop", terminal=True)
                 else:
-                    await gate.execute(chunk)
+                    motion = self._policy.motion
+                    if self._provider == "robodojo":
+                        source = "student" if self._execution_mode is ExecutionMode.POLICY or (
+                            self._execution_mode is ExecutionMode.HYBRID and motion is None and
+                            self._policy.last_response.get("review", {}).get("decision") == "allow"
+                        ) else "gpt_joint" if motion is None or motion["mode"] == "joint" else "gpt_eef"
+                        await self._require_device().on_owner(
+                            self._environment.select_control_source, source, "EDH admitted policy decision"
+                        )
+                    if motion is None:
+                        await gate.execute(chunk)
+                    else:
+                        await self._execute_motion(ticket, chunk, motion)
                 if self._require_device().last_step is not None and self._require_device().last_step.episode_terminated:
                     await gate.pause("episode_terminated", terminal=True)
                 if gate.snapshot()["state"] != "running":
@@ -355,6 +378,59 @@ class NativeWorkerSession:
                 await gate.pause("backend_error", terminal=True)
             if gate.snapshot()["state"] in ("paused", "ended"):
                 await self._publish(await self._require_device().on_owner(self._environment.observe), self._last_control)
+
+    async def _policy_tool(self, request: dict[str, Any], message: dict[str, Any]) -> Any:
+        gate = self._require_gate()
+        if (self._provider != "robodojo" or gate.snapshot()["state"] != "running" or
+                gate.snapshot()["generation"] != request["generation"] or gate.ticket_remaining_time() <= 0):
+            raise ValueError("Policy tools require the admitted RoboDojo inference scope.")
+        arguments = require_object(message.get("arguments", {}))
+        result = await self._require_device().on_owner(
+            self._environment.policy_tool, request["observation_id"], message["operation"], arguments
+        )
+        return result
+
+    async def _execute_motion(self, ticket: dict[str, Any], chunk: dict[str, Any], motion: dict[str, Any]) -> None:
+        if (self._provider != "robodojo" or not isinstance(motion, dict) or
+                set(motion) != {"mode", "targets", "steps", "stop_on_reach"} or
+                motion["mode"] not in {"eef", "joint"} or type(motion["steps"]) is not int or
+                not 1 <= motion["steps"] <= 150 or type(motion["stop_on_reach"]) is not bool):
+            raise ValueError("Invalid bounded direct-motion intent.")
+        device, gate = self._require_device(), self._require_gate()
+        await device.on_owner(self._environment.motion_status, motion)
+        prepared = await device.on_owner(self._environment.policy_tool, ticket["observation_id"],
+                                         "eef_joint_target", {"targets": motion["targets"]})
+        if len(chunk["actions"]) != 1 or chunk["actions"][0] != prepared["action"]:
+            raise ValueError("Direct motion action differs from the measured-state tracking command.")
+        errors: list[float] = []
+        start_actions = device.executed_actions
+        for index in range(motion["steps"]):
+            if gate.snapshot()["state"] != "running":
+                return
+            if index:
+                observation = await device.on_owner(self._environment.observe)
+                ticket = gate.request(self._request["instruction"], observation.observation_id,
+                                      {"motion_tracking": True}, observed_monotonic=observation.observed_monotonic)
+                proposal = await device.on_owner(self._environment.policy_tool, observation.observation_id,
+                    "eef_joint_target", {"targets": motion["targets"]})
+                chunk = {"schema_version": "physical.action_chunk.v1", **{key: ticket[key] for key in
+                    ("request_id", "execution_id", "task_scope", "generation", "observation_id", "valid_until", "action_spec")},
+                    "actions": [proposal["action"]]}
+            await gate.execute(chunk)
+            await device.on_owner(self._environment.observe)
+            status = await device.on_owner(self._environment.motion_status, motion)
+            self._last_motion = {**status, "status": "step_budget", "executed_steps": device.executed_actions - start_actions}
+            if device.last_step is not None and device.last_step.episode_terminated:
+                self._last_motion["status"] = "terminal"
+                await gate.pause("episode_terminated", terminal=True)
+                return
+            if gate.snapshot()["state"] != "running":
+                return
+            errors.append(status["error"])
+            if motion["stop_on_reach"] and (status["reached"] or
+                    len(errors) >= 20 and errors[-20] - min(errors[-19:]) < 1e-4):
+                self._last_motion["status"] = "reached" if status["reached"] else "stalled"
+                return
 
     async def _on_segment(self, segment: dict[str, Any], receipt: dict[str, Any]) -> None:
         device = self._require_device()
@@ -438,6 +514,7 @@ class NativeWorkerSession:
                 self._policy_uri, self._validator, timeout_s=self._policy_timeout_s,
                 execution_mode=self._execution_mode,
             )
+            self._policy.tool_handler = self._policy_tool
             observation = await self._require_device().on_owner(self._environment.observe)
             publication = await self._publish(observation)
             self._pump = asyncio.create_task(self._run_policy())

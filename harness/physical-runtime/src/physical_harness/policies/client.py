@@ -6,6 +6,7 @@ import copy
 import json
 import math
 from typing import Any, Protocol
+from collections.abc import Awaitable, Callable
 from urllib.parse import urlsplit
 
 from physical_harness.execution.modes import ExecutionMode, normalize_mode_response
@@ -80,6 +81,9 @@ class WebSocketPolicyClient:
         self._connection: Any = None
         self._active: asyncio.Task[Any] | None = None
         self._closed = False
+        self.motion: dict[str, Any] | None = None
+        self.last_response: dict[str, Any] | None = None
+        self.tool_handler: Callable[[dict[str, Any], dict[str, Any]], Awaitable[Any]] | None = None
 
     async def _disconnect(self) -> None:
         connection, self._connection = self._connection, None
@@ -90,6 +94,8 @@ class WebSocketPolicyClient:
         if self._closed or self._active is not None:
             raise RuntimeError("Policy client is closed or already has an in-flight request.")
         bound = copy.deepcopy(request)
+        self.motion = None
+        self.last_response = None
         self._validator.parse("PolicyRequest", bound)
         self._validator.parse("ActionSpec", bound["action_spec"])
         encoded = self._codec.encode(bound)
@@ -110,9 +116,23 @@ class WebSocketPolicyClient:
                 if self._closed:
                     raise RuntimeError("Policy client closed while connecting.")
                 await self._connection.send(encoded)
-                message = await self._connection.recv()
-                response = self._codec.decode(message, copy.deepcopy(bound))
+                for _ in range(64):
+                    message = await self._connection.recv()
+                    response = self._codec.decode(message, copy.deepcopy(bound))
+                    if response.get("type") != "policy_tool":
+                        break
+                    if (self._execution_mode is ExecutionMode.POLICY or self.tool_handler is None or
+                            response.get("request_id") != bound["request_id"] or
+                            not isinstance(response.get("id"), str)):
+                        raise PolicyProtocolError("Unexpected or stale policy tool request.")
+                    result = await self.tool_handler(copy.deepcopy(bound), response)
+                    await self._connection.send(json.dumps({"type": "policy_tool_result",
+                        "id": response["id"], "request_id": bound["request_id"], "result": result}, allow_nan=False))
+                else:
+                    raise PolicyProtocolError("Policy tool request budget exhausted.")
                 normalized = normalize_mode_response(response, bound, self._execution_mode)
+                self.motion = copy.deepcopy(response.get("motion"))
+                self.last_response = copy.deepcopy(response)
                 return copy.deepcopy(validate_response(self._validator, bound, normalized))
         except BaseException:
             # Closing after cancellation/timeout prevents a late response becoming the next result.

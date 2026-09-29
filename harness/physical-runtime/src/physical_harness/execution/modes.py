@@ -1,11 +1,3 @@
-"""Execution-mode contracts shared by GPT direct and hybrid policies.
-
-These helpers deliberately validate *proposals* before they reach ActionGate;
-they never dispatch an action and therefore cannot create a second control loop.
-The vocabulary is based on the local LitchiAgent implementation:
-``gpt_only`` maps to ``direct`` and ``pi05_plus_gpt`` maps to ``hybrid``.
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -163,6 +155,10 @@ def _review(value: object) -> HybridReview:
         raise ValueError("Hybrid review decision and reason are required strings.")
     if type(confidence) not in (int, float) or type(safe_steps) is not int:
         raise ValueError("Hybrid review confidence and safe_steps have invalid types.")
+    if decision not in {"allow", "intervene"} or not reason.strip() or not math.isfinite(confidence) or not 0 <= confidence <= 1:
+        raise ValueError("Hybrid review decision, reason or confidence is invalid.")
+    if (decision == "allow" and not 1 <= safe_steps <= 15) or (decision == "intervene" and safe_steps != 0):
+        raise ValueError("Allow requires 1..15 steps; intervention requires zero.")
     if not isinstance(refs, (list, tuple)) or not all(isinstance(item, str) and item for item in refs):
         raise ValueError("Hybrid grounding_refs must be nonempty strings.")
     if not isinstance(subtasks, (list, tuple)) or not all(isinstance(item, str) and item for item in subtasks):
@@ -199,12 +195,22 @@ def normalize_mode_response(
     if response.get("mode") != selected.value:
         raise ValueError(f"Policy response mode must be {selected.value!r}.")
     _identity(request, response)
+    if response.get("stop") is True:
+        if (set(response) != {"mode", "request_id", "stop", "reason"} or
+                not isinstance(response["reason"], str) or not response["reason"].strip()):
+            raise ValueError("Policy stop requires an explicit observed reason and no actions.")
+        return _canonical(request, [])
     action_spec = request.get("action_spec")
     if not isinstance(action_spec, Mapping):
         raise ValueError("Policy request has no ActionSpec.")
     if selected is ExecutionMode.DIRECT:
         action = response.get("action")
         return _canonical(request, [validate_direct_action(action, action_spec)])
+
+    if "correction" in response:
+        if "proposal" in response or "review" in response:
+            raise ValueError("A plan-owned direct correction cannot include a policy proposal.")
+        return _canonical(request, [validate_direct_action(response["correction"], action_spec)])
 
     proposal = response.get("proposal")
     if not isinstance(proposal, (list, tuple)) or not proposal or len(proposal) > 512:

@@ -50,3 +50,10 @@ DSH module identifiers are retained internally for source/declaration compatibil
 they resolve only to pinned local files. No external DSH product installation or
 upstream CLI is used. JavaScript dependencies retain their own licenses. Model
 weights, simulator assets and datasets are not included and have separate terms.
+
+## RoboDojo and LitchiAgent
+
+The external RoboDojo service retains its upstream research license. EDH does not
+distribute its source, models or assets. LitchiAgent-derived execution semantics
+retain the [LitchiAgent MIT notice](licenses/LITCHI-MIT.txt). Inspected revisions
+and the adaptation map appear in [provider provenance](docs/provenance/litchi-robodojo.md).

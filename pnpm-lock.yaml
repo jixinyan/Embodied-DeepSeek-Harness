@@ -20,6 +20,9 @@ importers:
       '@types/node':
         specifier: 22.19.0
         version: 22.19.0
+      '@types/ws':
+        specifier: 8.18.1
+        version: 8.18.1
       ajv:
         specifier: 8.17.1
         version: 8.17.1
@@ -66,7 +69,7 @@ importers:
     dependencies:
       '@apidevtools/json-schema-ref-parser':
         specifier: 14.2.1
-        version: 14.2.1
+        version: 14.2.1(@types/json-schema@7.0.15)
       '@edh/agents':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/agents
@@ -187,6 +190,12 @@ importers:
       '@edh/tools':
         specifier: workspace:*
         version: link:../tools
+      ws:
+        specifier: 8.18.3
+        version: 8.18.3
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   harness/agent-runtime/files:
     dependencies:
@@ -398,6 +407,8 @@ packages:
   '@apidevtools/json-schema-ref-parser@14.2.1':
     resolution: {integrity: sha512-HmdFw9CDYqM6B25pqGBpNeLCKvGPlIx1EbLrVL0zPvj50CJQUHyBNBw45Muk0kEIkogo1VZvOKHajdMuAzSxRg==}
     engines: {node: '>= 20'}
+    peerDependencies:
+      '@types/json-schema': ^7.0.15
 
   '@braintree/sanitize-url@7.1.2':
     resolution: {integrity: sha512-jigsZK+sMF/cuiB7sERuo9V7N9jx+dhmHHnQyDSVdpZwVutaBu7WvNYqMDLSgFgfB30n452TP3vjDAvFC973mA==}
@@ -919,6 +930,9 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
+
+  '@types/ws@8.18.1':
+    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
 
   '@upsetjs/venn.js@2.0.0':
     resolution: {integrity: sha512-WbBhLrooyePuQ1VZxrJjtLvTc4NVfpOyKx0sKqioq9bX1C1m7Jgykkn8gLrtwumBioXIqam8DLxp88Adbue6Hw==}
@@ -1584,6 +1598,18 @@ packages:
     engines: {node: '>= 8'}
     hasBin: true
 
+  ws@8.18.3:
+    resolution: {integrity: sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   xmlbuilder@15.1.1:
     resolution: {integrity: sha512-yMqGBqtXyeN1e3TGYvgNgDVZ3j84W4cwkOXQswghol6APgZWaff9lnbvN7MHYJOiXsvGPXtjTYJEiC9J2wv9Eg==}
     engines: {node: '>=8.0'}
@@ -1616,8 +1642,9 @@ snapshots:
       '@types/json-schema': 7.0.15
       js-yaml: 4.3.2
 
-  '@apidevtools/json-schema-ref-parser@14.2.1':
+  '@apidevtools/json-schema-ref-parser@14.2.1(@types/json-schema@7.0.15)':
     dependencies:
+      '@types/json-schema': 7.0.15
       js-yaml: 4.3.2
 
   '@braintree/sanitize-url@7.1.2': {}
@@ -2071,6 +2098,10 @@ snapshots:
     optional: true
 
   '@types/unist@3.0.3': {}
+
+  '@types/ws@8.18.1':
+    dependencies:
+      '@types/node': 22.19.0
 
   '@upsetjs/venn.js@2.0.0':
     optionalDependencies:
@@ -2868,6 +2899,8 @@ snapshots:
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
+
+  ws@8.18.3: {}
 
   xmlbuilder@15.1.1: {}
 

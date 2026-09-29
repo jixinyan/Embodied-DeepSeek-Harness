@@ -8,6 +8,15 @@ import { deadline } from '@deepseek-ai/dsh-timeout';
 import { createDshSession } from '@edh/agents';
 import { defineTool, type ToolDefinition } from '@edh/tools';
 import type { ActionChunk, ContractValidator, PolicyRequest } from '@edh/contracts';
+import { validatePolicyPlan, validatePolicyIntent, type PolicySubtask } from './policy-plan.js';
+import type { JsonValue } from '@deepseek-ai/dsh-util-values';
+
+export interface GptMotion {
+  mode: 'eef' | 'joint';
+  targets: Record<string, unknown>;
+  steps: number;
+  stop_on_reach: boolean;
+}
 
 export type GptControlMode = '0-shot' | 'textual-1-shot' | 'visual-1-shot';
 export interface GptPolicyOptions {
@@ -39,6 +48,13 @@ export interface GptPolicyOptions {
   audit?(record: Record<string, unknown>): void;
   timeoutMs?: number;
   maxModelSteps?: number;
+  requirePlan?: boolean;
+  providerTool?(
+    request: PolicyRequest,
+    operation: string,
+    argumentsValue: Record<string, unknown>,
+    signal: AbortSignal,
+  ): Promise<Record<string, JsonValue>>;
 }
 
 type Review = {
@@ -46,9 +62,12 @@ type Review = {
   reason: string;
   confidence: number;
   safeSteps: number;
+  intent?: Record<string, JsonValue>;
 };
 export type GptPolicyResponse =
-  | { mode: 'direct'; request_id: string; action: number[] }
+  | { mode: 'direct' | 'hybrid'; request_id: string; stop: true; reason: string }
+  | { mode: 'direct'; request_id: string; action: number[]; motion?: GptMotion }
+  | { mode: 'hybrid'; request_id: string; correction: number[]; motion?: GptMotion }
   | {
       mode: 'hybrid';
       request_id: string;
@@ -58,8 +77,10 @@ export type GptPolicyResponse =
         reason: string;
         confidence: number;
         safe_steps: number;
+        intent?: Record<string, JsonValue>;
       };
       intervention?: number[];
+      motion?: GptMotion;
     };
 
 /** EDH-owned Litchi-style policy using the existing DSH loop and native tools.
@@ -76,6 +97,11 @@ export class DshGptPolicy {
   private closed = false;
   private steps = 0;
   private readonly mode: GptControlMode;
+  private plan: PolicySubtask[] = [];
+  private planCurrent = false;
+  private planRevision = 0;
+  private readonly groundingIds = new Set<string>();
+  private auditCount = 0;
 
   constructor(
     private readonly host: Context,
@@ -120,25 +146,110 @@ export class DshGptPolicy {
   }
 
   private tools(): ToolDefinition[] {
-    const terminal = (action: number[], conclude: () => void) => {
+    const planningCurrent = () => {
+      if (this.options.requirePlan && !this.planCurrent)
+        throw new Error('Update the complete execution plan for the current observation.');
+    };
+    const terminal = (action: number[], conclude: () => void, motion?: GptMotion) => {
       const request = this.request();
+      planningCurrent();
       const admitted = this.action(action);
       if (this.options.mode === 'hybrid') {
-        if (!this.proposal || this.review?.decision !== 'intervene')
+        if (this.proposal && this.review?.decision !== 'intervene')
           throw new Error('Hybrid direct correction requires an intervened proposal.');
+        this.output = this.proposal
+          ? {
+              mode: 'hybrid',
+              request_id: request.request_id,
+              proposal: this.proposal.actions,
+              review: { ...this.review!, safe_steps: this.review!.safeSteps },
+              intervention: admitted,
+              ...(motion ? { motion } : {}),
+            }
+          : {
+              mode: 'hybrid',
+              request_id: request.request_id,
+              correction: admitted,
+              ...(motion ? { motion } : {}),
+            };
+        if ('review' in this.output)
+          delete (this.output.review as Record<string, unknown>).safeSteps;
+      } else
         this.output = {
-          mode: 'hybrid',
+          mode: 'direct',
           request_id: request.request_id,
-          proposal: this.proposal.actions,
-          review: { ...this.review, safe_steps: this.review.safeSteps },
-          intervention: admitted,
+          action: admitted,
+          ...(motion ? { motion } : {}),
         };
-        delete (this.output.review as Record<string, unknown>).safeSteps;
-      } else this.output = { mode: 'direct', request_id: request.request_id, action: admitted };
       conclude();
       return { accepted: true, requestId: request.request_id, physicalSteps: 0 };
     };
     const tools: ToolDefinition[] = [
+      defineTool({
+        name: 'policy__stop',
+        description:
+          'End this policy execution for independent verification, citing the current observed subgoal outcome. No further controls are issued. This is not a formal success verdict.',
+        parameters: {
+          requestId: { type: 'string', required: true },
+          reason: { type: 'string', required: true },
+        },
+        output: {
+          schema: { type: 'object', additionalProperties: true },
+          render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+        },
+        execute: async (args, exec) => {
+          const request = this.request(args.requestId);
+          planningCurrent();
+          if (!args.reason.trim())
+            throw new Error('Policy stop requires current observed evidence.');
+          this.output = {
+            mode: this.options.mode,
+            request_id: request.request_id,
+            stop: true,
+            reason: args.reason,
+          };
+          exec.concludeTurn();
+          return { accepted: true, physicalSteps: 0 };
+        },
+      }),
+      defineTool({
+        name: 'policy__update_plan',
+        description:
+          'Replace the complete local execution plan for this subgoal using current images. Record both arm assignments, reachability, prerequisites and observed evidence. No physical steps. A plan revision invalidates its proposal review.',
+        parameters: {
+          requestId: { type: 'string', required: true },
+          subtasks: {
+            type: 'array',
+            items: { type: 'object', additionalProperties: true },
+            required: true,
+          },
+          reason: { type: 'string', required: true },
+        },
+        output: {
+          schema: { type: 'object', additionalProperties: true },
+          render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+        },
+        execute: async (args) => {
+          const request = this.request(args.requestId);
+          if (!args.reason.trim()) throw new Error('Plan revision requires observed evidence.');
+          this.plan = validatePolicyPlan(args.subtasks);
+          this.planCurrent = true;
+          this.review = undefined;
+          const record = {
+            requestId: request.request_id,
+            revision: ++this.planRevision,
+            subtasks: this.plan,
+            reason: args.reason,
+            physicalSteps: 0,
+          };
+          this.options.audit?.({
+            kind: 'policy_plan',
+            executionId: request.execution_id,
+            ...record,
+          });
+          return structuredClone(record);
+        },
+      }),
       defineTool({
         name: 'policy__joint_command',
         description:
@@ -154,11 +265,126 @@ export class DshGptPolicy {
         },
         execute: async (args, exec) => {
           this.request(args.requestId);
+          if (!args.reason.trim()) throw new Error('An action reason is required.');
           exec.signal.throwIfAborted();
           return terminal(args.action, () => exec.concludeTurn());
         },
       }),
     ];
+    if (this.options.providerTool) {
+      const output = {
+        schema: { type: 'object', additionalProperties: true } as const,
+        render: (_args: unknown, value: unknown) => [
+          { type: 'text' as const, text: JSON.stringify(value) },
+        ],
+      };
+      for (const [name, operation, parameters] of [
+        [
+          'policy__grounding',
+          'grounding',
+          { x: { type: 'integer', required: true }, y: { type: 'integer', required: true } },
+        ],
+        [
+          'policy__get_depth',
+          'get_depth',
+          {
+            arm: { type: 'string', enum: ['left', 'right'], required: true },
+            x: { type: 'integer', required: true },
+            y: { type: 'integer', required: true },
+          },
+        ],
+      ] as const)
+        tools.push(
+          defineTool({
+            name,
+            description:
+              operation === 'grounding'
+                ? 'Read a head RGB-D pixel surface point in environment_origin. Original pixel coordinates; no motion.'
+                : 'Read a wrist pixel depth along the camera optical axis in metres. No motion.',
+            parameters: { requestId: { type: 'string', required: true }, ...parameters },
+            output,
+            execute: async (args, exec) => {
+              const request = this.request(args.requestId);
+              const { requestId: _id, ...inputs } = args;
+              const result = await this.options.providerTool!(
+                request,
+                operation,
+                inputs,
+                exec.signal,
+              );
+              this.request(args.requestId);
+              if (result.ok === false) throw new Error(String(result.error));
+              if (operation === 'grounding') {
+                if (typeof result.grounding_id !== 'string')
+                  throw new Error('Grounding returned no evidence identity.');
+                this.groundingIds.add(result.grounding_id);
+              }
+              return result;
+            },
+          }),
+        );
+      for (const mode of ['eef', 'joint'] as const)
+        tools.push(
+          defineTool({
+            name: mode === 'eef' ? 'policy__eef_target' : 'policy__joint_target',
+            description:
+              mode === 'eef'
+                ? 'Prepare absolute link6 poses for both arms in environment_origin using measured-state numerical IK. Use previewOnly to inspect FK without motion. Submit a bounded velocity-limited tracking intent through ActionGate.'
+                : 'Prepare absolute/delta six-joint targets in radians and explicit grippers for both arms. Delta is anchored once to current measured qpos. Preview FK before recovery; every actual command passes ActionGate.',
+            parameters: {
+              requestId: { type: 'string', required: true },
+              targets: { type: 'object', additionalProperties: true, required: true },
+              coordinateMode: { type: 'string', enum: ['absolute', 'delta'] },
+              previewOnly: { type: 'boolean', required: true },
+              steps: { type: 'integer', required: true },
+              stopOnReach: { type: 'boolean', required: true },
+              reason: { type: 'string', required: true },
+            },
+            output,
+            execute: async (args, exec) => {
+              const request = this.request(args.requestId);
+              planningCurrent();
+              if (
+                !Number.isSafeInteger(args.steps) ||
+                args.steps < 1 ||
+                args.steps > 150 ||
+                !/^left: .+, right: .+$/.test(args.reason)
+              )
+                throw new Error('Direct motion requires 1..150 steps and left/right reasons.');
+              if (mode === 'joint' && !args.coordinateMode)
+                throw new Error('Joint targets require absolute/delta coordinateMode.');
+              const prepared = await this.options.providerTool!(
+                request,
+                mode === 'eef' ? 'prepare_targets' : 'prepare_joints',
+                {
+                  targets: args.targets,
+                  ...(mode === 'joint' ? { coordinate_mode: args.coordinateMode } : {}),
+                },
+                exec.signal,
+              );
+              this.request(args.requestId);
+              if (prepared.ok !== true) throw new Error('Motion preparation did not succeed.');
+              if (args.previewOnly) return prepared;
+              const proposal = await this.options.providerTool!(
+                request,
+                'eef_joint_target',
+                { targets: args.targets },
+                exec.signal,
+              );
+              exec.signal.throwIfAborted();
+              this.request(args.requestId);
+              if (!Array.isArray(proposal.action))
+                throw new Error('Motion preparation returned no action.');
+              return terminal(proposal.action as number[], () => exec.concludeTurn(), {
+                mode,
+                targets: args.targets,
+                steps: args.steps,
+                stop_on_reach: args.stopOnReach,
+              });
+            },
+          }),
+        );
+    }
     if (this.options.prepareEef)
       tools.push(
         defineTool({
@@ -176,6 +402,7 @@ export class DshGptPolicy {
           },
           execute: async (args, exec) => {
             const request = this.request(args.requestId);
+            planningCurrent();
             const action = await this.options.prepareEef!(request, args.targets, exec.signal);
             exec.signal.throwIfAborted();
             this.request(args.requestId);
@@ -196,6 +423,7 @@ export class DshGptPolicy {
           },
           execute: async (args, exec) => {
             const request = this.request(args.requestId);
+            planningCurrent();
             if (this.proposal) throw new Error('The current request already has a proposal.');
             const proposed = await this.options.propose!(request, exec.signal);
             exec.signal.throwIfAborted();
@@ -218,10 +446,27 @@ export class DshGptPolicy {
               id: randomUUID(),
               actions: proposed.actions.map((action) => this.action(action)),
             };
+            const fk = this.options.providerTool
+              ? await this.options.providerTool(
+                  request,
+                  'fk_preview',
+                  { actions: this.proposal.actions },
+                  exec.signal,
+                )
+              : undefined;
+            this.request(args.requestId);
+            if (
+              fk &&
+              (!(fk.measured_fk_check as { passed?: boolean } | undefined)?.passed ||
+                !Array.isArray(fk.trajectory) ||
+                fk.trajectory.length !== this.proposal.actions.length)
+            )
+              throw new Error('FK preview failed measured robot validation.');
             return structuredClone({
               predictionId: this.proposal.id,
               actions: this.proposal.actions,
               physicalSteps: 0,
+              ...(fk ? { fk } : {}),
             });
           },
         }),
@@ -236,6 +481,7 @@ export class DshGptPolicy {
             reason: { type: 'string', required: true },
             confidence: { type: 'number', required: true },
             safeSteps: { type: 'integer', required: true },
+            intent: { type: 'object', additionalProperties: true },
           },
           output: {
             schema: { type: 'object', additionalProperties: true },
@@ -243,6 +489,7 @@ export class DshGptPolicy {
           },
           execute: async (args) => {
             this.request(args.requestId);
+            planningCurrent();
             if (!this.proposal || this.proposal.id !== args.predictionId || this.review)
               throw new Error('Review requires the current unreviewed prediction.');
             if (
@@ -251,16 +498,32 @@ export class DshGptPolicy {
               args.confidence < 0 ||
               args.confidence > 1 ||
               !Number.isSafeInteger(args.safeSteps) ||
-              args.safeSteps < 1 ||
+              args.safeSteps < 0 ||
               args.safeSteps > 15 ||
               args.safeSteps > this.proposal.actions.length
             )
               throw new Error('Review reason, confidence or prefix is invalid.');
+            if (
+              (args.decision === 'allow' && args.safeSteps === 0) ||
+              (args.decision === 'intervene' && args.safeSteps !== 0)
+            )
+              throw new Error(
+                'Allow requires a positive prefix; intervention requires zero steps.',
+              );
+            const intent = this.options.requirePlan
+              ? validatePolicyIntent(
+                  args.intent,
+                  args.decision as Review['decision'],
+                  this.plan,
+                  this.groundingIds,
+                )
+              : undefined;
             this.review = {
               decision: args.decision as Review['decision'],
               reason: args.reason,
               confidence: args.confidence,
               safeSteps: args.safeSteps,
+              ...(intent ? { intent } : {}),
             };
             return { predictionId: args.predictionId, ...this.review, physicalSteps: 0 };
           },
@@ -279,6 +542,7 @@ export class DshGptPolicy {
           },
           execute: async (args, exec) => {
             const request = this.request(args.requestId);
+            planningCurrent();
             if (
               !this.proposal ||
               this.proposal.id !== args.predictionId ||
@@ -294,6 +558,7 @@ export class DshGptPolicy {
                 reason: this.review.reason,
                 confidence: this.review.confidence,
                 safe_steps: this.review.safeSteps,
+                ...(this.review.intent ? { intent: this.review.intent } : {}),
               },
             };
             exec.concludeTurn();
@@ -323,8 +588,13 @@ export class DshGptPolicy {
       this.proposal = undefined;
       this.review = undefined;
       this.steps = 0;
+      this.planCurrent = false;
+      this.groundingIds.clear();
       if (this.executionId !== request.execution_id) {
         await this.handle?.dispose();
+        this.plan = [];
+        this.planRevision = 0;
+        this.auditCount = 0;
         this.handle = await createDshSession(this.host, {
           sessionId: randomUUID(),
           provider: this.options.provider,
@@ -332,7 +602,7 @@ export class DshGptPolicy {
           ...(this.options.reasoningEffort
             ? { reasoningEffort: ReasoningEffortId(this.options.reasoningEffort) }
             : {}),
-          instructions: `You are an action policy, not the Planner or Verifier. Use the explicit subgoal and current observation. Every tool proposes or reads; the EDH ActionGate alone commits controls. Never claim physical success. Use the exact requestId. ${this.options.mode === 'hybrid' ? 'Use policy__infer, inspect its action horizon, policy__review, then policy__execute for an allowed prefix or policy__joint_command/policy__eef_command for an intervention.' : 'Inspect the images, state, ActionSpec and optional grounding tools, then use policy__joint_command or policy__eef_command once.'} ${this.options.instructions ?? ''}`,
+          instructions: `You are the execution policy for the Planner's explicit subgoal. High-level retry/replan and formal verification belong to their independent roles. Every tool proposes or reads; ActionGate commits controls. Use fresh images and the exact requestId. ${this.options.requirePlan ? 'Before inference or motion, call policy__update_plan with the complete observed local plan. Subtasks require id/status/src/dst/cond/next_action/evidence, arm_plan(single/handoff/coordinated_dual), arms_used, simultaneous_arms, reachability(left.src/left.dst/right.src/right.dst: yes/no/unknown), depends_on. Update after every motion; preserve prerequisites. ' : ''}${this.options.mode === 'hybrid' ? 'Infer, inspect all FK trajectories and grippers, revise the plan if needed, review intent for both arms, then execute 1..15 allowed actions (near contact 1..5). Unknown intent or failure requires intervention with safeSteps=0. The entire remaining proposal is discarded after execution. Direct correction can be selected before inference, or after an intervened proposal.' : 'Inspect head/wrist images, state, limits and grounding, then propose a bounded EEF/joint motion.'} ${this.options.instructions ?? ''}`,
           tools: this.tools(),
         });
         this.executionId = request.execution_id;
@@ -363,6 +633,7 @@ export class DshGptPolicy {
                 maxActions: request.max_actions,
                 controlMode: this.mode,
                 observation: observed.context,
+                currentPlan: this.plan,
                 demonstration: this.mode === '0-shot' ? null : demonstration!.text,
               }),
             },
@@ -383,8 +654,9 @@ export class DshGptPolicy {
         mode: this.options.mode,
         controlMode: this.mode,
         response: this.output,
-        events: this.handle!.agent.session.snapshotEvents(),
+        events: this.handle!.agent.session.snapshotEvents().slice(this.auditCount),
       });
+      this.auditCount = this.handle!.agent.session.snapshotEvents().length;
       return structuredClone(this.output);
     } finally {
       if (abort) limit.signal.removeEventListener('abort', abort);
