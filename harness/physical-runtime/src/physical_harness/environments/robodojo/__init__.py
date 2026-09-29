@@ -381,6 +381,10 @@ class RoboDojoEnvironment:
             )
             if not isinstance(reset, dict) or not isinstance(reset.get("episode_id"), str):
                 raise RuntimeError("RoboDojo reset returned no episode identity.")
+            reset_metadata = reset.get("metadata")
+            if not isinstance(reset_metadata, dict) or reset_metadata.get("task") != task_id:
+                raise RuntimeError("RoboDojo reset returned no matching scene metadata.")
+            self._metadata = deepcopy(reset_metadata)
             self._episode_id = reset["episode_id"]
             self._source = source
             self._step_id = int(reset.get("step_id", 0))
