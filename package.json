@@ -60,6 +60,7 @@
     "@standard-schema/spec": "1.1.0",
     "@types/node": "22.19.0",
     "@types/ws": "8.18.1",
+    "undici": "8.11.2",
     "ajv": "8.17.1",
     "json-schema-to-typescript": "15.0.4",
     "prettier": "3.6.2",

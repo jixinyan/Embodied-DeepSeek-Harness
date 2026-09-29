@@ -1,6 +1,7 @@
 import { readFile, appendFile, mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici';
 import { ContractValidator } from '@edh/contracts';
 import { createConfiguredModels, readModelConfiguration } from '@edh/models';
 import { serveGptPolicy, requestPolicyProposal } from '@edh/execution';
@@ -14,6 +15,8 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const configurationPath = process.env.EDH_ROBODOJO_CONFIG;
 if (!configurationPath) throw new Error('EDH_ROBODOJO_CONFIG is required.');
 const config = JSON.parse(await readFile(configurationPath, 'utf8'));
+const dispatcher = new EnvHttpProxyAgent();
+setGlobalDispatcher(dispatcher);
 const validator = new ContractValidator(
   JSON.parse(
     await readFile(resolve(root, 'harness/contracts/schema/physical.schema.json'), 'utf8'),
@@ -31,6 +34,7 @@ const hosts = [];
 let auditWrites = Promise.resolve();
 let auditFailure;
 let closing = false;
+let server;
 const auditDirectory = resolve(config.dataDirectory, 'policy-audits');
 await mkdir(auditDirectory, { recursive: true });
 const audit = (record) => {
@@ -46,12 +50,13 @@ const audit = (record) => {
 async function shutdown() {
   if (closing) return;
   closing = true;
-  await server.close();
+  await server?.close();
   for (const gateway of gateways) await gateway.close();
   for (const host of hosts) await host.fiber.dispose();
   await auditWrites;
+  await dispatcher.close();
 }
-const server = await startServer({
+server = await startServer({
   root,
   port: config.consolePort ?? 4318,
   dataDirectory: resolve(config.dataDirectory),

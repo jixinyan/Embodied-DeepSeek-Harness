@@ -1,6 +1,7 @@
 /** OpenAI Responses transport for GPT-6 Astra and compatible endpoints. */
 
 import { deadline, timeoutOf } from '@deepseek-ai/dsh-timeout';
+import { EventSourceParserStream } from 'eventsource-parser/stream';
 import {
   LlmAdapter,
   LlmError,
@@ -148,41 +149,22 @@ async function inputItems(
 }
 
 async function* responseEvents(
-  stream: ReadableStream<Uint8Array>,
+  stream: ReadableStream<Uint8Array<ArrayBuffer>>,
 ): AsyncGenerator<{ event: string; data: any }> {
-  const reader = stream.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let event = '';
-  let data: string[] = [];
-  const flush = (): { event: string; data: any } | undefined => {
-    if (!data.length) return undefined;
-    const payload = data.join('\n');
-    data = [];
-    const current = { event: event || 'message', data: JSON.parse(payload) };
-    event = '';
-    return current;
-  };
+  const reader = stream
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(
+      new EventSourceParserStream({ onError: 'terminate', maxBufferSize: 32 * 1024 * 1024 }),
+    )
+    .getReader();
   try {
     while (true) {
       const next = await reader.read();
-      buffer += decoder.decode(next.value ?? new Uint8Array(), { stream: !next.done });
-      let newline: number;
-      while ((newline = buffer.indexOf('\n')) >= 0) {
-        let line = buffer.slice(0, newline);
-        buffer = buffer.slice(newline + 1);
-        if (line.endsWith('\r')) line = line.slice(0, -1);
-        if (!line) {
-          const result = flush();
-          if (result) yield result;
-        } else if (line.startsWith('event:')) event = line.slice(6).trim();
-        else if (line.startsWith('data:')) data.push(line.slice(5).trimStart());
-      }
       if (next.done) break;
+      yield { event: next.value.event ?? 'message', data: JSON.parse(next.value.data) };
     }
-    const result = flush();
-    if (result) yield result;
   } finally {
+    await reader.cancel();
     reader.releaseLock();
   }
 }
@@ -329,10 +311,13 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
     using requestDeadline = deadline(options.signal, this.timeout, 'MODEL_REQUEST_TIMEOUT');
     const { signal } = requestDeadline;
     let response: Response | undefined;
+    let stage = 'credential resolution';
     try {
       signal.throwIfAborted();
       const key = await this.config.apiKey?.(signal);
+      stage = 'request preparation';
       const body = await this.request(options, signal);
+      stage = 'HTTP connection';
       response = await fetch(this.endpoint, {
         method: 'POST',
         redirect: 'error',
@@ -368,14 +353,15 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
           'MALFORMED_RESPONSE',
         );
       let bytes = 0;
+      stage = 'SSE response';
       const responseLimit = this.responseLimit;
       const bounded = response.body.pipeThrough(
-        new TransformStream<Uint8Array, Uint8Array>({
+        new TransformStream<Uint8Array, Uint8Array<ArrayBuffer>>({
           transform(chunk, controller) {
             bytes += chunk.byteLength;
             if (bytes > responseLimit)
               throw new LlmError('Model response exceeds byte limit.', 'RESPONSE_TOO_LARGE');
-            controller.enqueue(chunk);
+            controller.enqueue(new Uint8Array(chunk));
           },
         }),
       );
@@ -384,7 +370,7 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
       if (options.signal?.aborted) throw options.signal.reason;
       if (timeoutOf(signal)) throw new LlmError('Model request timed out.', 'TIMEOUT');
       if (error instanceof LlmError) throw error;
-      throw new LlmError('Responses model transport failed.', 'TRANSPORT_ERROR', {
+      throw new LlmError(`Responses request failed during ${stage}.`, 'TRANSPORT_ERROR', {
         cause: error,
         ...(response ? { status: response.status } : {}),
       });
