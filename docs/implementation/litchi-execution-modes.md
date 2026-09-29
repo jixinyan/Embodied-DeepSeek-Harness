@@ -8,6 +8,11 @@ EDH supports three policy selections through `policy.config.execution_mode`:
 | `direct` | `evaluation_method=gpt_only` | GPT selects a direct EEF or joint command; the gateway transforms it to the admitted `ActionSpec` and submits it through ActionGate. |
 | `hybrid` | `evaluation_method=pi05_plus_gpt` | A lower policy proposes a finite action horizon; GPT reviews the proposal and only the reviewed prefix is admitted. An intervention replaces the proposal with a direct correction. |
 
+For configuration migration, EDH also accepts LitchiAgent's
+`evaluation_method=gpt_only` and `evaluation_method=pi05_plus_gpt` aliases when
+`execution_mode` is absent. Supplying both keys is allowed only when they resolve
+to the same mode; conflicting values are rejected before a worker starts.
+
 `direct` and `hybrid` are policy-gateway modes, not a second agent loop. DSH still
 owns the model stream, tool dispatch and durable conversation. The physical worker
 still owns one simulator thread, and ActionGate remains the only action admission

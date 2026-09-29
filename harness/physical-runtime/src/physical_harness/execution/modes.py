@@ -30,6 +30,12 @@ class ExecutionMode(StrEnum):
             raise ValueError(f"Unsupported execution mode: {value!r}.") from error
 
 
+_LITCHI_EXECUTION_MODES: dict[str, ExecutionMode] = {
+    "gpt_only": ExecutionMode.DIRECT,
+    "pi05_plus_gpt": ExecutionMode.HYBRID,
+}
+
+
 @dataclass(frozen=True)
 class HybridReview:
     """A model review that authorizes a bounded prefix of a lower-policy proposal."""
@@ -98,10 +104,30 @@ def validate_hybrid_proposal(
 
 
 def execution_mode_from_policy_config(config: Mapping[str, object]) -> ExecutionMode:
-    """Read the optional profile key without changing the v1 profile schema."""
+    """Read canonical or LitchiAgent-compatible mode keys.
 
-    value = config.get("execution_mode", ExecutionMode.POLICY.value)
-    return ExecutionMode.parse(value)
+    ``execution_mode`` is EDH's canonical key. LitchiAgent profiles may use
+    ``evaluation_method`` with ``gpt_only`` or ``pi05_plus_gpt``; accepting
+    those aliases keeps migration configuration-only and still rejects a
+    conflicting pair of keys.
+    """
+
+    configured = config.get("execution_mode")
+    legacy = config.get("evaluation_method")
+    value = configured if configured is not None else legacy
+    if value is None:
+        return ExecutionMode.POLICY
+    if not isinstance(value, str):
+        raise ValueError("Execution mode must be a string.")
+    mode = _LITCHI_EXECUTION_MODES.get(value, value)
+    selected = ExecutionMode.parse(mode)
+    if configured is not None and legacy is not None:
+        if not isinstance(legacy, str):
+            raise ValueError("Litchi evaluation_method must be a string.")
+        legacy_mode = _LITCHI_EXECUTION_MODES.get(legacy, legacy)
+        if legacy_mode != selected.value:
+            raise ValueError("execution_mode conflicts with evaluation_method.")
+    return selected
 
 
 def _identity(request: Mapping[str, object], response: Mapping[str, object]) -> None:

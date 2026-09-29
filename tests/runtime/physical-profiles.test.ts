@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
-import { resolvePhysicalRuntimeProfile, validatePhysicalProviderBindings } from '@edh/execution';
+import {
+  resolveExecutionMode,
+  resolvePhysicalRuntimeProfile,
+  validatePhysicalProviderBindings,
+} from '@edh/execution';
 import { FileTeamLoader } from '@edh/teams';
 import { fixtureProfile, profileValidator } from './profile-fixture.js';
 
@@ -28,6 +32,24 @@ test('profiles freeze full declared mappings and require installed provider vali
     },
   });
   assert.deepEqual(seen, ['cpu-scene', 'fixture-identity-v1']);
+});
+
+test('policy profiles accept Litchi execution aliases and reject conflicting mode keys', () => {
+  assert.equal(
+    resolveExecutionMode({ policy: { config: { evaluation_method: 'gpt_only' } } }),
+    'direct',
+  );
+  assert.equal(
+    resolveExecutionMode({ policy: { config: { evaluation_method: 'pi05_plus_gpt' } } }),
+    'hybrid',
+  );
+  assert.throws(
+    () =>
+      resolveExecutionMode({
+        policy: { config: { execution_mode: 'direct', evaluation_method: 'pi05_plus_gpt' } },
+      }),
+    /conflicts/,
+  );
 });
 
 test('profile preflight rejects malformed, placeholder and mismatched action/observation metadata', async () => {

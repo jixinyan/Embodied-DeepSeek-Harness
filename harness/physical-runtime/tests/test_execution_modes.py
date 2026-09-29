@@ -35,8 +35,18 @@ class ExecutionModeTests(unittest.TestCase):
         self.assertEqual(execution_mode_from_policy_config({}), ExecutionMode.POLICY)
         self.assertEqual(execution_mode_from_policy_config({"execution_mode": "direct"}), ExecutionMode.DIRECT)
         self.assertEqual(execution_mode_from_policy_config({"execution_mode": "hybrid"}), ExecutionMode.HYBRID)
-        with self.assertRaises(ValueError):
-            execution_mode_from_policy_config({"execution_mode": "gpt_only"})
+        self.assertEqual(
+            execution_mode_from_policy_config({"evaluation_method": "gpt_only"}),
+            ExecutionMode.DIRECT,
+        )
+        self.assertEqual(
+            execution_mode_from_policy_config({"evaluation_method": "pi05_plus_gpt"}),
+            ExecutionMode.HYBRID,
+        )
+        with self.assertRaisesRegex(ValueError, "conflicts"):
+            execution_mode_from_policy_config(
+                {"execution_mode": "direct", "evaluation_method": "pi05_plus_gpt"}
+            )
 
     def test_direct_action_is_bounded(self):
         self.assertEqual(validate_direct_action([0.2, 1], SPEC), (0.2, 1.0))
