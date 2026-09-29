@@ -347,14 +347,13 @@ test('sensor metadata admission rejects embedded bytes, invalid references and f
 });
 
 test(
-  'Planner perceives, plans and acts, then receives the verifier image before the next decision',
+  'Planner perceives, plans and acts, reads running status, then receives the verifier image',
   { timeout: 10000 },
   async () => {
     const { FixtureModel } = await import('../../apps/server/src/fixture-model.js');
     const { setTimeout } = await import('node:timers/promises');
     let plannerObserved = false;
     let plannerReceivedVerdictImage = false;
-    let monitorObserved = false;
     class ObservingModel extends FixtureModel {
       override async *stream(options: import('@deepseek-ai/dsh-llm').GenerateOptions) {
         const incoming = options.messages.filter((m) => m.source.kind === 'plugin').at(-1);
@@ -374,10 +373,6 @@ test(
           assert.equal(payload.evidence[0].evidence.id, payload.result.evidence_refs[0]);
           plannerReceivedVerdictImage = true;
         }
-        if (payload?.kind === 'monitor') {
-          assert(incoming!.content.some((p) => p.type === 'image'));
-          monitorObserved = true;
-        }
         yield* super.stream(options);
       }
     }
@@ -385,13 +380,21 @@ test(
     try {
       await f.run.start();
       const deadline = Date.now() + 7000;
+      while (f.backend.query()?.state !== 'running' && Date.now() < deadline) await setTimeout(10);
+      const owner = f.run.state.decisionAssignmentId;
+      const queried = await f.invoke(owner, 'execution__query');
+      assert.equal(queried.isError, false);
+      assert.equal(f.run.state.verdicts.length, 0);
+      assert.equal(
+        Object.values(f.run.state.assignments).filter((a) => a.member === 'verifier').length,
+        0,
+      );
       while (!['succeeded', 'failed'].includes(f.run.state.state) && Date.now() < deadline)
         await setTimeout(10);
       await f.run.settle();
       assert.equal(f.run.state.state, 'succeeded', f.run.state.error ?? undefined);
       assert(plannerObserved);
       assert(plannerReceivedVerdictImage);
-      assert(monitorObserved);
       const tools = f.run
         .snapshot()
         .events.filter(

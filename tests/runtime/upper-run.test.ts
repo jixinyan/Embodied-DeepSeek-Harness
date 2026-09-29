@@ -168,11 +168,19 @@ test(
         await app.run.start();
         await until(() => terminal(app.run.state.state), app.run);
         await app.run.settle();
-        assert.equal(app.run.state.state, scenario === 'first-pass' ? 'succeeded' : 'unknown');
+        assert.equal(
+          app.run.state.state,
+          scenario === 'first-pass'
+            ? 'succeeded'
+            : scenario === 'backend-error'
+              ? 'failed'
+              : 'unknown',
+          `${scenario}: ${app.run.state.error ?? ''}`,
+        );
         assert.equal(app.run.state.skillIds.length, 0);
         assert.equal(
           app.run.snapshot().events.filter((e) => e.type === 'verification.requested').length,
-          1,
+          scenario === 'backend-error' ? 0 : 1,
         );
       } finally {
         await app.close();
@@ -182,7 +190,7 @@ test(
 );
 
 test(
-  'user stop cancels active work; pause requires formal verification and explicit planner resume',
+  'user stop cancels active work; ordinary pause stays with Planner until explicit resume',
   { timeout: 15000 },
   async () => {
     const app = await setup('first-pass', 50);
@@ -190,10 +198,14 @@ test(
       await app.run.start();
       await until(() => app.backend.query()?.control_steps === 1, app.run);
       await app.run.pause();
-      await until(() => app.run.state.verdicts.length === 1, app.run);
       await app.run.settle();
       assert.equal(app.backend.query()?.state, 'paused');
       assert.equal(app.run.state.attempt, 1);
+      assert.equal(app.run.state.verdicts.length, 0);
+      assert.equal(
+        Object.values(app.run.state.assignments).filter((a) => a.member === 'verifier').length,
+        0,
+      );
       await app.run.requestResume();
       await until(() => app.backend.query()?.state === 'running', app.run);
       await app.run.stop();
@@ -746,23 +758,15 @@ async function nativeResume(app: Awaited<ReturnType<typeof setup>>) {
 }
 
 test(
-  'resume cannot reach the provider before the current paused boundary is formally checked',
+  'Planner resumes a confirmed ordinary pause with exact boundary preconditions and no formal check',
   { timeout: 15000 },
   async () => {
-    let release!: () => void;
-    const blocked = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    let checking = false;
+    let checks = 0;
     let resumeCalls = 0;
     const app = await setup('first-pass', 100, new FixtureModel(0), (backend) =>
       backendPort(backend, {
-        async check(ids, options) {
-          if (backend.query()?.state === 'paused') {
-            checking = true;
-            await blocked;
-            options?.signal?.throwIfAborted();
-          }
+        check(ids) {
+          checks++;
           return backend.check(ids);
         },
         async resume(owner, options) {
@@ -778,13 +782,9 @@ test(
       await app.run.start();
       await until(() => app.backend.query()?.control_steps === 1, app.run);
       await app.run.pause();
-      await until(() => checking, app.run);
-      assert.equal((await nativeResume(app)).isError, true);
-      assert.equal(resumeCalls, 0);
-      assert.equal(app.backend.query()?.state, 'paused');
-      release();
-      await until(() => app.run.state.verdicts.length === 1, app.run);
       await app.run.settle();
+      assert.equal(checks, 0);
+      assert.equal(app.run.state.verdicts.length, 0);
       assert.equal((await nativeResume(app)).isError, false);
       assert.equal(resumeCalls, 1);
       assert.equal(app.backend.query()?.state, 'running');
@@ -794,7 +794,6 @@ test(
       );
       await app.run.stop();
     } finally {
-      release();
       await app.close();
     }
   },
@@ -809,7 +808,6 @@ test(
       await app.run.start();
       await until(() => app.backend.query()?.control_steps === 1, app.run);
       await app.run.pause();
-      await until(() => app.run.state.verdicts.length === 1, app.run);
       await app.run.settle();
       const pausedIndex = app.run.state.eventCount!;
       // A provider knows the owner ID from the request; this is not a new Planner decision.
@@ -856,7 +854,6 @@ test(
       await app.run.start();
       await until(() => app.backend.query()?.control_steps === 1, app.run);
       await app.run.pause();
-      await until(() => app.run.state.verdicts.length === 1, app.run);
       await app.run.settle();
       const first = nativeResume(app);
       await until(() => calls === 1, app.run);
@@ -876,7 +873,7 @@ test(
 );
 
 test(
-  'a pause arriving during resume acknowledgement remains paused and needs its own formal result',
+  'a pause arriving during resume acknowledgement remains paused with a fresh boundary and no verdict',
   { timeout: 15000 },
   async () => {
     const app = await setup('first-pass', 100, new FixtureModel(0), (backend) =>
@@ -891,17 +888,14 @@ test(
       await app.run.start();
       await until(() => app.backend.query()?.control_steps === 1, app.run);
       await app.run.pause();
-      await until(() => app.run.state.verdicts.length === 1, app.run);
       await app.run.settle();
+      const oldBoundary = app.backend.query()!.boundary_event_id;
       assert.equal((await nativeResume(app)).isError, false);
-      await until(() => app.run.state.verdicts.length === 2, app.run);
       await app.run.settle();
       assert.equal(app.backend.query()?.state, 'paused');
       assert.equal(app.run.state.state, 'paused');
-      assert.notEqual(
-        app.run.state.verdicts[0]!.boundary_event_id,
-        app.run.state.verdicts[1]!.boundary_event_id,
-      );
+      assert.notEqual(app.backend.query()!.boundary_event_id, oldBoundary);
+      assert.equal(app.run.state.verdicts.length, 0);
     } finally {
       await app.close();
     }
@@ -930,7 +924,6 @@ test(
         await app.run.start();
         await until(() => app.backend.query()?.control_steps === 1, app.run);
         await app.run.pause();
-        await until(() => app.run.state.verdicts.length === 1, app.run);
         await app.run.settle();
         const forged = structuredClone(latest);
         if (variant === 'execution') forged.status.execution_id = randomUUID();
@@ -1057,44 +1050,28 @@ async function monitoredFrames(
 }
 
 test(
-  'seventy monitor frames reuse one independent assignment and release it at a stop',
-  { timeout: 45000 },
+  'seventy running observations remain inspectable without creating a Verifier or model monitor',
+  { timeout: 15000 },
   async () => {
     const app = await monitoredFrames();
     try {
       await app.run.start();
       await app.run.settle();
-      for (let i = 0; i < 70; i++) {
-        app.emitFrame();
-        await app.run.settle();
-      }
-      const frames = app.run
-        .snapshot()
-        .events.filter(
-          (e) =>
-            e.type === 'message.delivered' &&
-            (e.detail.payload as { kind?: string }).kind === 'monitor',
-        );
-      assert.equal(frames.length, 70);
-      assert.equal(new Set(frames.map((e) => e.detail.recipient)).size, 1);
-      assert.equal(app.run.snapshot().events.filter((e) => e.type === 'monitor.started').length, 1);
-      const id = String(frames[0]!.detail.recipient);
-      assert.notEqual(id, app.run.state.decisionAssignmentId);
+      for (let i = 0; i < 70; i++) app.emitFrame();
+      await app.run.settle();
+      assert.equal(app.run.state.latestSensor?.visualization.step, 70);
+      assert.equal(app.run.state.executions[0]?.control_steps, 70);
       assert.equal(
-        app.run.sessions.get(id).brief.caller_assignment_id,
-        app.run.state.decisionAssignmentId,
+        app.run.snapshot().events.filter((e) => e.type === 'execution.updated').length,
+        71,
       );
-      assert.equal(app.host.agents.list().length, 2);
+      assert.equal(Object.values(app.run.state.assignments).length, 1);
+      assert.equal(app.host.agents.list().length, 1);
+      assert.equal(app.run.state.verdicts.length, 0);
       await app.run.stop();
       await app.run.settle();
-      assert.equal(app.run.state.assignments[id]!.status, 'retired');
-      assert.equal(app.run.sessions.isLive(id), false);
-      assert(app.run.sessions.get(id));
-      const audit = new SessionAudits(app.store)
-        .read(app.run.state.id)
-        .find((row) => row.key.endsWith(id));
-      assert(audit && Array.isArray(audit.value) && audit.value.length > 70);
-      assert.equal(app.host.agents.list().length, 1);
+      assert.equal(app.run.state.state, 'cancelled');
+      assert.equal(app.run.state.verdicts.length, 0);
     } finally {
       await app.close();
     }
@@ -1102,131 +1079,64 @@ test(
 );
 
 test(
-  'pause cancels in-flight monitoring and resume creates fresh monitoring after formal verification',
-  { timeout: 15000 },
-  async () => {
-    let entered = false;
-    class SlowMonitor extends FixtureModel {
-      override async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
-        const incoming = options.messages.filter((m) => m.source.kind === 'plugin').at(-1);
-        const text = incoming?.content.find((p) => p.type === 'text');
-        if (text?.type === 'text' && JSON.parse(text.text).payload.kind === 'monitor' && !entered) {
-          entered = true;
-          await setTimeout(10000, undefined, options.signal ? { signal: options.signal } : {});
-        }
-        yield* super.stream(options);
-      }
-    }
-    const app = await monitoredFrames(new SlowMonitor(0));
-    try {
-      await app.run.start();
-      await app.run.settle();
-      app.emitFrame();
-      await until(() => entered, app.run);
-      const old = Object.values(app.run.state.assignments).find((a) => a.member === 'verifier')!;
-      await app.run.pause();
-      await until(() => app.run.state.verdicts.length === 1, app.run);
-      await app.run.settle();
-      assert.equal(app.run.state.state, 'paused');
-      assert.equal(old.status, 'retired');
-      assert.equal(app.run.sessions.isLive(old.id), false);
-      assert.notEqual(app.run.state.verdicts[0]!.verifier_assignment_id, old.id);
-      assert.equal((await nativeResume(app)).isError, false);
-      app.emitFrame();
-      await app.run.settle();
-      const starts = app.run.snapshot().events.filter((e) => e.type === 'monitor.started');
-      assert.equal(starts.length, 2);
-      assert.notEqual(starts[0]!.detail.assignmentId, starts[1]!.detail.assignmentId);
-      const newer = app.run.state.assignments[String(starts[1]!.detail.assignmentId)]!;
-      assert.notEqual(newer.sessionId, old.sessionId);
-      assert.equal(app.run.state.state, 'running');
-    } finally {
-      await app.close();
-    }
-  },
-);
-
-test(
-  'monitor creation finishing after a stopped boundary cannot receive stale frames',
+  'running observations across repeated pause and resume keep only the Planner assignment',
   { timeout: 15000 },
   async () => {
     const app = await monitoredFrames();
-    let release!: () => void;
-    const blocked = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    const create = app.host.agents.create.bind(app.host.agents);
-    let held = false;
     try {
       await app.run.start();
       await app.run.settle();
-      app.host.agents.create = async (...args: Parameters<typeof create>) => {
-        const handle = await create(...args);
-        if (!held) {
-          held = true;
-          await blocked;
-        }
-        return handle;
-      };
-      app.emitFrame();
-      await until(() => held, app.run);
-      await app.run.pause();
-      await until(() => app.run.state.verdicts.length === 1, app.run);
-      release();
-      await app.run.settle();
-      assert.equal(app.run.state.state, 'paused');
-      assert.equal(app.run.snapshot().events.filter((e) => e.type === 'monitor.started').length, 0);
-      assert.equal(
-        app.run
-          .snapshot()
-          .events.filter(
-            (e) =>
-              e.type === 'message.delivered' &&
-              (e.detail.payload as { kind?: string }).kind === 'monitor',
-          ).length,
-        0,
-      );
-      assert(
-        app.run
-          .snapshot()
-          .events.some(
-            (e) =>
-              e.type === 'agent.retired' && e.detail.reason === 'boundary-before-monitor-start',
-          ),
-      );
+      const plannerId = app.run.state.decisionAssignmentId;
+      for (let i = 0; i < 3; i++) {
+        app.emitFrame();
+        await app.run.pause();
+        await app.run.settle();
+        assert.equal(app.run.state.state, 'paused');
+        assert.equal(app.run.state.verdicts.length, 0);
+        assert.equal((await nativeResume(app)).isError, false);
+        assert.equal(app.run.state.state, 'running');
+      }
+      assert.equal(Object.values(app.run.state.assignments).length, 1);
+      assert.equal(app.run.state.decisionAssignmentId, plannerId);
+      assert.equal(app.run.sessions.isLive(plannerId), true);
     } finally {
-      release();
-      app.host.agents.create = create;
       await app.close();
     }
   },
 );
 
 test(
-  'a Verifier pause retains its stop acknowledgement after its monitor is cancelled',
+  'external stop after a running observation creates no Verifier and cannot publish success',
+  { timeout: 15000 },
+  async () => {
+    const app = await monitoredFrames();
+    try {
+      await app.run.start();
+      await app.run.settle();
+      app.emitFrame();
+      await app.backend.stop();
+      await app.run.settle();
+      assert.equal(app.run.state.state, 'unknown');
+      assert.equal(app.run.state.verdicts.length, 0);
+      assert.equal(app.run.state.skillIds.length, 0);
+      assert.equal(
+        Object.values(app.run.state.assignments).filter((a) => a.member === 'verifier').length,
+        0,
+      );
+      assert.equal(app.backend.query()?.device_confirmed, true);
+    } finally {
+      await app.close();
+    }
+  },
+);
+
+test(
+  'Planner pause preserves a delayed stop acknowledgement without creating a Verifier',
   { timeout: 10000 },
   async () => {
-    let requested = false;
     let acknowledged = false;
-    class PausingMonitor extends FixtureModel {
-      override async *stream(options: GenerateOptions): AsyncIterable<StreamChunk> {
-        const incoming = options.messages.filter((m) => m.source.kind === 'plugin').at(-1);
-        const text = incoming?.content.find((p) => p.type === 'text');
-        if (
-          text?.type === 'text' &&
-          JSON.parse(text.text).payload.kind === 'monitor' &&
-          !requested
-        ) {
-          requested = true;
-          yield* toolResponse('execution__pause', {}, 'monitor-pause')(options);
-          return;
-        }
-        yield* super.stream(options);
-      }
-    }
-    const app = await monitoredFrames(new PausingMonitor(0), async (backend, options) => {
+    const app = await monitoredFrames(new FixtureModel(0), async (backend, options) => {
       await backend.pause();
-      // Remote control acknowledgements can settle after their state event retires the caller.
       await setTimeout(30, undefined, options?.signal ? { signal: options.signal } : {});
       acknowledged = true;
     });
@@ -1234,15 +1144,19 @@ test(
       await app.run.start();
       await app.run.settle();
       app.emitFrame();
-      await until(() => app.run.state.verdicts.length === 1, app.run);
-      await app.run.settle();
-      assert(requested);
-      assert(acknowledged, 'Monitor cancellation must not cancel its accepted stop request.');
-      const monitor = app.run.snapshot().events.find((e) => e.type === 'monitor.started')!;
-      const id = String(monitor.detail.assignmentId);
-      assert.equal(app.run.state.assignments[id]!.status, 'retired');
+      const owner = app.run.state.assignments[app.run.state.decisionAssignmentId]!;
+      const result = await app.host.tools.execute({
+        agent: app.host.agents.get(SessionId(owner.sessionId))!,
+        callId: ToolCallId(randomUUID()),
+        name: 'execution__pause',
+        arguments: {},
+        signal: new AbortController().signal,
+      });
+      assert.equal(result.isError, false);
+      assert(acknowledged);
       assert.equal(app.run.state.state, 'paused');
-      assert.notEqual(app.run.state.verdicts[0]!.verifier_assignment_id, id);
+      assert.equal(app.run.state.verdicts.length, 0);
+      assert.equal(app.run.sessions.isLive(owner.id), true);
     } finally {
       await app.close();
     }

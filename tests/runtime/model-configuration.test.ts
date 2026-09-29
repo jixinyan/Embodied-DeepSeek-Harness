@@ -76,7 +76,7 @@ test('Responses configuration binds GPT-6 Astra to the DSH adapter without creat
     const bindings = createConfiguredModels(astra, { images });
     assert.deepEqual(
       { ...bindings.models },
-      { astra: { provider: 'openai', model: 'gpt-6-astra' } },
+      { astra: { provider: 'openai', model: 'gpt-6-astra', reasoningEffort: 'xhigh' } },
     );
     const adapter = bindings.adapters[0]!.adapter;
     const info = await adapter.resolveModel('openai', 'gpt-6-astra');

@@ -10,7 +10,12 @@ export interface TeamRouter {
   subscribe(taskId: string, afterSequence?: number): AsyncIterable<MessageEnvelope>;
 }
 
-export { TeamSessions, type Assignment, type SessionHooks } from './sessions.js';
+export {
+  TeamSessions,
+  type AgentModelBinding,
+  type Assignment,
+  type SessionHooks,
+} from './sessions.js';
 
 export {
   AssignmentReports,

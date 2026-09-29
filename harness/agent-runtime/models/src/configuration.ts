@@ -4,7 +4,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { parse } from 'yaml';
 import { z } from 'zod';
 import type { AttachmentStore, ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
-import { LlmError } from '@deepseek-ai/dsh-llm';
+import { LlmError, ReasoningEffortId } from '@deepseek-ai/dsh-llm';
 import { OpenAICompatibleAdapter, type OpenAICompatibleModel } from './openai-compatible.js';
 import { OpenAIResponsesAdapter } from './openai-responses.js';
 import type { LlmAdapter } from '@deepseek-ai/dsh-llm';
@@ -71,6 +71,7 @@ const model = z
       .refine((values) => values.includes('text') && new Set(values).size === values.length),
     contextWindow: bounded.optional(),
     maxTokens: bounded.optional(),
+    reasoningEffort: z.enum(['low', 'medium', 'high', 'xhigh', 'max']).optional(),
   })
   .strict();
 const configuration = z
@@ -116,7 +117,10 @@ export function createConfiguredModels(
   services: { images?: AttachmentStore } = {},
 ) {
   const config = parseModelConfiguration(input);
-  const models: Record<string, { provider: string; model: string }> = Object.create(null);
+  const models: Record<
+    string,
+    { provider: string; model: string; reasoningEffort?: ReturnType<typeof ReasoningEffortId> }
+  > = Object.create(null);
   const adapters: { providers: string[]; adapter: LlmAdapter }[] = [];
   for (const [provider, value] of Object.entries(config.endpoints)) {
     const registered = new Map<string, OpenAICompatibleModel>();
@@ -133,7 +137,13 @@ export function createConfiguredModels(
       if (previous && !isDeepStrictEqual(previous, info))
         throw new Error(`Conflicting capabilities for model ${provider}/${info.id}.`);
       registered.set(info.id, info);
-      models[alias] = { provider, model: entry.model };
+      models[alias] = {
+        provider,
+        model: entry.model,
+        ...(entry.reasoningEffort === undefined
+          ? {}
+          : { reasoningEffort: ReasoningEffortId(entry.reasoningEffort) }),
+      };
     }
     const images = services.images;
     if (

@@ -21,6 +21,7 @@ import {
   AssignmentReports,
   type ReportInput,
   type Assignment,
+  type AgentModelBinding,
 } from '@edh/communication';
 import type { LoadedTeam } from '@edh/teams';
 import { LocalStore, SessionHistory, type SessionHistoryOptions } from '@edh/storage';
@@ -87,7 +88,7 @@ export interface ApplicationOptions {
   instruction: string;
   taskContext?: readonly TaskContextSummary[];
   scenario: string;
-  model: (id: string) => { provider: string; model: string };
+  model: (id: string) => AgentModelBinding;
   onChange?: (state: Pick<RunState, 'id' | 'state' | 'updatedAt'>) => void;
   assignmentLifetimeMs?: number;
 }

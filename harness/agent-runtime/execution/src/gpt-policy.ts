@@ -3,7 +3,7 @@ import { isDeepStrictEqual } from 'node:util';
 import type { Context } from '@deepseek-ai/cordis';
 import type { AgentHandle } from '@deepseek-ai/dsh-agent';
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
-import { createUserMessage } from '@deepseek-ai/dsh-llm';
+import { createUserMessage, ReasoningEffortId } from '@deepseek-ai/dsh-llm';
 import { deadline } from '@deepseek-ai/dsh-timeout';
 import { createDshSession } from '@edh/agents';
 import { defineTool, type ToolDefinition } from '@edh/tools';
@@ -15,6 +15,7 @@ export interface GptPolicyOptions {
   model: string;
   mode: 'direct' | 'hybrid';
   controlMode?: GptControlMode;
+  reasoningEffort?: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
   instructions?: string;
   demonstration?: { text: string; images?: readonly ImageAttachmentRef[] };
   /** Admitted images and text from the current request; no model-selected path/URL. */
@@ -328,6 +329,9 @@ export class DshGptPolicy {
           sessionId: randomUUID(),
           provider: this.options.provider,
           model: this.options.model,
+          ...(this.options.reasoningEffort
+            ? { reasoningEffort: ReasoningEffortId(this.options.reasoningEffort) }
+            : {}),
           instructions: `You are an action policy, not the Planner or Verifier. Use the explicit subgoal and current observation. Every tool proposes or reads; the EDH ActionGate alone commits controls. Never claim physical success. Use the exact requestId. ${this.options.mode === 'hybrid' ? 'Use policy__infer, inspect its action horizon, policy__review, then policy__execute for an allowed prefix or policy__joint_command/policy__eef_command for an intervention.' : 'Inspect the images, state, ActionSpec and optional grounding tools, then use policy__joint_command or policy__eef_command once.'} ${this.options.instructions ?? ''}`,
           tools: this.tools(),
         });

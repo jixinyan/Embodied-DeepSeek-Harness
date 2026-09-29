@@ -80,7 +80,16 @@ export interface ServerDeployment {
   readonly teamFile: string;
   readonly roleRoot: string;
   readonly defaultModel: string;
-  readonly models: Readonly<Record<string, { readonly provider: string; readonly model: string }>>;
+  readonly models: Readonly<
+    Record<
+      string,
+      {
+        readonly provider: string;
+        readonly model: string;
+        readonly reasoningEffort?: 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+      }
+    >
+  >;
   readonly adapters: readonly ModelBinding[];
   readonly modelConfigurationDigest?: string;
   readonly tasks: Readonly<Record<string, TaskPreset>>;

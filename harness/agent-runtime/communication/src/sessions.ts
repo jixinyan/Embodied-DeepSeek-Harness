@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import type { Context } from '@deepseek-ai/cordis';
 import type { AgentHandle, AssistantStreamFrame } from '@deepseek-ai/dsh-agent';
+import type { ReasoningEffortId } from '@deepseek-ai/dsh-llm';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 import { SessionSeq, type Session } from '@deepseek-ai/dsh-session';
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools';
@@ -15,6 +16,11 @@ export interface Assignment {
   member: string;
   sessionId: string;
   brief: InvocationBrief;
+}
+export interface AgentModelBinding {
+  readonly provider: string;
+  readonly model: string;
+  readonly reasoningEffort?: ReasoningEffortId;
 }
 export interface SessionHooks {
   tools(assignment: Assignment): readonly ToolDefinition[];
@@ -48,7 +54,7 @@ export class TeamSessions {
     readonly team: LoadedTeam,
     private readonly validator: ContractValidator,
     private readonly hooks: SessionHooks,
-    private readonly model: (id: string) => { provider: string; model: string },
+    private readonly model: (id: string) => AgentModelBinding,
     private readonly lifetimeMs = 120_000,
   ) {}
   create(member: string, brief: InvocationBrief): Promise<Assignment> {

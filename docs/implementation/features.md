@@ -1,6 +1,6 @@
 # Current capability map
 
-Snapshot: 2026-09-26. Upper runtime and real RoboCasa model/policy control are
+Snapshot: 2026-09-30. Upper runtime and real RoboCasa model/policy control are
 implemented; complete task/recovery and multi-provider acceptance remain open.
 The [v1 delivery register](v1-delivery.md) tracks all remaining implementation and
 actual validation requirements.
@@ -54,7 +54,7 @@ actual validation requirements.
 | OpenAI-compatible text/image streaming through the native DSH loop                                        | [Model adapter and guide](model-policy-adapters.md), [HTTP acceptance](../../tests/runtime/openai-compatible.test.ts)                                |
 | WebSocket policy client/server and generation-fenced action gate                                          | [Adapter guide](model-policy-adapters.md), [CPU/socket acceptance](../../harness/physical-runtime/tests/test_policy.py)                              |
 | External RoboDojo RPC reset/observation/action adapter                                                   | [RoboDojo backend](robodojo-backend.md); CPU checks and one real Isaac Sim reset/step pass, full rollout pending |
-| GPT-6 Astra Responses transport and LitchiAgent direct/hybrid DSH policy gateway                  | [Execution modes](litchi-execution-modes.md), [DshGptPolicy](../../harness/agent-runtime/execution/src/gpt-policy.ts); live cloud/lower-policy acceptance pending |
+| GPT-6 Astra Responses transport and LitchiAgent direct/hybrid DSH policy gateway                  | [Execution modes](litchi-execution-modes.md), [DshGptPolicy](../../harness/agent-runtime/execution/src/gpt-policy.ts); live text/direct/hybrid rounds pass, learned-policy rollout pending |
 | Live output, tools/results, TODO history, sensors, verdict and recovery inspection                        | [Console](../../apps/console/README.md), [API/restart tests](../../tests/runtime/console-server.test.ts)                                             |
 
 Run `pnpm demo` and select the labeled failure/recovery fixture. The observable

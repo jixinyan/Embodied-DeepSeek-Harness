@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import type { AddressInfo } from 'node:net';
 import { Context } from '@deepseek-ai/cordis';
+import { ReasoningEffortId } from '@deepseek-ai/dsh-llm';
 import { ContractValidator } from '@edh/contracts';
 import type { ResolvedPhysicalRuntimeProfile } from '@edh/execution';
 import { UserSessions, SessionConflict } from './user-sessions.js';
@@ -654,7 +655,13 @@ async function startApplication(
                   model: (alias) => {
                     const binding = deployment.metadata.models[alias];
                     if (!binding) throw new Error(`Unknown model: ${alias}`);
-                    return binding;
+                    return {
+                      provider: binding.provider,
+                      model: binding.model,
+                      ...(binding.reasoningEffort
+                        ? { reasoningEffort: ReasoningEffortId(binding.reasoningEffort) }
+                        : {}),
+                    };
                   },
                   onChange: changed,
                 });
@@ -761,7 +768,13 @@ async function startApplication(
                 model: (id) => {
                   const binding = deployment.metadata.models[id];
                   if (!binding) throw new Error(`Unknown model binding: ${id}`);
-                  return binding;
+                  return {
+                    provider: binding.provider,
+                    model: binding.model,
+                    ...(binding.reasoningEffort
+                      ? { reasoningEffort: ReasoningEffortId(binding.reasoningEffort) }
+                      : {}),
+                  };
                 },
                 onChange: changed,
               });

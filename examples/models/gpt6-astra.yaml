@@ -13,3 +13,4 @@ models:
     endpoint: openai
     model: gpt-6-astra
     inputModalities: [text, image]
+    reasoningEffort: xhigh

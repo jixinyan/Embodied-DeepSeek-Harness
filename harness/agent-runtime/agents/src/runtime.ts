@@ -3,11 +3,13 @@ import type { Context } from '@deepseek-ai/cordis';
 import type { AgentHandle as DshAgentHandle } from '@deepseek-ai/dsh-agent';
 import { SessionId } from '@deepseek-ai/dsh-session';
 import type { ToolDefinition } from '@deepseek-ai/dsh-tools';
+import type { ReasoningEffortId } from '@deepseek-ai/dsh-llm';
 
 export interface DshSessionDefinition {
   readonly sessionId: string;
   readonly provider: string;
   readonly model: string;
+  readonly reasoningEffort?: ReasoningEffortId;
   readonly instructions: string;
   readonly tools: readonly ToolDefinition[];
   readonly signal?: AbortSignal;
@@ -31,7 +33,13 @@ export function createDshSession(
   }
   return host.agents.create({
     sessionId: SessionId(definition.sessionId),
-    agentOptions: { provider: definition.provider, model: definition.model },
+    agentOptions: {
+      provider: definition.provider,
+      model: definition.model,
+      ...(definition.reasoningEffort === undefined
+        ? {}
+        : { reasoningEffort: definition.reasoningEffort }),
+    },
     ...(definition.signal === undefined ? {} : { signal: definition.signal }),
     async setup(agentCtx) {
       if (definition.todo) await agentCtx.plugin(Todo, { allowParallelInProgress: true });

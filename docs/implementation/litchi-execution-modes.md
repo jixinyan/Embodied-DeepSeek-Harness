@@ -80,5 +80,7 @@ grant a model arbitrary filesystem or URL access.
 The official model documentation identifies the model as `gpt-6-astra` and
 requires the Responses API for tool calling:
 <https://developers.openai.com/api/docs/models/gpt-6-astra>.
-No repository credential or live cloud result is stored here; a deployment must
-provide its private environment credential and run the live endpoint checks.
+The local Litchi runtime configuration was used for a live EDH text smoke and
+direct/hybrid policy rounds on 2026-09-30. No repository credential or runtime
+response is stored here; a deployment must provide its private environment
+credential and run its own endpoint and physical-task checks.

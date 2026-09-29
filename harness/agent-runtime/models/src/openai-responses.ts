@@ -100,6 +100,25 @@ async function inputItems(
       (block): block is Extract<ContentBlock, { type: 'tool-call' }> => block.type === 'tool-call',
     );
     if (message.role === 'assistant') {
+      const source = message.source;
+      const replay = source.kind === 'model' && source.replayState;
+      const replayResponse =
+        replay && typeof replay === 'object' && replay !== null && 'response' in replay
+          ? (replay as { response?: unknown }).response
+          : undefined;
+      if (
+        replayResponse &&
+        typeof replayResponse === 'object' &&
+        replayResponse !== null &&
+        Array.isArray((replayResponse as { output?: unknown }).output)
+      ) {
+        items.push(
+          ...(replayResponse as { output: ResponsesItem[] }).output.map((item) =>
+            structuredClone(item),
+          ),
+        );
+        continue;
+      }
       for (const call of toolCalls)
         items.push({
           type: 'function_call',
@@ -453,9 +472,16 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
             index: reasoningIndex,
             block: { type: 'reasoning', text: reasoningValue },
           };
-        pendingUsage = usage(data?.response?.usage);
+        const response = data?.response ?? data;
+        pendingUsage = usage(response?.usage);
         if (pendingUsage) yield { type: 'usage', usage: pendingUsage };
-        yield { type: 'finish', reason: finishReason(data?.response ?? data) };
+        yield {
+          type: 'finish',
+          reason: finishReason(response),
+          ...(response && typeof response === 'object'
+            ? { replayState: { response: structuredClone(response) } }
+            : {}),
+        };
         return;
       } else if (event === 'response.failed' || event === 'error') {
         throw new LlmError('Responses model returned a failed event.', 'PROVIDER_ERROR');
