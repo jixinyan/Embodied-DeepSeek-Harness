@@ -329,6 +329,8 @@ class NativeWorkerSession:
                     policy_observation["control_context"] = await self._require_device().on_owner(
                         self._environment.policy_context, observation.observation_id
                     )
+                if gate.snapshot()["state"] != "running":
+                    return
                 ticket = gate.request(
                     self._request["instruction"], observation.observation_id, policy_observation,
                     observed_monotonic=observation.observed_monotonic,
@@ -355,6 +357,8 @@ class NativeWorkerSession:
                         await self._require_device().on_owner(
                             self._environment.select_control_source, source, "EDH admitted policy decision"
                         )
+                    if gate.snapshot()["state"] != "running" or gate.snapshot()["generation"] != ticket["generation"]:
+                        return
                     if motion is None:
                         await gate.execute(chunk)
                     else:
@@ -410,9 +414,14 @@ class NativeWorkerSession:
                 not 1 <= motion["steps"] <= 150 or type(motion["stop_on_reach"]) is not bool):
             raise ValueError("Invalid bounded direct-motion intent.")
         device, gate = self._require_device(), self._require_gate()
+        generation = ticket["generation"]
         await device.on_owner(self._environment.motion_status, motion)
+        if gate.snapshot()["state"] != "running" or gate.snapshot()["generation"] != generation:
+            return
         prepared = await device.on_owner(self._environment.policy_tool, ticket["observation_id"],
                                          "eef_joint_target", {"targets": motion["targets"]})
+        if gate.snapshot()["state"] != "running" or gate.snapshot()["generation"] != generation:
+            return
         if len(chunk["actions"]) != 1 or chunk["actions"][0] != prepared["action"]:
             raise ValueError("Direct motion action differs from the measured-state tracking command.")
         errors: list[float] = []
@@ -422,10 +431,14 @@ class NativeWorkerSession:
                 return
             if index:
                 observation = await device.on_owner(self._environment.observe)
+                if gate.snapshot()["state"] != "running" or gate.snapshot()["generation"] != generation:
+                    return
                 ticket = gate.request(self._request["instruction"], observation.observation_id,
                                       {"motion_tracking": True}, observed_monotonic=observation.observed_monotonic)
                 proposal = await device.on_owner(self._environment.policy_tool, observation.observation_id,
                     "eef_joint_target", {"targets": motion["targets"]})
+                if gate.snapshot()["state"] != "running" or gate.snapshot()["generation"] != generation:
+                    return
                 chunk = {"schema_version": "physical.action_chunk.v1", **{key: ticket[key] for key in
                     ("request_id", "execution_id", "task_scope", "generation", "observation_id", "valid_until", "action_spec")},
                     "actions": [proposal["action"]]}
@@ -505,12 +518,12 @@ class NativeWorkerSession:
                 return {"status": self._status, "observation": self._observation_wire(self._latest_observation)}
             reason = "user_stop" if terminal else "planner_pause"
             stopping = asyncio.create_task(gate.pause(reason, terminal=terminal))
-            await stopping
-            observation = await self._require_device().on_owner(self._environment.observe)
-            publication = await self._publish(observation, self._last_control)
             if self._policy is not None:
                 await self._policy.close()
                 self._policy = None
+            await stopping
+            observation = await self._require_device().on_owner(self._environment.observe)
+            publication = await self._publish(observation, self._last_control)
             if self._pump is not None:
                 await self._pump
                 self._pump = None
