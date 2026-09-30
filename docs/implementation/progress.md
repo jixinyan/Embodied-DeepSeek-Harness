@@ -44,6 +44,14 @@ exit code 0. The task GT is false. Native worker initialization and close deadli
 are configurable separately; BEHAVIOR selects 600000/900000 ms while ordinary
 device/observation budgets retain their existing bounds.
 
+RoboDojo Pi0.5 native services verify 18 checkpoint inference files and dependency
+consistency across 189 isolated packages. Two sequential inferences use retained
+native three-camera RGB and 14D state, return finite 50×14 horizons and identified
+EDH chunks, and match native input hashes. This scope contains zero physical controls.
+Learned/hybrid physical rollout and task success remain separate acceptance gates.
+The [OpenPI provider guide](openpi-robodojo-policy.md) records reproducible service
+configuration and the exact source/checkpoint identities.
+
 The trace-review milestone is complete after run `6610a9f4-29b8-499c-82ed-d81aab542e13`:
 116 real Pi0.5 controls, eight identified policy requests, 10,767 native physics
 steps, a confirmed terminal boundary, independent Qwen Verifier success and
