@@ -4,7 +4,9 @@ Snapshot: 2026-09-30. Local Qwen Planner/Verifier and learned Pi0.5 complete a
 real headless RoboTwin task with released Session resources. The live console
 shows Agent trace; simulator videos are recorded locally. Completed Planner TODOs,
 committed terminal receipts and zero tool errors pass real recorded acceptance.
-Custom-role reports, recovery and multi-provider acceptance remain open.
+Native Qwen/Pi0.5 failed-attempt recovery and actual SAM/YOLO/native RGB-D tool
+calls are verified. Custom-role reports, multi-goal and full multi-provider
+acceptance remain open. Live Evolver learning is paused; SceneState is deferred.
 The [v1 delivery register](v1-delivery.md) tracks all remaining implementation and
 actual validation requirements.
 
@@ -77,7 +79,7 @@ See [goal validation](../../harness/agent-runtime/tasks/README.md#goal-binding-a
 
 - Additional native tasks, concurrent physical goals and nested independent recovery chains.
 - Shared device resource arbitration, independent watchdog and hardware stop acknowledgement. The native host/Python bridge and real RoboCasa policy/stop path are implemented.
-- BEHAVIOR learned controls and complete lifecycle; additional RoboTwin tasks and genuine recovery; SAM/depth and hardware adapters.
+- BEHAVIOR console lifecycle acceptance; additional RoboTwin tasks; source-bound native measured geometry across providers and hardware adapters.
 - Resumable model sessions, distributed/exactly-once delivery, scalable retention and multi-user hosting.
 - Complete provider launch acceptance and configuration switching. Real trace/camera MP4 exports are verified; the live workspace displays Agent state.
 

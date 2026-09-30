@@ -61,6 +61,8 @@ export interface NativeWorkerConfiguration {
   readonly observationTtlS?: number;
   readonly deviceTimeoutS?: number;
   readonly policyTimeoutS?: number;
+  readonly initializeTimeoutMs?: number;
+  readonly closeTimeoutMs?: number;
   readonly catalog: TaskCatalogDefinition;
 }
 
@@ -245,7 +247,14 @@ class NativeWorkerTransport {
   private fault?: Error;
   private closeAcknowledged = false;
 
-  constructor(configuration: NativeWorkerConfiguration) {
+  constructor(private readonly configuration: NativeWorkerConfiguration) {
+    for (const timeout of [configuration.initializeTimeoutMs, configuration.closeTimeoutMs]) {
+      if (
+        timeout !== undefined &&
+        (!Number.isSafeInteger(timeout) || timeout <= 0 || timeout > 1800000)
+      )
+        throw new Error('Native worker lifecycle timeout is invalid.');
+    }
     this.child = spawn(configuration.command[0], configuration.command.slice(1), {
       cwd: configuration.cwd,
       env: { ...process.env, ...configuration.env },
@@ -378,8 +387,14 @@ class NativeWorkerTransport {
   ): Promise<unknown> {
     this.assertConnected();
     options.signal?.throwIfAborted();
-    const timeoutMs = options.timeoutMs ?? (operation === 'initialize' ? 180000 : 60000);
-    if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > 300000)
+    const timeoutMs =
+      options.timeoutMs ??
+      (operation === 'initialize'
+        ? (this.configuration.initializeTimeoutMs ?? 180000)
+        : operation === 'close'
+          ? (this.configuration.closeTimeoutMs ?? 60000)
+          : 60000);
+    if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > 1800000)
       throw new Error('Native worker request timeout is invalid.');
     const id = randomUUID();
     const encoded = JSON.stringify({ id, op: operation, args });
@@ -418,7 +433,7 @@ class NativeWorkerTransport {
     let requestError: unknown;
     if (!this.fault) {
       try {
-        await this.request('close', {}, { timeoutMs: 60000 });
+        await this.request('close');
       } catch (error) {
         requestError = error;
       }
@@ -673,8 +688,16 @@ class NativeTaskBackend implements EmbodiedBackend {
       'agent',
       uncertainActions,
     );
-    this.status = structuredClone(status);
-    for (const listener of this.listeners) listener({ status: structuredClone(status), sample });
+    const observationId = string(object(fields.observation).observation_id);
+    if (status.observation_refs.some((reference) => reference !== observationId))
+      throw new Error('Native execution references an unpublished observation.');
+    const publishedStatus = {
+      ...status,
+      observation_refs: status.observation_refs.map(() => sample.evidence.id),
+    };
+    this.status = structuredClone(publishedStatus);
+    for (const listener of this.listeners)
+      listener({ status: structuredClone(publishedStatus), sample });
   }
 
   private async publishFrame(publication: WorkerFramePublication): Promise<void> {
@@ -756,9 +779,10 @@ class NativeTaskBackend implements EmbodiedBackend {
     );
     options?.signal?.throwIfAborted();
     const status = this.validator.parse('ExecutionStatus', result.status) as ExecutionStatus;
-    if (this.query()?.execution_id !== status.execution_id)
+    const published = this.query();
+    if (!published || published.execution_id !== status.execution_id)
       throw new Error('Native worker did not publish the started execution.');
-    return status;
+    return published;
   }
 
   query(): ExecutionStatus | undefined {

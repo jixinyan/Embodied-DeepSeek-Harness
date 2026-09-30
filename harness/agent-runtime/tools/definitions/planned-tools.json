@@ -1,6 +1,6 @@
 {
   "status": "partially_implemented",
-  "description": "Logical tool inventory, not a second runtime registry. Upper tools use native DSH schemas/dispatch; physical bindings currently use a CPU fixture.",
+  "description": "Logical tool inventory. Upper tools use native DSH schemas and dispatch; physical bindings use explicitly configured native providers. Availability and acceptance depend on each deployment.",
   "tools": [
     {
       "id": "agent.report",
@@ -20,19 +20,19 @@
     },
     {
       "id": "execution.pause",
-      "status": "upper_with_fixture_backend"
+      "status": "upper_with_native_backend"
     },
     {
       "id": "execution.query",
-      "status": "upper_with_fixture_backend"
+      "status": "upper_with_native_backend"
     },
     {
       "id": "execution.resume",
-      "status": "upper_with_fixture_backend"
+      "status": "upper_with_native_backend"
     },
     {
       "id": "execution.start",
-      "status": "upper_with_fixture_backend"
+      "status": "upper_with_native_backend"
     },
     {
       "id": "files.read",
@@ -52,11 +52,15 @@
     },
     {
       "id": "perception.capture",
-      "status": "upper_with_fixture_backend"
+      "status": "upper_with_native_backend"
     },
     {
       "id": "perception.estimate_depth",
-      "status": "not_implemented"
+      "status": "upper_with_optional_provider"
+    },
+    {
+      "id": "perception.measure_object",
+      "status": "upper_with_optional_native_provider"
     },
     {
       "id": "perception.segment_objects",
@@ -128,7 +132,7 @@
     },
     {
       "id": "verification.check",
-      "status": "upper_with_fixture_backend"
+      "status": "upper_with_native_backend"
     },
     {
       "id": "verification.submit",

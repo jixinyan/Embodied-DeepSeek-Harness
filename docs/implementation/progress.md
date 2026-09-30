@@ -32,6 +32,18 @@ authority and source consistency. Raw monocular depth remains accuracy-qualified
 two actual source regions show approximately 0.373 m and 0.102 m median errors.
 Provider task outcomes and clean lifecycle acceptance are recorded independently.
 
+Native RoboCasa run `e6ebc3f3-37e5-4274-a51f-2d49584af534` verifies the strict
+running `execution.query` path without transmitting live camera images: its
+8-control receipt references saved, scoped event evidence. The run completes
+64 GR00T controls and an independent failed GT verdict; it is a query/lifecycle
+check and does not establish task success or a zero-error complete Planner run.
+
+BEHAVIOR lifecycle 13 verifies three real GR00T inferences, 18 R1Pro controls,
+72 physics steps, confirmed pause/terminal-stop and full native SDK shutdown with
+exit code 0. The task GT is false. Native worker initialization and close deadlines
+are configurable separately; BEHAVIOR selects 600000/900000 ms while ordinary
+device/observation budgets retain their existing bounds.
+
 The trace-review milestone is complete after run `6610a9f4-29b8-499c-82ed-d81aab542e13`:
 116 real Pi0.5 controls, eight identified policy requests, 10,767 native physics
 steps, a confirmed terminal boundary, independent Qwen Verifier success and
@@ -41,8 +53,8 @@ error against the simulator journal. The browser requests no camera assets;
 authorized model captures and formal-verification images remain available.
 The [Qwen headless handoff](qwen-headless-checkpoint.md) records actual
 provider status, source evidence, preserved work and the resumption boundary.
-Automatic development is disabled; the weekly DSH monitor performs read-only
-release discovery and assessment.
+Active work continues on reliable upper-agent retry, source-bound perception
+and native provider lifecycle acceptance under the current user scope.
 
 The complete 238-event trace passes `--require-clean-role-completion`: all five
 Planner TODOs completed, zero native tool errors and zero subsequent model steps

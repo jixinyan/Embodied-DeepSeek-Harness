@@ -260,8 +260,9 @@ class NativeWorkerSession:
             os.chdir(source_root)
             environment = RoboTwinEnvironment(source_root, self._validator)
         elif provider == "behavior":
-            from physical_harness.environments.behavior import BehaviorEnvironment
-            environment = BehaviorEnvironment(Path(arguments["source_root"]).resolve(strict=True), self._validator)
+            from physical_harness.environments.behavior.process import BehaviorProcessEnvironment
+            source_root = Path(arguments["source_root"]).resolve(strict=True)
+            environment = BehaviorProcessEnvironment(source_root, self._validator)
         elif provider == "robodojo":
             if "source_root" in arguments:
                 raise ValueError("RoboDojo is connected through its external RPC server, not a worker source_root.")
