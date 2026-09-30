@@ -83,9 +83,21 @@ TypeScript checks pass. RoboDojo run
 actual control, unchanged counters during the held boundary, and Planner-owned
 resume followed by a second actual control. The original cumulative 200-step
 budget remains unchanged, and no Verifier assignment or verdict is created.
-Cancellation and resource-release acceptance remain pending. Operator stop is
-tracked by run settlement before Session task retirement; channel readers
-respect closure, and scoped policy telemetry remains available during shutdown.
+Run `ac7133e1-c807-41ea-a0a6-fd76500755d8` verifies operator cancellation during
+actual direct motion: two admitted controls, confirmed `user_stop`, unchanged
+counters during the held terminal boundary, zero formal verdicts, Session
+`resources=released`, native simulator exit and a responsive console afterward.
+All 93 exported events pass the recorded-loop audit. Operator stop is tracked by
+run settlement before Session task retirement; channel readers respect closure,
+and scoped policy telemetry remains available during shutdown.
+
+EDH owns the DSH role and GPT-policy Sessions, tool declarations, worker client,
+execution lifecycle and ActionGate. The deployed native simulator server and
+grounding/numerical motion service still start from the separately installed
+LitchiAgent/GPT-as-Policy checkout. Framework-owned simulator startup and native
+tool-service packaging remain required for standalone EDH deployment. The current
+priority is real agent-loop debugging, measured efficiency improvements, then
+a natively successful `build_tower` task and composite agentic-trace MP4.
 
 Native DSH policy Sessions publish scoped model messages, returned reasoning,
 tool calls/results, local plans, status and decisions through the physical worker

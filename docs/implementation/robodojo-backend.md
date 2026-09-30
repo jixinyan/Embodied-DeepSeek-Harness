@@ -24,6 +24,13 @@ from the separately licensed checkout:
 .venv/bin/python -m pip install -e 'harness/physical-runtime[robodojo]'
 ```
 
+EDH owns the upper and execution-policy DSH Sessions, model transport, policy
+tools, worker client, execution lifecycle and ActionGate. The deployed simulator
+server currently starts through the separately installed LitchiAgent entry point
+and its GPT-as-Policy grounding/numerical motion services. EDH-owned simulator
+startup and native tool-service packaging remain required for standalone deployment;
+the RoboDojo/Isaac Sim dependencies retain their upstream licenses.
+
 The native worker provider name is `robodojo`. Its scene configuration requires
 `port` and accepts `host`, `seed`, `source`, `policy_version` and the optional
 combination/audit identity fields. The adapter expects the RoboDojo metadata to
@@ -55,8 +62,14 @@ releases the environment and exits its native simulator. The runtime source
 record retains revision `5442c98` with `state=modified`; the deployment binds
 the cloud Astra model and remote simulator explicitly.
 
-This run contains no recovery or SKILL publication. Hybrid checkpoint inference,
-interruption and recovery acceptance remain required. The replay/MP4 command and
+Run `806e8b33-4764-4458-87fc-2f99443e63d6` verifies confirmed ordinary pause and
+Planner-owned resume with cumulative control budgets. Run
+`ac7133e1-c807-41ea-a0a6-fd76500755d8` verifies in-flight operator cancellation,
+confirmed `user_stop`, no formal Verifier, Session resource release, native
+simulator exit and continued console availability. Its 93-event audit passes.
+
+The successful pickup contains no recovery or SKILL publication. Hybrid checkpoint
+inference and recovery acceptance remain required. The replay/MP4 command and
 source-integrity checks are documented in [recorded replay](../../scripts/REPLAY.md).
 
 ## Distributed Astra deployment
