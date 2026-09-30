@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from urllib.request import Request, urlopen
 
+import numpy as np
 from PIL import Image
 
 
@@ -52,8 +53,17 @@ def main():
         mask_path = args.output / f"mask-{index:02d}.png"
         mask_path.write_bytes(mask)
         with Image.open(mask_path) as mask_image:
-            if mask_image.size != (width, height):
-                raise ValueError("Mask dimensions differ from the source image.")
+            mask_image.load()
+            if mask_image.format != "PNG" or mask_image.mode != "RGB" or mask_image.size != (width, height):
+                raise ValueError("Mask must be a source-sized RGB PNG.")
+            pixels = np.asarray(mask_image)
+            if (
+                not np.array_equal(pixels[:, :, 0], pixels[:, :, 1])
+                or not np.array_equal(pixels[:, :, 0], pixels[:, :, 2])
+                or not np.all((pixels == 0) | (pixels == 255))
+                or int((pixels[:, :, 0] > 0).sum()) != instance["area_pixels"]
+            ):
+                raise ValueError("Mask pixels differ from the declared binary segmentation region.")
         instances.append({key: value for key, value in instance.items() if key != "mask_png_base64"})
     report = {
         "source_image": str(args.image),

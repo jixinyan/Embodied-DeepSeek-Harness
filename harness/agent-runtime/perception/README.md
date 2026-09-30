@@ -39,6 +39,16 @@ SAM inference session; `resultId` links its masks and overlay. Stored visualizat
 metadata keeps the source image hash, prompt, model revision, checkpoint hash, JPEG
 input hash, and session adapter. Dense masks remain image attachments and do not enter
 the model context as numeric arrays. Other assignments need an explicit evidence grant.
+Mask artifacts use lossless RGB PNG with equal 0/255 values in all channels.
+This format satisfies the shared image store's sRGB admission and preserves the
+binary region without changing encoded bytes during storage.
+Real GPU masks pass
+[`check_segmentation_storage.ts`](../../../examples/perception/check_segmentation_storage.ts):
+the native LocalImageStore saves and rereads both masks as byte-identical PNG,
+and YOLO26 processes the stored bytes with the original 6,953/17,627 pixel counts.
+Independent Pillow checks verify equal binary RGB channels and the declared area.
+The storage report is retained in
+`.local/work/perception-20260930/rgb-mask-storage-native/result.json`.
 
 The standalone service is
 [`sam31.py`](../../physical-runtime/src/physical_harness/perception/sam31.py).

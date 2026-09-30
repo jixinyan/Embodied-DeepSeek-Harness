@@ -162,7 +162,7 @@ def segment_once(predictor, request: SegmentRequest, work_root: Path, provenance
         score = float(torch.as_tensor(scores[index]).item())
         if not math.isfinite(score) or score < 0 or score > 1:
             raise ValueError("SAM 3.1 returned an invalid confidence score.")
-        mask_png = Image.fromarray((mask * 255).astype(np.uint8), mode="L")
+        mask_png = Image.fromarray((mask * 255).astype(np.uint8), mode="L").convert("RGB")
         overlay_pixels[mask] = (
             overlay_pixels[mask].astype(np.uint16) * 2
             + np.array([255, 80, 50], dtype=np.uint16)
