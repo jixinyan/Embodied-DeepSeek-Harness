@@ -85,7 +85,7 @@ class ExecutionModeTests(unittest.TestCase):
                 "mode": "hybrid",
                 "request_id": "request-1",
                 "proposal": [[0.1, 0.2]],
-                "review": {"decision": "intervene", "reason": "unsafe", "confidence": 0.1, "safe_steps": 1},
+                "review": {"decision": "intervene", "reason": "unsafe", "confidence": 0.1, "safe_steps": 0},
                 "intervention": [0.4, 0.6],
             },
             REQUEST,

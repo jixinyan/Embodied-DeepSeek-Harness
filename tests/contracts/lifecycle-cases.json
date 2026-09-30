@@ -978,7 +978,7 @@
       "error": "invalid_transition"
     },
     {
-      "name": "pause must pass through acknowledgement",
+      "name": "confirmed pause can coalesce the stopping publication",
       "base": "pause",
       "patches": [
         {
@@ -1004,7 +1004,7 @@
           }
         }
       ],
-      "error": "invalid_transition"
+      "error": null
     },
     {
       "name": "paused status cannot accumulate motion",
