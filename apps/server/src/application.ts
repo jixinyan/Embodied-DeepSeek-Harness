@@ -1887,12 +1887,7 @@ export class UpperRun {
     const execution = this.state.executions.find(
       (entry) => entry.execution_id === event.executionId,
     );
-    if (
-      this.closed ||
-      terminal(this.state.state) ||
-      !execution ||
-      !isDeepStrictEqual(execution.task_scope, event.taskScope)
-    )
+    if (this.closed || !execution || !isDeepStrictEqual(execution.task_scope, event.taskScope))
       throw new Error('Policy telemetry has no admitted active execution.');
     const sessions = (this.state.policySessions ??= {});
     const prior = sessions[event.sessionId];

@@ -134,6 +134,10 @@ class NativeWorkerTransport {
       this.child.stdout?.on('data', (chunk: Buffer) => process.stderr.write(chunk));
     this.child.stderr?.on('data', (chunk: Buffer) => process.stderr.write(chunk));
     const lines = createInterface({ input: channel, crlfDelay: Infinity });
+    let linesClosed = false;
+    lines.on('close', () => {
+      linesClosed = true;
+    });
     lines.on('line', (line) => {
       lines.pause();
       this.processing = this.processing
@@ -141,7 +145,9 @@ class NativeWorkerTransport {
         .catch((error: unknown) => {
           this.disconnect(error instanceof Error ? error : new Error(String(error)));
         })
-        .finally(() => lines.resume());
+        .finally(() => {
+          if (!linesClosed) lines.resume();
+        });
     });
     channel.on('end', () => {
       void this.processing.finally(() =>
@@ -191,6 +197,7 @@ class NativeWorkerTransport {
     if (this.closeAcknowledged && this.pending.size === 0) return;
     if (this.fault) return;
     this.fault = error;
+    process.stderr.write(`Native worker transport failure: ${error.message}\n`);
     this.child.stdin?.end();
     for (const item of this.pending.values()) {
       item.cleanup();
