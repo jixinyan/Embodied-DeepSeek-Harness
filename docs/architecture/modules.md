@@ -10,12 +10,21 @@ also pass GPU rendering and manual-control boundary checks. The native worker pa
 actual reset, image transport and connection-failure checks. A console-driven
 Planner task records 1,050 GR00T controls and formal native GT failure; its replay
 preserves the camera frames, agent events and subsequent model transport failure.
-RoboTwin native task reset passes. BEHAVIOR native reset returns R1Pro observations
-and GT with clean shutdown. BEHAVIOR worker integration, RoboTwin learned controls and successful upper task/recovery
-acceptance remain under integration.
+RoboTwin completes an actual Pi0.5 task with independent formal verification and
+confirmed Session release. BEHAVIOR native reset returns R1Pro observations and
+GT with clean shutdown. Remaining provider controls and recovery acceptance are
+tracked separately.
 See the [adapter boundaries](../implementation/model-policy-adapters.md).
 
 ![Architecture](assets/framework-overview.svg)
+
+![Recorded successful RoboTwin workflow](assets/verified-robotwin-workflow.svg)
+
+The recorded workflow illustrates run `8fcb950b-eebf-4133-ae94-197ac8e6bb41`:
+independent cloud Astra Planner and Verifier Sessions, seven identified Pi0.5
+inferences, 111 ActionGate controls, native task success and released resources.
+It records no retry or recovery-SKILL publication. New local Qwen/headless
+acceptance is tracked in [progress](../implementation/progress.md).
 
 The diagram shows the target architecture. The minimal DSH host/session integration
 is verified; consult the [capability map](../implementation/features.md) for implemented upper services and pending providers. No separate upstream

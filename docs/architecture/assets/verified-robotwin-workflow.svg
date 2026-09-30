@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title description">
+  <title id="title">Verified RoboTwin Agent Workflow</title>
+  <desc id="description">A recorded successful task links an independent Astra Planner, seven Pi0.5 requests, ActionGate, 111 native controls, an independent formal Verifier and a released user Session. Three synchronized cameras and agent events provide replay evidence.</desc>
+  <defs>
+    <linearGradient id="background" x2="1" y2="1"><stop stop-color="#08162b"/><stop offset="1" stop-color="#142c4d"/></linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#64b5ff"/></marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#e8f2ff}
+      .heading{font-size:32px;font-weight:700}.subheading{font-size:18px;fill:#a8bfdf}
+      .label{font-size:21px;font-weight:700}.body{font-size:17px;fill:#c0d3ed}
+      .number{font-size:29px;font-weight:700;fill:#88d1ff}.small{font-size:15px;fill:#a8bfdf}
+      .card{fill:#122843;stroke:#355b86;stroke-width:1.5}.connection{fill:none;stroke:#64b5ff;stroke-width:3;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1440" height="900" rx="24" fill="url(#background)"/>
+  <text x="56" y="64" class="heading">A task that completed through the real harness</text>
+  <text x="56" y="101" class="subheading">RoboTwin · adjust_bottle · Aloha AgileX · cloud Astra + learned Pi0.5</text>
+  <rect x="1165" y="39" width="219" height="49" rx="24" fill="#144834" stroke="#5bcf9c"/>
+  <text x="1177" y="70" class="label">TASK SUCCEEDED</text>
+  <g>
+    <rect x="56" y="156" width="288" height="210" rx="18" class="card"/>
+    <text x="80" y="194" class="label">1  Planner</text>
+    <text x="80" y="231" class="body">Independent native DSH Session</text>
+    <text x="80" y="266" class="body">Images → plan + TODO</text>
+    <text x="80" y="301" class="body">Original native task instruction</text>
+    <text x="80" y="340" class="small">Owns retry / replan / resume</text>
+    <rect x="400" y="156" width="288" height="210" rx="18" class="card"/>
+    <text x="424" y="194" class="label">2  Pi0.5 service</text>
+    <text x="424" y="239" class="number">7 policy requests</text>
+    <text x="424" y="278" class="body">Observation + subgoal → actions</text>
+    <text x="424" y="312" class="body">Identified checkpoint + requests</text>
+    <text x="424" y="340" class="small">At most 16 actions per admitted prefix</text>
+    <rect x="744" y="156" width="288" height="210" rx="18" class="card"/>
+    <text x="768" y="194" class="label">3  ActionGate</text>
+    <text x="768" y="235" class="body">Generation + resource ownership</text>
+    <text x="768" y="270" class="body">Budget + fresh observation</text>
+    <text x="768" y="305" class="body">Native receipts for every action</text>
+    <text x="768" y="340" class="small">Confirmed stop before verification</text>
+    <rect x="1088" y="156" width="296" height="210" rx="18" class="card"/>
+    <text x="1112" y="194" class="label">4  RoboTwin</text>
+    <text x="1112" y="239" class="number">111 actual controls</text>
+    <text x="1112" y="279" class="body">10,443 native physics steps</text>
+    <text x="1112" y="313" class="body">Native task_success = true</text>
+    <text x="1112" y="341" class="small">Unchanged task budget: 400 controls</text>
+    <path d="M344 261 H390" class="connection"/><path d="M688 261 H734" class="connection"/><path d="M1032 261 H1078" class="connection"/>
+  </g>
+  <path d="M1236 366 V432 H888 V470" class="connection"/>
+  <text x="965" y="419" class="body">episode_terminated + confirmed boundary</text>
+  <g>
+    <rect x="744" y="480" width="640" height="189" rx="18" class="card"/>
+    <text x="772" y="519" class="label">5  Independent formal Verifier</text>
+    <text x="772" y="558" class="body">Fresh DSH context receives the stopped boundary and scoped evidence.</text>
+    <text x="772" y="596" class="body">Native criterion check + camera evidence → accepted passed verdict</text>
+    <text x="772" y="640" class="small">Created after execution ended; independent from Planner and the policy service.</text>
+    <rect x="56" y="480" width="632" height="189" rx="18" class="card"/>
+    <text x="84" y="519" class="label">6  Planner completion + Session release</text>
+    <text x="84" y="558" class="body">Matching formal verdict → TODO completion → tasks.finish</text>
+    <text x="84" y="596" class="body">Run succeeded · User Session closed · Resources released</text>
+    <text x="84" y="640" class="small">No retry occurred; this run establishes no recovery-SKILL acceptance.</text>
+    <path d="M744 575 H698" class="connection"/>
+  </g>
+  <rect x="56" y="724" width="1328" height="126" rx="18" fill="#0c2038" stroke="#355b86"/>
+  <text x="84" y="762" class="label">Replay evidence: cameras + Agent trace share one recorded timeline</text>
+  <text x="84" y="799" class="body">663 events · 409 three-camera rollout groups · 1,227 rollout images · native action receipts + formal verdict</text>
+  <text x="84" y="832" class="small">Run 8fcb950b-eebf-4133-ae94-197ac8e6bb41 · Checkpoint revision e49e2ab6c11f07511573b67261bd129e88d0a416</text>
+</svg>
