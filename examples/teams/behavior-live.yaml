@@ -1,0 +1,13 @@
+schema_version: physical.team.v1
+team_id: behavior-live
+learning_enabled: false
+entrypoint: lead
+members:
+  lead: builtin:planner
+  verifier: builtin:verifier
+  evolver: builtin:evolver
+bindings:
+  decision_owner: lead
+  final_verifier: verifier
+  recovery_evolver: evolver
+tool_bindings: {}
