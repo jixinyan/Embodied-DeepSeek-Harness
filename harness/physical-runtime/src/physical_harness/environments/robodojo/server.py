@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import socket
 import struct
+import sys
 import traceback
 import zlib
 
@@ -154,8 +155,16 @@ def main():
             eval_env.WsModelClient = original
         session = RoboDojoSession(env, args.output, args.task)
         write_json(args.output / "resolved_config.json", OmegaConf.to_container(cfg, resolve=True))
+        loaded = {name: str(Path(module.__file__).resolve()) for name, module in sys.modules.items()
+                  if getattr(module, "__file__", None)}
+        dependencies = {name: location for name, location in loaded.items()
+                        if "LitchiAgent" in location or "GPT-as-Policy" in location}
+        if dependencies:
+            raise RuntimeError(f"The native service imported an external Agent implementation: {dependencies}.")
+        write_json(args.output / "module_origins.json", loaded)
         write_json(args.output / "runtime.json", {
-            "service": __file__, "simulator_source": str(Path(ROOT_DIR).resolve()),
+            "service": __file__, "python": sys.executable, "prefix": sys.prefix,
+            "simulator_source": str(Path(ROOT_DIR).resolve()),
             "gpu": torch.cuda.get_device_name(), "gpu_capability": [major, minor],
             "nvrtc_architectures": list(architectures), "opencv": cv2.__version__,
             "native_task": args.task, "native_step_limit": session.metadata["max_episode_steps"]})

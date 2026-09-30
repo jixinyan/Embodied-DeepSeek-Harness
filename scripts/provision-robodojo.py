@@ -87,7 +87,7 @@ def main():
             "isaaclab", "isaaclab_assets", "isaaclab_tasks", "isaaclab_mimic", "isaaclab_contrib", "isaaclab_rl")]
         run([python, "-m", "pip", "install", "--no-deps", "--no-build-isolation", "--force-reinstall",
              *modules, sdk / "third_party/curobo"], environment)
-        run([python, "-m", "pip", "install", "yourdfpy==0.0.58", "msgpack==1.1.1",
+        run([python, "-m", "pip", "install", "yourdfpy==0.0.60", "msgpack==1.1.1",
              "imageio-ffmpeg", "jsonschema==4.25.1"], environment)
         run([python, "-m", "pip", "install", "--no-deps", root / "harness/physical-runtime"], environment)
 

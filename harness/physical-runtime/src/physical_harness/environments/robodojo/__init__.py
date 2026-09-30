@@ -367,8 +367,11 @@ class RoboDojoEnvironment:
         source = configuration.get("source", "student")
         policy_version = configuration.get("policy_version", "edh")
         control_mode = configuration.get("control_mode", "0-shot")
-        if not isinstance(host, str) or not host or type(port) is not int:
+        if not isinstance(host, str) or not host or type(port) is not int or not 1 <= port <= 65535:
             raise ValueError("RoboDojo configuration requires a host and integer port.")
+        if (type(timeout_s) not in (int, float) or not math.isfinite(timeout_s)
+                or not 0 < timeout_s <= 900):
+            raise ValueError("RoboDojo timeout must be positive and at most 900 seconds.")
         if type(seed) is not int or seed < 0 or source not in ("student", "gpt_eef", "gpt_joint"):
             raise ValueError("RoboDojo seed or control source is invalid.")
         if not isinstance(policy_version, str) or not policy_version.strip():
@@ -397,7 +400,7 @@ class RoboDojoEnvironment:
                     self._service = None
                     raise RuntimeError(f"The owned RoboDojo service exited before readiness: {exit_code}.")
                 if any(connection.status == psutil.CONN_LISTEN and connection.laddr.port == port
-                       for connection in process.net_connections(kind="tcp")):
+                       for connection in process.connections(kind="tcp")):
                     break
                 if time.monotonic() >= deadline:
                     self._service.terminate()
