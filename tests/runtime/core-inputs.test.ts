@@ -33,6 +33,7 @@ test('segmentation preserves native type checks and domain character limits', ()
     required: Object.keys(properties),
     additionalProperties: false,
   };
+  assertObjectJsonSchema(schema);
   const args = {
     evidenceId: '3ed10d9f-5759-4556-bbdb-d73cad108be9',
     attachmentId: 'sha256:b46b25d0f6ddf6d9b9e6098c6e8504a834d5830400f2827fefd38ed210ee3202',

@@ -30,3 +30,38 @@ closed a second task on the same scene, then exited. The local report is
 `.local/work/robocasa-agent-gpu1-gate/result.json`. These checks establish
 policy-to-simulator control and Session task lifecycle for this deployment.
 Successful OpenCabinet completion and recovery remain unverified.
+
+A subsequent native console run, `eb163146-9971-4fa2-b040-7a65fcf2424c`, used the
+configured Astra Responses model, the same GR00T checkpoint and the environment's
+exact `Open the cabinet door.` instruction. The first attempt executed 1,050
+controls, 132 policy calls and 26,250 MuJoCo steps. It ended with
+`budget_exhausted` at a confirmed device boundary. An independent Verifier read
+the native `task_success=false` result and submitted a failed verdict. The
+Planner explicitly requested a retry on the retained scene, and an independent
+Evolver recorded that recovery. The second attempt executed 1,002 controls, 126
+policy calls and 25,050 MuJoCo steps before a confirmed `backend_error` boundary.
+The worker's ten-second `writer.drain()` deadline expired while publishing an
+execution update. No successful recovery verdict or recovery SKILL was produced.
+
+SAM requests in that run reached the real service, while the native DSH tool's
+ten-second deadline expired before a segmentation result could be published.
+The segmentation schema now uses DSH-supported string fields and preserves the
+128/128/1,024-character domain limits separately. Provider-specific segmentation
+timeout wiring and the SAM-enabled deployment remain uncommitted work in progress.
+Successful cold and warm segmentation publication through DSH, native task success
+termination, and same-Session success-predicate lifecycle checks remain pending.
+
+A separate cancellation run, `7e9ef306-42c3-4511-a831-65c3aee5431d`, invoked the
+segmentation tool and closed its Session two seconds later. The native tool call
+was cancelled, resources were released, and no segmentation completion for that
+call appeared during the following 45 seconds. The SAM service's first
+`add_prompt` log followed the Session close, so this check covers cancellation
+during the request/startup path; cancellation during an already-running cold
+inference remains unverified. Both Sessions were closed, and the owned console,
+GR00T, SAM and port-forward processes were stopped.
+
+The local evidence directory is `.local/work/robocasa-sam-20260930/`, including
+`run-final.json`, `backend-failure.json`, `server-repaired.log`, `sam.log`,
+`sam-cancel.log`, `session-closed.json` and `cancellation-result.json`. These are
+private run records and are excluded from Git. The schema tests, TypeScript
+checking, formatting checks and `git diff --check` passed at this checkpoint.
