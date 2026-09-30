@@ -36,6 +36,8 @@ def main():
     )
     with urlopen(request, timeout=600) as response:
         result = json.load(response)
+    if result["source_image_sha256"] != hashlib.sha256(image_bytes).hexdigest():
+        raise ValueError("Segmentation source digest differs from the input image.")
     if result["width"] != width or result["height"] != height:
         raise ValueError("Segmentation dimensions differ from the source image.")
     args.output.mkdir(parents=True, exist_ok=True)

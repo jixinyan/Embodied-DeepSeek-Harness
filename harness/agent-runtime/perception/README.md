@@ -101,10 +101,11 @@ Their retained depth NPY digest was
 YOLO26 source revision was `e5b73a40a3781e0dee8b9ab49b83f42e3b85bc45`;
 checkpoint SHA-256 was
 `a01d5e38f66db8617720d7765ef6228343e75c49b2790fbeb10316c5b8db817c`.
+Independent checkpoint inspection reads `Depth.cal_a=1.0` and
+`Depth.cal_b=-0.316650390625` from the loaded model head.
 Evidence is retained locally in
 `.local/work/perception-20260930/ts-acceptance/result.json`.
-This source recording has no corresponding depth or intrinsic calibration;
-absolute distance accuracy remains unverified for this camera.
+The native RoboCasa RGB-D capture below supplies matching geometry for this image.
 
 [`check_yolo26_depth.py`](../../../examples/perception/check_yolo26_depth.py)
 independently recomputes region statistics from the returned NPY with NumPy.
@@ -114,3 +115,36 @@ An optional identified intrinsic JSON verifies camera range. An optional paired
 GT NPY reports unaligned absolute relative error, meter RMSE and delta1, preserving
 the exact comparison source digest. Use corresponding RGB/depth observations and
 an ignored output directory for these checks.
+
+[`check_sam_yolo_metric_capture.py`](../../../examples/perception/check_sam_yolo_metric_capture.py)
+validates the native capture manifest, RGB/depth digests, pixel orientation and
+depth convention before running segmentation and region comparisons. On September
+30 it used a real OpenCabinet pretrain seed-0 capture, layout 53/style 37,
+observation `164b98ca-a598-49e4-83eb-921fe641f6ef`. Each camera's paired RGB and
+depth came from the same native render; the provider checker established unchanged
+robot state, simulator time and observation pixels around that render. The left
+camera has `fx=fy=221.7025033688163`, `cx=cy=128`. Source depth is positive float32
+axial depth in meters. All comparisons use the returned checkpoint predictions
+without scale adjustment.
+
+| SAM left-camera region | Pixels | Predicted median axial depth | GT median axial depth | Absolute relative error | RMSE | delta1 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Object 0 | 6,953 | 0.905962 m | 1.282525 m | 0.299552 | 0.401618 m | 0.001870 |
+| Object 1 | 17,627 | 0.830603 m | 0.952102 m | 0.118612 | 0.132137 m | 0.909627 |
+
+Both regions have validity and paired-depth fractions of 1.0. Median absolute
+errors are 0.372860 m and 0.102197 m; camera-range medians are predicted
+1.001570/0.937561 m and measured 1.412978/1.046194 m. These checks validate
+projection/statistic computation and reveal substantial absolute prediction error
+on this pose. Validity fraction counts usable numeric pixels and does not certify
+distance accuracy. This checkpoint has no demonstrated centimeter-scale distance
+accuracy for this source camera. Simulator metric tools should consume identified
+native RGB-D/GT geometry. YOLO26 outputs retain their prediction metadata.
+
+The `cabinet` prompt returned no instances on the right and wrist cameras;
+their reports preserve the empty results. SAM's instance scores express model
+segmentation scores, without measured semantic-mask accuracy. This check covers
+one native scene and pose and establishes no wider task or camera accuracy.
+The complete source capture is retained on `jd_B300` under
+`.local/work/robocasa-qwen-20260930/metric-depth-calibrated/`; the independent
+comparison report is under `.local/work/perception-20260930/gt-comparison-final/result.json`.

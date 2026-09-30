@@ -58,6 +58,12 @@ def main():
         raise ValueError("Depth array dimensions or type differ from the source image.")
     if result["source_image_sha256"] != hashlib.sha256(image_bytes).hexdigest():
         raise ValueError("Source image digest differs from the response.")
+    if (
+        result["width"] != width or result["height"] != height
+        or result["unit"] != "meter" or result["distance_frame"] != "camera_axial_depth"
+        or result["calibration_id"] != (intrinsics["calibration_id"] if intrinsics else None)
+    ):
+        raise ValueError("Depth convention, source dimensions or calibration identity differ from the input.")
     if result["region"]["mask_png_sha256"] != hashlib.sha256(mask_bytes).hexdigest():
         raise ValueError("Mask digest differs from the response.")
     selected = mask_array > 0
@@ -101,8 +107,8 @@ def main():
     report["overlay_png_sha256"] = hashlib.sha256(overlay_bytes).hexdigest()
     if args.ground_truth_depth:
         ground_truth = np.load(args.ground_truth_depth, allow_pickle=False)
-        if ground_truth.shape != depth.shape:
-            raise ValueError("Ground-truth dimensions differ from the prediction.")
+        if ground_truth.shape != depth.shape or ground_truth.dtype != np.float32:
+            raise ValueError("Ground-truth dimensions or type differ from the prediction.")
         paired = valid & np.isfinite(ground_truth) & (ground_truth > 0)
         if paired.sum() < 10:
             raise ValueError("Fewer than ten valid paired depth pixels are available.")
@@ -112,13 +118,29 @@ def main():
         report["ground_truth_comparison"] = {
             "alignment": "none",
             "unit": "meter",
+            "measurement_kind": "simulator_metric_depth",
             "ground_truth_sha256": hashlib.sha256(args.ground_truth_depth.read_bytes()).hexdigest(),
             "paired_pixels": int(paired.sum()),
+            "paired_fraction": float(paired.sum() / selected.sum()),
             "median_ground_truth_axial_depth_m": float(np.median(target)),
+            "p10_ground_truth_axial_depth_m": float(np.percentile(target, 10)),
+            "p90_ground_truth_axial_depth_m": float(np.percentile(target, 90)),
+            "median_predicted_to_ground_truth_ratio": float(np.median(prediction / target)),
+            "median_absolute_error_m": float(np.median(np.abs(prediction - target))),
             "abs_rel": float(np.mean(np.abs(prediction - target) / target)),
             "rmse_m": float(np.sqrt(np.mean(np.square(prediction - target)))),
             "delta1": float(np.mean(ratio < 1.25)),
         }
+        if intrinsics is not None:
+            rows, columns = np.nonzero(paired)
+            range_factor = np.sqrt(
+                1.0
+                + np.square((columns - intrinsics["cx"]) / intrinsics["fx"])
+                + np.square((rows - intrinsics["cy"]) / intrinsics["fy"])
+            )
+            report["ground_truth_comparison"]["median_ground_truth_camera_range_m"] = float(
+                np.median(target * range_factor)
+            )
     (args.output / "result.json").write_text(json.dumps(report, indent=2), encoding="utf8")
     print(json.dumps(report))
 
