@@ -317,20 +317,20 @@ The deployment uses CuRobo 0.7.7 compiled with isolated CUDA 13.0.88, PyTorch
 2.11 with CUDA 13.0 and Warp 1.7.0. Its reset report is
 `.local/work/robotwin-task/result.json` on the GPU host.
 
-On September 30, a new `adjust_bottle` reset supplied three native 640 × 480
-camera images and a fourteen-value state vector to the pinned Pi0.5 service on
-GPU 4. Inference returned one action in 59.13 seconds. The service retained the
-postprocessed model action and converted the right gripper value from
-`1.0010402202606201` to the provider's maximum `1.0`; the arm targets were
-unchanged. ActionGate admitted that action, and RoboTwin executed 63 physics
-steps, sampled seven three-camera frame groups, returned a final observation,
-and confirmed the budget stop. The native `task_success` check returned false.
-The simulator process exited after releasing its session. The result and camera
-frames are under `.local/work/robotwin-policy-rollout-gpu4/` in the remote live
-checkout; the identified model output is in
-`.local/work/lerobot-pi05-service-gpu4-recheck.log` there. This establishes one
-real policy-to-simulator control and native failure check. Multi-action task
-completion, interruption and complete console Session acceptance remain pending.
+The September 30 complete `adjust_bottle` console run
+`8fcb950b-eebf-4133-ae94-197ac8e6bb41` supplies three native 640 × 480 RGB cameras
+and a fourteen-value state vector to the pinned Pi0.5 service on GPU 4. It records
+seven identified policy requests, 111 controls, 10,443 physics steps and 409
+three-camera frame groups. The service retains original model outputs and applies
+native clipping only to the two gripper channels. Actual ActionReceipts preserve
+each generation, action mapping and cumulative native count. Execution ends at a
+confirmed `episode_terminated` boundary; independent Verifier checks return
+`task_success=true` and verdict `passed`, and Planner calls `tasks.finish`.
+The Session releases its environment and the worker exits; the console and policy
+service also exit. The complete source export, sensor metadata, service log,
+identified requests/receipts, native patches and running source snapshots are in
+`.local/work/robotwin-20260929/`. Confirmed pause/resume and operator cancellation
+checks are documented in the [RoboTwin deployment record](robotwin-live.md).
 
 ## Live VLM image and tool checks
 
@@ -388,9 +388,13 @@ Credentials stay outside the repository and run exports.
 The service runs on GPU 4 and reports its model/tokenizer identities in
 `.local/work/lerobot-pi05-service-gpu4-recheck.log` in the remote live checkout.
 Its initial load report is preserved in
-`.local/work/lerobot-pi05-service-pre-provenance.log`. The September 30 native
-check above confirms inference from a fresh task observation and one admitted
-control. Task completion remains pending.
+`.local/work/lerobot-pi05-service-pre-provenance.log`. The complete native task
+check subsequently confirms four actual policy requests, 120 admitted controls,
+11,151 physics steps and unchanged `task_success=true`. Confirmed pause/resume,
+terminal counters and native environment close pass. Its evidence is retained in
+`.local/work/robotwin-policy-full-gpu4/`. The complete console task subsequently
+passes native success, independent formal verification and resource release; see the
+[RoboTwin deployment record](robotwin-live.md).
 
 ## Integration sequence and acceptance
 

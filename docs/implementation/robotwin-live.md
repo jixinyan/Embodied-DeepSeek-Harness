@@ -32,8 +32,9 @@ worker file descriptor 3 as transport and direct simulator output to stderr.
 `adjust_bottle` admits 400 native control targets. Each target invokes native
 interpolation; its physics-step count is recorded separately. The catalog budget
 must preserve the native criterion `task_success` and the 400-control-step limit.
-`policyMaxActionsPerInference: 50` uses the checkpoint's complete action horizon.
-Positive observation, policy and device timeouts remain explicit deployment
+The checkpoint produces a 50-action horizon. `policyMaxActionsPerInference: 16`
+admits a prefix that fits the measured three-camera recording cost within the
+application's 300-second observation deadline. Positive observation, policy and device timeouts remain explicit deployment
 bindings, within the native worker's 300-second limit. Three camera frames and
 the fourteen-channel state are captured again before each new policy request.
 
@@ -63,7 +64,54 @@ native check values and confirmed environment release. Environment/control
 checks establish their own acceptance scope; successful task completion requires
 the native success predicate and the application-level independent formal verdict.
 
-The application deployment has passed actual startup, profile/role loading and
-HTTP configuration checks. Complete native rollout and application Session
-control/verification evidence are under active validation. See
+Native execution `native-acceptance-4d5be85e-2ec1-4d44-a8b3-f1c89008dcd4`
+completed `adjust_bottle` with 120 actual controls, 11,151 physics steps, four
+identified Pi0.5 requests and 432 three-camera frame groups. The unchanged native
+`task_success` predicate returned true; execution ended at a confirmed
+`episode_terminated` boundary with zero uncertain actions. Its first control was
+followed by a confirmed ordinary pause, two seconds of unchanged control/physics
+counts, and resume using the remaining cumulative 400-control budget. The native
+environment closed and its process exited. Evidence remains in the GPU host's
+`.local/work/robotwin-policy-full-gpu4/` directory.
+
+Application run `af510a44-c050-4363-80ca-0b17fb04499f` confirms ordinary pause
+after three controls, explicit Planner resume of the same execution and actual
+subsequent controls. Operator cancellation ended after five controls and 354
+physics steps with a confirmed `user_stop` boundary. Pause and terminal boundaries
+each held unchanged counts for three seconds. No Verifier assignment or formal
+verdict was created. Session `0ffefba9-231c-4bf6-976f-7869254da9bc` closed with
+resources released; its native worker exited and the console remained responsive.
+
+Application run `8fcb950b-eebf-4133-ae94-197ac8e6bb41` completes the retained
+native task through the real Pi0.5 service and native DSH Planner. Execution
+`d4d400cc-5266-4d0a-9716-885282de3177` records 111 controls, 10,443 physics steps,
+seven identified policy requests and 409 three-camera frame groups. It ends with
+confirmed `episode_terminated` boundary `dbf8605c-c2d7-476a-8bd5-90f46c084f5a`.
+A fresh independent Verifier checks the unchanged `task_success=true` predicate
+and submits verdict `57eb96be-d796-4a34-842d-ad5cfa8d071f` as `passed`. Planner
+then calls `tasks.finish`; the run records `succeeded`. Session
+`d6eda014-a729-4da8-be07-13dbf04952d4` closes with `resources=released`, and its
+native worker exits. The console and Pi0.5 service are also shut down.
+
+This run retains the exact native instruction, seed 0, bottle model 16 and
+orientation tag 0. The admitted budget is 400 controls and 3,600 wall-clock
+seconds; inference admits 16 actions with a 300-second observation deadline.
+Native camera sampling occurs every 30 physics steps and returns head, left-wrist
+and right-wrist RGB images. Each executed action has its actual generation,
+PolicyRequest, original model/native output and ActionReceipt retained under
+the explicit `EDH_POLICY_REQUEST_RECORD_DIR` binding. Segment records use
+execution/request/segment identities and reject overwrites.
+
+The complete 663-event export, 523 native sensor samples, service/checkpoint
+identity, source snapshots and SHA-256 records remain in
+`.local/work/robotwin-20260929/`. The actual source configuration retains
+`sourceCode.state=modified`; the export preserves those running source files.
+[audit-recorded-run.py](../../scripts/audit-recorded-run.py) checks this learned
+policy source independently of direct/hybrid DSH policy Session traces. It
+requires the native sensor export, actual request/receipt directory, service log
+and pinned policy manifest. Missing identified service evidence fails acceptance.
+The source audit passes all 663 events, 111 actual receipts and seven actual
+inference identities; every inference has an executed prefix. The checkpoint
+digest is `a7e94d38448efa8554575467a25b39dfaac721448d8de189fdaf27fc299b7013`.
+This run has no recovery attempt or experience publication. See
 [GPU integration evidence](gpu-integration.md).
