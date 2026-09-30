@@ -14,22 +14,21 @@ connection; EDH never replays an uncertain action. `teacher_observation` is read
 after each acknowledged `chunk_step`, preserving the simulator's exact
 post-action camera boundary.
 
-RoboDojo is an external dependency. Its repository is distributed under the
-RoboDojo Non-Commercial Research License and its public release is evaluation
-oriented; no RoboDojo or GPT-as-Policy source is copied into EDH. Install the
-optional dependencies in the physical runtime environment and start the simulator
-from the separately licensed checkout:
+The RoboDojo SDK, Isaac Sim and native dependencies remain separately installed
+and retain their source and asset licenses. EDH owns the simulator entry point,
+RGB-D tools, FK validation and numerical motion service. Install optional client
+dependencies in the worker environment:
 
 ```sh
 .venv/bin/python -m pip install -e 'harness/physical-runtime[robodojo]'
 ```
 
 EDH owns the upper and execution-policy DSH Sessions, model transport, policy
-tools, worker client, execution lifecycle and ActionGate. The deployed simulator
-server currently starts through the separately installed LitchiAgent entry point
-and its GPT-as-Policy grounding/numerical motion services. EDH-owned simulator
-startup and native tool-service packaging remain required for standalone deployment;
-the RoboDojo/Isaac Sim dependencies retain their upstream licenses.
+tools, worker client, execution lifecycle and ActionGate. The owned simulator service
+starts through `physical_harness.environments.robodojo.launch` and
+`physical_harness.environments.robodojo.server`. A configured
+`service_configuration` gives Session initialization ownership of service startup
+and confirmed shutdown. See [independent deployment](robodojo-standalone.md).
 
 The native worker provider name is `robodojo`. Its scene configuration requires
 `port` and accepts `host`, `seed`, `source`, `policy_version` and the optional
@@ -38,7 +37,7 @@ declare `action_dim=14`, cameras `cam_high`, `cam_left_wrist` and
 `cam_right_wrist`, and a positive `control_dt`. The canonical ActionSpec is
 `robodojo.environment_origin` qpos target with continuous grippers in `[0, 1]`.
 
-The adapter has CPU protocol coverage with a fake RPC peer. On 2026-09-30, the
+On 2026-09-30, the
 local Isaac Sim 5.1 `build_tower` server (RoboDojo revision `726e9aa`) also
 passed a real EDH reset, three-camera RGB observation, metadata/action-spec
 description and one admitted qpos step. The step returned one executed action,
@@ -98,5 +97,4 @@ episode after an uncertain reset; the inspected native server admits one episode
 References:
 
 - RoboDojo: <https://github.com/RoboDojo-Benchmark/RoboDojo>
-- GPT-as-Policy RPC implementation inspected in the local LitchiAgent checkout:
-  `/mnt/data/users/jixin/workspace/code/LitchiAgent/runtime/vendor/GPT-as-Policy`
+- [Source provenance and retained notices](../provenance/litchi-robodojo.md)

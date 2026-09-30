@@ -18,8 +18,10 @@ independent copies from an existing authorized installation. Its `source` stage
 creates complete Git checkouts without object alternates, sets their official
 origins and checks exact source revisions. Its `assets` stage copies the assets,
 compares their contents and binds the SDK to the configured data directory. Its
-`environment` stage creates a separate Conda environment and installs native
-packages from the EDH-owned dependency directory. Bootstrap input directories
+`environment` stage creates a separate Conda environment from explicit native
+package versions, copies installed binary dependencies, and installs native SDK
+packages from the EDH-owned dependency directory. Runtime caches and editable
+package redirects are excluded from the dependency copy. Bootstrap input directories
 are required only while installing dependencies.
 
 | Dependency | Revision |

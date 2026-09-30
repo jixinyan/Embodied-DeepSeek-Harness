@@ -79,6 +79,4 @@ def solve_ik(fk, joints, limits, target):
     result = least_squares(residual, seed, bounds=(limits[:, 0], limits[:, 1]),
                            max_nfev=200, ftol=1e-10, xtol=1e-10, gtol=1e-10)
     distance, angle = pose_error(fk.matrix(result.x), target)
-    if distance > 0.005 or angle > 0.03:
-        raise ValueError(f"Unreachable IK target: {distance:.4f} m, {angle:.4f} rad.")
-    return result.x
+    return result.x, distance, angle

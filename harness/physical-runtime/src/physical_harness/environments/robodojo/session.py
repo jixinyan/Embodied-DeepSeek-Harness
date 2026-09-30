@@ -160,13 +160,18 @@ class RoboDojoSession:
             raise ValueError(f"An integer wrist pixel within {width}x{height} is required.")
         value = float(depth[y, x])
         if not np.isfinite(value) or value <= 0:
-            raise ValueError("The wrist pixel has no valid metric depth.")
+            return {"ok": False, "physical_steps": 0, "error": "The wrist pixel has no valid metric depth."}
         return {"ok": True, "arm": arm, "camera": camera, "pixel": [x, y],
                 "image_size": [width, height], "pixel_origin": "top_left", "depth_m": value,
                 "units": "m", "depth_type": "distance_to_image_plane", "frame": f"{camera}_optical",
                 "source": "wrist_camera_metric_depth", "step_id": self.step_id, "physical_steps": 0}
 
     def grounding(self, x, y):
+        height, width, _ = self.head_cloud.shape
+        if type(x) is not int or type(y) is not int or not (0 <= x < width and 0 <= y < height):
+            raise ValueError(f"An integer head pixel within {width}x{height} is required.")
+        if not np.isfinite(self.head_cloud[y, x]).all():
+            return {"ok": False, "physical_steps": 0, "error": "The head pixel has no valid metric depth."}
         point = ground_pixel(self.head_cloud, x, y, self.world_from_env)
         return {"ok": True, "grounding_id": uuid4().hex, "pixel": [x, y],
                 "image_size": [self.head_cloud.shape[1], self.head_cloud.shape[0]],

@@ -63,6 +63,8 @@ def serve(session, port):
                 if len(response) > _MAX_BYTES:
                     raise ValueError("The native RPC response exceeds its byte limit.")
                 payload = zlib.compress(response, level=1)
+                if len(payload) > _MAX_BYTES:
+                    raise ValueError("The compressed native RPC response exceeds its byte limit.")
                 connection.sendall(struct.pack("!I", len(payload)) + payload)
 
 
@@ -159,6 +161,8 @@ def main():
             "native_task": args.task, "native_step_limit": session.metadata["max_episode_steps"]})
         serve(session, args.port)
     except BaseException:
+        if session is not None:
+            session.poisoned = True
         traceback.print_exc()
         raise
     finally:

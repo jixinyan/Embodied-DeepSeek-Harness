@@ -70,10 +70,18 @@ def main():
         run(["diff", "--brief", "--recursive", args.asset_source, destination], environment)
         (sdk / "Assets").symlink_to(destination, target_is_directory=True)
     else:
-        if prefix.exists():
-            raise FileExistsError(prefix)
-        run([args.conda, "create", "--yes", "--offline", "--prefix", prefix,
-             "--clone", args.environment_source], environment)
+        if (prefix / "conda-meta/history").exists():
+            raise FileExistsError("An initialized native environment already exists.")
+        specification = subprocess.check_output(
+            [str(args.conda), "list", "--explicit", "--prefix", str(args.environment_source)],
+            env=environment, text=True)
+        specification_path = scratch / "native-environment-explicit.txt"
+        specification_path.write_text(specification)
+        run([args.conda, "create", "--yes", "--prefix", prefix, "--file", specification_path], environment)
+        run(["rsync", "-a", "--exclude=__editable__*", "--exclude=isaacsim/kit/data/",
+             "--exclude=isaacsim/kit/logs/", "--exclude=isaacsim/kit/cache/",
+             str(args.environment_source / "lib/python3.11/site-packages") + "/",
+             str(prefix / "lib/python3.11/site-packages") + "/"], environment)
         python = prefix / "bin" / "python"
         modules = [sdk / "third_party/IsaacLab/source" / name for name in (
             "isaaclab", "isaaclab_assets", "isaaclab_tasks", "isaaclab_mimic", "isaaclab_contrib", "isaaclab_rl")]

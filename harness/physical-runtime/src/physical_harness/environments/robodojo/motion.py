@@ -53,8 +53,13 @@ class NumericalMotion:
                 goal = pose7(np.r_[array(target["position"]), array(target["quaternion_wxyz"])])
                 measured = pose7(self.kinematics.manager.get_real_endpose(self.kinematics.robots[arm])[0])
                 distance, angle = pose_error(measured, goal)
-                solution = current.copy() if distance <= 1e-6 and angle <= 1e-6 else solve_ik(
-                    fk, current, limits, np.linalg.inv(root) @ goal)
+                if distance <= 1e-6 and angle <= 1e-6:
+                    solution = current.copy()
+                else:
+                    solution, distance, angle = solve_ik(fk, current, limits, np.linalg.inv(root) @ goal)
+                    if distance > 0.005 or angle > 0.03:
+                        return {"ok": False, "physical_steps": 0,
+                                "error": f"{arm}: Unreachable IK target: {distance:.4f} m, {angle:.4f} rad."}
             else:
                 value = array(target["qpos"])
                 if value.shape != (6,) or not np.isfinite(value).all():
