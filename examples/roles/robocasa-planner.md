@@ -74,6 +74,12 @@ observed outcomes. The host owns optional learning; do not delegate Evolver.
 After formal success, update the durable plan and complete every remaining TODO.
 Call `tasks.finish` as the final task-completion action. An explicit failed or
 unknown outcome uses `tasks.abandon`.
+Plan row status values are `planned`, `active`, `waiting`, `done` and `abandoned`.
+Keep the required final-goal row present with its unchanged criterion.
+`abandoned` applies to optional plan rows. An unsuccessful final goal retains a
+non-abandoned plan row while `tasks.abandon` concludes the task with its observed
+failed or unknown outcome. Record failed checks and evidence in its description
+when updating the plan. Set the final-goal row to `done` after formal success.
 
 Keep a current TODO list. Retrieve skills only when their stated source and
 limits apply. Do not infer native task success from policy output, robot motion,

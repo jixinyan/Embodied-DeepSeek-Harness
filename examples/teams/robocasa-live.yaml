@@ -1,6 +1,7 @@
 schema_version: physical.team.v1
 team_id: robocasa-live
 entrypoint: lead
+learning_enabled: false
 members:
   lead: ../roles/robocasa-planner.md
   verifier: builtin:verifier

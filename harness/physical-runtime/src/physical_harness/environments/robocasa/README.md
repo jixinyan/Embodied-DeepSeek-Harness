@@ -148,3 +148,34 @@ team. That team disables recovery learning and registers
 `perception.segment_objects` and `perception.measure_object`. Geometry requests
 use the matching source-image and SAM-mask evidence references. Optional YOLO
 prediction has a separate provider binding and role.
+
+The Qwen/SAM/native-measurement run
+`e4c1038f-cb92-4664-a79e-6760aa2e5241` publishes capture, segmentation and
+measurement receipts in order, followed by a complete structured plan, goal
+selection and execution receipts. Measurement evidence
+`9f93596a-a915-47cc-9925-ee4fc33bdf16` retains the original camera and mask
+references, axial median 1.282525 metres, camera-range median 1.412978 metres
+and valid fraction 1. Execution `57fec71c-d911-4128-a7cc-86cf8f734a26` executes
+1,050 controls, 132 policy calls and 26,250 MuJoCo steps in 183.642 seconds.
+Independent verdict `c1cb5d54-ff1c-4848-871e-99d2ba63d7a5` is failed with
+native `task_success=false`. The upper run ends by operator cancellation after
+that verdict. Session `7ce5fd2d-0467-4a4f-b7c9-805b896dfab1` closes with
+resources released. Records are in `.local/work/robocasa-measured-20260930/`.
+
+A separate 64-control native run
+`e6ebc3f3-37e5-4274-a51f-2d49584af534` validates `execution.query` through
+the actual UpperRun tool. Its running receipt at control 8, policy call 1
+returns the current task scope and saved metadata evidence
+`2fcdc98c-27a9-4091-acd6-1c3ba71d6a02:status:9`. Running images remain disabled.
+The execution ends at a confirmed budget boundary after eight policy calls and
+1,600 MuJoCo steps in 10.747 seconds. Independent native verification is failed.
+The operator concludes this validation and Session
+`d4268aca-98d7-453c-993d-3f5e10b966ad` closes with resources released. Records
+are in `.local/work/robocasa-query-20260930/`.
+
+All six videos from these two executions decode successfully, with 1,050 and
+64 frames respectively in each of the three native camera streams. No camera-frame
+event is published into their upper running traces. The GR00T service and both
+validation consoles stop after release; shared Qwen and SAM remain allocated for
+other validation work. Full Planner task completion, successful native task
+termination and same-Session success-predicate lifecycle acceptance remain pending.
