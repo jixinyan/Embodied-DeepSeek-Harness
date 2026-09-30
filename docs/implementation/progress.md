@@ -92,12 +92,14 @@ run settlement before Session task retirement; channel readers respect closure,
 and scoped policy telemetry remains available during shutdown.
 
 EDH owns the DSH role and GPT-policy Sessions, tool declarations, worker client,
-execution lifecycle and ActionGate. The deployed native simulator server and
-grounding/numerical motion service still start from the separately installed
-LitchiAgent/GPT-as-Policy checkout. Framework-owned simulator startup and native
-tool-service packaging remain required for standalone EDH deployment. The current
+execution lifecycle and ActionGate. The native server, RGB-D capture, numerical
+motion tools, FK checks and service launcher now have EDH-owned source. Independent
+pinned SDK checkouts and a content-verified asset copy are provisioned; the separate
+Conda environment and real owned-service acceptance are in progress. The current
 priority is real agent-loop debugging, measured efficiency improvements, then
 a natively successful `build_tower` task and composite agentic-trace MP4.
+See [independent RoboDojo deployment](robodojo-standalone.md). Compilation, source
+structure and TypeScript checks pass; these checks do not certify native acceptance.
 
 Native DSH policy Sessions publish scoped model messages, returned reasoning,
 tool calls/results, local plans, status and decisions through the physical worker
@@ -113,10 +115,10 @@ imports, SVG XML and source structure pass. Direct-policy telemetry and task
 acceptance pass with the recorded native rollout above; hybrid acceptance remains pending.
 
 The authorized simulator uses configurable GPU device 7. Other GPU devices were
-available at the latest inventory; no existing job was interrupted. The checkpoint
-download and isolated OpenPI installation continue;
-installation uses an explicit 300-second dependency-download timeout. Actual
-checkpoint/model inference and available-device admission remain required.
+available at the latest inventory; no existing job was interrupted. The selected
+Pi0.5 checkpoint download completes at the pinned dataset revision. The isolated
+OpenPI dependency installation requires completion after its current download
+timeout. Actual checkpoint/model inference and available-device admission remain required.
 
 ## 2026-09-29 architecture and RoboDojo deployment checkpoint
 
