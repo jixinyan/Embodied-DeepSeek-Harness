@@ -1,10 +1,36 @@
 # Implementation progress
 
-Spec: v1.64. Current checkpoint: **local Qwen/Pi0.5 native task passes clean role-completion acceptance: completed TODOs, committed terminal receipts, zero tool errors, independent formal success and released Session resources**.
+Spec: v1.65. Current checkpoint: **native Qwen/Pi0.5 completes a formally failed attempt followed by an explicit Planner retry and independent formal success; source-bound SAM/YOLO and native RoboCasa geometry tools complete real model calls**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Run `8a7d4bde-60ec-40e4-abbe-d0357fbc841c` verifies actual recovery in native
+RoboTwin `adjust_bottle`, `demo_clean`, seed 0. The original task criterion and
+environment persist. Attempt one exhausts its admitted 64-control budget and
+receives a failed Verifier result. Planner accepts retry, captures the retained
+scene and starts attempt two; its 36 controls terminate with native success and
+a passed result from a fresh Verifier. All six TODOs complete and resources release.
+The source audit covers 318 events, seven identified Pi0.5 calls, 100 controls,
+10,213 physics steps, zero tool errors and zero post-terminal model steps. All six
+native camera videos pass full decoding and timestamp comparison.
+
+Current live Teams disable recovery learning. Recovery history retains its attempt
+links; no Evolver or new SKILL is created. SceneState work is deferred. Independent
+DSH contexts, durable plans/TODOs/files, scoped evidence and on-demand keyword SKILL
+search/selective loading remain available. The
+[current Agent loop](current-agent-loop.md) lists actual prompts, memory and retry rules.
+
+Run `5e05df06-6892-4024-b065-cb7a2ac09248` verifies real Qwen capture → SAM3.1
+segmentation → YOLO26 masked-depth estimation → user clarification, without motion.
+Its Session releases resources. Native RoboCasa Qwen run
+`e4c1038f-cb92-4664-a79e-6760aa2e5241` verifies capture → SAM → source-bound
+RGB-D measurement → structured plan → selected goal → GR00T execution. Independent
+native measurement checks verify camera/world geometry, provenance, stopped-state
+authority and source consistency. Raw monocular depth remains accuracy-qualified;
+two actual source regions show approximately 0.373 m and 0.102 m median errors.
+Provider task outcomes and clean lifecycle acceptance are recorded independently.
 
 The trace-review milestone is complete after run `6610a9f4-29b8-499c-82ed-d81aab542e13`:
 116 real Pi0.5 controls, eight identified policy requests, 10,767 native physics
@@ -25,18 +51,17 @@ before completing the turn. Plan writing, goal selection and execution admission
 await their preceding receipts. Configured denoising is applied before native
 camera creation; the running console displays the actual execution state.
 The composite MP4 passes complete decoding and all source-text bounds checks.
-Actual custom-role structured reporting and genuine recovery remain pending.
+Actual custom-role structured reporting and multi-goal acceptance remain pending.
 The earlier cloud-model task and provider evidence remain in the
 [September 30 provider handoff](pause-2026-09-30.md).
 
 The goal remains to complete and verify all agreed v1 capabilities. SAM 3.1
 segmentation and YOLO26 depth are selected for replaceable perception services.
-Standalone SAM 3.1 inference passes on a real RoboCasa image; the complete native
-DSH tool round and YOLO26 depth acceptance remain pending. The user selected
+Native DSH SAM/YOLO tool calls and source-bound native geometry checks pass. The user selected
 an initialized, continuously updated Session scene state for spatial memory. The
 [spatial-memory design](spatial-memory-proposal.md) specifies initialization,
 incremental observations, revisions, reset and evidence handling; runtime
-implementation and actual acceptance are pending.
+implementation and actual acceptance are deferred by the current user scope.
 Remaining simulator, policy, lifecycle and release work is tracked in the
 v1 acceptance register for resumption.
 
@@ -821,8 +846,8 @@ screens stack sections and long content scrolls. See the [console guide](../../a
 | Communication       | Versioned role reports/query, configured result schemas, explicit briefs, authenticated caller identity from tool scope, delegation/send/context exchange, evidence grants, native DSH delivery and audit exports |
 | Tools               | Native tool API, role exposure and owner checks; trusted custom native tools share run lifetime and activity tracking                                                                                             |
 | Planning/files      | Original DSH TODO; versioned dependency plans, immutable executed/final criteria, registered subgoal checks, owner-selected goals and private files                                                               |
-| Execution boundary  | Replaceable EmbodiedBackend port, nonblocking jobs and budgets; real RoboCasa confirms device pause, fresh observation and Planner-owned resume within the same execution.                                                                                           |
-| Verification        | Real RoboCasa validates one fresh Verifier after confirmed budget end, zero Verifier assignments while running/paused, and a native failed GT verdict. Unknown cannot become success.                       |
+| Execution boundary  | Replaceable EmbodiedBackend port, nonblocking jobs and budgets; real RoboCasa confirms device pause, fresh observation and Planner-owned resume within the same execution.                                        |
+| Verification        | Real RoboCasa validates one fresh Verifier after confirmed budget end, zero Verifier assignments while running/paused, and a native failed GT verdict. Unknown cannot become success.                             |
 | Recovery            | Formal failure followed by Planner replan/retry opens one recovery and Evolver; explicit progress batches continue until original-goal success                                                                    |
 | Experience          | Versioned SKILL export/search/load; failure signals, possible causes, avoid rules, success/verification guidance and provenance; fixture skills labeled and separated                                             |
 | Persistence         | Single-writer CAS journal, fsync, integrity checks, torn-tail recovery, separate immutable events and run projections; read-only historical session audits                                                        |
@@ -1273,7 +1298,6 @@ All resulting actions must continue through the interruptible action-admission l
 Configuration-only switching applies to installed compatible adapters and validated
 profiles; it must reject missing providers or incompatible embodiment/action bindings.
 
-
 ## Profile acceptance checkpoint (2026-09-19)
 
 Simulation/embodiment/policy profile schemas now share the contract source. Resolution
@@ -1299,7 +1323,6 @@ Next upper work: canonical HTTP context-overflow handling and bounded image hist
 then long-run evidence/events, idle-role and terminal-run cleanup. Real providers
 remain a separate implementation gate, with Action Gate mandatory between policy
 inference and execution. The main goal is still open.
-
 
 ## HTTP context-overflow checkpoint (2026-09-19)
 
@@ -1328,7 +1351,6 @@ Acceptance: full `pnpm check` passes with 76 runtime tests, 256 shared cases and
 work begins with explicit visual history selection, followed by bounded evidence/run
 retention and idle/terminal cleanup. Physical providers remain separate. The previous
 `ec072b8` checkpoint's GitHub CI is confirmed successful (run 35460671025).
-
 
 ## Visual history checkpoint (2026-09-19)
 
@@ -1374,7 +1396,6 @@ real simulator/hardware ownership. See [user sessions](user-sessions.md) and the
 [legacy migration audit](legacy-migration.md). CPU evidence does not establish robotics
 or cross-embodiment transfer performance.
 
-
 The console now groups runs beneath user sessions and displays the installed profile's
 environment, embodiment, policy/checkpoint, model and resource state. New session,
 Run task and End session are distinct controls. Workspace experience inspection retains
@@ -1382,7 +1403,6 @@ origin run/session links. Browser acceptance on the CPU preview exercised recove
 a second task in the same session, session end and experience inspection without browser
 errors. Installed profiles provide the authoritative complete configuration combinations.
 Implementation ownership checkpoint: `c57106f`.
-
 
 Validation: full `pnpm check` passes with 89 runtime tests, 256 shared cases and 17
 standalone Python policy/action-gate tests (plus the shared Python acceptance classes).

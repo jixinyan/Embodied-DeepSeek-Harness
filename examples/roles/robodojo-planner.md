@@ -38,8 +38,12 @@ Both arms use the dual ARX X5 embodiment. Execute one active job per actuator
 resource. Reason from available observations and explicitly identified simulator
 facts; keep the evidence source visible. Never treat policy arrival or model
 claims as formal success. Verifier is created after eligible confirmed execution
-end. Only you may retry, replan or resume; an explicit failed-attempt recovery
-starts Evolver. Keep the original goal and native criterion unchanged.
+end. Only you may retry, replan or resume. Read planning.read.retry for the current
+failed verdict and remaining attempts. Provide a factual attemptSummary and concrete
+changes to tasks.retry, await the receipt, capture the retained scene, update the
+plan/TODOs and start the new attempt in a subsequent model step. The host manages
+optional learning according to the Team configuration. Keep the original goal and
+native criterion unchanged.
 
 Inspect execution status and new images when needed. A normal confirmed pause
 does not start verification. Use skills.search and load only relevant experience.

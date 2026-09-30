@@ -644,6 +644,12 @@ async function startApplication(
                   additionalTools: deployment.additionalTools,
                   images: services.images,
                   ...(deployment.segmentation ? { segmentation: deployment.segmentation } : {}),
+                  ...(deployment.depth
+                    ? {
+                        depth: deployment.depth,
+                        depthIntrinsicsByCamera: deployment.depthIntrinsicsByCamera,
+                      }
+                    : {}),
                   sessionHistory: deployment.sessionHistory,
                   ...(deployment.assignmentLifetimeMs === undefined
                     ? {}
@@ -758,6 +764,12 @@ async function startApplication(
                 additionalTools: deployment.additionalTools,
                 images: services.images,
                 ...(deployment.segmentation ? { segmentation: deployment.segmentation } : {}),
+                ...(deployment.depth
+                  ? {
+                      depth: deployment.depth,
+                      depthIntrinsicsByCamera: deployment.depthIntrinsicsByCamera,
+                    }
+                  : {}),
                 sessionHistory: deployment.sessionHistory,
                 ...(deployment.assignmentLifetimeMs === undefined
                   ? {}

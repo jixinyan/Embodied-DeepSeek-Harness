@@ -50,6 +50,18 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
     },
     textPrompt: { type: 'string', description: 'Object text prompt, 1 to 1024 characters.' },
   },
+  'perception.estimate_depth': {
+    evidenceId: str,
+    attachmentId: str,
+    maskEvidenceId: str,
+    maskAttachmentId: str,
+  },
+  'perception.measure_object': {
+    evidenceId: str,
+    attachmentId: str,
+    maskEvidenceId: str,
+    maskAttachmentId: str,
+  },
   'observation.turn_view': { direction: { type: 'string', enum: ['left', 'center', 'right'] } },
   'execution.start': { instruction: str },
   'execution.query': {},
@@ -77,6 +89,10 @@ export const CORE_TOOL_OPTIONAL_PARAMETERS: Readonly<Record<string, readonly str
 };
 
 export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'perception.measure_object':
+    'Measure one SAM-grounded visible object region using same-frame native simulator RGB-D and camera calibration. Supply its original authorized evidenceId/attachmentId and matching maskEvidenceId/maskAttachmentId. Available only for an explicitly enabled native provider while confirmed stopped. Returns meter-valued axial depth and camera range, source hashes, camera/world frames and the mean of visible valid surface points. The surface centroid is not the full object geometric center. This read-only measurement does not verify task success.',
+  'perception.estimate_depth':
+    'Estimate depth for one SAM-grounded object in an authorized source image. Supply the original evidenceId and attachmentId plus its matching SAM maskEvidenceId and maskAttachmentId. Returns meter-valued camera axial depth statistics, valid-pixel coverage, model provenance and an overlay. Camera range requires deployment-provided intrinsics. Monocular estimates have unverified accuracy for the source camera and cannot establish verified geometry or task success.',
   'tasks.retry':
     'Admit one new attempt after a current formal failed verdict and confirmed ended execution. Provide a factual attemptSummary and nonempty concrete changes. Read planning.read.retry for the per-goal three-attempt limit. Await this receipt before fresh perception, plan/TODO updates and execution.start in a subsequent model step. The environment is retained and original success criteria remain unchanged; retry does not start motion.',
   'tasks.replan':
@@ -111,12 +127,16 @@ export function assertCoreInputLimits(args: Record<string, unknown>): void {
     throw new Error('Tool input exceeds 256 KiB.');
   for (const [key, value] of Object.entries(args)) {
     if (typeof value === 'string') {
-      const characterLimit =
-        key === 'evidenceId' || key === 'attachmentId'
-          ? 128
-          : key === 'textPrompt'
-            ? 1024
-            : undefined;
+      const characterLimit = [
+        'evidenceId',
+        'attachmentId',
+        'maskEvidenceId',
+        'maskAttachmentId',
+      ].includes(key)
+        ? 128
+        : key === 'textPrompt'
+          ? 1024
+          : undefined;
       if (characterLimit !== undefined && value.length > characterLimit)
         throw new Error(`Invalid length for ${key}.`);
       const limit = key === 'content' ? 131072 : 12000;

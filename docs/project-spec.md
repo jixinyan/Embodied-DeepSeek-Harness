@@ -1,8 +1,8 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.64 · 2026-09-30
+Version: v1.65 · 2026-09-30
 
-Status: local Qwen Planner and Verifier with learned Pi0.5 complete a real headless RoboTwin task through native DSH, ActionGate, independent formal verification and released Session. Clean role-completion acceptance verifies completed Planner TODOs, committed terminal receipts, zero tool errors and zero subsequent model steps after terminal tools. The trace-only console and worker-local three-camera videos are verified. Custom-role reporting, recovery and full four-provider v1 acceptance remain pending.
+Status: local Qwen Planner and fresh independent Verifiers complete a failed native RoboTwin attempt, explicit retained-scene retry and formal success through Pi0.5 and ActionGate. The source audit verifies completed TODOs, terminal receipts, zero tool errors, identified inference, decoded simulator video and released resources. Real Qwen SAM/YOLO tool calls and native RoboCasa source-bound RGB-D geometry are verified. Recovery learning is paused and SceneState implementation is deferred. Custom-role reporting, multi-goal and full four-provider acceptance remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -27,7 +27,12 @@ are SVG assets; include their directory when handing over this document.
 
 ### 0.1 Current work and next action
 
-The local Qwen/Pi0.5 trace-review milestone is complete. The
+The current priority is reliable upper-agent retry, source-bound perception metrics
+and continued native environment integration. Live Teams set `learning_enabled: false`;
+SceneState development is deferred. The [current Agent loop](implementation/current-agent-loop.md)
+records actual system prompt sources, context assembly, memory and retry behavior.
+Native Qwen/Pi0.5 failed-attempt recovery and successful completion are verified.
+The
 [Qwen headless handoff](implementation/qwen-headless-checkpoint.md) records exact task,
 source, checkpoint, verification and shutdown evidence, preserved work and the
 continuation requirements. The weekly DSH monitor performs read-only assessment.
@@ -286,16 +291,16 @@ transfer, but policy/hardware compatibility still requires validation.
 
 ### 1.1 Highlights and claims to validate
 
-| Highlight | Concrete design | Evidence required |
-| --- | --- | --- |
-| DSH-based physical task loop | Reuse the agent runtime; add asynchronous execution, device feedback, verification gates and physical events | Complete a long-horizon task and recovery without inventing another LLM loop |
-| User-defined agent teams | ROLE.md specifies responsibility/tools; team.yaml binds members and decision roles | Add or replace a role through configuration without modifying fixed agent types or routing |
-| Complete, open tool surface | One catalog covers planning/files, SAM-like perception, active observation, policies and checks | Compose a new role from existing tools; expose a new perception provider to compatible roles |
-| Independent contexts and explicit cooperation | Fresh delegation sessions, complete task briefs, direct messaging and subscriptions | Actual model-input checks demonstrate that only explicitly delivered/read information is visible |
-| Execution followed by independent verification | Record policy execution and its confirmed end before creating Verifier; require formal checking after budget expiry | Trace execution, final report, confirmed boundary, checks and verdict on one timeline |
-| Learning from successful retries | Retry starts Evolver; original-goal recovery success enables skill creation | Trace every skill to failure, changes, attempts and success evidence |
-| Replaceable policies, environments and bodies | Separate semantic contracts from concrete adapters with declared compatibility | Add a second configuration without modifying the general core |
-| Physical task observability | Console displays agents, devices, plans, messages, evidence references and experience; simulator-host video records cameras | Explain why motion stopped, who requested a retry and which skill was used |
+| Highlight                                      | Concrete design                                                                                                             | Evidence required                                                                                |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| DSH-based physical task loop                   | Reuse the agent runtime; add asynchronous execution, device feedback, verification gates and physical events                | Complete a long-horizon task and recovery without inventing another LLM loop                     |
+| User-defined agent teams                       | ROLE.md specifies responsibility/tools; team.yaml binds members and decision roles                                          | Add or replace a role through configuration without modifying fixed agent types or routing       |
+| Complete, open tool surface                    | One catalog covers planning/files, SAM-like perception, active observation, policies and checks                             | Compose a new role from existing tools; expose a new perception provider to compatible roles     |
+| Independent contexts and explicit cooperation  | Fresh delegation sessions, complete task briefs, direct messaging and subscriptions                                         | Actual model-input checks demonstrate that only explicitly delivered/read information is visible |
+| Execution followed by independent verification | Record policy execution and its confirmed end before creating Verifier; require formal checking after budget expiry         | Trace execution, final report, confirmed boundary, checks and verdict on one timeline            |
+| Learning from successful retries               | Retry starts Evolver; original-goal recovery success enables skill creation                                                 | Trace every skill to failure, changes, attempts and success evidence                             |
+| Replaceable policies, environments and bodies  | Separate semantic contracts from concrete adapters with declared compatibility                                              | Add a second configuration without modifying the general core                                    |
+| Physical task observability                    | Console displays agents, devices, plans, messages, evidence references and experience; simulator-host video records cameras | Explain why motion stopped, who requested a retry and which skill was used                       |
 
 These are engineering goals and research claims to test, not assertions of academic
 novelty or already demonstrated cross-environment generalization.
@@ -336,17 +341,17 @@ novelty or already demonstrated cross-environment generalization.
 
 ### 2.2 v1 delivery boundary
 
-| v1 | Later extensions |
-| --- | --- |
-| DSH integration, Team/Role loader, independent sessions, generic task messages/events | More complex multi-host agent deployment and workflow recovery |
+| v1                                                                                                                                                         | Later extensions                                                        |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| DSH integration, Team/Role loader, independent sessions, generic task messages/events                                                                      | More complex multi-host agent deployment and workflow recovery          |
 | Planning/files, pluggable perception/active observation, unified catalog; SAM 3.1 segmentation and YOLO26 depth integration with explicit model provenance | More perception providers, user tool packs and an extension marketplace |
-| Default Planner, Verifier and one Evolver assignment per recovery chain | More roles, specialist verifiers and multi-robot cooperation |
-| Real policy-to-console task loops for BEHAVIOR-1K, RoboCasa and RoboTwin with configuration-selected compatible tasks, embodiments and checkpoints | Further environment adapters |
-| A second configuration to test interfaces, with test/real status distinguished | Broader cross-environment and cross-embodiment transfer evaluation |
-| Replaceable subgoal-policy interface, asynchronous jobs and hardware contract tests | Fine-tuning, real robot trials and other control policies |
-| Post-execution formal verification with limited GT | Real-device visual/sensor evidence providers |
-| Retry → Evolver → evidenced SKILL → later retrieval | Larger-scale automated skill evaluation and transfer validation |
-| Production console following the approved prototype direction | Teleoperation and additional robot-specific panels |
+| Default Planner, Verifier and one Evolver assignment per recovery chain                                                                                    | More roles, specialist verifiers and multi-robot cooperation            |
+| Real policy-to-console task loops for BEHAVIOR-1K, RoboCasa and RoboTwin with configuration-selected compatible tasks, embodiments and checkpoints         | Further environment adapters                                            |
+| A second configuration to test interfaces, with test/real status distinguished                                                                             | Broader cross-environment and cross-embodiment transfer evaluation      |
+| Replaceable subgoal-policy interface, asynchronous jobs and hardware contract tests                                                                        | Fine-tuning, real robot trials and other control policies               |
+| Post-execution formal verification with limited GT                                                                                                         | Real-device visual/sensor evidence providers                            |
+| Retry → Evolver → evidenced SKILL → later retrieval                                                                                                        | Larger-scale automated skill evaluation and transfer validation         |
+| Production console following the approved prototype direction                                                                                              | Teleoperation and additional robot-specific panels                      |
 
 The upper layer initially focuses on embodied tasks, run analysis and experience
 management while retaining general tool extensibility. A general coding assistant,
@@ -367,14 +372,14 @@ explicit calls and messages.
 
 ### 3.1 Deployment and responsibilities
 
-| Layer | Owns | Boundary |
-| --- | --- | --- |
-| Control console | Instructions, run state, plans, Agent trace, evidence and experience views | Uses structured facts to display device state |
-| EDH host with absorbed DSH capabilities | Model calls, independent sessions, tools, agent creation and inboxes | Does not advance high-frequency control steps |
-| EDH domain modules | Team/Role loading, catalog, messages, routing, verification gates, recovery and capabilities | No second LLM loop or autonomous retry decisions |
-| Python execution worker | Policy calls, actions, budgets and device-state reports | Cannot create new task attempts on its own |
-| Environment/hardware backends | Simulator state, connections and sensor/actuator I/O | No environment-private types in general protocols |
-| Evidence/memory providers | Run records, authorized facts, skill versions and retrieval | Stored information does not enter every agent context automatically |
+| Layer                                   | Owns                                                                                         | Boundary                                                            |
+| --------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Control console                         | Instructions, run state, plans, Agent trace, evidence and experience views                   | Uses structured facts to display device state                       |
+| EDH host with absorbed DSH capabilities | Model calls, independent sessions, tools, agent creation and inboxes                         | Does not advance high-frequency control steps                       |
+| EDH domain modules                      | Team/Role loading, catalog, messages, routing, verification gates, recovery and capabilities | No second LLM loop or autonomous retry decisions                    |
+| Python execution worker                 | Policy calls, actions, budgets and device-state reports                                      | Cannot create new task attempts on its own                          |
+| Environment/hardware backends           | Simulator state, connections and sensor/actuator I/O                                         | No environment-private types in general protocols                   |
+| Evidence/memory providers               | Run records, authorized facts, skill versions and retrieval                                  | Stored information does not enter every agent context automatically |
 
 The Planner directly perceives images, plans and makes execution decisions in a
 ReAct-style observe/decide/act/observe loop using native DSH. Perception tool results
@@ -410,11 +415,11 @@ optional output schema and lifecycle. TeamDefinition binds subscriptions and dut
 Instances carry `agent_id`, `session_id`, `assignment_id`, `team_run_id`, task scope
 and caller relationship. Section 11 defines authoring.
 
-| Default | Inputs | Output/capabilities | Excluded responsibility |
-| --- | --- | --- | --- |
-| Planner | User goal, capability catalog, explicit observations, verifier feedback and retrieved skills | Plans, files, perception/active observation, subgoals, execution decisions, delegation and reports | Fabricating formal verdicts |
-| Verifier | Goal/criteria, final execution report, confirmed ended boundary, authorized before/after evidence and check permissions | Independent formal verdict, checked observations and necessary facts | Executing actions, viewing in-flight frames, retry, replan or resume |
-| Evolver | Original failure, recovery goal, upper-level changes, related records/events | Evidenced skill bundle, version and summary | Robot control or changing task criteria |
+| Default  | Inputs                                                                                                                  | Output/capabilities                                                                                | Excluded responsibility                                              |
+| -------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Planner  | User goal, capability catalog, explicit observations, verifier feedback and retrieved skills                            | Plans, files, perception/active observation, subgoals, execution decisions, delegation and reports | Fabricating formal verdicts                                          |
+| Verifier | Goal/criteria, final execution report, confirmed ended boundary, authorized before/after evidence and check permissions | Independent formal verdict, checked observations and necessary facts                               | Executing actions, viewing in-flight frames, retry, replan or resume |
+| Evolver  | Original failure, recovery goal, upper-level changes, related records/events                                            | Evidenced skill bundle, version and summary                                                        | Robot control or changing task criteria                              |
 
 Planner directly calls `execution.start`; the physical worker/policy returns
 execution status and observations. The default workflow has no independent Executor
@@ -477,18 +482,18 @@ explicit authorized references if the model is slow.
 
 ### 4.2 InvocationBrief: minimum delegation context
 
-| Field | Content | Example |
-| --- | --- | --- |
-| objective | What this assignment must accomplish | Check this placement against its criterion after confirmed execution end |
-| task_scope | Task, goal, attempt and relevant recovery IDs | `task_42 / goal_store / attempt_2` |
-| expected_output | Output schema and recipient | `VerificationResult.v1 → planner_1` |
-| entities | Object-role bindings and their sources | `object=cup_17; container=cabinet_2` |
-| success_contract | Authoritative definition, version and scope | Task-sourced `inside(object, container)` |
-| known_facts | Relevant facts with timestamps/evidence | Previous check false; observation `obs_101` |
-| history_summary | Relevant preceding work | First attempt left the cup on the table; Planner chose a change |
-| changes | What differs this time | Explicitly bind the left cup, rather than saying only “try again” |
-| evidence_refs | Authorized records, frame/stream or event ranges | Failure clip, event interval and camera stream |
-| tools_and_limits | Allowed tools/actions and budget | Read authorized evidence and run checks; no subgoal execution |
+| Field            | Content                                          | Example                                                                  |
+| ---------------- | ------------------------------------------------ | ------------------------------------------------------------------------ |
+| objective        | What this assignment must accomplish             | Check this placement against its criterion after confirmed execution end |
+| task_scope       | Task, goal, attempt and relevant recovery IDs    | `task_42 / goal_store / attempt_2`                                       |
+| expected_output  | Output schema and recipient                      | `VerificationResult.v1 → planner_1`                                      |
+| entities         | Object-role bindings and their sources           | `object=cup_17; container=cabinet_2`                                     |
+| success_contract | Authoritative definition, version and scope      | Task-sourced `inside(object, container)`                                 |
+| known_facts      | Relevant facts with timestamps/evidence          | Previous check false; observation `obs_101`                              |
+| history_summary  | Relevant preceding work                          | First attempt left the cup on the table; Planner chose a change          |
+| changes          | What differs this time                           | Explicitly bind the left cup, rather than saying only “try again”        |
+| evidence_refs    | Authorized records, frame/stream or event ranges | Failure clip, event interval and camera stream                           |
+| tools_and_limits | Allowed tools/actions and budget                 | Read authorized evidence and run checks; no subgoal execution            |
 
 The caller is responsible for semantic sufficiency. Schemas validate shape and
 references, not whether context is enough. A recipient lacking information sends
@@ -522,8 +527,8 @@ This is a proposed domain message, not an existing native DSH API:
   "message_id": "msg_120",
   "kind": "event",
   "type": "verification.completed",
-  "sender": {"agent_id": "verifier_3"},
-  "destination": {"topic": "task_42.verification"},
+  "sender": { "agent_id": "verifier_3" },
+  "destination": { "topic": "task_42.verification" },
   "scope": {
     "task_id": "task_42",
     "goal_id": "goal_store",
@@ -537,7 +542,7 @@ This is a proposed domain message, not an existing native DSH API:
   "payload": {
     "status": "passed",
     "goal_contract_version": "1",
-    "checks": [{"check_id": "inside_target", "value": true}]
+    "checks": [{ "check_id": "inside_target", "value": true }]
   },
   "evidence_refs": ["obs_130", "gt_check_9"]
 }
@@ -554,18 +559,18 @@ Timestamps support freshness, not a strict global order across devices.
 
 ### 5.2 Events and responsibilities
 
-| Event | Producer | Consumers | Meaning |
-| --- | --- | --- | --- |
-| `agent.invoke` | Calling agent through validated runtime | New agent | Complete brief and independent context |
-| `context.request / response` | Recipient/caller | Counterparty | Explicit missing information, not copied parent history |
-| `execution.started / progress` | Execution service | Planner and UI | Actual execution state; in-flight frames stay outside Verifier context |
-| `execution.pause_requested / paused` | Requester/execution service | Planner and UI | Intent and confirmed device state separately; ordinary pause does not start verification |
-| `execution.budget_exhausted / ended` | Execution service | Verification admission and relevant agents | Confirmed end and stop reason; no automatic success |
-| `verification.requested / checked / completed` | Lifecycle coordinator/Verifier | Verifier, then Planner/Evolver/UI | Post-end formal checks, scoped evidence and verdict |
-| `retry.requested` | Planner | Execution/recovery coordination | Original goal, changes and failure source |
-| `retry.started` | Runtime after accepting retry | Evolver, UI | Recovery-chain start, never inferred from prose |
-| `recovery.resolved` | Correlator using the original-goal verdict | Evolver, Planner, UI | Original recovery goal passed or was abandoned |
-| `experience.created` | Evolver after memory persistence | Planner, experience management, UI | Skill version, applicability and evidence references |
+| Event                                          | Producer                                   | Consumers                                  | Meaning                                                                                  |
+| ---------------------------------------------- | ------------------------------------------ | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `agent.invoke`                                 | Calling agent through validated runtime    | New agent                                  | Complete brief and independent context                                                   |
+| `context.request / response`                   | Recipient/caller                           | Counterparty                               | Explicit missing information, not copied parent history                                  |
+| `execution.started / progress`                 | Execution service                          | Planner and UI                             | Actual execution state; in-flight frames stay outside Verifier context                   |
+| `execution.pause_requested / paused`           | Requester/execution service                | Planner and UI                             | Intent and confirmed device state separately; ordinary pause does not start verification |
+| `execution.budget_exhausted / ended`           | Execution service                          | Verification admission and relevant agents | Confirmed end and stop reason; no automatic success                                      |
+| `verification.requested / checked / completed` | Lifecycle coordinator/Verifier             | Verifier, then Planner/Evolver/UI          | Post-end formal checks, scoped evidence and verdict                                      |
+| `retry.requested`                              | Planner                                    | Execution/recovery coordination            | Original goal, changes and failure source                                                |
+| `retry.started`                                | Runtime after accepting retry              | Evolver, UI                                | Recovery-chain start, never inferred from prose                                          |
+| `recovery.resolved`                            | Correlator using the original-goal verdict | Evolver, Planner, UI                       | Original recovery goal passed or was abandoned                                           |
+| `experience.created`                           | Evolver after memory persistence           | Planner, experience management, UI         | Skill version, applicability and evidence references                                     |
 
 ### 5.3 Routing, ordering and reconnection
 
@@ -639,12 +644,12 @@ come from the task, not an extra universal preference such as releasing the grip
 
 ### 6.3 Execution reports and formal verdicts
 
-| Data | States/content |
-| --- | --- |
-| ExecutionStatus | accepted / running / pausing / paused / ended; counts, device state, observation references |
-| StopReason | policy_stop / budget_exhausted / user_stop / backend_error / episode_terminated |
+| Data               | States/content                                                                                       |
+| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| ExecutionStatus    | accepted / running / pausing / paused / ended; counts, device state, observation references          |
+| StopReason         | policy_stop / budget_exhausted / user_stop / backend_error / episode_terminated                      |
 | VerificationResult | pending / running / passed / failed / unknown; checks, evidence, observation time, criterion version |
-| PlannerDecision | resume / retry / replan / finish / abandon; cited feedback and new goals |
+| PlannerDecision    | resume / retry / replan / finish / abandon; cited feedback and new goals                             |
 
 Policy or execution self-reported success may be diagnostic only. Authoritative
 completion requires the designated verifier's verdict for the correct attempt,
@@ -783,34 +788,39 @@ description: Help the upper layer reobserve and verify after an unsuccessful att
 ---
 
 # Applicability
+
 Several similar objects are visible, target-binding evidence is insufficient,
 and the current goal check has not passed.
 
 # Planning cue
+
 Request a fresh observation or explicit target binding before deciding to retry;
 do not merely repeat the same instruction.
 
 # Verification cue
+
 Confirm that the checked entity is the intended target. Policy termination alone
 does not prove goal completion.
 
 # Limits
+
 A valid new observation must be available. This does not imply that all failed
 grasps are caused by target ambiguity.
 
 # Sources
+
 Metadata and references link the failure, changes and verified recovery evidence.
 ```
 
 ### 8.4 Working state, records and long-term knowledge
 
-| Category | Lifetime | Visibility |
-| --- | --- | --- |
-| Agent conversation | One assignment | That instance; not automatically copied |
-| Initialized SceneState | Retained Session environment and scene generation | Versioned, evidence-backed state; explicit role queries and console updates |
-| Task facts/entity bindings | Current task, with time and evidence | Briefs, messages or explicit queries |
-| Episode evidence/events | Persistent audit records | Scoped reads with preserved visibility |
-| Skill library | Cross-task knowledge | Explicit retrieval, compatibility filtering and on-demand loading |
+| Category                   | Lifetime                                          | Visibility                                                                  |
+| -------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------- |
+| Agent conversation         | One assignment                                    | That instance; not automatically copied                                     |
+| Initialized SceneState     | Retained Session environment and scene generation | Versioned, evidence-backed state; explicit role queries and console updates |
+| Task facts/entity bindings | Current task, with time and evidence              | Briefs, messages or explicit queries                                        |
+| Episode evidence/events    | Persistent audit records                          | Scoped reads with preserved visibility                                      |
+| Skill library              | Cross-task knowledge                              | Explicit retrieval, compatibility filtering and on-demand loading           |
 
 Task completion returns results and recovery/skill references. A fresh agent on the
 next task retrieves relevant knowledge rather than inheriting the previous conversation.
@@ -929,17 +939,17 @@ A unified interface specifies inputs, outputs, semantics and compatibility. It d
 not imply that arbitrary models, devices and environments are interchangeable.
 Preflight failures must explain the concrete mismatch.
 
-| Component | Required contract | Compatibility and optional capabilities |
-| --- | --- | --- |
-| Model provider | DSH model interface; images, tools and structured-output support | Different roles may use different models; check actual supported inputs |
-| Tool provider/catalog | ID, description, input/output schemas, executor, scope, effects and resources | Native TS, Python/HTTP or MCP; expose only selected compatible tools |
-| Policy provider | Subgoal/observation input, action/status output, version and input/action specs | Cameras, proprioception, control mode/frequency and instruction granularity |
-| Embodiment adapter | Device/joint/sensor IDs, coordinate frames, units and observation/action mapping | Fixed arm, mobile manipulation or dual arm; no navigation requests to a body without that capability |
-| Environment adapter | Observations, entities, run source and task/evaluator mapping | reset/step/snapshot/GT are explicit simulation capabilities, not mandatory hardware methods |
-| Hardware backend | Connection, state, streams, commands and confirmed stopping | DiMOS/SDK/ROS2; declare actual pause/resume support |
-| Verification provider | Registered checks, criterion versions, value/unknown reason and evidence | Simulation GT or real sensor evidence; unsupported is not fabricated false |
-| Memory provider | Query, write, version retrieval, applicability filtering and evidence linkage | Filesystem, index or remote storage; traceable retrieval |
-| Role/router | InvocationBrief, outputs, subscriptions and independent context | New roles do not change the base envelope; control permissions are explicit |
+| Component             | Required contract                                                                | Compatibility and optional capabilities                                                              |
+| --------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Model provider        | DSH model interface; images, tools and structured-output support                 | Different roles may use different models; check actual supported inputs                              |
+| Tool provider/catalog | ID, description, input/output schemas, executor, scope, effects and resources    | Native TS, Python/HTTP or MCP; expose only selected compatible tools                                 |
+| Policy provider       | Subgoal/observation input, action/status output, version and input/action specs  | Cameras, proprioception, control mode/frequency and instruction granularity                          |
+| Embodiment adapter    | Device/joint/sensor IDs, coordinate frames, units and observation/action mapping | Fixed arm, mobile manipulation or dual arm; no navigation requests to a body without that capability |
+| Environment adapter   | Observations, entities, run source and task/evaluator mapping                    | reset/step/snapshot/GT are explicit simulation capabilities, not mandatory hardware methods          |
+| Hardware backend      | Connection, state, streams, commands and confirmed stopping                      | DiMOS/SDK/ROS2; declare actual pause/resume support                                                  |
+| Verification provider | Registered checks, criterion versions, value/unknown reason and evidence         | Simulation GT or real sensor evidence; unsupported is not fabricated false                           |
+| Memory provider       | Query, write, version retrieval, applicability filtering and evidence linkage    | Filesystem, index or remote storage; traceable retrieval                                             |
+| Role/router           | InvocationBrief, outputs, subscriptions and independent context                  | New roles do not change the base envelope; control permissions are explicit                          |
 
 ### 9.1 Observation and action semantics
 
@@ -985,18 +995,18 @@ names. Each selected tool gets its own model-facing schema and a recorded logica
 to wire-name mapping. Do not reduce the entire interface to an opaque
 `call_any_tool(name, string)`.
 
-| Toolset | Minimum capability | Default consumer | Source/adaptation |
-| --- | --- | --- | --- |
-| planning | Read/write plans, goal dependencies and criterion links | Decision owner | Legacy todos; DSH display plus durable task plan |
-| workspace/files | Read/write/edit/list/search working notes and intermediate files | Explicitly configured roles | DSH file/search capabilities and private workspaces |
-| team | List members, delegate, send, request context and query status | Planner and authorized roles | DSH scoped factory plus EDH routing |
-| perception.read | Capture, segment, detect, estimate depth and localize; optional point clouds | Planner, Verifier and perception roles | Legacy capture/detection, depth and SAM adapters |
-| observation.active | Turn view/look at a target and return a new observation | Planner and explicitly authorized roles | Legacy rotate-camera and actual device controls |
-| execution | Start/query/pause/resume/stop jobs; optional gripper/reach primitives | Configured decision/pause owners | Asynchronous execution and resource services |
-| verification | Check goal, read evidence and submit formal result | Current final verifier | Limited facts provider and formal-verdict protocol |
-| task_memory | Query facts, record observations and bind entities | Planner and authorized roles | Source-linked task facts replacing global scene state |
-| skills | Search/load applicable knowledge with versions | Planner, Verifier and selected roles | DSH discovery/loading plus EDH compatibility retrieval |
-| experience | Read recovery, save skills and report experience | Evolver | Recovery chains, evidence and versioned memory |
+| Toolset            | Minimum capability                                                           | Default consumer                        | Source/adaptation                                      |
+| ------------------ | ---------------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------ |
+| planning           | Read/write plans, goal dependencies and criterion links                      | Decision owner                          | Legacy todos; DSH display plus durable task plan       |
+| workspace/files    | Read/write/edit/list/search working notes and intermediate files             | Explicitly configured roles             | DSH file/search capabilities and private workspaces    |
+| team               | List members, delegate, send, request context and query status               | Planner and authorized roles            | DSH scoped factory plus EDH routing                    |
+| perception.read    | Capture, segment, detect, estimate depth and localize; optional point clouds | Planner, Verifier and perception roles  | Legacy capture/detection, depth and SAM adapters       |
+| observation.active | Turn view/look at a target and return a new observation                      | Planner and explicitly authorized roles | Legacy rotate-camera and actual device controls        |
+| execution          | Start/query/pause/resume/stop jobs; optional gripper/reach primitives        | Configured decision/pause owners        | Asynchronous execution and resource services           |
+| verification       | Check goal, read evidence and submit formal result                           | Current final verifier                  | Limited facts provider and formal-verdict protocol     |
+| task_memory        | Query facts, record observations and bind entities                           | Planner and authorized roles            | Source-linked task facts replacing global scene state  |
+| skills             | Search/load applicable knowledge with versions                               | Planner, Verifier and selected roles    | DSH discovery/loading plus EDH compatibility retrieval |
+| experience         | Read recovery, save skills and report experience                             | Evolver                                 | Recovery chains, evidence and versioned memory         |
 
 Examples of logical tool IDs are `perception.capture`, `perception.segment_objects`,
 `observation.turn_view`, `execution.start`, `skills.search` and `skills.load`.
@@ -1016,14 +1026,14 @@ The old `agents/top_agent.py` combines perception/memory tools and relies on
 Preserve these capabilities while replacing the runtime with DSH. Migrating only
 policy tools would omit essential planning and working-memory support.
 
-| Legacy capability | EDH behavior | Constraint |
-| --- | --- | --- |
-| write_todos | Create/read/update plans with goal IDs, dependencies, states and success references | Plan state does not replace formal verifier facts |
-| read_file/write_file/edit_file | Private assignment workspace for progress, analysis and intermediate artifacts | Other roles' files require explicit handoff |
-| File discovery/search | Search only the workspace and explicitly mounted read-only material | DSH fs-search subprocess paths must obey the same visibility boundary as file tools |
-| Subagent delegation | `team.delegate` returns assignment/agent identity without waiting for a long task | No inherited parent conversation or tools |
-| Context compaction/persistence | Reuse DSH capabilities within the current session | Not a mandatory manual user tool; cannot introduce other agents' context |
-| On-demand experience | Search/load skill versions with applicability | Knowledge enters fresh tasks through explicit tool results |
+| Legacy capability              | EDH behavior                                                                        | Constraint                                                                          |
+| ------------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| write_todos                    | Create/read/update plans with goal IDs, dependencies, states and success references | Plan state does not replace formal verifier facts                                   |
+| read_file/write_file/edit_file | Private assignment workspace for progress, analysis and intermediate artifacts      | Other roles' files require explicit handoff                                         |
+| File discovery/search          | Search only the workspace and explicitly mounted read-only material                 | DSH fs-search subprocess paths must obey the same visibility boundary as file tools |
+| Subagent delegation            | `team.delegate` returns assignment/agent identity without waiting for a long task   | No inherited parent conversation or tools                                           |
+| Context compaction/persistence | Reuse DSH capabilities within the current session                                   | Not a mandatory manual user tool; cannot introduce other agents' context            |
+| On-demand experience           | Search/load skill versions with applicability                                       | Knowledge enters fresh tasks through explicit tool results                          |
 
 In the inspected DSH baseline, `todo_write` belongs to one agent and its UI projection
 clears at the next turn. It is not a durable cross-turn task-plan database. EDH maintains
@@ -1056,14 +1066,14 @@ coordinate convention, detections and evidence:
       "detection_id": "det_4",
       "label": "cup",
       "score": 0.91,
-      "bbox_xyxy": [0.12, 0.30, 0.28, 0.68],
+      "bbox_xyxy": [0.12, 0.3, 0.28, 0.68],
       "bbox_space": "normalized_image",
       "mask_ref": "artifact_mask_4",
       "entity_id": null
     }
   ],
   "overlay_ref": "artifact_overlay_4",
-  "depth": {"status": "unavailable"}
+  "depth": { "status": "unavailable" }
 }
 ```
 
@@ -1156,18 +1166,18 @@ events. Simulator-host recordings provide camera playback after a headless task.
 
 ### 10.1 Required work areas
 
-| Area | Display and interaction |
-| --- | --- |
-| Task/instructions | Goal, constraints, additional input, run source and config version; distinguish received/effective input |
+| Area                 | Display and interaction                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Task/instructions    | Goal, constraints, additional input, run source and config version; distinguish received/effective input                          |
 | Observation evidence | Source identities and timestamps in tool/debug records; model tools receive images, and simulator-host video records camera views |
-| Agents | Instances, roles, callers, private sessions, current assignments, waiting dependencies, received briefs/messages |
-| Team/Role | Team version, member aliases and instances, definitions, effective tools and startup errors |
-| Tool calls | Category, provider, source observation, annotated results, actual resources and state |
-| Embodiment | Connection, actuator state, job, budgets and confirmed pause/stop; render according to device capabilities |
-| Subgoals/recovery | Goals, attempts, changes, decision ownership and original recovery-goal state |
-| Verification | Post-end assignment, individual checks, GT source, unknown reasons and evidence |
-| Experience | Evolver trigger, read evidence, output skill version/scope and later retrieval |
-| Timeline | Causally linked user input, messages, execution, pause, checks, retries and skills |
+| Agents               | Instances, roles, callers, private sessions, current assignments, waiting dependencies, received briefs/messages                  |
+| Team/Role            | Team version, member aliases and instances, definitions, effective tools and startup errors                                       |
+| Tool calls           | Category, provider, source observation, annotated results, actual resources and state                                             |
+| Embodiment           | Connection, actuator state, job, budgets and confirmed pause/stop; render according to device capabilities                        |
+| Subgoals/recovery    | Goals, attempts, changes, decision ownership and original recovery-goal state                                                     |
+| Verification         | Post-end assignment, individual checks, GT source, unknown reasons and evidence                                                   |
+| Experience           | Evolver trigger, read evidence, output skill version/scope and later retrieval                                                    |
+| Timeline             | Causally linked user input, messages, execution, pause, checks, retries and skills                                                |
 
 ### 10.2 Interactions
 
@@ -1245,7 +1255,7 @@ The [examples](../examples/README.md) are loader fixtures, not a working loader.
 
 File: `roles/scene-analyst.md`:
 
-````markdown
+```markdown
 ---
 role_id: scene-analyst
 description: Identify target objects and spatial relationships using available perception tools and return evidence to the caller.
@@ -1261,7 +1271,7 @@ Inspect the referenced frames. Capture a new observation or segment candidate
 objects when needed; estimate spatial relationships only when depth is available.
 Return candidate entities, evidence references, uncertainty and any missing context.
 Do not treat detections as ground truth, retry physical tasks or move the robot.
-````
+```
 
 To authorize turning for a new view, select `observation.turn_view` and explicitly
 supply allowed motion and budgets in the brief; no new agent implementation is needed.
@@ -1351,13 +1361,13 @@ not a currently registered runtime check.
 
 ### 11.4 Required fields, defaults and validation
 
-| Definition | Required content | Defaults and checks |
-| --- | --- | --- |
-| RoleDefinition | role_id, description, tools and nonempty Markdown instructions | Intended role schema version defaults to physical.role.v1; model defaults to team; InvocationBrief input and AgentReport output |
-| TeamDefinition | schema_version, team_id, entrypoint, members, responsibility bindings | Referenced members and built-in/relative role files must exist |
-| Role tools | Registered logical IDs; optional toolsets resolve to fixed IDs | Reject unknown tools, missing schemas or incomplete effect declarations before activation |
-| Responsibility bindings | decision_owner, final_verifier; recovery_evolver when learning is enabled | One decision owner per task, one final verifier per goal, appropriate tool capabilities |
-| AgentReport | Assignment/scope identity, status, summary, structured result where needed and evidence | Completed/failed/insufficient-context/cancelled semantics; empty evidence allowed, fabricated references forbidden |
+| Definition              | Required content                                                                        | Defaults and checks                                                                                                             |
+| ----------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| RoleDefinition          | role_id, description, tools and nonempty Markdown instructions                          | Intended role schema version defaults to physical.role.v1; model defaults to team; InvocationBrief input and AgentReport output |
+| TeamDefinition          | schema_version, team_id, entrypoint, members, responsibility bindings                   | Referenced members and built-in/relative role files must exist                                                                  |
+| Role tools              | Registered logical IDs; optional toolsets resolve to fixed IDs                          | Reject unknown tools, missing schemas or incomplete effect declarations before activation                                       |
+| Responsibility bindings | decision_owner, final_verifier; recovery_evolver when learning is enabled               | One decision owner per task, one final verifier per goal, appropriate tool capabilities                                         |
+| AgentReport             | Assignment/scope identity, status, summary, structured result where needed and evidence | Completed/failed/insufficient-context/cancelled semantics; empty evidence allowed, fabricated references forbidden              |
 
 The target Role/Team ID pattern is `[a-z][a-z0-9_-]{0,63}`. Tool lists are deduplicated.
 Reject unknown fields outside documented extensions. Resolve relative files from the
@@ -1426,21 +1436,21 @@ validation is Step 01. Do not maintain incompatible manual DTO definitions.
 
 ### 12.2 Legacy EAF migration map
 
-| Legacy implementation | Preserve | Change |
-| --- | --- | --- |
-| execute_subtask | Separate instructions and success criteria; closed-loop responsibility | Fixed manipulation/navigation becomes capability binding; blocking text becomes jobs/events/reports |
-| Context projection | Relevant region/object summaries | InvocationBrief with instance/time/evidence; no implicit global scene graph |
-| top_agent core tools | Todos, files and delegation | DSH bridges, durable PlanDocument, private assignment files |
-| Perception/SAM/depth | Capture, segmentation, overlays and localization | Replaceable providers, explicit observation/calibration, no global spatial-memory side effects |
-| rotate_camera | Active viewpoint acquisition | Resolve actual head/base resources and report achieved pose |
-| ExecutionReport | Execution summary and final observation | Policy success is diagnostic; formal verification is separate |
-| Verification | Independent post-end checks with confirmed boundary evidence | DSH verifier, mandatory budget trigger, separate facts and recovery suggestions |
-| Verification bundle | Per-attempt evidence | Versioning, causality, device confirmation and actual model-visible inputs |
-| Policy registry/contracts | Type specifications, lazy loading and remote inference | Check units, frames, joints, frequency and compatibility |
-| Lessons | Failure evidence as input | Retry-driven Evolver and scoped successful-recovery skills |
-| Global trace/scene graph/counters | Underlying responsibilities | Task/attempt scope; remove implicit cross-task sharing |
-| BEHAVIOR backend | Existing real environment integration path | Extract common boundaries; keep R1Pro binding in configuration |
-| Deep Agents builders | Useful role ideas and prompt content | DSH runtime; no second model loop |
+| Legacy implementation             | Preserve                                                               | Change                                                                                              |
+| --------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| execute_subtask                   | Separate instructions and success criteria; closed-loop responsibility | Fixed manipulation/navigation becomes capability binding; blocking text becomes jobs/events/reports |
+| Context projection                | Relevant region/object summaries                                       | InvocationBrief with instance/time/evidence; no implicit global scene graph                         |
+| top_agent core tools              | Todos, files and delegation                                            | DSH bridges, durable PlanDocument, private assignment files                                         |
+| Perception/SAM/depth              | Capture, segmentation, overlays and localization                       | Replaceable providers, explicit observation/calibration, no global spatial-memory side effects      |
+| rotate_camera                     | Active viewpoint acquisition                                           | Resolve actual head/base resources and report achieved pose                                         |
+| ExecutionReport                   | Execution summary and final observation                                | Policy success is diagnostic; formal verification is separate                                       |
+| Verification                      | Independent post-end checks with confirmed boundary evidence           | DSH verifier, mandatory budget trigger, separate facts and recovery suggestions                     |
+| Verification bundle               | Per-attempt evidence                                                   | Versioning, causality, device confirmation and actual model-visible inputs                          |
+| Policy registry/contracts         | Type specifications, lazy loading and remote inference                 | Check units, frames, joints, frequency and compatibility                                            |
+| Lessons                           | Failure evidence as input                                              | Retry-driven Evolver and scoped successful-recovery skills                                          |
+| Global trace/scene graph/counters | Underlying responsibilities                                            | Task/attempt scope; remove implicit cross-task sharing                                              |
+| BEHAVIOR backend                  | Existing real environment integration path                             | Extract common boundaries; keep R1Pro binding in configuration                                      |
+| Deep Agents builders              | Useful role ideas and prompt content                                   | DSH runtime; no second model loop                                                                   |
 
 Legacy code does not implement full RoboCasa/RoboTwin support. Mocks do not establish
 support. Do not migrate autonomous local retries from old navigation/manipulation agents.
@@ -1453,14 +1463,14 @@ acceptance requires actual model, policy and simulator execution. No timeline is
 M0–M3 form v1, M4 evaluates broader
 configurations, and M5 covers actual hardware.
 
-| Milestone | Deliverable | Completion evidence |
-| --- | --- | --- |
-| M0: Teams/tools/context | Loader, catalog, role factory, briefs, routing and provider capability checks | Config-only role addition, no inherited tools/history, no duplicate actions |
-| M1: Tools and simulation | Persistent plans/files, perception/active observation, BEHAVIOR worker, policy interface, GT verifier | Observe/plan/change view/execute; mandatory budget checks; actual resources and steps traceable |
+| Milestone                                | Deliverable                                                                                             | Completion evidence                                                                                                             |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| M0: Teams/tools/context                  | Loader, catalog, role factory, briefs, routing and provider capability checks                           | Config-only role addition, no inherited tools/history, no duplicate actions                                                     |
+| M1: Tools and simulation                 | Persistent plans/files, perception/active observation, BEHAVIOR worker, policy interface, GT verifier   | Observe/plan/change view/execute; mandatory budget checks; actual resources and steps traceable                                 |
 | M2: Post-execution verification/recovery | Nonblocking jobs, pause acknowledgement, formal post-end checks, owner retry/replan and recovery chains | Running/paused attempts never start Verifier; eligible confirmed ends do; owner-only attempts and actual provider stop handling |
-| M3: Experience/console | Retry Evolver, skill version retrieval and production UI | Traceable successful recovery; fresh next-task agent explicitly retrieves skill; UI explains the process |
-| M4: Extensibility | Second real environment/body, minimal DiMOS experiment and hardware contracts | Adapter addition without core changes; real/test/replay validation distinguished |
-| M5: Real hardware | Bound robot, compatible policy and real evidence provider | Actual task/stop/disconnection behavior and unknown handling reported independently |
+| M3: Experience/console                   | Retry Evolver, skill version retrieval and production UI                                                | Traceable successful recovery; fresh next-task agent explicitly retrieves skill; UI explains the process                        |
+| M4: Extensibility                        | Second real environment/body, minimal DiMOS experiment and hardware contracts                           | Adapter addition without core changes; real/test/replay validation distinguished                                                |
+| M5: Real hardware                        | Bound robot, compatible policy and real evidence provider                                               | Actual task/stop/disconnection behavior and unknown handling reported independently                                             |
 
 Even without a robot, v1 tests different capability declarations, asynchronous data,
 pause/stop acknowledgement and reconnect states. Try minimal DiMOS interoperability
@@ -1468,27 +1478,27 @@ when dependencies are available; otherwise report it unverified, not supported.
 
 ### 13.1 Required contract and integration checks
 
-| Scenario | Required observation |
-| --- | --- |
-| Independent context | A marker withheld from the brief is absent from the recipient's actual model input; appears only after explicit handoff |
-| New task, reused role | Fresh session without previous objects, messages or working memory |
-| Insufficient context | Explicit context request rather than hidden access to other sessions |
-| Incompatible capabilities | Reject before execution with the missing camera/control/check mapping |
-| Budget exhaustion | Stop actions, preserve boundary and trigger formal verification even without a model tool request |
-| Stale evidence or verdict | Old attempt/frame cannot complete the current attempt |
-| Ordinary pause | Request and acknowledgement remain distinct; no Verifier starts, and only Planner resumes or creates an attempt |
-| Redelivery/reconnection | Idempotent job; query uncertainty before further physical commands |
-| GT isolation | Only authorized facts enter agents; debug state remains inaccessible |
-| Retry and learning | Only explicit upper retry starts Evolver; normal success does not; failed chains yield no successful skill |
-| Replan prerequisite | Prerequisite success does not close the original recovery goal |
-| Skill applicability | Preserve source configuration, reject mismatches and retain authoritative conditions |
-| Role replacement | New role/subscription uses configuration without a fixed role enum |
-| User-authored team | A new role file/member completes a delegation without a dedicated builder |
-| Tool isolation | Perception role lacks execution.start in both model schema and execution authorization |
-| Files and plans | Same-named files do not collide; plans persist; todos cannot fabricate success |
-| Provider replacement | Same role/observation works with another conforming segmentation provider |
-| Active observation | Gimbal/base resource resolution differs by body; conflicting policy motion does not run concurrently |
-| Missing optional dependencies | CPU profile starts without SAM/GPU; selecting an absent provider yields a clear diagnostic |
+| Scenario                      | Required observation                                                                                                    |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Independent context           | A marker withheld from the brief is absent from the recipient's actual model input; appears only after explicit handoff |
+| New task, reused role         | Fresh session without previous objects, messages or working memory                                                      |
+| Insufficient context          | Explicit context request rather than hidden access to other sessions                                                    |
+| Incompatible capabilities     | Reject before execution with the missing camera/control/check mapping                                                   |
+| Budget exhaustion             | Stop actions, preserve boundary and trigger formal verification even without a model tool request                       |
+| Stale evidence or verdict     | Old attempt/frame cannot complete the current attempt                                                                   |
+| Ordinary pause                | Request and acknowledgement remain distinct; no Verifier starts, and only Planner resumes or creates an attempt         |
+| Redelivery/reconnection       | Idempotent job; query uncertainty before further physical commands                                                      |
+| GT isolation                  | Only authorized facts enter agents; debug state remains inaccessible                                                    |
+| Retry and learning            | Only explicit upper retry starts Evolver; normal success does not; failed chains yield no successful skill              |
+| Replan prerequisite           | Prerequisite success does not close the original recovery goal                                                          |
+| Skill applicability           | Preserve source configuration, reject mismatches and retain authoritative conditions                                    |
+| Role replacement              | New role/subscription uses configuration without a fixed role enum                                                      |
+| User-authored team            | A new role file/member completes a delegation without a dedicated builder                                               |
+| Tool isolation                | Perception role lacks execution.start in both model schema and execution authorization                                  |
+| Files and plans               | Same-named files do not collide; plans persist; todos cannot fabricate success                                          |
+| Provider replacement          | Same role/observation works with another conforming segmentation provider                                               |
+| Active observation            | Gimbal/base resource resolution differs by body; conflicting policy motion does not run concurrently                    |
+| Missing optional dependencies | CPU profile starts without SAM/GPU; selecting an absent provider yields a clear diagnostic                              |
 
 ### 13.2 Evaluation
 
@@ -1532,20 +1542,20 @@ documented decision rather than an adapter-specific bypass.
 
 ### 15.1 Reference basis
 
-| Source | Use and limits |
-| --- | --- |
-| [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness/tree/d347e703908d0406b7a7ef80e3a0e594d86b2215) | Pinned runtime/session/tool/plugin/UI research; module map and key-path inspection, not a line-by-line audit of every file |
-| [DSH agent](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/core/agent/README.md) | Scoped creation, followup/steer/inject and lifecycle; model-step delivery is not hard-real-time handling |
-| [DSH subagent control](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/subagent/tool-subagent-control/README.md) | Default parent/child messages; arbitrary task routing belongs to EDH |
-| [DSH skills](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/skill/skill-filesystem/README.md) | Discovery/loading; EDH adds compatibility and evidence versioning |
-| [DSH presets](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/preset/agent-presets/README.md) | Composition reuse; explicitly verify target-role isolation from parent composition |
-| [DSH todo](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/todo/tool-todo/README.md) | Session list/UI projection, not a durable shared task plan |
-| [DSH files](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/fs/tool-fs/README.md) | Read/image/write/edit with assignment-scoped workspace access |
-| [DSH file search](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/fs/tool-fs-search/README.md) | Glob/grep subprocess paths need the same workspace restriction |
-| [DSH MCP](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/mcp/mcp-client/README.md) | External tools; EDH supplies effect/resource/result mappings without assuming resource/prompt support |
-| Legacy EAF | Commit `714e00ca83999da2df7221dcf205968adde5b441`; execution, verification, context projection, policies and evidence |
-| [DiMOS](https://github.com/dimensionalOS/dimos) | Modules, typed streams, blueprints, hardware protocols and MCP; optional backend candidate, not installed or interoperably verified |
-| [ASPIRE](https://research.nvidia.com/labs/gear/aspire/) | Inspiration for evidenced recovery/transfer boundaries; EDH skills target upper decisions and verification; no reproduced results |
+| Source                                                                                                                                                                  | Use and limits                                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness/tree/d347e703908d0406b7a7ef80e3a0e594d86b2215)                                                       | Pinned runtime/session/tool/plugin/UI research; module map and key-path inspection, not a line-by-line audit of every file          |
+| [DSH agent](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/core/agent/README.md)                                | Scoped creation, followup/steer/inject and lifecycle; model-step delivery is not hard-real-time handling                            |
+| [DSH subagent control](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/subagent/tool-subagent-control/README.md) | Default parent/child messages; arbitrary task routing belongs to EDH                                                                |
+| [DSH skills](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/skill/skill-filesystem/README.md)                   | Discovery/loading; EDH adds compatibility and evidence versioning                                                                   |
+| [DSH presets](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/preset/agent-presets/README.md)                    | Composition reuse; explicitly verify target-role isolation from parent composition                                                  |
+| [DSH todo](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/todo/tool-todo/README.md)                             | Session list/UI projection, not a durable shared task plan                                                                          |
+| [DSH files](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/fs/tool-fs/README.md)                                | Read/image/write/edit with assignment-scoped workspace access                                                                       |
+| [DSH file search](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/fs/tool-fs-search/README.md)                   | Glob/grep subprocess paths need the same workspace restriction                                                                      |
+| [DSH MCP](https://github.com/deepseek-ai/deepseek-harness/blob/d347e703908d0406b7a7ef80e3a0e594d86b2215/packages/mcp/mcp-client/README.md)                              | External tools; EDH supplies effect/resource/result mappings without assuming resource/prompt support                               |
+| Legacy EAF                                                                                                                                                              | Commit `714e00ca83999da2df7221dcf205968adde5b441`; execution, verification, context projection, policies and evidence               |
+| [DiMOS](https://github.com/dimensionalOS/dimos)                                                                                                                         | Modules, typed streams, blueprints, hardware protocols and MCP; optional backend candidate, not installed or interoperably verified |
+| [ASPIRE](https://research.nvidia.com/labs/gear/aspire/)                                                                                                                 | Inspiration for evidenced recovery/transfer boundaries; EDH skills target upper decisions and verification; no reproduced results   |
 
 See [provenance](provenance/README.md) for the source audit. Historical ideas are
 reference material; simulation-only scope and automatic replanning at budget expiry
@@ -1583,39 +1593,39 @@ DSH paths below are relative to the pinned upstream checkout, not EDH's folder l
 Use the [pinned source tree](https://github.com/deepseek-ai/deepseek-harness/tree/d347e703908d0406b7a7ef80e3a0e594d86b2215)
 if the research checkout is unavailable.
 
-| Purpose | DSH source paths | Verify during implementation |
-| --- | --- | --- |
-| Independent instances | `packages/core/agent/src/index.ts`, `packages/core/agent/src/runtime-types.ts` | Actual create/setup-scope/send/followup/steer signatures |
-| Model/tool loop | `packages/core/agent-loop/src/index.ts`, `packages/core/agent-loop/src/tool-calls.ts` | Reuse original loop; physical ownership is not single-agent tool serialization |
-| Role composition | `packages/preset/agent-presets/src/index.ts`, `packages/preset/agent-presets/src/mount.ts`, `packages/preset/agent-presets/src/session.ts` | Explicit target preset/scope; avoid parent composition inheritance |
-| Tool registration/results | `packages/core/tools/src/index.ts`, `packages/core/tools/src/types.ts` | Registry, cancellation, structured/multimodal results |
-| Background communication | `packages/subagent/tool-subagent/src/index.ts`, `packages/subagent/tool-subagent-control/src/index.ts` | Parent/child restrictions and EDH router integration |
-| Plans/files | `packages/todo/tool-todo/src/index.ts`, `packages/fs/tool-fs/src/index.ts`, `packages/fs/tool-fs-search/src/index.ts` | Persistence, private workspaces and search scope |
-| External tools | `packages/mcp/mcp-client/src/index.ts` | Media references, cancellation and reconnection |
-| State/UI | `packages/core/session/src/types.ts`, `packages/api/gateway/README.md`, `packages/client/ui-tool/src/client/index.ts` | Durable events/projections rather than parsed model prose |
-| Skills | `packages/skill/skill-filesystem/README.md`, `packages/skill/tool-skill/src/index.ts` | Discovery/loading and EDH metadata indexing |
+| Purpose                   | DSH source paths                                                                                                                           | Verify during implementation                                                   |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| Independent instances     | `packages/core/agent/src/index.ts`, `packages/core/agent/src/runtime-types.ts`                                                             | Actual create/setup-scope/send/followup/steer signatures                       |
+| Model/tool loop           | `packages/core/agent-loop/src/index.ts`, `packages/core/agent-loop/src/tool-calls.ts`                                                      | Reuse original loop; physical ownership is not single-agent tool serialization |
+| Role composition          | `packages/preset/agent-presets/src/index.ts`, `packages/preset/agent-presets/src/mount.ts`, `packages/preset/agent-presets/src/session.ts` | Explicit target preset/scope; avoid parent composition inheritance             |
+| Tool registration/results | `packages/core/tools/src/index.ts`, `packages/core/tools/src/types.ts`                                                                     | Registry, cancellation, structured/multimodal results                          |
+| Background communication  | `packages/subagent/tool-subagent/src/index.ts`, `packages/subagent/tool-subagent-control/src/index.ts`                                     | Parent/child restrictions and EDH router integration                           |
+| Plans/files               | `packages/todo/tool-todo/src/index.ts`, `packages/fs/tool-fs/src/index.ts`, `packages/fs/tool-fs-search/src/index.ts`                      | Persistence, private workspaces and search scope                               |
+| External tools            | `packages/mcp/mcp-client/src/index.ts`                                                                                                     | Media references, cancellation and reconnection                                |
+| State/UI                  | `packages/core/session/src/types.ts`, `packages/api/gateway/README.md`, `packages/client/ui-tool/src/client/index.ts`                      | Durable events/projections rather than parsed model prose                      |
+| Skills                    | `packages/skill/skill-filesystem/README.md`, `packages/skill/tool-skill/src/index.ts`                                                      | Discovery/loading and EDH metadata indexing                                    |
 
 Legacy EAF paths are relative to a separately obtained legacy checkout:
 
-| Purpose | Legacy source paths | Preserve/change |
-| --- | --- | --- |
-| Upper tools/prompts | `src/eaf/agent/agents/top_agent.py`, `src/eaf/agent/agents/prompts/top.py` | Planning/files/perception/facts; remove robot constants |
-| Perception | `src/eaf/agent/tools/perception.py` | Capture, segmentation, overlays, depth/localization; remove global side effects |
-| SAM/depth providers | `src/eaf/agent/interfaces/sam_backend.py`, `src/eaf/agent/interfaces/da3_depth.py`, `src/eaf/agent/interfaces/lingbot_depth.py` | Replaceable lazy providers; recheck actual APIs/dependencies |
-| Active observation | `src/eaf/agent/interfaces/http_backend.py`, `src/eaf/sim/behavior/motion.py` | Actual base/head resources and achieved pose |
-| Subtasks/verification | `src/eaf/agent/orchestration/subtask_executor.py`, `src/eaf/agent/orchestration/verification.py`, `src/eaf/agent/orchestration/verify_bundle.py` | Explicit inputs, independent checks, evidence and async identities |
-| In-flight monitor | `src/eaf/agent/runtime/rollout_monitor.py` | Historical reference only; current Verifier begins after confirmed execution end |
-| Policy/environment | `src/eaf/contracts.py`, `src/eaf/sim/schemas.py`, `src/eaf/sim/behavior/session.py` | Calls and budgets; no environment-private types in generic tools |
+| Purpose               | Legacy source paths                                                                                                                              | Preserve/change                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Upper tools/prompts   | `src/eaf/agent/agents/top_agent.py`, `src/eaf/agent/agents/prompts/top.py`                                                                       | Planning/files/perception/facts; remove robot constants                          |
+| Perception            | `src/eaf/agent/tools/perception.py`                                                                                                              | Capture, segmentation, overlays, depth/localization; remove global side effects  |
+| SAM/depth providers   | `src/eaf/agent/interfaces/sam_backend.py`, `src/eaf/agent/interfaces/da3_depth.py`, `src/eaf/agent/interfaces/lingbot_depth.py`                  | Replaceable lazy providers; recheck actual APIs/dependencies                     |
+| Active observation    | `src/eaf/agent/interfaces/http_backend.py`, `src/eaf/sim/behavior/motion.py`                                                                     | Actual base/head resources and achieved pose                                     |
+| Subtasks/verification | `src/eaf/agent/orchestration/subtask_executor.py`, `src/eaf/agent/orchestration/verification.py`, `src/eaf/agent/orchestration/verify_bundle.py` | Explicit inputs, independent checks, evidence and async identities               |
+| In-flight monitor     | `src/eaf/agent/runtime/rollout_monitor.py`                                                                                                       | Historical reference only; current Verifier begins after confirmed execution end |
+| Policy/environment    | `src/eaf/contracts.py`, `src/eaf/sim/schemas.py`, `src/eaf/sim/behavior/session.py`                                                              | Calls and budgets; no environment-private types in generic tools                 |
 
 The legacy prompt and orchestration sources provide behavior guidance without
 introducing their agent implementation into EDH:
 
-| Legacy source | Retained principle in EDH |
-| --- | --- |
-| `src/eaf/agent/agents/prompts/top.py` | Planner perceives and plans, gives one bounded action instruction with an explicit criterion, and changes its approach when it explicitly retries. |
-| `src/eaf/agent/agents/prompts/manip.py` and `nav.py` | The former execution agents returned a self-report and `final_observation_ref`. EDH directly calls a policy job; its stop reason, counts and final observation remain evidence, not a verified success claim. |
-| `src/eaf/agent/agents/prompts/verifier.py` | A fresh Verifier judges one criterion, treats execution claims as untrusted, accounts for camera-pose changes between authorized before/after evidence, and reports concrete facts with a reasoned basis. EDH also admits limited native GT checks under the current visibility rules. |
-| `src/eaf/agent/orchestration/subtask_executor.py` | The historical order was executor report, then independent verifier. EDH preserves this temporal boundary while Planner directly invokes the policy. |
+| Legacy source                                        | Retained principle in EDH                                                                                                                                                                                                                                                              |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/eaf/agent/agents/prompts/top.py`                | Planner perceives and plans, gives one bounded action instruction with an explicit criterion, and changes its approach when it explicitly retries.                                                                                                                                     |
+| `src/eaf/agent/agents/prompts/manip.py` and `nav.py` | The former execution agents returned a self-report and `final_observation_ref`. EDH directly calls a policy job; its stop reason, counts and final observation remain evidence, not a verified success claim.                                                                          |
+| `src/eaf/agent/agents/prompts/verifier.py`           | A fresh Verifier judges one criterion, treats execution claims as untrusted, accounts for camera-pose changes between authorized before/after evidence, and reports concrete facts with a reasoned basis. EDH also admits limited native GT checks under the current visibility rules. |
+| `src/eaf/agent/orchestration/subtask_executor.py`    | The historical order was executor report, then independent verifier. EDH preserves this temporal boundary while Planner directly invokes the policy.                                                                                                                                   |
 
 Evolver belongs to EDH's recovery mechanism: a formal failed verdict followed by
 Planner's explicit retry or replan starts its evidence record. A reusable SKILL is
@@ -1627,15 +1637,15 @@ W01–W07 group responsibilities. The implementation plan splits UI, real adapte
 acceptance into separate steps. Target interfaces may exist in bootstrap; their presence
 does not satisfy functional completion.
 
-| ID | Work | Output | Acceptance |
-| --- | --- | --- | --- |
-| W01 | Single protocol source | Role/Team/Tool/Brief/Envelope/Report/Plan/Observation/Result schemas and cross-language fixtures | Matching versions, valid inputs accepted, malformed structures and invalid references rejected at appropriate boundaries |
-| W02 | Team/Role loader and catalog | Resolution, preflight and immutable snapshots | Config-only role addition, deterministic missing-binding errors |
-| W03 | DSH role factory and communication | Fresh scopes, nonblocking delegation, send/reply/context requests/subscriptions | No prompt/tool/workspace leakage; correlate brief and actual model input |
-| W04 | Upper-level tools | Persistent plan/todo mapping and scoped files/search | Plans survive turns, version conflicts rejected, private files explicitly handed over |
-| W05 | Full tool execution slice | CPU capture/segmentation, active observation, jobs/checks, results and resources | Scene-role report, head/base conflicts and no GPU dependency |
-| W06 | Verification and recovery | Mandatory post-end formal checks, pause acknowledgement, owner retry and Evolver | Budget must verify; only owner creates attempts; original-goal success enables skills |
-| W07 | UI and actual adapters | Team/role/tool console, BEHAVIOR/provider migration, optional SAM | Real events replace demo data; dependencies and unverified capabilities are explicit |
+| ID  | Work                               | Output                                                                                           | Acceptance                                                                                                               |
+| --- | ---------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| W01 | Single protocol source             | Role/Team/Tool/Brief/Envelope/Report/Plan/Observation/Result schemas and cross-language fixtures | Matching versions, valid inputs accepted, malformed structures and invalid references rejected at appropriate boundaries |
+| W02 | Team/Role loader and catalog       | Resolution, preflight and immutable snapshots                                                    | Config-only role addition, deterministic missing-binding errors                                                          |
+| W03 | DSH role factory and communication | Fresh scopes, nonblocking delegation, send/reply/context requests/subscriptions                  | No prompt/tool/workspace leakage; correlate brief and actual model input                                                 |
+| W04 | Upper-level tools                  | Persistent plan/todo mapping and scoped files/search                                             | Plans survive turns, version conflicts rejected, private files explicitly handed over                                    |
+| W05 | Full tool execution slice          | CPU capture/segmentation, active observation, jobs/checks, results and resources                 | Scene-role report, head/base conflicts and no GPU dependency                                                             |
+| W06 | Verification and recovery          | Mandatory post-end formal checks, pause acknowledgement, owner retry and Evolver                 | Budget must verify; only owner creates attempts; original-goal success enables skills                                    |
+| W07 | UI and actual adapters             | Team/role/tool console, BEHAVIOR/provider migration, optional SAM                                | Real events replace demo data; dependencies and unverified capabilities are explicit                                     |
 
 W01–W06 schema and persisted-data validation can run without a GPU. Simulator and
 checkpoint availability determine actual physical acceptance. Structural checks do not
@@ -1740,7 +1750,6 @@ verdict. Decision owners finish tasks through existing task tools. Native raw to
 definitions invoke DSH input validation explicitly; schema declaration alone does
 not validate arguments. No new registry, model loop or physical middleware is added.
 
-
 ## Implementation update: plan-selected subgoals (2026-09-09)
 
 The native `tasks.select_goal` tool selects an admitted plan goal. `planning.read`
@@ -1755,7 +1764,6 @@ of its original failed goal. SKILL publication is then allowed while later task 
 continue. Evolver model failures remain learning failures. No new DSH loop or dispatcher
 was introduced. [Runtime guide and SVG](implementation/multi-goal-runtime.md) specify
 current tool semantics, limits and the CPU acceptance scenario.
-
 
 ## Implementation update: caller report acknowledgement (2026-09-09)
 

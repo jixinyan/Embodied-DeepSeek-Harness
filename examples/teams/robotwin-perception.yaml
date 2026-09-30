@@ -1,0 +1,11 @@
+schema_version: physical.team.v1
+team_id: robotwin-perception
+learning_enabled: false
+entrypoint: lead
+members:
+  lead: ../roles/robotwin-perception-planner.md
+  verifier: builtin:verifier
+bindings:
+  decision_owner: lead
+  final_verifier: verifier
+tool_bindings: {}

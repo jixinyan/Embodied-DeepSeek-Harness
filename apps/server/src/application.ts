@@ -1,7 +1,8 @@
 import { isDeepStrictEqual } from 'node:util';
+import { parse as parsePath } from 'node:path';
 import { modelToolContractSchema } from './model-tool-schema.js';
 import { admitSensorSample, sensorImages, SensorSamples } from '@edh/perception';
-import type { SegmentationEngine } from '@edh/perception';
+import type { SegmentationEngine, DepthEngine, DepthCameraIntrinsics } from '@edh/perception';
 import { createHash, randomUUID } from 'node:crypto';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
 import type { Context } from '@deepseek-ai/cordis';
@@ -92,6 +93,8 @@ export interface ApplicationOptions {
   backend: EmbodiedBackend;
   images?: AttachmentStore;
   segmentation?: SegmentationEngine;
+  depth?: DepthEngine;
+  depthIntrinsicsByCamera?: Readonly<Record<string, DepthCameraIntrinsics>>;
   instruction: string;
   taskContext?: readonly TaskContextSummary[];
   scenario: string;
@@ -663,8 +666,23 @@ export class UpperRun {
             throw new Error('Segmentation provider and image storage are unavailable.');
           if (logical === 'planning.update' && !this.planToolSchema)
             throw new Error('PlanDocument tool schema has not been prepared.');
+          if (
+            logical === 'perception.estimate_depth' &&
+            (!this.options.depth || !this.options.images)
+          )
+            throw new Error('Depth provider and image storage are unavailable.');
+          if (logical === 'perception.measure_object' && !this.options.backend.measureObject)
+            throw new Error('This native provider does not support object measurement.');
           native = {
             name: logical.replaceAll('.', '__'),
+            ...(logical === 'perception.segment_objects' &&
+            this.options.segmentation?.timeoutMs !== undefined
+              ? { timeoutMs: this.options.segmentation.timeoutMs }
+              : {}),
+            ...(logical === 'perception.estimate_depth' &&
+            this.options.depth?.timeoutMs !== undefined
+              ? { timeoutMs: this.options.depth.timeoutMs }
+              : {}),
             description:
               CORE_TOOL_DESCRIPTIONS[logical] ??
               `${logical}. Operates only within this assignment and task.`,
@@ -703,9 +721,11 @@ export class UpperRun {
                   ? this.permit(a, [(value as unknown as SensorSample).evidence.id])
                   : logical === 'perception.segment_objects'
                     ? this.permit(a, [(value as { overlayEvidenceId: string }).overlayEvidenceId])
-                    : logical === 'verification.check' && this.checks.get(a.id)?.sample
-                      ? this.permit(a, [this.checks.get(a.id)!.sample.evidence.id])
-                      : [];
+                    : logical === 'perception.estimate_depth'
+                      ? this.permit(a, [(value as { overlayEvidenceId: string }).overlayEvidenceId])
+                      : logical === 'verification.check' && this.checks.get(a.id)?.sample
+                        ? this.permit(a, [this.checks.get(a.id)!.sample.evidence.id])
+                        : [];
                 return [
                   { type: 'text' as const, text: JSON.stringify(value) },
                   ...sensorImages(samples).map((attachment) => ({
@@ -1304,6 +1324,200 @@ export class UpperRun {
             maskAttachmentId: maskRefs[index]!.attachmentId,
           })),
         };
+      }
+      case 'perception.estimate_depth':
+      case 'perception.measure_object': {
+        const measured = tool === 'perception.measure_object';
+        const depth = this.options.depth;
+        const images = this.options.images;
+        if (!images || (measured ? !this.options.backend.measureObject : !depth))
+          throw new Error('The requested object geometry provider is unavailable.');
+        const source = this.permit(a, [s('evidenceId')])[0]!;
+        const reference = source.images?.find((image) => image.attachmentId === s('attachmentId'));
+        if (!reference) throw new Error('Depth source camera is not in the granted observation.');
+        const mask = this.permit(a, [s('maskEvidenceId')])[0]!;
+        const maskReference = mask.images?.find(
+          (image) => image.attachmentId === s('maskAttachmentId'),
+        );
+        if (
+          mask.evidence.kind !== 'mask' ||
+          mask.visualization?.sourceEvidenceId !== source.evidence.id ||
+          mask.visualization?.sourceAttachmentId !== reference.attachmentId ||
+          !maskReference ||
+          maskReference.width !== reference.width ||
+          maskReference.height !== reference.height
+        )
+          throw new Error('Depth mask must originate from the same authorized source image.');
+        const [original, maskImage] = await Promise.all([
+          images.readImage(reference, signal),
+          images.readImage(maskReference, signal),
+        ]);
+        if (maskImage.ref.mediaType !== 'image/png')
+          throw new Error('Object geometry requires a lossless PNG mask.');
+        if (measured) {
+          if (!reference.name)
+            throw new Error('Object measurement requires a named source camera.');
+          const camera = parsePath(reference.name).name;
+          const measurement = await this.options.backend.measureObject!(
+            {
+              observationId: source.evidence.id,
+              camera,
+              sourceImageSha256: createHash('sha256').update(original.data).digest('hex'),
+              maskPngBase64: Buffer.from(maskImage.data).toString('base64'),
+            },
+            { signal },
+          );
+          signal.throwIfAborted();
+          if (this.closed || terminal(this.state.state))
+            throw new Error('Run ended during object measurement.');
+          if (
+            measurement.observationId !== source.evidence.id ||
+            measurement.camera !== camera ||
+            measurement.sourceImageSha256 !==
+              createHash('sha256').update(original.data).digest('hex') ||
+            measurement.maskPngSha256 !==
+              createHash('sha256').update(maskImage.data).digest('hex') ||
+            measurement.width !== reference.width ||
+            measurement.height !== reference.height
+          )
+            throw new Error('Object measurement differs from the admitted source image and mask.');
+          const resultId = randomUUID();
+          const measurementEvidenceId = randomUUID();
+          const result = {
+            resultId,
+            measurementEvidenceId,
+            sourceEvidenceId: source.evidence.id,
+            sourceAttachmentId: reference.attachmentId,
+            maskEvidenceId: mask.evidence.id,
+            maskAttachmentId: maskReference.attachmentId,
+            observedAt: source.evidence.observed_at,
+            ...measurement,
+          };
+          this.retainSample({
+            evidence: {
+              ...source.evidence,
+              id: measurementEvidenceId,
+              kind: 'depth',
+              source: measurement.source,
+              created_at: new Date().toISOString(),
+            },
+            sequence: source.sequence,
+            source: source.source,
+            description: 'Same-frame simulator metric depth and visible surface centroid.',
+            visualization: {
+              resultId,
+              sourceEvidenceId: source.evidence.id,
+              sourceAttachmentId: reference.attachmentId,
+              maskEvidenceId: mask.evidence.id,
+              maskAttachmentId: maskReference.attachmentId,
+              measurementKind: measurement.measurementKind,
+              unit: measurement.unit,
+              calibrationId: measurement.intrinsics.calibrationId,
+              cameraFrame: measurement.cameraFrame,
+              worldFrame: measurement.worldFrame,
+              centroidKind: measurement.centroidKind,
+              validFraction: measurement.validFraction,
+              medianAxialDepthM: measurement.medianAxialDepthM,
+              medianCameraRangeM: measurement.medianCameraRangeM,
+              cameraX: measurement.centroidCameraXYZ[0],
+              cameraY: measurement.centroidCameraXYZ[1],
+              cameraZ: measurement.centroidCameraXYZ[2],
+              worldX: measurement.centroidWorldXYZ[0],
+              worldY: measurement.centroidWorldXYZ[1],
+              worldZ: measurement.centroidWorldXYZ[2],
+            },
+            images: [],
+          });
+          this.grants.extend(a.id, [measurementEvidenceId]);
+          this.event('perception.generated', { assignmentId: a.id, ...result });
+          return result;
+        }
+        if (!depth) throw new Error('Depth estimation is unavailable.');
+        const prediction = await depth.estimate({
+          image: original.data,
+          mediaType: original.ref.mediaType,
+          width: reference.width,
+          height: reference.height,
+          maskPng: maskImage.data,
+          ...(reference.name && this.options.depthIntrinsicsByCamera?.[reference.name]
+            ? { intrinsics: this.options.depthIntrinsicsByCamera[reference.name] }
+            : {}),
+          signal,
+        });
+        signal.throwIfAborted();
+        if (this.closed || terminal(this.state.state))
+          throw new Error('Run ended during depth estimation.');
+        if (
+          prediction.sourceImageSha256 !==
+            createHash('sha256').update(original.data).digest('hex') ||
+          prediction.maskPngSha256 !== createHash('sha256').update(maskImage.data).digest('hex') ||
+          prediction.width !== reference.width ||
+          prediction.height !== reference.height
+        )
+          throw new Error('Depth prediction differs from its source image or mask.');
+        const overlay = await images.saveImage({
+          data: prediction.overlayPng,
+          mediaType: 'image/png',
+          name: 'YOLO26 depth overlay',
+        });
+        if (overlay.width !== reference.width || overlay.height !== reference.height)
+          throw new Error('Depth overlay dimensions differ from the source image.');
+        signal.throwIfAborted();
+        if (this.closed || terminal(this.state.state))
+          throw new Error('Run ended during depth storage.');
+        const { depthNpy, overlayPng, ...metrics } = prediction;
+        const resultId = randomUUID();
+        const overlayEvidenceId = randomUUID();
+        const result = {
+          resultId,
+          sourceEvidenceId: source.evidence.id,
+          sourceAttachmentId: reference.attachmentId,
+          maskEvidenceId: mask.evidence.id,
+          maskAttachmentId: maskReference.attachmentId,
+          camera: reference.name ?? null,
+          observedAt: source.evidence.observed_at,
+          overlayEvidenceId,
+          ...metrics,
+        };
+        this.retainSample({
+          evidence: {
+            ...source.evidence,
+            id: overlayEvidenceId,
+            kind: 'image',
+            source: prediction.provider,
+            created_at: new Date().toISOString(),
+          },
+          sequence: source.sequence,
+          source: source.source,
+          description:
+            'YOLO26 monocular object depth estimate; source-camera metric accuracy is unverified.',
+          visualization: {
+            resultId,
+            sourceEvidenceId: source.evidence.id,
+            sourceAttachmentId: reference.attachmentId,
+            maskEvidenceId: mask.evidence.id,
+            maskAttachmentId: maskReference.attachmentId,
+            provider: prediction.provider,
+            sourceRevision: prediction.sourceRevision,
+            checkpointSha256: prediction.checkpointSha256,
+            measurementKind: prediction.measurementKind,
+            metricAccuracy: prediction.metricAccuracy,
+            unit: prediction.unit,
+            depthNpySha256: prediction.depthNpySha256,
+            validFraction: prediction.validFraction,
+            medianAxialDepthM: prediction.medianAxialDepthM,
+            p10AxialDepthM: prediction.p10AxialDepthM,
+            p90AxialDepthM: prediction.p90AxialDepthM,
+            ...(prediction.calibrationId ? { calibrationId: prediction.calibrationId } : {}),
+            ...(prediction.medianCameraRangeM === null
+              ? {}
+              : { medianCameraRangeM: prediction.medianCameraRangeM }),
+          },
+          images: [overlay],
+        });
+        this.grants.extend(a.id, [overlayEvidenceId]);
+        this.event('perception.generated', { assignmentId: a.id, ...result });
+        return result;
       }
       case 'observation.turn_view': {
         this.owner(a);

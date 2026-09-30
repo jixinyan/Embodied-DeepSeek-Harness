@@ -14,7 +14,7 @@ import type { ApplicationOptions } from './application.js';
 import { CORE_TOOLS } from './application.js';
 import type { ModelBinding } from './runtime.js';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
-import type { SegmentationEngine } from '@edh/perception';
+import type { SegmentationEngine, DepthEngine, DepthCameraIntrinsics } from '@edh/perception';
 import {
   defaultSessionHistory,
   sessionHistoryOptions,
@@ -96,6 +96,9 @@ export interface ServerDeployment {
   readonly tasks: Readonly<Record<string, TaskPreset>>;
   readonly additionalTools?: ApplicationOptions['additionalTools'];
   readonly segmentation?: SegmentationEngine;
+  readonly depth?: DepthEngine;
+  readonly enableObjectMeasurement?: boolean;
+  readonly depthIntrinsicsByCamera?: Readonly<Record<string, DepthCameraIntrinsics>>;
   readonly providers?: readonly string[];
   readonly contextManagement?: ContextManagementOptions;
   readonly sessionHistory?: SessionHistoryOptions;
@@ -262,7 +265,15 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     launchProfiles: launchMetadata,
     tasks: taskMetadata,
     tools: [
-      ...CORE_TOOLS.filter((tool) => tool !== 'perception.segment_objects' || input.segmentation),
+      ...CORE_TOOLS.filter((tool) =>
+        tool === 'perception.segment_objects'
+          ? input.segmentation
+          : tool === 'perception.estimate_depth'
+            ? input.depth
+            : tool === 'perception.measure_object'
+              ? input.enableObjectMeasurement === true
+              : true,
+      ),
       ...Object.keys(additionalTools),
     ],
     providers: [...(input.providers ?? [])],
@@ -274,6 +285,8 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     adapters,
     additionalTools,
     segmentation: input.segmentation,
+    depth: input.depth,
+    depthIntrinsicsByCamera: input.depthIntrinsicsByCamera,
     sessionHistory,
     ...(input.assignmentLifetimeMs === undefined
       ? {}
