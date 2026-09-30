@@ -63,6 +63,23 @@ recorded event timeline with native model/tool outputs, plans and formal success
 The endpoint returned no reasoning content blocks; the video displays actual
 assistant text and tool arguments. No hidden reasoning is inferred.
 
+The successful run took 1,283.093 seconds of recorded wall time. Its eight direct
+policy decisions contain 41 native DSH model steps and 56 policy tool calls;
+the 42 physical controls represent 1.68 seconds of simulator control time.
+Planner, execution policy and Verifier used independent GPT-6 Astra Sessions
+with `xhigh` reasoning effort. Direct mode generates grounded target poses;
+numerical IK, ActionGate and the native controller execute admitted motions.
+This run used no learned VLA checkpoint. The video compresses recorded wall time
+at 16× and adds labeled reading holds; it preserves the original timestamps.
+
+Direct motion rechecks ActionGate state and generation after each awaited
+observation, motion preparation and provider control-source selection. Pause
+cancels an active policy request while the generation-fenced device completes
+its stop acknowledgement. Provider status updates may coalesce the internal
+stopping phase into a confirmed `running` → `paused` publication; all device
+boundary, ownership, budget and counter checks remain required. Python and
+TypeScript checks pass. Actual RoboDojo pause/resume/cancel acceptance is pending.
+
 Native DSH policy Sessions publish scoped model messages, returned reasoning,
 tool calls/results, local plans, status and decisions through the physical worker
 into the same run journal and console. The console can filter execution-policy

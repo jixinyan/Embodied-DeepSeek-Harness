@@ -88,7 +88,7 @@ consume those tables. Methods return semantic error codes; invalid shapes throw
 | Execution state | Allowed next states |
 | --- | --- |
 | accepted | running, ended |
-| running | running, pausing, ended |
+| running | running, pausing, paused, ended |
 | pausing | pausing, paused, ended |
 | paused | paused, running, ended |
 | ended | none |
@@ -96,14 +96,19 @@ consume those tables. Methods return semantic error codes; invalid shapes throw
 `execution(request, previous, next, actorAgentId?)` checks immutable execution/scope,
 increasing state versions, stable clocks, monotonic counters and request budgets.
 `pausing` means intent without device acknowledgement; `paused` requires confirmation.
+Provider status publications may coalesce the internal stopping phase and report
+`running` directly followed by a confirmed `paused` status. A confirmed boundary
+ID and time remain mandatory. Generation revocation, device stop acknowledgement
+and completion of any admitted in-flight control precede that confirmation.
 Only the request's decision owner can resume. An exhausted control/wall budget requires
 `ended`; it cannot renew itself. Ended/paused statuses carry a boundary ID and time.
 
-`requiresVerification(status)` (`requires_verification` in Python) returns true for
-paused/ended, including budget expiry. It does **not** emit an event or run an agent.
-A future job service must schedule the formal verification, persist it idempotently
-and preserve an unconfirmed device stop as uncertainty. Execution ending never
-marks a goal complete.
+`requiresVerification(status)` (`requires_verification` in Python) selects an
+`ended` status with `policy_stop`, `episode_terminated` or `budget_exhausted`.
+The runtime admits a fresh independent Verifier after the device confirms that
+boundary. An ordinary pause remains with Planner. Cancellation and backend
+failure preserve failed or unknown outcomes. Task completion requires the
+accepted formal verdict for the unchanged goal criteria.
 
 | Verification state | Allowed next states |
 | --- | --- |
