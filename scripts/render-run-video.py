@@ -142,7 +142,7 @@ def wall_at(segments, second):
     return segments[-1][3], segments[-1][4]
 
 
-def camera_source(export, manifest, images):
+def camera_source(export, manifest, images, native_directory=None, executions=()):
     lookup = {(row["eventSequence"], row["image"]["name"]): row["file"]
               for row in images if row["kind"] == "simulation.frame" and row["file"]}
     grouped = {}
@@ -159,17 +159,44 @@ def camera_source(export, manifest, images):
                 raise ValueError(f"Missing original image file: {file}")
             frames.append((timestamp(wall), file, sequence, simulation))
         grouped.setdefault(video["camera"], []).extend(frames)
+    if native_directory is not None:
+        if grouped:
+            raise ValueError("Select one recorded rollout source for the composite.")
+        for execution in executions:
+            execution_id = execution["execution_id"]
+            recording = native_directory / execution_id
+            native_manifest = load_json(recording / "manifest.json")
+            journal = [json.loads(line) for line in (recording / "frames.jsonl").read_text().splitlines()]
+            if not journal or len(journal) != native_manifest["frames"] or any(
+                    row["execution_id"] != execution_id or row["task_scope"] != execution["task_scope"] for row in journal):
+                raise ValueError("Native video journal does not match the actual execution.")
+            for camera in native_manifest["cameras"]:
+                if Path(camera).name != camera or camera in {".", ".."}:
+                    raise ValueError("Invalid native camera identity.")
+                folder = export / "decoded-native-video" / execution_id / camera
+                folder.mkdir(parents=True, exist_ok=True)
+                if any(folder.iterdir()):
+                    raise ValueError("Native video decode requires an empty output directory.")
+                subprocess.run(["ffmpeg", "-v", "error", "-xerror", "-i", str(recording / f"{camera}.mp4"),
+                                "-fps_mode", "passthrough", "-enc_time_base", "demux", str(folder / "%08d.png")], check=True)
+                decoded = sorted(folder.glob("*.png"))
+                if len(decoded) != len(journal):
+                    raise ValueError("Decoded native frame count differs from its journal.")
+                frames = [(timestamp(row["observed_at"]), file,
+                           f"native:{execution_id}:{index + 1}", row["simulation_time_s"])
+                          for index, (row, file) in enumerate(zip(journal, decoded, strict=True))]
+                grouped.setdefault(camera, []).extend(frames)
     cameras = []
     for name, frames in grouped.items():
         first_frame_time = min(row[0] for row in frames)
         for row in images:
-            if (row["kind"] == "agent.observation" and row["image"]["name"] == name and
+            if (row["kind"] == "agent.observation" and row["image"]["name"] in {name, f"{name}.png"} and
                     row["file"] and row["eventAt"] and timestamp(row["eventAt"]) < first_frame_time):
                 file = export / row["file"]
                 if not file.is_file():
                     raise ValueError(f"Missing initial observation image: {file}")
                 frames.append((timestamp(row["eventAt"]), file, row["eventSequence"], None))
-        frames.sort(key=lambda row: (row[0], row[2]))
+        frames.sort(key=lambda row: (row[0], str(row[2])))
         if len({row[2] for row in frames}) != len(frames):
             raise ValueError(f"Duplicate recorded frame sequence for {name}.")
         cameras.append((name, frames, [row[0] for row in frames]))
@@ -282,7 +309,9 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
                 camera_cache[index] = (file, ImageOps.pad(original.convert("RGB"), (320, 196), color="#0b1418"))
         image.paste(camera_cache[index][1], (1205, y))
         draw.text((1545, y + 12), name.replace("robot0_", "").replace(".png", ""), font=small, fill=TEXT)
-        draw.text((1545, y + 56), f"Source event #{sequence}", font=small, fill=MUTED)
+        frame_identity = (f"Native video frame #{sequence.rsplit(':', 1)[1]}"
+                          if isinstance(sequence, str) else f"Source event #{sequence}")
+        draw.text((1545, y + 56), frame_identity, font=caption, fill=MUTED)
         draw.text((1545, y + 96), f"Simulator {sim_time:.3f} s" if sim_time is not None else
                   "Initial observation", font=small, fill=MUTED)
         if simulation_time is None:
@@ -320,7 +349,9 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     fraction = (wall - timestamp(events[0]["at"])) / (timestamp(events[-1]["at"]) - timestamp(events[0]["at"]))
     draw.rounded_rectangle((34, 1024, 34 + int(1852 * fraction), 1056), radius=6, fill="#29636b")
     draw.text((48, 1027), f"RECORDED WALL {datetime.fromtimestamp(wall).astimezone().strftime('%H:%M:%S')} · elapsed {(wall - timestamp(events[0]['at'])):.1f} s", font=caption, fill=TEXT)
-    draw.text((1165, 1027), f"SIM {simulation_time:.3f} s · frame #{source_sequence}" if simulation_time is not None else "SIM awaiting first frame", font=caption, fill=TEXT)
+    frame_identity = (f"native frame #{source_sequence.rsplit(':', 1)[1]}"
+                      if isinstance(source_sequence, str) else f"event #{source_sequence}")
+    draw.text((1165, 1027), f"SIM {simulation_time:.3f} s · {frame_identity}" if simulation_time is not None else "SIM awaiting first frame", font=caption, fill=TEXT)
     return image
 
 
@@ -331,6 +362,7 @@ def main():
     parser.add_argument("--font", type=Path, required=True)
     parser.add_argument("--fps", type=int, default=10)
     parser.add_argument("--wall-speed", type=float, default=4.0)
+    parser.add_argument("--simulation-videos", type=Path)
     arguments = parser.parse_args()
     if arguments.fps <= 0 or arguments.wall_speed <= 0 or not arguments.font.is_file():
         raise ValueError("FPS, wall speed, and font path must be valid.")
@@ -346,7 +378,7 @@ def main():
     event_times = [timestamp(event["at"]) for event in events]
     if event_times != sorted(event_times):
         raise ValueError("Recorded events must have increasing wall timestamps.")
-    cameras = camera_source(export, manifest, images)
+    cameras = camera_source(export, manifest, images, arguments.simulation_videos, run["executions"])
     segments, duration, start, end = playback_schedule(events, arguments.wall_speed)
     frame_count = int(duration * arguments.fps) + 1
     fonts = tuple(ImageFont.truetype(str(arguments.font), size) for size in (34, 25, 22, 17))
@@ -389,6 +421,7 @@ def main():
               "agentReasoningEvents": sum(event["type"] in {"agent.output", "policy.output"} and
                                           any(block["type"] == "reasoning" for block in model_message(event)["content"])
                                           for event in events)}
+    report["cameraSource"] = "worker-local native MP4 and frame journal" if arguments.simulation_videos else "recorded frame events"
     arguments.output.with_suffix(".json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report))
 

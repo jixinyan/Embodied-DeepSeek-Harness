@@ -294,13 +294,47 @@ async function writeDashboard(output, run, events, manifest) {
     await copyFile(path.join(projectRoot, 'scripts', name), path.join(output, name));
 }
 
-async function policyLogEvidence(file, run, images, output) {
+async function nativeVideoEvidence(directory, run, output) {
+  if (!directory) return [];
+  const recordings = [];
+  for (const execution of run.executions) {
+    const id = execution.execution_id;
+    if (!/^[A-Za-z0-9-]+$/.test(id)) throw new Error('Invalid native execution identity.');
+    const source = path.join(directory, id);
+    const manifest = JSON.parse(await readFile(path.join(source, 'manifest.json'), 'utf8'));
+    const journal = (await readFile(path.join(source, 'frames.jsonl'), 'utf8')).trim().split(/\r?\n/).map(JSON.parse);
+    if (!journal.length || journal.length !== manifest.frames || !manifest.cameras.length ||
+        journal.some((row) => row.execution_id !== id ||
+          ['task_id', 'goal_id', 'attempt_id'].some((key) => row.task_scope[key] !== execution.task_scope[key])))
+      throw new Error('Native recording differs from its actual execution.');
+    const folder = path.join('native-videos', id);
+    await mkdir(path.join(output, folder), { recursive: true });
+    const files = [];
+    for (const name of ['manifest.json', 'frames.jsonl', ...manifest.cameras.map((camera) => {
+      if (path.basename(camera) !== camera || camera === '.' || camera === '..')
+        throw new Error('Invalid native camera name.');
+      return `${camera}.mp4`;
+    })]) {
+      const bytes = await readFile(path.join(source, name));
+      const file = path.join(folder, name);
+      await writeFile(path.join(output, file), bytes);
+      files.push({ file, sha256: createHash('sha256').update(bytes).digest('hex') });
+    }
+    recordings.push({ executionId: id, frames: journal.length, cameras: manifest.cameras, files,
+      policyRequestIds: [...new Set(journal.map((row) => row.policy_request_id))] });
+  }
+  return recordings;
+}
+
+async function policyLogEvidence(file, run, images, output, nativeRecordings = []) {
   if (!file) return null;
   const bytes = await readFile(file);
   const records = bytes.toString('utf8').split(/\r?\n/)
     .filter((line) => line.startsWith('{')).map((line) => JSON.parse(line));
   const requestIds = new Set(images.filter((row) => row.kind === 'simulation.frame')
     .map((row) => row.policyRequestId).filter(Boolean));
+  for (const recording of nativeRecordings)
+    for (const id of recording.policyRequestIds) requestIds.add(id);
   const inference = records.filter((record) => record.event === 'policy_inference_completed'
     && requestIds.has(record.request_id) && record.task_scope?.task_id === run.id);
   if (!inference.length) throw new Error('Policy log has no inference for this recorded run.');
@@ -368,9 +402,10 @@ async function main() {
   const images = imageSources(run, events);
   await saveImages(options.origin, run.id, output, images);
   const { videos, missing } = await makeVideos(output, images, options.camera);
-  const policyLog = await policyLogEvidence(options['policy-log'], run, images, output);
+  const nativeRecordings = await nativeVideoEvidence(options['simulation-videos'], run, output);
+  const policyLog = await policyLogEvidence(options['policy-log'], run, images, output, nativeRecordings);
   const unavailable = [
-    ...missing,
+    ...(nativeRecordings.length ? [] : missing),
     ...images.filter((row) => !row.file).map((row) => `image ${row.evidenceId}/${row.image.name}`),
   ];
   if (!events.some((event) => event.type.startsWith('verification.')))
@@ -407,9 +442,9 @@ async function main() {
     modelBindings: run.configuration?.models ?? null,
     exporterRevision: revision.trim(),
     verdicts: run.verdicts, runError: run.error,
-    eventCount: events.length, imageCount: images.length, videos,
+    eventCount: events.length, imageCount: images.length, videos, nativeRecordings,
     originalRecords: ['source/run.json', 'source/events.json', 'frames.json',
-      ...(policyLog ? [policyLog.file] : [])],
+      ...(policyLog ? [policyLog.file] : []), ...nativeRecordings.flatMap((row) => row.files.map((item) => item.file))],
     policyLog,
     missing: [...(run.configuration?.sourceCode?.revision ? [] : ['run source revision']),
       ...(sceneConfiguration?.seed == null ? ['seed'] : []),
