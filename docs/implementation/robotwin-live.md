@@ -115,3 +115,24 @@ inference identities; every inference has an executed prefix. The checkpoint
 digest is `a7e94d38448efa8554575467a25b39dfaac721448d8de189fdaf27fc299b7013`.
 This run has no recovery attempt or experience publication. See
 [GPU integration evidence](gpu-integration.md).
+
+## Recorded visualization
+
+The successful run's complete recorded export is
+`.local/work/replay-robotwin-success-8fcb950b/`. `timeline.html` provides an
+interactive recorded-wall timeline with synchronized head/wrist cameras,
+Planner and Verifier output, tools, plan, TODO and original event details.
+`robotwin-task-overview.mp4` presents the same recorded source at 1920×1080,
+10 fps and 122.8 seconds. It compresses recorded wall time at 16× and labels
+reading holds; all camera views retain their original aspect ratio. Playback
+uses local historical files and requires no model, simulator or policy service.
+
+All four MP4 files pass complete decoding. Every rendered frame passes text
+boundary checks; all 265 source-text pages across 101 recorded text regions also
+pass. The validation records retain font identity/SHA, source audit, media SHA
+and actual browser checks at initial, running and completed times. Three native
+640×480 camera videos load without media errors and seek to their identified
+final frame alongside `task_success=true`, Verifier `passed` and the completed
+run. The export retains all 663 events, 1,233 image records and three camera
+videos. The endpoint recorded no reasoning content blocks; assistant text and
+tool arguments are shown from actual records.

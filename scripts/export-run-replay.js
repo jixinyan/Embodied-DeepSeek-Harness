@@ -312,12 +312,15 @@ async function policyLogEvidence(file, run, images, output) {
   if (inference.some((record) => record.checkpoint_digest !== startup.checkpoint_digest
       || record.checkpoint_revision !== startup.checkpoint_revision))
     throw new Error('Policy checkpoint identity changed within the recorded run.');
+  const source = startup.policy_source ?? startup.source;
+  if (typeof source !== 'string' || !source)
+    throw new Error('Policy startup lacks its identified implementation source.');
   const saved = 'source/policy-service.log';
   await writeFile(path.join(output, saved), bytes);
   return {
     file: saved,
     sha256: createHash('sha256').update(bytes).digest('hex'),
-    source: startup.source,
+    source,
     checkpointRevision: startup.checkpoint_revision,
     checkpointDigest: startup.checkpoint_digest,
     checkpointWeightSha256: startup.checkpoint_weight_sha256,
@@ -372,7 +375,7 @@ async function main() {
   ];
   if (!events.some((event) => event.type.startsWith('verification.')))
     unavailable.push('formal verification events');
-  if (!events.some((event) => event.type.includes('policy.')))
+  if (!policyLog && !events.some((event) => event.type.startsWith('policy.')))
     unavailable.push('policy request and action chunk events');
   const flow = flowSource(events);
   await writeFile(path.join(output, 'flow.mmd'), flow);
@@ -381,11 +384,14 @@ async function main() {
   await writeFile(path.join(output, 'source/events.json'), `${JSON.stringify(events, null, 2)}\n`);
   await writeFile(path.join(output, 'frames.json'), `${JSON.stringify(images, null, 2)}\n`);
   const { stdout: revision } = await execute('git', ['rev-parse', 'HEAD'], { cwd: projectRoot });
+  const recordedConfiguration = run.submission?.goal?.configuration ?? null;
+  const sceneConfiguration = typeof recordedConfiguration === 'string' &&
+    recordedConfiguration.trim().startsWith('{') ? JSON.parse(recordedConfiguration) : recordedConfiguration;
   const manifest = {
     schemaVersion: 'edh.run_replay.v1', runId: run.id, runState: run.state,
     source: run.source, task: run.scenario, instruction: run.instruction,
-    sceneConfiguration: run.submission?.goal?.configuration ?? null,
-    seed: null,
+    sceneConfiguration,
+    seed: sceneConfiguration?.seed ?? null,
     environment: run.configuration?.launchProfile?.environment ?? null,
     embodiment: run.configuration?.launchProfile?.embodiment ?? null,
     policy: run.configuration?.launchProfile?.policy ?? null,
@@ -405,7 +411,8 @@ async function main() {
     originalRecords: ['source/run.json', 'source/events.json', 'frames.json',
       ...(policyLog ? [policyLog.file] : [])],
     policyLog,
-    missing: [...(run.configuration?.sourceCode?.revision ? [] : ['run source revision']), 'seed',
+    missing: [...(run.configuration?.sourceCode?.revision ? [] : ['run source revision']),
+      ...(sceneConfiguration?.seed == null ? ['seed'] : []),
       ...(policyLog ? [] : ['checkpoint revision', 'policy service raw log']), ...unavailable],
   };
   await writeFile(path.join(output, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
