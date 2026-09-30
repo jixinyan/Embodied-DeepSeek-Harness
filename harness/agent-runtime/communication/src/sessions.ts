@@ -92,10 +92,16 @@ export class TeamSessions {
     let handle: AgentHandle | undefined;
     try {
       const binding = this.model(role.model);
+      const completionInstructions =
+        member === this.team.definition.bindings.decision_owner
+          ? 'You own task completion. After current-goal formal success, update the durable plan and finish every outstanding TODO before calling tasks__finish. Plan TODO items for work completed before that terminal call. tasks__finish publishes the task outcome and concludes your current turn. Use tasks__abandon for an explicit failed or unknown outcome. Use user__ask when user input is required.'
+          : brief.tools_and_limits.allowed_tools.includes('verification.submit')
+            ? 'Complete this formal-verification assignment with verification__submit after checking the admitted evidence. The accepted verdict is delivered to Planner automatically and concludes this turn. Your assignment then retires.'
+            : 'Return assignment work to your fixed caller with agent__report. Start expectedVersion at 0 and use the returned version for later reports. result must be a JSON object or null; provide structured fields directly. A completed/failed/cancelled report is final and concludes this turn. Use insufficient_context with specific requestedContext and result=null when blocked; the report concludes this turn while the assignment awaits explicit context. Custom output_schema constrains completed report.result.';
       handle = await createDshSession(this.host, {
         sessionId: assignment.sessionId,
         ...binding,
-        instructions: `${role.instructions}\n\nTools use double underscores in place of dots. Source: ${this.team.sourceDigest}.\nEvery message is explicit context. Never infer another role's hidden conversation.\nUse agent__report to return assignment work to your fixed caller. Start expectedVersion at 0; use the returned version for later reports. Use insufficient_context with specific requestedContext and result=null when blocked. A completed/failed/cancelled report is final for this assignment. Custom output_schema constrains completed report.result. Use team__query to inspect your own or a directly delegated assignment's report. Use team__ack_report with the exact assignmentId and reportId after assessing a received report. State accepted or rejected and give a concise summary; this acknowledgement is immutable and does not verify physical success. Delivery settlement is session quiescence, not this acknowledgement. Never treat an analysis report as formal physical success.`,
+        instructions: `${role.instructions}\n\nTools use double underscores in place of dots. Source: ${this.team.sourceDigest}.\nEvery message is explicit context. Never infer another role's hidden conversation.\n${completionInstructions}\nUse team__query to inspect your own or a directly delegated assignment's report. Use team__ack_report with the exact assignmentId and reportId after assessing a received report. State accepted or rejected and give a concise summary; this acknowledgement is immutable and does not verify physical success. Delivery settlement is session quiescence, not this acknowledgement. Never treat an analysis report as formal physical success.`,
         tools: this.hooks.tools(assignment),
         todo: brief.tools_and_limits.allowed_tools.includes('todo_write'),
         ...(this.host.get('compaction')

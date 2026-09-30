@@ -708,7 +708,16 @@ export class UpperRun {
                 exec.signal,
                 exec.callId,
               );
-              if (logical === 'user.ask') exec.concludeTurn();
+              if (
+                [
+                  'user.ask',
+                  'agent.report',
+                  'verification.submit',
+                  'tasks.finish',
+                  'tasks.abandon',
+                ].includes(logical)
+              )
+                exec.concludeTurn();
               return result;
             },
           };
@@ -1578,6 +1587,10 @@ export class UpperRun {
         )
           throw new Error(
             'Finish requires a completed plan; explicitly abandon unused optional goals.',
+          );
+        if (this.state.assignments[a.id]?.todos?.some((todo) => todo.status !== 'completed'))
+          throw new Error(
+            'Finish requires all decision-owner TODO items to be completed. Update todo_write before tasks.finish.',
           );
         this.state.state = 'succeeded';
         this.event('run.succeeded', { verdictId: result.verdict_id });

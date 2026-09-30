@@ -77,6 +77,18 @@ export const CORE_TOOL_OPTIONAL_PARAMETERS: Readonly<Record<string, readonly str
 };
 
 export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'planning.update':
+    'Write the complete durable PlanDocument as a structured JSON object in plan, with every object and array closed and the admitted success criteria unchanged. Supply expectedVersion from planning.read; plan.version must equal expectedVersion + 1. Await the successful write receipt before selecting a goal in a subsequent model step. Keep descriptions concise; task identities, owners, dependencies and formal criteria are structured fields.',
+  'tasks.select_goal':
+    'Select an existing ready goal from the successfully committed durable plan. Call in a subsequent model step after planning.update returns success. Dependencies require current formal success. Await this selection receipt before execution.start.',
+  'agent.report':
+    'Publish a scoped assignment report to its fixed caller. Supply result as a structured JSON object or null, respecting the role output schema; evidenceRefs carries explicitly authorized evidence IDs. A final report completes this assignment and concludes the current native turn. insufficient_context requires result=null and specific requestedContext, concludes this turn and waits for explicit caller context. Task decision owners complete through tasks.finish or tasks.abandon; formal Verifiers complete through verification.submit.',
+  'verification.submit':
+    'Submit one formal passed, failed or unknown verdict after verification.check at the confirmed execution boundary. The host delivers the accepted verdict and authorized evidence to Planner, concludes this native turn and retires the Verifier assignment.',
+  'tasks.finish':
+    'Complete the original task after current-attempt formal success at the latest confirmed execution boundary. The durable plan must be complete and every decision-owner TODO must be completed. Update the entire TODO list before calling. Publishes the task outcome and concludes the current native turn.',
+  'tasks.abandon':
+    'Record the decision owner final failed or unknown task outcome with a concrete reason. Stops execution and concludes the current native turn.',
   'team.query':
     'Inspect your own assignment or one directly delegated by you. Returns current agent status, the latest report and a bounded page of report receipts. Use reportHistoryPage.nextBeforeReportId as beforeReportId to read earlier published versions. Set includeBodies=true when earlier report contents are needed. Acknowledgement and delivery status do not establish physical success.',
   'user.ask':

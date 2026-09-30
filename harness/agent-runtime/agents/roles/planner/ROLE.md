@@ -90,8 +90,16 @@ verify physical facts through observations, and decide explicitly whether to res
 Use planning.read to inspect the final goal and deployment-registered subgoal checks.
 Write the complete plan before execution, retain the final goal, and compose new
 subgoals only from the advertised checks without changing their arguments or source.
+Supply planning.update.plan as a complete structured JSON object matching its
+schema. Keep descriptions concise. Await the successful plan-write receipt before
+selecting a goal in a subsequent model step, then await its selection receipt
+before execution.start.
 Select a ready goal with tasks.select_goal. Dependencies need current formal success.
 Returning to a failed goal restores its previous attempt: call tasks.retry explicitly
 before execution.start. Attempts have a per-goal budget. Replan before leaving a failed
 goal for repair work. Keep completed plan rows tied to their own latest verdicts.
 Finish only after the final task goal passes at the latest stopped execution boundary.
+Complete the durable plan and all outstanding TODOs before calling tasks.finish.
+Use TODOs for work that finishes before this terminal call. tasks.finish publishes
+the task outcome and concludes your turn; tasks.abandon concludes an explicit
+failed or unknown outcome.

@@ -232,6 +232,54 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
             "policyServiceLogSha256": sha256(service_log.read_bytes()).hexdigest()}
 
 
+def audit_role_completion(run, events):
+    require(not any(event["type"] in {"tool.failed", "agent.deadline"} for event in events),
+            "Clean role completion requires successful tool calls and no role deadline.")
+    calls = {}
+    completed = []
+    owner_todos = None
+    terminals = {"agent.report", "verification.submit", "tasks.finish", "tasks.abandon"}
+    for event in events:
+        detail = event["detail"]
+        if event["type"] == "dsh.tool-call":
+            calls[detail["data"]["callId"]] = detail
+        elif event["type"] == "dsh.tool-result":
+            require(not detail["data"].get("error") and not any(
+                block.get("isError") for block in detail["data"]["message"]["content"]
+                if block["type"] == "tool-result"), "A native DSH tool result contains an error.")
+        elif event["type"] == "agent.todos" and detail["assignmentId"] == run["decisionAssignmentId"]:
+            owner_todos = detail["todos"]
+        elif event["type"] == "tool.completed" and detail["tool"] in terminals:
+            call = calls[detail["callId"]]
+            identity = (call["assignmentId"], call["turn"], call["data"]["step"])
+            require(not any(candidate["type"] == "agent.step-started" and
+                            candidate["detail"]["assignmentId"] == identity[0] and
+                            candidate["detail"]["turn"] == identity[1] and
+                            candidate["detail"]["step"] > identity[2] for candidate in events),
+                    "A role started another model step after its terminal tool.")
+            ended = [candidate for candidate in events if candidate["type"] == "agent.turn-ended" and
+                     candidate["detail"]["assignmentId"] == identity[0] and candidate["detail"]["turn"] == identity[1]]
+            require(len(ended) == 1 and ended[0]["sequence"] > event["sequence"] and
+                    ended[0]["detail"]["reason"]["kind"] == "completed",
+                    "A terminal tool lacks one completed native turn with its committed receipt.")
+            receipts = [candidate for candidate in events if candidate["type"] == "dsh.tool-result" and
+                        candidate["detail"]["assignmentId"] == identity[0] and
+                        candidate["detail"]["turn"] == identity[1] and
+                        candidate["detail"]["data"]["message"]["source"].get("callId") == detail["callId"]]
+            require(len(receipts) == 1 and event["sequence"] < receipts[0]["sequence"] < ended[0]["sequence"],
+                    "The terminal native receipt must commit before the completed turn.")
+            if detail["tool"] == "tasks.finish":
+                require(owner_todos is not None and all(todo["status"] == "completed" for todo in owner_todos),
+                        "The decision owner finished with incomplete TODOs.")
+            completed.append({"tool": detail["tool"], "assignmentId": identity[0], "turn": identity[1],
+                              "step": identity[2], "toolSequence": event["sequence"],
+                              "receiptSequence": receipts[0]["sequence"], "endSequence": ended[0]["sequence"]})
+    require(any(row["tool"] == "verification.submit" for row in completed) and
+            any(row["tool"] == "tasks.finish" for row in completed), "Required formal and task completion tools are absent.")
+    return {"status": "passed", "terminalTools": completed, "ownerTodoCount": len(owner_todos),
+            "allOwnerTodosCompleted": True, "nativeToolErrors": 0, "postTerminalModelSteps": 0}
+
+
 def audit(run, events, *, samples=None, request_directory=None, service_log=None, policy_manifest=None,
           schema_path=None, simulation_videos=None):
     require(run["source"] in {"simulation", "hardware"}, "Acceptance requires a real run source.")
@@ -389,6 +437,7 @@ def main():
     parser.add_argument("--policy-service-log", type=Path)
     parser.add_argument("--policy-manifest", type=Path)
     parser.add_argument("--simulation-videos", type=Path)
+    parser.add_argument("--require-clean-role-completion", action="store_true")
     parser.add_argument("--schema-path", type=Path,
                         default=Path(__file__).resolve().parents[1] / "harness/contracts/schema/physical.schema.json")
     args = parser.parse_args()
@@ -398,6 +447,8 @@ def main():
     report = audit(run, events, samples=samples, request_directory=args.policy_requests,
                    service_log=args.policy_service_log, policy_manifest=args.policy_manifest,
                    schema_path=args.schema_path, simulation_videos=args.simulation_videos)
+    if args.require_clean_role_completion:
+        report["roleCompletion"] = audit_role_completion(run, events)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report))

@@ -29,6 +29,10 @@ tools:
 You own the complete task plan and every execution decision. Capture the available
 head and wrist cameras, read the native task instruction and admitted success
 criteria, write a complete plan and select the ready goal before starting execution.
+Supply planning.update.plan as a complete structured JSON object matching its
+schema. Keep descriptions concise and retain the exact admitted success criteria.
+Wait for the successful plan-write receipt, select the goal in the next model
+step, and wait for the selection receipt before execution.start.
 The Pi0.5 checkpoint receives the native adjust_bottle instruction verbatim from
 the retained task catalog. Scene details belong in your plan and TODO list.
 
@@ -48,3 +52,8 @@ Keep your TODO list current. Inspect the formal verdict and authorized evidence
 before choosing a retry, replan, finish or abandon decision. Any retry retains
 the current native Session scene and the admitted success criterion. Retrieve
 skills only when their documented source and limits apply to the current goal.
+
+After formal success, update the durable plan and complete every remaining TODO.
+Use TODOs for observation, planning, execution monitoring and verdict assessment.
+Call tasks.finish as the final task-completion action; the host publishes the outcome
+and concludes your turn. An explicit failed or unknown outcome uses tasks.abandon.
