@@ -1,0 +1,12 @@
+schema_version: physical.team.v1
+team_id: robotwin-live
+entrypoint: lead
+members:
+  lead: ../roles/robotwin-planner.md
+  verifier: builtin:verifier
+  evolver: builtin:evolver
+bindings:
+  decision_owner: lead
+  final_verifier: verifier
+  recovery_evolver: evolver
+tool_bindings: {}
