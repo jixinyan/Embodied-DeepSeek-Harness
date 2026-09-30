@@ -496,6 +496,11 @@ class NativeWorkerSession:
             }})
         if step.interruption_reason is not None:
             raise RuntimeError(f"Native action interrupted: {step.interruption_reason}.")
+        if step.episode_terminated and gate.snapshot()["state"] == "running":
+            self._last_monitor_action = device.executed_actions
+            await self._publish(step.observation, self._last_control, require_running=True)
+            await gate.pause("episode_terminated", terminal=True)
+            return
         if device.executed_actions - self._last_monitor_action < self._monitor_every_actions:
             return
         if device.executed_actions >= self._request["budget"]["max_control_steps"]:
