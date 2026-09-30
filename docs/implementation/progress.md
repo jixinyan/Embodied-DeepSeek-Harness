@@ -1,16 +1,16 @@
 # Implementation progress
 
-Spec: v1.63. Current checkpoint: **local Qwen Planner/Verifier and learned Pi0.5 complete a real headless RoboTwin task; trace-only console, worker-local videos and Session release verified; development stopped at the requested minimal goal**.
+Spec: v1.64. Current checkpoint: **local Qwen/Pi0.5 native task passes clean role-completion acceptance: completed TODOs, committed terminal receipts, zero tool errors, independent formal success and released Session resources**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-Development is stopped after run `7c158abe-a195-4575-b8bf-a58569da6127`:
-107 real Pi0.5 controls, seven identified policy requests, 10,642 native physics
+The trace-review milestone is complete after run `6610a9f4-29b8-499c-82ed-d81aab542e13`:
+116 real Pi0.5 controls, eight identified policy requests, 10,767 native physics
 steps, a confirmed terminal boundary, independent Qwen Verifier success and
 Planner completion. Its user Session is closed with resources released. Three
-worker-local MP4 files each contain 407 actual frames with zero decoded timestamp
+worker-local MP4 files each contain 419 actual frames with zero decoded timestamp
 error against the simulator journal. The browser requests no camera assets;
 authorized model captures and formal-verification images remain available.
 The [Qwen headless handoff](qwen-headless-checkpoint.md) records actual
@@ -18,9 +18,14 @@ provider status, source evidence, preserved work and the resumption boundary.
 Automatic development is disabled; the weekly DSH monitor performs read-only
 release discovery and assessment.
 
-The recorded task establishes formal success and resource release. Complete
-supplementary role-report and terminal TODO acceptance remains pending. Its
-original trace is preserved without modifying any model output or tool result.
+The complete 238-event trace passes `--require-clean-role-completion`: all five
+Planner TODOs completed, zero native tool errors and zero subsequent model steps
+after terminal tools in the same turn. Native DSH commits each terminal receipt
+before completing the turn. Plan writing, goal selection and execution admission
+await their preceding receipts. Configured denoising is applied before native
+camera creation; the running console displays the actual execution state.
+The composite MP4 passes complete decoding and all source-text bounds checks.
+Actual custom-role structured reporting and genuine recovery remain pending.
 The earlier cloud-model task and provider evidence remain in the
 [September 30 provider handoff](pause-2026-09-30.md).
 

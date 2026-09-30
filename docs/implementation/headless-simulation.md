@@ -72,5 +72,10 @@ decoded frames use the original media time base without frame duplication.
 The native audit still requires the original requests and sensor samples and
 independently verifies every camera's decoded simulator timestamps.
 
+Use `--require-clean-role-completion` with the native audit to require completed
+Planner TODOs, successful native tool receipts and zero subsequent model steps in
+the same turn after each terminal tool. This additional gate reads original DSH
+events; ordinary recorded-source audits preserve their existing evidence scope.
+
 Native task results and the exact delivery boundary are recorded in
 [implementation progress](progress.md).

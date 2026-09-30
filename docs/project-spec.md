@@ -1,8 +1,8 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.63 · 2026-09-30
+Version: v1.64 · 2026-09-30
 
-Status: local Qwen Planner and Verifier with learned Pi0.5 complete a real headless RoboTwin task through native DSH, ActionGate, independent formal verification, Planner finish and released Session. The trace-only console and worker-local three-camera videos are verified. Full four-provider, recovery, supplementary role-report/TODO completion and v1 acceptance remain pending. Development is stopped at the requested minimal checkpoint.
+Status: local Qwen Planner and Verifier with learned Pi0.5 complete a real headless RoboTwin task through native DSH, ActionGate, independent formal verification and released Session. Clean role-completion acceptance verifies completed Planner TODOs, committed terminal receipts, zero tool errors and zero subsequent model steps after terminal tools. The trace-only console and worker-local three-camera videos are verified. Custom-role reporting, recovery and full four-provider v1 acceptance remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -27,7 +27,7 @@ are SVG assets; include their directory when handing over this document.
 
 ### 0.1 Current work and next action
 
-Development is stopped after the completed local Qwen/Pi0.5 headless workflow. The
+The local Qwen/Pi0.5 trace-review milestone is complete. The
 [Qwen headless handoff](implementation/qwen-headless-checkpoint.md) records exact task,
 source, checkpoint, verification and shutdown evidence, preserved work and the
 continuation requirements. The weekly DSH monitor performs read-only assessment.
@@ -434,6 +434,15 @@ Accepted formal-verification assignments use the same completion path. Missing-c
 reports remain open. An Evolver with a published SKILL is released after its final
 success delivery settles; learning failures release the handle independently of task
 success. The decision owner remains available through run shutdown for report inspection.
+
+Completion instructions follow the configured responsibility: Planner uses
+`tasks.finish` or `tasks.abandon`, formal Verifier uses `verification.submit`, and
+delegated work uses structured `agent.report` results. These tools call native DSH
+`ToolExecution.concludeTurn` after successful execution. The current turn commits
+its tool receipt and completes before role retirement; missing-context reports
+complete the turn while retaining their assignment for explicit caller context.
+Planner success requires the completed durable plan, current formal verdict and
+all decision-owner TODOs marked `completed` before `tasks.finish`.
 
 Retirement awaits native disposal before publishing its final audit snapshot, including
 events committed by scoped cleanup. Assignment evidence grants are opened from the

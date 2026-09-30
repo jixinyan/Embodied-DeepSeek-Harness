@@ -2,8 +2,9 @@
 
 Snapshot: 2026-09-30. Local Qwen Planner/Verifier and learned Pi0.5 complete a
 real headless RoboTwin task with released Session resources. The live console
-shows Agent trace; simulator videos are recorded locally. Complete role-report,
-terminal TODO, recovery and multi-provider acceptance remain open.
+shows Agent trace; simulator videos are recorded locally. Completed Planner TODOs,
+committed terminal receipts and zero tool errors pass real recorded acceptance.
+Custom-role reports, recovery and multi-provider acceptance remain open.
 The [v1 delivery register](v1-delivery.md) tracks all remaining implementation and
 actual validation requirements.
 

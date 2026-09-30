@@ -40,7 +40,7 @@ See [native audit publication](../../../docs/implementation/session-audits.md#na
 
 
 Normal completion uses `TeamSessions.finish`: reject new messages immediately, allow
-the current native turn to receive its final tool receipt and produce final output,
+the current native turn to commit its final tool receipt,
 then retire at quiescence. The original turn deadline remains active while draining;
 shutdown may still cancel it. Repeated finish shares completion, including cleanup
 errors. `isLive` describes the native handle; `acceptsMessages` also excludes finishing
@@ -57,3 +57,15 @@ report arriving after its caller finishes is saved with failed delivery and no n
 recipient evidence grant; it does not reopen that caller or fail the whole task.
 Its actual final native turn may replay the report before quiescence. After disposal,
 use durable report inspection, not another native call through a retired handle.
+
+Completion instructions follow the assignment responsibility. The decision owner
+completes through `tasks.finish` or `tasks.abandon`; the formal Verifier completes
+through `verification.submit`; delegated work returns structured `agent.report`
+results. Completed tools use DSH's native `concludeTurn` to finish the current turn
+after its receipt is committed. Missing-context reports also conclude the current
+turn while retaining the assignment for explicit followup context. Report `result`
+is a JSON object or null and obeys the role's configured result schema.
+
+Before task success, the decision owner must update its durable plan and complete
+all remaining native TODO items. The application checks their actual recorded
+statuses before committing success; it never rewrites a model's TODO history.

@@ -25,6 +25,13 @@ retirement. Receipt replay and final output can finish through the existing nati
 turn. `retire` closes admission and requests cancellation immediately. Both share
 existing retirement completions and retain cleanup failures.
 
+Accepted formal verdicts and assignment reports conclude their current turn through
+DSH `ToolExecution.concludeTurn`. The native scheduler commits the tool receipt and
+the completed turn before retirement disposes its context. Task decision-owner
+completion uses the same native boundary through `tasks.finish` or `tasks.abandon`.
+Success requires a complete durable plan, current formal success and completed
+decision-owner TODOs. Explicit later report acknowledgements remain separate work.
+
 Retirement awaits quiescence, attempts native handle disposal, then publishes the
 final native event range. Native disposal removes Agent and Session registry entries and
 unwinds the scoped services. Events produced by those services during cleanup are
