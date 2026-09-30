@@ -99,7 +99,7 @@ server = await startServer({
           demonstration = { text, images: admitted };
         }
         const gateway = await serveGptPolicy(host, validator, {
-          port: 0,
+          port: entry.policyGatewayPort ?? 0,
           images,
           modes: [mode],
           onError: (error) => console.error(error),
@@ -122,7 +122,7 @@ server = await startServer({
           },
         });
         gateways.push(gateway);
-        worker.policyUri = `ws://127.0.0.1:${gateway.port}`;
+        worker.policyUri = entry.workerPolicyUri ?? `ws://127.0.0.1:${gateway.port}`;
       }
       launchProfiles[id] = {
         source: 'simulation',

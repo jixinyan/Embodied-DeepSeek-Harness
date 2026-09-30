@@ -40,6 +40,29 @@ provider-boundary evidence only; it does not claim a completed task, learned
 policy success or GPT-6 Astra request. A full policy rollout, interruption and
 formal task-success acceptance still require their own recorded runs.
 
+## Distributed Astra deployment
+
+`examples/deployments/robodojo-live.mjs` accepts a deployment JSON path through
+`EDH_ROBODOJO_CONFIG`. Each profile binds a worker command, native scene and task
+catalog, compatible execution mode and model/checkpoint identity. The console
+admits the complete profile selected by the user.
+
+The console and DSH policy gateway may run on a model-accessible host while the
+native simulator and Python worker run on the GPU host. Set a profile's optional
+`policyGatewayPort` to the local listening port and `workerPolicyUri` to the
+WebSocket address reachable from its worker. Without these settings, the gateway
+uses an allocated local port and the worker connects locally. An SSH reverse
+forward can connect the remote worker to a loopback-only local gateway; the
+worker command can use SSH with `transportFd: 1`. SSH stdout then carries the
+worker protocol and stderr carries diagnostics. No model credentials need to be
+copied into worker configuration.
+
+Keep simulator output, native task assets, checkpoints and dependency environments
+in their designated locations. Device selection is deployment configuration.
+Cold scene/material initialization must complete before task acceptance. Retain
+initialization failures separately from task outcomes and create a fresh native
+episode after an uncertain reset; the inspected native server admits one episode.
+
 References:
 
 - RoboDojo: <https://github.com/RoboDojo-Benchmark/RoboDojo>

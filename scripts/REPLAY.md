@@ -82,7 +82,7 @@ images, or the recorded outcome.
 `render-run-video.py` composes the original three PNG camera sequences and
 recorded agent events into one 1920×1080 MP4. It requires Pillow, `ffmpeg` with
 `libx264`, and a readable TrueType font supplied by the host. Its source is a
-complete terminal failed-run export made by the command above:
+complete terminal successful or failed run export with formal verification made by the command above:
 
 ```sh
 python scripts/render-run-video.py \
@@ -94,11 +94,13 @@ python scripts/render-run-video.py \
 
 The video advances recorded wall time at the stated speed, with explicit
 holds at recorded model outputs, plan publication, formal verdict and final
-failure. Each hold is labelled. The camera panel selects only recorded source
+run result. Each hold is labelled. The camera panel selects only recorded source
 frames at or before the current wall time and shows the original frame event
 and simulator time. Its heading identifies those frames as the operator rollout;
 the video does not imply that every frame entered an agent context. Model
-reasoning and assistant text come directly from `agent.output` content blocks.
+reasoning and assistant text come directly from native `agent.output` and
+`policy.output` content blocks. Execution-policy tool events and local subtask
+plans remain separate from the upper roles. Camera aspect ratios are preserved.
 Long entries display a labelled original-text page; the complete text stays in
 `source/events.json`. Plan, TODO, tools, communication, execution counters and
 native verification use the same recorded wall-time cursor.

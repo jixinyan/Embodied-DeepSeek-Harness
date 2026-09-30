@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 
 from PIL import Image, ImageDraw, ImageFont
+from PIL import ImageOps
 
 
 WIDTH = 1920
@@ -28,10 +29,19 @@ def load_json(file):
 
 
 def latest(events, times, wall, event_type):
+    kinds = {event_type} if isinstance(event_type, str) else set(event_type)
     for index in range(bisect_right(times, wall) - 1, -1, -1):
-        if events[index]["type"] == event_type:
+        if events[index]["type"] in kinds:
             return events[index]
     return None
+
+
+def model_message(event):
+    return event["detail"]["data"]["message"] if event["type"] == "policy.output" else event["detail"]["message"]
+
+
+def model_role(event):
+    return "execution policy" if event["type"] == "policy.output" else event["detail"]["member"]
 
 
 def draw_panel(draw, bounds, title, font):
@@ -90,8 +100,10 @@ def draw_excerpt(draw, source, origin, width, line_height, maximum, font, page_i
 def recorded_holds(events):
     holds = []
     for event in events:
-        duration = {"agent.output": 2.0, "plan.updated": 1.0,
-                    "verification.completed": 3.0, "run.failed": 4.0}.get(event["type"])
+        duration = {"agent.output": 2.0, "policy.output": 2.0,
+                    "plan.updated": 1.0, "policy.plan": 1.0,
+                    "verification.completed": 3.0, "run.failed": 4.0,
+                    "run.succeeded": 4.0}.get(event["type"])
         if duration is not None:
             holds.append((timestamp(event["at"]), duration, event["sequence"], event["type"]))
     return holds
@@ -163,12 +175,12 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     if hold:
         draw.text((1270, 48), f"RECORDED HOLD  #{hold[0]} {hold[1]}", font=small, fill=ACCENT)
     draw_panel(draw, (30, 115, 1170, 575), "MODEL REASONING · ORIGINAL RECORD", body)
-    output = latest(events, event_times, wall, "agent.output")
+    output = latest(events, event_times, wall, ("agent.output", "policy.output"))
     if output:
-        blocks = output["detail"]["message"]["content"]
+        blocks = model_message(output)["content"]
         reasoning = next((block.get("text", "") for block in blocks if block["type"] == "reasoning"), "")
         display = reasoning or "Reasoning text was not recorded for this model output."
-        draw.text((52, 164), f"{output['detail']['member']} · event #{output['sequence']} · {output['at']}", font=small, fill=MUTED)
+        draw.text((52, 164), f"{model_role(output)} · event #{output['sequence']} · {output['at']}", font=small, fill=MUTED)
         page = int((playback_second - model_start.get(output["sequence"], playback_second)) / 4)
         current, total = draw_excerpt(draw, display, (52, 205), 1085, 29, 11, body, page, 1148, 540)
         draw.text((52, 542), f"Original text page {current}/{total} · full record: source/events.json", font=caption, fill=MUTED)
@@ -177,13 +189,13 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     draw_panel(draw, (30, 590, 1170, 735), "ASSISTANT TEXT · ORIGINAL RECORD", body)
     text_event = None
     for candidate in reversed(events[:bisect_right(event_times, wall)]):
-        if candidate["type"] == "agent.output" and any(
+        if candidate["type"] in {"agent.output", "policy.output"} and any(
                 block["type"] == "text" and block.get("text", "").strip()
-                for block in candidate["detail"]["message"]["content"]):
+                for block in model_message(candidate)["content"]):
             text_event = candidate
             break
     if text_event:
-        original = "\n".join(block["text"] for block in text_event["detail"]["message"]["content"]
+        original = "\n".join(block["text"] for block in model_message(text_event)["content"]
                              if block["type"] == "text")
         page, total = draw_excerpt(draw, original, (52, 638), 1080, 27, 2, body, 0, 1148, 715)
         draw.text((750, 710), f"event #{text_event['sequence']} · excerpt {page}/{total}", font=caption, fill=MUTED)
@@ -204,18 +216,27 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
         todo_lines = [f"{item['status']}: {item['content']}" for item in todos["detail"].get("todos", [])]
         current = next((line for line in todo_lines if line.startswith("in_progress:")), todo_lines[-1] if todo_lines else "No TODO items")
         draw_excerpt(draw, current, (50, 940), 515, 23, 2, caption, 0, 570, 994)
+    policy_plan = latest(events, event_times, wall, "policy.plan")
+    if policy_plan:
+        subtasks = policy_plan["detail"]["data"]["subtasks"]
+        active = next((item for item in subtasks if item["status"] == "in_progress"), subtasks[-1] if subtasks else None)
+        if active:
+            draw.rectangle((48, 938, 575, 999), fill=PANEL)
+            draw_excerpt(draw, f"Policy {active['id']} · {active['status']}: {active['src']} → {active['dst']}",
+                         (50, 940), 515, 23, 2, caption, 0, 570, 994)
     draw_panel(draw, (605, 750, 1170, 1005), "TOOLS AND COMMUNICATION", body)
     tool = None
     message = None
     for candidate in reversed(events[:bisect_right(event_times, wall)]):
-        if tool is None and candidate["type"].startswith("tool."):
+        if tool is None and (candidate["type"].startswith("tool.") or candidate["type"] in {"policy.tool-call", "policy.tool-result"}):
             tool = candidate
         if message is None and candidate["type"] == "message.delivered":
             message = candidate
         if tool and message:
             break
     if tool:
-        draw.text((625, 801), f"#{tool['sequence']} {tool['detail'].get('tool', 'tool')} · {tool['type']}", font=small, fill=TEXT)
+        draw_excerpt(draw, f"#{tool['sequence']} {tool['detail'].get('tool', 'execution policy')} · {tool['type']}",
+                     (625, 801), 520, 23, 1, small, 0, 1147, 832)
         draw_excerpt(draw, json.dumps(tool["detail"].get("result", tool["detail"]), ensure_ascii=False),
                      (625, 838), 520, 23, 3, caption, 0, 1147, 920)
     if message:
@@ -238,9 +259,7 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
         frame_wall, file, sequence, sim_time = frames[position]
         if camera_cache[index][0] != file:
             with Image.open(file) as original:
-                if original.width != original.height:
-                    raise ValueError("Recorded camera aspect ratio does not match this layout.")
-                camera_cache[index] = (file, original.convert("RGB").resize((196, 196)))
+                camera_cache[index] = (file, ImageOps.pad(original.convert("RGB"), (196, 196), color="#0b1418"))
         image.paste(camera_cache[index][1], (1205, y))
         draw.text((1420, y + 12), name.replace("robot0_", "").replace(".png", ""), font=small, fill=TEXT)
         draw.text((1420, y + 56), f"Frame event #{sequence}", font=small, fill=MUTED)
@@ -261,11 +280,15 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     verdict = latest(events, event_times, wall, "verification.completed")
     if check:
         facts = check["detail"].get("facts", [])
-        draw.text((1205, 900), ", ".join(f"{fact['check_id']}={str(fact['value']).lower()}" for fact in facts), font=small, fill=FAILURE)
+        draw.text((1205, 900), ", ".join(f"{fact['check_id']}={str(fact['value']).lower()}" for fact in facts), font=small, fill=ACCENT if all(fact["value"] is True for fact in facts) else FAILURE)
     else:
         draw.text((1205, 900), "Formal native check pending", font=small, fill=MUTED)
     if verdict:
-        draw.text((1205, 931), f"Formal verdict: {verdict['detail']['result']['status']}", font=small, fill=FAILURE)
+        status = verdict["detail"]["result"]["status"]
+        draw.text((1205, 931), f"Formal verdict: {status}", font=small, fill=ACCENT if status == "success" else FAILURE)
+    success = latest(events, event_times, wall, "run.succeeded")
+    if success:
+        draw.text((1205, 965), "TASK SUCCEEDED · independent formal verification", font=small, fill=ACCENT)
     failure = latest(events, event_times, wall, "run.failed")
     if failure:
         _, error_pages = draw_excerpt(draw, f"Run failed: {source_run['error']}",
@@ -295,8 +318,10 @@ def main():
     events = load_json(export / "source/events.json")
     manifest = load_json(export / "manifest.json")
     images = load_json(export / "frames.json")
-    if run["id"] != manifest["runId"] or len(events) != manifest["eventCount"] or run["state"] != "failed":
-        raise ValueError("The source must be a complete, recorded failed run.")
+    if run["id"] != manifest["runId"] or len(events) != manifest["eventCount"] or run["state"] not in {"failed", "succeeded"}:
+        raise ValueError("The source must be a complete, recorded terminal run with formal verification.")
+    if run["state"] == "succeeded" and not any(event["type"] == "verification.completed" and event["detail"]["result"]["status"] == "success" for event in events):
+        raise ValueError("A successful source requires its recorded formal success verdict.")
     event_times = [timestamp(event["at"]) for event in events]
     if event_times != sorted(event_times):
         raise ValueError("Recorded events must have increasing wall timestamps.")
@@ -313,7 +338,7 @@ def main():
     camera_cache = [(None, None) for _ in cameras]
     model_start = {}
     for event in events:
-        if event["type"] == "agent.output":
+        if event["type"] in {"agent.output", "policy.output"}:
             for segment in segments:
                 if segment[2] <= timestamp(event["at"]) <= segment[3]:
                     model_start[event["sequence"]] = segment[0] + (timestamp(event["at"]) - segment[2]) / arguments.wall_speed
@@ -338,8 +363,8 @@ def main():
                                     if event["type"] == "verification.completed"),
               "nativeCheck": next(event["detail"]["facts"] for event in events
                                   if event["type"] == "verification.checked"),
-              "agentReasoningEvents": sum(event["type"] == "agent.output" and
-                                          any(block["type"] == "reasoning" for block in event["detail"]["message"]["content"])
+              "agentReasoningEvents": sum(event["type"] in {"agent.output", "policy.output"} and
+                                          any(block["type"] == "reasoning" for block in model_message(event)["content"])
                                           for event in events)}
     arguments.output.with_suffix(".json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report))

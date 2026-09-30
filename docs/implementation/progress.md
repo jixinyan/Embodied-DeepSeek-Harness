@@ -26,6 +26,15 @@ v1 acceptance register for resumption.
 
 ## 2026-09-29 execution-policy observability checkpoint
 
+Distributed RoboDojo deployments can bind the local policy gateway port and the
+worker-reachable WebSocket URI explicitly. Native task configuration retains its
+instruction alongside scene metadata, including when the user adds task guidance.
+Native owner-thread invocations accept typed positional/keyword parameters.
+The composite MP4 renderer includes native execution-policy output, local plans
+and tool events, preserves camera aspect ratios and validates successful sources
+against a recorded formal success verdict. End-to-end successful acceptance and
+the requested successful MP4 remain pending.
+
 Native DSH policy Sessions publish scoped model messages, returned reasoning,
 tool calls/results, local plans, status and decisions through the physical worker
 into the same run journal and console. The console can filter execution-policy

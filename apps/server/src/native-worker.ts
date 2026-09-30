@@ -772,7 +772,13 @@ export async function createNativeWorkerEnvironment(
           {
             ...task,
             instruction: nativeInstruction,
-            goal: { ...task.goal, configuration: JSON.stringify(sceneMetadata) },
+            goal: {
+              ...task.goal,
+              configuration: JSON.stringify({
+                ...sceneMetadata,
+                task_instruction: nativeInstruction,
+              }),
+            },
           },
         ]),
       ),

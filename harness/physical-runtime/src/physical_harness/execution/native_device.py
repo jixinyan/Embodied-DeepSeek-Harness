@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from threading import Lock
-from typing import Callable, TypeVar
+from typing import Callable, ParamSpec, TypeVar
 from uuid import uuid4
 
 from physical_harness.environments import NativeEnvironment, NativeObservation, NativeStep
 
 
 T = TypeVar("T")
+P = ParamSpec("P")
 
 
 class NativeActionDevice:
@@ -26,10 +28,10 @@ class NativeActionDevice:
         self._uncertain_actions = 0
         self._last_step: NativeStep | None = None
 
-    async def on_owner(self, action: Callable[[], T]) -> T:
+    async def on_owner(self, action: Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
         if self._closed:
             raise RuntimeError("Native simulation owner is closed.")
-        return await asyncio.get_running_loop().run_in_executor(self._executor, action)
+        return await asyncio.get_running_loop().run_in_executor(self._executor, partial(action, *args, **kwargs))
 
     @property
     def raw_sim_steps(self) -> int:

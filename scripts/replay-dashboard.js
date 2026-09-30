@@ -71,13 +71,15 @@ function renderAgents(wall) {
   if (!created.length) text(container, 'p', 'No agent has started at this time.', 'empty');
   const output = clear('model-output');
   text(output, 'h3', 'Recorded model output');
-  const rows = visible('agent.output', wall).slice(-8).reverse();
+  const rows = events.filter((event) => ['agent.output', 'policy.output'].includes(event.type)
+    && Date.parse(event.at) <= wall).slice(-8).reverse();
   if (!rows.length) text(output, 'p', 'No model output at this time.', 'empty');
   for (const event of rows) {
     const detail = event.detail;
-    const message = detail.message;
+    const message = event.type === 'policy.output' ? detail.data.message : detail.message;
+    const member = event.type === 'policy.output' ? 'execution policy' : detail.member;
     const source = message?.source;
-    const row = addEntry(output, `${detail.member} · ${message?.role ?? 'assistant'}`, `${at(event)} · ${source?.provider ?? 'provider unavailable'}/${source?.model ?? 'model unavailable'}`, null, null);
+    const row = addEntry(output, `${member} · ${message?.role ?? 'assistant'}`, `${at(event)} · ${source?.provider ?? 'provider unavailable'}/${source?.model ?? 'model unavailable'}`, null, null);
     for (const block of message?.content ?? []) {
       if (block.type === 'text') text(row, 'p', block.text);
       else if (block.type === 'reasoning') text(row, 'p', `Recorded reasoning: ${valueText(block.text ?? block.content ?? '')}`);
@@ -112,15 +114,23 @@ function renderPlan(wall) {
     for (const item of updateTodos.detail.todos ?? [])
       addEntry(todos, item.status, null, item.content, null);
   }
+  const policyPlan = last('policy.plan', wall);
+  if (policyPlan) {
+    text(todos, 'strong', `Execution policy · ${at(policyPlan)}`);
+    for (const item of policyPlan.detail.data.subtasks)
+      addEntry(todos, `${item.id} · ${item.status}`, null, `${item.src} → ${item.dst}: ${item.next_action}`, item);
+  }
 }
 
 function renderToolsAndMessages(wall) {
   const tools = clear('tools');
   text(tools, 'h3', 'Tool activity');
-  const toolEvents = events.filter((event) => event.type.startsWith('tool.') && Date.parse(event.at) <= wall).slice(-7).reverse();
+  const toolEvents = events.filter((event) => (event.type.startsWith('tool.')
+    || ['policy.tool-call', 'policy.tool-result'].includes(event.type))
+    && Date.parse(event.at) <= wall).slice(-7).reverse();
   if (!toolEvents.length) text(tools, 'p', 'No tool activity at this time.', 'empty');
   for (const event of toolEvents)
-    addEntry(tools, `${event.detail.tool} · ${event.type.slice(5)}`, at(event), null, event.detail);
+    addEntry(tools, `${event.detail.tool ?? event.detail.data?.name ?? 'execution policy'} · ${event.type}`, at(event), null, event.detail);
   const messages = clear('messages');
   text(messages, 'h3', 'Role communication');
   const rows = visible('message.delivered', wall).slice(-6).reverse();
@@ -199,6 +209,8 @@ function syncCamera(node, wall) {
 
 const milestone = (event) => !['simulation.frame', 'execution.updated', 'agent.context-usage', 'agent.context-capacity'].includes(event.type);
 function eventCategory(event) {
+  if (['policy.tool-call', 'policy.tool-result'].includes(event.type)) return 'tool';
+  if (event.type.startsWith('policy.')) return 'agent';
   if (event.type.startsWith('agent.') || event.type === 'message.delivered' || event.type === 'plan.updated') return 'agent';
   if (event.type.startsWith('tool.') || event.type.startsWith('dsh.tool-')) return 'tool';
   if (event.type.startsWith('execution.')) return 'execution';
