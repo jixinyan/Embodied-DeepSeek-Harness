@@ -1,5 +1,6 @@
 schema_version: physical.team.v1
 team_id: robotwin-live
+learning_enabled: false
 entrypoint: lead
 members:
   lead: ../roles/robotwin-planner.md

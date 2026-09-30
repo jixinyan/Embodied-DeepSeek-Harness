@@ -254,6 +254,8 @@ export class UpperRun {
                     successContract: this.goal.successContract,
                     budget: this.goal.budget,
                   },
+                  retry: this.retryContext(),
+                  learningEnabled: this.sessions.team.definition.learning_enabled !== false,
                 }
               : {}),
             execution: execution
@@ -455,6 +457,26 @@ export class UpperRun {
           latest,
         )
       : undefined;
+  }
+  private retryContext() {
+    const attempts = this.state.requests.filter((request) => request.goal_id === this.goal.id);
+    const verdict = this.currentVerdict();
+    const currentFailure =
+      verdict?.status === 'failed' &&
+      verdict.task_scope.attempt_id === `attempt-${this.state.attempt}`;
+    return {
+      goalId: this.goal.id,
+      attemptId: `attempt-${this.state.attempt}`,
+      attemptsStarted: attempts.length,
+      maxAttempts: 3,
+      remainingAttempts: Math.max(0, 3 - attempts.length),
+      retryAllowed: currentFailure && attempts.length < 3,
+      failedVerdictId: currentFailure ? verdict.verdict_id : null,
+      changes: [...this.state.retryChanges],
+      executionStarted: attempts.some(
+        (request) => request.attempt_id === `attempt-${this.state.attempt}`,
+      ),
+    };
   }
   private stoppedAndVerified(): void {
     const execution = this.options.backend.query();
@@ -1056,6 +1078,8 @@ export class UpperRun {
           successContract: structuredClone(this.goal.successContract),
           activeGoalId: this.goal.id,
           attemptId: `attempt-${this.state.attempt}`,
+          retry: this.retryContext(),
+          learningEnabled: this.sessions.team.definition.learning_enabled !== false,
           ...this.goals.catalog(),
         };
       case 'planning.update': {
@@ -1081,6 +1105,11 @@ export class UpperRun {
       case 'files.search':
         return { files: this.files.search(a.id, s('query')) };
       case 'team.delegate': {
+        if (
+          this.sessions.team.definition.learning_enabled === false &&
+          s('member') === this.sessions.team.definition.bindings.recovery_evolver
+        )
+          throw new Error('Recovery learning is disabled for this Team.');
         const targetRole = this.sessions.team.members[s('member')];
         const verifierRole =
           this.sessions.team.members[this.sessions.team.definition.bindings.final_verifier];
@@ -1441,7 +1470,14 @@ export class UpperRun {
           recoveryId: this.state.recoveryId,
           changes,
         });
-        return { attempt: this.state.attempt, recoveryId: this.state.recoveryId };
+        return {
+          attempt: this.state.attempt,
+          recoveryId: this.state.recoveryId,
+          retry: this.retryContext(),
+          failedVerdictId: verdict.verdict_id,
+          instruction:
+            'The new attempt is admitted but has not started. Capture the retained scene, update the plan and TODOs, then call execution.start in a subsequent model step. Keep the original success criteria unchanged.',
+        };
       }
       case 'verification.check': {
         this.verifier(a);
@@ -1545,6 +1581,8 @@ export class UpperRun {
               execution,
               brief: this.brief(lead.member, this.state.instruction),
               finalGoalId: this.options.goal.id,
+              retry: this.retryContext(),
+              learningEnabled: this.sessions.team.definition.learning_enabled !== false,
             },
             a.id,
             sensorImages([checked.sample]),

@@ -77,6 +77,10 @@ export const CORE_TOOL_OPTIONAL_PARAMETERS: Readonly<Record<string, readonly str
 };
 
 export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'tasks.retry':
+    'Admit one new attempt after a current formal failed verdict and confirmed ended execution. Provide a factual attemptSummary and nonempty concrete changes. Read planning.read.retry for the per-goal three-attempt limit. Await this receipt before fresh perception, plan/TODO updates and execution.start in a subsequent model step. The environment is retained and original success criteria remain unchanged; retry does not start motion.',
+  'tasks.replan':
+    'Record the decision owner plan revision and concrete changes. After formal failure, include the factual attemptSummary. Update the durable plan explicitly; a new execution attempt still requires tasks.retry. Recovery learning follows the Team configuration.',
   'planning.update':
     'Write the complete durable PlanDocument as a structured JSON object in plan, with every object and array closed and the admitted success criteria unchanged. Supply expectedVersion from planning.read; plan.version must equal expectedVersion + 1. Await the successful write receipt before selecting a goal in a subsequent model step. Keep descriptions concise; task identities, owners, dependencies and formal criteria are structured fields.',
   'tasks.select_goal':

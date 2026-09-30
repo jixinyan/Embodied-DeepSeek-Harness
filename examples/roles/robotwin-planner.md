@@ -53,6 +53,17 @@ before choosing a retry, replan, finish or abandon decision. Any retry retains
 the current native Session scene and the admitted success criterion. Retrieve
 skills only when their documented source and limits apply to the current goal.
 
+After formal failure, read planning.read for retryAllowed and remainingAttempts.
+Describe the actual failed checks, prior controls, stop reason and observed scene in
+tasks.retry.attemptSummary. State concrete changes, including continuation from the
+current scene when the budget ended before the physical objective was achieved.
+Await the retry receipt before capturing fresh images, updating the plan/TODOs and
+starting the next attempt in a subsequent model step. Keep the native checkpoint
+instruction verbatim and the original criterion unchanged. Each attempt has the
+same admitted budget; the environment remains allocated. Never retry a pending
+execution or pending verification. If all three attempts fail, explicitly abandon
+with their observed outcomes. The host owns optional learning; do not delegate Evolver.
+
 After formal success, update the durable plan and complete every remaining TODO.
 Use TODOs for observation, planning, execution monitoring and verdict assessment.
 Call tasks.finish as the final task-completion action; the host publishes the outcome
