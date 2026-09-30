@@ -94,8 +94,14 @@ and scoped policy telemetry remains available during shutdown.
 EDH owns the DSH role and GPT-policy Sessions, tool declarations, worker client,
 execution lifecycle and ActionGate. The native server, RGB-D capture, numerical
 motion tools, FK checks and service launcher now have EDH-owned source. Independent
-pinned SDK checkouts and a content-verified asset copy are provisioned; the separate
-Conda environment and real owned-service acceptance are in progress. The current
+pinned SDK checkouts, isolated native packages and a content-verified asset copy
+are provisioned. Native check `efc74efc-5c30-4b1b-9173-5c0c47d51039` confirms
+reset, three RGB-D cameras, measured FK, numerical preparation, two actual
+ActionGate controls, pause/resume, terminal user stop and owned-process exit.
+Native task success is false; model-driven owned-service acceptance remains pending.
+The selected IsaacLab/Isaac Sim package requirements contain an incompatible
+Starlette/FastAPI constraint; the installer checks and reports dependency consistency.
+The current
 priority is real agent-loop debugging, measured efficiency improvements, then
 a natively successful `build_tower` task and composite agentic-trace MP4.
 See [independent RoboDojo deployment](robodojo-standalone.md). Compilation, source

@@ -90,6 +90,7 @@ def main():
         run([python, "-m", "pip", "install", "yourdfpy==0.0.60", "msgpack==1.1.1",
              "imageio-ffmpeg", "jsonschema==4.25.1"], environment)
         run([python, "-m", "pip", "install", "--no-deps", root / "harness/physical-runtime"], environment)
+        run([python, "-m", "pip", "check"], environment)
 
 
 if __name__ == "__main__":

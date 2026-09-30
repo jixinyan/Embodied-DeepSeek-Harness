@@ -68,6 +68,9 @@ with the same native task and loopback port. Session initialization starts the
 owned service and waits for its actual listening socket. Each initialization
 creates a unique episode output beneath the configured output directory.
 Session resource release closes the connection and waits for confirmed process exit.
+Use port `0` in both configurations for independently allocated Session ports.
+The service atomically publishes its actual port, process and task identity after
+binding. The worker checks its owned listening socket before connecting once.
 Select `direct`, `hybrid` or `policy` through the existing admitted
 profile. Hybrid/learned profiles additionally require a real compatible policy
 endpoint and checkpoint identity. Model credentials remain environment variables.
@@ -75,9 +78,17 @@ The worker disconnects its owned service when the user Session releases resource
 
 ## Acceptance
 
-Compilation and source checks pass for the service and launcher. Independent
-SDK/environment/asset provisioning and real service acceptance are in progress.
-Required checks are native reset, measured FK, all three RGB-D sensors, numerical
-preparation, actual ActionGate controls, Planner-owned pause/resume, operator
-cancel and process/resource release. Previous acceptance evidence using a separate
-native service does not certify this new deployment.
+Independent SDK checkouts, isolated native packages and the content-verified
+asset copy are provisioned. Native manual-control check
+`efc74efc-5c30-4b1b-9173-5c0c47d51039` passes reset, all three RGB-D sensors,
+measured FK and numerical preparation with zero physical steps. Two actual
+ActionGate controls pass confirmed pause, held counters, resume, terminal
+`user_stop` and confirmed owned-process exit. Its unchanged native success
+criterion returns false. This check exercises manual control boundaries;
+independent model-driven Session and task-success acceptance remain required.
+
+The selected native SDK dependency metadata requires Starlette `0.49.1` while
+Isaac Sim `5.1.0.0` requires FastAPI `0.115.7`, which requires Starlette below
+`0.46.0`. The environment provisioning command finishes with `pip check` and
+reports this upstream dependency conflict. Native manual-control evidence does
+not certify a clean dependency installation.

@@ -2,6 +2,7 @@ import argparse
 import ctypes
 import importlib
 import json
+import os
 from pathlib import Path
 import socket
 import struct
@@ -31,6 +32,12 @@ def serve(session, port):
         listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         listener.bind(("127.0.0.1", port))
         listener.listen(1)
+        port = listener.getsockname()[1]
+        ready = session.output / "ready.json"
+        staging = session.output / ".ready.json"
+        staging.write_text(json.dumps({"version": _VERSION, "pid": os.getpid(), "port": port,
+                                      "task": session.metadata["task"]}) + "\n")
+        staging.replace(ready)
         print(json.dumps({"event": "ready", "port": port, "metadata": session.metadata}), flush=True)
         connection, _ = listener.accept()
         with connection:
@@ -84,7 +91,7 @@ def main():
 
     AppLauncher.add_app_launcher_args(parser)
     args = parser.parse_args()
-    if not 1 <= args.port <= 65535 or args.output.exists():
+    if not 0 <= args.port <= 65535 or args.output.exists():
         raise ValueError("Use a valid port and a fresh output directory.")
     args.headless, args.enable_cameras = True, True
     from env.global_configs import ROOT_DIR, BENCHMARK

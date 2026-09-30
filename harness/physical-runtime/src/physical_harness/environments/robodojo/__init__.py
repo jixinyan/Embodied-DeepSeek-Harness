@@ -348,6 +348,36 @@ class RoboDojoEnvironment:
             },
         )
 
+    def _start_service(self, service_path: Path, service_config: Mapping[str, Any],
+                       task_id: str, port: int, timeout_s: float) -> int:
+        output = Path(service_config["output"]) / str(uuid4())
+        self._service = subprocess.Popen(
+            [sys.executable, "-m", "physical_harness.environments.robodojo.launch",
+             "--configuration", str(service_path), "--output", str(output)],
+            stdout=sys.stderr, stderr=sys.stderr, start_new_session=True,
+        )
+        process = psutil.Process(self._service.pid)
+        deadline = time.monotonic() + timeout_s
+        ready_path = output / "ready.json"
+        while True:
+            exit_code = self._service.poll()
+            if exit_code is not None:
+                self._service = None
+                raise RuntimeError(f"The owned RoboDojo service exited before readiness: {exit_code}.")
+            if ready_path.exists():
+                ready = json.loads(ready_path.read_text())
+                actual_port = ready.get("port")
+                if (ready.get("pid") != self._service.pid or ready.get("task") != task_id
+                        or ready.get("version") != _VERSION or type(actual_port) is not int
+                        or not 1 <= actual_port <= 65535 or (port != 0 and port != actual_port)):
+                    raise RuntimeError("Native service readiness identity differs from its owner.")
+                if any(connection.status == psutil.CONN_LISTEN and connection.laddr.port == actual_port
+                       for connection in process.connections(kind="tcp")):
+                    return actual_port
+            if time.monotonic() >= deadline:
+                raise TimeoutError("The owned RoboDojo service did not become ready within its timeout.")
+            time.sleep(0.2)
+
     def reset(self, task_id: str, configuration: Mapping[str, object]) -> NativeObservation:
         if self._rpc is not None or self._service is not None:
             raise RuntimeError("RoboDojo session is already initialized; reset cannot roll back an episode.")
@@ -367,7 +397,7 @@ class RoboDojoEnvironment:
         source = configuration.get("source", "student")
         policy_version = configuration.get("policy_version", "edh")
         control_mode = configuration.get("control_mode", "0-shot")
-        if not isinstance(host, str) or not host or type(port) is not int or not 1 <= port <= 65535:
+        if not isinstance(host, str) or not host or type(port) is not int or not 0 <= port <= 65535:
             raise ValueError("RoboDojo configuration requires a host and integer port.")
         if (type(timeout_s) not in (int, float) or not math.isfinite(timeout_s)
                 or not 0 < timeout_s <= 900):
@@ -386,30 +416,10 @@ class RoboDojoEnvironment:
             service_config = json.loads(service_path.read_text())
             if service_config["task"] != task_id or service_config["port"] != port:
                 raise ValueError("Native service configuration differs from the admitted task or port.")
-            output = Path(service_config["output"]) / str(uuid4())
-            self._service = subprocess.Popen(
-                [sys.executable, "-m", "physical_harness.environments.robodojo.launch",
-                 "--configuration", str(service_path), "--output", str(output)],
-                stdout=sys.stderr, stderr=sys.stderr, start_new_session=True,
-            )
-            process = psutil.Process(self._service.pid)
-            deadline = time.monotonic() + float(timeout_s)
-            while True:
-                exit_code = self._service.poll()
-                if exit_code is not None:
-                    self._service = None
-                    raise RuntimeError(f"The owned RoboDojo service exited before readiness: {exit_code}.")
-                if any(connection.status == psutil.CONN_LISTEN and connection.laddr.port == port
-                       for connection in process.connections(kind="tcp")):
-                    break
-                if time.monotonic() >= deadline:
-                    self._service.terminate()
-                    self._service.wait(timeout=30)
-                    self._service = None
-                    raise TimeoutError("The owned RoboDojo service did not become ready within its timeout.")
-                time.sleep(0.2)
         self._configuration = dict(configuration)
         try:
+            if service_configuration is not None:
+                port = self._start_service(service_path, service_config, task_id, port, float(timeout_s))
             self._rpc = _RoboDojoRpc(host, port, float(timeout_s))
             metadata = self._rpc.request("metadata")
             if not isinstance(metadata, dict) or metadata.get("task") != task_id:
