@@ -129,9 +129,12 @@ acceptance pass with the recorded native rollout above; hybrid acceptance remain
 
 The authorized simulator uses configurable GPU device 7. Other GPU devices were
 available at the latest inventory; no existing job was interrupted. The selected
-Pi0.5 checkpoint download completes at the pinned dataset revision. The isolated
-OpenPI dependency installation requires completion after its current download
-timeout. Actual checkpoint/model inference and available-device admission remain required.
+Pi0.5 checkpoint download contains all 18 inference files at the pinned dataset
+revision. The isolated EDH-owned OpenPI installation imports JAX, Torch, OpenPI
+and its client from its own SDK checkout. Its dependency consistency check reports
+the selected Rerun SDK's NumPy requirement against OpenPI's NumPy bound.
+Identified checkpoint inference, artifact checksum verification and hybrid task
+acceptance remain required.
 
 ## 2026-09-29 architecture and RoboDojo deployment checkpoint
 
@@ -172,23 +175,23 @@ revision `35efbc7dedfdbeeb6e95fb749bd885d73d483e41` (3,290 entries under
 `Pi_05/RoboDojo-sim-arx_x5-joint-0/59999`, including
 `assets/arx_x5_sim/norm_stats.json`. Its 18 inference files total 12,440,992,402
 bytes. The download destination is `workspace/checkpoints/robodojo`, with the
-upstream directory layout retained. Download completion and checksum verification
-are pending. The dataset card declares Apache-2.0; simulator licensing remains
+upstream directory layout retained. All 18 files are present at the expected sizes;
+checksum verification remains pending. The dataset card declares Apache-2.0; simulator licensing remains
 independently scoped.
 
-OpenPI installation uses a dedicated `.local/envs/robodojo-openpi`, pinned external
+OpenPI installation uses a dedicated `.local/envs/robodojo-openpi`, EDH-owned SDK
 source `bb9a0b5f5136a74503b679af830bfd0a3a837d5c`, private cache and temporary
-directories. Installation encountered a dependency-download timeout. All eight
-GPU devices had active jobs at the last inspection; no additional model service
-was allocated to them. The new OpenPI RoboDojo bridge files remain local work
-pending import, identified inference and hybrid execution checks.
+directories. JAX 0.5.3, Torch 2.10.0+cu128, OpenPI and its client import successfully.
+The dependency consistency check reports Rerun SDK 0.26.2's NumPy >=2 requirement
+against the selected NumPy 1.26.4 and OpenPI's NumPy <2 requirement. The bridge
+files remain local work pending identified inference and hybrid execution checks.
 
 Continuation evidence is in the ignored `.local/work/robodojo-20260929/` directory
 on the local checkout and `jd_B300`. It contains the checkpoint inventory,
 download/install logs, model-tool probe, retained camera/event data and private
-deployment bindings. Required next actions: restore endpoint connectivity, complete
-the isolated OpenPI installation and checkpoint download, validate the bridge with
-identified native inference, and run the direct/hybrid RoboDojo task through
+deployment bindings. Required next actions: resolve dependency consistency,
+verify checkpoint checksums, validate the bridge with identified native inference,
+and run the owned direct/hybrid RoboDojo task through
 formal verification. Long-running services must survive the initiating SSH
 connection and retain their own shutdown ownership.
 

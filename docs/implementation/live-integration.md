@@ -51,9 +51,9 @@ reuse requires its own task and provenance evidence.
 | Provider | Native installation/reset | EDH worker and action admission | Actual policy and upper VLM task |
 | --- | --- | --- | --- |
 | RoboCasa 1.0.1 / PandaOmron | Passed: OpenCabinet reset, three cameras and native control | Real GR00T actions, frame capture, confirmed pause/stop and consecutive task ports passed | Console Planner execution and formal GT failure recorded; successful task/recovery acceptance pending |
-| BEHAVIOR-1K v3.9.2 / R1Pro | Native picking_up_trash reset, separate three-camera capture, GT and clean shutdown pass | Policy control and worker integration pending | Pending |
-| RoboTwin stable release / Aloha AgileX | Passed: adjust_bottle reset, three cameras, 14-channel state and native GT | Policy control and interruption pending | Pi0.5 weights and official tokenizer loaded; service listening; native-observation inference pending |
-| RoboDojo `build_tower` / dual ARX X5 | Passed: local Isaac Sim 5.1 reset, metadata, three RGB cameras and 14-channel action description | One EDH-admitted qpos step passed through the external RPC boundary; pause/stop and longer policy runs pending | No GPT-6 Astra or learned-policy rollout claimed; task success remains pending |
+| BEHAVIOR-1K v3.9.2 / R1Pro | Native picking_up_trash reset, three-camera capture and GT pass; separate synchronous shutdown passes | Current asynchronous owner has zero learned controls and no confirmed successful close; owned native process integration pending | GR00T checkpoint load passes; actual policy controls and complete console lifecycle pending |
+| RoboTwin stable release / Aloha AgileX | Passed: adjust_bottle reset, three cameras, 14-channel state and native GT | Pi0.5 native task success: 120 controls, 11,151 physics steps, pause/resume, confirmed termination and environment close | Four real native-observation inference requests; independent console Verifier and Planner finish pending |
+| RoboDojo / dual ARX X5 | EDH-owned Isaac Sim 5.1 startup, three RGB-D cameras, FK and numerical motion tools pass | Owned Astra pause/resume/cancellation, manual controls and Session release pass; imported-service pickup has formal success and trace | Owned-deployment task success, build_tower success, identified ARX X5 Pi0.5 inference and hybrid acceptance pending |
 
 See [GPU integration](gpu-integration.md) for immutable source pins, dependency
 isolation and completed native checks. Record model family, exact checkpoint,
