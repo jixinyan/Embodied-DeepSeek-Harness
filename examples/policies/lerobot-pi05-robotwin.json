@@ -37,6 +37,7 @@
   "action": {
     "horizon": 50,
     "representation": "absolute joint-space targets with saved MEAN_STD postprocessing",
+    "gripper_conversion": "RoboTwin envs/robot/robot.py set_gripper applies numpy.clip(value, 0, 1); the policy service applies the same conversion to channels 7 and 14 and records the original postprocessed model values.",
     "native_channels": [
       "fl_joint1", "fl_joint2", "fl_joint3", "fl_joint4", "fl_joint5", "fl_joint6", "fl_joint7",
       "fr_joint1", "fr_joint2", "fr_joint3", "fr_joint4", "fr_joint5", "fr_joint6", "fr_joint7"

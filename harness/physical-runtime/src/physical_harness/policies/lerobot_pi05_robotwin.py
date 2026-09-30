@@ -88,6 +88,32 @@ def _decode_state(value: Any) -> torch.Tensor:
     return torch.tensor(value, dtype=torch.float32)
 
 
+def native_action_record(selected: torch.Tensor) -> tuple[list[list[float]], list[list[float]]]:
+    if selected.ndim != 2 or selected.shape[1] != len(CHANNELS) or selected.shape[0] == 0:
+        raise ValueError("LeRobot π0.5 returned an invalid RoboTwin action selection.")
+    if not torch.isfinite(selected).all():
+        raise ValueError("LeRobot π0.5 returned nonfinite RoboTwin actions.")
+    model_actions = selected.detach().cpu().to(torch.float64).tolist()
+    native = selected.detach().cpu().to(torch.float64).clone()
+    native[:, (6, 13)] = native[:, (6, 13)].clamp(0, 1)
+    lower = torch.tensor([0 if name.endswith("joint7") else -10 for name in CHANNELS], dtype=torch.float64)
+    upper = torch.tensor([1 if name.endswith("joint7") else 10 for name in CHANNELS], dtype=torch.float64)
+    violations = (native < lower) | (native > upper)
+    if torch.any(violations):
+        invalid = [
+            {
+                "channel": CHANNELS[index],
+                "value": native[action_index, index].item(),
+                "minimum": lower[index].item(),
+                "maximum": upper[index].item(),
+                "action_index": action_index,
+            }
+            for action_index, index in torch.nonzero(violations, as_tuple=False).tolist()
+        ]
+        raise ValueError(f"LeRobot π0.5 returned actions outside the native RoboTwin joint range: {invalid}")
+    return native.tolist(), model_actions
+
+
 class LeRobotPi05RoboTwin:
     def __init__(self, checkpoint: str, tokenizer: str, *, device: str = "cuda:0") -> None:
         path = Path(checkpoint).resolve(strict=True)
@@ -141,6 +167,10 @@ class LeRobotPi05RoboTwin:
         )
 
     def infer(self, request: dict[str, Any]) -> list[list[float]]:
+        actions, _ = self.infer_with_record(request)
+        return actions
+
+    def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
         _check_action_spec(request["action_spec"])
         observation = request["observation"]
         if observation.get("schema_version") != "edh.policy_observation.v1":
@@ -167,9 +197,4 @@ class LeRobotPi05RoboTwin:
         if not torch.isfinite(actions).all():
             raise ValueError("LeRobot π0.5 returned nonfinite RoboTwin actions.")
         count = min(request["max_actions"], actions.shape[1])
-        selected = actions[0, :count].detach().cpu().to(torch.float64)
-        lower = torch.tensor([0 if name.endswith("joint7") else -10 for name in CHANNELS], dtype=torch.float64)
-        upper = torch.tensor([1 if name.endswith("joint7") else 10 for name in CHANNELS], dtype=torch.float64)
-        if torch.any(selected < lower) or torch.any(selected > upper):
-            raise ValueError("LeRobot π0.5 returned actions outside the native RoboTwin joint range.")
-        return selected.tolist()
+        return native_action_record(actions[0, :count])

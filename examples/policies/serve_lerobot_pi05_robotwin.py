@@ -23,6 +23,7 @@ async def main() -> None:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8004)
+    parser.add_argument("--timeout-s", type=float, default=120)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     validator = ContractValidator.from_path(root / "harness/contracts/schema/physical.schema.json")
@@ -36,9 +37,9 @@ async def main() -> None:
             raise RuntimeError("LeRobot π0.5 inference is already in progress.")
         started = monotonic()
         received_at = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
-        future = executor.submit(policy.infer, request)
+        future = executor.submit(policy.infer_with_record, request)
         future.add_done_callback(lambda _: admission.release())
-        actions = await asyncio.wrap_future(future)
+        actions, model_actions = await asyncio.wrap_future(future)
         print(json.dumps({
             "event": "policy_inference_completed",
             **identity,
@@ -51,11 +52,12 @@ async def main() -> None:
             "received_at": received_at,
             "completed_at": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
             "duration_s": monotonic() - started,
+            "model_actions": model_actions,
             "actions": actions,
         }), flush=True)
         return actions
 
-    server = await serve_policy(infer, validator, host=args.host, port=args.port, timeout_s=120)
+    server = await serve_policy(infer, validator, host=args.host, port=args.port, timeout_s=args.timeout_s)
     print(json.dumps({
         "service": "lerobot-pi05-robotwin-aloha-agilex",
         "policy_source": "huggingface/lerobot@v0.6.1:7e241bd630a3719a56157a497ce5d08f244784f1",
@@ -64,6 +66,7 @@ async def main() -> None:
         "device": args.device,
         "host": args.host,
         "port": server.sockets[0].getsockname()[1],
+        "timeout_s": args.timeout_s,
     }), flush=True)
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()

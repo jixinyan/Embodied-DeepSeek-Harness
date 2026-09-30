@@ -314,9 +314,23 @@ The actual `adjust_bottle` task reset subsequently passed with Aloha AgileX and
 seed 0. The adapter returned three 640 × 480 PNG observations, fourteen native
 joint/gripper targets and `task_success=false`. The physics timestep is 0.004 s.
 The deployment uses CuRobo 0.7.7 compiled with isolated CUDA 13.0.88, PyTorch
-2.11 with CUDA 13.0 and Warp 1.7.0. Its report is
-`.local/work/robotwin-task/result.json` on the GPU host. Policy control and
-interruption acceptance remain required before full provider validation.
+2.11 with CUDA 13.0 and Warp 1.7.0. Its reset report is
+`.local/work/robotwin-task/result.json` on the GPU host.
+
+On September 30, a new `adjust_bottle` reset supplied three native 640 × 480
+camera images and a fourteen-value state vector to the pinned Pi0.5 service on
+GPU 4. Inference returned one action in 59.13 seconds. The service retained the
+postprocessed model action and converted the right gripper value from
+`1.0010402202606201` to the provider's maximum `1.0`; the arm targets were
+unchanged. ActionGate admitted that action, and RoboTwin executed 63 physics
+steps, sampled seven three-camera frame groups, returned a final observation,
+and confirmed the budget stop. The native `task_success` check returned false.
+The simulator process exited after releasing its session. The result and camera
+frames are under `.local/work/robotwin-policy-rollout-gpu4/` in the remote live
+checkout; the identified model output is in
+`.local/work/lerobot-pi05-service-gpu4-recheck.log` there. This establishes one
+real policy-to-simulator control and native failure check. Multi-action task
+completion, interruption and complete console Session acceptance remain pending.
 
 ## Live VLM image and tool checks
 
@@ -371,13 +385,12 @@ under `checkpoints/lerobot/paligemma-3b-pt-224/`, pinned to
 The saved pre/postprocessor initializes offline against these local files.
 Credentials stay outside the repository and run exports.
 
-The actual service runs on the allocated GPU 4 and reports its model/tokenizer
-identities in `.local/work/lerobot-pi05-service.log` on the GPU host. The initial
-load report is preserved in `.local/work/lerobot-pi05-service-pre-provenance.log`.
-It accepts
-three 640 × 480 RGB cameras and a fourteen-value native state vector. Service
-startup does not yet certify inference from a real RoboTwin task, valid admitted
-actions or task completion; those checks remain pending.
+The service runs on GPU 4 and reports its model/tokenizer identities in
+`.local/work/lerobot-pi05-service-gpu4-recheck.log` in the remote live checkout.
+Its initial load report is preserved in
+`.local/work/lerobot-pi05-service-pre-provenance.log`. The September 30 native
+check above confirms inference from a fresh task observation and one admitted
+control. Task completion remains pending.
 
 ## Integration sequence and acceptance
 
