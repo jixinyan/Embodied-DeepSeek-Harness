@@ -40,9 +40,15 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
   'context.respond': { assignmentId: str, message: str, evidenceRefs: strings },
   'perception.capture': {},
   'perception.segment_objects': {
-    evidenceId: { type: 'string', minLength: 1, maxLength: 128 },
-    attachmentId: { type: 'string', minLength: 1, maxLength: 128 },
-    textPrompt: { type: 'string', minLength: 1, maxLength: 1024 },
+    evidenceId: {
+      type: 'string',
+      description: 'Authorized observation ID, 1 to 128 characters.',
+    },
+    attachmentId: {
+      type: 'string',
+      description: 'Authorized camera attachment ID, 1 to 128 characters.',
+    },
+    textPrompt: { type: 'string', description: 'Object text prompt, 1 to 1024 characters.' },
   },
   'observation.turn_view': { direction: { type: 'string', enum: ['left', 'center', 'right'] } },
   'execution.start': { instruction: str },
@@ -89,6 +95,14 @@ export function assertCoreInputLimits(args: Record<string, unknown>): void {
     throw new Error('Tool input exceeds 256 KiB.');
   for (const [key, value] of Object.entries(args)) {
     if (typeof value === 'string') {
+      const characterLimit =
+        key === 'evidenceId' || key === 'attachmentId'
+          ? 128
+          : key === 'textPrompt'
+            ? 1024
+            : undefined;
+      if (characterLimit !== undefined && value.length > characterLimit)
+        throw new Error(`Invalid length for ${key}.`);
       const limit = key === 'content' ? 131072 : 12000;
       if (
         Buffer.byteLength(value) > limit ||
