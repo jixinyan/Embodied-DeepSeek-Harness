@@ -133,6 +133,7 @@ export class UpperRun {
   private closed = false;
   private closing = false;
   private closePromise: Promise<void> | undefined;
+  private stopPromise: Promise<void> | undefined;
   private readonly lifecycleErrors: unknown[] = [];
   private unsubscribe: () => void;
   private unsubscribeFrames: () => void = () => {};
@@ -2114,9 +2115,12 @@ export class UpperRun {
     );
   }
   async stop(): Promise<void> {
+    if (this.stopPromise) return this.stopPromise;
     if (terminal(this.state.state)) return;
     this.state.state = 'cancelled';
-    await this.cancelAndStop('run.cancelled', { source: 'user' });
+    this.stopPromise = this.cancelAndStop('run.cancelled', { source: 'user' });
+    this.spawn(this.stopPromise);
+    await this.stopPromise;
   }
   async settle(): Promise<void> {
     while (this.pending.size) await Promise.all([...this.pending]);
