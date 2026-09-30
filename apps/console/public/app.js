@@ -11,7 +11,6 @@ import { createTaskCatalogSelection } from './task-catalog.js';
 import { bindClarification } from './clarification.js';
 import { api } from './api.js';
 import { taskRequest, completeTaskRequest } from './task-request.js';
-import { renderSensorImages } from './sensor-images.js';
 import { bindStorageMaintenance } from './storage-maintenance.js';
 import { bindSessionAudit } from './session-audit.js';
 import { bindReportHistory } from './report-history.js';
@@ -27,7 +26,7 @@ import {
 
 const $ = (id) => document.getElementById(id);
 let selection = {};
-let config, current, stream, displayedFrame, displayedScopeKey;
+let config, current, stream;
 let busy = false;
 let loadRevision = 0;
 let activeRunId = null;
@@ -234,118 +233,7 @@ function updateTaskComposer() {
       : 'Deployment task criteria',
   );
 }
-const archivedSensor = createAssignmentSelection(api, () => showSensor(), error);
 const archivedTodo = createAssignmentSelection(api, () => renderTodos(), error);
-function showSensor() {
-  const selection = $('sensor-view').value;
-  const archived = archivedSensor.select(current?.id, current?.assignments[selection]);
-  const operator = current?.latestOperatorFrame;
-  const latestSensor = current?.latestSensor;
-  const latestOperatorVisible =
-    Boolean(operator) &&
-    (!latestSensor ||
-      Date.parse(operator.sample.evidence.observed_at) >=
-        Date.parse(latestSensor.evidence.observed_at));
-  const operatorIsLatest = selection === 'latest' && latestOperatorVisible;
-  const latestFrame = latestOperatorVisible ? operator.sample : latestSensor;
-  const frame =
-    selection === 'latest'
-      ? operatorIsLatest
-        ? operator.sample
-        : latestSensor
-      : (archived?.observation ?? current?.agentSeen[selection]);
-  const operatorEventSequence = operatorIsLatest ? operator.eventSequence : null;
-  const fixture = (frame?.source ?? current?.source ?? config.mode) === 'test_fixture';
-  const imageContainer = $('sensor-images');
-  const runId = current?.id;
-  const scopeKey = `${runId ?? ''}:${selection}`;
-  if (displayedScopeKey !== scopeKey) {
-    displayedFrame = null;
-    displayedScopeKey = scopeKey;
-  }
-  const imageCount = renderSensorImages(
-    imageContainer,
-    runId,
-    frame,
-    (actualFrame) => {
-      if (current?.id !== runId || $('sensor-view').value !== selection) return;
-      displayedFrame = actualFrame;
-      text('frame-number', `FRAME ${String(actualFrame.sequence).padStart(4, '0')}`);
-      showDisplayedSensorDetails(actualFrame);
-    },
-    selection,
-    operatorEventSequence,
-  );
-  if (!imageCount) displayedFrame = frame;
-  $('sensor-svg').toggleAttribute(
-    'hidden',
-    !fixture || imageCount > 0 || archivedSensor.loading || Boolean(archivedSensor.error),
-  );
-  text(
-    'scene-source',
-    imageCount
-      ? fixture
-        ? 'TEST IMAGE'
-        : 'SENSOR IMAGE'
-      : fixture
-        ? 'FIXTURE'
-        : 'PROVIDER METADATA',
-  );
-  text(
-    'sensor-subtitle',
-    archivedSensor.loading
-      ? 'Loading archived observation…'
-      : archivedSensor.error
-        ? 'Archived observation unavailable'
-        : imageCount
-          ? `${imageCount} ${imageCount === 1 ? 'view' : 'views'} · ${operatorIsLatest ? 'Recorded operator camera frame' : fixture ? 'Test evidence' : 'Recorded sensor evidence'}`
-          : fixture
-            ? 'CPU illustration · Not real camera imagery'
-            : frame?.evidence.visibility === 'debug_only'
-              ? 'Restricted evidence · image access unavailable'
-              : 'Provider metadata · No image attached',
-  );
-  text(
-    'frame-source',
-    selection === 'latest'
-      ? operatorIsLatest
-        ? 'Latest operator frame'
-        : 'Latest sensor'
-      : `${current?.assignments[selection]?.member ?? 'Agent'} received`,
-  );
-  text(
-    'frame-number',
-    imageCount
-      ? imageContainer.dataset.displayedSequence
-        ? `FRAME ${String(imageContainer.dataset.displayedSequence).padStart(4, '0')}`
-        : 'LOADING FRAME'
-      : displayedFrame
-        ? `FRAME ${String(displayedFrame.sequence).padStart(4, '0')}`
-        : 'NO FRAME',
-  );
-  text(
-    'latest-frame',
-    latestFrame
-      ? `Frame ${latestFrame.sequence} · ${new Date(latestFrame.evidence.observed_at).toLocaleTimeString()}`
-      : '—',
-  );
-  showDisplayedSensorDetails(displayedFrame);
-}
-function showDisplayedSensorDetails(frame) {
-  text('sensor-description', frame?.description ?? 'Awaiting provider observation.');
-  text('sensor-age', frame ? new Date(frame.evidence.observed_at).toLocaleTimeString() : '—');
-  $('inspect-frame').disabled = !frame;
-  const closed = frame?.visualization.cabinetOpen === false;
-  for (const id of ['open-door', 'open-handle']) $(id).style.display = closed ? 'none' : '';
-  $('closed-door').toggleAttribute('hidden', !closed);
-  const inside = frame?.visualization.cupInside === true;
-  $('cup').setAttribute('transform', inside ? 'translate(580 194)' : 'translate(338 262)');
-  const step = Number(frame?.visualization.step ?? 0);
-  $('robot-arm').setAttribute(
-    'points',
-    step % 2 ? '567,289 551,239 465,198 427,219' : '567,289 551,239 465,198 404,231',
-  );
-}
 function renderDeployment() {
   const view = current ? current.configuration : config;
   const source = current?.source ?? config.mode;
@@ -418,22 +306,6 @@ function renderAgents() {
       });
     $('agents').append(card);
   }
-  const old = $('sensor-view').value;
-  const options = [
-    { value: 'latest', label: 'Latest sensor' },
-    ...assignments
-      .filter((a) => current.agentSeen[a.id] || a.lastObservationId)
-      .map((a) => ({ value: a.id, label: `${a.member} · ${shorten(a.id)}` })),
-  ];
-  $('sensor-view').replaceChildren(
-    ...options.map((o) => {
-      const option = document.createElement('option');
-      option.value = o.value;
-      option.textContent = o.label;
-      return option;
-    }),
-  );
-  if (options.some((o) => o.value === old)) $('sensor-view').value = old;
 }
 function summarize(event) {
   const d = event.detail;
@@ -924,7 +796,6 @@ function render() {
   $('inspect-assignments').disabled = false;
   if (current.error) error(current.error);
   renderAgents();
-  showSensor();
   renderTimeline();
   renderFeed();
   updateControls();
@@ -1099,7 +970,6 @@ for (const command of ['pause', 'resume', 'stop'])
       await loadRun(runId);
     });
 $('refresh-history').onclick = () => refreshHistory().catch((e) => error(e.message));
-$('sensor-view').onchange = showSensor;
 $('scenario').onchange = () => {
   if (!current)
     $('instruction').value = taskDefinitions().presets?.[$('scenario').value]?.instruction ?? '';
@@ -1124,8 +994,6 @@ $('inspect-team').onclick = () =>
         })
       : config,
   );
-$('inspect-frame').onclick = () =>
-  inspect('Displayed observation · Evidence and source', displayedFrame);
 $('inspect-verdict').onclick = () =>
   action(async () => {
     inspect('Formal verification · Accepted verdicts', '');
@@ -1222,7 +1090,6 @@ try {
   $('scenario').onchange();
   renderDeployment();
   renderAgents();
-  showSensor();
   const history = await refreshHistory();
   if (history?.activeId || history?.runs[0]) await loadRun(history.activeId || history.runs[0].id);
   else {

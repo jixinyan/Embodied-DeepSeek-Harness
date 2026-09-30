@@ -33,15 +33,17 @@ formal verification/retry decisions; the physical side returns real frames, cont
 steps, device acknowledgement and limited fact checks. Folder placement does not grant
 the physical worker decision ownership or cause agent contexts to be shared.
 Planner directly starts the policy execution. Verifier receives a fresh assignment
-only after an eligible ended execution has a confirmed device boundary; running
-frames remain available to the operator and authorized Planner tools.
+only after an eligible ended execution has a confirmed device boundary. The console
+tracks Agent and execution state; headless simulator video is recorded on the worker
+host. Authorized observation tools continue to supply images to models. See
+[headless simulation](../implementation/headless-simulation.md).
 
 ## Working directories
 
 | Module | Owns | Does not own | Main boundary / next step |
 | --- | --- | --- | --- |
 | `apps/server` | EDH application assembly, local HTTP/SSE API and startup | Agent loop implementation | startServer + ServerDeployment; Step 00/12 |
-| `apps/console` | Sensors, team/agent/robot state, tools, verdicts and timeline | Device truth or planner decisions | ConsoleProjection; Step 12 |
+| `apps/console` | Team/agent/robot state, plans, tools, verdicts and Agent trace | Device truth or planner decisions | ConsoleProjection; Step 12 |
 | `apps/desktop` | Native configuration selection, owned service process, console window and shutdown | Models, agent loops or physical allocation | Default deployment factory into existing startServer |
 | `harness/agent-runtime/agents` | Independent assignments, DSH session lifecycle, built-in role definitions | Implicit parent context or another loop | AgentFactory; Step 03 |
 | `harness/agent-runtime/foundation` | Plugin context, schemas and selected runtime support | Another agent loop or physical policy | Pinned source and compiler boundaries; Step 00 |
