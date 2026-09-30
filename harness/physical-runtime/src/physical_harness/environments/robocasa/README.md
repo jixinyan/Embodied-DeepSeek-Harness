@@ -16,6 +16,46 @@ step and reports the measured MuJoCo internal step count. A manually specified
 neutral control action passed one step with 25 internal steps in the isolated GPU
 environment. That check did not execute a learned policy or complete the task.
 
+After each committed native control, `step` reports `episode_terminated` when
+RoboCasa's current `_check_success()` predicate or native `done` flag is true.
+The ActionGate worker obtains the device stop acknowledgement before publishing
+the terminal boundary. This matches the official GR00T evaluation wrapper's
+`terminate_on_success` setting. The independent Verifier still evaluates
+`task_success` after the confirmed end. The adapter stores no success latch;
+task binding preserves the scene and subsequent checks read its current state.
+The successful-predicate branch remains awaiting a real successful policy task.
+
+`capture_metric_depth` is an explicit read-only native-owner operation. Each
+camera obtains RGB and normalized depth from one MuJoCo `render(depth=True)`
+call. Both arrays use top-left image coordinates. Official robosuite
+`get_real_depth_map`, `get_camera_intrinsic_matrix` and
+`get_camera_extrinsic_matrix` supply axial depth in metres, intrinsic calibration
+and the camera-to-world transform. The capture includes observation identity,
+per-camera timestamps, simulation time and clipping distances; it advances no
+controls. The backend advertises `measureObject` only for RoboCasa and uses the
+native worker's read-only `measure_object` operation. Input binds an observation
+identity, actual named camera, original image SHA-256 and binary PNG mask. The
+worker requires its latest explicit capture, unchanged control counters and a
+confirmed paused/ended boundary when execution exists. The provider renders the
+current frame and requires the RGB digest to match the admitted original image.
+Calibration identity includes the actual intrinsics, camera pose and capture.
+
+Measurements report axial-depth and camera-range medians, p10/p90 axial spread,
+selected/valid pixel counts and coverage, camera/world frames and intrinsics.
+`centroidCameraXYZ` and `centroidWorldXYZ` are means of visible valid surface
+points. Camera axes are right/down/forward, and distances use metres. Read-only
+request cancellation rejects the caller without disconnecting the worker;
+the backend checks cancellation again before returning a result.
+
+Run `scripts/check-robocasa-metric-depth.py --output-directory <ignored-directory>`
+inside the isolated RoboCasa environment with its native EGL configuration. The
+checker uses the existing `NativeActionDevice.on_owner` to reset and capture the
+scene. It saves paired RGB PNGs, float32 axial-depth NPY files and calibration
+JSON records with `calibration_id`, `fx/fy/cx/cy`, camera identity and SHA-256
+values. Every RGB array must equal the native observations captured before and
+after it; robot state and simulation time must remain unchanged. The exported
+depth is simulator measurement for perception-quality evaluation.
+
 Simulator calls must stay on the execution worker's owner thread. The adapter alone
 does not publish upper agent updates, image references or formal verdicts.
 
@@ -46,10 +86,9 @@ execution update. No successful recovery verdict or recovery SKILL was produced.
 SAM requests in that run reached the real service, while the native DSH tool's
 ten-second deadline expired before a segmentation result could be published.
 The segmentation schema now uses DSH-supported string fields and preserves the
-128/128/1,024-character domain limits separately. Provider-specific segmentation
-timeout wiring and the SAM-enabled deployment remain uncommitted work in progress.
-Successful cold and warm segmentation publication through DSH, native task success
-termination, and same-Session success-predicate lifecycle checks remain pending.
+128/128/1,024-character domain limits separately. Successful cold and warm
+segmentation publication through DSH, native task success termination, and
+same-Session success-predicate lifecycle checks retain separate acceptance gates.
 
 A separate cancellation run, `7e9ef306-42c3-4511-a831-65c3aee5431d`, invoked the
 segmentation tool and closed its Session two seconds later. The native tool call
@@ -65,3 +104,47 @@ The local evidence directory is `.local/work/robocasa-sam-20260930/`, including
 `sam-cancel.log`, `session-closed.json` and `cancellation-result.json`. These are
 private run records and are excluded from Git. The schema tests, TypeScript
 checking, formatting checks and `git diff --check` passed at this checkpoint.
+
+The headless local-Qwen run `415e2c46-7527-469a-9969-600ebc5520ba` uses
+Qwen3.8-27B through the existing configured model loader, GPU1 native RoboCasa and
+GPU6 GR00T. The team disables recovery learning. It executes 1,050 controls,
+132 identified policy requests and 26,250 MuJoCo steps in 244.156 seconds. Cold
+GR00T inference takes 60.505 seconds; the subsequent inference median is
+0.147 seconds. Running publications contain metadata with no camera-frame events,
+and three camera videos remain local to the worker. The unchanged ten-second
+worker output deadline completes this task without an output timeout.
+
+Execution `f6529761-37ce-4029-a2d2-8732b33c0a2f` ends at a confirmed
+`budget_exhausted` boundary. Independent Qwen Verifier verdict
+`80a05f6f-d8e7-4938-83d9-682575f52b42` is failed with native `task_success=false`.
+The Planner ends the failed goal, and Session
+`5566c490-e37b-4a51-ba69-3104fd624d4e` closes with resources released. Two
+`planning.update` calls fail input/plan validation before later corrected calls;
+this run establishes no clean-role-completion or successful-task acceptance.
+Evolver does not run. The 1,180-event trace, original policy log/requests, videos
+and metric capture are retained in `.local/work/robocasa-qwen-20260930/`.
+
+The separate seed-0 metric capture is
+`metric-depth-calibrated/result.json` under that evidence directory. All three
+RGB arrays match native camera observations exactly, and each depth/calibration
+pair shares capture `164b98ca-a598-49e4-83eb-921fe641f6ef`. This reset observation
+has its own identity and does not represent the preceding task's final state.
+
+`scripts/check-robocasa-object-measurement.ts` exercises the actual native worker,
+local image store, live SAM cabinet masks and GR00T controls. Its verified run
+retains `object-measurement-verified/result.json` in the private evidence directory.
+Both initial SAM regions match their measured pixel counts.
+The two regions contain 6,953 and 17,627 valid pixels with axial medians of
+1.282525 and 0.952102 metres and camera-range medians of 1.412978 and 1.046194
+metres. Coverage is 1 for both regions. Wrong source images,
+earlier captures, running-device requests and earlier Session identities are
+rejected. A cancelled measurement publishes no caller result, and a subsequent
+measurement succeeds on the same connection. After real GR00T control and a
+confirmed pause, fresh camera segmentation and native measurement succeed while
+the control count remains unchanged. All owned native checker resources close.
+
+Set `EDH_SAM31_BASE_URL` in the RoboCasa deployment to select the SAM/measurement
+team. That team disables recovery learning and registers
+`perception.segment_objects` and `perception.measure_object`. Geometry requests
+use the matching source-image and SAM-mask evidence references. Optional YOLO
+prediction has a separate provider binding and role.

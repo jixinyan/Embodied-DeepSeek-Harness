@@ -13,6 +13,9 @@ import type {
 import {
   readPolicyEvent,
   type BackendPolicyEvent,
+  type BackendCallOptions,
+  type BackendObjectMeasurementInput,
+  type BackendObjectMeasurement,
   type EmbodiedBackend,
   type BackendFrame,
   type BackendUpdate,
@@ -71,6 +74,124 @@ interface WorkerDescription {
   execution_mode: 'policy' | 'direct' | 'hybrid';
   task_instruction?: string | null;
   scene_metadata?: JsonObject | null;
+  supports_object_measurement: boolean;
+}
+
+function metricNumber(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value))
+    throw new Error('Native object measurement omitted a finite numeric field.');
+  return value;
+}
+
+function metricVector(value: unknown, size: number): number[] {
+  if (!Array.isArray(value) || value.length !== size)
+    throw new Error('Native object measurement returned an invalid vector.');
+  return value.map(metricNumber);
+}
+
+function metricMatrix(value: unknown, size: number): number[][] {
+  if (!Array.isArray(value) || value.length !== size)
+    throw new Error('Native object measurement returned an invalid matrix.');
+  return value.map((row) => metricVector(row, size));
+}
+
+function objectMeasurement(
+  value: unknown,
+  input: BackendObjectMeasurementInput,
+): BackendObjectMeasurement {
+  const result = object(value);
+  const intrinsics = object(result.intrinsics);
+  if (
+    result.provider !== 'robocasa' ||
+    result.source !== 'robocasa-native-rgbd' ||
+    result.measurement_kind !== 'simulator_metric_depth' ||
+    result.unit !== 'meter' ||
+    result.distance_frame !== 'camera_axial_depth' ||
+    result.centroid_kind !== 'mean_of_visible_valid_surface_points' ||
+    result.observation_id !== input.observationId ||
+    result.camera !== input.camera ||
+    result.camera_frame !== `robocasa.${input.camera}.optical` ||
+    result.world_frame !== 'robocasa.mujoco.world' ||
+    result.source_image_sha256 !== input.sourceImageSha256 ||
+    result.mask_png_sha256 !==
+      createHash('sha256').update(Buffer.from(input.maskPngBase64, 'base64')).digest('hex') ||
+    !isDeepStrictEqual(result.coordinate_axes, ['right', 'down', 'forward'])
+  )
+    throw new Error('Native object measurement source or coordinate identity is invalid.');
+  const measurement: BackendObjectMeasurement = {
+    provider: 'robocasa',
+    source: 'robocasa-native-rgbd',
+    measurementKind: 'simulator_metric_depth',
+    unit: 'meter',
+    distanceFrame: 'camera_axial_depth',
+    centroidKind: 'mean_of_visible_valid_surface_points',
+    cameraFrame: string(result.camera_frame),
+    worldFrame: string(result.world_frame),
+    coordinateAxes: ['right', 'down', 'forward'],
+    observationId: input.observationId,
+    measurementCaptureId: string(result.measurement_capture_id),
+    camera: input.camera,
+    sourceImageSha256: input.sourceImageSha256,
+    maskPngSha256: string(result.mask_png_sha256),
+    measuredAt: string(result.measured_at),
+    simulationTimeS: metricNumber(result.simulation_time_s),
+    width: metricNumber(result.width),
+    height: metricNumber(result.height),
+    selectedPixels: metricNumber(result.selected_pixels),
+    validPixels: metricNumber(result.valid_pixels),
+    invalidPixels: metricNumber(result.invalid_pixels),
+    validFraction: metricNumber(result.valid_fraction),
+    medianAxialDepthM: metricNumber(result.median_axial_depth_m),
+    p10AxialDepthM: metricNumber(result.p10_axial_depth_m),
+    p90AxialDepthM: metricNumber(result.p90_axial_depth_m),
+    medianCameraRangeM: metricNumber(result.median_camera_range_m),
+    centroidPixel: metricVector(result.centroid_pixel, 2) as [number, number],
+    centroidCameraXYZ: metricVector(result.centroid_camera_xyz, 3) as [number, number, number],
+    centroidWorldXYZ: metricVector(result.centroid_world_xyz, 3) as [number, number, number],
+    intrinsics: {
+      calibrationId: string(intrinsics.calibration_id),
+      fx: metricNumber(intrinsics.fx),
+      fy: metricNumber(intrinsics.fy),
+      cx: metricNumber(intrinsics.cx),
+      cy: metricNumber(intrinsics.cy),
+    },
+    intrinsicMatrix: metricMatrix(result.intrinsic_matrix, 3),
+    cameraToWorld: metricMatrix(result.camera_to_world, 4),
+    minimumDepthM: metricNumber(result.minimum_depth_m),
+    maximumDepthM: metricNumber(result.maximum_depth_m),
+  };
+  if (
+    ![
+      measurement.width,
+      measurement.height,
+      measurement.selectedPixels,
+      measurement.validPixels,
+      measurement.invalidPixels,
+    ].every(Number.isSafeInteger) ||
+    measurement.width < 1 ||
+    measurement.height < 1 ||
+    measurement.width * measurement.height > 4_000_000 ||
+    measurement.selectedPixels < 1 ||
+    measurement.selectedPixels > measurement.width * measurement.height ||
+    measurement.validPixels < 1 ||
+    measurement.invalidPixels < 0 ||
+    measurement.validPixels + measurement.invalidPixels !== measurement.selectedPixels ||
+    measurement.validFraction !== measurement.validPixels / measurement.selectedPixels ||
+    measurement.simulationTimeS < 0 ||
+    measurement.minimumDepthM <= 0 ||
+    measurement.maximumDepthM <= measurement.minimumDepthM ||
+    measurement.p10AxialDepthM <= measurement.minimumDepthM ||
+    measurement.p10AxialDepthM > measurement.medianAxialDepthM ||
+    measurement.medianAxialDepthM > measurement.p90AxialDepthM ||
+    measurement.p90AxialDepthM >= measurement.maximumDepthM ||
+    measurement.medianCameraRangeM < measurement.medianAxialDepthM ||
+    measurement.intrinsics.fx <= 0 ||
+    measurement.intrinsics.fy <= 0 ||
+    !/^[a-f0-9]{64}$/.test(measurement.intrinsics.calibrationId) ||
+    !Number.isFinite(Date.parse(measurement.measuredAt))
+  )
+    throw new Error('Native object measurement statistics are invalid.');
+  return measurement;
 }
 
 interface WorkerObservation {
@@ -266,7 +387,7 @@ class NativeWorkerTransport {
       throw new Error('Native worker request exceeds the transport bound.');
     return new Promise((resolve, reject) => {
       const onAbort = () => {
-        if (operation === 'capture' || operation === 'check') {
+        if (operation === 'capture' || operation === 'check' || operation === 'measure_object') {
           reject(new Error(`Native worker ${operation} request cancelled.`));
           options.signal?.removeEventListener('abort', onAbort);
           return;
@@ -328,6 +449,10 @@ class NativeWorkerTransport {
 
 class NativeTaskBackend implements EmbodiedBackend {
   readonly source = 'simulation';
+  readonly measureObject?: (
+    input: BackendObjectMeasurementInput,
+    options?: BackendCallOptions,
+  ) => Promise<BackendObjectMeasurement>;
   private status?: ExecutionStatus;
   private sequence = 0;
   private closed = false;
@@ -351,6 +476,7 @@ class NativeTaskBackend implements EmbodiedBackend {
     private readonly nativeTaskId: string,
     private readonly clockId: string,
     private readonly activeViews: readonly string[],
+    supportsObjectMeasurement: boolean,
     private readonly timeouts: Readonly<{
       observationTtlS: number;
       deviceTimeoutS: number;
@@ -358,6 +484,40 @@ class NativeTaskBackend implements EmbodiedBackend {
     }>,
     private readonly onClose: () => void,
   ) {
+    if (supportsObjectMeasurement) {
+      if (this.provider !== 'robocasa')
+        throw new Error('Native provider advertised unsupported object measurement.');
+      this.measureObject = async (input, options) => {
+        options?.signal?.throwIfAborted();
+        if (
+          this.closed ||
+          !input.observationId ||
+          input.observationId.length > 128 ||
+          !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$/.test(input.camera) ||
+          !/^[a-f0-9]{64}$/.test(input.sourceImageSha256) ||
+          !input.maskPngBase64 ||
+          input.maskPngBase64.length > 8 * 1024 * 1024
+        )
+          throw new Error('Native object measurement input is invalid.');
+        const result = object(
+          await this.transport.request(
+            'measure_object',
+            {
+              run_task_id: this.runId,
+              observation_id: input.observationId,
+              camera: input.camera,
+              source_image_sha256: input.sourceImageSha256,
+              mask_png_base64: input.maskPngBase64,
+            },
+            { signal: options?.signal },
+          ),
+        );
+        options?.signal?.throwIfAborted();
+        if (this.closed || result.run_task_id !== this.runId)
+          throw new Error('Native object measurement belongs to another session task.');
+        return objectMeasurement(result.measurement, input);
+      };
+    }
     this.transport.setListener((publication) => this.publish(publication));
     this.transport.setFrameListener((publication) => this.publishFrame(publication));
     this.transport.setPolicyListener((publication) => {
@@ -766,6 +926,11 @@ export async function createNativeWorkerEnvironment(
       description.execution_mode !== (configuration.executionMode ?? 'policy')
     )
       throw new Error('Native worker initialized a different provider or task.');
+    if (
+      typeof description.supports_object_measurement !== 'boolean' ||
+      description.supports_object_measurement !== (configuration.provider === 'robocasa')
+    )
+      throw new Error('Native worker object measurement capability is invalid.');
     const nativeInstruction = description.task_instruction;
     const sceneMetadata = description.scene_metadata;
     if (
@@ -850,6 +1015,7 @@ export async function createNativeWorkerEnvironment(
           configuration.nativeTaskId,
           description.clock_id,
           description.active_view_directions,
+          description.supports_object_measurement,
           timeouts,
           () => {
             active = undefined;

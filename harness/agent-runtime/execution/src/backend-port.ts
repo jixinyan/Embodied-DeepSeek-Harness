@@ -60,6 +60,48 @@ export interface BackendCheckResult {
   sample: SensorSample;
   facts: CheckResult[];
 }
+export interface BackendObjectMeasurementInput {
+  observationId: string;
+  camera: string;
+  sourceImageSha256: string;
+  maskPngBase64: string;
+}
+export interface BackendObjectMeasurement {
+  provider: 'robocasa';
+  source: 'robocasa-native-rgbd';
+  measurementKind: 'simulator_metric_depth';
+  unit: 'meter';
+  distanceFrame: 'camera_axial_depth';
+  centroidKind: 'mean_of_visible_valid_surface_points';
+  cameraFrame: string;
+  worldFrame: string;
+  coordinateAxes: readonly ['right', 'down', 'forward'];
+  observationId: string;
+  measurementCaptureId: string;
+  camera: string;
+  sourceImageSha256: string;
+  maskPngSha256: string;
+  measuredAt: string;
+  simulationTimeS: number;
+  width: number;
+  height: number;
+  selectedPixels: number;
+  validPixels: number;
+  invalidPixels: number;
+  validFraction: number;
+  medianAxialDepthM: number;
+  p10AxialDepthM: number;
+  p90AxialDepthM: number;
+  medianCameraRangeM: number;
+  centroidPixel: readonly [number, number];
+  centroidCameraXYZ: readonly [number, number, number];
+  centroidWorldXYZ: readonly [number, number, number];
+  intrinsics: { calibrationId: string; fx: number; fy: number; cx: number; cy: number };
+  intrinsicMatrix: readonly (readonly number[])[];
+  cameraToWorld: readonly (readonly number[])[];
+  minimumDepthM: number;
+  maximumDepthM: number;
+}
 /** Upper application port. Physical transports and resource arbitration remain provider responsibilities. */
 export interface EmbodiedBackend {
   readonly source: 'test_fixture' | 'simulation' | 'hardware';
@@ -67,6 +109,10 @@ export interface EmbodiedBackend {
   /** Immediate local status projection; remote clients update it before notifying subscribers. */
   query(): ExecutionStatus | undefined;
   capture(options?: BackendCallOptions): SensorSample | Promise<SensorSample>;
+  measureObject?(
+    input: BackendObjectMeasurementInput,
+    options?: BackendCallOptions,
+  ): Promise<BackendObjectMeasurement>;
   turnView(
     direction: 'left' | 'center' | 'right',
     options?: BackendCallOptions,

@@ -34,6 +34,8 @@ export type {
   BackendResumeOptions,
   BackendCheckOptions,
   BackendCheckResult,
+  BackendObjectMeasurementInput,
+  BackendObjectMeasurement,
 } from './backend-port.js';
 
 export {

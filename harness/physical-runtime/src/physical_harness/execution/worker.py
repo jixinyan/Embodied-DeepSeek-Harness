@@ -4,6 +4,7 @@ import asyncio
 import base64
 from datetime import datetime, timezone
 import faulthandler
+import hashlib
 import json
 import math
 import os
@@ -104,6 +105,8 @@ class NativeWorkerSession:
         self._pump: asyncio.Task[None] | None = None
         self._initial_observation: NativeObservation | None = None
         self._latest_observation: NativeObservation | None = None
+        self._measurement_observation: NativeObservation | None = None
+        self._measurement_control_counts: tuple[int, int] | None = None
         self._status: dict[str, Any] | None = None
         self._clock_id = str(uuid4())
         self._started = 0.0
@@ -289,6 +292,7 @@ class NativeWorkerSession:
             "clock_id": self._clock_id,
             "policy_id": self._policy_id,
             "execution_mode": self._execution_mode.value,
+            "supports_object_measurement": self._provider == "robocasa",
         }
 
     async def start(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -306,6 +310,8 @@ class NativeWorkerSession:
                 raise RuntimeError("Native session request history is full.")
             if self._run_task_id is None or request["task_id"] != self._run_task_id:
                 raise ValueError("Execution request differs from the admitted session task.")
+            self._measurement_observation = None
+            self._measurement_control_counts = None
             if self._gate is not None and self._gate.snapshot()["state"] != "ended":
                 raise RuntimeError("Previous native execution lacks a confirmed terminal boundary.")
             if self._gate is not None and not self._gate.snapshot()["device_confirmed"]:
@@ -650,7 +656,49 @@ class NativeWorkerSession:
         observation = await self._require_device().on_owner(self._environment.observe)
         if run_task_id != self._run_task_id or not self._host_connected:
             raise RuntimeError("Native task identity changed during capture.")
+        if self._provider == "robocasa":
+            self._measurement_observation = observation
+            device = self._require_device()
+            self._measurement_control_counts = (device.executed_actions, device.raw_sim_steps)
         return {"run_task_id": run_task_id, "observation": self._observation_wire(observation)}
+
+    async def measure_object(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        async with self._control_lock:
+            if self._provider != "robocasa":
+                raise ValueError("Native provider does not support object measurement.")
+            run_task_id = self._run_task_id
+            if run_task_id is None or arguments["run_task_id"] != run_task_id or not self._host_connected:
+                raise ValueError("Object measurement requires the current connected session task.")
+            snapshot = self._gate.snapshot() if self._gate is not None else None
+            if snapshot is not None and (snapshot["state"] not in ("paused", "ended")
+                                         or not snapshot["device_confirmed"]):
+                raise RuntimeError("Object measurement requires a confirmed stopped device.")
+            observation = self._measurement_observation
+            device = self._require_device()
+            counts = (device.executed_actions, device.raw_sim_steps)
+            if (observation is None or arguments["observation_id"] != observation.observation_id
+                    or counts != self._measurement_control_counts):
+                raise ValueError("Object measurement requires an unchanged latest explicit capture.")
+            camera = arguments["camera"]
+            digest = arguments["source_image_sha256"]
+            encoded_mask = arguments["mask_png_base64"]
+            if (not isinstance(camera, str) or camera not in observation.images
+                    or not isinstance(digest, str) or len(digest) != 64
+                    or any(character not in "0123456789abcdef" for character in digest)
+                    or hashlib.sha256(observation.images[camera]).hexdigest() != digest):
+                raise ValueError("Object measurement camera or source image identity differs from capture.")
+            if not isinstance(encoded_mask, str) or not encoded_mask or len(encoded_mask) > 8 * 1024 * 1024:
+                raise ValueError("Object measurement mask exceeds its bounded PNG input.")
+            mask_png = base64.b64decode(encoded_mask, validate=True)
+            result = await device.on_owner(lambda: self._environment.measure_object(
+                observation.observation_id, camera, digest, mask_png
+            ))
+            after = self._gate.snapshot() if self._gate is not None else None
+            if (not self._host_connected or self._run_task_id != run_task_id
+                    or snapshot != after or self._measurement_observation is not observation
+                    or counts != (device.executed_actions, device.raw_sim_steps)):
+                raise RuntimeError("Native task or control boundary changed during object measurement.")
+            return {"run_task_id": run_task_id, "measurement": result}
 
     async def turn_view(self, arguments: dict[str, Any]) -> dict[str, Any]:
         direction = arguments["direction"]
@@ -685,11 +733,15 @@ class NativeWorkerSession:
                 raise RuntimeError("Native worker host disconnected during task binding.")
             self._catalog_task_id = catalog_task_id
             self._run_task_id = run_task_id
+            self._measurement_observation = None
+            self._measurement_control_counts = None
             self._seen_run_ids.add(run_task_id)
             self._lease_active = True
             return {"catalog_task_id": catalog_task_id, "run_task_id": run_task_id, "native_task_id": self._native_task_id}
 
     async def close_task(self) -> dict[str, Any]:
+        self._measurement_observation = None
+        self._measurement_control_counts = None
         if self._gate is None:
             self._catalog_task_id = None
             self._run_task_id = None
@@ -785,6 +837,7 @@ async def serve() -> None:
         "stop": lambda args: session.pause(args, terminal=True),
         "resume": session.resume,
         "capture": session.capture,
+        "measure_object": session.measure_object,
         "turn_view": session.turn_view,
         "check": session.check,
         "close_task": lambda _args: session.close_task(),

@@ -4,6 +4,8 @@ from copy import deepcopy
 from datetime import datetime, timezone
 from importlib.metadata import version
 from io import BytesIO
+import hashlib
+import json
 import math
 import time
 from typing import Callable, Mapping, Sequence
@@ -13,6 +15,11 @@ import numpy as np
 from PIL import Image
 from robocasa.utils.env_utils import create_env
 from robosuite import macros
+from robosuite.utils.camera_utils import (
+    get_camera_extrinsic_matrix,
+    get_camera_intrinsic_matrix,
+    get_real_depth_map,
+)
 
 from physical_harness.environments import (
     NativeCheck,
@@ -22,6 +29,7 @@ from physical_harness.environments import (
     NativeStep,
 )
 from physical_harness.validation import ContractValidator
+from physical_harness.perception.metric_geometry import summarize_metric_region
 
 
 CAMERA_NAMES = (
@@ -217,6 +225,74 @@ class RoboCasaEnvironment:
         raw = env.viewer._get_observations(force_update=True) if env.viewer_get_obs else env._get_observations(force_update=True)
         return self._observation(raw)
 
+    def capture_metric_depth(self, camera_names: Sequence[str] = CAMERA_NAMES) -> dict[str, object]:
+        env = self._require_env()
+        if (not camera_names or len(camera_names) > len(CAMERA_NAMES)
+                or len(set(camera_names)) != len(camera_names)
+                or any(camera not in CAMERA_NAMES for camera in camera_names)):
+            raise ValueError("Metric depth capture requires unique registered RoboCasa cameras.")
+        simulation_time = float(env.sim.data.time)
+        captures: dict[str, object] = {}
+        for camera in camera_names:
+            observed_at = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+            rgb, normalized_depth = env.sim.render(camera_name=camera, width=256, height=256, depth=True)
+            if (rgb.shape != (256, 256, 3) or rgb.dtype != np.uint8
+                    or normalized_depth.shape != (256, 256)
+                    or not np.isfinite(normalized_depth).all()
+                    or np.any(normalized_depth < 0) or np.any(normalized_depth > 1)):
+                raise RuntimeError("RoboCasa metric capture returned invalid RGB or normalized depth.")
+            rgb = np.array(rgb[::-1], copy=True)
+            depth = np.array(get_real_depth_map(env.sim, normalized_depth)[::-1], dtype=np.float32, copy=True)
+            intrinsic = get_camera_intrinsic_matrix(env.sim, camera, 256, 256)
+            camera_to_world = get_camera_extrinsic_matrix(env.sim, camera)
+            if (not np.isfinite(depth).all() or np.any(depth <= 0)
+                    or intrinsic.shape != (3, 3) or not np.isfinite(intrinsic).all()
+                    or camera_to_world.shape != (4, 4) or not np.isfinite(camera_to_world).all()):
+                raise RuntimeError("RoboCasa metric depth or camera calibration is invalid.")
+            png = BytesIO()
+            Image.fromarray(rgb).save(png, format="PNG")
+            depth.setflags(write=False)
+            captures[camera] = {
+                "rgb_png": png.getvalue(),
+                "axial_depth_m": depth,
+                "intrinsic_matrix": intrinsic,
+                "camera_to_world": camera_to_world,
+                "observed_at": observed_at,
+                "near_m": float(env.sim.model.vis.map.znear * env.sim.model.stat.extent),
+                "far_m": float(env.sim.model.vis.map.zfar * env.sim.model.stat.extent),
+            }
+        if float(env.sim.data.time) != simulation_time:
+            raise RuntimeError("Read-only metric capture advanced the native simulator clock.")
+        return {"observation_id": str(uuid4()), "simulation_time_s": simulation_time, "cameras": captures}
+
+    def measure_object(self, observation_id: str, camera: str, source_image_sha256: str,
+                       mask_png: bytes) -> dict[str, object]:
+        capture = self.capture_metric_depth((camera,))
+        frame = capture["cameras"][camera]
+        calibration = {
+            "capture_id": capture["observation_id"],
+            "observation_id": observation_id,
+            "camera": camera,
+            "source_image_sha256": source_image_sha256,
+            "intrinsic_matrix": frame["intrinsic_matrix"].tolist(),
+            "camera_to_world": frame["camera_to_world"].tolist(),
+            "simulation_time_s": capture["simulation_time_s"],
+        }
+        calibration_id = hashlib.sha256(json.dumps(
+            calibration, sort_keys=True, separators=(",", ":"), allow_nan=False
+        ).encode("utf-8")).hexdigest()
+        result = summarize_metric_region(
+            axial_depth_m=frame["axial_depth_m"], mask_png=mask_png,
+            source_image_png=frame["rgb_png"], expected_source_image_sha256=source_image_sha256,
+            intrinsic_matrix=frame["intrinsic_matrix"], camera_to_world=frame["camera_to_world"],
+            calibration_id=calibration_id, observation_id=observation_id, camera_name=camera,
+            observed_at=frame["observed_at"], simulation_time_s=capture["simulation_time_s"],
+            source="robocasa-native-rgbd", world_frame="robocasa.mujoco.world",
+            minimum_depth_m=frame["near_m"], maximum_depth_m=frame["far_m"],
+        )
+        return {**result, "provider": "robocasa", "camera_frame": f"robocasa.{camera}.optical",
+                "measurement_capture_id": capture["observation_id"]}
+
     def step(
         self,
         action: Sequence[float],
@@ -242,7 +318,7 @@ class RoboCasaEnvironment:
             observation.observation_id, observation.observed_at, observation.images,
             raw_steps, self._simulation_time_s,
         )
-        return NativeStep(observation, 1, True, raw_steps, bool(done), (frame,))
+        return NativeStep(observation, 1, True, raw_steps, bool(done or env._check_success()), (frame,))
 
     def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]:
         env = self._require_env()
