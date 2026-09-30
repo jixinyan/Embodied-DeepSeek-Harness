@@ -98,7 +98,14 @@ pinned SDK checkouts, isolated native packages and a content-verified asset copy
 are provisioned. Native check `efc74efc-5c30-4b1b-9173-5c0c47d51039` confirms
 reset, three RGB-D cameras, measured FK, numerical preparation, two actual
 ActionGate controls, pause/resume, terminal user stop and owned-process exit.
-Native task success is false; model-driven owned-service acceptance remains pending.
+Native task success is false in the manual check. Owned-service Astra run
+`c62651a0-f681-4303-9476-3c0301754833` then passes two actual controls, held
+pause, Planner-owned resume, confirmed user cancellation, Session resource release
+and native process exit. Its recorded-loop audit validates all 204 events with one
+upper Session, two independently scoped policy Sessions and zero formal verdicts.
+Atomic readiness selects an owned port from port `0`; 6,417 recorded module
+origins contain no external LitchiAgent or GPT-as-Policy path. Task success,
+recovery and experience publication in this owned deployment remain pending.
 The selected IsaacLab/Isaac Sim package requirements contain an incompatible
 Starlette/FastAPI constraint; the installer checks and reports dependency consistency.
 The current

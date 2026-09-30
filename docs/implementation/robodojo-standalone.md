@@ -85,7 +85,18 @@ measured FK and numerical preparation with zero physical steps. Two actual
 ActionGate controls pass confirmed pause, held counters, resume, terminal
 `user_stop` and confirmed owned-process exit. Its unchanged native success
 criterion returns false. This check exercises manual control boundaries;
-independent model-driven Session and task-success acceptance remain required.
+task-success acceptance remains required.
+
+Owned-service Astra run `c62651a0-f681-4303-9476-3c0301754833` passes two
+actual controls across an operator pause and a Planner-owned resume. Cancellation
+confirms `user_stop`, closes Session `f7625b8c-72b6-46c2-9f68-3e188d4617a9`,
+releases resources and exits native process `149702`. Its audit validates all
+204 events, one upper Session, two independently scoped execution-policy Sessions,
+two sensor/control boundaries and zero formal verdicts. The service initializes
+with port `0` and verifies its atomically published process/task/port identity.
+The recorded 6,417 module origins contain no LitchiAgent or GPT-as-Policy path.
+This check validates control lifecycle and cancellation; it does not measure
+task success, recovery or experience publication.
 
 The selected native SDK dependency metadata requires Starlette `0.49.1` while
 Isaac Sim `5.1.0.0` requires FastAPI `0.115.7`, which requires Starlette below
