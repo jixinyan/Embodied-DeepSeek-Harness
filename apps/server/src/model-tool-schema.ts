@@ -13,6 +13,27 @@ function supportedNode(value: unknown): Record<string, unknown> {
   const node: Record<string, unknown> = {};
   for (const key of ['type', 'const', 'enum', 'description', 'title'])
     if (source[key] !== undefined) node[key] = structuredClone(source[key]);
+  const constraints = [
+    'minimum',
+    'maximum',
+    'exclusiveMinimum',
+    'exclusiveMaximum',
+    'multipleOf',
+    'minLength',
+    'maxLength',
+    'pattern',
+    'format',
+    'minItems',
+    'maxItems',
+    'uniqueItems',
+  ].filter((key) => source[key] !== undefined);
+  if (constraints.length)
+    node.description = [
+      source.description,
+      `Domain validation: ${constraints.map((key) => `${key}=${JSON.stringify(source[key])}`).join('; ')}.`,
+    ]
+      .filter(Boolean)
+      .join(' ');
   if (node.type === undefined && (node.const !== undefined || node.enum !== undefined)) {
     const example = node.const ?? (Array.isArray(node.enum) ? node.enum[0] : undefined);
     node.type = example === null ? 'null' : typeof example;

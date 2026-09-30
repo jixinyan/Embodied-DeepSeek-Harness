@@ -9,9 +9,10 @@
     "node": ">=22.19.0"
   },
   "scripts": {
-    "check": "pnpm format:check && pnpm format:desktop && pnpm check:contracts && pnpm check:provenance && pnpm typecheck && pnpm check:structure && pnpm check:python && pnpm test:runtime && pnpm test:contracts && pnpm test:console && pnpm test:launcher",
+    "check": "pnpm format:check && pnpm format:desktop && pnpm check:contracts && pnpm check:role-workflows && pnpm check:provenance && pnpm typecheck && pnpm check:structure && pnpm check:python && pnpm test:runtime && pnpm test:contracts && pnpm test:console && pnpm test:launcher",
     "generate:contracts": "node scripts/generate-contracts.mjs",
     "check:contracts": "node scripts/generate-contracts.mjs --check && tsx --tsconfig tsconfig.runtime.json scripts/check-contracts.mjs",
+    "check:role-workflows": "tsx --tsconfig tsconfig.runtime.json scripts/check-role-workflows.mjs",
     "typecheck": "node scripts/build-dsh-types.mjs && tsc --noEmit",
     "check:structure": "node scripts/check-structure.mjs",
     "check:python": "node scripts/check-python.mjs",

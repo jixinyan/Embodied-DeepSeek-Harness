@@ -19,6 +19,10 @@ Upper tool definitions use the original DSH validator explicitly before domain
 effects. Raw ToolDefinition does not acquire argument validation merely by declaring
 parameters; defineTool wraps this automatically. Role result schemas use the same
 native supported subset. EDH separately enforces input-size and version limits.
+Core descriptions identify argument sources, returned fields and admission conditions.
+The canonical plan projection retains domain bounds as model-visible annotations.
+`pnpm check:role-workflows` checks actual configured roles and authored schemas across
+six live Teams. See [workflow and schema composition](../../../docs/implementation/prompt-workflow.md).
 
 `user.ask` lets the decision owner request missing user information at a confirmed
 stopped execution boundary. It stores a question and signals native turn conclusion;

@@ -1,86 +1,196 @@
-/** Native DSH input schemas for the upper application tool pack. No dispatch logic. */
-const str = { type: 'string' };
-const integer = { type: 'integer' };
-const strings = { type: 'array', items: str };
+const text = (description: string) => ({ type: 'string', description });
+const list = (description: string) => ({
+  type: 'array',
+  items: text('Nonempty string, at most 12000 UTF-8 bytes.'),
+  description,
+});
+const version = {
+  type: 'integer',
+  description:
+    'Nonnegative safe integer. Use the last returned version; use 0 before the first write.',
+};
+const evidenceId = text(
+  'Copy evidence.id from an authorized observation receipt; 1 to 128 characters.',
+);
+const attachmentId = text(
+  'Copy attachment.id for one camera in that observation; 1 to 128 characters.',
+);
+const maskEvidenceId = text(
+  'Copy maskEvidenceId from segmentation of this exact source image; 1 to 128 characters.',
+);
+const maskAttachmentId = text(
+  'Copy instances[index].maskAttachmentId for the selected object mask; 1 to 128 characters.',
+);
+const evidenceRefs = list(
+  'Authorized observation evidence IDs to include or grant explicitly; at most 32. Use [] when no observations are needed.',
+);
 const obj = { type: 'object', additionalProperties: true };
 export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
-  'user.ask': { question: str, reason: str, options: strings },
+  'user.ask': {
+    question: text('One self-contained question for the user.'),
+    reason: text('Explain which task decision needs this answer.'),
+    options: list('Zero to eight suggested answers. Use [] for a free-text question.'),
+  },
   'agent.report': {
     status: { type: 'string', enum: ['completed', 'failed', 'insufficient_context', 'cancelled'] },
-    summary: str,
-    result: { oneOf: [obj, { type: 'null' }] },
-    evidenceRefs: strings,
-    requestedContext: strings,
-    expectedVersion: integer,
+    summary: text('Factual findings, limitations and the caller action they support.'),
+    result: {
+      oneOf: [obj, { type: 'null' }],
+      description: 'Structured role result; null for insufficient_context.',
+    },
+    evidenceRefs,
+    requestedContext: list(
+      'Specific missing inputs for insufficient_context; otherwise []. At most 32.',
+    ),
+    expectedVersion: version,
   },
   'planning.read': {},
-  'planning.update': { plan: obj, expectedVersion: integer },
-  'files.read': { path: str },
+  'planning.update': { plan: obj, expectedVersion: version },
+  'files.read': {
+    path: text(
+      'Relative path within this assignment private files, for example memory/progress.md.',
+    ),
+  },
   'files.write': {
-    path: str,
-    content: { type: 'string' },
-    expectedVersion: integer,
+    path: text('Relative path within this assignment private files.'),
+    content: text('Complete UTF-8 file contents, up to 131072 bytes. Empty contents are allowed.'),
+    expectedVersion: version,
   },
-  'files.search': { query: str },
+  'files.search': { query: text('Nonempty text to find in this assignment private files.') },
   'team.ack_report': {
-    assignmentId: str,
-    reportId: str,
+    assignmentId: text('Exact sender assignmentId from a received report.'),
+    reportId: text('Exact immutable reportId being assessed.'),
     disposition: { type: 'string', enum: ['accepted', 'rejected'] },
-    summary: str,
+    summary: text('Explain the report assessment and any remaining evidence limitations.'),
   },
-  'team.query': { assignmentId: str, beforeReportId: str, includeBodies: { type: 'boolean' } },
+  'team.query': {
+    assignmentId: text('Your assignment ID or one returned by your own team.delegate call.'),
+    beforeReportId: text('Optional pagination cursor: copy reportHistoryPage.nextBeforeReportId.'),
+    includeBodies: {
+      type: 'boolean',
+      description: 'Optional; request earlier report bodies as well as receipts.',
+    },
+  },
   'team.delegate': {
-    member: str,
-    objective: str,
-    context: { type: 'string' },
-    evidenceRefs: strings,
+    member: text(
+      'Configured Team member alias. Formal Verifier is assigned by the host; learning-disabled Evolver is unavailable.',
+    ),
+    objective: text('Bounded specialist task with a concrete expected result.'),
+    context: text(
+      'Explicit instructions, attempted actions, facts, constraints and expected output. The recipient has a fresh context; empty text is allowed.',
+    ),
+    evidenceRefs,
   },
-  'team.send': { assignmentId: str, message: str, evidenceRefs: strings },
-  'context.request': { assignmentId: str, message: str, evidenceRefs: strings },
-  'context.respond': { assignmentId: str, message: str, evidenceRefs: strings },
+  'team.send': {
+    assignmentId: text(
+      'Exact active recipient assignment ID from the explicit communication context.',
+    ),
+    message: text('Self-contained context or instructions for that assignment.'),
+    evidenceRefs,
+  },
+  'context.request': {
+    assignmentId: text('Exact active caller assignment ID from your InvocationBrief.'),
+    message: text(
+      'Identify the missing facts, observations or constraints needed to complete the assignment.',
+    ),
+    evidenceRefs,
+  },
+  'context.respond': {
+    assignmentId: text('Exact active assignment ID that requested more context.'),
+    message: text('Answer the requested inputs with factual context and remaining limitations.'),
+    evidenceRefs,
+  },
   'perception.capture': {},
   'perception.segment_objects': {
-    evidenceId: {
-      type: 'string',
-      description: 'Authorized observation ID, 1 to 128 characters.',
-    },
-    attachmentId: {
-      type: 'string',
-      description: 'Authorized camera attachment ID, 1 to 128 characters.',
-    },
+    evidenceId,
+    attachmentId,
     textPrompt: { type: 'string', description: 'Object text prompt, 1 to 1024 characters.' },
   },
   'perception.estimate_depth': {
-    evidenceId: str,
-    attachmentId: str,
-    maskEvidenceId: str,
-    maskAttachmentId: str,
+    evidenceId,
+    attachmentId,
+    maskEvidenceId,
+    maskAttachmentId,
   },
   'perception.measure_object': {
-    evidenceId: str,
-    attachmentId: str,
-    maskEvidenceId: str,
-    maskAttachmentId: str,
+    evidenceId,
+    attachmentId,
+    maskEvidenceId,
+    maskAttachmentId,
   },
-  'observation.turn_view': { direction: { type: 'string', enum: ['left', 'center', 'right'] } },
-  'execution.start': { instruction: str },
+  'observation.turn_view': {
+    direction: {
+      type: 'string',
+      enum: ['left', 'center', 'right'],
+      description:
+        'Advertised view direction. Inspect the returned achieved view; motion depends on the embodiment.',
+    },
+  },
+  'execution.start': {
+    instruction: text(
+      'One concrete instruction accepted by the selected checkpoint for the active goal. Use the catalog instruction verbatim when required by this deployment; at most 12000 UTF-8 bytes.',
+    ),
+  },
   'execution.query': {},
   'execution.pause': {},
   'execution.resume': {},
-  'tasks.select_goal': { goalId: str },
-  'tasks.retry': { changes: strings, attemptSummary: str },
-  'tasks.replan': { reason: str, changes: strings, attemptSummary: str },
+  'tasks.select_goal': {
+    goalId: text('Exact goal_id of a ready item in the last successfully written plan.'),
+  },
+  'tasks.retry': {
+    changes: list(
+      'One to 32 concrete adjustments supported by the failed attempt; continuation from the retained scene is valid when budget ended with observed progress.',
+    ),
+    attemptSummary: text(
+      'Previous instruction, confirmed stop reason, observed physical outcome and exact failed checks; distinguish supported causes from uncertainty.',
+    ),
+  },
+  'tasks.replan': {
+    reason: text('Evidence-based reason to revise the plan or introduce admitted repair work.'),
+    changes: list('One to 32 concrete plan changes; preserve the original goal criterion.'),
+    attemptSummary: text(
+      'Factual previous attempt and failed checks. Required after formal failure.',
+    ),
+  },
   'tasks.finish': {},
-  'tasks.abandon': { reason: str, status: { type: 'string', enum: ['failed', 'unknown'] } },
+  'tasks.abandon': {
+    reason: text(
+      'Observed unsuccessful outcome or missing evidence, including exhausted attempts when applicable.',
+    ),
+    status: {
+      type: 'string',
+      enum: ['failed', 'unknown'],
+      description:
+        'failed for established unsuccessful outcome; unknown when the criterion cannot be settled.',
+    },
+  },
   'verification.check': {},
   'verification.submit': {
-    status: { type: 'string', enum: ['passed', 'failed', 'unknown'] },
-    explanation: str,
+    status: {
+      type: 'string',
+      enum: ['passed', 'failed', 'unknown'],
+      description:
+        'Verdict consistent with verification.check facts and the exact admitted all/any criterion.',
+    },
+    explanation: text(
+      'Identify the checked condition, returned fact status, source evidence and any missing evidence; stopping alone is insufficient.',
+    ),
   },
-  'skills.search': { query: str },
-  'skills.load': { skillId: str, sections: strings },
-  'skills.save': { markdown: str },
-  'evidence.read': { evidenceId: str },
+  'skills.search': {
+    query: text('Focused task-semantic keywords for a planning or verification question.'),
+  },
+  'skills.load': {
+    skillId: text('Exact skillId from reviewed search metadata or an explicit skill reference.'),
+    sections: list(
+      'Optional distinct heading names to load; at most 32. Omit for the complete SKILL body.',
+    ),
+  },
+  'skills.save': {
+    markdown: text(
+      'Complete SKILL.md with applicability, failure/success guidance, limits and source evidence; at most 12000 UTF-8 bytes.',
+    ),
+  },
+  'evidence.read': { evidenceId },
 };
 export const CORE_TOOLS = [...Object.keys(CORE_TOOL_PARAMETERS), 'todo_write'];
 export const CORE_TOOL_OPTIONAL_PARAMETERS: Readonly<Record<string, readonly string[]>> = {
@@ -89,6 +199,42 @@ export const CORE_TOOL_OPTIONAL_PARAMETERS: Readonly<Record<string, readonly str
 };
 
 export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
+  'evidence.read':
+    'Read one immutable observation already authorized for this assignment. Returns a SensorSample with evidence.id, task_scope, observed_at and camera attachments, and presents its available images to this model. Reading preserves the original capture time. SKILL source references and another role conversation do not grant access; request missing observations explicitly from the caller.',
+  'perception.capture':
+    'Capture current authorized sensor observations. Returns a SensorSample with evidence.id, observed_at, task_scope and camera attachments; the result also presents available RGB images to this model. Copy reference IDs from this receipt for segmentation, geometry and delegation. Capture does not move the device or verify success.',
+  'perception.segment_objects':
+    'Ground one text-described object in an authorized source camera image with SAM. Supply evidenceId and attachmentId copied from capture or evidence.read. Returns instances, each with maskAttachmentId, plus maskEvidenceId and overlayEvidenceId; an empty instances array supplies no object geometry. Use the original RGB references with a selected mask for subsequent depth or native measurement. Segmentation does not establish persistent object identity or physical success.',
+  'observation.turn_view':
+    'Request an advertised active view using the embodiment motion resource. Decision owner only, with stopped execution and available resource. Returns an authorized observation and achieved state; inspect actual motion and capture time. View changes may move the body and invalidate earlier geometry. Use only when exposed by the selected deployment.',
+  'planning.read':
+    'Read authoritative task planning context without side effects. Returns plan (null before the first write), taskId, ownerAgentId, ownerAssignmentId, activeGoalId, attemptId, successContract, goal catalog, allowed subgoal checks, retry and learningEnabled. For the first plan use expectedVersion=0 and plan.version=1; later use plan.version from this receipt and increment it exactly once. Copy IDs and original criteria from these fields.',
+  'files.read':
+    'Read one assignment-private versioned text file. Returns its contents and version for the next files.write. Files belonging to another role require explicit communication.',
+  'files.write':
+    'Write the complete contents of one assignment-private file. expectedVersion is 0 for a new file and the latest returned version thereafter. Returns the committed version. File notes can record evidence and progress; they do not verify physical success.',
+  'files.search':
+    'Search this assignment private files and return matching file records in files. Retrieve only the material needed for the current task decision.',
+  'team.delegate':
+    'Create a fresh specialist assignment for a configured member with objective, complete explicit context and authorized observation references. Returns accepted and assignmentId for messages or inspection. Supply the requested result, task facts, attempted actions and limitations; conversations are independent. The host assigns formal Verifier at execution end, and disabled recovery learning forbids Evolver delegation.',
+  'team.send':
+    'Send self-contained context and explicitly granted observations to an active assignment in the allowed caller/delegate relationship. Returns a message delivery receipt. Delivery does not imply recipient completion or task success.',
+  'context.request':
+    'Request missing information from the active caller using explicit message text and evidenceRefs. Returns a message receipt. To suspend an incomplete specialist assignment, publish agent.report with insufficient_context, result=null and requestedContext, then wait for the caller.',
+  'context.respond':
+    'Provide explicitly requested facts and authorized observations to an active delegated assignment. Returns a message receipt and permits its native follow-up; preserve its stated objective and permissions.',
+  'team.ack_report':
+    'Record an immutable accepted/rejected assessment of one exact received assignment report. Returns its acknowledgement receipt. Read the report first, identify limitations and assess its scope. This assessment does not replace formal physical verification.',
+  'execution.start':
+    'Start one nonblocking, bounded policy job for the selected ready goal and current attempt, after its successful selection receipt. Returns execution identity, state and admitted budget; actions pass through ActionGate. The host supplies goal, attempt, criterion and resource identities. Await the receipt, finish this response and wait for the execution/formal-verdict follow-up. At most one start per attempt; no polling loop or duplicate start. A new failed-goal attempt requires an accepted tasks.retry first.',
+  'execution.query':
+    'Read the current published job status without starting motion. Returns execution (null when absent) and formalVerification (null or assignmentId/status/verdictStatus/nextStep). Inspect control_steps, policy_calls, stop_reason, device_confirmed and boundary_event_id. A pending formalVerification is host-owned: finish this response and wait for its verdict follow-up. Status references can be metadata-only while running; do not interpret those as images or success.',
+  'execution.pause':
+    'Decision owner requests confirmed stopping of the current job. Returns execution status after the request; require state=paused and device_confirmed before treating motion as paused. Ordinary pause preserves the current attempt and cumulative budget and creates no formal Verifier.',
+  'execution.resume':
+    'Decision owner explicitly resumes a confirmed ordinarily paused job in the same attempt with its remaining cumulative budget. Returns execution status. Reassess the scene and current goal before authorization; ended jobs require the formal outcome and explicit retry instead.',
+  'verification.check':
+    'Formal Verifier only: run the admitted criterion checks at this assignment exact confirmed end boundary. Returns facts and boundaryId, and supplies the check observation images to this model. Each fact has check_id, value (true/false/null), evidence_refs and a reason for null. The host retains facts and evidence for verification.submit; do not replace arguments, move the device or interpret incomplete evidence as success.',
   'perception.measure_object':
     'Measure one SAM-grounded visible object region using same-frame native simulator RGB-D and camera calibration. Supply its original authorized evidenceId/attachmentId and matching maskEvidenceId/maskAttachmentId. Available only for an explicitly enabled native provider while confirmed stopped. Returns meter-valued axial depth and camera range, source hashes, camera/world frames and the mean of visible valid surface points. The surface centroid is not the full object geometric center. This read-only measurement does not verify task success.',
   'perception.estimate_depth':

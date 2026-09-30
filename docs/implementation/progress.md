@@ -1,10 +1,18 @@
 # Implementation progress
 
-Spec: v1.65. Current checkpoint: **native Qwen/Pi0.5 completes a formally failed attempt followed by an explicit Planner retry and independent formal success; source-bound SAM/YOLO and native RoboCasa geometry tools complete real model calls**.
+Spec: v1.66. Current checkpoint: **native Qwen/Pi0.5 completes a formally failed attempt followed by an explicit Planner retry and independent formal success; source-bound SAM/YOLO and native RoboCasa geometry tools complete real model calls**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
+
+Responsibility-bound numbered Planner/Verifier workflows load across all six live
+Teams and contribute to their source digests. All 33 core tools have argument and
+receipt guidance; the canonical plan projection retains domain bounds in model-visible
+annotations. Authored role/schema checks, formatting, type checks, source provenance
+and structure checks pass. A separate actual Qwen/Pi0.5 recovery run with recorded
+model-request prompts and serialized schemas is undergoing validation. See
+[prompt workflows](prompt-workflow.md).
 
 Run `8a7d4bde-60ec-40e4-abbe-d0357fbc841c` verifies actual recovery in native
 RoboTwin `adjust_bottle`, `demo_clean`, seed 0. The original task criterion and

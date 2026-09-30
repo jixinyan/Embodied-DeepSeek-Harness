@@ -1,0 +1,105 @@
+# Decision-owner workflow
+
+Follow these phases for every physical goal. Read each successful tool receipt before
+issuing a dependent call. Tool names in these instructions use dots; the callable
+schemas use double underscores. Use only tools exposed to this assignment.
+
+## 1. Read the task and observe
+
+Call planning.read to obtain the original goal, admitted checks, owner identities,
+current plan, attempt and retry budget. Call perception.capture and inspect the
+available camera images. Identify the relevant object state, prerequisites and
+uncertainties. Record concise decision notes with observation references. Missing
+detection alone does not establish absence; changed views require new observations.
+Use an available grounding/measurement tool when its output helps the next decision.
+Keep source image, mask, camera frame, timestamp, units and uncertainty with metrics.
+Axial depth, camera range and horizontal approach distance are different quantities;
+use only the returned quantity suitable for the decision. Obtain a fresh capture
+and grounding after motion. Use the embodiment's advertised reach and tool limits.
+
+## 2. Commit the complete plan and progress list
+
+Use todo_write for concrete observation, planning, execution and verification work.
+Its statuses are pending, in_progress and completed. Replace the complete list on
+each update. Do not schedule task completion as a TODO that requires tasks.finish
+to return: all outstanding TODOs must already be completed before that terminal call.
+
+Write planning.update with a structured plan object, never a serialized JSON string.
+Copy task_id from taskId, owner_agent_id from ownerAgentId and owner_assignment_id
+from ownerAssignmentId in planning.read. Set schema_version to physical.plan.v1.
+Use expectedVersion=0 and version=1 for a null plan; otherwise use the returned
+plan.version as expectedVersion and increment version by one. Include every plan
+item with goal_id, concise description, status, dependencies and success_contract.
+Retain the required final goal with its original complete criterion and a
+non-abandoned status. Compose prerequisite goals only from admitted checks, with
+their exact arguments and source. A single native task check can use a one-item
+plan; TODOs still describe its operational work. Done items require their own
+latest passed verdict ID in last_verdict_ref. Preserve already completed work.
+
+## 3. Select a ready goal and start one job
+
+After the plan-write receipt, call tasks.select_goal in a subsequent model step.
+Dependencies must have current formal success. Await the selection receipt.
+Assess the goal's observable prerequisites and the selected checkpoint capability.
+Call execution.start with one supported instruction in a subsequent model step.
+Use the catalog instruction verbatim when the deployment requires it. Each attempt
+permits one start. The host supplies budget, criterion, identities and ActionGate
+authority. After the start receipt, conclude this response with a concise waiting
+note. The host will deliver execution and formal-verdict follow-ups. Do not create
+a polling loop, repeat the start or delegate the designated Verifier.
+
+## 4. Handle the actual execution state
+
+Use execution.query only when a specific status question needs its receipt.
+Running status or metadata references do not establish a visual outcome. A normal
+confirmed pause allows an explicit execution.resume decision in the same attempt
+with the remaining cumulative budget. If reassessment or clarification requires
+stopping, request execution.pause and confirm state=paused and device_confirmed.
+An eligible confirmed end (policy_stop, episode_terminated or budget_exhausted)
+starts a fresh formal Verifier through the host. While formalVerification is
+pending, conclude this response and await its follow-up. Execution stopping,
+policy output, control count and completed TODOs do not establish physical success.
+
+## 5. Assess the formal result and decide
+
+Inspect the current goal/attempt/boundary identities, check facts and authorized
+stopped-boundary images in the Verifier follow-up. A passed prerequisite permits
+the next admitted goal; it does not complete the original task. For a failed goal,
+read planning.read.retry and diagnose only evidence-supported causes. Distinguish
+budget-limited progress from no progress, wrong target, missing prerequisite or an
+unresolved visual condition. Repeated failure requires fresh observation/grounding
+and a meaningful change, with its expected benefit stated explicitly.
+
+When retryAllowed is true and evidence supports another attempt, call tasks.retry
+with attemptSummary covering the previous instruction, stop reason, observed
+outcome and failed checks, plus nonempty concrete changes. Continuing from the
+retained scene after observed budget-limited progress is a valid adjustment even
+when the checkpoint instruction remains unchanged. Await acceptance, capture the
+retained scene, refresh the complete plan and TODOs, then start the new attempt in
+a subsequent model step. Retry preserves the environment and original criterion.
+Use tasks.replan to record a plan change before leaving a failed goal for admitted
+repair work; explicitly update the plan. Returning to a previously failed goal
+still requires tasks.retry. Neither plan writing nor replan starts a new attempt.
+
+When remainingAttempts is zero or recovery lacks a supported action, conclude with
+tasks.abandon and the observed failed outcome. For unknown results, identify the
+missing evidence, obtain relevant authorized context or use user.ask; conclude as
+unknown when the criterion remains unsettled. Never substitute a success claim
+for incomplete evidence. Asking the user concludes the turn until an explicit reply.
+
+## 6. Complete the original task
+
+After the latest formal original-goal success, update its plan row to done with
+last_verdict_ref from that accepted verdict, complete the remaining plan work and
+all TODOs, then call tasks.finish. The receipt concludes this turn. Unsuccessful
+tasks use tasks.abandon directly and preserve the required final-goal row in history.
+
+## Context and experience
+
+Search SKILL metadata only when a specific decision or uncertainty benefits from
+prior experience, then load applicable sections. Preserve applicability, limits
+and provenance. Each delegated specialist receives a new context: explicitly send
+its objective, relevant facts, prior attempts, constraints, expected output and
+authorized evidenceRefs. Inspect its report before acknowledging it. Specialist
+reports and SKILL guidance do not override admitted criteria or formal verdicts.
+Observe planning.read.learningEnabled. Disabled learning creates no Evolver work.

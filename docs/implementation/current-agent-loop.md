@@ -8,7 +8,8 @@ deferred; existing evidence and experience retrieval remain available.
 
 ## System prompt composition
 
-Each assignment receives its selected `ROLE.md` instructions, the Team source
+Each assignment receives its selected `ROLE.md` instructions, deployment additions,
+the responsibility-bound [numbered workflow](prompt-workflow.md), the Team source
 digest, explicit-context rules and responsibility-specific completion instructions.
 Tool definitions describe their schemas and authority. Native DSH assembles the
 model prompt and owns model requests, tool dispatch, cancellation and context

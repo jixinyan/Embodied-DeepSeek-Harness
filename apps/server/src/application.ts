@@ -659,6 +659,8 @@ export class UpperRun {
         } else {
           const properties = CORE_TOOL_PARAMETERS[logical];
           if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
+          const description = CORE_TOOL_DESCRIPTIONS[logical];
+          if (!description) throw new Error(`Tool description is unavailable: ${logical}`);
           if (
             logical === 'perception.segment_objects' &&
             (!this.options.segmentation || !this.options.images)
@@ -683,9 +685,7 @@ export class UpperRun {
             this.options.depth?.timeoutMs !== undefined
               ? { timeoutMs: this.options.depth.timeoutMs }
               : {}),
-            description:
-              CORE_TOOL_DESCRIPTIONS[logical] ??
-              `${logical}. Operates only within this assignment and task.`,
+            description,
             parameters: {
               type: 'object',
               properties:
@@ -693,6 +693,8 @@ export class UpperRun {
                   ? {
                       ...properties,
                       result: {
+                        description:
+                          'Structured role output; null when requesting missing context. Follow the selected role result schema.',
                         oneOf: [
                           this.sessions.team.members[a.member]!.outputSchema?.schema ?? {
                             type: 'object',

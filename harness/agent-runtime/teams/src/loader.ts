@@ -102,7 +102,25 @@ export class FileTeamLoader {
       const profileContext = [o.promptContext, o.rolePromptAdditions?.[alias]].filter(
         (value): value is string => Boolean(value?.trim()),
       );
-      const instructions = [match[2]!.trim(), ...profileContext].join('\n\n');
+      const workflowRole =
+        alias === definition.bindings.decision_owner
+          ? 'planner'
+          : alias === definition.bindings.final_verifier
+            ? 'verifier'
+            : undefined;
+      const workflow = workflowRole
+        ? await readFile(
+            await within(
+              resolve(o.builtinDirectory, workflowRole, 'WORKFLOW.md'),
+              o.builtinDirectory,
+            ),
+            'utf8',
+          )
+        : undefined;
+      const instructions = [match[2]!.trim(), ...profileContext, workflow]
+        .filter(Boolean)
+        .join('\n\n');
+      if (workflow) digest.update(workflowRole!).update(workflow);
       if (profileContext.length) digest.update(profileContext.join('\n'));
       const bound = {
         ...role,
