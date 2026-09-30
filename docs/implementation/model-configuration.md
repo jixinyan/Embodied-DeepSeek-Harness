@@ -43,6 +43,7 @@ continue to use installed complete launch profiles and their existing validation
 | `defaultModel` | Existing alias in `models` |
 | `endpoints.<id>.hosting` | `cloud_api` or `vllm`; describes deployment location |
 | `endpoints.<id>.protocol` | `chat_completions` (default) or `responses`; selects the transport adapter |
+| `endpoints.<id>.connectionMode` | `pooled` (default); `close-after-response` opens a separate connection per request and requires HTTP Chat Completions |
 | `baseURL` | HTTP(S) API root; includes `/v1` where required; credentials/query/fragment are rejected |
 | `authentication` | Explicit `{ type: none }` or `{ type: environment, variable: ENV_NAME }` |
 | `systemRole` | Chat Completions: `system` by default; configurable as `developer`. Responses uses `instructions`. |

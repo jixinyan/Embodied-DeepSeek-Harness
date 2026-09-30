@@ -112,6 +112,10 @@ class NativeWorkerSession:
         self._policy_timeout_s = 30.0
         self._policy_max_actions_per_inference = 512
         self._monitor_every_actions = 1
+        self._publish_running_images = False
+        self._record_simulation_frames = False
+        self._video_directory = None
+        self._video_recorder = None
         self._last_monitor_action = 0
         self._boundary_at: str | None = None
         self._lease_active = False
@@ -172,9 +176,11 @@ class NativeWorkerSession:
 
     def _publication(self, observation: NativeObservation) -> dict[str, Any]:
         self._latest_observation = observation
+        status = self._status_for(observation)
+        include_images = status["state"] != "running" or self._publish_running_images
         publication = {
-            "status": self._status_for(observation),
-            "observation": self._observation_wire(observation),
+            "status": status,
+            "observation": self._observation_wire(observation, include_images=include_images),
             "uncertain_actions": self._require_device().uncertain_actions,
         }
         if self._failure_detail is not None:
@@ -182,11 +188,13 @@ class NativeWorkerSession:
         return publication
 
     @staticmethod
-    def _observation_wire(observation: NativeObservation | NativeFrame) -> dict[str, Any]:
+    def _observation_wire(observation: NativeObservation | NativeFrame, *, include_images: bool = True) -> dict[str, Any]:
         return {
             "observation_id": observation.observation_id,
             "observed_at": observation.observed_at,
-            "images": {name: base64.b64encode(data).decode("ascii") for name, data in observation.images.items()},
+            "images": ({name: base64.b64encode(data).decode("ascii") for name, data in observation.images.items()}
+                       if include_images else {}),
+            **({"images_omitted": True} if not include_images else {}),
         }
 
     async def _publish(self, observation: NativeObservation, control: dict[str, Any] | None = None,
@@ -225,6 +233,15 @@ class NativeWorkerSession:
         self._monitor_every_actions = arguments.get("monitor_every_actions", 1)
         if type(self._monitor_every_actions) is not int or not 1 <= self._monitor_every_actions <= 512:
             raise ValueError("Monitor interval must contain 1 to 512 control commands.")
+        self._publish_running_images = arguments.get("publish_running_images", False)
+        self._record_simulation_frames = arguments.get("record_simulation_frames", False)
+        if type(self._publish_running_images) is not bool or type(self._record_simulation_frames) is not bool:
+            raise ValueError("Image publication and frame recording options must be booleans.")
+        video_directory = arguments.get("simulation_video_directory")
+        if video_directory is not None:
+            if not isinstance(video_directory, str) or not Path(video_directory).is_absolute():
+                raise ValueError("Simulation video directory must be an absolute worker-local path.")
+            self._video_directory = Path(video_directory)
         self._policy_max_actions_per_inference = arguments.get("policy_max_actions_per_inference", 512)
         if type(self._policy_max_actions_per_inference) is not int or not 1 <= self._policy_max_actions_per_inference <= 512:
             raise ValueError("Policy action limit must contain 1 to 512 control commands.")
@@ -310,6 +327,11 @@ class NativeWorkerSession:
             if not self._host_connected or not self._lease_active:
                 raise RuntimeError("Native task lease ended during binding.")
             execution_id = str(uuid4())
+            if self._video_recorder is not None:
+                await asyncio.to_thread(self._video_recorder.close)
+            if self._video_directory is not None:
+                from physical_harness.execution.video import SimulationVideoRecorder
+                self._video_recorder = SimulationVideoRecorder(self._video_directory, execution_id)
             await self._device.bind_execution(execution_id)
             if not self._host_connected or not self._lease_active:
                 raise RuntimeError("Native task lease ended during execution binding.")
@@ -527,6 +549,10 @@ class NativeWorkerSession:
                 raise RuntimeError("Native frame sequence or simulation time is invalid.")
             prior_step_index = frame.native_step_index
             prior_simulation_time = frame.simulation_time_s
+            if self._video_recorder is not None:
+                await asyncio.to_thread(self._video_recorder.append, frame, segment)
+            if not self._record_simulation_frames:
+                continue
             await self._emit({"event": "frame", "data": {
                 "run_task_id": self._run_task_id,
                 "execution_id": gate.snapshot()["execution_id"],
@@ -679,6 +705,8 @@ class NativeWorkerSession:
             self._pump = None
         if not self._gate.snapshot()["device_confirmed"]:
             raise RuntimeError("Native task close has no confirmed device boundary.")
+        if self._video_recorder is not None:
+            await asyncio.to_thread(self._video_recorder.close)
         self._catalog_task_id = None
         self._run_task_id = None
         self._lease_active = False
@@ -700,6 +728,8 @@ class NativeWorkerSession:
             await stopping
         if self._device is not None:
             await self._device.close()
+        if self._video_recorder is not None:
+            await asyncio.to_thread(self._video_recorder.close)
 
 
 def gate_scope(request: dict[str, Any] | None) -> dict[str, str]:
@@ -769,9 +799,10 @@ async def serve() -> None:
             if operation not in handlers:
                 raise ValueError("Unknown native worker operation.")
             result = await handlers[operation](require_object(message.get("args", {})))
-            await emit({"id": request_id, "result": result})
         except Exception as error:
             await emit({"id": request_id, "error": {"type": type(error).__name__, "message": str(error)}})
+        else:
+            await emit({"id": request_id, "result": result})
 
     while line := await asyncio.to_thread(sys.stdin.readline):
         if len(line) > 32 * 1024 * 1024:

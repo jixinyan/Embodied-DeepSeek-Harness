@@ -52,6 +52,7 @@ const endpoint = z
     systemRole: z.enum(['system', 'developer']).default('system'),
     maxTokensField: z.enum(['max_tokens', 'max_completion_tokens']).default('max_tokens'),
     passReasoningContent: z.boolean().default(false),
+    connectionMode: z.enum(['pooled', 'close-after-response']).default('pooled'),
     extraBody: z.record(z.string(), z.json()).default({}),
     imageRequest: z
       .object({ maxPixels: bounded, maxBytes: bounded })
@@ -95,6 +96,12 @@ export function parseModelConfiguration(input: unknown): ModelConfiguration {
   for (const name of Object.keys(result.endpoints))
     if (!Object.values(result.models).some((value) => value.endpoint === name))
       throw new Error(`Model endpoint has no model bindings: ${name}`);
+  for (const value of Object.values(result.endpoints))
+    if (
+      value.connectionMode === 'close-after-response' &&
+      (value.protocol !== 'chat_completions' || new URL(value.baseURL).protocol !== 'http:')
+    )
+      throw new Error('Closing each model connection requires an HTTP Chat Completions endpoint.');
   return result;
 }
 
@@ -188,6 +195,7 @@ export function createConfiguredModels(
               systemRole: options.systemRole,
               maxTokensField: options.maxTokensField,
               passReasoningContent: options.passReasoningContent,
+              connectionMode: options.connectionMode,
               extraBody: options.extraBody,
             }),
     });

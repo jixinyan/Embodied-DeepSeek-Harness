@@ -1,0 +1,26 @@
+version: 1
+defaultModel: brain
+endpoints:
+  local:
+    hosting: vllm
+    protocol: chat_completions
+    baseURL: http://127.0.0.1:18080/v1
+    authentication:
+      type: none
+    maxTokensField: max_tokens
+    connectionMode: close-after-response
+    passReasoningContent: true
+    timeoutMs: 300000
+    extraBody:
+      top_p: 0.95
+      top_k: 20
+      chat_template_kwargs:
+        enable_thinking: true
+        preserve_thinking: true
+models:
+  brain:
+    endpoint: local
+    model: Qwen/Qwen3.8-27B
+    inputModalities: [text, image]
+    contextWindow: 131072
+    maxTokens: 8192

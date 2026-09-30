@@ -12,6 +12,7 @@ dependencies = ["jsonschema==4.25.1"]
 
 [project.optional-dependencies]
 policy = ["websockets==17.0.1"]
+recording = ["av==18.1.0", "Pillow"]
 robodojo = ["msgpack==1.1.1", "numpy", "Pillow", "psutil"]
 robodojo-server = ["msgpack==1.1.1", "numpy", "Pillow", "psutil", "scipy", "yourdfpy==0.0.60", "imageio", "imageio-ffmpeg"]
 

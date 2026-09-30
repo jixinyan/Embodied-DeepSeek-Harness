@@ -52,6 +52,9 @@ export interface NativeWorkerConfiguration {
   readonly executionMode?: 'policy' | 'direct' | 'hybrid';
   readonly policyMaxActionsPerInference?: number;
   readonly monitorEveryActions?: number;
+  readonly publishRunningImages?: boolean;
+  readonly recordSimulationFrames?: boolean;
+  readonly simulationVideoDirectory?: string;
   readonly observationTtlS?: number;
   readonly deviceTimeoutS?: number;
   readonly policyTimeoutS?: number;
@@ -74,6 +77,7 @@ interface WorkerObservation {
   observation_id: string;
   observed_at: string;
   images: Record<string, string>;
+  images_omitted?: boolean;
 }
 
 interface WorkerPublication {
@@ -386,7 +390,12 @@ class NativeTaskBackend implements EmbodiedBackend {
     const cached = this.lastFrameImages;
     let refs: NonNullable<SensorSample['images']>;
     const entries = Object.entries(object(fields.images));
-    if (!entries.length || entries.length > 8)
+    const imagesOmitted = fields.images_omitted === true;
+    if (
+      entries.length > 8 ||
+      (!entries.length && !imagesOmitted) ||
+      (imagesOmitted && (entries.length > 0 || !status || status.state !== 'running'))
+    )
       throw new Error('Native observation has no bounded camera frames.');
     const reuseFrameImages =
       visibility === 'agent' &&
@@ -430,9 +439,7 @@ class NativeTaskBackend implements EmbodiedBackend {
     const sample: SensorSample = {
       sequence: ++this.sequence,
       source: 'simulation',
-      description: diagnostic
-        ? `${this.provider} camera capture; ${diagnostic}`
-        : `${this.provider} camera capture`,
+      description: `${this.provider} ${imagesOmitted ? 'execution observation metadata' : 'camera capture'}${diagnostic ? `; ${diagnostic}` : ''}`,
       visualization: {
         provider: this.provider,
         catalogTaskId: this.catalogTaskId,
@@ -454,9 +461,11 @@ class NativeTaskBackend implements EmbodiedBackend {
       },
       images: refs,
       evidence: {
-        id: evidenceId ?? observationId,
-        kind: 'image',
-        source: `${this.provider}.camera`,
+        id:
+          evidenceId ??
+          (imagesOmitted ? `${observationId}:status:${status!.state_version}` : observationId),
+        kind: imagesOmitted ? 'event' : 'image',
+        source: `${this.provider}.${imagesOmitted ? 'execution' : 'camera'}`,
         created_at: observedAt,
         visibility,
         task_scope: scope ?? status?.task_scope ?? { task_id: this.runId },
@@ -742,6 +751,11 @@ export async function createNativeWorkerEnvironment(
         schema_path: configuration.schemaPath,
         policy_max_actions_per_inference: policyMaxActionsPerInference,
         monitor_every_actions: configuration.monitorEveryActions ?? 1,
+        publish_running_images: configuration.publishRunningImages ?? false,
+        record_simulation_frames: configuration.recordSimulationFrames ?? false,
+        ...(configuration.simulationVideoDirectory
+          ? { simulation_video_directory: configuration.simulationVideoDirectory }
+          : {}),
         ...(configuration.sourceRoot ? { source_root: configuration.sourceRoot } : {}),
       }),
     ) as unknown as WorkerDescription;

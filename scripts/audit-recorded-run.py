@@ -4,6 +4,7 @@ from hashlib import sha256
 import json
 import math
 from pathlib import Path
+import subprocess
 
 from physical_harness.validation import ContractValidator
 
@@ -13,7 +14,52 @@ def require(condition, message):
         raise ValueError(message)
 
 
-def audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest, schema_path):
+def audit_native_videos(run, directory):
+    frames = {}
+    videos = []
+    for status in run["executions"]:
+        execution_id = status["execution_id"]
+        recording = directory / execution_id
+        manifest = json.loads((recording / "manifest.json").read_text(encoding="utf-8"))
+        journal = [json.loads(line) for line in (recording / "frames.jsonl").read_text(encoding="utf-8").splitlines()]
+        require(journal and len(journal) == manifest["frames"] and manifest["cameras"] and
+                manifest["timeline"] == "native simulation time", "Native video manifest lacks its complete frame journal.")
+        origin = journal[0]["simulation_time_s"]
+        require(origin == manifest["origin_simulation_time_s"] and
+                journal[-1]["simulation_time_s"] == manifest["last_simulation_time_s"],
+                "Native video manifest differs from recorded simulation time.")
+        previous_time = -1.0
+        for frame in journal:
+            require(frame["execution_id"] == execution_id and frame["task_scope"] == status["task_scope"] and
+                    math.isfinite(frame["simulation_time_s"]) and frame["simulation_time_s"] > previous_time and
+                    frame["pts_us"] == round((frame["simulation_time_s"] - origin) * 1_000_000),
+                    "Native video frame identity or simulator timestamp differs from its execution.")
+            group = frames.setdefault(frame["segment_id"], [])
+            require(not group or frame["native_step_index"] > group[-1]["native_step_index"],
+                    "Native video segment frame indices are unordered.")
+            group.append(frame)
+            previous_time = frame["simulation_time_s"]
+        for camera in manifest["cameras"]:
+            require(Path(camera).name == camera and camera not in {".", ".."}, "Invalid recorded camera name.")
+            video = recording / f"{camera}.mp4"
+            decoded = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                                      "frame=best_effort_timestamp_time", "-of", "json", str(video)],
+                                     check=True, capture_output=True, text=True)
+            timestamps = [float(item["best_effort_timestamp_time"]) for item in json.loads(decoded.stdout)["frames"]]
+            require(len(timestamps) == len(journal), "Native video decoded frame count differs from its journal.")
+            error = max(abs(timestamp - frame["pts_us"] / 1_000_000)
+                        for timestamp, frame in zip(timestamps, journal, strict=True))
+            require(error <= 0.000002, "Native MP4 timestamps differ from recorded simulation time.")
+            subprocess.run(["ffmpeg", "-v", "error", "-xerror", "-i", str(video), "-f", "null", "-"],
+                           check=True, capture_output=True)
+            videos.append({"executionId": execution_id, "camera": camera, "frames": len(journal),
+                           "maxTimestampErrorS": error, "sha256": sha256(video.read_bytes()).hexdigest()})
+    require(frames, "Native video acceptance requires actual recorded frames.")
+    return frames, videos
+
+
+def audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest, schema_path,
+                         native_frames=None):
     require(all(value is not None for value in (samples, request_directory, service_log, policy_manifest)),
             "Learned-policy acceptance requires native samples, requests, service log and pinned manifest.")
     validator = ContractValidator.from_path(schema_path)
@@ -141,9 +187,21 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
                 (recorded["native_step"]["observation_id"] == metadata["observationId"] or
                  status["state"] == "ended" and status["device_confirmed"]),
                 "Actual native receipt physics counts or post-action/stopped observation identity differ.")
-        require(sample["evidence"]["visibility"] == "agent" and
-                sample["images"] and len(sample["images"]) == len(request["observation"]["cameras"]),
-                "Native action receipt lacks the actual post-action camera group.")
+        require(sample["evidence"]["visibility"] == "agent", "Native action receipt has invalid evidence visibility.")
+        if sample["images"]:
+            require(len(sample["images"]) == len(request["observation"]["cameras"]),
+                    "Native action receipt camera group differs from the policy observation.")
+        else:
+            require(native_frames and status["state"] == "running" and sample["evidence"]["kind"] == "event" and
+                    sample["evidence"]["id"] == f'{metadata["observationId"]}:status:{status["state_version"]}',
+                    "Metadata-only action receipt lacks identified native video evidence.")
+        if native_frames is not None:
+            recorded_frames = native_frames[segment_id]
+            require(all(frame["policy_request_id"] == request_id and
+                        frame["execution_id"] == status["execution_id"] and
+                        frame["task_scope"] == status["task_scope"] and
+                        0 < frame["native_step_index"] <= raw_steps for frame in recorded_frames),
+                    "Worker-local native video differs from its actual admitted action receipt.")
         segments[segment_id] = {"request_id": request_id, "execution_id": status["execution_id"],
                                 "raw_steps": raw_steps, "provider": metadata["provider"]}
         committed[request_id] = index + 1
@@ -152,6 +210,8 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
             "An actual committed prefix lacks its identified learned inference source.")
     require(physics == sum(status["raw_sim_steps"] for status in prior.values()),
             "Native receipt physics steps differ from the complete execution event counters.")
+    if native_frames is not None:
+        require(set(native_frames) == set(segments), "Native video and actual action receipt segment sets differ.")
     for event in events:
         if event["type"] != "simulation.frame":
             continue
@@ -173,7 +233,7 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
 
 
 def audit(run, events, *, samples=None, request_directory=None, service_log=None, policy_manifest=None,
-          schema_path=None):
+          schema_path=None, simulation_videos=None):
     require(run["source"] in {"simulation", "hardware"}, "Acceptance requires a real run source.")
     require(run["state"] in {"succeeded", "failed", "cancelled", "unknown", "interrupted"},
             "Acceptance requires a terminal run.")
@@ -297,13 +357,15 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
             require(result["status"] == "passed", "Task completion requires formal success.")
     require(len(requests) == len(verdicts), "An admitted formal verification has no verdict.")
     learned = None
+    native_frames, videos = audit_native_videos(run, simulation_videos) if simulation_videos else (None, [])
     if run["state"] == "succeeded":
         require(any(event["type"] == "run.succeeded" for event in events), "No successful task event exists.")
-        require(controls > 0 and frames > 0, "Success requires real controls and native frames.")
+        require(controls > 0 and (frames > 0 or native_frames), "Success requires real controls and native frames.")
         mode = run["configuration"]["launchProfile"]["executionMode"]
         if mode == "policy":
             require(not policy_sequences, "Learned-only execution contains a DSH policy Session.")
-            learned = audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest, schema_path)
+            learned = audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest,
+                                           schema_path, native_frames)
             require(learned["nativeActionReceipts"] == controls, "Learned receipt/control counts differ.")
         else:
             require(mode in {"direct", "hybrid"} and policy_sequences,
@@ -312,6 +374,8 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
             "checkedEvents": len(events), "independentUpperSessions": len(sessions),
             "executionPolicySessions": len(policy_sequences), "executedControls": controls,
             "recordedSimulatorFrames": frames, "formalVerdicts": len(verdicts),
+            "workerRecordedFrames": sum(len(group) for group in native_frames.values()) if native_frames else 0,
+            "workerVideos": videos,
             "recoveryChains": len(recoveries), "observedInvariants": "passed",
             "unobservedRecovery": not bool(recoveries), "learnedPolicy": learned}
 
@@ -324,6 +388,7 @@ def main():
     parser.add_argument("--policy-requests", type=Path)
     parser.add_argument("--policy-service-log", type=Path)
     parser.add_argument("--policy-manifest", type=Path)
+    parser.add_argument("--simulation-videos", type=Path)
     parser.add_argument("--schema-path", type=Path,
                         default=Path(__file__).resolve().parents[1] / "harness/contracts/schema/physical.schema.json")
     args = parser.parse_args()
@@ -332,7 +397,7 @@ def main():
     samples = json.loads(args.sensor_samples.read_text(encoding="utf-8")) if args.sensor_samples else None
     report = audit(run, events, samples=samples, request_directory=args.policy_requests,
                    service_log=args.policy_service_log, policy_manifest=args.policy_manifest,
-                   schema_path=args.schema_path)
+                   schema_path=args.schema_path, simulation_videos=args.simulation_videos)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report))
