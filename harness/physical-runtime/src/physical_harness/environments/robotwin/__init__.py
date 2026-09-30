@@ -71,6 +71,7 @@ class RoboTwinEnvironment:
         self._controlled_physics_steps = 0
         self._frame_sample_interval_steps = 10
         self._max_frames_per_action = 300
+        self._ray_tracing_denoiser = "none"
 
     def _require_env(self):
         if self._env is None:
@@ -114,14 +115,19 @@ class RoboTwinEnvironment:
                 "bottle_orientation_tag": int(env.qpose_tag),
                 "scene_identifier": f"adjust_bottle:{self._seed}:{int(env.model_id)}:{int(env.qpose_tag)}",
                 "physics_timestep_s": 1 / 250,
+                "ray_tracing_denoiser": self._ray_tracing_denoiser,
             },
         )
 
     def _configuration(self, task_id: str, configuration: Mapping[str, object]) -> dict[str, object]:
         if task_id != "adjust_bottle":
             raise ValueError("This RoboTwin adapter supports the adjust_bottle native task.")
-        if set(configuration) - {"seed", "frame_sample_interval_steps", "max_frames_per_action"}:
+        if set(configuration) - {"seed", "frame_sample_interval_steps", "max_frames_per_action", "ray_tracing_denoiser"}:
             raise ValueError("Unknown RoboTwin scene configuration field.")
+        denoiser = configuration.get("ray_tracing_denoiser", "none")
+        if not isinstance(denoiser, str) or denoiser not in {"none", "oidn", "optix"}:
+            raise ValueError("RoboTwin ray_tracing_denoiser must be none, oidn or optix.")
+        self._ray_tracing_denoiser = denoiser
         seed = configuration.get("seed", 0)
         if type(seed) is not int or seed < 0:
             raise ValueError("RoboTwin seed must be a nonnegative integer.")
@@ -193,9 +199,20 @@ class RoboTwinEnvironment:
             raise RuntimeError("RoboTwin session is already initialized; task admission preserves its scene.")
         selected = self._configuration(task_id, configuration)
         task_class = getattr(import_module(f"envs.{task_id}"), task_id)
-        env = task_class()
+        denoiser = self._ray_tracing_denoiser
+
+        class RenderConfiguredTask(task_class):
+            def setup_scene(self, **kwargs):
+                super().setup_scene(**kwargs)
+                sapien.render.set_ray_tracing_denoiser(denoiser)
+                if sapien.render.get_ray_tracing_denoiser() != denoiser:
+                    raise RuntimeError("SAPIEN denoiser differs from the admitted scene configuration.")
+
+        env = RenderConfiguredTask()
         try:
             env.setup_demo(**selected)
+            if sapien.render.get_ray_tracing_denoiser() != self._ray_tracing_denoiser:
+                raise RuntimeError("SAPIEN denoiser differs from the admitted scene configuration.")
             self._env = env
             self._task_id = task_id
             self._seed = selected["seed"]

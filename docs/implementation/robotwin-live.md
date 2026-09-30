@@ -60,6 +60,13 @@ application's 300-second observation deadline. Positive observation, policy and 
 bindings, within the native worker's 300-second limit. Three camera frames and
 the fourteen-channel state are captured again before each new policy request.
 
+Native scene configuration accepts `ray_tracing_denoiser` with `none`, `oidn` or
+`optix`; the default is `none`. EDH applies and checks this setting immediately
+after native scene construction, before native cameras are created. Scene metadata
+records the selected value. Model observations and native recordings use that
+same renderer. A deployment selecting OIDN or OptiX must validate support on its
+selected GPU and SAPIEN installation.
+
 The native task instruction and scene metadata replace the configured catalog's
 instruction during Session admission. Planner passes that instruction verbatim
 to Pi0.5. A confirmed ordinary pause retains the same execution, scene and
