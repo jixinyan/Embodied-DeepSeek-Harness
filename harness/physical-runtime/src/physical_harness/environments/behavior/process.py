@@ -11,6 +11,7 @@ import signal
 import socket
 import subprocess
 from threading import Event, Lock, Timer, current_thread, main_thread
+import time
 import traceback
 from typing import Callable, Mapping, Sequence
 from uuid import uuid4
@@ -182,6 +183,7 @@ class BehaviorProcessEnvironment:
     def close(self) -> None:
         if self._closed:
             return
+        close_started = time.monotonic()
         close_error = None
         try:
             if not self._failed:
@@ -191,7 +193,8 @@ class BehaviorProcessEnvironment:
                 except BaseException as error:
                     close_error = error
             try:
-                status = self._process.wait(timeout=self._timeout_s)
+                remaining_s = max(0.0, self._timeout_s - (time.monotonic() - close_started))
+                status = self._process.wait(timeout=remaining_s)
             except subprocess.TimeoutExpired:
                 self._process.terminate()
                 try:
