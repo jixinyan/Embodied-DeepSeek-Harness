@@ -18,3 +18,15 @@ environment. That check did not execute a learned policy or complete the task.
 
 Simulator calls must stay on the execution worker's owner thread. The adapter alone
 does not publish upper agent updates, image references or formal verdicts.
+
+On 2026-09-30, the GPU1 native gate check passed reset, three-camera capture,
+manual control, confirmed pause/resume, a second execution on the retained scene,
+and a stable simulator clock after an in-flight stop. A separate worker check used
+the checkpoint-backed GR00T-N1.6 policy on GPU6. Its first task executed seven
+admitted controls and 175 MuJoCo steps, published native camera frames, and
+returned `task_success=false` at a confirmed boundary. The worker opened and
+closed a second task on the same scene, then exited. The local report is
+`.local/work/robocasa-agent-worker/result.json`; the remote gate report is
+`.local/work/robocasa-agent-gpu1-gate/result.json`. These checks establish
+policy-to-simulator control and Session task lifecycle for this deployment.
+Successful OpenCabinet completion and recovery remain unverified.
