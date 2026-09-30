@@ -78,7 +78,14 @@ cancels an active policy request while the generation-fenced device completes
 its stop acknowledgement. Provider status updates may coalesce the internal
 stopping phase into a confirmed `running` → `paused` publication; all device
 boundary, ownership, budget and counter checks remain required. Python and
-TypeScript checks pass. Actual RoboDojo pause/resume/cancel acceptance is pending.
+TypeScript checks pass. RoboDojo run
+`806e8b33-4764-4458-87fc-2f99443e63d6` confirms an ordinary pause after one
+actual control, unchanged counters during the held boundary, and Planner-owned
+resume followed by a second actual control. The original cumulative 200-step
+budget remains unchanged, and no Verifier assignment or verdict is created.
+Cancellation and resource-release acceptance remain pending. Operator stop is
+tracked by run settlement before Session task retirement; channel readers
+respect closure, and scoped policy telemetry remains available during shutdown.
 
 Native DSH policy Sessions publish scoped model messages, returned reasoning,
 tool calls/results, local plans, status and decisions through the physical worker
