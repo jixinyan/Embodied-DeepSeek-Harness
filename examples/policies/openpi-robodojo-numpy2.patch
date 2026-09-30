@@ -1,0 +1,15 @@
+diff --git a/pyproject.toml b/pyproject.toml
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -19,1 +19,1 @@
+-    "numpy>=1.22.4,<2.0.0",
++    "numpy>=2.0.0,<3.0.0",
+@@ -67,1 +67,1 @@
+-    "numpy>=1.22.4,<2.0.0",
++    "numpy>=2.0.0,<3.0.0",
+diff --git a/packages/openpi-client/pyproject.toml b/packages/openpi-client/pyproject.toml
+--- a/packages/openpi-client/pyproject.toml
++++ b/packages/openpi-client/pyproject.toml
+@@ -8,1 +8,1 @@
+-    "numpy>=1.22.4,<2.0.0",
++    "numpy>=2.0.0,<3.0.0",
