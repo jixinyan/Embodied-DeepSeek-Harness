@@ -9,6 +9,7 @@ import json
 import math
 import os
 from pathlib import Path
+from threading import current_thread, main_thread
 import time
 from typing import Callable, Mapping, Sequence
 from uuid import uuid4
@@ -54,6 +55,7 @@ STATE_CHANNELS = tuple(f"state.{name}" for name in STATE_SLICES)
 
 class BehaviorEnvironment:
     def __init__(self, source_root: Path, validator: ContractValidator) -> None:
+        self._require_owner()
         if version("omnigibson") != "3.9.2":
             raise RuntimeError("Installed OmniGibson differs from BEHAVIOR-1K v3.9.2.")
         self._source_root = source_root.resolve(strict=True)
@@ -69,8 +71,17 @@ class BehaviorEnvironment:
         self._action_spec: dict[str, object] | None = None
         self._controlled_physics_steps = 0
         self._episode_terminated = False
+        self._last_control_duration_s = 0.0
+        self._close_diagnostics: dict[str, object] | None = None
+        import_module("omnigibson")
+
+    @staticmethod
+    def _require_owner() -> None:
+        if current_thread() is not main_thread():
+            raise RuntimeError("BEHAVIOR requires the main thread for its native lifecycle and controls.")
 
     def _require_env(self):
+        self._require_owner()
         if self._env is None:
             raise RuntimeError("BEHAVIOR native task has not been reset.")
         return self._env
@@ -199,6 +210,7 @@ class BehaviorEnvironment:
         return NativeObservation(str(uuid4()), observed_at, observed_monotonic, images, state)
 
     def reset(self, task_id: str, configuration: Mapping[str, object]) -> NativeObservation:
+        self._require_owner()
         if self._env is not None:
             raise RuntimeError("BEHAVIOR session is already initialized; task admission preserves its scene.")
         if task_id != "picking_up_trash" or set(configuration) - {"instance_id"}:
@@ -306,6 +318,7 @@ class BehaviorEnvironment:
             return NativeStep(self.observe(), 0, False, 0, self._episode_terminated)
         if self._episode_terminated:
             raise RuntimeError("BEHAVIOR episode has ended; a new native session is required.")
+        control_started = time.monotonic()
         channels = self._action_spec["channels"]
         if len(action) != len(channels) or any(
             type(value) not in (int, float) or not math.isfinite(value)
@@ -328,6 +341,7 @@ class BehaviorEnvironment:
             raw_sim_steps, self._controlled_physics_steps / 120,
         )
         live_exhausted = on_live_frame is not None and not on_live_frame(frame)
+        self._last_control_duration_s = time.monotonic() - control_started
         return NativeStep(
             observation, 1, True, raw_sim_steps, self._episode_terminated,
             (frame,), "live_frame_capacity_exhausted" if live_exhausted else None,
@@ -344,13 +358,32 @@ class BehaviorEnvironment:
         raise ValueError(f"BEHAVIOR active view direction is unsupported: {direction}")
 
     def close(self) -> None:
+        self._require_owner()
         self._env = None
         self._task_id = None
         self._action_spec = None
         if self._og is not None:
             og, self._og = self._og, None
-            from omnigibson import lazy
+            if og.sim is not None:
+                from omnigibson import lazy
 
-            lazy.omni.kit.viewport.menubar.core.utils.usd_watch.stop()
-            og.sim._partial_clear()
-            og.shutdown()
+                lazy.omni.kit.viewport.menubar.core.utils.usd_watch.stop()
+                og.sim._partial_clear()
+            if og.app is None:
+                og.cleanup()
+            else:
+                import omni.ui as ui
+
+                callback_titles = list(ui.Workspace.get_show_window_titles())
+                for title in callback_titles:
+                    ui.Workspace.set_show_window_fn(title, None)
+                remaining_callbacks = list(ui.Workspace.get_show_window_titles())
+                if remaining_callbacks:
+                    raise RuntimeError("BEHAVIOR native UI window callbacks remain registered during shutdown.")
+                self._close_diagnostics = {
+                    "released_ui_callback_titles": callback_titles,
+                    "remaining_ui_callback_titles": remaining_callbacks,
+                }
+                og.app.set_setting("/app/fastShutdown", False)
+                og.shutdown()
+                self._close_diagnostics["native_close_returned"] = True
