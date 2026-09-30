@@ -44,6 +44,16 @@ exit code 0. The task GT is false. Native worker initialization and close deadli
 are configurable separately; BEHAVIOR selects 600000/900000 ms while ordinary
 device/observation budgets retain their existing bounds.
 
+Actual BEHAVIOR console run `c9c3809c-374c-437f-b131-12977a44044a` completes
+16 controls/64 physics steps, confirmed budget exhaustion, a fresh Qwen Verifier
+with native failed GT and Planner `tasks.abandon`. Both role Sessions retire; the
+user Session closes with resources released and the worker/native processes exit.
+All three 16-frame native videos decode. One final plan update is rejected because
+the required final goal must remain in history; this run is not zero-tool-error
+acceptance. Current Planner instructions explicitly preserve that goal and conclude
+failed/unknown tasks through `tasks.abandon`; this prompt addition requires its own
+subsequent live check.
+
 RoboDojo Pi0.5 native services verify 18 checkpoint inference files and dependency
 consistency across 189 isolated packages. Two sequential inferences use retained
 native three-camera RGB and 14D state, return finite 50×14 horizons and identified

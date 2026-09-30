@@ -13,12 +13,12 @@ Provider data belongs under `workspace/data/behavior`. The fixed public
 `9f0d57d465726976ed98138d3f8b8ca3e2186775`. Required archives and
 extraction targets are:
 
-| Archive in `data/behavior/downloads` | Extracted directory | Version |
-| --- | --- | --- |
-| `behavior-1k-assets-3.9.0.zip` | `data/behavior/behavior-1k-assets` | 3.9.0 |
-| `omnigibson-robot-assets-3.8.2.zip` | `data/behavior/omnigibson-robot-assets` | 3.8.2 |
-| `2026-challenge-task-instances.zip` | `data/behavior/2026-challenge-task-instances` | 2026 challenge |
-| `2025-challenge-task-instances.zip` | `data/behavior/2025-challenge-task-instances` | 2025 challenge |
+| Archive in `data/behavior/downloads` | Extracted directory                           | Version        |
+| ------------------------------------ | --------------------------------------------- | -------------- |
+| `behavior-1k-assets-3.9.0.zip`       | `data/behavior/behavior-1k-assets`            | 3.9.0          |
+| `omnigibson-robot-assets-3.8.2.zip`  | `data/behavior/omnigibson-robot-assets`       | 3.8.2          |
+| `2026-challenge-task-instances.zip`  | `data/behavior/2026-challenge-task-instances` | 2026 challenge |
+| `2025-challenge-task-instances.zip`  | `data/behavior/2025-challenge-task-instances` | 2025 challenge |
 
 Set `OMNIGIBSON_DATA_PATH` to `workspace/data/behavior` in the native
 process. The official OmniGibson asset functions install the required local
@@ -42,18 +42,36 @@ positions in radians with measured joint limits. The GR00T processor converts
 its relative torso and arm predictions to absolute commands before this native
 action interface receives them.
 
-On 2026-09-26, native reset of 2025 `picking_up_trash` instance 0 in
-`house_double_floor_lower` produced three 256×256 RGB PNG cameras, all 21
-finite state groups, a validated 23-channel `ActionSpec`, and a native
-`task_success=false` result. A separate `observe()` call produced a new
-observation identity and another valid three-camera capture. The simulator
-process completed `close()` with status 0, and its GPU memory was released.
-The close sequence stops OmniGibson's USD watcher and calls
-`sim._partial_clear()` to release the loaded scene and skybox before the
-official `og.shutdown()` call. These cleanup calls follow the sequence used
-by OmniGibson 3.9.2's `og.clear()` without relaunching the simulator.
-This acceptance measured observation and ground truth; policy control and
-task completion remain unverified. The remote report, captured PNG files and
-process status are under
-`/home/jixin/workspace/code/Embodied-DeepSeek-Harness/.local/work/behavior-capture-shutdown-check`.
-The process log is the adjacent `behavior-capture-shutdown-check.log` file.
+`BehaviorProcessEnvironment` keeps native simulator operations on an independent
+process's main thread. A standard bounded multiprocessing connection carries
+provider calls; deadlines supervise initialization, control and close. The native
+interpreter comes from `EDH_BEHAVIOR_NATIVE_PYTHON`, separately from the worker
+interpreter. Close uses one total deadline, confirms SDK shutdown and requires an
+actual process exit code 0. Shutdown releases the USD watcher and loaded scene,
+unregisters Workspace show-window callbacks and calls the complete `og.shutdown()`
+path. A timeout retains an unconfirmed release outcome.
+
+The [live deployment](../../../../../../examples/deployments/behavior-live.mjs)
+uses configurable initialization/close defaults of 600000/900000 ms. Its
+[Team](../../../../../../examples/teams/behavior-live.yaml) binds independent
+Planner/Verifier roles with recovery learning disabled. Model/GPU/checkpoint/source
+paths belong to deployment configuration.
+
+September 30 lifecycle 13 verifies three real GR00T requests, 18 R1Pro controls,
+72 physics steps, pause/resume, a second retained-scene execution and terminal stop.
+Confirmed pause/stop takes approximately 0.198/0.227 seconds; native time remains
+unchanged after confirmation. An active synchronous control finishes before stop
+acknowledgement. The SDK close returns and the native process exits normally.
+
+Actual console run `c9c3809c-374c-437f-b131-12977a44044a` uses Qwen Planner,
+GR00T and a fresh independent Qwen Verifier. It executes 16 controls and 64 physics
+steps, reaches confirmed budget exhaustion, receives native `task_success=false`,
+and ends with Planner `tasks.abandon`. Both role Sessions retire; the user Session
+closes with resources released and its worker/native processes exit. The three
+256×256 camera videos each decode all 16 frames. One final plan update is rejected
+for attempting to abandon the required final goal; the run does not establish a
+zero-tool-error complete acceptance. The current Planner instructions retain the
+required goal and conclude unsuccessful tasks through `tasks.abandon`.
+
+Original `picking_up_trash` success, a complete upper run without tool errors and
+additional task/scene/checkpoint combinations remain separate acceptance gates.
