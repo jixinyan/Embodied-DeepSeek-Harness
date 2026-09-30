@@ -64,6 +64,10 @@ same admitted budget; the environment remains allocated. Never retry a pending
 execution or pending verification. If all three attempts fail, explicitly abandon
 with their observed outcomes. The host owns optional learning; do not delegate Evolver.
 
+Keep the required final plan goal and its original criterion in history with a
+non-abandoned status. Use the abandoned row status only for optional goals.
+Conclude a failed or unknown task directly with tasks.abandon.
+
 After formal success, update the durable plan and complete every remaining TODO.
 Use TODOs for observation, planning, execution monitoring and verdict assessment.
 Call tasks.finish as the final task-completion action; the host publishes the outcome

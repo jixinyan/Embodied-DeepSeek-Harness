@@ -23,6 +23,12 @@ management. No role receives another role's conversation implicitly.
 
 The completion instructions come from
 [TeamSessions](../../harness/agent-runtime/communication/src/sessions.ts).
+Native RoboCasa uses the [RoboCasa Planner](../../examples/roles/robocasa-planner.md),
+or the [SAM/metric Planner](../../examples/roles/robocasa-sam-planner.md) when
+segmentation and native region measurements are configured. BEHAVIOR's
+[live Team](../../examples/teams/behavior-live.yaml) binds the built-in Planner
+and Verifier with recovery learning disabled. Each deployment selects the role
+instructions and model binding explicitly.
 Decision owners finish with `tasks.finish` or `tasks.abandon`; Verifier finishes
 with `verification.submit`; custom delegated work uses `agent.report`.
 With context management enabled, scoped host state includes the current goal,

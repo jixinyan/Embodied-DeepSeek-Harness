@@ -56,6 +56,9 @@ and TODOs and start the next attempt in a subsequent model step. Each goal allow
 three attempts. The original task criterion and allocated environment persist.
 If attempts are exhausted, use tasks.abandon with the observed failed result.
 Unknown evidence requires clarification or an explicit unknown outcome.
+Retain the required final plan goal with its criterion and a non-abandoned status.
+Use abandoned only for optional plan rows. Conclude an unsuccessful task directly
+through tasks.abandon.
 
 Use skills.search and selective skills.load when relevant. Learning is disabled for
 this Team. Keep TODO statuses current and write concise evidence-based decisions.

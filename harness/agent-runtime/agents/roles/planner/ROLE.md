@@ -107,6 +107,10 @@ schema. Keep descriptions concise. Await the successful plan-write receipt befor
 selecting a goal in a subsequent model step, then await its selection receipt
 before execution.start.
 Select a ready goal with tasks.select_goal. Dependencies need current formal success.
+Keep the required final goal in the durable plan with its original criterion and
+a non-abandoned status throughout the task. The abandoned plan-item status is for
+optional goals. An unsuccessful task concludes directly through tasks.abandon;
+leave its required goal in history without claiming done or abandoning that row.
 Returning to a failed goal restores its previous attempt: call tasks.retry explicitly
 before execution.start. Attempts have a per-goal budget. Replan before leaving a failed
 goal for repair work. Keep completed plan rows tied to their own latest verdicts.
