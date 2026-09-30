@@ -16,3 +16,10 @@ export {
   type SegmentationInput,
   type SegmentationOutput,
 } from './sam31-client.js';
+export {
+  Yolo26HttpClient,
+  type DepthEngine,
+  type DepthInput,
+  type DepthOutput,
+  type DepthCameraIntrinsics,
+} from './yolo26-client.js';

@@ -1,4 +1,5 @@
 import type { ImageMediaType } from '@deepseek-ai/dsh-attachment';
+import { createHash } from 'node:crypto';
 
 export interface SegmentationInput {
   image: Uint8Array;
@@ -30,6 +31,7 @@ export interface SegmentationOutput {
 }
 
 export interface SegmentationEngine {
+  readonly timeoutMs?: number;
   segment(input: SegmentationInput): Promise<SegmentationOutput>;
 }
 
@@ -121,8 +123,12 @@ function parseOutput(value: unknown): SegmentationOutput {
 
 export class Sam31HttpClient implements SegmentationEngine {
   private readonly endpoint: URL;
+  readonly timeoutMs: number;
 
-  constructor(address: string) {
+  constructor(address: string, timeoutMs = 600_000) {
+    if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 600_000)
+      throw new Error('SAM 3.1 tool timeout must contain 1 to 600000 milliseconds.');
+    this.timeoutMs = timeoutMs;
     const endpoint = new URL('/segment', address);
     if (
       endpoint.protocol !== 'http:' ||
@@ -148,7 +154,7 @@ export class Sam31HttpClient implements SegmentationEngine {
         image_mime_type: input.mediaType,
         text_prompt: input.textPrompt,
       }),
-      signal: input.signal,
+      signal: AbortSignal.any([input.signal, AbortSignal.timeout(this.timeoutMs)]),
     });
     if (!response.ok) throw new Error(`SAM 3.1 service returned HTTP ${response.status}.`);
     const reader = response.body?.getReader();
@@ -165,6 +171,9 @@ export class Sam31HttpClient implements SegmentationEngine {
       }
       chunks.push(part.value);
     }
-    return parseOutput(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+    const output = parseOutput(JSON.parse(Buffer.concat(chunks).toString('utf8')));
+    if (output.sourceImageSha256 !== createHash('sha256').update(input.image).digest('hex'))
+      throw new Error('SAM 3.1 response refers to a different source image.');
+    return output;
   }
 }

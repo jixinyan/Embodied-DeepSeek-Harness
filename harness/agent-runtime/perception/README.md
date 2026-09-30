@@ -67,3 +67,50 @@ The deployment can use
 [LocalImageStore](../../../docs/implementation/image-storage.md) for encoded image
 bytes, normalization and model request projection. See the
 [Planner loop and image path](../../../docs/implementation/model-policy-adapters.md).
+
+`Yolo26HttpClient` implements `DepthEngine` against the independent loopback
+`yolo26_depth.py` service. Inputs include the source RGB bytes and dimensions,
+an optional binary SAM mask and ROI, and optional identified camera intrinsics.
+The service returns source-sized float32 NPY depth, an overlay, selected/valid
+pixel counts, validity fraction, axial-depth median and p10/p90 values. Identified
+intrinsics additionally permit camera-range median using the pinhole projection.
+The client verifies source/mask digests, region identity, dimensions, statistics,
+calibration identity and the retained depth-array digest. Both clients apply
+cancellation and the configured bounded timeout throughout response reading.
+
+YOLO26 results carry `measurementKind=monocular_prediction`,
+`metricAccuracy=unverified_for_source_camera`, global checkpoint scale calibration
+and unavailable model uncertainty. Intrinsic calibration supplies projection
+geometry; validating absolute prediction accuracy requires corresponding source
+camera ground-truth depth. Region p10/p90 values describe observed depth spread
+and do not constitute model confidence bounds. The official
+[depth documentation](https://docs.ultralytics.com/tasks/depth) specifies the
+aligned `(H,W)` meter output and its checkpoint calibration. Simulator RGB-D and
+GT measurements retain their own evidence and measurement kind.
+
+Real service acceptance on September 30 used the retained 256 × 256 RoboCasa
+camera PNG with SHA-256
+`b46b25d0f6ddf6d9b9e6098c6e8504a834d5830400f2827fefd38ed210ee3202`.
+[`check_perception_services.ts`](../../../examples/perception/check_perception_services.ts)
+ran the production SAM and YOLO26 HTTP clients through actual GPU services.
+Independent cold/warm SAM sessions returned 6,953 and 17,627 selected pixels;
+all selected predicted depth values were valid. The axial-depth medians were
+0.9059616 m and 0.8306032 m. Complete cold/warm rounds took 59.915 s and 7.554 s.
+Their retained depth NPY digest was
+`a794fc08e606c95b2277c87e3e70004b78af044eef5db0c0da6c87a90e84b978`.
+YOLO26 source revision was `e5b73a40a3781e0dee8b9ab49b83f42e3b85bc45`;
+checkpoint SHA-256 was
+`a01d5e38f66db8617720d7765ef6228343e75c49b2790fbeb10316c5b8db817c`.
+Evidence is retained locally in
+`.local/work/perception-20260930/ts-acceptance/result.json`.
+This source recording has no corresponding depth or intrinsic calibration;
+absolute distance accuracy remains unverified for this camera.
+
+[`check_yolo26_depth.py`](../../../examples/perception/check_yolo26_depth.py)
+independently recomputes region statistics from the returned NPY with NumPy.
+The actual RoboCasa SAM mask passed every independent statistic and artifact
+digest check on September 30; its 6,953 pixels reproduce the values above.
+An optional identified intrinsic JSON verifies camera range. An optional paired
+GT NPY reports unaligned absolute relative error, meter RMSE and delta1, preserving
+the exact comparison source digest. Use corresponding RGB/depth observations and
+an ignored output directory for these checks.
