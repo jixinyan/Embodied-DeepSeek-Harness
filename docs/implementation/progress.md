@@ -26,6 +26,21 @@ v1 acceptance register for resumption.
 
 ## 2026-09-29 execution-policy observability checkpoint
 
+RoboDojo run `2c974465-f035-4d1d-a913-fba5a4688c02` uses the real cloud
+Astra endpoint, native DSH Planner and execution-policy Sessions, three native
+640×480 cameras, RGB-D grounding, wrist depth and numerical motion preparation.
+The active rollout has recorded approach, grasp and lift controls through
+ActionGate. Formal task success remains pending until the execution ends and
+the independent Verifier returns the native criterion result.
+
+Policy tool declarations specify complete local subtask fields and both arm
+target formats through native DSH schemas. Motion reasons carry an explicit
+left/right format. Text streams publish actual text/reasoning deltas; tool
+arguments remain in native tool events. TypeScript and Python/structure checks
+pass. The current composite renderer passes source-text bounds and complete
+MP4 decoding using the retained real RoboCasa recording. These checks do not
+establish task success or recovery acceptance.
+
 Distributed RoboDojo deployments can bind the local policy gateway port and the
 worker-reachable WebSocket URI explicitly. Native task configuration retains its
 instruction alongside scene metadata, including when the user adds task guidance.

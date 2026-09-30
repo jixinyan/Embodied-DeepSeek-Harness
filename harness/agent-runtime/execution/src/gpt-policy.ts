@@ -244,7 +244,46 @@ export class DshGptPolicy {
           requestId: { type: 'string', required: true },
           subtasks: {
             type: 'array',
-            items: { type: 'object', additionalProperties: true },
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                id: { type: 'string', required: true },
+                status: {
+                  type: 'string',
+                  enum: ['pending', 'ready', 'in_progress', 'blocked', 'done'],
+                  required: true,
+                },
+                src: { type: 'string', required: true },
+                dst: { type: 'string', required: true },
+                cond: { type: 'string', required: true },
+                next_action: { type: 'string', required: true },
+                evidence: { type: 'string', required: true },
+                arm_plan: {
+                  type: 'string',
+                  enum: ['single', 'handoff', 'coordinated_dual'],
+                  required: true,
+                },
+                arms_used: {
+                  type: 'array',
+                  items: { type: 'string', enum: ['left', 'right'] },
+                  required: true,
+                },
+                simultaneous_arms: { type: 'integer', enum: [1, 2], required: true },
+                reachability: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    'left.src': { type: 'string', enum: ['yes', 'no', 'unknown'], required: true },
+                    'left.dst': { type: 'string', enum: ['yes', 'no', 'unknown'], required: true },
+                    'right.src': { type: 'string', enum: ['yes', 'no', 'unknown'], required: true },
+                    'right.dst': { type: 'string', enum: ['yes', 'no', 'unknown'], required: true },
+                  },
+                  required: true,
+                },
+                depends_on: { type: 'array', items: { type: 'string' }, required: true },
+              },
+            },
             required: true,
           },
           reason: { type: 'string', required: true },
@@ -352,7 +391,39 @@ export class DshGptPolicy {
             },
           }),
         );
-      for (const mode of ['eef', 'joint'] as const)
+      for (const mode of ['eef', 'joint'] as const) {
+        const armTarget = {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            ...(mode === 'eef'
+              ? ({
+                  position: {
+                    type: 'array',
+                    items: { type: 'number' },
+                    required: true,
+                    description:
+                      'Exactly three link6 coordinates [x,y,z] in environment_origin, metres.',
+                  },
+                  quaternion_wxyz: {
+                    type: 'array',
+                    items: { type: 'number' },
+                    required: true,
+                    description: 'Exactly four normalized quaternion values [w,x,y,z].',
+                  },
+                } as const)
+              : ({
+                  qpos: {
+                    type: 'array',
+                    items: { type: 'number' },
+                    required: true,
+                    description:
+                      'Exactly six joint values in radians, interpreted using coordinateMode.',
+                  },
+                } as const)),
+            gripper_closed: { type: 'boolean', required: true },
+          },
+        } as const;
         tools.push(
           defineTool({
             name: mode === 'eef' ? 'policy__eef_target' : 'policy__joint_target',
@@ -362,24 +433,39 @@ export class DshGptPolicy {
                 : 'Prepare absolute/delta six-joint targets in radians and explicit grippers for both arms. Delta is anchored once to current measured qpos. Preview FK before recovery; every actual command passes ActionGate.',
             parameters: {
               requestId: { type: 'string', required: true },
-              targets: { type: 'object', additionalProperties: true, required: true },
+              targets: {
+                type: 'object',
+                additionalProperties: false,
+                required: true,
+                properties: {
+                  left: { ...armTarget, required: true },
+                  right: { ...armTarget, required: true },
+                },
+              },
               coordinateMode: { type: 'string', enum: ['absolute', 'delta'] },
               previewOnly: { type: 'boolean', required: true },
               steps: { type: 'integer', required: true },
               stopOnReach: { type: 'boolean', required: true },
-              reason: { type: 'string', required: true },
+              reason: {
+                type: 'string',
+                required: true,
+                description:
+                  'Use exactly "left: <observed intent>, right: <observed intent>" with a comma before right. Describe active motion and the other arm hold.',
+                examples: [
+                  'left: hold measured pose open, right: approach grounded target with open gripper',
+                ],
+              },
             },
             output,
             execute: async (args, exec) => {
               const request = this.request(args.requestId);
               planningCurrent();
-              if (
-                !Number.isSafeInteger(args.steps) ||
-                args.steps < 1 ||
-                args.steps > 150 ||
-                !/^left: .+, right: .+$/.test(args.reason)
-              )
-                throw new Error('Direct motion requires 1..150 steps and left/right reasons.');
+              if (!Number.isSafeInteger(args.steps) || args.steps < 1 || args.steps > 150)
+                throw new Error('Direct motion requires 1..150 integer control steps.');
+              if (!/^left: .+, right: .+$/.test(args.reason))
+                throw new Error(
+                  'Motion reason must use "left: <intent>, right: <intent>" with a comma separator.',
+                );
               if (mode === 'joint' && !args.coordinateMode)
                 throw new Error('Joint targets require absolute/delta coordinateMode.');
               const prepared = await this.options.providerTool!(
@@ -392,7 +478,8 @@ export class DshGptPolicy {
                 exec.signal,
               );
               this.request(args.requestId);
-              if (prepared.ok !== true) throw new Error('Motion preparation did not succeed.');
+              if (prepared.ok !== true)
+                throw new Error(`Motion preparation failed: ${String(prepared.error)}`);
               if (args.previewOnly) return prepared;
               const proposal = await this.options.providerTool!(
                 request,
@@ -413,6 +500,7 @@ export class DshGptPolicy {
             },
           }),
         );
+      }
     }
     if (this.options.prepareEef)
       tools.push(
@@ -673,6 +761,7 @@ export class DshGptPolicy {
           if (!latestStream || latestStream.attemptId !== frame.attemptId) return;
           latestStream.revision = frame.revision;
           if (frame.type === 'chunk') {
+            if (!['text-delta', 'reasoning-delta'].includes(frame.chunk.type)) return;
             if (frame.chunk.type === 'text-delta')
               latestStream.text = (latestStream.text + frame.chunk.text).slice(-16000);
             if (frame.chunk.type === 'reasoning-delta')
