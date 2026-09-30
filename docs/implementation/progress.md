@@ -24,6 +24,65 @@ implementation and actual acceptance are pending.
 Remaining simulator, policy, lifecycle and release work is tracked in the
 v1 acceptance register for resumption.
 
+## 2026-09-29 architecture and RoboDojo deployment checkpoint
+
+README presents the framework architecture, component responsibilities, extension
+points and configuration guides. The shared architecture SVG covers user-defined
+teams, independent DSH contexts, upper model adapters, learned/direct/hybrid
+execution, ActionGate, simulator/hardware boundaries, post-execution verification
+and on-demand cross-Session SKILL retrieval. Development evidence remains in this
+document and the v1 acceptance register. Commit `8a5e685` publishes this entry point.
+
+The console launch selection includes `executionMode` and admits complete compatible
+profiles. The RoboDojo deployment connects native DSH GPT policy sessions to the
+worker through scoped read-only grounding, wrist-depth, numerical motion preparation
+and FK preview requests. Each actual motion step advances through ActionGate;
+model-generated targets and measured arrival remain separate from formal success.
+Checkpoint commits: `24fb309`, `f566e1c`, `87eafe1` and `0be3c37`.
+
+The configured Astra endpoint completed a real DSH file-tool round. A native
+RoboDojo `build_tower` Session (`873a2df9-3abc-42f4-a036-197ccf4bbfc6`), run
+`c05140ba-7b8d-4d55-a073-008b9c6a0453`, recorded reset, three native camera images,
+Planner tool calls and TODO updates. The SSH-owned console and simulator processes
+terminated when that connection closed. This run establishes no physical task
+success. The retained source camera is
+`sha256:146b1cf4762204cd059e290552832ede5ce2b67fed47e02161b33b4c33bc99c6`.
+
+Responses tool outputs preserve authorized image attachments with text metadata.
+TypeScript checks pass. A real Astra / DSH image-tool round completed using the
+retained native RoboDojo head camera: the model called the tool exactly once,
+received its authorized attachment and returned a scene description. The probe
+ran from the local checkout against the configured cloud endpoint and retained
+the source image digest and native Session events. Server-side endpoint access
+encountered connection timeouts. Simulator rollout and formal task verification
+remain pending.
+
+The official RoboDojo checkpoint repository was fully enumerated at dataset
+revision `35efbc7dedfdbeeb6e95fb749bd885d73d483e41` (3,290 entries under
+`ckpt/RoboDojo`). The selected inference checkpoint is
+`Pi_05/RoboDojo-sim-arx_x5-joint-0/59999`, including
+`assets/arx_x5_sim/norm_stats.json`. Its 18 inference files total 12,440,992,402
+bytes. The download destination is `workspace/checkpoints/robodojo`, with the
+upstream directory layout retained. Download completion and checksum verification
+are pending. The dataset card declares Apache-2.0; simulator licensing remains
+independently scoped.
+
+OpenPI installation uses a dedicated `.local/envs/robodojo-openpi`, pinned external
+source `bb9a0b5f5136a74503b679af830bfd0a3a837d5c`, private cache and temporary
+directories. Installation encountered a dependency-download timeout. All eight
+GPU devices had active jobs at the last inspection; no additional model service
+was allocated to them. The new OpenPI RoboDojo bridge files remain local work
+pending import, identified inference and hybrid execution checks.
+
+Continuation evidence is in the ignored `.local/work/robodojo-20260929/` directory
+on the local checkout and `jd_B300`. It contains the checkpoint inventory,
+download/install logs, model-tool probe, retained camera/event data and private
+deployment bindings. Required next actions: restore endpoint connectivity, complete
+the isolated OpenPI installation and checkpoint download, validate the bridge with
+identified native inference, and run the direct/hybrid RoboDojo task through
+formal verification. Long-running services must survive the initiating SSH
+connection and retain their own shutdown ownership.
+
 ## 2026-09-30 RoboDojo and GPT policy checkpoint
 
 The checkout was fast-forwarded from `028c346` to `96d0a17`, then committed as

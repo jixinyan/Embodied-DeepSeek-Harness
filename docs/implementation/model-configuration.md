@@ -1,8 +1,9 @@
 # Cloud API and vLLM model configuration
 
-The upper runtime supports cloud OpenAI-compatible Chat Completions endpoints and
-locally deployed vLLM endpoints through `OpenAICompatibleAdapter`. Both use the native
-DSH loop, message/image serialization, streamed output and tool-call translation.
+The upper runtime supports cloud and local vLLM endpoints. `chat_completions`
+selects `OpenAICompatibleAdapter`; `responses` selects `OpenAIResponsesAdapter`,
+including GPT-6 Astra tool calling. Both use the native DSH loop, message/image
+serialization, streamed output and tool-call translation.
 The configured model must support image input and automatic tool calling for Planner
 perception/planning. Endpoint configuration does not evaluate those model capabilities.
 
@@ -40,21 +41,23 @@ continue to use installed complete launch profiles and their existing validation
 | --- | --- |
 | `version` | Configuration format, currently `1` |
 | `defaultModel` | Existing alias in `models` |
-| `endpoints.<id>.hosting` | `cloud_api` or `vllm`; both use Chat Completions |
+| `endpoints.<id>.hosting` | `cloud_api` or `vllm`; describes deployment location |
+| `endpoints.<id>.protocol` | `chat_completions` (default) or `responses`; selects the transport adapter |
 | `baseURL` | HTTP(S) API root; includes `/v1` where required; credentials/query/fragment are rejected |
 | `authentication` | Explicit `{ type: none }` or `{ type: environment, variable: ENV_NAME }` |
-| `systemRole` | `system` by default; configurable as `developer` |
-| `maxTokensField` | `max_tokens` by default; configurable as `max_completion_tokens` |
+| `systemRole` | Chat Completions: `system` by default; configurable as `developer`. Responses uses `instructions`. |
+| `maxTokensField` | Chat Completions: `max_tokens` by default; configurable as `max_completion_tokens`. Responses uses `max_output_tokens`. |
 | `timeoutMs` | Positive request deadline; default 120,000 ms |
 | `maxRequestBytes`, `maxResponseBytes` | Encoded transport limits; each defaults to 32 MiB |
 | `maxImagesPerRequest` | Default 16 image blocks |
 | `imageRequest` | Request-image projection policy; default 1,048,576 pixels and 2 MiB encoded-byte target |
-| `passReasoningContent` | Explicit opt-in for endpoints requiring reasoning-content history replay |
-| `extraBody` | JSON generation extensions, including vLLM `chat_template_kwargs`; cannot replace DSH messages/model/tools/generation fields |
+| `passReasoningContent` | Chat Completions opt-in for endpoints requiring reasoning-content history replay; Responses preserves returned output items. |
+| `extraBody` | Chat Completions generation extensions, including vLLM `chat_template_kwargs`; cannot replace DSH messages/model/tools/generation fields |
 | `models.<alias>.endpoint` | Existing endpoint ID |
 | `models.<alias>.model` | Exact cloud model ID or vLLM served model name |
 | `inputModalities` | Explicit unique list including `text`; include `image` for visual roles |
 | `name`, `contextWindow`, `maxTokens` | Optional display name, model capacity and default output-token limit |
+| `reasoningEffort` | Optional role/model binding: `low`, `medium`, `high`, `xhigh` or `max` |
 
 All endpoints must have model bindings. Aliases can share one served model when
 their declared capabilities agree. Unknown fields, routes, defaults and conflicting
@@ -69,7 +72,7 @@ The server address may name a local process or a GPU server on another host.
 The vLLM deployment must configure a compatible chat template and tool parser for
 its checkpoint. Automatic tool calling requires the server's appropriate options;
 consult the [vLLM tool-calling documentation](https://docs.vllm.ai/en/stable/features/tool_calling/).
-Native Anthropic/Gemini APIs and OpenAI Responses require their respective adapters.
+Native Anthropic/Gemini protocols require their respective adapters.
 
 ## Credentials, images and configuration identity
 
@@ -83,6 +86,13 @@ configured adapter resolves admitted image references through `readImageRequest`
 its selected projection policy. Sensor IDs remain in the agent history; actual request
 image bytes are supplied when the native serializer constructs the model request.
 The original observation/evidence permission checks remain in the upper application.
+
+Responses preserves images returned by tools as `input_image` items in the
+corresponding `function_call_output`, alongside textual evidence metadata. A
+Planner capture, Verifier check or other authorized image-producing tool therefore
+uses the same immutable attachment resolver and request-image limits as an image
+in a user message. Model-call history retains provider output items for subsequent
+tool rounds. See the official [function-calling guide](https://developers.openai.com/api/docs/guides/function-calling).
 
 `modelConfigurationDigest` hashes the validated configuration and its defaults,
 including endpoint address, credential-variable name, capability and request options.

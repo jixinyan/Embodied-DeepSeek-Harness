@@ -138,12 +138,16 @@ async function inputItems(
     const regular = message.content.filter((block) => block.type !== 'tool-result');
     const parts = await blocks(regular);
     if (parts.length) items.push({ role: 'user', content: parts });
-    for (const result of results)
+    for (const result of results) {
+      const output = await blocks(result.content);
       items.push({
         type: 'function_call_output',
         call_id: result.toolCallId,
-        output: text(result.content) || '(no output)',
+        output: output.some((part) => part.type === 'input_image')
+          ? output
+          : text(result.content) || '(no output)',
       });
+    }
   }
   return items;
 }
