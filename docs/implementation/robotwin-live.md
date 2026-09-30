@@ -29,6 +29,23 @@ renderer device, policy identity, policy WebSocket URI and the task catalog.
 The policy runs with `executionMode: policy`. An SSH deployment must preserve
 worker file descriptor 3 as transport and direct simulator output to stderr.
 
+For local Qwen, co-locate the Agent server, model service, policy and simulator on
+the GPU host. Forward the console's same loopback port to the browser host; its Host
+validation requires the matching port. Select
+[qwen38-vllm.yaml](../../examples/models/qwen38-vllm.yaml) for upper roles and set
+`publishRunningImages: false`, `recordSimulationFrames: false` and an absolute
+`simulationVideoDirectory` in the worker configuration. Model captures retain
+complete camera groups. See [headless recording](headless-simulation.md).
+
+The Pi0.5 service accepts `--compile-model` and `--no-compile-model`; omitting both
+retains the checkpoint's official LeRobot configuration. The supplied checkpoint
+selects `max-autotune` when compilation is enabled. Eager inference is selected
+explicitly with `--no-compile-model`; the startup record includes the effective
+compile setting and mode alongside checkpoint/source identity. Deployment-specific
+`OMP_NUM_THREADS` and `MKL_NUM_THREADS` settings bound CPU processing independently
+of GPU selection. Task acceptance always checks actual checkpoint outputs, native
+receipts and formal verification.
+
 `adjust_bottle` admits 400 native control targets. Each target invokes native
 interpolation; its physics-step count is recorded separately. The catalog budget
 must preserve the native criterion `task_success` and the 400-control-step limit.

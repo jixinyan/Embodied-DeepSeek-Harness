@@ -115,7 +115,8 @@ def native_action_record(selected: torch.Tensor) -> tuple[list[list[float]], lis
 
 
 class LeRobotPi05RoboTwin:
-    def __init__(self, checkpoint: str, tokenizer: str, *, device: str = "cuda:0") -> None:
+    def __init__(self, checkpoint: str, tokenizer: str, *, device: str = "cuda:0",
+                 compile_model: bool | None = None) -> None:
         path = Path(checkpoint).resolve(strict=True)
         tokenizer_path = Path(tokenizer).resolve(strict=True)
         for name, expected_hash in TOKENIZER_HASHES.items():
@@ -128,6 +129,10 @@ class LeRobotPi05RoboTwin:
             raise ValueError("Checkpoint has an incompatible PaliGemma tokenizer configuration.")
         config = PreTrainedConfig.from_pretrained(path, local_files_only=True)
         config.device = device
+        if compile_model is not None:
+            if type(compile_model) is not bool:
+                raise ValueError("Pi0.5 compile_model must be a boolean.")
+            config.compile_model = compile_model
         expected = {
             "observation.state": ("STATE", (14,)),
             **{name: ("VISUAL", (480, 640, 3)) for name in CAMERAS.values()},

@@ -24,11 +24,13 @@ async def main() -> None:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8004)
     parser.add_argument("--timeout-s", type=float, default=120)
+    parser.add_argument("--compile-model", action=argparse.BooleanOptionalAction, default=None)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     validator = ContractValidator.from_path(root / "harness/contracts/schema/physical.schema.json")
     identity = checkpoint_identity(args.checkpoint, root / "examples/policies/lerobot-pi05-robotwin.json")
-    policy = LeRobotPi05RoboTwin(args.checkpoint, args.tokenizer, device=args.device)
+    policy = LeRobotPi05RoboTwin(args.checkpoint, args.tokenizer, device=args.device,
+                               compile_model=args.compile_model)
     executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="edh-lerobot-pi05")
     admission = BoundedSemaphore(1)
 
@@ -64,6 +66,8 @@ async def main() -> None:
         **identity,
         "tokenizer_revision": "35e4f46485b4d07967e7e9935bc3786aad50687c",
         "device": args.device,
+        "compile_model": policy.policy.config.compile_model,
+        "compile_mode": policy.policy.config.compile_mode,
         "host": args.host,
         "port": server.sockets[0].getsockname()[1],
         "timeout_s": args.timeout_s,

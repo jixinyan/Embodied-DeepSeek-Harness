@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.61 · 2026-09-29
+Version: v1.62 · 2026-09-30
 
 Status: native DSH, cloud Astra and Pi0.5 complete a successful RoboTwin console task with ActionGate, independent formal verification, Planner finish and released Session. RoboCasa records actual controls and formal failure; RoboDojo direct task success and owned-service lifecycle evidence are retained. Full four-provider, recovery and v1 acceptance remain pending. Development is stopped at the requested minimal checkpoint.
 
@@ -295,7 +295,7 @@ transfer, but policy/hardware compatibility still requires validation.
 | Execution followed by independent verification | Record policy execution and its confirmed end before creating Verifier; require formal checking after budget expiry | Trace execution, final report, confirmed boundary, checks and verdict on one timeline |
 | Learning from successful retries | Retry starts Evolver; original-goal recovery success enables skill creation | Trace every skill to failure, changes, attempts and success evidence |
 | Replaceable policies, environments and bodies | Separate semantic contracts from concrete adapters with declared compatibility | Add a second configuration without modifying the general core |
-| Physical task observability | Console displays sensors, agents, devices, messages, evidence and experience | Explain why motion stopped, who requested a retry and which skill was used |
+| Physical task observability | Console displays agents, devices, plans, messages, evidence references and experience; simulator-host video records cameras | Explain why motion stopped, who requested a retry and which skill was used |
 
 These are engineering goals and research claims to test, not assertions of academic
 novelty or already demonstrated cross-environment generalization.
@@ -369,7 +369,7 @@ explicit calls and messages.
 
 | Layer | Owns | Boundary |
 | --- | --- | --- |
-| Control console | Instructions, run state, sensors, evidence and experience views | Uses structured facts, not agent prose, to display device state |
+| Control console | Instructions, run state, plans, Agent trace, evidence and experience views | Uses structured facts to display device state |
 | EDH host with absorbed DSH capabilities | Model calls, independent sessions, tools, agent creation and inboxes | Does not advance high-frequency control steps |
 | EDH domain modules | Team/Role loading, catalog, messages, routing, verification gates, recovery and capabilities | No second LLM loop or autonomous retry decisions |
 | Python execution worker | Policy calls, actions, budgets and device-state reports | Cannot create new task attempts on its own |
@@ -830,8 +830,9 @@ The native DSH attachment service now has an EDH local image provider using pinn
 DSH normalization/publication code. It supports durable image bytes and route-specific
 request projection, with explicit operation limits and lifecycle. The application owns
 the attachment context and supplies its service to deployment, environment and task
-factories. The console reads images by persisted run/evidence/attachment identity,
-checks agent visibility and displays the selected latest or agent-seen observations.
+factories. Authorized model tools read images by persisted run/evidence/attachment
+identity. The console displays evidence references and Agent trace. Headless camera
+video is recorded on the simulator host and transferred after execution.
 Live VLM/provider acceptance, media retention and reference accounting remain required.
 See the [image storage guide](implementation/image-storage.md).
 
@@ -1141,15 +1142,15 @@ permission must agree; hiding a tool in the UI is not authorization enforcement.
 
 ## 10. Control console
 
-Follow the approved prototype's physical-task layout. The old demo used synthetic data;
-production components connect to real events and observation services.
+The unified workspace connects to actual role, plan, tool, execution and verification
+events. Simulator-host recordings provide camera playback after a headless task.
 
 ### 10.1 Required work areas
 
 | Area | Display and interaction |
 | --- | --- |
 | Task/instructions | Goal, constraints, additional input, run source and config version; distinguish received/effective input |
-| Sensors | Cameras/depth/other streams, sources/timestamps, stale or disconnected states; compare live and agent-seen frames |
+| Observation evidence | Source identities and timestamps in tool/debug records; model tools receive images, and simulator-host video records camera views |
 | Agents | Instances, roles, callers, private sessions, current assignments, waiting dependencies, received briefs/messages |
 | Team/Role | Team version, member aliases and instances, definitions, effective tools and startup errors |
 | Tool calls | Category, provider, source observation, annotated results, actual resources and state |
@@ -1174,8 +1175,10 @@ failure did Evolver use? What context did this new agent actually receive? Show 
 decision explanations, tool calls and evidence, not inferred private model reasoning.
 
 v1 supports file-configured teams and dynamically created instances. A drag-and-drop
-workflow editor is optional. Video uses stream/asset channels and refreshes independently
-of model replies.
+workflow editor is optional. Headless video uses native simulation timestamps and
+retains frame/segment provenance. The console does not download live camera images.
+Qwen, the Agent server, policies and simulator may run on one GPU host; the browser
+then receives trace/status events. See [headless simulation](implementation/headless-simulation.md).
 
 ### 10.3 Incremental event delivery
 
@@ -1714,7 +1717,7 @@ and expose real model output, tool arguments/results/errors, assignment/turn/ste
 identity, explicit context and TODO history. Concise decision notes are useful;
 missing provider reasoning must never be fabricated. Agent-reported TODO completion
 is separate from verifier-accepted physical success. The final console must show
-key agent, task, sensor, execution, verification and recovery state together in one
+key agent, task, execution, verification and recovery state together in one
 workspace, without page/tab switching for essential state. The unified console now
 implements this layout, with stacked sections on narrow screens and scrollable details.
 

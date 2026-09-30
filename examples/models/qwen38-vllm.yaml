@@ -11,6 +11,9 @@ endpoints:
     connectionMode: close-after-response
     passReasoningContent: true
     timeoutMs: 300000
+    imageRequest:
+      maxPixels: 1048576
+      maxBytes: 131072
     extraBody:
       top_p: 0.95
       top_k: 20
