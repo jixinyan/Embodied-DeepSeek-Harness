@@ -87,6 +87,25 @@ export interface RunState {
     string,
     { attemptId: string; revision: number; text: string; reasoning: string; status: string }
   >;
+  policySessions?: Record<
+    string,
+    {
+      sessionId: string;
+      executionId: string;
+      requestId: string;
+      sequence: number;
+      generation: number;
+      status: string;
+      plan?: Record<string, unknown>;
+      stream?: {
+        attemptId: string;
+        revision: number;
+        text: string;
+        reasoning: string;
+        status: string;
+      };
+    }
+  >;
   skillIds: string[];
   error: string | null;
   clarification?: UserClarification | null;

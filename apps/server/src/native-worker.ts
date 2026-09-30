@@ -10,7 +10,14 @@ import type {
   CheckResult,
   TaskScope,
 } from '@edh/contracts';
-import type { EmbodiedBackend, BackendFrame, BackendUpdate, SensorSample } from '@edh/execution';
+import {
+  readPolicyEvent,
+  type BackendPolicyEvent,
+  type EmbodiedBackend,
+  type BackendFrame,
+  type BackendUpdate,
+  type SensorSample,
+} from '@edh/execution';
 import { parseTaskCatalog, type TaskCatalogDefinition, type TaskDefinition } from '@edh/tasks';
 import type { DeploymentServices, SessionEnvironment } from './deployment.js';
 
@@ -109,6 +116,7 @@ class NativeWorkerTransport {
   private processing: Promise<void> = Promise.resolve();
   private listener: ((publication: WorkerPublication) => Promise<void>) | undefined;
   private frameListener: ((publication: WorkerFramePublication) => Promise<void>) | undefined;
+  private policyListener: ((publication: unknown) => void) | undefined;
   private fault?: Error;
   private closeAcknowledged = false;
 
@@ -167,6 +175,9 @@ class NativeWorkerTransport {
   ): void {
     this.frameListener = listener;
   }
+  setPolicyListener(listener: ((publication: unknown) => void) | undefined): void {
+    this.policyListener = listener;
+  }
 
   get disconnected(): boolean {
     return this.fault !== undefined;
@@ -197,6 +208,11 @@ class NativeWorkerTransport {
     if (Buffer.byteLength(line) > 32 * 1024 * 1024)
       throw new Error('Native worker response exceeds the transport bound.');
     const message = object(JSON.parse(line));
+    if (message.event === 'policy') {
+      if (!this.policyListener) throw new Error('Policy event has no admitted task port.');
+      this.policyListener(message.data);
+      return;
+    }
     if (message.event === 'update') {
       const publication = object(message.data) as unknown as WorkerPublication;
       if (!this.listener) throw new Error('Native worker published outside an active task port.');
@@ -306,6 +322,7 @@ class NativeTaskBackend implements EmbodiedBackend {
   private closed = false;
   private readonly listeners = new Set<(update: BackendUpdate) => void>();
   private readonly frameListeners = new Set<(frame: BackendFrame) => void>();
+  private readonly policyListeners = new Set<(event: BackendPolicyEvent) => void>();
   private lastFrameImages?: {
     observationId: string;
     observedAt: string;
@@ -332,6 +349,18 @@ class NativeTaskBackend implements EmbodiedBackend {
   ) {
     this.transport.setListener((publication) => this.publish(publication));
     this.transport.setFrameListener((publication) => this.publishFrame(publication));
+    this.transport.setPolicyListener((publication) => {
+      const event = readPolicyEvent(publication, this.validator);
+      if (
+        this.closed ||
+        !this.status ||
+        event.taskScope.task_id !== this.runId ||
+        event.executionId !== this.status.execution_id ||
+        !isDeepStrictEqual(event.taskScope, this.status.task_scope)
+      )
+        throw new Error('Policy event belongs to another run or execution.');
+      for (const listener of this.policyListeners) listener(event);
+    });
   }
 
   private async sample(
@@ -655,6 +684,10 @@ class NativeTaskBackend implements EmbodiedBackend {
     this.frameListeners.add(listener);
     return () => this.frameListeners.delete(listener);
   }
+  subscribePolicyEvents(listener: (event: BackendPolicyEvent) => void): () => void {
+    this.policyListeners.add(listener);
+    return () => this.policyListeners.delete(listener);
+  }
 
   async close(): Promise<void> {
     if (this.closed) return;
@@ -662,6 +695,7 @@ class NativeTaskBackend implements EmbodiedBackend {
     this.closed = true;
     this.transport.setListener(undefined);
     this.transport.setFrameListener(undefined);
+    this.transport.setPolicyListener(undefined);
     this.onClose();
   }
 }

@@ -15,6 +15,7 @@ import {
 import type { SkillBundle } from '@edh/memory';
 import type { DomainRecordOwner } from './domain-retention.js';
 import { readClarification } from './clarifications.js';
+import { readPolicyEvent } from '@edh/execution';
 
 const id = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$(?![\s\S])/);
 const count = z.number().int().nonnegative().safe();
@@ -507,9 +508,20 @@ export class RunEventReferences {
           break;
         }
         default:
-          if (!this.extension)
+          if (!this.extension && !event.type.startsWith('policy.'))
             throw new Error(`Event type requires explicit reference ownership: ${event.type}`);
       }
+    if (event.type.startsWith('policy.')) {
+      const { member: _member, policySessionId: _session, ...input } = event.detail;
+      const policy = readPolicyEvent(input, this.validator);
+      scope(policy.taskScope);
+      if (policy.taskScope.task_id !== runId)
+        throw new Error('Policy event belongs to another run.');
+      const sample = new SensorSamples(this.store, this.validator, runId, state.source).read(
+        policy.observationId,
+      );
+      if (sample) evidence(sample.evidence.id);
+    }
     if (this.extension)
       for (const reference of z
         .array(z.string().min(1).max(512))

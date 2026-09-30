@@ -365,18 +365,22 @@ function renderAgents() {
     ...new Set([...Object.keys(team?.members ?? {}), ...assignments.map((a) => a.member)]),
   ];
   const filter = $('agent-filter');
-  if (filter.dataset.members !== JSON.stringify(members)) {
+  const filterMembers = [
+    ...members,
+    ...(Object.keys(current?.policySessions ?? {}).length ? ['execution-policy'] : []),
+  ];
+  if (filter.dataset.members !== JSON.stringify(filterMembers)) {
     const selected = filter.value;
     filter.replaceChildren(
-      ...['all', ...members].map((member) => {
+      ...['all', ...filterMembers].map((member) => {
         const option = document.createElement('option');
         option.value = member;
         option.textContent = member === 'all' ? 'All agents' : member;
         return option;
       }),
     );
-    filter.value = members.includes(selected) ? selected : 'all';
-    filter.dataset.members = JSON.stringify(members);
+    filter.value = members.includes(selected) || selected === 'execution-policy' ? selected : 'all';
+    filter.dataset.members = JSON.stringify(filterMembers);
   }
   for (const member of members) {
     const membersAssignments = assignments.filter((a) => a.member === member);
@@ -533,12 +537,41 @@ async function browseEvents(direction) {
 let feedSignature = '';
 function actor(event) {
   const d = event.detail;
+  if (d.policySessionId)
+    return { ...current?.policySessions?.[d.policySessionId], member: 'execution-policy' };
   const id = d.assignmentId || d.recipient || d.sender;
   return current?.assignments[id];
 }
 function renderTodos() {
   if (!current) return;
   const filter = $('agent-filter').value;
+  if (filter === 'execution-policy') {
+    const policy = Object.values(current.policySessions ?? {}).at(-1);
+    const plan = policy?.plan;
+    text(
+      'todo-source',
+      plan
+        ? `Execution policy · revision ${plan.revision} · ${shorten(policy.executionId)}`
+        : 'Awaiting execution-policy plan.',
+    );
+    $('todos').replaceChildren();
+    for (const item of plan?.subtasks ?? []) {
+      const div = document.createElement('div');
+      div.className = `todo ${item.status === 'done' ? 'completed' : item.status === 'in_progress' ? 'in_progress' : 'pending'}`;
+      const button = document.createElement('button');
+      button.textContent = `${item.src} → ${item.dst} · ${item.status}`;
+      button.onclick = () =>
+        inspect(`Execution subtask · ${item.id}`, {
+          session: policy.sessionId,
+          revision: plan.revision,
+          item,
+        });
+      div.append(button);
+      $('todos').append(div);
+    }
+    $('inspect-todos').disabled = !plan;
+    return;
+  }
   const assignments = Object.values(current.assignments);
   const owner = assignments.find((a) => a.id === current.decisionAssignmentId);
   const selected =
@@ -589,8 +622,8 @@ function renderFeed() {
     feedSignature = signature;
     const nativeResults = new Map(
       current.events
-        .filter((e) => e.type === 'dsh.tool-result')
-        .map((e) => [e.detail.data.message.source.callId, e]),
+        .filter((e) => e.type === 'dsh.tool-result' || e.type === 'policy.tool-result')
+        .map((e) => [`${e.detail.sessionId}:${e.detail.data.message.source.callId}`, e]),
     );
     const entries = current.events
       .filter((event) => {
@@ -598,12 +631,16 @@ function renderFeed() {
         if (filter !== 'all' && member !== filter) return false;
         if (query && !JSON.stringify(event).replaceAll('__', '.').toLowerCase().includes(query))
           return false;
-        if (event.type === 'agent.output')
-          return event.detail.message.content.some(
-            (b) => b.type === 'text' || b.type === 'reasoning',
-          );
+        if (event.type === 'agent.output' || event.type === 'policy.output')
+          return (
+            event.type === 'policy.output' ? event.detail.data.message : event.detail.message
+          ).content.some((b) => b.type === 'text' || b.type === 'reasoning');
         return [
           'dsh.tool-call',
+          'policy.tool-call',
+          'policy.plan',
+          'policy.decision',
+          'policy.failure',
           'message.delivered',
           'agent.todos',
           'verification.completed',
@@ -644,8 +681,8 @@ function renderFeed() {
         inspect(`${event.type} · Correlation details`, { event, assignment: row ?? null });
       meta.append(who, identity, button);
       card.append(meta);
-      if (event.type === 'agent.output') {
-        for (const block of d.message.content) {
+      if (event.type === 'agent.output' || event.type === 'policy.output') {
+        for (const block of (event.type === 'policy.output' ? d.data.message : d.message).content) {
           if (block.type === 'text') {
             const p = document.createElement('p');
             p.className = 'feed-text';
@@ -665,8 +702,8 @@ function renderFeed() {
             card.append(details);
           }
         }
-      } else if (event.type === 'dsh.tool-call') {
-        const result = nativeResults.get(d.data.callId);
+      } else if (event.type === 'dsh.tool-call' || event.type === 'policy.tool-call') {
+        const result = nativeResults.get(`${d.sessionId}:${d.data.callId}`);
         const errored = result?.detail.data.message.content.some(
           (b) => b.type === 'tool-result' && b.isError,
         );
@@ -738,9 +775,19 @@ function renderFeed() {
     if ($('follow-output').checked) feed.scrollTop = feed.scrollHeight;
     else feed.scrollTop = scroll;
   }
-  const live = Object.entries(current.agentStreams ?? {}).filter(
+  const live = Object.entries({
+    ...current.agentStreams,
+    ...Object.fromEntries(
+      Object.values(current.policySessions ?? {})
+        .filter((entry) => entry.stream)
+        .map((entry) => [entry.sessionId, entry.stream]),
+    ),
+  }).filter(
     ([id, s]) =>
-      s.status === 'streaming' && (filter === 'all' || current.assignments[id]?.member === filter),
+      s.status === 'streaming' &&
+      (filter === 'all' ||
+        (current.policySessions?.[id] ? 'execution-policy' : current.assignments[id]?.member) ===
+          filter),
   );
   $('live-output').hidden = !live.length;
   text(
@@ -748,7 +795,7 @@ function renderFeed() {
     live
       .map(
         ([id, s]) =>
-          `${current.assignments[id]?.member ?? id} · streaming\n${s.text || s.reasoning || 'Waiting for provider output…'}`,
+          `${current.policySessions?.[id] ? 'execution-policy' : (current.assignments[id]?.member ?? id)} · streaming\n${s.text || s.reasoning || 'Waiting for provider output…'}`,
       )
       .join('\n'),
   );
@@ -971,7 +1018,7 @@ $('follow-output').onchange = () => {
 $('inspect-todos').onclick = () =>
   inspect(
     'Recent TODO history · Browse Event log for earlier snapshots',
-    current?.events.filter((e) => e.type === 'agent.todos') ?? [],
+    current?.events.filter((e) => e.type === 'agent.todos' || e.type === 'policy.plan') ?? [],
   );
 $('events-older').onclick = () => browseEvents('older').catch((e) => error(e.message));
 $('events-newer').onclick = () => browseEvents('newer').catch((e) => error(e.message));

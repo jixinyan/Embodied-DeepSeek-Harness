@@ -1,5 +1,11 @@
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
-import type { CheckResult, EvidenceRef, ExecutionStatus, SubgoalRequest } from '@edh/contracts';
+import type {
+  CheckResult,
+  EvidenceRef,
+  ExecutionStatus,
+  SubgoalRequest,
+  TaskScope,
+} from '@edh/contracts';
 
 export interface SensorSample {
   /** Admitted immutable images; bytes stay in the deployment attachment store. */
@@ -22,6 +28,18 @@ export interface BackendFrame {
   segmentId: string;
   nativeStepIndex: number;
   simulationTimeS: number;
+}
+export interface BackendPolicyEvent {
+  requestId: string;
+  executionId: string;
+  taskScope: TaskScope;
+  generation: number;
+  observationId: string;
+  sessionId: string;
+  sequence: number;
+  at: string;
+  type: string;
+  data: Record<string, unknown>;
 }
 export interface BackendCallOptions {
   /** Native DSH cancellation; providers must forward it to cooperative remote work. */
@@ -62,5 +80,6 @@ export interface EmbodiedBackend {
   ): BackendCheckResult | Promise<BackendCheckResult>;
   subscribe(listener: (update: BackendUpdate) => void): () => void;
   subscribeFrames?(listener: (frame: BackendFrame) => void): () => void;
+  subscribePolicyEvents?(listener: (event: BackendPolicyEvent) => void): () => void;
   close(): Promise<void>;
 }

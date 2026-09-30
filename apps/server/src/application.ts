@@ -31,7 +31,14 @@ import { AssignmentEvidenceGrants, SkillLibrary } from '@edh/memory';
 import { VerificationBoundaries, VerificationContexts } from '@edh/verification';
 import { skillSourceLimitations } from './skill-provenance.js';
 import { UserClarifications, ClarificationConflict, readClarification } from './clarifications.js';
-import type { EmbodiedBackend, BackendFrame, BackendUpdate, SensorSample } from '@edh/execution';
+import {
+  readPolicyEvent,
+  type BackendPolicyEvent,
+  type EmbodiedBackend,
+  type BackendFrame,
+  type BackendUpdate,
+  type SensorSample,
+} from '@edh/execution';
 import {
   TaskGoals,
   RunHistory,
@@ -129,6 +136,7 @@ export class UpperRun {
   private readonly lifecycleErrors: unknown[] = [];
   private unsubscribe: () => void;
   private unsubscribeFrames: () => void = () => {};
+  private unsubscribePolicyEvents: () => void = () => {};
   private readonly goals: TaskGoals;
   private goal: GoalBinding;
   private attemptSequence = 1;
@@ -347,6 +355,15 @@ export class UpperRun {
       this.unsubscribeFrames = options.backend.subscribeFrames((frame) => {
         try {
           this.backendFrame(frame);
+        } catch (error) {
+          this.spawn(this.fail(error));
+          throw error;
+        }
+      });
+    if (options.backend.subscribePolicyEvents)
+      this.unsubscribePolicyEvents = options.backend.subscribePolicyEvents((event) => {
+        try {
+          this.backendPolicyEvent(event);
         } catch (error) {
           this.spawn(this.fail(error));
           throw error;
@@ -1865,6 +1882,58 @@ export class UpperRun {
       );
     }
   }
+  private backendPolicyEvent(input: BackendPolicyEvent): void {
+    const event = readPolicyEvent(input, this.options.validator);
+    const execution = this.state.executions.find(
+      (entry) => entry.execution_id === event.executionId,
+    );
+    if (
+      this.closed ||
+      terminal(this.state.state) ||
+      !execution ||
+      !isDeepStrictEqual(execution.task_scope, event.taskScope)
+    )
+      throw new Error('Policy telemetry has no admitted active execution.');
+    const sessions = (this.state.policySessions ??= {});
+    const prior = sessions[event.sessionId];
+    if (
+      (prior &&
+        (prior.executionId !== event.executionId ||
+          event.sequence !== prior.sequence + 1 ||
+          event.generation < prior.generation)) ||
+      (!prior && event.sequence !== 1)
+    )
+      throw new Error('Policy telemetry identity or sequence changed.');
+    const row = (sessions[event.sessionId] ??= {
+      sessionId: event.sessionId,
+      executionId: event.executionId,
+      requestId: event.requestId,
+      sequence: 0,
+      generation: event.generation,
+      status: 'running',
+    });
+    row.requestId = event.requestId;
+    row.sequence = event.sequence;
+    row.generation = event.generation;
+    if (event.type === 'status') row.status = String(event.data.status);
+    if (event.type === 'failure') row.status = 'failed';
+    if (event.type === 'plan') row.plan = structuredClone(event.data);
+    if (event.type === 'stream')
+      row.stream = structuredClone(event.data) as NonNullable<typeof row.stream>;
+    const type =
+      event.type === 'assistant/message'
+        ? 'output'
+        : event.type === 'tool/call'
+          ? 'tool-call'
+          : event.type === 'tool/result'
+            ? 'tool-result'
+            : event.type;
+    this.event(`policy.${type}`, {
+      ...event,
+      member: 'execution-policy',
+      policySessionId: event.sessionId,
+    });
+  }
   private backendFrame(frame: BackendFrame): void {
     if (this.closed) throw new Error('Native frame arrived after run close.');
     const request = this.state.requests.at(-1);
@@ -2096,6 +2165,7 @@ export class UpperRun {
         if (recovery.timer) clearTimeout(recovery.timer);
       await cleanup(() => this.unsubscribe());
       await cleanup(() => this.unsubscribeFrames());
+      await cleanup(() => this.unsubscribePolicyEvents());
       await cleanup(() => this.options.backend.close());
       await cleanup(() => this.sessions.close());
       await cleanup(() => this.settle());

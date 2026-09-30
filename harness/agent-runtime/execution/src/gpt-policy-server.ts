@@ -24,7 +24,7 @@ export interface GptPolicyServerOptions {
   port: number;
   apiKey?: string;
   images: AttachmentStore;
-  policy: Omit<GptPolicyOptions, 'mode' | 'observation' | 'providerTool' | 'requirePlan'>;
+  policy: Omit<GptPolicyOptions, 'mode' | 'observation' | 'providerTool' | 'requirePlan' | 'event'>;
   modes: readonly ('direct' | 'hybrid')[];
   onError(error: unknown): void;
 }
@@ -164,6 +164,10 @@ export async function serveGptPolicy(
             mode,
             requirePlan: true,
             providerTool,
+            event: (data) => {
+              if (socket.readyState === WebSocket.OPEN && !controller?.signal.aborted)
+                send({ type: 'policy_event', data });
+            },
             observation: async (ticket, signal) => {
               const value = jsonObject.parse(ticket.observation);
               const cameras = z
@@ -273,14 +277,18 @@ export async function requestPolicyProposal(
     maxPayload: 32 * 1024 * 1024,
     handshakeTimeout: 30_000,
   });
-  const abort = () => socket.terminate();
+  let rejectResponse: ((error: unknown) => void) | undefined;
+  const abort = () => {
+    rejectResponse?.(signal.reason);
+    socket.terminate();
+  };
   signal.addEventListener('abort', abort, { once: true });
   try {
     await once(socket, 'open', { signal });
     const response = new Promise<unknown>((resolve, reject) => {
+      rejectResponse = reject;
       socket.once('error', reject);
       socket.once('close', () => reject(new Error('Lower policy closed without a result.')));
-      signal.addEventListener('abort', () => reject(signal.reason), { once: true });
       socket.once('message', (bytes, binary) => {
         try {
           if (binary) throw new Error('Lower policy must implement the EDH JSON codec.');

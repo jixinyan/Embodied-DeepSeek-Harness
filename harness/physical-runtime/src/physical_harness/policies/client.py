@@ -84,6 +84,7 @@ class WebSocketPolicyClient:
         self.motion: dict[str, Any] | None = None
         self.last_response: dict[str, Any] | None = None
         self.tool_handler: Callable[[dict[str, Any], dict[str, Any]], Awaitable[Any]] | None = None
+        self.event_handler: Callable[[dict[str, Any], dict[str, Any]], Awaitable[None]] | None = None
 
     async def _disconnect(self) -> None:
         connection, self._connection = self._connection, None
@@ -116,11 +117,20 @@ class WebSocketPolicyClient:
                 if self._closed:
                     raise RuntimeError("Policy client closed while connecting.")
                 await self._connection.send(encoded)
-                for _ in range(64):
+                tool_calls = 0
+                for _ in range(10000):
                     message = await self._connection.recv()
                     response = self._codec.decode(message, copy.deepcopy(bound))
+                    if response.get("type") == "policy_event":
+                        if self._execution_mode is ExecutionMode.POLICY or self.event_handler is None:
+                            raise PolicyProtocolError("Policy telemetry has no admitted execution mode or consumer.")
+                        await self.event_handler(copy.deepcopy(bound), response["data"])
+                        continue
                     if response.get("type") != "policy_tool":
                         break
+                    tool_calls += 1
+                    if tool_calls > 64:
+                        raise PolicyProtocolError("Policy tool request budget exhausted.")
                     if (self._execution_mode is ExecutionMode.POLICY or self.tool_handler is None or
                             response.get("request_id") != bound["request_id"] or
                             not isinstance(response.get("id"), str)):
@@ -129,7 +139,7 @@ class WebSocketPolicyClient:
                     await self._connection.send(json.dumps({"type": "policy_tool_result",
                         "id": response["id"], "request_id": bound["request_id"], "result": result}, allow_nan=False))
                 else:
-                    raise PolicyProtocolError("Policy tool request budget exhausted.")
+                    raise PolicyProtocolError("Policy telemetry message budget exhausted.")
                 normalized = normalize_mode_response(response, bound, self._execution_mode)
                 self.motion = copy.deepcopy(response.get("motion"))
                 self.last_response = copy.deepcopy(response)

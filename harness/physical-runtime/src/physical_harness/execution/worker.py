@@ -305,6 +305,7 @@ class NativeWorkerSession:
                 execution_mode=self._execution_mode,
             )
             self._policy.tool_handler = self._policy_tool
+            self._policy.event_handler = self._policy_event
             observation = await self._device.on_owner(self._environment.observe)
             if not self._host_connected or not self._lease_active:
                 raise RuntimeError("Native task lease ended during capture.")
@@ -378,6 +379,18 @@ class NativeWorkerSession:
                 await gate.pause("backend_error", terminal=True)
             if gate.snapshot()["state"] in ("paused", "ended"):
                 await self._publish(await self._require_device().on_owner(self._environment.observe), self._last_control)
+
+    async def _policy_event(self, request: dict[str, Any], event: dict[str, Any]) -> None:
+        gate = self._require_gate()
+        if (gate.snapshot()["state"] != "running" or
+                event["requestId"] != request["request_id"] or
+                event["executionId"] != request["execution_id"] or
+                event["taskScope"] != request["task_scope"] or
+                event["generation"] != request["generation"] or
+                event["observationId"] != request["observation_id"] or
+                gate.snapshot()["generation"] != request["generation"]):
+            raise ValueError("Policy telemetry differs from its current inference scope.")
+        await self._emit({"event": "policy", "data": event})
 
     async def _policy_tool(self, request: dict[str, Any], message: dict[str, Any]) -> Any:
         gate = self._require_gate()
@@ -515,6 +528,7 @@ class NativeWorkerSession:
                 execution_mode=self._execution_mode,
             )
             self._policy.tool_handler = self._policy_tool
+            self._policy.event_handler = self._policy_event
             observation = await self._require_device().on_owner(self._environment.observe)
             publication = await self._publish(observation)
             self._pump = asyncio.create_task(self._run_policy())

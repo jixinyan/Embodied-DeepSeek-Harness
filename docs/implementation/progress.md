@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.60. Current checkpoint: **RoboDojo boundary and mode envelopes verified; Astra text/direct/hybrid rounds live-verified; full task acceptance pending**.
+Spec: v1.61. Current checkpoint: **RoboDojo direct/hybrid integration and policy observability implemented; actual task and hybrid checkpoint acceptance pending**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -23,6 +23,26 @@ incremental observations, revisions, reset and evidence handling; runtime
 implementation and actual acceptance are pending.
 Remaining simulator, policy, lifecycle and release work is tracked in the
 v1 acceptance register for resumption.
+
+## 2026-09-29 execution-policy observability checkpoint
+
+Native DSH policy Sessions publish scoped model messages, returned reasoning,
+tool calls/results, local plans, status and decisions through the physical worker
+into the same run journal and console. The console can filter execution-policy
+activity and inspect its local subtask status. Telemetry preserves independent role
+contexts and grants no control or verification authority. See
+[policy observability](policy-observability.md) for identity, limits and acceptance.
+
+Grounded RoboDojo profiles expose the provider's velocity-limited numerical target
+tools. The lower-policy WebSocket request releases its abort listener when the
+request settles. TypeScript checks, console syntax checks, Python compilation/base
+imports, SVG XML and source structure pass. A complete native telemetry rollout
+and real policy task acceptance remain pending.
+
+The GPU host currently runs other jobs on every device. No existing GPU job was
+interrupted. The checkpoint download and isolated OpenPI installation continue;
+installation uses an explicit 300-second dependency-download timeout. Actual
+checkpoint/model inference and available-device admission remain required.
 
 ## 2026-09-29 architecture and RoboDojo deployment checkpoint
 

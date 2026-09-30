@@ -29,6 +29,7 @@ export type {
   SensorSample,
   BackendUpdate,
   BackendFrame,
+  BackendPolicyEvent,
   BackendCallOptions,
   BackendResumeOptions,
   BackendCheckOptions,
@@ -47,6 +48,7 @@ export {
 } from './profiles.js';
 
 export type ExecutionMode = 'policy' | 'direct' | 'hybrid';
+export { readPolicyEvent } from './policy-events.js';
 export {
   serveGptPolicy,
   requestPolicyProposal,

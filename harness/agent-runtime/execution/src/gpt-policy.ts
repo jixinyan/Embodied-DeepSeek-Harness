@@ -10,6 +10,8 @@ import { defineTool, type ToolDefinition } from '@edh/tools';
 import type { ActionChunk, ContractValidator, PolicyRequest } from '@edh/contracts';
 import { validatePolicyPlan, validatePolicyIntent, type PolicySubtask } from './policy-plan.js';
 import type { JsonValue } from '@deepseek-ai/dsh-util-values';
+import type { BackendPolicyEvent } from './backend-port.js';
+import { readPolicyEvent } from './policy-events.js';
 
 export interface GptMotion {
   mode: 'eef' | 'joint';
@@ -46,6 +48,7 @@ export interface GptPolicyOptions {
     signal: AbortSignal,
   ): Promise<number[]>;
   audit?(record: Record<string, unknown>): void;
+  event?(record: BackendPolicyEvent): void;
   timeoutMs?: number;
   maxModelSteps?: number;
   requirePlan?: boolean;
@@ -102,6 +105,27 @@ export class DshGptPolicy {
   private planRevision = 0;
   private readonly groundingIds = new Set<string>();
   private auditCount = 0;
+  private eventSequence = 0;
+
+  private publish(type: string, data: Record<string, unknown>): void {
+    const request = this.current;
+    if (!request || !this.handle || this.executionId !== request.execution_id) return;
+    const record: BackendPolicyEvent = {
+      requestId: request.request_id,
+      executionId: request.execution_id,
+      taskScope: structuredClone(request.task_scope),
+      generation: request.generation,
+      observationId: request.observation_id,
+      sessionId: this.handle.agent.session.id,
+      sequence: ++this.eventSequence,
+      at: new Date().toISOString(),
+      type,
+      data: JSON.parse(JSON.stringify(data)) as Record<string, unknown>,
+    };
+    readPolicyEvent(record, this.validator);
+    this.options.audit?.({ kind: 'policy_event', ...record });
+    this.options.event?.(record);
+  }
 
   constructor(
     private readonly host: Context,
@@ -247,29 +271,34 @@ export class DshGptPolicy {
             executionId: request.execution_id,
             ...record,
           });
+          this.publish('plan', record);
           return structuredClone(record);
         },
       }),
-      defineTool({
-        name: 'policy__joint_command',
-        description:
-          'Propose one canonical joint/control action from the fresh images and ActionSpec. This does not move the device.',
-        parameters: {
-          requestId: { type: 'string', required: true },
-          action: { type: 'array', items: { type: 'number' }, required: true },
-          reason: { type: 'string', required: true },
-        },
-        output: {
-          schema: { type: 'object', additionalProperties: true },
-          render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
-        },
-        execute: async (args, exec) => {
-          this.request(args.requestId);
-          if (!args.reason.trim()) throw new Error('An action reason is required.');
-          exec.signal.throwIfAborted();
-          return terminal(args.action, () => exec.concludeTurn());
-        },
-      }),
+      ...(!this.options.providerTool
+        ? [
+            defineTool({
+              name: 'policy__joint_command',
+              description:
+                'Propose one canonical joint/control action from the fresh images and ActionSpec. This does not move the device.',
+              parameters: {
+                requestId: { type: 'string', required: true },
+                action: { type: 'array', items: { type: 'number' }, required: true },
+                reason: { type: 'string', required: true },
+              },
+              output: {
+                schema: { type: 'object', additionalProperties: true },
+                render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }],
+              },
+              execute: async (args, exec) => {
+                this.request(args.requestId);
+                if (!args.reason.trim()) throw new Error('An action reason is required.');
+                exec.signal.throwIfAborted();
+                return terminal(args.action, () => exec.concludeTurn());
+              },
+            }),
+          ]
+        : []),
     ];
     if (this.options.providerTool) {
       const output = {
@@ -595,6 +624,7 @@ export class DshGptPolicy {
         this.plan = [];
         this.planRevision = 0;
         this.auditCount = 0;
+        this.eventSequence = 0;
         this.handle = await createDshSession(this.host, {
           sessionId: randomUUID(),
           provider: this.options.provider,
@@ -606,6 +636,54 @@ export class DshGptPolicy {
           tools: this.tools(),
         });
         this.executionId = request.execution_id;
+        let turn = 0;
+        this.handle.agent.ctx.on('session/event', (_session, event) => {
+          if (event.type === 'turn/start') turn = event.data.turn;
+          if (
+            [
+              'turn/start',
+              'turn/end',
+              'step/start',
+              'step/end',
+              'assistant/message',
+              'tool/call',
+              'tool/result',
+              'request/context',
+            ].includes(event.type) &&
+            (event.type !== 'tool/result' || event.surfaceOp === 'append')
+          )
+            this.publish(event.type, { turn, sessionSequence: event.seq, ...event.data });
+        });
+        this.handle.agent.ctx.on('agent/status', ({ status }) =>
+          this.publish('status', { status }),
+        );
+        let latestStream:
+          | { attemptId: string; revision: number; text: string; reasoning: string; status: string }
+          | undefined;
+        let publishedAt = 0;
+        this.handle.agent.ctx.on('agent/assistant-stream', ({ frame }) => {
+          if (frame.type === 'start')
+            latestStream = {
+              attemptId: frame.attemptId,
+              revision: frame.revision,
+              text: '',
+              reasoning: '',
+              status: 'streaming',
+            };
+          if (!latestStream || latestStream.attemptId !== frame.attemptId) return;
+          latestStream.revision = frame.revision;
+          if (frame.type === 'chunk') {
+            if (frame.chunk.type === 'text-delta')
+              latestStream.text = (latestStream.text + frame.chunk.text).slice(-16000);
+            if (frame.chunk.type === 'reasoning-delta')
+              latestStream.reasoning = (latestStream.reasoning + frame.chunk.text).slice(-16000);
+          }
+          if (frame.type === 'end') latestStream.status = frame.outcome.kind;
+          if (frame.type !== 'chunk' || Date.now() - publishedAt >= 100) {
+            publishedAt = Date.now();
+            this.publish('stream', latestStream);
+          }
+        });
         this.handle.agent.ctx.on('agent/pre-step', (_event, next) => {
           if (++this.steps > (this.options.maxModelSteps ?? 12))
             throw new Error('GPT policy model-step budget exhausted.');
@@ -648,6 +726,7 @@ export class DshGptPolicy {
       limit.signal.throwIfAborted();
       if (!this.output)
         throw new Error('GPT policy turn ended without an admitted action decision.');
+      this.publish('decision', { response: this.output, mode: this.options.mode });
       this.options.audit?.({
         requestId: request.request_id,
         executionId: request.execution_id,
@@ -658,6 +737,9 @@ export class DshGptPolicy {
       });
       this.auditCount = this.handle!.agent.session.snapshotEvents().length;
       return structuredClone(this.output);
+    } catch (error) {
+      this.publish('failure', { message: error instanceof Error ? error.message : String(error) });
+      throw error;
     } finally {
       if (abort) limit.signal.removeEventListener('abort', abort);
       this.current = undefined;

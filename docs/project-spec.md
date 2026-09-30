@@ -1,8 +1,8 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.59 · 2026-09-26
+Version: v1.61 · 2026-09-29
 
-Status: native DSH, Qwen VLM, GR00T and RoboCasa complete actual control, pause/resume and post-execution failed verification with before/after images; successful tasks and complete three-provider acceptance remain pending.
+Status: native DSH, Qwen VLM, GR00T and RoboCasa complete actual control, pause/resume and post-execution failed verification with before/after images. RoboDojo adds Astra direct/hybrid execution and scoped policy observability. Cloud Astra image-tool transport passes; successful tasks and complete four-provider acceptance remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -32,7 +32,7 @@ The [v1 delivery register](implementation/v1-delivery.md) connects each remainin
 capability to its implementation and actual acceptance requirements, including the
 integrated agent/task/sensor visualization.
 
-The active scope covers the complete upper agent workflow, all three simulation
+The active scope covers the complete upper agent workflow, all four simulation
 providers and actual VLM/policy integration tests. Installation, native SDK checks,
 transport integration and model-driven task acceptance have separate evidence gates.
 The [live integration acceptance plan](implementation/live-integration.md) defines

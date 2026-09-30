@@ -75,6 +75,7 @@ const runSchema = z
       .optional(),
     agentSeen: z.record(id, z.unknown()),
     agentStreams: z.record(id, z.unknown()).optional(),
+    policySessions: z.record(id, z.unknown()).optional(),
     skillIds: z.array(id),
     error: z.string().nullable(),
     taskContext: z.array(z.unknown()).max(4).optional(),
