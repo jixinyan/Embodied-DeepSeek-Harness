@@ -1,17 +1,19 @@
 # Implementation progress
 
-Spec: v1.61. Current checkpoint: **RoboDojo Astra direct task succeeds through the native DSH loop and independent verification; recovery and hybrid checkpoint acceptance pending**.
+Spec: v1.61. Current checkpoint: **RoboTwin Pi0.5 console task succeeds through native DSH planning, ActionGate, independent verification and Session release; development stopped at the requested minimal goal**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-The previous v1 goal was paused after the SAM 3.1 checkpoint. This checkpoint
-resumes implementation for the RoboDojo external backend, GPT-6 Astra Responses
-transport and LitchiAgent-derived direct/hybrid policy contracts.
-The [September 26 handoff](pause-2026-09-26.md) records the stopping point,
-preserved local work and service state. This checkpoint records the implementation
-and acceptance work completed after that handoff.
+Development is stopped after the completed RoboTwin console task. Run
+`8fcb950b-eebf-4133-ae94-197ac8e6bb41` records 111 real Pi0.5 controls, seven
+policy requests, 10,443 physics steps, confirmed native termination, an independent
+passed Verifier verdict and Planner completion. Its user Session is closed with
+resources released. The [September 30 handoff](pause-2026-09-30.md) records actual
+provider status, preserved local work, source evidence and the resumption boundary.
+Automatic development is disabled; the weekly DSH monitor performs read-only
+release discovery and assessment.
 
 The goal remains to complete and verify all agreed v1 capabilities. SAM 3.1
 segmentation and YOLO26 depth are selected for replaceable perception services.

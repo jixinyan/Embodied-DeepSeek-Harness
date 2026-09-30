@@ -2,7 +2,7 @@
 
 Version: v1.61 · 2026-09-29
 
-Status: native DSH, Qwen VLM, GR00T and RoboCasa complete actual control, pause/resume and post-execution failed verification with before/after images. RoboDojo adds Astra direct/hybrid execution and scoped policy observability. Cloud Astra image-tool transport passes; successful tasks and complete four-provider acceptance remain pending.
+Status: native DSH, cloud Astra and Pi0.5 complete a successful RoboTwin console task with ActionGate, independent formal verification, Planner finish and released Session. RoboCasa records actual controls and formal failure; RoboDojo direct task success and owned-service lifecycle evidence are retained. Full four-provider, recovery and v1 acceptance remain pending. Development is stopped at the requested minimal checkpoint.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -26,6 +26,11 @@ are SVG assets; include their directory when handing over this document.
 ## 0. Handoff entry point
 
 ### 0.1 Current work and next action
+
+Development is stopped after the completed RoboTwin console workflow. The
+[September 30 handoff](implementation/pause-2026-09-30.md) records exact task,
+source, checkpoint, verification and shutdown evidence, preserved work and the
+continuation requirements. The weekly DSH monitor performs read-only assessment.
 
 The release objective is a complete v1 implementation of all agreed capabilities.
 The [v1 delivery register](implementation/v1-delivery.md) connects each remaining
