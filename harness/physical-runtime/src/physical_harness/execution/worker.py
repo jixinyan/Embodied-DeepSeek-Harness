@@ -46,6 +46,42 @@ def record_policy_request(ticket: dict[str, Any], directory: Path) -> None:
         output.write("\n")
 
 
+def record_policy_control(segment: dict[str, Any], receipt: dict[str, Any], device: NativeActionDevice,
+                          directory: Path) -> None:
+    for key in ("execution_id", "request_id", "segment_id"):
+        value = segment[key]
+        if not isinstance(value, str) or not value or not value.isascii() or not all(
+            character.isalnum() or character in "-_.:" for character in value
+        ) or value in (".", ".."):
+            raise ValueError("Native policy control identity is invalid for local recording.")
+    step = device.last_step
+    if step is None:
+        raise RuntimeError("Native policy control recording has no actual step.")
+    target_directory = directory / segment["execution_id"] / segment["request_id"]
+    target_directory.mkdir(parents=True, exist_ok=True)
+    target = target_directory / f"{segment['segment_id']}.json"
+    descriptor = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as output:
+        json.dump({
+            "schema_version": "edh.native_policy_receipt.v1",
+            "recorded_at": wire_time(),
+            "control_index": device.executed_actions,
+            "segment": segment,
+            "receipt": receipt,
+            "raw_sim_steps": device.raw_sim_steps,
+            "uncertain_actions": device.uncertain_actions,
+            "native_step": {
+                "executed_actions": step.executed_actions,
+                "action_completed": step.action_completed,
+                "raw_sim_steps": step.raw_sim_steps,
+                "episode_terminated": step.episode_terminated,
+                "interruption_reason": step.interruption_reason,
+                "observation_id": step.observation.observation_id,
+            },
+        }, output, allow_nan=False, separators=(",", ":"))
+        output.write("\n")
+
+
 class NativeWorkerSession:
     def __init__(self, emit: Callable[[dict[str, Any]], Awaitable[None]]) -> None:
         self._emit = emit
@@ -464,6 +500,10 @@ class NativeWorkerSession:
         step = device.last_step
         if step is None:
             raise RuntimeError("Native action receipt has no completed step.")
+        record_directory = os.environ.get("EDH_POLICY_REQUEST_RECORD_DIR")
+        if record_directory is not None:
+            await asyncio.to_thread(record_policy_control, segment, receipt, device,
+                                    Path(record_directory).resolve(strict=True))
         self._last_control = {
             "request_id": segment["request_id"],
             "segment_id": receipt["segment_id"],
