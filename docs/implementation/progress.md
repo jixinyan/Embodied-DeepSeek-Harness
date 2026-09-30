@@ -1,19 +1,28 @@
 # Implementation progress
 
-Spec: v1.61. Current checkpoint: **RoboTwin Pi0.5 console task succeeds through native DSH planning, ActionGate, independent verification and Session release; development stopped at the requested minimal goal**.
+Spec: v1.63. Current checkpoint: **local Qwen Planner/Verifier and learned Pi0.5 complete a real headless RoboTwin task; trace-only console, worker-local videos and Session release verified; development stopped at the requested minimal goal**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## Current delivery boundary
 
-Development is stopped after the completed RoboTwin console task. Run
-`8fcb950b-eebf-4133-ae94-197ac8e6bb41` records 111 real Pi0.5 controls, seven
-policy requests, 10,443 physics steps, confirmed native termination, an independent
-passed Verifier verdict and Planner completion. Its user Session is closed with
-resources released. The [September 30 handoff](pause-2026-09-30.md) records actual
-provider status, preserved local work, source evidence and the resumption boundary.
+Development is stopped after run `7c158abe-a195-4575-b8bf-a58569da6127`:
+107 real Pi0.5 controls, seven identified policy requests, 10,642 native physics
+steps, a confirmed terminal boundary, independent Qwen Verifier success and
+Planner completion. Its user Session is closed with resources released. Three
+worker-local MP4 files each contain 407 actual frames with zero decoded timestamp
+error against the simulator journal. The browser requests no camera assets;
+authorized model captures and formal-verification images remain available.
+The [Qwen headless handoff](qwen-headless-checkpoint.md) records actual
+provider status, source evidence, preserved work and the resumption boundary.
 Automatic development is disabled; the weekly DSH monitor performs read-only
 release discovery and assessment.
+
+The recorded task establishes formal success and resource release. Complete
+supplementary role-report and terminal TODO acceptance remains pending. Its
+original trace is preserved without modifying any model output or tool result.
+The earlier cloud-model task and provider evidence remain in the
+[September 30 provider handoff](pause-2026-09-30.md).
 
 The goal remains to complete and verify all agreed v1 capabilities. SAM 3.1
 segmentation and YOLO26 depth are selected for replaceable perception services.

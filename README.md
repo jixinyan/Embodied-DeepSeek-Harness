@@ -77,7 +77,7 @@ the [integration guide](docs/implementation/live-integration.md) records them.
 | Directory | Responsibility |
 | --- | --- |
 | [apps/server](apps/server/README.md) | Application assembly, Session lifecycle and HTTP/SSE API |
-| [apps/console](apps/console/README.md) | Session launcher, cameras, agent output, plans, tools and execution timeline |
+| [apps/console](apps/console/README.md) | Session launcher, Agent trace, plans, TODOs, tools, execution and verification |
 | [apps/desktop](apps/desktop/README.md) | Desktop configuration selection and local-service lifecycle |
 | [harness/agent-runtime](harness/agent-runtime/README.md) | DSH runtime, agents, teams, models, tools, communication, planning, verification and memory |
 | [harness/physical-runtime](harness/physical-runtime/README.md) | Execution worker, ActionGate, policies, environments, embodiments and device interfaces |
@@ -105,6 +105,7 @@ startup:
 - [Astra direct and hybrid execution](docs/implementation/litchi-execution-modes.md)
 - [Isolated GPU environments and simulator installation](docs/implementation/gpu-integration.md)
 - [Desktop launcher](apps/desktop/README.md)
+- [Headless simulator recording and trace MP4 export](docs/implementation/headless-simulation.md)
 
 For the local workflow demonstration, run `pnpm demo` and open
 `http://127.0.0.1:4317`. That demonstration uses a scripted model and a synthetic

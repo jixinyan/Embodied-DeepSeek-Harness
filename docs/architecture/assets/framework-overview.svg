@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1490" viewBox="0 0 1440 1490" role="img" aria-labelledby="title desc">
   <title id="title">Embodied DeepSeek Harness architecture</title>
-  <desc id="desc">A console configures compatible Sessions and user-defined agent teams. Independent DSH role contexts use planning, perception, execution and memory tools. Learned, Astra direct and reviewed hybrid policies send actions through ActionGate to simulator or hardware adapters. Observations return to Planner and the console. A confirmed eligible execution end triggers formal verification; Planner owns retry and Evolver records recovery for on-demand SKILL retrieval.</desc>
+  <desc id="desc">A console configures compatible Sessions and user-defined agent teams. Independent DSH role contexts use planning, perception, execution and memory tools. Learned, Astra direct and reviewed hybrid policies send actions through ActionGate to simulator or hardware adapters. Observations return to Planner; Agent and device state reach the console. Simulator cameras are recorded on the worker host. A confirmed eligible execution end triggers formal verification; Planner owns retry and Evolver records recovery for on-demand SKILL retrieval.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#42607e"/></marker>
     <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#2563eb"/></marker>
@@ -20,7 +20,7 @@
   <rect x="44" y="112" width="890" height="126" rx="18" fill="#143b70"/>
   <text x="68" y="147" class="heading" style="fill:white">Control console / Session launcher</text>
   <text x="68" y="181" class="body" style="fill:#d9eaff">Environment · Embodiment · Execution mode · Checkpoint · Model · Team</text>
-  <text x="68" y="211" class="small" style="fill:#d9eaff">Cameras · Agent output · Plans / TODOs · Tool calls · Device state · Timeline</text>
+  <text x="68" y="211" class="small" style="fill:#d9eaff">Agent output · Plans / TODOs · Tool calls · Device state · Timeline</text>
   <rect x="960" y="112" width="436" height="126" rx="18" fill="#e7efff" stroke="#b8cef0"/>
   <text x="984" y="147" class="heading">User-defined team</text>
   <text x="984" y="181" class="body">team.yaml + ROLE.md + tool bindings</text>
@@ -88,11 +88,11 @@
   <text x="984" y="833" class="heading">Observations and evidence</text>
   <text x="984" y="867" class="body">Camera / RGB-D / state / events</text>
   <text x="984" y="899" class="small">Perception providers · Explicit image refs</text>
-  <text x="984" y="928" class="small">Planner feedback + console visualization</text>
+  <text x="984" y="928" class="small">Planner images · Worker-local video</text>
   <text x="984" y="956" class="small">Session scene state updated from evidence</text>
   <path d="M934 1163H947V886H960" class="feedback"/>
   <path d="M1396 886H1420V260H720V238" class="feedback"/>
-  <text x="980" y="777" class="small" style="fill:#2563eb">Observation feedback to Planner tools and console</text>
+  <text x="980" y="777" class="small" style="fill:#2563eb">Planner observations + console state</text>
   <rect x="960" y="1000" width="436" height="210" rx="15" fill="#f0faf6" stroke="#b4dccb"/>
   <text x="984" y="1037" class="heading">Cross-Session SKILL.md</text>
   <text x="984" y="1071" class="body">Success cues · Failure conditions</text>

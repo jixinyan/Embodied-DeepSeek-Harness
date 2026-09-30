@@ -9,6 +9,11 @@ The service retains original model outputs and converts the two gripper channels
 with the native `numpy.clip(value, 0, 1)` semantics. See
 [checkpoint identity and mapping](../../examples/policies/lerobot-pi05-robotwin.json).
 
+Local Qwen Planner/Verifier with this learned checkpoint completes a headless
+native task with 107 controls, independent formal success, released Session and
+audited three-camera recordings. See the [recorded handoff](qwen-headless-checkpoint.md)
+for source identity, original trace, MP4 and remaining acceptance.
+
 ## Application configuration
 
 Set `EDH_ROBOTWIN_CONFIG` to a private JSON configuration and launch

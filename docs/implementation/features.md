@@ -1,7 +1,9 @@
 # Current capability map
 
-Snapshot: 2026-09-30. Upper runtime and real RoboCasa model/policy control are
-implemented; complete task/recovery and multi-provider acceptance remain open.
+Snapshot: 2026-09-30. Local Qwen Planner/Verifier and learned Pi0.5 complete a
+real headless RoboTwin task with released Session resources. The live console
+shows Agent trace; simulator videos are recorded locally. Complete role-report,
+terminal TODO, recovery and multi-provider acceptance remain open.
 The [v1 delivery register](v1-delivery.md) tracks all remaining implementation and
 actual validation requirements.
 
@@ -12,6 +14,7 @@ actual validation requirements.
 | Isolated GPU installation, actual NVIDIA MuJoCo physics/rendering and RoboCasa native scene reset with three camera observations | [Deployment evidence and remaining simulator acceptance](gpu-integration.md) |
 | Native RoboCasa ActionGate pause/resume, budget exhaustion and retained-scene execution with manual controls | [Native control checks](../../scripts/check-robocasa-gate.py) |
 | Actual local Qwen VLM consuming a RoboCasa image through independent native DSH Planner and Verifier tool rounds | [Live VLM acceptance](gpu-integration.md#live-vlm-image-and-tool-checks) |
+| Local Qwen/Pi0.5 RoboTwin task success, post-execution verification, trace-only console and audited worker-local MP4 | [Recorded native acceptance and remaining work](qwen-headless-checkpoint.md) |
 | Native desktop launcher, selected deployment configuration and owned service lifecycle | [Launcher, packaging and acceptance limits](../../apps/desktop/README.md) |
 | Declarative cloud API / vLLM model bindings, private authentication and image-service assembly | [Configuration and native-service acceptance](model-configuration.md) |
 | Original DSH loop, tool validation, sessions, timeout and cancellation                                    | [Host](../../apps/server/src/runtime.ts), [native tests](../../tests/runtime/native-tools.test.ts)                                                   |
@@ -71,11 +74,11 @@ See [goal validation](../../harness/agent-runtime/tasks/README.md#goal-binding-a
 
 ## Still outside the working boundary
 
-- Model-driven physical task evaluation; concurrent physical goals and nested independent recovery chains.
+- Additional native tasks, concurrent physical goals and nested independent recovery chains.
 - Shared device resource arbitration, independent watchdog and hardware stop acknowledgement. The native host/Python bridge and real RoboCasa policy/stop path are implemented.
-- BEHAVIOR clean lifecycle and learned controls, RoboTwin learned controls, successful policy tasks, SAM/depth and hardware adapters. Both providers return native reset observations.
+- BEHAVIOR learned controls and complete lifecycle; additional RoboTwin tasks and genuine recovery; SAM/depth and hardware adapters.
 - Resumable model sessions, distributed/exactly-once delivery, scalable retention and multi-user hosting.
-- Integrated agent/task/sensor replay and complete provider launch acceptance; the unified live workspace and actual RoboCasa image stream are implemented.
+- Complete provider launch acceptance and configuration switching. Real trace/camera MP4 exports are verified; the live workspace displays Agent state.
 
 The demo model and sensors are scripted/synthetic. Its upper workflow is runnable;
 it is not the requested final simulation MVP yet. See [progress](progress.md) for

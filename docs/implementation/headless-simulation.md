@@ -50,5 +50,27 @@ requires the worker-local video journal, matching executed segments, decoded fra
 counts and native MP4 timestamps. It fully decodes every camera video with FFmpeg.
 Success acceptance still requires independent formal verification and Planner finish.
 
+For an actual completed run, transfer the worker's execution directories and retain
+the policy log, requests and native sensor samples. Export and render with:
+
+```sh
+node scripts/export-run-replay.js --base-url "<console-origin>" \
+  --run-id "<actual-run-id>" --output .local/work/recorded-task \
+  --policy-log "<identified-policy-log>" --simulation-videos "<worker-video-root>"
+"<isolated-render-environment>/bin/python" scripts/render-run-video.py \
+  --export .local/work/recorded-task --output .local/work/recorded-task/task.mp4 \
+  --simulation-videos .local/work/recorded-task/native-videos \
+  --font "<installed-font-file>" --wall-speed 16 --fps 10
+```
+
+The exporter retains the original MP4 files, journals and manifests under
+`native-videos/`, with file hashes and matching policy request identities.
+The composite joins actual model outputs, plans, tools and verification with
+worker-recorded frames by their original wall timestamps. Reading holds and
+wall-time compression are labeled. The renderer requires Pillow and FFmpeg;
+decoded frames use the original media time base without frame duplication.
+The native audit still requires the original requests and sensor samples and
+independently verifies every camera's decoded simulator timestamps.
+
 Native task results and the exact delivery boundary are recorded in
 [implementation progress](progress.md).

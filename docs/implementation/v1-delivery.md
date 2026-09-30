@@ -1,7 +1,7 @@
 # v1 delivery and acceptance
 
 Updated: 2026-09-30. Development is stopped at the completed
-[RoboTwin console checkpoint](pause-2026-09-30.md); full v1 acceptance remains pending.
+[local Qwen headless checkpoint](qwen-headless-checkpoint.md); full v1 acceptance remains pending.
 
 The delivery target is a complete EDH v1 with every agreed product capability
 implemented and verified. A working directory, interface declaration, installed
@@ -14,7 +14,7 @@ tracks the remaining work across that behavior.
 
 | ID | Capability | Confirmed current state | Remaining implementation and acceptance |
 | --- | --- | --- | --- |
-| V01 | DSH agent runtime and replaceable models | Selected native DSH loop, tools, sessions and context management are mounted. Local Qwen/vLLM completes real image/tool rounds. Cloud Astra/Responses completes a real native-camera tool round with authorized image output. | Verify long-running task/recovery behavior and GPU-host cloud connectivity. |
+| V01 | DSH agent runtime and replaceable models | Selected native DSH loop, tools, sessions and context management are mounted. Local Qwen/vLLM completes image/tool rounds and a real headless RoboTwin task with independent Planner/Verifier. Cloud Astra/Responses native task evidence is retained. | Complete supplementary structured reports and terminal TODO acceptance; verify multi-goal/recovery behavior. Current task testing uses local Qwen and learned policies. |
 | V02 | Composable teams and explicit communication | Team/ROLE loading, separate assignment contexts, briefs, reports, acknowledgements and tool exposure exist. | Verify custom roles and role/tool configuration changes with actual model sessions, including cancellation, explicit evidence transfer and role retirement. |
 | V03 | Planning and task decisions | Native TODOs, persistent plans, registered goals, owner-only selection/retry/replan/resume and user clarification exist. | Validate multi-subgoal completion and Planner-directed recovery with actual simulation. Task criteria must remain supplied by validated providers and explicit configuration. |
 | V04 | Post-execution verification | Real RoboCasa confirms zero Verifier assignments during running/paused execution, Planner-owned resume, and one fresh Verifier after confirmed budget end with a native failed GT verdict. RoboDojo confirms a fresh independent Verifier after native episode termination, unchanged native GT success and Planner completion. | Check unknown verdicts, scoped before/after evidence and native GT across all four providers, including policy-stop boundaries. |
@@ -25,16 +25,17 @@ tracks the remaining work across that behavior.
 | V09 | BEHAVIOR-1K / R1Pro | Native picking_up_trash reset and capture return three cameras, 21 state groups, 23-channel actions and GT. A separate synchronous reset/close check passes. Current asynchronous owner integration has zero learned controls and no confirmed successful close. The adapter currently admits only that task and an instance_id setting. | Use an owned synchronous native process and bounded provider IPC, install pinned policy dependencies, and verify control/interrupt/GT/session-release through the console. Expose validated task/scene/instance configuration and compatible checkpoint selections. |
 | V10 | Perception and active observation | Reference-addressed capture, scoped image delivery and perception schemas exist. SAM 3.1 and YOLO26 depth are the selected perception providers. Current native providers declare no active-view directions. | Integrate the actual selected checkpoints through replaceable services and authorized image references; verify segmentation, depth provenance/calibration and supported physical observation actions. Validate tool effects, actual resources, camera calibration and evidence identity. |
 | V11 | Spatial memory and frame selection | Native context compaction, whole-message image recency and original audit retention exist. The user selected one initialized SceneState continuously updated within the retained Session environment; its lifecycle is specified in the spatial-memory proposal. | Implement initialization, incremental evidence-backed updates, atomic revisions, explicit scene-memory tools, reset/restart reconciliation, coverage-aware selection and comparison-frame retention using actual sensor metadata. |
-| V12 | Console and launcher | Unified console, compatible execution-mode/checkpoint/model selectors, history, actual model/tool/TODO displays, desktop launcher and event/camera replay exist. Execution-policy telemetry and local-plan inspection are implemented. A real-run MP4 export is available. | Verify native deployment creation, policy telemetry through an actual rollout, multi-task continuity, configuration switching and clean release. |
+| V12 | Console and launcher | Unified trace-only console, compatible execution-mode/checkpoint/model selectors, history, actual model/tool/TODO displays and desktop launcher exist. Real Qwen/Pi0.5 task shows 107 controls, independent verification and released Session with zero browser camera requests. Worker-local recordings and composite trace MP4 pass audit and full decoding. | Verify multi-task continuity, configuration switching and complete native deployment creation across providers. |
 | V13 | Persistence and maintenance | Durable records/images, scoped audits, SQLite history index, compaction and several reference-owner modules exist. | Complete submission/plan/file/clarification/native-audit ownership, archived request identities and user-facing retention operations. Verify restart reconciliation and cleanup against actual histories without losing SKILL sources. |
 | V14 | Hardware portability and release handoff | Device/provider boundaries and deployment configuration exist. | Implement and validate the hardware integration interface, capability discovery and stop acknowledgement. As agreed, physical robot experiments follow simulation/interface acceptance; their completion needs a selected device and independent evidence. Publish reproducible setup, compatibility declarations and release checks. |
 | V15 | RoboDojo / dual ARX X5 | Console-driven Astra direct pickup succeeds with 42 controls, eight policy calls, scoped trace, native GT, independent Verifier and Planner finish. EDH-owned simulator startup, native tools, independent SDKs and source provenance now pass actual manual control and Astra pause/resume/cancellation/release checks. All 18 ARX X5 checkpoint files are downloaded; isolated OpenPI imports pass. | Verify owned-deployment task success, dependency consistency and checkpoint checksums. Complete identified ARX X5 inference, successful hybrid tasks and genuine recovery/SKILL acceptance; improve measured efficiency before the successful build_tower demo. |
 
 ## Execution order
 
-1. Prioritize native RoboDojo tasks with Astra direct and identified ARX X5 Pi0.5
-   hybrid execution. Verify policy observability, ActionGate, formal verification
-   and the full agent/task/sensor view using actual run records.
+1. Complete local Qwen structured role reports and terminal TODO acceptance on a
+   real task. Continue RoboDojo learned-policy dependency/inference validation and
+   Qwen upper-role integration. Preserve ActionGate and independent post-execution
+   verification; record simulator video locally and inspect trace through the console.
 2. Complete the current model diagnostics and native DSH release compatibility checks.
    Preserve failure causes without retaining credentials or sensitive request bodies.
 3. Complete policy-to-simulator acceptance for RoboTwin and BEHAVIOR, including
@@ -54,7 +55,8 @@ runtime sides before dependent integration is accepted.
 
 ## Real-run visualization requirements
 
-The console and exported replay must expose the following together:
+The live console exposes Agent/task state. Recorded exports join that state with
+worker-local simulator video. Together they retain:
 
 - Task instruction, selected backend, embodiment, policy/checkpoint and model.
 - Role identities, assignment lifecycle and explicitly delivered messages/evidence.

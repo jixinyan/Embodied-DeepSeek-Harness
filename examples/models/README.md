@@ -34,12 +34,14 @@ export EDH_QWEN_CHECKPOINT="<workspace>/checkpoints/Qwen3.8-27B"
 export EDH_MODEL_GPU="<selected-gpu-devices>"
 export EDH_MODEL_WORK="$PWD/.local/work/qwen"
 export EDH_MODEL_IPC_DIRECTORY="<short-private-socket-directory>"
-export VLLM_USE_FLASHINFER_SAMPLER=0
+export EDH_MODEL_FLASHINFER_SAMPLER=0
 bash examples/models/serve-qwen38.sh
 ```
 
 The launcher selects `qwen3_xml` tool parsing and `qwen3` reasoning parsing,
 131,072 context tokens, BF16 and a configurable `FLASH_ATTN` attention backend.
+Its sampler defaults to the native implementation; `EDH_MODEL_FLASHINFER_SAMPLER`
+selects FlashInfer sampling when the deployment supports it.
 The model file supplies `enable_thinking` and `preserve_thinking` through vLLM's
 `chat_template_kwargs`; it retains reasoning content between tool rounds. Roles
 refer to the stable `brain` alias. Pi0.5 is a separate policy service and receives

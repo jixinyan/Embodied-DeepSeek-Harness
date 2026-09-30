@@ -2,12 +2,13 @@
 
 The [browser client](public/app.js) connects to the local server started with `pnpm demo`.
 It displays actual DSH output, native tool arguments/results, TODO status/history,
-agent assignments/briefs, task plans, synthetic sensors, verification and recovery.
-Historical runs are read-only; sensor fixtures are explicitly labeled.
+agent assignments/briefs, task plans, execution, verification and recovery.
+Historical runs are read-only. Simulator cameras are recorded on the worker host;
+the live console requests no camera images.
 
 The unified workspace keeps user-session/task history and agent assignments in a sidebar, goal plans
 and native TODOs on the left, the searchable agent activity stream in the center,
-and observations, execution, verification and recovery on the right. There are no
+and execution, verification and recovery on the right. There are no
 inspector tabs. Narrow screens stack these sections on the same page; long content
 scrolls within its panel. Full payloads remain available in a keyboard-accessible
 inspector, including goal criteria and their verdict history.
@@ -118,28 +119,19 @@ that range, with a dedicated TODO-updates filter. Agent activity search and TODO
 shortcuts cover recent events. Current TODOs, plans, verdicts and recovery status remain
 independent of event eviction. Browsing history keeps live state updates connected.
 
-## Observation images
+## Model observations and recorded video
 
-`sensor-images.js` renders the selected latest or agent-seen observation using scoped
-run/evidence/image URLs. The latest view also accepts the run's operator camera projection
-through its recorded frame event URL; assignment views retain agent-seen evidence.
-Referenced camera images are requested and decoded in parallel.
-The viewer publishes one complete decoded observation in a browser frame, retains its
-visible image elements across updates, and keeps only the newest queued live frame while
-the current frame loads. Run and selection changes cancel superseded requests. Empty and
-restricted samples clear the viewer. Source labels identify test images explicitly.
-The visible image status reports local request-to-decode time and display frames per
-second based on published frames, reporting no new frames after five seconds.
-Capture-to-decode compares the capture host clock with the browser clock, so it
-requires synchronized host clocks. The outer frame label and observation details
-track the last fully displayed observation.
+Planner and Verifier still receive scoped native images through authorized tools.
 The server checks persisted ownership, reference association and evidence visibility
-before reading bytes. See the [image guide](../../docs/implementation/image-storage.md).
+before reading bytes. The live browser displays observation metadata in audit views.
+See the [image guide](../../docs/implementation/image-storage.md).
 
-Component acceptance uses actual image storage and browser DOM checks. A live
-RoboCasa run has supplied native camera observations, VLM decisions and policy
-controls; its formal task result was failed. Other provider results are recorded
-in the implementation progress document.
+Headless workers encode native camera MP4 files with simulator timestamps and a
+frame journal. Recorded exports combine those files with original model/tool events,
+plan/TODO state and formal verification. Local Qwen/Pi0.5 acceptance confirms a
+successful task, zero browser camera requests and complete video decoding.
+See [headless recording](../../docs/implementation/headless-simulation.md) and
+the [actual task handoff](../../docs/implementation/qwen-headless-checkpoint.md).
 
 ## Native session audits
 

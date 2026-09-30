@@ -1,8 +1,8 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.62 · 2026-09-30
+Version: v1.63 · 2026-09-30
 
-Status: native DSH, cloud Astra and Pi0.5 complete a successful RoboTwin console task with ActionGate, independent formal verification, Planner finish and released Session. RoboCasa records actual controls and formal failure; RoboDojo direct task success and owned-service lifecycle evidence are retained. Full four-provider, recovery and v1 acceptance remain pending. Development is stopped at the requested minimal checkpoint.
+Status: local Qwen Planner and Verifier with learned Pi0.5 complete a real headless RoboTwin task through native DSH, ActionGate, independent formal verification, Planner finish and released Session. The trace-only console and worker-local three-camera videos are verified. Full four-provider, recovery, supplementary role-report/TODO completion and v1 acceptance remain pending. Development is stopped at the requested minimal checkpoint.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -27,8 +27,8 @@ are SVG assets; include their directory when handing over this document.
 
 ### 0.1 Current work and next action
 
-Development is stopped after the completed RoboTwin console workflow. The
-[September 30 handoff](implementation/pause-2026-09-30.md) records exact task,
+Development is stopped after the completed local Qwen/Pi0.5 headless workflow. The
+[Qwen headless handoff](implementation/qwen-headless-checkpoint.md) records exact task,
 source, checkpoint, verification and shutdown evidence, preserved work and the
 continuation requirements. The weekly DSH monitor performs read-only assessment.
 

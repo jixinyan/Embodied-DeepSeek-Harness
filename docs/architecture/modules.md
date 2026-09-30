@@ -23,8 +23,11 @@ See the [adapter boundaries](../implementation/model-policy-adapters.md).
 The recorded workflow illustrates run `8fcb950b-eebf-4133-ae94-197ac8e6bb41`:
 independent cloud Astra Planner and Verifier Sessions, seven identified Pi0.5
 inferences, 111 ActionGate controls, native task success and released resources.
-It records no retry or recovery-SKILL publication. New local Qwen/headless
-acceptance is tracked in [progress](../implementation/progress.md).
+It records no retry or recovery-SKILL publication. Local Qwen/Pi0.5 run
+`7c158abe-a195-4575-b8bf-a58569da6127` separately validates headless task success,
+107 real controls, independent formal verification and worker-local recording.
+Its trace-only console requests no camera images. The exact evidence and remaining
+acceptance are in the [Qwen handoff](../implementation/qwen-headless-checkpoint.md).
 
 The diagram shows the target architecture. The minimal DSH host/session integration
 is verified; consult the [capability map](../implementation/features.md) for implemented upper services and pending providers. No separate upstream
