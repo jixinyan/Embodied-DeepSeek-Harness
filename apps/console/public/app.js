@@ -707,9 +707,11 @@ function render() {
   text(
     'stop-reason',
     execution?.stop_reason?.replaceAll('_', ' ') ??
-      (current.source === 'simulation'
-        ? 'No native execution has started.'
-        : 'No execution has started.'),
+      (execution
+        ? `Execution ${execution.state.replaceAll('_', ' ')}.`
+        : current.source === 'simulation'
+          ? 'No native execution has started.'
+          : 'No execution has started.'),
   );
   $('budget').value = execution?.control_steps ?? 0;
   text('attempt', `ATTEMPT ${current.attempt}`);
