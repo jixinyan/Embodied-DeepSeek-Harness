@@ -472,6 +472,9 @@ class NativeWorkerSession:
             "action_completed": step.action_completed,
             "raw_sim_steps": step.raw_sim_steps,
         }
+        if step.episode_terminated and gate.snapshot()["state"] == "running":
+            self._last_monitor_action = device.executed_actions
+            await gate.pause("episode_terminated", terminal=True)
         if len(step.native_frames) > 300:
             raise RuntimeError("Native action exceeded the bounded frame recording capacity.")
         prior_step_index = 0
@@ -496,10 +499,7 @@ class NativeWorkerSession:
             }})
         if step.interruption_reason is not None:
             raise RuntimeError(f"Native action interrupted: {step.interruption_reason}.")
-        if step.episode_terminated and gate.snapshot()["state"] == "running":
-            self._last_monitor_action = device.executed_actions
-            await self._publish(step.observation, self._last_control, require_running=True)
-            await gate.pause("episode_terminated", terminal=True)
+        if step.episode_terminated:
             return
         if device.executed_actions - self._last_monitor_action < self._monitor_every_actions:
             return
