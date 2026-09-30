@@ -1,0 +1,35 @@
+{
+  "id": "gr00t-n1d6-behavior-r1pro",
+  "upstream": {
+    "policy_repository": "NVIDIA/Isaac-GR00T",
+    "policy_revision": "9b37aa1ce69c73c6d165233fa88128283bba4508",
+    "simulator_repository": "StanfordVL/BEHAVIOR-1K",
+    "simulator_revision": "b1979916ec1549b10a4e65e630bc6504a9af1b00",
+    "checkpoint_id": "nvidia/GR00T-N1.6-BEHAVIOR1k",
+    "checkpoint_revision": "300db814db8ab5dd010026d5631f280048d06b91",
+    "checkpoint_files_sha256": {
+      "config.json": "cd265fe9f1c037188a09d317155d3a4c28d1db1a5d8f0bb129934b5e170fdd27",
+      "model-00001-of-00002.safetensors": "fe30dd24dccf6d1929fc63822927212c9cb88da4d86cc97a6b7b33404e6d16b5",
+      "model-00002-of-00002.safetensors": "be85e06694f547f9f2d842f14d54df83acaac1285acfc5629c86fdbb8789eca2",
+      "model.safetensors.index.json": "4baab54d48f5492daeea0a18d29bf8956661367820d6a19feb0dab10848ef5ab",
+      "processor_config.json": "e95db539fd9d9f28504c5c9aa87abde38d4d5edcfe19d0e4d5778dd97f4baa71",
+      "statistics.json": "cefa9f4c612a350a4d406a501c6640d0a2371004d63d7b7e3c9703aac41a455b"
+    },
+    "embodiment_tag": "BEHAVIOR_R1_PRO",
+    "native_task_id": "picking_up_trash"
+  },
+  "observation": {
+    "schema_version": "edh.policy_observation.v1",
+    "image_format": "256x256 RGB uint8 PNG from the native R1Pro cameras",
+    "cameras": ["head", "left_wrist", "right_wrist"],
+    "state_groups": 21,
+    "language": "PolicyRequest.instruction"
+  },
+  "action": {
+    "horizon": 32,
+    "control_mode": "behavior.r1pro_native",
+    "native_channels": 23,
+    "relative_model_groups": ["torso", "left_arm", "right_arm"],
+    "native_conversion": "The pinned GR00T processor converts relative model groups to absolute joint targets before the 23-channel native action is checked."
+  }
+}
