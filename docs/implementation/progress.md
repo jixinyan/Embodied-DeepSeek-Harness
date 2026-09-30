@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.61. Current checkpoint: **RoboDojo direct/hybrid integration and policy observability implemented; actual task and hybrid checkpoint acceptance pending**.
+Spec: v1.61. Current checkpoint: **RoboDojo Astra direct task succeeds through the native DSH loop and independent verification; recovery and hybrid checkpoint acceptance pending**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -29,9 +29,17 @@ v1 acceptance register for resumption.
 RoboDojo run `2c974465-f035-4d1d-a913-fba5a4688c02` uses the real cloud
 Astra endpoint, native DSH Planner and execution-policy Sessions, three native
 640×480 cameras, RGB-D grounding, wrist depth and numerical motion preparation.
-The active rollout has recorded approach, grasp and lift controls through
-ActionGate. Formal task success remains pending until the execution ends and
-the independent Verifier returns the native criterion result.
+The task instruction is "Pick up the mint green scissors by 10 cm." The run
+records 42 controls and eight policy calls through ActionGate. Native execution
+ended with `episode_terminated` and a confirmed device boundary; a fresh Verifier
+then checked the unchanged criterion and submitted `passed` for
+`task_success=true`. Planner marked the durable goal done and called `tasks.finish`.
+The completed export contains 2,153 events, 42 recorded frames per camera,
+two independent upper Sessions and one independent execution-policy Session.
+The recorded-loop audit passes all observed scope, sequence, boundary, criterion
+and completion checks. There was no retry or Evolver in this run; recovery and
+cross-Session SKILL acceptance remain pending. The user Session closed with
+`resources=released`, and its owned native simulator process exited.
 
 Policy tool declarations specify complete local subtask fields and both arm
 target formats through native DSH schemas. Motion reasons carry an explicit
@@ -47,8 +55,13 @@ instruction alongside scene metadata, including when the user adds task guidance
 Native owner-thread invocations accept typed positional/keyword parameters.
 The composite MP4 renderer includes native execution-policy output, local plans
 and tool events, preserves camera aspect ratios and validates successful sources
-against a recorded formal success verdict. End-to-end successful acceptance and
-the requested successful MP4 remain pending.
+against a recorded formal success verdict. The successful composite MP4 contains
+2,152 frames at 10 fps, 1920×1080 resolution and 215.2 seconds duration. Every
+rendered source-text page passes its bounds checks; complete FFmpeg decoding
+passes. Its initial observation and 42 rollout frames per camera share the
+recorded event timeline with native model/tool outputs, plans and formal success.
+The endpoint returned no reasoning content blocks; the video displays actual
+assistant text and tool arguments. No hidden reasoning is inferred.
 
 Native DSH policy Sessions publish scoped model messages, returned reasoning,
 tool calls/results, local plans, status and decisions through the physical worker
@@ -60,11 +73,12 @@ contexts and grants no control or verification authority. See
 Grounded RoboDojo profiles expose the provider's velocity-limited numerical target
 tools. The lower-policy WebSocket request releases its abort listener when the
 request settles. TypeScript checks, console syntax checks, Python compilation/base
-imports, SVG XML and source structure pass. A complete native telemetry rollout
-and real policy task acceptance remain pending.
+imports, SVG XML and source structure pass. Direct-policy telemetry and task
+acceptance pass with the recorded native rollout above; hybrid acceptance remains pending.
 
-The GPU host currently runs other jobs on every device. No existing GPU job was
-interrupted. The checkpoint download and isolated OpenPI installation continue;
+The authorized simulator uses configurable GPU device 7. Other GPU devices were
+available at the latest inventory; no existing job was interrupted. The checkpoint
+download and isolated OpenPI installation continue;
 installation uses an explicit 300-second dependency-download timeout. Actual
 checkpoint/model inference and available-device admission remain required.
 

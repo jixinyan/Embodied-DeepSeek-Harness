@@ -241,8 +241,16 @@ async function makeVideos(output, images, selectedCamera) {
 }
 
 function flowSource(events) {
-  const selected = events.filter((event) =>
-    /^(run\.|agent\.created|agent\.output|tool\.|execution\.|policy\.|action\.|simulation\.frame|verification\.)/.test(event.type));
+  let executionState;
+  const selected = events.filter((event) => {
+    if (event.type === 'execution.updated') {
+      const state = `${event.detail.execution.execution_id}:${event.detail.execution.state}`;
+      if (state === executionState) return false;
+      executionState = state;
+      return true;
+    }
+    return /^(run\.|agent\.created|agent\.output|tool\.|execution\.requested|policy\.(output|plan|decision|failure)$|verification\.)/.test(event.type);
+  });
   const lines = ['flowchart TD'];
   for (const event of selected) {
     const type = event.type.replaceAll(/[^A-Za-z0-9._-]/g, '');
@@ -388,13 +396,16 @@ async function main() {
     policySource: policyLog?.source ?? null,
     deploymentDigest: run.configuration?.deploymentDigest ?? null,
     modelConfigurationDigest: run.configuration?.modelConfigurationDigest ?? null,
-    runRevision: null, exporterRevision: revision.trim(),
+    runRevision: run.configuration?.sourceCode?.revision ?? null,
+    runSourceCode: run.configuration?.sourceCode ?? null,
+    modelBindings: run.configuration?.models ?? null,
+    exporterRevision: revision.trim(),
     verdicts: run.verdicts, runError: run.error,
     eventCount: events.length, imageCount: images.length, videos,
     originalRecords: ['source/run.json', 'source/events.json', 'frames.json',
       ...(policyLog ? [policyLog.file] : [])],
     policyLog,
-    missing: ['run source revision', 'seed',
+    missing: [...(run.configuration?.sourceCode?.revision ? [] : ['run source revision']), 'seed',
       ...(policyLog ? [] : ['checkpoint revision', 'policy service raw log']), ...unavailable],
   };
   await writeFile(path.join(output, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);

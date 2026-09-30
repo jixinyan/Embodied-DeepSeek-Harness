@@ -51,6 +51,8 @@ source frames from this playback frame.
 The output includes `timeline.html`, `flow.mmd`, rendered `flow.svg`,
 `manifest.json`, `frames.json`, source `run.json` and `events.json`, the original
 PNG frames and observations, and MP4 videos when recorded frames permit them.
+The SVG shows task, model, tool, local-plan, execution-state and verification
+milestones; `source/events.json` preserves every frame and telemetry event.
 The HTML dashboard keeps recorded model text, tool calls, agent status, role
 messages, plan and TODO snapshots, execution counters, native verification,
 and three camera streams together at the selected wall-clock time. It labels
@@ -110,3 +112,20 @@ writes a JSON report beside the MP4 with source counts, timing, native check,
 verdict and render dimensions. The MP4 should also pass a complete `ffmpeg`
 decode check before delivery. The generated report and video are local run
 artifacts and remain outside Git.
+
+`audit-recorded-run.py` validates complete real run exports before acceptance:
+
+```sh
+python scripts/audit-recorded-run.py \
+  --export .local/work/replay-<terminal-run-id> \
+  --output .local/work/replay-<terminal-run-id>/loop-audit.json
+```
+
+The audit checks independent role Sessions, execution counters and scope,
+Verifier creation after an eligible confirmed execution end, native check and
+verdict identities, original task criteria, Planner-authorized recovery, policy
+event sequences and simulator control/frame identities. A successful run requires
+recorded controls, camera frames, policy telemetry and formal success. Reports
+identify whether a recovery occurred; an absent recovery remains untested.
+The composite renderer combines each camera's frames across recorded executions
+using their original event sequence and wall timestamps.

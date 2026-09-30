@@ -38,7 +38,26 @@ description and one admitted qpos step. The step returned one executed action,
 one native simulation step and a nonterminal `task_success=false` check. This is
 provider-boundary evidence only; it does not claim a completed task, learned
 policy success or GPT-6 Astra request. A full policy rollout, interruption and
-formal task-success acceptance still require their own recorded runs.
+formal task-success acceptance retain independent recorded evidence.
+
+## Verified Astra direct task
+
+Run `2c974465-f035-4d1d-a913-fba5a4688c02` completes the native
+`general_pickup` instruction "Pick up the mint green scissors by 10 cm."
+Planner, execution policy and Verifier use three independent native DSH Sessions.
+Astra direct inference uses the head and both wrist cameras, camera RGB-D
+grounding, wrist depth and numerical motion preparation. ActionGate admits
+42 controls across eight policy calls within the unchanged 200-step native budget.
+Native episode termination confirms the stopped device boundary. The fresh
+Verifier returns `passed` for `task_success=true`, then Planner completes its plan
+and task. All 2,153 recorded events pass the real-run audit, and Session closure
+releases the environment and exits its native simulator. The runtime source
+record retains revision `5442c98` with `state=modified`; the deployment binds
+the cloud Astra model and remote simulator explicitly.
+
+This run contains no recovery or SKILL publication. Hybrid checkpoint inference,
+interruption and recovery acceptance remain required. The replay/MP4 command and
+source-integrity checks are documented in [recorded replay](../../scripts/REPLAY.md).
 
 ## Distributed Astra deployment
 

@@ -28,6 +28,11 @@ can include errors that the disconnected client could not receive. No action rep
 occurs during reconnection.
 
 The implementation passes TypeScript, Python compilation and source checks.
-An actual direct/hybrid rollout must still verify gateway-to-worker publication,
-console inspection, cancellation and persisted-history reading. These checks do
-not establish simulator task success.
+RoboDojo direct run `2c974465-f035-4d1d-a913-fba5a4688c02` records complete
+gateway-to-worker publication and persisted-history reads, 42 actual controls,
+eight Astra policy calls, local plans, grounding/depth/motion tool rounds and
+three camera views. Its independent upper Verifier accepts native
+`task_success=true`; Planner completes the task. The recorded-loop audit checks
+all 2,153 events. The final local policy plan remains its last model-authored
+snapshot; native episode termination and the formal verdict establish completion
+separately. Hybrid inference and in-flight interruption need their own acceptance.

@@ -1,6 +1,7 @@
 import argparse
 from bisect import bisect_right
 from datetime import datetime
+from functools import lru_cache
 import json
 from pathlib import Path
 import subprocess
@@ -49,7 +50,8 @@ def draw_panel(draw, bounds, title, font):
     draw.text((bounds[0] + 18, bounds[1] + 13), title, font=font, fill=ACCENT)
 
 
-def wrapped_lines(draw, source, font, width):
+@lru_cache(maxsize=512)
+def wrapped_lines(source, font, width):
     lines = []
     for paragraph in source.split("\n"):
         if not paragraph:
@@ -58,15 +60,15 @@ def wrapped_lines(draw, source, font, width):
         current = ""
         for word in paragraph.split(" "):
             candidate = word if not current else f"{current} {word}"
-            if draw.textlength(candidate, font=font) <= width:
+            if font.getlength(candidate) <= width:
                 current = candidate
             else:
                 if current:
                     lines.append(current)
-                if draw.textlength(word, font=font) > width:
+                if font.getlength(word) > width:
                     current = ""
                     for character in word:
-                        if draw.textlength(current + character, font=font) > width:
+                        if font.getlength(current + character) > width:
                             lines.append(current)
                             current = character
                         else:
@@ -90,7 +92,7 @@ def draw_lines(draw, lines, origin, font, line_height, maximum, right, bottom, c
 
 
 def draw_excerpt(draw, source, origin, width, line_height, maximum, font, page_index, right, bottom):
-    lines = wrapped_lines(draw, source, font, width)
+    lines = wrapped_lines(source, font, width)
     pages = [lines[index:index + maximum] for index in range(0, len(lines), maximum)] or [[""]]
     index = page_index % len(pages)
     draw_lines(draw, pages[index], origin, font, line_height, maximum, right, bottom)
@@ -143,7 +145,7 @@ def wall_at(segments, second):
 def camera_source(export, manifest, images):
     lookup = {(row["eventSequence"], row["image"]["name"]): row["file"]
               for row in images if row["kind"] == "simulation.frame" and row["file"]}
-    cameras = []
+    grouped = {}
     for video in manifest["videos"]:
         frames = []
         for sequence, wall, simulation in zip(video["frameEventSequences"],
@@ -156,7 +158,21 @@ def camera_source(export, manifest, images):
             if not file.is_file():
                 raise ValueError(f"Missing original image file: {file}")
             frames.append((timestamp(wall), file, sequence, simulation))
-        cameras.append((video["camera"], frames, [row[0] for row in frames]))
+        grouped.setdefault(video["camera"], []).extend(frames)
+    cameras = []
+    for name, frames in grouped.items():
+        first_frame_time = min(row[0] for row in frames)
+        for row in images:
+            if (row["kind"] == "agent.observation" and row["image"]["name"] == name and
+                    row["file"] and row["eventAt"] and timestamp(row["eventAt"]) < first_frame_time):
+                file = export / row["file"]
+                if not file.is_file():
+                    raise ValueError(f"Missing initial observation image: {file}")
+                frames.append((timestamp(row["eventAt"]), file, row["eventSequence"], None))
+        frames.sort(key=lambda row: (row[0], row[2]))
+        if len({row[2] for row in frames}) != len(frames):
+            raise ValueError(f"Duplicate recorded frame sequence for {name}.")
+        cameras.append((name, frames, [row[0] for row in frames]))
     if len(cameras) != 3:
         raise ValueError("This video layout requires three recorded cameras.")
     return cameras
@@ -174,12 +190,16 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     draw.text((790, 73), f"Retry/Evolver events: {recovery_count} recorded", font=caption, fill=MUTED)
     if hold:
         draw.text((1270, 48), f"RECORDED HOLD  #{hold[0]} {hold[1]}", font=small, fill=ACCENT)
-    draw_panel(draw, (30, 115, 1170, 575), "MODEL REASONING · ORIGINAL RECORD", body)
+    draw_panel(draw, (30, 115, 1170, 575), "AGENT OUTPUT · ORIGINAL RECORD", body)
     output = latest(events, event_times, wall, ("agent.output", "policy.output"))
     if output:
         blocks = model_message(output)["content"]
         reasoning = next((block.get("text", "") for block in blocks if block["type"] == "reasoning"), "")
-        display = reasoning or "Reasoning text was not recorded for this model output."
+        display = reasoning or "\n".join(
+            block["text"] if block["type"] == "text" else
+            f"Tool call: {block['name']}\n{block['arguments']}"
+            for block in blocks if block["type"] in {"text", "tool-call"}
+        ) or "No model text or tool call was recorded for this output."
         draw.text((52, 164), f"{model_role(output)} · event #{output['sequence']} · {output['at']}", font=small, fill=MUTED)
         page = int((playback_second - model_start.get(output["sequence"], playback_second)) / 4)
         current, total = draw_excerpt(draw, display, (52, 205), 1085, 29, 11, body, page, 1148, 540)
@@ -253,17 +273,18 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
         position = bisect_right(times, wall) - 1
         y = 164 + index * 198
         if position < 0:
-            draw.rectangle((1205, y, 1401, y + 196), fill="#0b1418")
-            draw.text((1420, y + 50), "Awaiting frame", font=small, fill=MUTED)
+            draw.rectangle((1205, y, 1525, y + 196), fill="#0b1418")
+            draw.text((1545, y + 50), "Awaiting frame", font=small, fill=MUTED)
             continue
         frame_wall, file, sequence, sim_time = frames[position]
         if camera_cache[index][0] != file:
             with Image.open(file) as original:
-                camera_cache[index] = (file, ImageOps.pad(original.convert("RGB"), (196, 196), color="#0b1418"))
+                camera_cache[index] = (file, ImageOps.pad(original.convert("RGB"), (320, 196), color="#0b1418"))
         image.paste(camera_cache[index][1], (1205, y))
-        draw.text((1420, y + 12), name.replace("robot0_", "").replace(".png", ""), font=small, fill=TEXT)
-        draw.text((1420, y + 56), f"Frame event #{sequence}", font=small, fill=MUTED)
-        draw.text((1420, y + 96), f"Simulator {sim_time:.3f} s", font=small, fill=MUTED)
+        draw.text((1545, y + 12), name.replace("robot0_", "").replace(".png", ""), font=small, fill=TEXT)
+        draw.text((1545, y + 56), f"Source event #{sequence}", font=small, fill=MUTED)
+        draw.text((1545, y + 96), f"Simulator {sim_time:.3f} s" if sim_time is not None else
+                  "Initial observation", font=small, fill=MUTED)
         if simulation_time is None:
             simulation_time = sim_time
             source_sequence = sequence
@@ -285,7 +306,7 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
         draw.text((1205, 900), "Formal native check pending", font=small, fill=MUTED)
     if verdict:
         status = verdict["detail"]["result"]["status"]
-        draw.text((1205, 931), f"Formal verdict: {status}", font=small, fill=ACCENT if status == "success" else FAILURE)
+        draw.text((1205, 931), f"Formal verdict: {status}", font=small, fill=ACCENT if status == "passed" else FAILURE)
     success = latest(events, event_times, wall, "run.succeeded")
     if success:
         draw.text((1205, 965), "TASK SUCCEEDED · independent formal verification", font=small, fill=ACCENT)
@@ -320,7 +341,7 @@ def main():
     images = load_json(export / "frames.json")
     if run["id"] != manifest["runId"] or len(events) != manifest["eventCount"] or run["state"] not in {"failed", "succeeded"}:
         raise ValueError("The source must be a complete, recorded terminal run with formal verification.")
-    if run["state"] == "succeeded" and not any(event["type"] == "verification.completed" and event["detail"]["result"]["status"] == "success" for event in events):
+    if run["state"] == "succeeded" and not any(event["type"] == "verification.completed" and event["detail"]["result"]["status"] == "passed" for event in events):
         raise ValueError("A successful source requires its recorded formal success verdict.")
     event_times = [timestamp(event["at"]) for event in events]
     if event_times != sorted(event_times):
@@ -354,6 +375,8 @@ def main():
         raise RuntimeError("ffmpeg did not complete the recorded video.")
     report = {"runId": run["id"], "runState": run["state"], "runError": run["error"],
               "recordedEventCount": len(events), "recordedFrameCountPerCamera": [len(rows) for _, rows, _ in cameras],
+              "recordedRolloutFramesPerCamera": [sum(row[3] is not None for row in rows) for _, rows, _ in cameras],
+              "initialObservationImagesPerCamera": [sum(row[3] is None for row in rows) for _, rows, _ in cameras],
               "fps": arguments.fps, "frameCount": frame_count, "width": WIDTH, "height": HEIGHT,
               "wallStart": events[0]["at"], "wallEnd": events[-1]["at"],
               "wallDurationS": end - start, "wallPlaybackSpeed": arguments.wall_speed,
