@@ -68,7 +68,7 @@ description and parameters to the model. Output schemas validate host-side value
 | --- | --- |
 | Plan identities and initial version | planning.read taskId, ownerAgentId, ownerAssignmentId and plan |
 | Goal selection | Admitted plan row goal_id after successful plan-write receipt |
-| Source camera | Capture/evidence receipt evidence.id and camera attachment id |
+| Source camera | Capture/evidence receipt evidence.id and images[index].attachmentId |
 | Selected SAM mask | Segment receipt maskEvidenceId and instances[index].maskAttachmentId |
 | Retry | planning.read.retry followed by accepted tasks.retry receipt |
 | Formal result | verification.check facts: check_id, value, evidence_refs, optional reason; boundaryId |
@@ -82,9 +82,30 @@ remain enforced.
 
 ## Validation
 
-Private evidence for the current real Qwen/Pi0.5 RoboTwin validation is stored under
-.local/work/prompt-workflow-20260930/. The request recorder forwards to the existing
-vLLM service and saves actual system prompts and serialized tool schemas. Source
-journals establish outcome, retry ordering, independent Verifier identities,
-controls, tool errors and release. Progress records the accepted run measurements
-after this live validation completes.
+Actual Qwen/Pi0.5 RoboTwin run `686c9767-746a-430e-ba81-900eef3fb09c` completes
+64 controls with failed formal verification, an explicit retained-scene retry,
+and 49 controls with original-goal formal success. The actual request recorder
+forwards unchanged to vLLM and retains the serialized payloads: 12 Planner requests
+and four fresh-Verifier requests contain 344 checked schemas. Required descriptions,
+camera-reference paths, canonical structured plans and dynamic report schemas reach
+the model through native DSH. The 292-event source audit verifies eight learned
+inferences, 113 controls, 10,662 physics steps, all six TODOs completed, zero native
+tool errors, zero post-terminal model steps, six decoded native camera videos and
+released resources. Private evidence is stored under
+.local/work/prompt-workflow-20260930/.
+
+The failed-outcome workflow finishes factual assessment TODOs before tasks.abandon.
+Terminal receipts end the current native turn. Original final-goal criteria remain
+in the plan, while completed assessment items describe observed unmet conditions.
+The source auditor reports the actual task outcome and latest TODO statuses for
+both successful and unsuccessful tasks.
+
+Actual Qwen/GR00T RoboCasa run `7dfb663e-debb-44fb-a4da-96be2b88e664` completes
+three failed 64-control attempts and two explicit retries. All 13 factual assessment
+TODOs complete before the accepted tasks.abandon receipt. The original required
+goal and criterion remain in plan versions 1–4. Source auditing verifies 467 events,
+24 learned inferences, 192 controls, 4,800 physics steps, nine decoded native videos,
+zero tool errors, zero post-terminal model steps, retired roles and released resources.
+Its actual wire audit checks 616 schemas across 22 Planner and six Verifier requests.
+The task outcome remains failed. Evidence is retained under
+.local/work/robocasa-workflow-finalization-20260930/.

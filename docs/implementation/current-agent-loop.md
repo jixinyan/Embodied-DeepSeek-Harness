@@ -67,13 +67,24 @@ task success. The implementation is
 [UpperRun](../../apps/server/src/application.ts); actual recovery acceptance is
 recorded separately in [progress](progress.md).
 
-Run `8a7d4bde-60ec-40e4-abbe-d0357fbc841c` verifies this sequence with native
+Run `686c9767-746a-430e-ba81-900eef3fb09c` verifies this sequence with native
 Qwen, Pi0.5 and RoboTwin `adjust_bottle`: attempt one exhausts 64 controls and
 receives a failed verdict; Planner retries in the retained scene; attempt two
-terminates after 36 controls and receives a passed verdict from a different
-Verifier. The 318-event audit confirms seven identified policy calls, all six
+terminates after 49 controls and receives a passed verdict from a different
+Verifier. The 292-event audit confirms eight identified policy calls, all six
 TODOs completed, zero tool errors, no Evolver/new SKILL and released resources.
 All six worker-local camera videos pass full decoding and timestamp checks.
+Its actual model-request audit verifies 344 tool schemas across 12 Planner and
+four Verifier calls. Before a failed or unknown terminal call, Planner completes
+factual assessment TODOs describing unmet conditions and remaining recovery.
+Their completion describes finished assessment work and carries no success claim.
+
+Native RoboCasa run `7dfb663e-debb-44fb-a4da-96be2b88e664` verifies the unsuccessful
+branch: three failed formal results, two retained-scene retries, 192 GR00T controls,
+all 13 assessment TODOs completed and accepted tasks.abandon with the failed outcome.
+The original required goal persists in the plan. All four role assignments retire
+and Session resources release. The 467-event source audit observes zero tool errors
+and zero post-terminal model steps; 616 actual tool schemas pass wire inspection.
 
 ## Available memory
 

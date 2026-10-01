@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.66. Current checkpoint: **native Qwen/Pi0.5 completes a formally failed attempt followed by an explicit Planner retry and independent formal success; source-bound SAM/YOLO and native RoboCasa geometry tools complete real model calls**.
+Spec: v1.67. Current checkpoint: **native Qwen/Pi0.5 completes a formally failed attempt followed by an explicit Planner retry and independent formal success; native Qwen/GR00T concludes retry exhaustion with a truthful failed outcome; source-bound SAM/YOLO and native RoboCasa geometry tools complete real model calls**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -10,19 +10,40 @@ Responsibility-bound numbered Planner/Verifier workflows load across all six liv
 Teams and contribute to their source digests. All 33 core tools have argument and
 receipt guidance; the canonical plan projection retains domain bounds in model-visible
 annotations. Authored role/schema checks, formatting, type checks, source provenance
-and structure checks pass. A separate actual Qwen/Pi0.5 recovery run with recorded
-model-request prompts and serialized schemas is undergoing validation. See
+and structure checks pass. Recorded actual model requests verify independent role
+workflows, parameter descriptions and structured plan schemas. See
 [prompt workflows](prompt-workflow.md).
 
-Run `8a7d4bde-60ec-40e4-abbe-d0357fbc841c` verifies actual recovery in native
+Run `686c9767-746a-430e-ba81-900eef3fb09c` verifies actual recovery in native
 RoboTwin `adjust_bottle`, `demo_clean`, seed 0. The original task criterion and
 environment persist. Attempt one exhausts its admitted 64-control budget and
 receives a failed Verifier result. Planner accepts retry, captures the retained
-scene and starts attempt two; its 36 controls terminate with native success and
+scene and starts attempt two; its 49 controls terminate with native success and
 a passed result from a fresh Verifier. All six TODOs complete and resources release.
-The source audit covers 318 events, seven identified Pi0.5 calls, 100 controls,
-10,213 physics steps, zero tool errors and zero post-terminal model steps. All six
+The source audit covers 292 events, eight identified Pi0.5 calls, 113 controls,
+10,662 physics steps, zero tool errors and zero post-terminal model steps. The
+actual request audit checks 12 Planner and four Verifier requests, containing 344
+serialized tool schemas. All six
 native camera videos pass full decoding and timestamp comparison.
+
+Lossless SAM mask storage fully decodes bounded single-frame PNG inputs and retains
+their exact bytes, dimensions and SHA-256 identity through the existing immutable
+publisher. Two recorded native SAM masks pass byte-identical save/read checks;
+non-PNG mask admission is rejected. Full assignment-level grounding is being
+validated with live services.
+
+Run `7dfb663e-debb-44fb-a4da-96be2b88e664` verifies native RoboCasa OpenCabinet
+retry exhaustion. Qwen owns planning and three fresh Verifiers; GR00T supplies
+24 identified learned inferences and 192 controls across three 64-control attempts.
+All three authoritative native checks fail; Planner accepts two retries, retains
+the required goal and original criterion through plan versions 1–4, completes
+13 factual assessment TODOs and concludes with `tasks.abandon`. The 467-event audit
+verifies 4,800 physics steps, nine fully decoded native camera videos, zero tool
+errors, zero post-terminal model steps, four retired role assignments and released
+Session resources. Actual wire auditing checks 616 schemas across 22 Planner and
+six Verifier requests. This validates retry and unsuccessful completion; the
+RoboCasa task remains failed. Evidence is retained under
+.local/work/robocasa-workflow-finalization-20260930/.
 
 Current live Teams disable recovery learning. Recovery history retains its attempt
 links; no Evolver or new SKILL is created. SceneState work is deferred. Independent

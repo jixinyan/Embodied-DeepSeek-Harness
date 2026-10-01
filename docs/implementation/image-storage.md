@@ -6,6 +6,14 @@ request-image functions. The EDH service supplies an explicit storage directory,
 validated deployment limits, detached inputs, bounded operation admission and native
 Cordis disposal. It is exported by `@edh/storage`.
 
+`LosslessMaskStore.saveMaskPng` admits a single-frame PNG, fully decodes it against
+the configured byte/pixel/dimension limits and publishes its exact bytes through
+the same immutable object storage. It preserves pixel coordinates and binary mask
+values for geometry tools. Orientation and retained metadata are rejected. The
+reference digest identifies the original mask bytes. DSH request-image projection
+remains available separately for model display. SAM integration requires this API
+from a custom image provider as well as ordinary attachment operations.
+
 ## Deployment API
 
 `startServer` mounts a native attachment service for the application lifetime. The

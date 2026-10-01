@@ -183,7 +183,7 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
                 "Native receipt physics steps differ from cumulative actual execution counts.")
         require(recorded["native_step"]["raw_sim_steps"] == raw_steps and
                 recorded["raw_sim_steps"] == status["raw_sim_steps"] and
-                metadata["observationId"] in status["observation_refs"] and
+                sample["evidence"]["id"] in status["observation_refs"] and
                 (recorded["native_step"]["observation_id"] == metadata["observationId"] or
                  status["state"] == "ended" and status["device_confirmed"]),
                 "Actual native receipt physics counts or post-action/stopped observation identity differ.")
@@ -233,6 +233,8 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
 
 
 def audit_role_completion(run, events):
+    require(run["state"] in {"succeeded", "failed", "unknown"},
+            "Clean role completion requires a model-completed task outcome.")
     require(not any(event["type"] in {"tool.failed", "agent.deadline"} for event in events),
             "Clean role completion requires successful tool calls and no role deadline.")
     calls = {}
@@ -274,10 +276,14 @@ def audit_role_completion(run, events):
             completed.append({"tool": detail["tool"], "assignmentId": identity[0], "turn": identity[1],
                               "step": identity[2], "toolSequence": event["sequence"],
                               "receiptSequence": receipts[0]["sequence"], "endSequence": ended[0]["sequence"]})
+    terminal_tool = "tasks.finish" if run["state"] == "succeeded" else "tasks.abandon"
     require(any(row["tool"] == "verification.submit" for row in completed) and
-            any(row["tool"] == "tasks.finish" for row in completed), "Required formal and task completion tools are absent.")
-    return {"status": "passed", "terminalTools": completed, "ownerTodoCount": len(owner_todos),
-            "allOwnerTodosCompleted": True, "nativeToolErrors": 0, "postTerminalModelSteps": 0}
+            any(row["tool"] == terminal_tool for row in completed), "Required formal and task completion tools are absent.")
+    return {"status": "passed", "taskOutcome": run["state"], "terminalTools": completed,
+            "ownerTodoCount": len(owner_todos) if owner_todos is not None else 0,
+            "allOwnerTodosCompleted": owner_todos is not None and all(
+                todo["status"] == "completed" for todo in owner_todos),
+            "nativeToolErrors": 0, "postTerminalModelSteps": 0}
 
 
 def audit(run, events, *, samples=None, request_directory=None, service_log=None, policy_manifest=None,

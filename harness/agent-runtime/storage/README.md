@@ -8,6 +8,11 @@ and supplies scoped console image reads. Image inventory and explicit request-ca
 cleanup preserve original objects, require a current provider revision and exclude
 concurrent image mutations. Custom providers can expose the optional maintenance API.
 
+`saveMaskPng` provides lossless segmentation-mask publication. Admission fully
+decodes the PNG against configured limits and retains its exact bytes, dimensions
+and digest using the existing immutable object publisher. Geometry tools read this
+original attachment; model request projection has its own display policy.
+
 `collectUnreferencedObjects` provides explicit local original-image collection using a
 complete caller-supplied retained-ID set. It excludes active readers/writers and checks
 all retained objects before deletion. `inspectStoredImageReferences` inventories nested

@@ -40,8 +40,8 @@ metadata keeps the source image hash, prompt, model revision, checkpoint hash, J
 input hash, and session adapter. Dense masks remain image attachments and do not enter
 the model context as numeric arrays. Other assignments need an explicit evidence grant.
 Mask artifacts use lossless RGB PNG with equal 0/255 values in all channels.
-This format satisfies the shared image store's sRGB admission and preserves the
-binary region without changing encoded bytes during storage.
+`LocalImageStore.saveMaskPng` preserves the binary region and exact encoded bytes
+through bounded PNG admission and immutable publication.
 Real GPU masks pass
 [`check_segmentation_storage.ts`](../../../examples/perception/check_segmentation_storage.ts):
 the native LocalImageStore saves and rereads both masks as byte-identical PNG,
@@ -70,8 +70,8 @@ accepts an explicit port. For the actual image check, run
 with a native camera PNG, a prompt and an ignored output directory. A RoboCasa
 256 × 256 camera image with prompt `cabinet` produced two nonempty masks with areas
 6,953 and 17,627 pixels. The source image hash matched the camera attachment.
-This verifies the standalone model service and image output. An actual DSH assignment
-tool round with model-visible retained overlay remains to be checked.
+This verifies the standalone model service and image output. Actual assignment
+tool-round evidence is recorded in the [current Agent loop](../../../docs/implementation/current-agent-loop.md).
 
 The deployment can use
 [LocalImageStore](../../../docs/implementation/image-storage.md) for encoded image

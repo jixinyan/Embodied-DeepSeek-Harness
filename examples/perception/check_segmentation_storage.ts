@@ -36,7 +36,7 @@ const report = [];
 try {
   for (const instance of segmentation.instances) {
     const sourceHash = createHash('sha256').update(instance.maskPng).digest('hex');
-    const reference = await images.saveImage({
+    const reference = await images.saveMaskPng({
       data: instance.maskPng,
       mediaType: 'image/png',
       name: `SAM region ${instance.objectId}`,

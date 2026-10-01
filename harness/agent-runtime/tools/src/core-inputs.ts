@@ -13,7 +13,7 @@ const evidenceId = text(
   'Copy evidence.id from an authorized observation receipt; 1 to 128 characters.',
 );
 const attachmentId = text(
-  'Copy attachment.id for one camera in that observation; 1 to 128 characters.',
+  'Copy images[index].attachmentId for one camera in that observation; 1 to 128 characters.',
 );
 const maskEvidenceId = text(
   'Copy maskEvidenceId from segmentation of this exact source image; 1 to 128 characters.',
@@ -200,9 +200,9 @@ export const CORE_TOOL_OPTIONAL_PARAMETERS: Readonly<Record<string, readonly str
 
 export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
   'evidence.read':
-    'Read one immutable observation already authorized for this assignment. Returns a SensorSample with evidence.id, task_scope, observed_at and camera attachments, and presents its available images to this model. Reading preserves the original capture time. SKILL source references and another role conversation do not grant access; request missing observations explicitly from the caller.',
+    'Read one immutable observation already authorized for this assignment. Returns a SensorSample with evidence.id, evidence.task_scope, evidence.observed_at and images, and presents available images to this model. Each images[index] includes attachmentId and the camera name when available. Reading preserves the original capture time. SKILL source references and another role conversation do not grant access; request missing observations explicitly from the caller.',
   'perception.capture':
-    'Capture current authorized sensor observations. Returns a SensorSample with evidence.id, observed_at, task_scope and camera attachments; the result also presents available RGB images to this model. Copy reference IDs from this receipt for segmentation, geometry and delegation. Capture does not move the device or verify success.',
+    'Capture current authorized sensor observations. Returns a SensorSample with evidence.id, evidence.observed_at, evidence.task_scope and images; the result also presents available RGB images to this model. Each images[index] includes attachmentId and the camera name when available. Copy evidence.id and images[index].attachmentId for segmentation and geometry. Capture does not move the device or verify success.',
   'perception.segment_objects':
     'Ground one text-described object in an authorized source camera image with SAM. Supply evidenceId and attachmentId copied from capture or evidence.read. Returns instances, each with maskAttachmentId, plus maskEvidenceId and overlayEvidenceId; an empty instances array supplies no object geometry. Use the original RGB references with a selected mask for subsequent depth or native measurement. Segmentation does not establish persistent object identity or physical success.',
   'observation.turn_view':
@@ -210,9 +210,9 @@ export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
   'planning.read':
     'Read authoritative task planning context without side effects. Returns plan (null before the first write), taskId, ownerAgentId, ownerAssignmentId, activeGoalId, attemptId, successContract, goal catalog, allowed subgoal checks, retry and learningEnabled. For the first plan use expectedVersion=0 and plan.version=1; later use plan.version from this receipt and increment it exactly once. Copy IDs and original criteria from these fields.',
   'files.read':
-    'Read one assignment-private versioned text file. Returns its contents and version for the next files.write. Files belonging to another role require explicit communication.',
+    'Read one assignment-private versioned text file. Returns path, content and a decimal version string. Convert that version to an integer for the next files.write.expectedVersion. Files belonging to another role require explicit communication.',
   'files.write':
-    'Write the complete contents of one assignment-private file. expectedVersion is 0 for a new file and the latest returned version thereafter. Returns the committed version. File notes can record evidence and progress; they do not verify physical success.',
+    'Write the complete contents of one assignment-private file. expectedVersion is integer 0 for a new file; otherwise convert the latest returned decimal version string to an integer. Returns path, content and the committed decimal version string. File notes can record evidence and progress; they do not verify physical success.',
   'files.search':
     'Search this assignment private files and return matching file records in files. Retrieve only the material needed for the current task decision.',
   'team.delegate':
@@ -254,7 +254,7 @@ export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
   'tasks.finish':
     'Complete the original task after current-attempt formal success at the latest confirmed execution boundary. The durable plan must be complete and every decision-owner TODO must be completed. Update the entire TODO list before calling. Publishes the task outcome and concludes the current native turn.',
   'tasks.abandon':
-    'Record the decision owner final failed or unknown task outcome with a concrete reason. Keep the required final plan goal and its original criterion in history; changing its plan status to abandoned is unnecessary. Confirms execution stopping, publishes the outcome and concludes the current native turn.',
+    'Record the decision owner final failed or unknown task outcome with a concrete reason. Before calling, finish factual assessment TODOs describing unmet conditions and exhausted or unavailable recovery; completed assessment work does not claim physical success. Keep the required final plan goal and its original criterion in history; changing its plan status to abandoned is unnecessary. Confirms execution stopping, publishes the outcome and concludes the current native turn.',
   'team.query':
     'Inspect your own assignment or one directly delegated by you. Returns current agent status, the latest report and a bounded page of report receipts. Use reportHistoryPage.nextBeforeReportId as beforeReportId to read earlier published versions. Set includeBodies=true when earlier report contents are needed. Acknowledgement and delivery status do not establish physical success.',
   'user.ask':

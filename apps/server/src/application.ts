@@ -26,6 +26,7 @@ import {
 } from '@edh/communication';
 import type { LoadedTeam } from '@edh/teams';
 import { LocalStore, SessionHistory, type SessionHistoryOptions } from '@edh/storage';
+import type { LosslessMaskStore } from '@edh/storage';
 import { AssignmentFiles } from '@edh/files';
 import { TaskPlans } from '@edh/planning';
 import { AssignmentEvidenceGrants, SkillLibrary } from '@edh/memory';
@@ -91,7 +92,7 @@ export interface ApplicationOptions {
   validator: ContractValidator;
   store: LocalStore;
   backend: EmbodiedBackend;
-  images?: AttachmentStore;
+  images?: AttachmentStore & Partial<LosslessMaskStore>;
   segmentation?: SegmentationEngine;
   depth?: DepthEngine;
   depthIntrinsicsByCamera?: Readonly<Record<string, DepthCameraIntrinsics>>;
@@ -705,7 +706,14 @@ export class UpperRun {
                       },
                     }
                   : logical === 'planning.update'
-                    ? { ...properties, plan: this.planToolSchema! }
+                    ? {
+                        ...properties,
+                        plan: {
+                          ...this.planToolSchema!,
+                          description:
+                            'Nested JSON object with schema_version, task_id, version, owner_agent_id, owner_assignment_id and items. Copy identities and criteria from planning.read. Keep objects, arrays and numeric versions as their JSON types throughout the tool arguments.',
+                        },
+                      }
                     : properties,
               required: Object.keys(properties).filter(
                 (key) => !CORE_TOOL_OPTIONAL_PARAMETERS[logical]?.includes(key),
@@ -1198,6 +1206,8 @@ export class UpperRun {
         const segmentation = this.options.segmentation;
         const images = this.options.images;
         if (!segmentation || !images) throw new Error('Segmentation is unavailable.');
+        if (!images.saveMaskPng)
+          throw new Error('Segmentation requires lossless PNG mask storage.');
         const source = this.permit(a, [s('evidenceId')])[0]!;
         const reference = source.images?.find((image) => image.attachmentId === s('attachmentId'));
         if (!reference) throw new Error('Camera attachment is not in the granted sample.');
@@ -1224,7 +1234,7 @@ export class UpperRun {
         });
         const maskRefs = await Promise.all(
           prediction.instances.map((instance) =>
-            images.saveImage({
+            images.saveMaskPng!({
               data: instance.maskPng,
               mediaType: 'image/png',
               name: `SAM 3.1 object ${instance.objectId} mask`,

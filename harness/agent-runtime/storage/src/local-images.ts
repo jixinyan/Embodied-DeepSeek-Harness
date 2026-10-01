@@ -1,8 +1,9 @@
 import { isAbsolute, join, parse, resolve } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { Context } from '@deepseek-ai/cordis';
 import {
   AttachmentStore,
+  AttachmentId,
   type ImageAttachmentRef,
   type ImageRequestPolicy,
   type RequestImageAttachment,
@@ -21,6 +22,7 @@ import {
   type ImageObjectInspection,
 } from './image-maintenance.js';
 import { CompressionLimiter } from './dsh/attachment-local/compression-limiter.ts';
+import { detectImage } from './dsh/attachment-local/image.ts';
 import { readRequestImageFile } from './dsh/attachment-local/request-image.ts';
 import {
   commitPreparedImageFile,
@@ -48,6 +50,9 @@ const optionsSchema = z
   .strict();
 
 export type LocalImageOptions = z.input<typeof optionsSchema>;
+export interface LosslessMaskStore {
+  saveMaskPng(input: SaveImageAttachment): Promise<ImageAttachmentRef>;
+}
 const retainedIds = z.array(
   z
     .string()
@@ -176,6 +181,35 @@ export class LocalImageStore extends AttachmentStore {
 
   async saveImage(input: SaveImageAttachment): Promise<ImageAttachmentRef> {
     return (await this.saveImages([input]))[0]!;
+  }
+
+  async saveMaskPng(input: SaveImageAttachment): Promise<ImageAttachmentRef> {
+    return this.mutation(async () => {
+      const [copy] = this.snapshot([input]);
+      if (copy!.mediaType !== 'image/png') throw new Error('Mask storage requires PNG input.');
+      const metadata = await this.compression.run(() =>
+        detectImage(copy!.data, {
+          maxPixels: this.imageLimits.maxImagePixels,
+          maxDimension: this.imageLimits.maxImageDimension,
+        }),
+      );
+      if (metadata.mediaType !== 'image/png' || metadata.animated || metadata.carriesMetadata)
+        throw new Error(
+          'Mask storage requires a single-frame PNG without orientation or metadata.',
+        );
+      const digest = createHash('sha256').update(copy!.data).digest('hex');
+      return commitPreparedImageFile(this.root, {
+        data: copy!.data,
+        ref: {
+          attachmentId: AttachmentId(`sha256:${digest}`),
+          mediaType: 'image/png',
+          width: metadata.width,
+          height: metadata.height,
+          bytes: copy!.data.byteLength,
+          ...(copy!.name === undefined ? {} : { name: copy!.name }),
+        },
+      });
+    });
   }
 
   async readImage(ref: ImageAttachmentRef, signal?: AbortSignal) {

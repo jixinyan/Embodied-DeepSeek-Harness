@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.66 · 2026-09-30
+Version: v1.67 · 2026-09-30
 
 Status: local Qwen Planner and fresh independent Verifiers complete a failed native RoboTwin attempt, explicit retained-scene retry and formal success through Pi0.5 and ActionGate. The source audit verifies completed TODOs, terminal receipts, zero tool errors, identified inference, decoded simulator video and released resources. Real Qwen SAM/YOLO tool calls and native RoboCasa source-bound RGB-D geometry are verified. Recovery learning is paused and SceneState implementation is deferred. Custom-role reporting, multi-goal and full four-provider acceptance remain pending.
 
@@ -35,6 +35,11 @@ Responsibility-bound numbered workflows and model-facing parameter/receipt guida
 are documented in [prompt workflows](implementation/prompt-workflow.md). Their
 contents contribute to the Team digest for every configured physical profile.
 Native Qwen/Pi0.5 failed-attempt recovery and successful completion are verified.
+Native Qwen/GR00T RoboCasa retry exhaustion concludes with the observed failed
+outcome, completed factual assessment TODOs and released resources. Structured
+plan parameters preserve their canonical types. SAM masks use bounded lossless
+PNG storage for source-bound geometry. Actual acceptance records are in
+[progress](implementation/progress.md).
 The
 [Qwen headless handoff](implementation/qwen-headless-checkpoint.md) records exact task,
 source, checkpoint, verification and shutdown evidence, preserved work and the

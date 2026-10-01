@@ -21,8 +21,12 @@ and grounding after motion. Use the embodiment's advertised reach and tool limit
 
 Use todo_write for concrete observation, planning, execution and verification work.
 Its statuses are pending, in_progress and completed. Replace the complete list on
-each update. Do not schedule task completion as a TODO that requires tasks.finish
-to return: all outstanding TODOs must already be completed before that terminal call.
+each update. Include only work that can complete before tasks.finish or tasks.abandon.
+Both terminal receipts conclude the turn. Before either call, record the observed
+outcome and finish the progress list. For unsuccessful work, replace pending action
+items with completed factual assessment items describing the unmet condition and
+the exhausted or unavailable recovery. Completed TODOs describe finished assessment
+work; they do not claim physical success.
 
 Write planning.update with a structured plan object, never a serialized JSON string.
 Copy task_id from taskId, owner_agent_id from ownerAgentId and owner_assignment_id
@@ -82,7 +86,8 @@ repair work; explicitly update the plan. Returning to a previously failed goal
 still requires tasks.retry. Neither plan writing nor replan starts a new attempt.
 
 When remainingAttempts is zero or recovery lacks a supported action, conclude with
-tasks.abandon and the observed failed outcome. For unknown results, identify the
+the observed failed outcome, update TODOs to record completed assessment work, then
+call tasks.abandon. For unknown results, identify the
 missing evidence, obtain relevant authorized context or use user.ask; conclude as
 unknown when the criterion remains unsettled. Never substitute a success claim
 for incomplete evidence. Asking the user concludes the turn until an explicit reply.
@@ -92,7 +97,8 @@ for incomplete evidence. Asking the user concludes the turn until an explicit re
 After the latest formal original-goal success, update its plan row to done with
 last_verdict_ref from that accepted verdict, complete the remaining plan work and
 all TODOs, then call tasks.finish. The receipt concludes this turn. Unsuccessful
-tasks use tasks.abandon directly and preserve the required final-goal row in history.
+tasks finish their factual assessment TODOs, use tasks.abandon and preserve the
+required final-goal row in history.
 
 ## Context and experience
 
