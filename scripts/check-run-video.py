@@ -24,6 +24,9 @@ def main():
             len(events) != report["recordedEventCount"] or verdicts != report["formalVerdicts"] or
             report["formalVerdict"] != (verdicts[-1] if verdicts else None)):
         raise ValueError("Composite report differs from actual task records.")
+    tool_failures = sum(event["type"] == "tool.failed" for event in events)
+    if "toolFailureCount" in report and report["toolFailureCount"] != tool_failures:
+        raise ValueError("Composite error count differs from original tool events.")
     probe = json.loads(subprocess.run([
         "ffprobe", "-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries",
         "stream=width,height,nb_read_frames,r_frame_rate,pix_fmt,codec_name:format=duration", "-of", "json", str(video)
@@ -42,6 +45,7 @@ def main():
     subprocess.run(["ffmpeg", "-v", "error", "-xerror", "-i", str(video), "-f", "null", "-"], check=True)
     result = {"runId": run["id"], "state": run["state"], "scope": report["scope"],
               "frames": report["frameCount"], "durationS": duration, "formalVerdicts": verdicts,
+              "toolFailureCount": tool_failures,
               "sha256": hashlib.sha256(video.read_bytes()).hexdigest(),
               "sourceIntegrity": "passed", "fullVideoDecode": "passed",
               "textBoundaryChecks": report["textBoundaryChecks"]}

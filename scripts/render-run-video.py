@@ -107,7 +107,7 @@ def recorded_holds(events):
                     "plan.updated": 1.0, "policy.plan": 1.0,
                     "verification.completed": 3.0, "run.failed": 4.0,
                     "run.succeeded": 4.0, "run.abandoned": 4.0,
-                    "clarification.created": 4.0}.get(event["type"])
+                    "clarification.created": 4.0, "tool.failed": 4.0}.get(event["type"])
         if duration is not None:
             holds.append((timestamp(event["at"]), duration, event["sequence"], event["type"]))
     return holds
@@ -223,7 +223,9 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     draw.text((42, 72), f"Run {source_run['id']} · wall playback {speed:g}×", font=small, fill=MUTED)
     recovery_count = sum(event["type"] == "tool.completed" and event["detail"].get("tool") == "tasks.retry"
                          for event in events[:bisect_right(event_times, wall)])
-    draw.text((790, 73), f"Accepted retries: {recovery_count} · replay of source events", font=caption, fill=MUTED)
+    tool_failures = sum(event["type"] == "tool.failed" for event in events[:bisect_right(event_times, wall)])
+    draw.text((790, 73), f"Accepted retries: {recovery_count} · tool errors: {tool_failures}",
+              font=caption, fill=FAILURE if tool_failures else MUTED)
     if hold:
         draw.text((1270, 48), f"RECORDED HOLD  #{hold[0]} {hold[1]}", font=small, fill=ACCENT)
     draw_panel(draw, (30, 115, 1170, 575), "AGENT OUTPUT · ORIGINAL RECORD", body)
@@ -295,7 +297,10 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     if tool:
         draw_excerpt(draw, f"#{tool['sequence']} {tool['detail'].get('tool', 'execution policy')} · {tool['type']}",
                      (625, 801), 520, 23, 1, small, 0, 1147, 832)
-        draw_excerpt(draw, json.dumps(tool["detail"].get("result", tool["detail"]), ensure_ascii=False),
+        detail = tool["detail"]
+        tool_text = (str(detail["error"]) if tool["type"] == "tool.failed" else
+                     json.dumps(detail.get("result", detail), ensure_ascii=False))
+        draw_excerpt(draw, tool_text,
                      (625, 838), 520, 23, 3, caption, 0, 1147, 920)
     if message:
         detail = message["detail"]
@@ -415,7 +420,7 @@ def main():
     if arguments.observation_only:
         if (arguments.simulation_videos or run["executions"] or run["state"] != "running" or
                 not run.get("clarification") or run["clarification"]["state"] != "pending" or
-                any(event["type"] in {"tool.error", "verification.completed", "run.succeeded"} for event in events)):
+                any(event["type"] in {"tool.failed", "verification.completed", "run.succeeded"} for event in events)):
             raise ValueError("Observation-only rendering requires an actual pre-motion user-wait snapshot.")
     elif run["state"] not in {"failed", "succeeded"}:
         raise ValueError("The source must be a complete, recorded terminal run with formal verification.")
@@ -470,6 +475,7 @@ def main():
         raise RuntimeError("ffmpeg did not complete the recorded video.")
     report = {"runId": run["id"], "runState": run["state"], "runError": run["error"],
               "recordedEventCount": len(events), "recordedFrameCountPerCamera": [len(rows) for _, rows, _ in cameras],
+              "toolFailureCount": sum(event["type"] == "tool.failed" for event in events),
               "recordedRolloutFramesPerCamera": [sum(row[3] is not None for row in rows) for _, rows, _ in cameras],
               "initialObservationImagesPerCamera": [sum(row[3] is None for row in rows) for _, rows, _ in cameras],
               "fps": arguments.fps, "frameCount": frame_count, "width": WIDTH, "height": HEIGHT,

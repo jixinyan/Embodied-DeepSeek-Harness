@@ -14,13 +14,26 @@ operations. Actual worker-pipe checks confirm continued communication after a
 These process checks contain no simulator task. Full native-model acceptance of
 these changes is in progress. See [native tool boundaries](native-tool-boundaries.md).
 
-Three [recorded Agent workflow MP4s](recorded-demos.md) retain native RoboTwin
+Four [recorded Agent workflow MP4s](recorded-demos.md) retain native RoboTwin
 failed-attempt recovery and success, native RoboCasa retry exhaustion, and actual
-SAM/YOLO pre-motion grounding with user clarification. Source hashes and immutable
-image bytes pass integrity checks. All 1,217 / 1,424 / 481 encoded frames fully
+SAM/YOLO pre-motion grounding with user clarification, plus BEHAVIOR retry exhaustion.
+Source hashes and immutable image bytes pass integrity checks.
+All 1,217 / 1,424 / 481 / 1,546 encoded frames fully
 decode; dimensions, FPS, duration and text bounds pass. These are replays of the
-accepted source records described below. BEHAVIOR and custom-role complete workflow
-acceptance continue separately.
+source records described below. BEHAVIOR records one tool error and a failed native
+task; zero-tool-error and task-success acceptance remain pending. Custom-role complete
+workflow acceptance continues separately.
+
+Native BEHAVIOR run `0b7da1de-19c2-4f9f-8229-bb346a178c16` retains 399 events,
+three identified GR00T inferences, 48 controls, 192 physics steps and three confirmed
+16-control execution endings. Three independent Verifiers find the original
+`picking_up_trash` criterion false. Planner accepts two retries, completes 11 factual
+TODOs and concludes failure. Four role assignments retire; the Session resources
+release. All nine native camera videos decode with exact journal timestamps.
+The original trace contains one unsupported active-view call, and its audit declares
+`cleanWorkflowAcceptance: false`. This recorded worker predates the current native
+budget/capability changes. Evidence is retained under
+`.local/work/behavior-workflow-demo-20260930/`.
 
 Responsibility-bound numbered Planner/Verifier workflows load across all six live
 Teams and contribute to their source digests. All 33 core tools have argument and
