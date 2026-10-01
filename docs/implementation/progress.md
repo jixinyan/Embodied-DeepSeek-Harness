@@ -6,6 +6,18 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## Current delivery boundary
 
+### Idle-service handoff
+
+Completed EDH experiments have no remaining simulator, policy, console or recorder
+processes on the checked hosts. The idle Qwen/vLLM service on `jd_B300:18080`
+was stopped with SIGTERM after its live metrics reported zero running and waiting
+requests. Its API process, inference engine and resource tracker have exited; its
+listening ports and GPU context are absent. GPU 2 usage decreased from the engine's
+112,314 MiB allocation to 1 MiB total. Other active experiments remain running.
+The next model-driven experiment requires starting the configured model service
+and checking its readiness. Recorded task evidence and shutdown audits retain
+their original service states.
+
 Native worker tools declare a 120000-ms DSH budget; ordinary worker requests retain
 their 60000-ms bound. Configurable output transmission defaults to 30 seconds and
 formal native checks revalidate the connected task lease/boundary around owner
