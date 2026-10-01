@@ -271,7 +271,9 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     if todos:
         todo_lines = [f"{item['status']}: {item['content']}" for item in todos["detail"].get("todos", [])]
         current = next((line for line in todo_lines if line.startswith("in_progress:")), todo_lines[-1] if todo_lines else "No TODO items")
-        draw_excerpt(draw, current, (50, 940), 515, 23, 2, caption, 0, 570, 994)
+        complete = sum(item["status"] == "completed" for item in todos["detail"].get("todos", []))
+        draw_excerpt(draw, f"{todos['detail']['member']} TODO {complete}/{len(todo_lines)} completed · {current}",
+                     (50, 940), 515, 23, 2, caption, 0, 570, 994)
     policy_plan = latest(events, event_times, wall, "policy.plan")
     if policy_plan:
         subtasks = policy_plan["detail"]["data"]["subtasks"]
@@ -349,7 +351,7 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     execution = latest(events, event_times, wall, "execution.updated")
     if execution:
         state = execution["detail"]["execution"]
-        draw.text((1205, 831), f"{state['state']} · {state['control_steps']} controls · {state['policy_calls']} policy calls", font=small, fill=TEXT)
+        draw.text((1205, 831), f"{state['task_scope']['attempt_id']} · {state['state']} · {state['control_steps']} controls · {state['policy_calls']} calls", font=small, fill=TEXT)
         draw.text((1205, 868), f"{state['raw_sim_steps']} physics steps · stop: {state.get('stop_reason', 'pending')}", font=small, fill=MUTED)
     elif not observation_only:
         draw.text((1205, 831), "Execution not started", font=small, fill=MUTED)
@@ -357,12 +359,14 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     verdict = latest(events, event_times, wall, "verification.completed")
     if check:
         facts = check["detail"].get("facts", [])
-        draw.text((1205, 900), ", ".join(f"{fact['check_id']}={str(fact['value']).lower()}" for fact in facts), font=small, fill=ACCENT if all(fact["value"] is True for fact in facts) else FAILURE)
+        scope = check["detail"]["evidence"]["task_scope"]
+        draw.text((1205, 900), f"{scope['attempt_id']} · " + ", ".join(f"{fact['check_id']}={str(fact['value']).lower()}" for fact in facts), font=small, fill=ACCENT if all(fact["value"] is True for fact in facts) else FAILURE)
     elif not observation_only:
         draw.text((1205, 900), "Formal native check pending", font=small, fill=MUTED)
     if verdict:
-        status = verdict["detail"]["result"]["status"]
-        draw.text((1205, 931), f"Formal verdict: {status}", font=small, fill=ACCENT if status == "passed" else FAILURE)
+        result = verdict["detail"]["result"]
+        status = result["status"]
+        draw.text((1205, 931), f"{result['task_scope']['attempt_id']} · formal verdict: {status}", font=small, fill=ACCENT if status == "passed" else FAILURE)
     success = latest(events, event_times, wall, "run.succeeded")
     if success:
         draw.text((1205, 965), "TASK SUCCEEDED · independent formal verification", font=small, fill=ACCENT)

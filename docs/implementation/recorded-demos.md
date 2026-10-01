@@ -5,6 +5,8 @@ verification with recorded simulator images. They replay existing native runs;
 rendering does not execute a task or establish an additional acceptance result.
 Original timestamps determine each displayed state. Labeled reading holds and
 wall-time compression make the recorded decisions readable.
+Execution counters, native checks and formal verdicts include their recorded
+attempt identity. TODO status includes the reporting member and completed count.
 
 ## Delivered recordings
 
