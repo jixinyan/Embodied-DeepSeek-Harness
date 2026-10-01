@@ -19,6 +19,7 @@ model requests and simulator data are excluded from Git.
 | `robocasa-retry-exhaustion.mp4` | Three failed formal verdicts, two accepted retries, Planner concludes failure | Qwen3.8-27B / GR00T | 118.667 s | `7dfb663e-debb-44fb-a4da-96be2b88e664` |
 | `sam-yolo-grounding.mp4` | Pre-motion perception and user clarification; zero physical controls | Qwen3.8-27B / SAM3.1 / YOLO26 depth | 40.083 s | `0b6b7450-0bb9-483a-9ff4-2631d65530df` |
 | `behavior-retry-exhaustion.mp4` | Three failed formal verdicts, two accepted retries, Planner concludes failure; one recorded tool error | Qwen3.8-27B / GR00T | 128.833 s | `0b7da1de-19c2-4f9f-8229-bb346a178c16` |
+| `custom-role-retry-success.mp4` | Explicit specialist report and acknowledgement, failed first attempt, successful retry; eight recorded plan-parameter errors | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 189.083 s | `ef8f9d03-c9e6-4671-aac4-99c965631ae4` |
 
 The RoboTwin recording contains 292 events, 113 admitted controls, eight identified
 Pi0.5 inferences and 416 native frame groups across three cameras. Its two formal
@@ -51,6 +52,22 @@ call remains visible in the recorded trace; `cleanWorkflowAcceptance` is false.
 The source audit validates inference/action/receipt identity and terminal order.
 It uses the recorded worker source, separately from the subsequent native tool
 budget and device-capability validation.
+
+The custom-role recording retains four independent Sessions: Planner, SceneAnalyst
+and two fresh Verifiers. The explicit handoff grants three camera images and a
+caller-supplied context marker. The specialist reads the evidence and publishes
+its selected-schema report; Planner queries and acknowledges that exact report
+before its first plan-write receipt. Attempt one completes 64 controls and receives
+a failed native verdict; its accepted retry completes 60 controls and receives a
+passed verdict. The 415-event record includes 124 actions, eight identified Pi0.5
+inferences, 11,366 physics steps and 446 native frame groups. All six native camera
+files, terminal tool receipts, completed TODOs and released resources pass their
+source checks. Eight actual plan-parameter errors remain visible; the task succeeds
+and clean-workflow acceptance is false. Source binding uses an exact 495-file
+SHA-256 inventory and ten deployment/configuration hashes from the private overlay.
+The saved run has no Git revision value. Thirty-four actual model requests retain
+754 checked tool schemas. The original run validates native physical tool budgets;
+it precedes the rotation and capability-subset changes.
 
 ## Offline preparation
 
@@ -85,7 +102,7 @@ labels the display as pre-motion grounding and records a null formal verdict.
 ## Verification boundary
 
 All delivered composites are H.264, `yuv420p`, 1920 × 1080 at 12 FPS. Complete
-FFmpeg decoding passes. FFprobe confirms 1,217 / 1,424 / 481 / 1,546 encoded frames and
+FFmpeg decoding passes. FFprobe confirms 1,217 / 1,424 / 481 / 1,546 / 2,269 encoded frames and
 their durations. Every rendered text page passes its panel bounds. Companion
 `*.json` and `*.validation.json` files retain source identity, all formal verdicts,
 the final verdict, media hash and full-decoding results. The renderer validates
@@ -94,8 +111,16 @@ source hashes, original image bytes and decoded image dimensions before renderin
 Native control/inference, simulator timestamps, independent Verifier Sessions,
 TODO completion and resource release remain covered by the original source audits
 documented in [progress](progress.md). Rendering and media validation do not replace
-those audits. BEHAVIOR task success, a zero-tool-error workflow and custom-role
-acceptance remain separate work until their own actual records pass the required
-checks. New renders retain cumulative tool-error counts and four-second holds at
+those audits. BEHAVIOR task success, zero-tool-error custom-role planning and the
+remaining acceptance combinations retain their own actual evidence requirements.
+New renders retain cumulative tool-error counts and four-second holds at
 actual failed calls; the video validator compares those counts with the original
 event journal.
+
+The recorded endpoint-failure run `4a65da16-f64d-4eb2-9d33-7873fa8247cc`
+has zero native actions and a confirmed `backend_error` ending. Its original
+zero-byte frame journal and manifest (`frames: 0`, `cameras: []`) can be exported
+as hash-bound native recording evidence. The exporter retains both original files
+and lists no camera videos or frame policy request IDs. Actual zero-frame and
+446-frame successful-run records pass byte/hash comparisons. Zero-frame evidence
+contains no simulator rollout or completed learned inference.

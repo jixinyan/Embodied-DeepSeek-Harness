@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.67. Current checkpoint: **native Qwen/Pi0.5 completes a formally failed attempt followed by an explicit Planner retry and independent formal success; native Qwen/GR00T concludes retry exhaustion with a truthful failed outcome; source-bound SAM/YOLO and native RoboCasa geometry tools complete real model calls**.
+Spec: v1.68. Current checkpoint: **native Qwen/Pi0.5 completes formally failed attempts followed by explicit Planner retry and independent formal success, including an explicit custom SceneAnalyst report; native Qwen/GR00T concludes retry exhaustion with truthful failed outcomes; five source-verified MP4s show actual Agent decisions, tools and simulator evidence**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -11,18 +11,38 @@ their 60000-ms bound. Configurable output transmission defaults to 30 seconds an
 formal native checks revalidate the connected task lease/boundary around owner
 operations. Actual worker-pipe checks confirm continued communication after a
 12.051-second reader pause and lease termination after a 32.009-second pause.
-These process checks contain no simulator task. Full native-model acceptance of
-these changes is in progress. See [native tool boundaries](native-tool-boundaries.md).
+These process checks contain no simulator task. The actual Qwen/Pi0.5 custom-role
+task verifies the selected deadlines and connected post-execution checks described
+below. Endpoint-failure and rotation checks retain separate acceptance records.
+See [native tool boundaries](native-tool-boundaries.md).
 
-Four [recorded Agent workflow MP4s](recorded-demos.md) retain native RoboTwin
+Five [recorded Agent workflow MP4s](recorded-demos.md) retain native RoboTwin
 failed-attempt recovery and success, native RoboCasa retry exhaustion, and actual
-SAM/YOLO pre-motion grounding with user clarification, plus BEHAVIOR retry exhaustion.
+SAM/YOLO pre-motion grounding with user clarification, BEHAVIOR retry exhaustion
+and successful custom-role delegation with retained-scene recovery.
 Source hashes and immutable image bytes pass integrity checks.
-All 1,217 / 1,424 / 481 / 1,546 encoded frames fully
+All 1,217 / 1,424 / 481 / 1,546 / 2,269 encoded frames fully
 decode; dimensions, FPS, duration and text bounds pass. These are replays of the
 source records described below. BEHAVIOR records one tool error and a failed native
-task; zero-tool-error and task-success acceptance remain pending. Custom-role complete
-workflow acceptance continues separately.
+task; zero-tool-error and task-success acceptance remain pending. The custom-role
+task succeeds with eight recorded plan-parameter errors; zero-tool-error planning
+and additional role/task combinations remain pending.
+
+Custom-role run `ef8f9d03-c9e6-4671-aac4-99c965631ae4` verifies four independent
+Qwen Sessions, explicit three-camera evidence transfer, a selected-schema specialist
+report, Planner query/acknowledgement and actual Pi0.5 recovery. The original task
+receives failed formal verification after 64 controls and passed verification
+after its 60-control retry. Its 415-event audit checks 124 actions, eight identified
+inferences, 11,366 physics steps, 446 native frame groups and six fully decoded
+camera videos. All assignments retire, TODOs complete and resources release.
+Both formal checks declare a 120000-ms tool deadline and complete once, in
+1.023/1.029 seconds. Eight rejected plan-parameter calls remain in the actual
+source; `cleanWorkflowAcceptance` is false. Thirty-four model requests expose
+754 checked schemas. Its exact private-source/configuration SHA inventories and
+original process wire are retained under
+`.local/work/custom-role-demo-20260930/remote-acceptance/`. This validates native
+tool budgets and connected post-execution checks; it precedes the new rotation
+and capability-filter implementation.
 
 Native BEHAVIOR run `0b7da1de-19c2-4f9f-8229-bb346a178c16` retains 399 events,
 three identified GR00T inferences, 48 controls, 192 physics steps and three confirmed

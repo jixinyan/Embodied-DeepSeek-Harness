@@ -1,8 +1,8 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.67 · 2026-09-30
+Version: v1.68 · 2026-09-30
 
-Status: local Qwen Planner and fresh independent Verifiers complete a failed native RoboTwin attempt, explicit retained-scene retry and formal success through Pi0.5 and ActionGate. The source audit verifies completed TODOs, terminal receipts, zero tool errors, identified inference, decoded simulator video and released resources. Real Qwen SAM/YOLO tool calls and native RoboCasa source-bound RGB-D geometry are verified. Recovery learning is paused and SceneState implementation is deferred. Custom-role reporting, multi-goal and full four-provider acceptance remain pending.
+Status: local Qwen Planner and fresh independent Verifiers complete failed native RoboTwin attempts, explicit retained-scene retry and formal success through Pi0.5 and ActionGate. A custom SceneAnalyst independently receives images/context, publishes a selected-schema report and is acknowledged by Planner before execution; its task succeeds with eight retained plan-parameter errors. Source audits verify completed TODOs, terminal receipts, identified inference, decoded simulator video and released resources. Native RoboCasa and BEHAVIOR retries conclude their observed failed outcomes. Five MP4s retain these workflows and real SAM/YOLO grounding. Native tool budgets and connected post-execution checks have real task validation. R1Pro active-rotation and device-supported tool exposure validation is in progress. Recovery learning is paused and SceneState implementation is deferred. Zero-tool-error custom-role planning, multi-goal and full four-provider acceptance remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
 

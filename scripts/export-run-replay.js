@@ -294,7 +294,7 @@ async function writeDashboard(output, run, events, manifest) {
     await copyFile(path.join(projectRoot, 'scripts', name), path.join(output, name));
 }
 
-async function nativeVideoEvidence(directory, run, output) {
+export async function nativeVideoEvidence(directory, run, output) {
   if (!directory) return [];
   const recordings = [];
   for (const execution of run.executions) {
@@ -302,8 +302,11 @@ async function nativeVideoEvidence(directory, run, output) {
     if (!/^[A-Za-z0-9-]+$/.test(id)) throw new Error('Invalid native execution identity.');
     const source = path.join(directory, id);
     const manifest = JSON.parse(await readFile(path.join(source, 'manifest.json'), 'utf8'));
-    const journal = (await readFile(path.join(source, 'frames.jsonl'), 'utf8')).trim().split(/\r?\n/).map(JSON.parse);
-    if (!journal.length || journal.length !== manifest.frames || !manifest.cameras.length ||
+    const journalText = (await readFile(path.join(source, 'frames.jsonl'), 'utf8')).trim();
+    const journal = journalText ? journalText.split(/\r?\n/).map(JSON.parse) : [];
+    if (!Number.isSafeInteger(manifest.frames) || manifest.frames < 0 ||
+        !Array.isArray(manifest.cameras) || journal.length !== manifest.frames ||
+        (journal.length === 0 ? manifest.cameras.length !== 0 : !manifest.cameras.length) ||
         journal.some((row) => row.execution_id !== id ||
           ['task_id', 'goal_id', 'attempt_id'].some((key) => row.task_scope[key] !== execution.task_scope[key])))
       throw new Error('Native recording differs from its actual execution.');
@@ -456,4 +459,5 @@ async function main() {
     videos: videos.length, missing: manifest.missing }));
 }
 
-await main();
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url))
+  await main();
