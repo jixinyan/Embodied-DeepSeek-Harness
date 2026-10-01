@@ -105,6 +105,7 @@ export interface BackendObjectMeasurement {
 /** Upper application port. Physical transports and resource arbitration remain provider responsibilities. */
 export interface EmbodiedBackend {
   readonly source: 'test_fixture' | 'simulation' | 'hardware';
+  readonly toolTimeoutMs?: number;
   start(request: SubgoalRequest, options?: BackendCallOptions): Promise<ExecutionStatus>;
   /** Immediate local status projection; remote clients update it before notifying subscribers. */
   query(): ExecutionStatus | undefined;

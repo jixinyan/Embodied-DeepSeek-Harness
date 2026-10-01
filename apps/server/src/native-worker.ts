@@ -61,6 +61,8 @@ export interface NativeWorkerConfiguration {
   readonly observationTtlS?: number;
   readonly deviceTimeoutS?: number;
   readonly policyTimeoutS?: number;
+  readonly toolTimeoutMs?: number;
+  readonly transportWriteTimeoutS?: number;
   readonly initializeTimeoutMs?: number;
   readonly closeTimeoutMs?: number;
   readonly catalog: TaskCatalogDefinition;
@@ -497,6 +499,7 @@ class NativeTaskBackend implements EmbodiedBackend {
       deviceTimeoutS: number;
       policyTimeoutS: number;
     }>,
+    readonly toolTimeoutMs: number,
     private readonly onClose: () => void,
   ) {
     if (supportsObjectMeasurement) {
@@ -915,6 +918,16 @@ export async function createNativeWorkerEnvironment(
   };
   if (Object.values(timeouts).some((value) => !Number.isFinite(value) || value <= 0 || value > 300))
     throw new Error('Native policy and device timeouts must be positive and at most 300 seconds.');
+  const toolTimeoutMs = configuration.toolTimeoutMs ?? 120_000;
+  if (!Number.isSafeInteger(toolTimeoutMs) || toolTimeoutMs <= 60_000 || toolTimeoutMs > 1_800_000)
+    throw new Error('Native tool timeout must exceed 60000 ms and be at most 1800000 ms.');
+  const transportWriteTimeoutS = configuration.transportWriteTimeoutS ?? 30;
+  if (
+    !Number.isFinite(transportWriteTimeoutS) ||
+    transportWriteTimeoutS <= 0 ||
+    transportWriteTimeoutS > 60
+  )
+    throw new Error('Native transport write timeout must be positive and at most 60 seconds.');
   const policyMaxActionsPerInference = configuration.policyMaxActionsPerInference ?? 512;
   if (
     !Number.isSafeInteger(policyMaxActionsPerInference) ||
@@ -930,6 +943,7 @@ export async function createNativeWorkerEnvironment(
         native_task_id: configuration.nativeTaskId,
         policy_uri: configuration.policyUri,
         policy_id: configuration.policyId,
+        transport_write_timeout_s: transportWriteTimeoutS,
         execution_mode: configuration.executionMode ?? 'policy',
         scene_configuration: configuration.sceneConfiguration,
         schema_path: configuration.schemaPath,
@@ -1041,6 +1055,7 @@ export async function createNativeWorkerEnvironment(
           description.active_view_directions,
           description.supports_object_measurement,
           timeouts,
+          toolTimeoutMs,
           () => {
             active = undefined;
           },

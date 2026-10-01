@@ -149,6 +149,13 @@ export class UpperRun {
   private readonly executionRequestedAt = new Map<string, string>();
   private planToolSchema: Record<string, unknown> | undefined;
   constructor(private readonly options: ApplicationOptions) {
+    if (
+      options.backend.toolTimeoutMs !== undefined &&
+      (!Number.isSafeInteger(options.backend.toolTimeoutMs) ||
+        options.backend.toolTimeoutMs <= 0 ||
+        options.backend.toolTimeoutMs > 1_800_000)
+    )
+      throw new Error('Backend tool timeout must be a positive integer at most 1800000 ms.');
     taskContextSummary(options.taskContext ?? []);
     this.goals = new TaskGoals(
       options.validator,
@@ -678,6 +685,18 @@ export class UpperRun {
             throw new Error('This native provider does not support object measurement.');
           native = {
             name: logical.replaceAll('.', '__'),
+            ...([
+              'perception.capture',
+              'perception.measure_object',
+              'observation.turn_view',
+              'execution.start',
+              'execution.pause',
+              'execution.resume',
+              'verification.check',
+              'tasks.abandon',
+            ].includes(logical) && this.options.backend.toolTimeoutMs !== undefined
+              ? { timeoutMs: this.options.backend.toolTimeoutMs }
+              : {}),
             ...(logical === 'perception.segment_objects' &&
             this.options.segmentation?.timeoutMs !== undefined
               ? { timeoutMs: this.options.segmentation.timeoutMs }
@@ -832,6 +851,7 @@ export class UpperRun {
               assignmentId: a.id,
               tool: logical,
               callId: exec.callId,
+              timeoutMs: native.timeoutMs ?? 10_000,
               args,
             });
             try {
@@ -1623,7 +1643,12 @@ export class UpperRun {
         this.state.state = 'running';
         this.event('execution.requested', { request });
         this.executionRequestedAt.set(request.idempotency_key, this.state.updatedAt);
-        return { execution: await this.options.backend.start(request, { signal }) };
+        try {
+          return { execution: await this.options.backend.start(request, { signal }) };
+        } catch (error) {
+          this.spawn(this.fail(error));
+          throw error;
+        }
       }
       case 'execution.pause':
         this.owner(a);

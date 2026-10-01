@@ -113,6 +113,7 @@ class NativeWorkerSession:
         self._state_version = 0
         self._policy_calls = 0
         self._policy_timeout_s = 30.0
+        self._transport_write_timeout_s = 30.0
         self._policy_max_actions_per_inference = 512
         self._monitor_every_actions = 1
         self._publish_running_images = False
@@ -134,6 +135,10 @@ class NativeWorkerSession:
     def revoke_lease(self) -> None:
         self._lease_active = False
         self._host_connected = False
+
+    @property
+    def transport_write_timeout_s(self) -> float:
+        return self._transport_write_timeout_s
 
     def _require_device(self) -> NativeActionDevice:
         if self._device is None:
@@ -218,9 +223,15 @@ class NativeWorkerSession:
             return publication
 
     async def initialize(self, arguments: dict[str, Any]) -> dict[str, Any]:
-        self._provider = arguments["provider"]
         if self._device is not None:
             raise RuntimeError("Native session is already initialized.")
+        transport_write_timeout_s = arguments.get("transport_write_timeout_s", 30)
+        if (type(transport_write_timeout_s) not in (int, float)
+                or not math.isfinite(transport_write_timeout_s)
+                or not 0 < transport_write_timeout_s <= 60):
+            raise ValueError("Native transport_write_timeout_s must be positive and at most 60 seconds.")
+        self._transport_write_timeout_s = float(transport_write_timeout_s)
+        self._provider = arguments["provider"]
         provider = arguments["provider"]
         self._native_task_id = arguments["native_task_id"]
         self._policy_uri = arguments["policy_uri"]
@@ -636,12 +647,15 @@ class NativeWorkerSession:
 
     async def check(self, arguments: dict[str, Any]) -> dict[str, Any]:
         async with self._control_lock:
-            self._check_boundary(arguments)
+            run_task_id = self._run_task_id
+            self._check_task_boundary(arguments, run_task_id)
             ids = arguments["check_ids"]
             if not isinstance(ids, list) or not ids or any(value not in self._description.supported_check_ids for value in ids):
                 raise ValueError("Unsupported native check ID.")
             observation = await self._require_device().on_owner(self._environment.observe)
+            self._check_task_boundary(arguments, run_task_id)
             facts = await self._require_device().on_owner(lambda: self._environment.check(ids))
+            self._check_task_boundary(arguments, run_task_id)
             if [item.check_id for item in facts] != ids:
                 raise RuntimeError("Native checks do not match the requested catalog IDs.")
             return {
@@ -649,6 +663,21 @@ class NativeWorkerSession:
                 "observation": self._observation_wire(observation),
                 "facts": [vars(item) for item in facts],
             }
+
+    def _check_task_boundary(self, arguments: dict[str, Any], run_task_id: str | None) -> None:
+        if not self._host_connected or not self._lease_active:
+            raise RuntimeError("Native task lease is unavailable for checking.")
+        if (run_task_id is None or run_task_id != self._run_task_id
+                or self._request is None or self._request["task_id"] != run_task_id):
+            raise RuntimeError("Native task identity changed during checking.")
+        self._check_boundary(arguments)
+        if self._status["task_scope"]["task_id"] != run_task_id:
+            raise RuntimeError("Native check status belongs to another session task.")
+        snapshot = self._require_gate().snapshot()
+        if (snapshot["state"] not in ("paused", "ended") or not snapshot["device_confirmed"]
+                or snapshot["execution_id"] != arguments["execution_id"]
+                or snapshot["boundary_id"] != arguments["boundary_id"]):
+            raise RuntimeError("Native stopped boundary changed during checking.")
 
     async def capture(self, arguments: dict[str, Any]) -> dict[str, Any]:
         if self._run_task_id is None or arguments["run_task_id"] != self._run_task_id:
@@ -820,14 +849,14 @@ async def serve() -> None:
         serialized = json.dumps(message, allow_nan=False, separators=(",", ":"))
         if len(serialized) > 32 * 1024 * 1024:
             raise ValueError("Native worker message exceeds the transport bound.")
-        async with output_lock:
-            writer.write((serialized + "\n").encode("utf-8"))
-            try:
-                async with asyncio.timeout(10):
+        try:
+            async with asyncio.timeout(session.transport_write_timeout_s):
+                async with output_lock:
+                    writer.write((serialized + "\n").encode("utf-8"))
                     await writer.drain()
-            except BaseException:
-                session.revoke_lease()
-                raise
+        except BaseException:
+            session.revoke_lease()
+            raise
 
     session = NativeWorkerSession(emit)
     handlers = {

@@ -6,6 +6,14 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## Current delivery boundary
 
+Native worker tools declare a 120000-ms DSH budget; ordinary worker requests retain
+their 60000-ms bound. Configurable output transmission defaults to 30 seconds and
+formal native checks revalidate the connected task lease/boundary around owner
+operations. Actual worker-pipe checks confirm continued communication after a
+12.051-second reader pause and lease termination after a 32.009-second pause.
+These process checks contain no simulator task. Full native-model acceptance of
+these changes is in progress. See [native tool boundaries](native-tool-boundaries.md).
+
 Three [recorded Agent workflow MP4s](recorded-demos.md) retain native RoboTwin
 failed-attempt recovery and success, native RoboCasa retry exhaustion, and actual
 SAM/YOLO pre-motion grounding with user clarification. Source hashes and immutable

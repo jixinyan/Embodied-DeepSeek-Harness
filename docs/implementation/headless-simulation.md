@@ -39,6 +39,8 @@ is local to the worker; remote hosts transfer the completed files after executio
 The action device, ActionGate, budgets and policy service retain their existing
 responsibilities. Recording never supplies task success. A fresh Verifier is assigned
 after an eligible confirmed execution end and checks the unchanged native criterion.
+Native tool deadlines, pipe output budgets and connected-task verification checks
+are described in [native tool boundaries](native-tool-boundaries.md).
 
 ## Recorded acceptance
 
