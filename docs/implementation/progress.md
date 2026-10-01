@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.68. Current checkpoint: **native Qwen/Pi0.5 completes formally failed attempts followed by explicit Planner retry and independent formal success, including an explicit custom SceneAnalyst report; native Qwen/GR00T concludes retry exhaustion with truthful failed outcomes; five source-verified MP4s show actual Agent decisions, tools and simulator evidence**.
+Spec: v1.69. Current checkpoint: **native Qwen/Pi0.5 completes formally failed attempts followed by explicit Planner retry and independent formal success, including an explicit custom SceneAnalyst report; native Qwen/GR00T concludes retry exhaustion with truthful failed outcomes; five source-verified MP4s show actual Agent decisions, tools and simulator evidence; actual Qwen/R1Pro active observation returns source-matched camera images through the production worker**.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -37,9 +37,28 @@ cancellation and in-motion cancellation. All achieved yaw/pitch targets are with
 the 1.5-degree tolerance. The source audit checks 170 controls, 680 physics steps,
 unchanged task criteria, held non-motion joints, fresh RGB identities and clean
 native shutdown. Three camera videos fully decode all 170 frames. Evidence is
-retained under `.local/work/behavior-rotation-20260930/`. Production-worker and
-actual Qwen Planner-call acceptance is in progress; no policy task success is
+retained under `.local/work/behavior-rotation-20260930/`. No policy task success is
 claimed for these observation motions.
+
+Production-worker run `8f35aca4-e71a-41cb-936d-2a0ab8d21a2c` verifies actual Qwen
+capture → yaw +15 degrees → yaw −15 degrees → explicit user confirmation.
+The two completed rotations consume 145 observation controls and 580 physics
+steps; policy controls remain zero. Native initialization takes 523.553 seconds
+in this recorded deployment.
+Five actual model requests expose the canonical rotation schema and descriptions.
+For each capture/rotation receipt, all three original image digests and byte counts
+match an actual subsequent model request. Nine 256×256 PNG files fully decode.
+All 709 private-source files pass SHA-256 verification. The original task criterion
+matches the catalog, brief and plan. Four factual TODOs complete and the remaining
+confirmation item stays in progress. The pre-close snapshot contains 63 events
+and a pending user question; closing the Session yields `cancelled` with 66 events
+and released resources. There are zero tool errors, policy jobs, policy requests
+and formal verdicts. All owned worker/native/compile processes and console/recorder
+services exit; GPU contexts release and the shared Qwen service remains available.
+This accepts active observation and model image transport, without a task-completion
+claim. Evidence is retained under
+`.local/work/behavior-rotation-planner-20260930/remote-evidence/`; its local
+source/image audit and checkpoint are in the parent directory.
 
 Five [recorded Agent workflow MP4s](recorded-demos.md) retain native RoboTwin
 failed-attempt recovery and success, native RoboCasa retry exhaustion, and actual

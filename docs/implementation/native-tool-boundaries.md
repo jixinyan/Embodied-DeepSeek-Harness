@@ -103,7 +103,12 @@ false task criterion. Three camera videos each fully decode 170 frames. The SDK
 returns close acknowledgement and exits with code 0. Exact loaded source, original
 images/actions, native model metadata and resource-release evidence are retained
 under `.local/work/behavior-rotation-20260930/`. These native checks do not establish
-a policy task result or complete Planner-call acceptance.
+a policy task result. Production-worker run `8f35aca4` separately verifies actual
+Qwen capture and both yaw directions with zero tool errors. Each receipt's three
+original RGB image hashes and byte counts match subsequent real model requests.
+The original task criterion remains unchanged. The test waits for explicit user
+confirmation before policy execution, then closes its Session and resources.
+No policy job or formal verdict is produced.
 
 ## Recorded process validation
 

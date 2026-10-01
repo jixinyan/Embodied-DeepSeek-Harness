@@ -79,8 +79,11 @@ requested yaw ±15 degrees and camera pitch ±10 degrees within tolerance. Six
 trials, including cancellation before control and during motion, retain 170 controls,
 680 physics steps, seven fresh observation identities and clean native shutdown.
 Each of the three recorded camera files fully decodes its 170 frames. These checks
-validate the native primitive; complete Planner/production-worker acceptance is
-recorded separately in [progress](../../../../../../docs/implementation/progress.md).
+validate the native primitive. Actual Qwen run `8f35aca4` separately validates
+capture, both yaw directions and subsequent model requests containing the exact
+returned image bytes. It waits for explicit confirmation before policy execution
+and closes with released resources. [Progress](../../../../../../docs/implementation/progress.md)
+records both acceptance scopes and remaining task requirements.
 
 September 30 lifecycle 13 verifies three real GR00T requests, 18 R1Pro controls,
 72 physics steps, pause/resume, a second retained-scene execution and terminal stop.
