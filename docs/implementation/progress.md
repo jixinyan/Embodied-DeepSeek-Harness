@@ -16,6 +16,21 @@ task verifies the selected deadlines and connected post-execution checks describ
 below. Endpoint-failure and rotation checks retain separate acceptance records.
 See [native tool boundaries](native-tool-boundaries.md).
 
+Native RoboTwin run `4a65da16-f64d-4eb2-9d33-7873fa8247cc` verifies a real
+unavailable Pi0.5 endpoint after an execution-start receipt. The 99-event record
+retains the original connection error, a confirmed `backend_error` boundary,
+zero controls, zero physics steps and zero completed learned inferences. No
+Verifier is assigned and no formal verdict is produced. Task and owned service
+resources release. Eleven actual model requests expose exactly the device-supported
+tool subset declared in their briefs; this fixed-camera provider exposes neither
+`observation.turn_view` nor `observation.rotate`. Its source audit binds 496 files
+from the private overlay. This accepts failure after policy-job admission;
+provider-start rejection before an execution receipt requires separate validation.
+The original zero-frame native recording exports with byte-identical manifest and
+empty journal, no camera video and explicitly unavailable native rollout frames.
+Actual successful recordings with 446 frame groups retain their original hashes.
+Evidence is retained under `.local/work/custom-role-demo-20260930/failure-endpoint/`.
+
 Five [recorded Agent workflow MP4s](recorded-demos.md) retain native RoboTwin
 failed-attempt recovery and success, native RoboCasa retry exhaustion, and actual
 SAM/YOLO pre-motion grounding with user clarification, BEHAVIOR retry exhaustion

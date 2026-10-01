@@ -408,7 +408,9 @@ async function main() {
   const nativeRecordings = await nativeVideoEvidence(options['simulation-videos'], run, output);
   const policyLog = await policyLogEvidence(options['policy-log'], run, images, output, nativeRecordings);
   const unavailable = [
-    ...(nativeRecordings.length ? [] : missing),
+    ...(nativeRecordings.some((recording) => recording.frames > 0) ? [] : missing),
+    ...(nativeRecordings.length && nativeRecordings.every((recording) => recording.frames === 0)
+      ? ['native rollout frames'] : []),
     ...images.filter((row) => !row.file).map((row) => `image ${row.evidenceId}/${row.image.name}`),
   ];
   if (!events.some((event) => event.type.startsWith('verification.')))

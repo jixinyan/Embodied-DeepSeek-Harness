@@ -123,4 +123,5 @@ zero-byte frame journal and manifest (`frames: 0`, `cameras: []`) can be exporte
 as hash-bound native recording evidence. The exporter retains both original files
 and lists no camera videos or frame policy request IDs. Actual zero-frame and
 446-frame successful-run records pass byte/hash comparisons. Zero-frame evidence
-contains no simulator rollout or completed learned inference.
+contains no simulator rollout or completed learned inference; the exported
+availability list explicitly reports unavailable native rollout frames.
