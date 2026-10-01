@@ -3,6 +3,7 @@ from bisect import bisect_right
 from datetime import datetime
 from functools import lru_cache
 import json
+import hashlib
 from pathlib import Path
 import subprocess
 
@@ -105,7 +106,8 @@ def recorded_holds(events):
         duration = {"agent.output": 2.0, "policy.output": 2.0,
                     "plan.updated": 1.0, "policy.plan": 1.0,
                     "verification.completed": 3.0, "run.failed": 4.0,
-                    "run.succeeded": 4.0}.get(event["type"])
+                    "run.succeeded": 4.0, "run.abandoned": 4.0,
+                    "clarification.created": 4.0}.get(event["type"])
         if duration is not None:
             holds.append((timestamp(event["at"]), duration, event["sequence"], event["type"]))
     return holds
@@ -142,10 +144,17 @@ def wall_at(segments, second):
     return segments[-1][3], segments[-1][4]
 
 
-def camera_source(export, manifest, images, native_directory=None, executions=()):
+def camera_source(export, manifest, images, native_directory=None, executions=(), observation_only=False):
     lookup = {(row["eventSequence"], row["image"]["name"]): row["file"]
               for row in images if row["kind"] == "simulation.frame" and row["file"]}
     grouped = {}
+    if observation_only:
+        for name in ("head_camera.png", "SAM 3.1 segmentation overlay", "YOLO26 depth overlay"):
+            rows = [row for row in images if row["image"]["name"] == name]
+            if not rows:
+                raise ValueError(f"Missing recorded perception image: {name}")
+            grouped[name] = [(timestamp(row["eventAt"]), export / row["file"], row["eventSequence"], None)
+                             for row in rows]
     for video in manifest["videos"]:
         frames = []
         for sequence, wall, simulation in zip(video["frameEventSequences"],
@@ -206,15 +215,15 @@ def camera_source(export, manifest, images, native_directory=None, executions=()
 
 
 def render_frame(export, events, event_times, cameras, wall, hold, playback_second, speed, fonts,
-                 source_run, camera_cache, model_start):
+                 source_run, camera_cache, model_start, observation_only=False):
     image = Image.new("RGB", (WIDTH, HEIGHT), BACKGROUND)
     draw = ImageDraw.Draw(image)
     title, body, small, caption = fonts
     draw.text((40, 20), f"{source_run['scenario']} · REAL RECORDED RUN", font=title, fill=TEXT)
     draw.text((42, 72), f"Run {source_run['id']} · wall playback {speed:g}×", font=small, fill=MUTED)
-    recovery_count = sum(event["type"].startswith("recovery.") or event["detail"].get("member") == "evolver"
-                         for event in events)
-    draw.text((790, 73), f"Retry/Evolver events: {recovery_count} recorded", font=caption, fill=MUTED)
+    recovery_count = sum(event["type"] == "tool.completed" and event["detail"].get("tool") == "tasks.retry"
+                         for event in events[:bisect_right(event_times, wall)])
+    draw.text((790, 73), f"Accepted retries: {recovery_count} · replay of source events", font=caption, fill=MUTED)
     if hold:
         draw.text((1270, 48), f"RECORDED HOLD  #{hold[0]} {hold[1]}", font=small, fill=ACCENT)
     draw_panel(draw, (30, 115, 1170, 575), "AGENT OUTPUT · ORIGINAL RECORD", body)
@@ -293,7 +302,8 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
         objective = detail.get("payload", {}).get("brief", {}).get("objective")
         if objective:
             draw_excerpt(draw, objective, (625, 968), 520, 20, 1, caption, 0, 1147, 998)
-    draw_panel(draw, (1185, 115, 1890, 765), "OPERATOR ROLLOUT CAMERAS", body)
+    draw_panel(draw, (1185, 115, 1890, 765),
+               "SOURCE CAMERA AND PERCEPTION OUTPUTS" if observation_only else "OPERATOR ROLLOUT CAMERAS", body)
     simulation_time = None
     source_sequence = None
     for index, (name, frames, times) in enumerate(cameras):
@@ -308,30 +318,47 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
             with Image.open(file) as original:
                 camera_cache[index] = (file, ImageOps.pad(original.convert("RGB"), (320, 196), color="#0b1418"))
         image.paste(camera_cache[index][1], (1205, y))
-        draw.text((1545, y + 12), name.replace("robot0_", "").replace(".png", ""), font=small, fill=TEXT)
+        draw_excerpt(draw, name.replace("robot0_", "").replace(".png", ""),
+                     (1545, y + 12), 325, 23, 2, small, 0, 1872, y + 64)
         frame_identity = (f"Native video frame #{sequence.rsplit(':', 1)[1]}"
                           if isinstance(sequence, str) else f"Source event #{sequence}")
-        draw.text((1545, y + 56), frame_identity, font=caption, fill=MUTED)
-        draw.text((1545, y + 96), f"Simulator {sim_time:.3f} s" if sim_time is not None else
-                  "Initial observation", font=small, fill=MUTED)
+        draw.text((1545, y + 76), frame_identity, font=caption, fill=MUTED)
+        draw.text((1545, y + 116), f"Simulator {sim_time:.3f} s" if sim_time is not None else
+                  ("Recorded tool image" if observation_only else "Initial observation"), font=small, fill=MUTED)
         if simulation_time is None:
             simulation_time = sim_time
             source_sequence = sequence
     draw.text((1205, 742), "Operator view · agent evidence is recorded separately", font=caption, fill=MUTED)
-    draw_panel(draw, (1185, 780, 1890, 1005), "EXECUTION AND FORMAL GT", body)
+    draw_panel(draw, (1185, 780, 1890, 1005),
+               "PRE-MOTION GROUNDING · NO TASK VERDICT" if observation_only else "EXECUTION AND FORMAL GT", body)
+    if observation_only:
+        depth = next((event for event in reversed(events[:bisect_right(event_times, wall)])
+                      if event["type"] == "tool.completed" and
+                      event["detail"].get("tool") == "perception.estimate_depth"), None)
+        if depth:
+            result = depth["detail"]["result"]
+            draw.text((1205, 831), f"Axial depth median {result['medianAxialDepthM']:.3f} m · {result['selectedPixels']} mask pixels",
+                      font=small, fill=TEXT)
+            draw.text((1205, 868), f"p10 {result['p10AxialDepthM']:.3f} m · p90 {result['p90AxialDepthM']:.3f} m",
+                      font=small, fill=MUTED)
+            draw.text((1205, 900), "Monocular prediction · camera accuracy unverified", font=small, fill=FAILURE)
+        clarification = next((event for event in reversed(events[:bisect_right(event_times, wall)])
+                              if event["type"] == "tool.completed" and event["detail"].get("tool") == "user.ask"), None)
+        if clarification:
+            draw.text((1205, 965), "AWAITING USER RESPONSE · zero physical controls", font=small, fill=ACCENT)
     execution = latest(events, event_times, wall, "execution.updated")
     if execution:
         state = execution["detail"]["execution"]
         draw.text((1205, 831), f"{state['state']} · {state['control_steps']} controls · {state['policy_calls']} policy calls", font=small, fill=TEXT)
         draw.text((1205, 868), f"{state['raw_sim_steps']} physics steps · stop: {state.get('stop_reason', 'pending')}", font=small, fill=MUTED)
-    else:
+    elif not observation_only:
         draw.text((1205, 831), "Execution not started", font=small, fill=MUTED)
     check = latest(events, event_times, wall, "verification.checked")
     verdict = latest(events, event_times, wall, "verification.completed")
     if check:
         facts = check["detail"].get("facts", [])
         draw.text((1205, 900), ", ".join(f"{fact['check_id']}={str(fact['value']).lower()}" for fact in facts), font=small, fill=ACCENT if all(fact["value"] is True for fact in facts) else FAILURE)
-    else:
+    elif not observation_only:
         draw.text((1205, 900), "Formal native check pending", font=small, fill=MUTED)
     if verdict:
         status = verdict["detail"]["result"]["status"]
@@ -345,6 +372,9 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
                                       (1205, 960), 660, 21, 2, caption, 0, 1872, 1004)
         if error_pages != 1:
             raise ValueError("The final recorded error does not fit the result panel.")
+    abandoned = latest(events, event_times, wall, "run.abandoned")
+    if abandoned:
+        draw.text((1205, 965), f"TASK CONCLUDED · {abandoned['detail']['status'].upper()}", font=small, fill=FAILURE)
     draw.rounded_rectangle((30, 1020, 1890, 1060), radius=9, fill="#122229", outline=BORDER)
     fraction = (wall - timestamp(events[0]["at"])) / (timestamp(events[-1]["at"]) - timestamp(events[0]["at"]))
     draw.rounded_rectangle((34, 1024, 34 + int(1852 * fraction), 1056), radius=6, fill="#29636b")
@@ -363,6 +393,7 @@ def main():
     parser.add_argument("--fps", type=int, default=10)
     parser.add_argument("--wall-speed", type=float, default=4.0)
     parser.add_argument("--simulation-videos", type=Path)
+    parser.add_argument("--observation-only", action="store_true")
     arguments = parser.parse_args()
     if arguments.fps <= 0 or arguments.wall_speed <= 0 or not arguments.font.is_file():
         raise ValueError("FPS, wall speed, and font path must be valid.")
@@ -371,14 +402,38 @@ def main():
     events = load_json(export / "source/events.json")
     manifest = load_json(export / "manifest.json")
     images = load_json(export / "frames.json")
-    if run["id"] != manifest["runId"] or len(events) != manifest["eventCount"] or run["state"] not in {"failed", "succeeded"}:
+    for name, expected in manifest.get("sourceSha256", {}).items():
+        actual = hashlib.sha256((export / f"source/{name}.json").read_bytes()).hexdigest()
+        if actual != expected:
+            raise ValueError(f"Recorded {name} source differs from its export digest.")
+    if run["id"] != manifest["runId"] or len(events) != manifest["eventCount"]:
+        raise ValueError("Source run and recorded event manifest differ.")
+    if arguments.observation_only:
+        if (arguments.simulation_videos or run["executions"] or run["state"] != "running" or
+                not run.get("clarification") or run["clarification"]["state"] != "pending" or
+                any(event["type"] in {"tool.error", "verification.completed", "run.succeeded"} for event in events)):
+            raise ValueError("Observation-only rendering requires an actual pre-motion user-wait snapshot.")
+    elif run["state"] not in {"failed", "succeeded"}:
         raise ValueError("The source must be a complete, recorded terminal run with formal verification.")
     if run["state"] == "succeeded" and not any(event["type"] == "verification.completed" and event["detail"]["result"]["status"] == "passed" for event in events):
         raise ValueError("A successful source requires its recorded formal success verdict.")
     event_times = [timestamp(event["at"]) for event in events]
     if event_times != sorted(event_times):
         raise ValueError("Recorded events must have increasing wall timestamps.")
-    cameras = camera_source(export, manifest, images, arguments.simulation_videos, run["executions"])
+    for row in images:
+        file = export / row["file"]
+        if not file.resolve().is_relative_to(export):
+            raise ValueError("Image reference escapes its export directory.")
+        data = file.read_bytes()
+        if (hashlib.sha256(data).hexdigest() != row["image"]["attachmentId"].removeprefix("sha256:") or
+                len(data) != row["image"]["bytes"]):
+            raise ValueError("Recorded image bytes differ from their immutable reference.")
+        with Image.open(file) as original:
+            original.load()
+            if original.size != (row["image"]["width"], row["image"]["height"]):
+                raise ValueError("Decoded image dimensions differ from their reference.")
+    cameras = camera_source(export, manifest, images, arguments.simulation_videos, run["executions"],
+                            arguments.observation_only)
     segments, duration, start, end = playback_schedule(events, arguments.wall_speed)
     frame_count = int(duration * arguments.fps) + 1
     fonts = tuple(ImageFont.truetype(str(arguments.font), size) for size in (34, 25, 22, 17))
@@ -396,13 +451,17 @@ def main():
                 if segment[2] <= timestamp(event["at"]) <= segment[3]:
                     model_start[event["sequence"]] = segment[0] + (timestamp(event["at"]) - segment[2]) / arguments.wall_speed
                     break
-    for index in range(frame_count):
-        second = min(duration, index / arguments.fps)
-        wall, hold = wall_at(segments, second)
-        frame = render_frame(export, events, event_times, cameras, wall, hold, second,
-                             arguments.wall_speed, fonts, run, camera_cache, model_start)
-        process.stdin.write(frame.tobytes())
-    process.stdin.close()
+    try:
+        for index in range(frame_count):
+            second = min(duration, index / arguments.fps)
+            wall, hold = wall_at(segments, second)
+            frame = render_frame(export, events, event_times, cameras, wall, hold, second,
+                                 arguments.wall_speed, fonts, run, camera_cache, model_start,
+                                 arguments.observation_only)
+            process.stdin.write(frame.tobytes())
+    finally:
+        process.stdin.close()
+        process.wait()
     if process.wait() != 0:
         raise RuntimeError("ffmpeg did not complete the recorded video.")
     report = {"runId": run["id"], "runState": run["state"], "runError": run["error"],
@@ -414,14 +473,20 @@ def main():
               "wallDurationS": end - start, "wallPlaybackSpeed": arguments.wall_speed,
               "recordedHoldCount": len(recorded_holds(events)), "expectedVideoDurationS": duration,
               "textBoundaryChecks": "passed for every rendered frame",
-              "formalVerdict": next(event["detail"]["result"]["status"] for event in events
-                                    if event["type"] == "verification.completed"),
-              "nativeCheck": next(event["detail"]["facts"] for event in events
-                                  if event["type"] == "verification.checked"),
+              "formalVerdicts": [event["detail"]["result"]["status"] for event in events
+                                 if event["type"] == "verification.completed"],
+              "formalVerdict": next((event["detail"]["result"]["status"] for event in reversed(events)
+                                     if event["type"] == "verification.completed"), None),
+              "nativeCheck": next((event["detail"]["facts"] for event in reversed(events)
+                                   if event["type"] == "verification.checked"), None),
+              "scope": "pre-motion grounding, awaiting user" if arguments.observation_only else "terminal task workflow",
+              "sourceSha256": {name: hashlib.sha256((export / f"source/{name}.json").read_bytes()).hexdigest()
+                               for name in ("run", "events")},
               "agentReasoningEvents": sum(event["type"] in {"agent.output", "policy.output"} and
                                           any(block["type"] == "reasoning" for block in model_message(event)["content"])
                                           for event in events)}
-    report["cameraSource"] = "worker-local native MP4 and frame journal" if arguments.simulation_videos else "recorded frame events"
+    report["cameraSource"] = ("recorded sensor and tool-result attachments" if arguments.observation_only else
+                              "worker-local native MP4 and frame journal" if arguments.simulation_videos else "recorded frame events")
     arguments.output.with_suffix(".json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(report))
 

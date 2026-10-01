@@ -79,3 +79,10 @@ events; ordinary recorded-source audits preserve their existing evidence scope.
 
 Native task results and the exact delivery boundary are recorded in
 [implementation progress](progress.md).
+
+Saved source-only records can also be prepared without restarting a console with
+`scripts/prepare-recorded-replay.mjs`. The offline path validates immutable
+attachments, retains source hashes and supports an explicitly labeled pre-motion
+grounding snapshot. `scripts/check-run-video.py` verifies full composite decoding,
+encoded frame counts, source hashes and all recorded formal verdicts. See
+[recorded demos](recorded-demos.md) for commands and actual delivered outcomes.

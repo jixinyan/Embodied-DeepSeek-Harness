@@ -6,6 +6,14 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## Current delivery boundary
 
+Three [recorded Agent workflow MP4s](recorded-demos.md) retain native RoboTwin
+failed-attempt recovery and success, native RoboCasa retry exhaustion, and actual
+SAM/YOLO pre-motion grounding with user clarification. Source hashes and immutable
+image bytes pass integrity checks. All 1,217 / 1,424 / 481 encoded frames fully
+decode; dimensions, FPS, duration and text bounds pass. These are replays of the
+accepted source records described below. BEHAVIOR and custom-role complete workflow
+acceptance continue separately.
+
 Responsibility-bound numbered Planner/Verifier workflows load across all six live
 Teams and contribute to their source digests. All 33 core tools have argument and
 receipt guidance; the canonical plan projection retains domain bounds in model-visible
