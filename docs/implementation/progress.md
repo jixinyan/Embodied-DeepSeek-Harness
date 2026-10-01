@@ -29,8 +29,20 @@ native camera videos pass full decoding and timestamp comparison.
 Lossless SAM mask storage fully decodes bounded single-frame PNG inputs and retains
 their exact bytes, dimensions and SHA-256 identity through the existing immutable
 publisher. Two recorded native SAM masks pass byte-identical save/read checks;
-non-PNG mask admission is rejected. Full assignment-level grounding is being
-validated with live services.
+non-PNG mask admission is rejected. Attachment content identity preserves media
+type, dimensions and byte count; sample-local display names and input dimensions
+retain their own presentation context.
+
+Run `0b6b7450-0bb9-483a-9ff4-2631d65530df` verifies the complete actual Qwen
+capture → SAM3.1 → YOLO26 masked-depth → user-confirmation sequence. The matching
+640 × 480 source/mask pair retains 18,202 selected pixels, identical to SAM's
+reported area, and a meter-valued axial median of 0.5965579. The mask attachment
+identity matches the depth service's PNG digest. Prediction accuracy remains
+unverified for that camera. Five actual model requests expose 110 checked schemas,
+including the nested plan annotation and precise image/mask-reference paths.
+There are zero native tool errors and zero physical controls; Session resources
+release. This acceptance covers the grounding round, without a task-success claim.
+Evidence is retained under .local/work/prompt-grounding-20260930/.
 
 Run `7dfb663e-debb-44fb-a4da-96be2b88e664` verifies native RoboCasa OpenCabinet
 retry exhaustion. Qwen owns planning and three fresh Verifiers; GR00T supplies

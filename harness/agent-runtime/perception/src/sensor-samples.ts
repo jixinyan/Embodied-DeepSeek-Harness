@@ -5,6 +5,16 @@ import type { SensorSample } from '@edh/execution';
 import type { LocalStore } from '@edh/storage';
 import { admitSensorSample } from './sensor-sample.js';
 
+function sameImageContent(left: ImageAttachmentRef, right: ImageAttachmentRef): boolean {
+  return (
+    left.attachmentId === right.attachmentId &&
+    left.mediaType === right.mediaType &&
+    left.bytes === right.bytes &&
+    left.width === right.width &&
+    left.height === right.height
+  );
+}
+
 export class SensorSamples {
   constructor(
     private readonly store: LocalStore,
@@ -34,7 +44,7 @@ export class SensorSamples {
       throw new Error('Invalid immutable sensor record.');
     for (const image of sample.images ?? []) {
       const saved = this.store.get<ImageAttachmentRef>(this.key('image', image.attachmentId));
-      if (!saved || saved.version !== 1 || !isDeepStrictEqual(saved.value, image))
+      if (!saved || saved.version !== 1 || !sameImageContent(saved.value, image))
         throw new Error('Sensor record has inconsistent attachment metadata.');
     }
     return sample;
@@ -50,7 +60,7 @@ export class SensorSamples {
     const additions: ImageAttachmentRef[] = [];
     for (const image of sample.images ?? []) {
       const saved = this.store.get<ImageAttachmentRef>(this.key('image', image.attachmentId));
-      if (saved && (saved.version !== 1 || !isDeepStrictEqual(saved.value, image)))
+      if (saved && (saved.version !== 1 || !sameImageContent(saved.value, image)))
         throw new Error('An immutable attachment ID cannot be rebound to different metadata.');
       if (!saved) additions.push(image);
     }

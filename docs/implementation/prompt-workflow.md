@@ -109,3 +109,12 @@ zero tool errors, zero post-terminal model steps, retired roles and released res
 Its actual wire audit checks 616 schemas across 22 Planner and six Verifier requests.
 The task outcome remains failed. Evidence is retained under
 .local/work/robocasa-workflow-finalization-20260930/.
+
+Actual pre-motion Qwen grounding run `0b6b7450-0bb9-483a-9ff4-2631d65530df`
+verifies capture, SAM3.1 and YOLO26 through exposed production tools, followed by
+user clarification. Its five actual requests contain 110 checked schemas with
+the nested plan annotation and source/mask-reference descriptions. The 18,202-pixel
+mask region, dimensions and PNG digest remain identical through storage and depth
+inference. The reported 0.5965579 m axial median retains source-camera accuracy as
+unverified. Native tool errors and physical controls are zero; resources release.
+Evidence is retained under .local/work/prompt-grounding-20260930/.

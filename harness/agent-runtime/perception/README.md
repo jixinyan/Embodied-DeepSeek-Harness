@@ -7,7 +7,10 @@ granted samples. Neither function creates an independent perception agent.
 
 `SensorSamples` persists admitted metadata in the existing LocalStore journal, scoped
 by run identity. `retain` validates the entire sample and attachment conflicts before
-writing missing immutable attachment records, then publishes the sample. Exact replay
+writing missing immutable attachment records, then publishes the sample. Attachment
+identity fixes encoded media type, byte count and dimensions. Camera/display names
+and original input dimensions remain scoped to each immutable sample reference;
+the same encoded bytes may have different presentation names. Exact replay
 adds no records. A failed publication can leave immutable attachment reservations;
 the sample remains unavailable until it is published successfully. JSON metadata uses
 the journal representation, including omitted optional undefined fields and numeric zero.

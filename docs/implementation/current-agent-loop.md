@@ -124,11 +124,14 @@ surface points. This centroid describes the observed surface. It does not establ
 the geometric center of an occluded object. Running execution, stale capture,
 different camera/source images and another Session are rejected.
 
-Actual Qwen run `5e05df06-6892-4024-b065-cb7a2ac09248` completes capture, SAM
+Actual Qwen run `0b6b7450-0bb9-483a-9ff4-2631d65530df` completes capture, SAM
 segmentation and YOLO26 estimation through the production tools, reports a
-0.5965668 m bottle axial-depth median with its accuracy limitation, and requests
+0.5965579 m bottle axial-depth median with its accuracy limitation, and requests
 user clarification before motion. It uses zero physical controls and releases its
-Session. This validates the tool round; it does not establish task success.
+Session with zero native tool errors. Its 18,202 selected mask pixels match SAM's
+reported area, and the mask attachment digest matches the depth input. Five actual
+Qwen requests contain 110 checked tool schemas. This validates the tool round;
+it does not establish task success.
 
 Actual RoboCasa Qwen run `e4c1038f-cb92-4664-a79e-6760aa2e5241` obtains a
 source-bound native measurement before planning and executing GR00T. Its selected
