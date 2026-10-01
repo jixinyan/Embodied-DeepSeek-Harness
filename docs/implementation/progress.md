@@ -89,11 +89,9 @@ Actual BEHAVIOR console run `c9c3809c-374c-437f-b131-12977a44044a` completes
 16 controls/64 physics steps, confirmed budget exhaustion, a fresh Qwen Verifier
 with native failed GT and Planner `tasks.abandon`. Both role Sessions retire; the
 user Session closes with resources released and the worker/native processes exit.
-All three 16-frame native videos decode. One final plan update is rejected because
-the required final goal must remain in history; this run is not zero-tool-error
-acceptance. Current Planner instructions explicitly preserve that goal and conclude
-failed/unknown tasks through `tasks.abandon`; this prompt addition requires its own
-subsequent live check.
+All three 16-frame native videos decode. The shared numbered Planner workflow and
+failed-outcome completion are verified by the RoboCasa run above. A zero-tool-error
+BEHAVIOR upper-loop run with the current workflow remains pending.
 
 RoboDojo Pi0.5 native services verify 18 checkpoint inference files and dependency
 consistency across 189 isolated packages. Two sequential inferences use retained
