@@ -57,6 +57,31 @@ uses configurable initialization/close defaults of 600000/900000 ms. Its
 Planner/Verifier roles with recovery learning disabled. Model/GPU/checkpoint/source
 paths belong to deployment configuration.
 
+## Active observation
+
+The provider declares `rotation_axes: [yaw, pitch]` after validating native R1Pro
+controllers. Planner's `observation.rotate` accepts relative degree-valued angles:
+positive yaw turns left and positive camera pitch looks up. Yaw uses the native
+base velocity controller; pitch uses absolute `torso_joint3` control and the
+measured head-camera optical axis. Other joint commands retain their current
+native hold targets. Returned world positions use meters, and all returned angles
+use degrees. The tool supplies fresh head/left-wrist/right-wrist RGB images,
+requested/achieved angles, before/after pose, controls, physics steps and stop reason.
+
+The host admits rotation before policy execution or after confirmed execution end
+and formal verification. Rotation exclusively owns the physical motion resource.
+The native primitive has a 240-control / 45-second budget and a 1.5-degree tolerance;
+cross-process cancellation supplies zero-velocity settling controls and retains
+the actual achieved movement. Original task criteria remain unchanged.
+
+Actual OmniGibson 3.9.2 validation in `picking_up_trash`, instance 0, verifies
+requested yaw ±15 degrees and camera pitch ±10 degrees within tolerance. Six
+trials, including cancellation before control and during motion, retain 170 controls,
+680 physics steps, seven fresh observation identities and clean native shutdown.
+Each of the three recorded camera files fully decodes its 170 frames. These checks
+validate the native primitive; complete Planner/production-worker acceptance is
+recorded separately in [progress](../../../../../../docs/implementation/progress.md).
+
 September 30 lifecycle 13 verifies three real GR00T requests, 18 R1Pro controls,
 72 physics steps, pause/resume, a second retained-scene execution and terminal stop.
 Confirmed pause/stop takes approximately 0.198/0.227 seconds; native time remains

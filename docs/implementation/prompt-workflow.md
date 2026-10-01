@@ -29,6 +29,7 @@ The source commit is 714e00ca83999da2df7221dcf205968adde5b441.
 | Prior prompt mechanism | EDH behavior |
 | --- | --- |
 | Numbered scanning, planning, execution, checking and recovery | Shared responsibility-bound workflows across configured profiles |
+| `rotate_camera` scanning with measured feedback | Planner uses device-supported `observation.rotate`; native R1Pro body yaw and trunk-camera pitch return measured motion and fresh images |
 | Observe prerequisites and inspect actual tool results | Planner inspects images, admitted capability and receipts before decisions |
 | Ground objects and distinguish distance quantities | Preserve image/mask, camera frame, capture time, units and uncertainty with metrics |
 | Atomic instructions and post-action observation | One supported checkpoint instruction; confirmed end supplies evidence for formal verification |

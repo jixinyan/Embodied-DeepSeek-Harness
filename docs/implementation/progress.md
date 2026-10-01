@@ -31,6 +31,16 @@ empty journal, no camera video and explicitly unavailable native rollout frames.
 Actual successful recordings with 446 frame groups retain their original hashes.
 Evidence is retained under `.local/work/custom-role-demo-20260930/failure-endpoint/`.
 
+Native R1Pro active-observation validation passes six actual OmniGibson trials in
+`picking_up_trash`, instance 0: yaw ±15 degrees, camera pitch ±10 degrees, initial
+cancellation and in-motion cancellation. All achieved yaw/pitch targets are within
+the 1.5-degree tolerance. The source audit checks 170 controls, 680 physics steps,
+unchanged task criteria, held non-motion joints, fresh RGB identities and clean
+native shutdown. Three camera videos fully decode all 170 frames. Evidence is
+retained under `.local/work/behavior-rotation-20260930/`. Production-worker and
+actual Qwen Planner-call acceptance is in progress; no policy task success is
+claimed for these observation motions.
+
 Five [recorded Agent workflow MP4s](recorded-demos.md) retain native RoboTwin
 failed-attempt recovery and success, native RoboCasa retry exhaustion, and actual
 SAM/YOLO pre-motion grounding with user clarification, BEHAVIOR retry exhaustion
@@ -71,7 +81,7 @@ budget/capability changes. Evidence is retained under
 `.local/work/behavior-workflow-demo-20260930/`.
 
 Responsibility-bound numbered Planner/Verifier workflows load across all six live
-Teams and contribute to their source digests. All 33 core tools have argument and
+Teams and contribute to their source digests. All 34 core tools have argument and
 receipt guidance; the canonical plan projection retains domain bounds in model-visible
 annotations. Authored role/schema checks, formatting, type checks, source provenance
 and structure checks pass. Recorded actual model requests verify independent role

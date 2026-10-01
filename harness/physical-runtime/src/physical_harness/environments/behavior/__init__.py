@@ -14,7 +14,7 @@ import time
 from typing import Callable, Mapping, Sequence
 from uuid import uuid4
 
-from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeStep
+from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeRotation, NativeStep
 from physical_harness.validation import ContractValidator
 
 
@@ -157,12 +157,15 @@ class BehaviorEnvironment:
         return spec
 
     def describe(self) -> NativeEnvironmentDescription:
+        from physical_harness.environments.behavior.rotation import NativeViewRotation
+
         self._require_env()
         if self._action_spec is None or self._instance_id is None or self._instance_filename is None:
             raise RuntimeError("BEHAVIOR native action and scene metadata are unavailable.")
         og = self._og
         if abs(float(og.sim.get_physics_dt()) - 1 / 120) > 1e-9 or abs(float(og.sim.get_sim_step_dt()) - 1 / 30) > 1e-9:
             raise RuntimeError("BEHAVIOR physics or control timestep differs from the official evaluation profile.")
+        NativeViewRotation(self)
         return NativeEnvironmentDescription(
             provider="behavior",
             embodiment_id="behavior.r1pro",
@@ -171,6 +174,7 @@ class BehaviorEnvironment:
             state_channels=STATE_CHANNELS,
             supported_check_ids=("task_success",),
             active_view_directions=(),
+            rotation_axes=("yaw", "pitch"),
             task_instruction="Picking up trash.",
             scene_metadata={
                 "native_task_id": self._task_id,
@@ -356,6 +360,11 @@ class BehaviorEnvironment:
 
     def turn_view(self, direction: str) -> NativeObservation:
         raise ValueError(f"BEHAVIOR active view direction is unsupported: {direction}")
+
+    def rotate_view(self, yaw_deg: float, pitch_deg: float, should_stop: Callable[[], bool]) -> NativeRotation:
+        from physical_harness.environments.behavior.rotation import NativeViewRotation
+
+        return NativeViewRotation(self).run(yaw_deg, pitch_deg, should_stop)
 
     def close(self) -> None:
         self._require_owner()

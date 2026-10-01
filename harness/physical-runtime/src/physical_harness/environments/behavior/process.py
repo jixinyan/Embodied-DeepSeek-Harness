@@ -16,7 +16,7 @@ import traceback
 from typing import Callable, Mapping, Sequence
 from uuid import uuid4
 
-from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeStep
+from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeRotation, NativeStep
 from physical_harness.validation import ContractValidator
 
 
@@ -99,7 +99,7 @@ class BehaviorProcessEnvironment:
     def control_in_flight(self) -> bool:
         return self._control_in_flight.is_set()
 
-    def _rpc(self, operation: str, *args: object):
+    def _rpc(self, operation: str, *args: object, should_stop: Callable[[], bool] | None = None):
         with self._lock:
             if self._closed or self._failed:
                 raise RuntimeError("BEHAVIOR native process no longer admits operations.")
@@ -120,9 +120,16 @@ class BehaviorProcessEnvironment:
                     raise TimeoutError(f"BEHAVIOR native operation timed out: {operation}")
                 response = _receive(self._connection)
                 if response.get("event") == "control_started":
-                    if operation != "step" or response.get("request_id") != request_id or response.get("pid") != self.native_pid:
+                    if operation not in ("step", "rotate_view") or response.get("request_id") != request_id or response.get("pid") != self.native_pid:
                         raise RuntimeError("BEHAVIOR native control-start identity is invalid.")
                     self._control_in_flight.set()
+                    cancellation_sent = False
+                    while not self._connection.poll(0.025):
+                        if should_stop is not None and should_stop() and not cancellation_sent:
+                            os.kill(self.native_pid, signal.SIGUSR2)
+                            cancellation_sent = True
+                        if expired.is_set():
+                            raise TimeoutError(f"BEHAVIOR native operation timed out: {operation}")
                     response = _receive(self._connection)
                 if expired.is_set():
                     raise TimeoutError(f"BEHAVIOR native operation timed out: {operation}")
@@ -180,6 +187,9 @@ class BehaviorProcessEnvironment:
     def turn_view(self, direction: str) -> NativeObservation:
         return self._rpc("turn_view", direction)
 
+    def rotate_view(self, yaw_deg: float, pitch_deg: float, should_stop: Callable[[], bool]) -> NativeRotation:
+        return self._rpc("rotate_view", yaw_deg, pitch_deg, bool(should_stop()), should_stop=should_stop)
+
     def close(self) -> None:
         if self._closed:
             return
@@ -236,6 +246,8 @@ def _serve(connection_fd: int) -> None:
     environment = None
     scene_id = str(uuid4())
     closed = False
+    cancellation = Event()
+    previous_handler = signal.signal(signal.SIGUSR2, lambda signum, frame: cancellation.set())
     try:
         while True:
             request = _receive(connection)
@@ -251,6 +263,12 @@ def _serve(connection_fd: int) -> None:
                 elif operation == "step":
                     _send(connection, {"request_id": request_id, "pid": os.getpid(), "event": "control_started"})
                     result = environment.step(args[0], lambda: False)
+                elif operation == "rotate_view":
+                    cancellation.clear()
+                    if args[2]:
+                        cancellation.set()
+                    _send(connection, {"request_id": request_id, "pid": os.getpid(), "event": "control_started"})
+                    result = environment.rotate_view(args[0], args[1], cancellation.is_set)
                 elif operation == "native_state":
                     result = _native_state(environment, scene_id)
                 elif operation in ("reset", "bind_task", "observe", "describe", "check", "turn_view", "close"):
@@ -272,6 +290,7 @@ def _serve(connection_fd: int) -> None:
             if environment is not None and not closed:
                 environment.close()
         finally:
+            signal.signal(signal.SIGUSR2, previous_handler)
             connection.close()
 
 

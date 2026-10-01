@@ -148,6 +148,7 @@ export class UpperRun {
   private readonly recoveries = new Map<string, RecoveryObservation>();
   private readonly executionRequestedAt = new Map<string, string>();
   private planToolSchema: Record<string, unknown> | undefined;
+  private activeObservation = false;
   constructor(private readonly options: ApplicationOptions) {
     if (
       options.backend.toolTimeoutMs !== undefined &&
@@ -156,6 +157,24 @@ export class UpperRun {
         options.backend.toolTimeoutMs > 1_800_000)
     )
       throw new Error('Backend tool timeout must be a positive integer at most 1800000 ms.');
+    if (
+      options.backend.activeViewDirections !== undefined &&
+      (!Array.isArray(options.backend.activeViewDirections) ||
+        options.backend.activeViewDirections.some(
+          (direction) => !['left', 'center', 'right'].includes(direction),
+        ) ||
+        new Set(options.backend.activeViewDirections).size !==
+          options.backend.activeViewDirections.length)
+    )
+      throw new Error('Backend active observation directions are invalid.');
+    if (
+      options.backend.rotationAxes !== undefined &&
+      (!Array.isArray(options.backend.rotationAxes) ||
+        options.backend.rotationAxes.some((axis) => !['yaw', 'pitch'].includes(axis)) ||
+        new Set(options.backend.rotationAxes).size !== options.backend.rotationAxes.length ||
+        (options.backend.rotationAxes.length > 0 && !options.backend.rotateView))
+    )
+      throw new Error('Backend rotation capability is invalid.');
     taskContextSummary(options.taskContext ?? []);
     this.goals = new TaskGoals(
       options.validator,
@@ -614,7 +633,15 @@ export class UpperRun {
       changes: [...this.state.retryChanges],
       evidence_refs: refs,
       tools_and_limits: {
-        allowed_tools: [...role.definition.tools],
+        allowed_tools: role.definition.tools.filter(
+          (logical) =>
+            (logical !== 'observation.turn_view' ||
+              Boolean(this.options.backend.activeViewDirections?.length)) &&
+            (logical !== 'observation.rotate' ||
+              Boolean(this.options.backend.rotationAxes?.length)) &&
+            (logical !== 'perception.measure_object' ||
+              Boolean(this.options.backend.measureObject)),
+        ),
         allowed_actions: [],
         budget: structuredClone(this.goal.budget),
       },
@@ -689,6 +716,7 @@ export class UpperRun {
               'perception.capture',
               'perception.measure_object',
               'observation.turn_view',
+              'observation.rotate',
               'execution.start',
               'execution.pause',
               'execution.resume',
@@ -724,16 +752,42 @@ export class UpperRun {
                         ],
                       },
                     }
-                  : logical === 'planning.update'
-                    ? {
-                        ...properties,
-                        plan: {
-                          ...this.planToolSchema!,
-                          description:
-                            'Nested JSON object with schema_version, task_id, version, owner_agent_id, owner_assignment_id and items. Copy identities and criteria from planning.read. Keep objects, arrays and numeric versions as their JSON types throughout the tool arguments.',
-                        },
-                      }
-                    : properties,
+                  : logical === 'observation.rotate'
+                    ? Object.fromEntries(
+                        Object.entries(properties).map(([name, schema]) => [
+                          name,
+                          this.options.backend.rotationAxes!.includes(
+                            name === 'yawDeg' ? 'yaw' : 'pitch',
+                          )
+                            ? schema
+                            : {
+                                type: 'number',
+                                const: 0,
+                                description:
+                                  'This device does not support this rotation axis; supply 0.',
+                              },
+                        ]),
+                      )
+                    : logical === 'observation.turn_view'
+                      ? {
+                          ...properties,
+                          direction: {
+                            type: 'string',
+                            description:
+                              'One active observation direction supported by this device.',
+                            enum: [...this.options.backend.activeViewDirections!],
+                          },
+                        }
+                      : logical === 'planning.update'
+                        ? {
+                            ...properties,
+                            plan: {
+                              ...this.planToolSchema!,
+                              description:
+                                'Nested JSON object with schema_version, task_id, version, owner_agent_id, owner_assignment_id and items. Copy identities and criteria from planning.read. Keep objects, arrays and numeric versions as their JSON types throughout the tool arguments.',
+                            },
+                          }
+                        : properties,
               required: Object.keys(properties).filter(
                 (key) => !CORE_TOOL_OPTIONAL_PARAMETERS[logical]?.includes(key),
               ),
@@ -745,6 +799,7 @@ export class UpperRun {
                 const samples = [
                   'perception.capture',
                   'observation.turn_view',
+                  'observation.rotate',
                   'evidence.read',
                 ].includes(logical)
                   ? this.permit(a, [(value as unknown as SensorSample).evidence.id])
@@ -961,6 +1016,13 @@ export class UpperRun {
     signal: AbortSignal,
     callId: string,
   ): Promise<object> {
+    if (
+      this.activeObservation &&
+      ((tool.startsWith('execution.') && tool !== 'execution.query') ||
+        tool.startsWith('tasks.') ||
+        tool.startsWith('observation.'))
+    )
+      throw new Error('Active observation owns the motion resource.');
     const s = (key: string) => String(args[key]);
     switch (tool) {
       case 'user.ask': {
@@ -1561,6 +1623,35 @@ export class UpperRun {
         if (this.closed || terminal(this.state.state))
           throw new Error('Run ended during active observation.');
         return this.observe(a, sample);
+      }
+      case 'observation.rotate': {
+        this.owner(a);
+        this.stoppedAndVerified();
+        if (!this.options.backend.rotateView)
+          throw new Error('This device does not support rotation.');
+        if (
+          this.state.verdicts.some(
+            (verdict) =>
+              verdict.status === 'passed' &&
+              verdict.task_scope.goal_id === this.goal.id &&
+              verdict.task_scope.attempt_id === `attempt-${this.state.attempt}`,
+          )
+        )
+          throw new Error('A formally completed goal cannot admit additional observation motion.');
+        this.activeObservation = true;
+        try {
+          const result = await this.options.backend.rotateView(
+            Number(args.yawDeg),
+            Number(args.pitchDeg),
+            { signal },
+          );
+          signal.throwIfAborted();
+          if (this.closed || terminal(this.state.state))
+            throw new Error('Run ended during rotation.');
+          return { ...this.observe(a, result.sample), rotation: result.motion };
+        } finally {
+          this.activeObservation = false;
+        }
       }
       case 'execution.query': {
         const native = this.options.backend.query() ?? null;

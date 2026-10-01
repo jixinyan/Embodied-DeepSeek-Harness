@@ -13,6 +13,7 @@ class NativeEnvironmentDescription:
     active_view_directions: tuple[str, ...]
     task_instruction: str | None = None
     scene_metadata: Mapping[str, object] | None = None
+    rotation_axes: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,24 @@ class NativeFrame:
     images: Mapping[str, bytes]
     native_step_index: int
     simulation_time_s: float
+
+
+@dataclass(frozen=True)
+class NativeRotation:
+    observation: NativeObservation
+    requested_yaw_deg: float
+    requested_pitch_deg: float
+    achieved_yaw_deg: float
+    achieved_pitch_deg: float
+    before_yaw_deg: float
+    after_yaw_deg: float
+    before_pitch_deg: float
+    after_pitch_deg: float
+    before_position: tuple[float, float, float]
+    after_position: tuple[float, float, float]
+    control_steps: int
+    raw_sim_steps: int
+    stop_reason: str
 
 
 @dataclass(frozen=True)

@@ -38,7 +38,11 @@ or automatically granted sensor evidence.
 
 ## Task and retry sequence
 
-1. Planner captures images and reads the admitted task and available checks.
+1. Planner captures images and reads the admitted task and available checks. When
+   the selected device exposes `observation.rotate`, Planner can scan with bounded
+   relative yaw/pitch angles and inspect its new images and measured motion receipt.
+   R1Pro scanning changes body heading or trunk posture; subsequent decisions use
+   the resulting pose and current evidence.
 2. Planner writes the complete plan and TODOs. Goal selection waits for the plan
    receipt; execution waits for the selection receipt.
 3. `execution.start` starts one bounded policy job. ActionGate controls actual

@@ -16,6 +16,8 @@ import {
   type BackendCallOptions,
   type BackendObjectMeasurementInput,
   type BackendObjectMeasurement,
+  type BackendRotationResult,
+  type BackendRotationMotion,
   type EmbodiedBackend,
   type BackendFrame,
   type BackendUpdate,
@@ -73,6 +75,7 @@ interface WorkerDescription {
   native_task_id: string;
   supported_check_ids: string[];
   active_view_directions: string[];
+  rotation_axes: string[];
   clock_id: string;
   policy_id: string;
   execution_mode: 'policy' | 'direct' | 'hybrid';
@@ -492,7 +495,8 @@ class NativeTaskBackend implements EmbodiedBackend {
     private readonly runId: string,
     private readonly nativeTaskId: string,
     private readonly clockId: string,
-    private readonly activeViews: readonly string[],
+    readonly activeViewDirections: readonly ('left' | 'center' | 'right')[],
+    readonly rotationAxes: readonly ('yaw' | 'pitch')[],
     supportsObjectMeasurement: boolean,
     private readonly timeouts: Readonly<{
       observationTtlS: number;
@@ -624,6 +628,9 @@ class NativeTaskBackend implements EmbodiedBackend {
         runId: this.runId,
         observationId,
         uncertainActions,
+        activeObservationSupported: this.activeViewDirections.length > 0,
+        activeViewDirections: this.activeViewDirections.join(', '),
+        rotationAxes: this.rotationAxes.join(', '),
         ...(status
           ? { executionId: status.execution_id, rawSimSteps: status.raw_sim_steps ?? 0 }
           : {}),
@@ -812,7 +819,7 @@ class NativeTaskBackend implements EmbodiedBackend {
     direction: 'left' | 'center' | 'right',
     options?: { signal?: AbortSignal },
   ): Promise<SensorSample> {
-    if (!this.activeViews.includes(direction))
+    if (!this.activeViewDirections.includes(direction))
       throw new Error('Native provider does not support this active view.');
     options?.signal?.throwIfAborted();
     const result = object(
@@ -822,6 +829,69 @@ class NativeTaskBackend implements EmbodiedBackend {
     if (result.run_task_id !== this.runId)
       throw new Error('Native active view belongs to another session task.');
     return this.sample(result.observation as WorkerObservation);
+  }
+
+  async rotateView(
+    yawDeg: number,
+    pitchDeg: number,
+    options?: BackendCallOptions,
+  ): Promise<BackendRotationResult> {
+    if (
+      !Number.isFinite(yawDeg) ||
+      !Number.isFinite(pitchDeg) ||
+      Math.abs(yawDeg) > 90 ||
+      Math.abs(pitchDeg) > 45 ||
+      (!this.rotationAxes.includes('yaw') && yawDeg !== 0) ||
+      (!this.rotationAxes.includes('pitch') && pitchDeg !== 0)
+    )
+      throw new Error('Requested rotation exceeds the device capability.');
+    const result = object(
+      await this.transport.request(
+        'rotate_view',
+        {
+          run_task_id: this.runId,
+          yaw_deg: yawDeg,
+          pitch_deg: pitchDeg,
+        },
+        { signal: options?.signal },
+      ),
+    );
+    options?.signal?.throwIfAborted();
+    if (result.run_task_id !== this.runId)
+      throw new Error('Native rotation belongs to another session task.');
+    const motion = object(result.motion);
+    for (const name of [
+      'requested_yaw_deg',
+      'requested_pitch_deg',
+      'achieved_yaw_deg',
+      'achieved_pitch_deg',
+      'before_yaw_deg',
+      'after_yaw_deg',
+      'before_pitch_deg',
+      'after_pitch_deg',
+    ])
+      metricNumber(motion[name]);
+    for (const name of ['before_position', 'after_position']) {
+      const position = motion[name];
+      if (!Array.isArray(position) || position.length !== 3)
+        throw new Error('Native rotation position is invalid.');
+      position.forEach(metricNumber);
+    }
+    for (const name of ['control_steps', 'raw_sim_steps'])
+      if (!Number.isSafeInteger(motion[name]) || (motion[name] as number) < 0)
+        throw new Error('Native rotation counters are invalid.');
+    if (
+      motion.requested_yaw_deg !== yawDeg ||
+      motion.requested_pitch_deg !== pitchDeg ||
+      !['completed', 'stalled', 'budget_exhausted', 'cancelled', 'episode_terminated'].includes(
+        string(motion.stop_reason),
+      )
+    )
+      throw new Error('Native rotation receipt differs from its request.');
+    return {
+      sample: await this.sample(result.observation as WorkerObservation),
+      motion: motion as unknown as BackendRotationMotion,
+    };
   }
 
   async pause(): Promise<void> {
@@ -969,6 +1039,26 @@ export async function createNativeWorkerEnvironment(
       description.supports_object_measurement !== (configuration.provider === 'robocasa')
     )
       throw new Error('Native worker object measurement capability is invalid.');
+    if (
+      !Array.isArray(description.active_view_directions) ||
+      description.active_view_directions.some(
+        (direction) => !['left', 'center', 'right'].includes(direction),
+      ) ||
+      new Set(description.active_view_directions).size !== description.active_view_directions.length
+    )
+      throw new Error('Native worker active observation capability is invalid.');
+    const activeViewDirections = Object.freeze([...description.active_view_directions] as (
+      | 'left'
+      | 'center'
+      | 'right'
+    )[]);
+    if (
+      !Array.isArray(description.rotation_axes) ||
+      description.rotation_axes.some((axis) => !['yaw', 'pitch'].includes(axis)) ||
+      new Set(description.rotation_axes).size !== description.rotation_axes.length
+    )
+      throw new Error('Native worker rotation capability is invalid.');
+    const rotationAxes = Object.freeze([...description.rotation_axes] as ('yaw' | 'pitch')[]);
     const nativeInstruction = description.task_instruction;
     const sceneMetadata = description.scene_metadata;
     if (
@@ -1052,7 +1142,8 @@ export async function createNativeWorkerEnvironment(
           options.runId,
           configuration.nativeTaskId,
           description.clock_id,
-          description.active_view_directions,
+          activeViewDirections,
+          rotationAxes,
           description.supports_object_measurement,
           timeouts,
           toolTimeoutMs,

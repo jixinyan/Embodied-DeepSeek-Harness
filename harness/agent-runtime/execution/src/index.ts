@@ -36,6 +36,8 @@ export type {
   BackendCheckResult,
   BackendObjectMeasurementInput,
   BackendObjectMeasurement,
+  BackendRotationMotion,
+  BackendRotationResult,
 } from './backend-port.js';
 
 export {

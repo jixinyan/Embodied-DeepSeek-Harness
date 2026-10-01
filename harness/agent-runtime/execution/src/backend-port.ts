@@ -60,6 +60,25 @@ export interface BackendCheckResult {
   sample: SensorSample;
   facts: CheckResult[];
 }
+export interface BackendRotationMotion {
+  requested_yaw_deg: number;
+  requested_pitch_deg: number;
+  achieved_yaw_deg: number;
+  achieved_pitch_deg: number;
+  before_yaw_deg: number;
+  after_yaw_deg: number;
+  before_pitch_deg: number;
+  after_pitch_deg: number;
+  before_position: readonly [number, number, number];
+  after_position: readonly [number, number, number];
+  control_steps: number;
+  raw_sim_steps: number;
+  stop_reason: 'completed' | 'stalled' | 'budget_exhausted' | 'cancelled' | 'episode_terminated';
+}
+export interface BackendRotationResult {
+  sample: SensorSample;
+  motion: BackendRotationMotion;
+}
 export interface BackendObjectMeasurementInput {
   observationId: string;
   camera: string;
@@ -106,6 +125,8 @@ export interface BackendObjectMeasurement {
 export interface EmbodiedBackend {
   readonly source: 'test_fixture' | 'simulation' | 'hardware';
   readonly toolTimeoutMs?: number;
+  readonly activeViewDirections?: readonly ('left' | 'center' | 'right')[];
+  readonly rotationAxes?: readonly ('yaw' | 'pitch')[];
   start(request: SubgoalRequest, options?: BackendCallOptions): Promise<ExecutionStatus>;
   /** Immediate local status projection; remote clients update it before notifying subscribers. */
   query(): ExecutionStatus | undefined;
@@ -118,6 +139,11 @@ export interface EmbodiedBackend {
     direction: 'left' | 'center' | 'right',
     options?: BackendCallOptions,
   ): Promise<SensorSample>;
+  rotateView?(
+    yawDeg: number,
+    pitchDeg: number,
+    options?: BackendCallOptions,
+  ): Promise<BackendRotationResult>;
   pause(options?: BackendCallOptions): Promise<void>;
   resume(ownerId: string, options: BackendResumeOptions): Promise<void>;
   stop(): Promise<void>;

@@ -126,6 +126,18 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
         'Advertised view direction. Inspect the returned achieved view; motion depends on the embodiment.',
     },
   },
+  'observation.rotate': {
+    yawDeg: {
+      type: 'number',
+      description:
+        'Finite relative body yaw in degrees between -90 and 90; positive turns left, negative turns right. Use 0 to hold yaw.',
+    },
+    pitchDeg: {
+      type: 'number',
+      description:
+        'Finite relative measured head-camera pitch in degrees between -45 and 45; positive looks up, negative looks down. R1Pro uses trunk motion. Use 0 to hold pitch.',
+    },
+  },
   'execution.start': {
     instruction: text(
       'One concrete instruction accepted by the selected checkpoint for the active goal. Use the catalog instruction verbatim when required by this deployment; at most 12000 UTF-8 bytes.',
@@ -207,6 +219,8 @@ export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
     'Ground one text-described object in an authorized source camera image with SAM. Supply evidenceId and attachmentId copied from capture or evidence.read. Returns instances, each with maskAttachmentId, plus maskEvidenceId and overlayEvidenceId; an empty instances array supplies no object geometry. Use the original RGB references with a selected mask for subsequent depth or native measurement. Segmentation does not establish persistent object identity or physical success.',
   'observation.turn_view':
     'Request an advertised active view using the embodiment motion resource. Decision owner only, with stopped execution and available resource. Returns an authorized observation and achieved state; inspect actual motion and capture time. View changes may move the body and invalidate earlier geometry. Use only when exposed by the selected deployment.',
+  'observation.rotate':
+    'Rotate the current embodiment to actively observe the environment. Decision owner only, before execution or after a confirmed ended execution with formal verification. Supply both degree-valued angles; unsupported axes must be 0. Returns a new SensorSample, presents its RGB images and includes rotation with requested/achieved yaw and pitch, measured before/after pose, control_steps, raw_sim_steps and stop_reason. R1Pro yaw turns the entire body and pitch changes trunk posture. Inspect achieved angles, displacement and any stalled/budget/cancelled outcome. Motion invalidates earlier capture geometry; policy execution and formal verification cannot run concurrently with rotation.',
   'planning.read':
     'Read authoritative task planning context without side effects. Returns plan (null before the first write), taskId, ownerAgentId, ownerAssignmentId, activeGoalId, attemptId, successContract, goal catalog, allowed subgoal checks, retry and learningEnabled. For the first plan use expectedVersion=0 and plan.version=1; later use plan.version from this receipt and increment it exactly once. Copy IDs and original criteria from these fields.',
   'files.read':

@@ -15,6 +15,7 @@ tools:
   - evidence.read
   - perception.capture
   - observation.turn_view
+  - observation.rotate
   - execution.start
   - execution.query
   - execution.pause
@@ -34,6 +35,12 @@ inspect the returned images together with task context and explicitly supplied
 agent evidence. Use observation.turn_view when a different view is needed and the
 motion resource is available. Do not assume a specialist agent must interpret the
 scene before you can plan. Specialists are optional helpers, not the decision owner.
+
+When observation.rotate is available, scan with bounded relative yaw/pitch angles
+and inspect its returned RGB images and measured rotation receipt. On R1Pro, yaw
+turns the body and pitch moves the trunk-mounted camera. Each scan changes the
+physical pose. Use current evidence for subsequent planning and geometry; account
+for the changed heading and posture before starting the selected policy.
 
 Ground the durable plan and each execution decision in the available images and
 context. When a tool or verifier returns new evidence, reassess the next action.

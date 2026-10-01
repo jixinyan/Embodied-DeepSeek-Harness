@@ -15,7 +15,7 @@ import traceback
 from typing import Any, Awaitable, Callable
 from uuid import uuid4
 
-from physical_harness.environments import NativeEnvironment, NativeFrame, NativeObservation
+from physical_harness.environments import NativeEnvironment, NativeFrame, NativeObservation, NativeRotation
 from physical_harness.execution.action_gate import ActionGate
 from physical_harness.execution.modes import ExecutionMode
 from physical_harness.execution.native_device import NativeActionDevice
@@ -298,6 +298,7 @@ class NativeWorkerSession:
             "camera_names": self._description.camera_names,
             "supported_check_ids": self._description.supported_check_ids,
             "active_view_directions": self._description.active_view_directions,
+            "rotation_axes": self._description.rotation_axes,
             "task_instruction": self._description.task_instruction,
             "scene_metadata": self._description.scene_metadata,
             "native_task_id": self._native_task_id,
@@ -742,6 +743,40 @@ class NativeWorkerSession:
             raise RuntimeError("Native task identity changed during active observation.")
         return {"run_task_id": run_task_id, "observation": self._observation_wire(observation)}
 
+    async def rotate_view(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        async with self._control_lock:
+            run_task_id = self._run_task_id
+            if (not self._host_connected or not self._lease_active or run_task_id is None
+                    or arguments["run_task_id"] != run_task_id):
+                raise RuntimeError("Rotation requires the current connected task lease.")
+            yaw, pitch = arguments["yaw_deg"], arguments["pitch_deg"]
+            for axis, value, limit in (("yaw", yaw, 90), ("pitch", pitch, 45)):
+                if type(value) not in (int, float) or not math.isfinite(value) or abs(value) > limit:
+                    raise ValueError("Rotation angle exceeds its finite degree limit.")
+                if value != 0 and axis not in self._description.rotation_axes:
+                    raise ValueError("Rotation axis is unsupported by this device.")
+            if not self._description.rotation_axes:
+                raise ValueError("This device does not support rotation.")
+            snapshot = self._gate.snapshot() if self._gate is not None else None
+            if snapshot is not None and (snapshot["state"] != "ended" or not snapshot["device_confirmed"]):
+                raise RuntimeError("Rotation requires a confirmed ended execution.")
+            if self._pump is not None and not self._pump.done():
+                raise RuntimeError("Policy execution still owns the motion resource.")
+            result = await self._require_device().on_owner(lambda: self._environment.rotate_view(
+                float(yaw), float(pitch), lambda: not self._host_connected or not self._lease_active
+            ))
+            if not isinstance(result, NativeRotation):
+                raise RuntimeError("Native rotation did not provide its measured receipt.")
+            self._measurement_observation = None
+            self._measurement_control_counts = None
+            self._latest_observation = result.observation
+            if not self._host_connected or not self._lease_active or self._run_task_id != run_task_id:
+                raise RuntimeError("Task lease changed during rotation; inspect the native motion record.")
+            if snapshot != (self._gate.snapshot() if self._gate is not None else None):
+                raise RuntimeError("Execution boundary changed during rotation.")
+            return {"run_task_id": run_task_id, "observation": self._observation_wire(result.observation),
+                    "motion": {key: value for key, value in vars(result).items() if key != "observation"}}
+
     async def open_task(self, arguments: dict[str, Any]) -> dict[str, Any]:
         async with self._control_lock:
             if not self._host_connected:
@@ -869,6 +904,7 @@ async def serve() -> None:
         "capture": session.capture,
         "measure_object": session.measure_object,
         "turn_view": session.turn_view,
+        "rotate_view": session.rotate_view,
         "check": session.check,
         "close_task": lambda _args: session.close_task(),
         "close": lambda _args: session.close(),
