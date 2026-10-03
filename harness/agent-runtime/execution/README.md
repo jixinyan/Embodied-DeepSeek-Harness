@@ -142,6 +142,15 @@ group cleanup continues when the leader exits before its children. Forced releas
 retains the original failure and any exit deadline errors. A failed or unconfirmed
 release keeps device/resource state unknown.
 
+The [native Console fault acceptance](../../../docs/implementation/native-console-fault.md)
+checks a real Qwen/GR00T/BEHAVIOR task after suspension of its owned SDK process.
+The background timeout fails the task, retires its role and preserves zero formal
+verdicts and unconfirmed device state. Original learned proposals, historical
+published counters, active-observation controls and OS process cleanup have
+separate records. Session close returns an error with resources unknown, while
+the worker's owned process group exits. Process absence establishes OS cleanup;
+device confirmation still requires its original acknowledgement.
+
 Formal boundary IDs are scoped to a run and execution. Every completed execution
 requires a fresh boundary ID. The upper host records admission before publishing
 the ended status and scheduling the formal role. Historical paused-boundary records
@@ -151,7 +160,6 @@ remain readable. See
 Six additional upper tests cover pending formal checks, unsolicited resume, missing
 acknowledgement, concurrent commands, a newer pause during acknowledgement,
 execution/image identity and first-state budget rejection. All use CPU providers.
-
 
 Profile configuration is resolved before provider allocation. The shared schema and
 [profile guide](../../../docs/implementation/physical-profiles.md) define the exact
