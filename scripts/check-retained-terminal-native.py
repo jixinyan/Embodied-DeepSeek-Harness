@@ -9,7 +9,9 @@ import numpy as np
 from PIL import Image
 
 from physical_harness.environments.robodojo.audit import audit_native_physics
-from physical_harness.policies.openpi_audit import CAMERAS, json_records, require
+from physical_harness.policies.openpi_audit import (
+    CAMERAS, REQUEST_FIELDS, json_records, require, verify_actions, verify_request_inputs,
+)
 from physical_harness.validation import ContractValidator
 
 
@@ -121,7 +123,7 @@ def audit(packet, schema_path):
                         "The second-task camera evidence differs from the retained final SDK observation.")
                 image_checks.append({"camera": camera, "sha256": source["sha256"], "pixelsMatch": True})
 
-    request_count = 0
+    request_count, retained_inferences = 0, {}
     for path in Path(packet["policyRequestDirectory"]).rglob("*.json"):
         value = json.loads(path.read_text(encoding="utf-8"))
         schema = value.get("schema_version")
@@ -134,6 +136,19 @@ def audit(packet, schema_path):
             action = validator.parse("ActionSegment", value["segment"])
             require(action["task_scope"]["task_id"] != second_id,
                     "The already-ended task issued a native ActionSegment.")
+        elif schema is None and path.name == f"{value.get('request_id')}.inference.json":
+            request = validator.parse("PolicyRequest", json.loads(
+                path.with_name(f"{value['request_id']}.request.json").read_text(encoding="utf-8")))
+            require(request["task_scope"]["task_id"] != second_id,
+                    "The already-ended task issued a recorded native inference.")
+            require(all(value[name] == request[name] for name in REQUEST_FIELDS),
+                    "Retained native inference belongs to a different PolicyRequest.")
+            verify_actions(value)
+            verify_request_inputs(request, value)
+            require(value["admitted_actions"] == value["actions"][:request["max_actions"]]
+                    and value["admitted_actions"] and value["request_id"] not in retained_inferences,
+                    "Retained native inference has an invalid or duplicated admitted action prefix.")
+            retained_inferences[value["request_id"]] = value
         else:
             raise ValueError(f"Unknown actual policy record schema: {path}")
     require(request_count > 0, "The first successful task has no actual retained policy requests.")
@@ -164,6 +179,14 @@ def audit(packet, schema_path):
         require(all(source[name] == record[name] for name in
                     ("state_sha256", "camera_sha256", "elapsed_s", "checkpoint_sha256")),
                 "The bridge inference does not identify its actual native service request.")
+        require(record["request_id"] in retained_inferences,
+                "The original bridge inference has no actual retained inference file.")
+        retained = retained_inferences[record["request_id"]]
+        require(all(record.get(name) == value for name, value in retained.items()
+                    if name != "admitted_actions"),
+                "The actual retained inference differs from its original bridge service log.")
+    require(set(retained_inferences) == {record["request_id"] for record in bridge_inferences},
+            "Retained policy files contain an additional unidentified native inference.")
     require(max(native_inferences) == max(item["inference_index"] for item in bridge_inferences),
             "The native policy has an additional unidentified inference after the last bridge request.")
     return {"episodeId": native["episode_id"], "nativeStepId": native["step_id"],

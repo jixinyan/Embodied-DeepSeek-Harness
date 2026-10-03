@@ -88,10 +88,14 @@ terminal reason alone does not establish success. Native success, failure and
 truncation retain the provider's actual predicate/episode flags. The scene remains
 unchanged and the environment remains allocated until Session closure.
 
-Python compilation and base imports verify the new preflight integration. Actual
-repeated-task acceptance for a genuinely terminated native scene is tracked in the
-[delivery record](v1-delivery.md), independently from positive learned-policy action
-acceptance. Historical journal inspection does not execute or resume an environment.
+Actual RoboDojo Session `88b93ebe-b2df-48f9-8170-30a724c0c0f9` retains two
+sequential `general_pickup` tasks. Run `897f215d-119f-4880-9030-1d9edeb9fabb`
+succeeds after its 32-control failed attempt and 26-control successful retry.
+Run `ca43312e-328d-4ee1-b940-97d48c27d172` then succeeds with a fresh confirmed
+terminal boundary and independent formal Verifier, using zero additional controls,
+policy calls or physics steps. Both tasks retain zero tool errors and the Session
+closes with resources released. This accepts repeated-task behavior on that
+genuinely ended native episode; other native providers retain separate acceptance.
 
 `scripts/check-retained-terminal-task.ts` reads a private copy of an actual closed
 Session journal through production membership, catalog, event, assignment, sensor,
@@ -100,7 +104,9 @@ second task with a new confirmed terminal boundary, independent Verifier and zer
 new policy calls, controls or physics steps. The native helper verifies the same
 RoboDojo episode through its retained `episode_status` records, actual SDK counter,
 current native GT and final NPZ camera arrays. It also checks original request,
-ActionSegment and policy-service sources. This dedicated check preserves the
+ActionSegment and policy-service sources. Retained native inference files must
+match their original PolicyRequests, actual model action horizons and bridge/native
+logs. This dedicated check preserves the
 positive learned-policy auditor's requirement for actual inference and controls.
 
 Run against original completed records using an installed Python environment with
@@ -121,8 +127,16 @@ pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-retained-terminal-t
 
 The command writes private acceptance artifacts under `.local/work/` and leaves
 the original journal/images unchanged. Missing native sources or unresolved
-ownership fail the check. Its actual repeated-task gate remains open until an
-accepted closed native two-task record is retained.
+ownership fail the check. The accepted RoboDojo record retains native episode
+`4e0e5c138eb94ada9be396df31f08733`, step 58, physics counter 1424 and simulation
+time 5.696000270545483 seconds. Its second-task `episode_status_000060.json`
+precedes boundary `08a692a3-4aab-408a-916c-633ce8522b62`; counter, time,
+success, NPZ digest and physics provenance remain unchanged. All 12 model-facing
+camera comparisons equal the final native RGB arrays. Private evidence is
+`v1-robodojo-20261003-05/acceptance-tools-terminal/.local/work/retained-terminal-task-Fzbxs6/acceptance.json`
+on the deployment host and `.local/work/retained-terminal-05-accepted/acceptance.json`
+in the development checkout. Original journal SHA256 remains
+`909bce8f3eb27a51b4bd2eab3313d46ff9295ef7a3f5dbbbffe8a047be0eed62`.
 
 ## Console behavior and verification
 
