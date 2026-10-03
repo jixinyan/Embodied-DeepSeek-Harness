@@ -230,4 +230,12 @@ existing `edh-behavior` interpreter and an independently created recording root.
 Its empty-root cleanup returns the matching token/root and zero profile receipts;
 repeated host release remains idempotent. This check allocates no simulator,
 profile or model request.
+The configured RoboDojo native interpreter independently passes the same
+production host preflight and repeated empty-root release under frozen
+`147c42ab42380d385443a8cc85da1ee511f7b083` at
+`2026-10-03T16:24:12.061Z`. Its original report is retained in
+`.local/work/native-console-fault-20261003-05/profile-host-preflight.json`.
+That workspace allocates zero Sessions, SDK processes, Tasks, policy requests
+and profiles. Its owned Console, policy and bridge processes exit by
+`16:28:28.343401Z`; the three listeners and writer lock are absent.
 The full native forced-exit acceptance of this host binding remains pending.
