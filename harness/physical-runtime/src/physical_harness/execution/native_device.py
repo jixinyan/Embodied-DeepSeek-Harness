@@ -2,7 +2,11 @@ from __future__ import annotations
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timezone
 from functools import partial
+import json
+import os
+from pathlib import Path
 from threading import Lock
 from typing import Callable, ParamSpec, TypeVar
 from uuid import uuid4
@@ -158,13 +162,36 @@ class NativeActionDevice:
         with self._lock:
             if self._closed or execution_id != self._execution_id or generation != self._generation:
                 raise RuntimeError("Native stop was superseded before confirmation.")
-        return {
+        acknowledgement = {
             "schema_version": "physical.stop_ack.v1",
             "execution_id": execution_id,
             "generation": generation,
             "device_confirmed": True,
             "boundary_id": str(uuid4()),
         }
+        record_directory = os.environ.get("EDH_POLICY_REQUEST_RECORD_DIR")
+        if record_directory is not None:
+            with self._lock:
+                record = {
+                    "schema_version": "edh.native_stop_record.v1",
+                    "recorded_at": datetime.now(timezone.utc).isoformat(),
+                    "acknowledgement": acknowledgement,
+                    "executed_actions": self._executed_actions,
+                    "raw_sim_steps": self._raw_sim_steps,
+                    "uncertain_actions": self._uncertain_actions,
+                    "observation_id": self._last_step.observation.observation_id if self._last_step else None,
+                    "native_physics": self._last_step.native_physics if self._last_step else None,
+                }
+            directory = Path(record_directory).resolve(strict=True) / execution_id
+            directory.mkdir(exist_ok=True)
+            path = directory / f"stop-{acknowledgement['boundary_id']}.json"
+            await asyncio.to_thread(self._record_stop, path, record)
+        return acknowledgement
+
+    @staticmethod
+    def _record_stop(path: Path, record: dict) -> None:
+        with path.open("x", encoding="utf-8") as stream:
+            json.dump(record, stream, allow_nan=False)
 
     async def resume(self, execution_id: str, generation: int) -> bool:
         with self._lock:
