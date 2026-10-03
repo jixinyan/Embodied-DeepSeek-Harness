@@ -1,11 +1,11 @@
-name: Framework checks
+name: Source checks
 on:
   push:
   pull_request:
 permissions:
   contents: read
 jobs:
-  scaffold:
+  source:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

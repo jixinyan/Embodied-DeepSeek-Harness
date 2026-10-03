@@ -17,6 +17,9 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+The [release validation guide](release-validation.md) defines source checks,
+actual native task submission, source-bound audits and product/safety evidence.
+
 ## Acceptance register
 
 | ID  | Capability                                  | Confirmed current state                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Remaining implementation and acceptance                                                                                                                                                                                                                               |
