@@ -36,6 +36,13 @@ const sourceDigest = await digest();
 await mkdir('.local/work', { recursive: true });
 const directory = await mkdtemp(resolve('.local/work/retained-storage-'));
 await copyFile(source, resolve(directory, 'records.jsonl'));
+assert.equal(
+  createHash('sha256')
+    .update(await readFile(resolve(directory, 'records.jsonl')))
+    .digest('hex'),
+  sourceDigest,
+  'Private journal does not match the retained source snapshot.',
+);
 const validator = new ContractValidator(
   JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
 );
@@ -70,6 +77,7 @@ try {
     );
     const archives = new RequestIdentityArchives(store);
     index = new WorkspaceHistoryIndex(store);
+    assert.ok(index.page('session').records.length);
     const retention = new DomainRetention(store, validator, {
       version: 'private-copy-actual-history-v1',
       sources: [],
@@ -86,12 +94,16 @@ try {
     const preview = await retention.inspect(selected.keys, signal);
     const retired = await retention.retire(preview.token, signal);
     assert.equal(retired.removedRecords, selected.keys.length);
+    assert.equal(index.page('session').records.length, 0);
+    assert.equal(index.page('run').records.length, 0);
     await assert.rejects(retention.retire(preview.token, signal), DomainRetentionConflict);
     index.close();
     index = undefined;
     store.close();
     store = new LocalStore(directory);
     index = new WorkspaceHistoryIndex(store);
+    assert.equal(index.page('session').records.length, 0);
+    assert.equal(index.page('run').records.length, 0);
     const restarted = new UserSessions(store, new SessionTaskCatalogs(store, validator));
     assert.equal(restarted.list().length, 0);
     for (const session of sessions)

@@ -8,6 +8,7 @@ import {
   TaskGoals,
   VerdictHistory,
   parseGoalBinding,
+  RunHistory,
   type RunState,
 } from '@edh/tasks';
 import type { DomainRecordOwner } from './domain-retention.js';
@@ -229,12 +230,20 @@ export function applicationRecordOwners(
         );
         if (!accepted) throw new Error('Plan verdict source is missing.');
         const verdict = new VerdictHistory(store, validator).resolve(state.id, accepted);
+        const latest = state.verdicts.findLast(
+          (result) =>
+            result.task_scope.task_id === state.id && result.task_scope.goal_id === goalId,
+        );
+        const request = state.requests.findLast((item) => item.goal_id === goalId);
         if (
           verdict.task_scope.task_id !== state.id ||
           verdict.task_scope.goal_id !== goalId ||
           verdict.goal_contract_id !== item.success_contract.id ||
           verdict.goal_contract_version !== item.success_contract.version ||
-          (item.status === 'done' && verdict.status !== 'passed')
+          (item.status === 'done' &&
+            (verdict.status !== 'passed' ||
+              latest?.verdict_id !== verdict.verdict_id ||
+              (request && request.attempt_id !== verdict.task_scope.attempt_id)))
         )
           throw new Error('Plan verdict conflicts with its goal criteria or completion.');
         if ('detailsStored' in accepted)
@@ -256,12 +265,51 @@ export function applicationRecordOwners(
       const state = run(runId);
       const references = new Set([`run:${runId}`]);
       const decision = actor(state, question.assignmentId, references);
+      const attempt = /^attempt-([1-9][0-9]*)$/.exec(question.attemptId);
       if (
         question.assignmentId !== state.decisionAssignmentId ||
-        question.goalId !== decision.brief.task_scope.goal_id ||
-        question.attemptId !== decision.brief.task_scope.attempt_id
+        !attempt ||
+        !Number.isSafeInteger(Number(attempt[1])) ||
+        Number(attempt[1]) > state.attempt
       )
         throw new Error('Clarification decision owner or task scope conflicts.');
+      const history = new RunHistory(store);
+      const total = history.total(state);
+      let sourceFound = false;
+      for (let offset = 0; offset < total; ) {
+        const page = history.page(state, offset, total);
+        for (const event of page.events) {
+          if (event.type !== 'user.clarification') continue;
+          const original = z.object({ id: z.string() }).parse(event.detail.clarification);
+          if (original.id !== question.id) continue;
+          const stable = (value: unknown) =>
+            z
+              .object({
+                id: z.string(),
+                runId: id,
+                assignmentId: id,
+                callId: z.string(),
+                goalId: id,
+                attemptId: id,
+                question: z.string(),
+                reason: z.string(),
+                options: z.array(z.string()),
+                createdAt: z.string(),
+              })
+              .parse(value);
+          if (!isDeepStrictEqual(stable(event.detail.clarification), stable(question)))
+            throw new Error('Clarification scope conflicts with its published question.');
+          if (state.eventCount !== undefined) references.add(`event:${runId}:${event.sequence}`);
+          sourceFound = true;
+        }
+        offset = page.throughSequence;
+      }
+      if (
+        !sourceFound &&
+        (question.goalId !== decision.brief.task_scope.goal_id ||
+          question.attemptId !== decision.brief.task_scope.attempt_id)
+      )
+        throw new Error('Clarification historical goal requires a published source event.');
       const result = declaration(key, question, state, references, question.assignmentId);
       return { ...result, retain: question.state === 'pending' || question.delivery === 'queued' };
     }),
