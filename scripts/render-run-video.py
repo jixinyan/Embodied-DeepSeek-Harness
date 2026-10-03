@@ -357,7 +357,7 @@ def render_frame(export, events, event_times, cameras, wall, hold, playback_seco
     if execution:
         state = execution["detail"]["execution"]
         draw.text((1205, 831), f"{state['task_scope']['attempt_id']} · {state['state']} · {state['control_steps']} controls · {state['policy_calls']} calls", font=small, fill=TEXT)
-        draw.text((1205, 868), f"{state['raw_sim_steps']} physics steps · stop: {state.get('stop_reason', 'pending')}", font=small, fill=MUTED)
+        draw.text((1205, 868), f"Native steps {state['raw_sim_steps']} · stop: {state.get('stop_reason', 'pending')}", font=small, fill=MUTED)
     elif not observation_only:
         draw.text((1205, 831), "Execution not started", font=small, fill=MUTED)
     check = latest(events, event_times, wall, "verification.checked")
