@@ -41,6 +41,12 @@ export interface BackendPolicyEvent {
   type: string;
   data: Record<string, unknown>;
 }
+export interface BackendFault {
+  executionId: string;
+  taskScope: TaskScope;
+  type: string;
+  message: string;
+}
 export interface BackendCallOptions {
   /** Native DSH cancellation; providers must forward it to cooperative remote work. */
   signal?: AbortSignal;
@@ -171,5 +177,6 @@ export interface EmbodiedBackend {
   subscribe(listener: (update: BackendUpdate) => void): () => void;
   subscribeFrames?(listener: (frame: BackendFrame) => void): () => void;
   subscribePolicyEvents?(listener: (event: BackendPolicyEvent) => void): () => void;
+  subscribeFaults?(listener: (fault: BackendFault) => void): () => void;
   close(): Promise<void>;
 }

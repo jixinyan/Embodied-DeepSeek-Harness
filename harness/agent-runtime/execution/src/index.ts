@@ -30,6 +30,7 @@ export type {
   BackendUpdate,
   BackendFrame,
   BackendPolicyEvent,
+  BackendFault,
   BackendCallOptions,
   BackendResumeOptions,
   BackendEndOptions,

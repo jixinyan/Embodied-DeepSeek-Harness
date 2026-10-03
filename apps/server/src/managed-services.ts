@@ -144,7 +144,7 @@ async function probe(entry: Entry, signal: AbortSignal): Promise<void> {
     );
   });
 }
-async function waitFor<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+export async function waitFor<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
   signal.throwIfAborted();
   let abort: () => void;
   const interrupted = new Promise<never>((_accept, reject) => {

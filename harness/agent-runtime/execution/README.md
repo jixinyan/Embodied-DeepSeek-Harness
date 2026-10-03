@@ -113,6 +113,20 @@ last accepted status is historical evidence, not proof of current hardware state
 following a connection or protocol failure. Device/resource recovery is still a
 worker integration responsibility.
 
+`subscribeFaults` reports a background worker failure even without an outstanding
+RPC. Native fault publications carry their original execution ID, complete active
+task scope, exception type and message. The client validates them against its
+admitted request and published execution before failing the active run. Disconnect
+rejects outstanding calls and closes transport admission. Fault handling produces
+no execution status, stop acknowledgement or formal verification boundary.
+
+Native workers own a separate POSIX process group. Shutdown requires the original
+clean close acknowledgement, successful leader exit and absence of that owned
+group. Each graceful, SIGTERM and SIGKILL release wait has a 15-second deadline;
+group cleanup continues when the leader exits before its children. Forced release
+retains the original failure and any exit deadline errors. A failed or unconfirmed
+release keeps device/resource state unknown.
+
 Formal boundary IDs are scoped to a run and execution. Every completed execution
 requires a fresh boundary ID. The upper host records admission before publishing
 the ended status and scheduling the formal role. Historical paused-boundary records

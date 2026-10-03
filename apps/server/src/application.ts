@@ -144,6 +144,7 @@ export class UpperRun {
   private unsubscribe: () => void;
   private unsubscribeFrames: () => void = () => {};
   private unsubscribePolicyEvents: () => void = () => {};
+  private unsubscribeFaults: () => void = () => {};
   private readonly goals: TaskGoals;
   private goal: GoalBinding;
   private attemptSequence = 1;
@@ -419,6 +420,24 @@ export class UpperRun {
           this.spawn(this.fail(error));
           throw error;
         }
+      });
+    if (options.backend.subscribeFaults)
+      this.unsubscribeFaults = options.backend.subscribeFaults((fault) => {
+        const request = this.currentRequest();
+        const execution = this.state.executions.find(
+          (candidate) => candidate.execution_id === fault.executionId,
+        );
+        if (
+          this.closed ||
+          !request ||
+          fault.taskScope.task_id !== this.state.id ||
+          fault.taskScope.goal_id !== request.goal_id ||
+          fault.taskScope.attempt_id !== request.attempt_id ||
+          fault.taskScope.recovery_id !== request.recovery_id ||
+          (execution && !isDeepStrictEqual(execution.task_scope, fault.taskScope))
+        )
+          throw new Error('Native backend fault differs from its admitted task scope.');
+        this.spawn(this.fail(new Error(`Native backend ${fault.type}: ${fault.message}`)));
       });
   }
   snapshot(): RunState {
@@ -2704,6 +2723,7 @@ export class UpperRun {
       await cleanup(() => this.unsubscribe());
       await cleanup(() => this.unsubscribeFrames());
       await cleanup(() => this.unsubscribePolicyEvents());
+      await cleanup(() => this.unsubscribeFaults());
       await cleanup(() => this.options.backend.close());
       await cleanup(() => this.sessions.close());
       await cleanup(() => this.settle());

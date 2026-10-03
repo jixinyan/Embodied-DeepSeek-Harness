@@ -2,6 +2,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { createInterface } from 'node:readline';
 import type { Readable } from 'node:stream';
+import { setTimeout as delay } from 'node:timers/promises';
 import { isDeepStrictEqual } from 'node:util';
 import type {
   ContractValidator,
@@ -13,6 +14,7 @@ import type {
 import {
   readPolicyEvent,
   type BackendPolicyEvent,
+  type BackendFault,
   type BackendCallOptions,
   type BackendObjectMeasurementInput,
   type BackendObjectMeasurement,
@@ -25,6 +27,7 @@ import {
 } from '@edh/execution';
 import { parseTaskCatalog, type TaskCatalogDefinition, type TaskDefinition } from '@edh/tasks';
 import type { DeploymentServices, SessionEnvironment } from './deployment.js';
+import { waitFor } from './managed-services.js';
 
 type JsonObject = Record<string, unknown>;
 
@@ -259,8 +262,13 @@ class NativeWorkerTransport {
   private listener: ((publication: WorkerPublication) => Promise<void>) | undefined;
   private frameListener: ((publication: WorkerFramePublication) => Promise<void>) | undefined;
   private policyListener: ((publication: unknown) => void) | undefined;
+  private faultAdmission: ((publication: unknown) => BackendFault) | undefined;
+  private faultListener: ((error: Error, publication?: BackendFault) => void) | undefined;
   private fault?: Error;
   private closeAcknowledged = false;
+  private readonly exited: Promise<void>;
+  private termination: Promise<void> | undefined;
+  private closing: Promise<void> | undefined;
 
   constructor(private readonly configuration: NativeWorkerConfiguration) {
     for (const timeout of [configuration.initializeTimeoutMs, configuration.closeTimeoutMs]) {
@@ -274,6 +282,13 @@ class NativeWorkerTransport {
       cwd: configuration.cwd,
       env: { ...process.env, ...configuration.env },
       stdio: ['pipe', 'pipe', 'pipe', 'pipe'],
+      detached: process.platform !== 'win32',
+    });
+    this.exited = new Promise<void>((resolve) => {
+      this.child.once('exit', () => resolve());
+      this.child.once('error', () => {
+        if (this.child.pid === undefined) resolve();
+      });
     });
     if (this.child.pid !== undefined) configuration.onProcessStarted?.(this.child.pid);
     const channel = this.child.stdio[configuration.transportFd ?? 3] as Readable;
@@ -333,6 +348,13 @@ class NativeWorkerTransport {
   setPolicyListener(listener: ((publication: unknown) => void) | undefined): void {
     this.policyListener = listener;
   }
+  setFaultListener(
+    listener: ((error: Error, publication?: BackendFault) => void) | undefined,
+    admission?: (publication: unknown) => BackendFault,
+  ): void {
+    this.faultListener = listener;
+    this.faultAdmission = admission;
+  }
 
   get disconnected(): boolean {
     return this.fault !== undefined;
@@ -342,8 +364,8 @@ class NativeWorkerTransport {
     if (this.fault) throw this.fault;
   }
 
-  private disconnect(error: Error): void {
-    if (this.closeAcknowledged && this.pending.size === 0) return;
+  private disconnect(error: Error, publication?: BackendFault): void {
+    if (!publication && this.closeAcknowledged && this.pending.size === 0) return;
     if (this.fault) return;
     this.fault = error;
     process.stderr.write(`Native worker transport failure: ${error.message}\n`);
@@ -353,17 +375,82 @@ class NativeWorkerTransport {
       item.reject(error);
     }
     this.pending.clear();
-    const timer = setTimeout(() => {
-      if (this.child.exitCode === null && this.child.signalCode === null)
-        this.child.kill('SIGTERM');
-    }, 15000);
-    timer.unref();
+    void this.terminate().catch((terminationError: unknown) => {
+      process.stderr.write(`Native worker termination failure: ${String(terminationError)}\n`);
+    });
+    this.faultListener?.(error, publication);
+  }
+
+  private terminate(): Promise<void> {
+    return (this.termination ??= (async () => {
+      const alive = (): boolean => {
+        if (this.child.pid === undefined) return false;
+        if (process.platform === 'win32')
+          return this.child.exitCode === null && this.child.signalCode === null;
+        try {
+          process.kill(-this.child.pid, 0);
+          return true;
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code === 'ESRCH') return false;
+          throw error;
+        }
+      };
+      const signal = (name: NodeJS.Signals): void => {
+        if (!alive()) return;
+        if (process.platform === 'win32') this.child.kill(name);
+        else {
+          try {
+            process.kill(-this.child.pid!, name);
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;
+          }
+        }
+      };
+      const released = async (): Promise<void> => {
+        const deadline = AbortSignal.timeout(15000);
+        await waitFor(this.exited, deadline);
+        while (alive()) await delay(50, undefined, { signal: deadline });
+      };
+      try {
+        await released();
+      } catch (gracefulError) {
+        signal('SIGTERM');
+        try {
+          await released();
+        } catch (termError) {
+          signal('SIGKILL');
+          let releaseError: unknown;
+          try {
+            await released();
+          } catch (error) {
+            releaseError = error;
+          }
+          throw new AggregateError(
+            [gracefulError, termError, ...(releaseError ? [releaseError] : [])],
+            'Native worker required forced process termination; device state is unknown.',
+          );
+        }
+        throw new Error('Native worker exceeded its graceful exit deadline.', {
+          cause: gracefulError,
+        });
+      }
+    })());
   }
 
   private async receive(line: string): Promise<void> {
     if (Buffer.byteLength(line) > 32 * 1024 * 1024)
       throw new Error('Native worker response exceeds the transport bound.');
     const message = object(JSON.parse(line));
+    if (this.fault) throw new Error('Native worker published after a transport fault.');
+    if (message.event === 'fault') {
+      if (!this.faultAdmission) throw new Error('Native worker fault has no admitted task port.');
+      const publication = this.faultAdmission(message.data);
+      this.disconnect(
+        new Error(`Native worker ${publication.type}: ${publication.message}`),
+        publication,
+      );
+      return;
+    }
     if (message.event === 'policy') {
       if (!this.policyListener) throw new Error('Policy event has no admitted task port.');
       this.policyListener(message.data);
@@ -443,7 +530,11 @@ class NativeWorkerTransport {
     });
   }
 
-  async close(): Promise<void> {
+  close(): Promise<void> {
+    return (this.closing ??= this.closeOwned());
+  }
+
+  private async closeOwned(): Promise<void> {
     const existingFault = this.fault;
     let requestError: unknown;
     if (!this.fault) {
@@ -454,22 +545,15 @@ class NativeWorkerTransport {
       }
     }
     this.child.stdin?.end();
-    await new Promise<void>((resolve, reject) => {
-      if (this.child.exitCode !== null || this.child.signalCode !== null) {
-        resolve();
-        return;
-      }
-      const timer = setTimeout(() => {
-        this.child.kill('SIGTERM');
-        reject(new Error('Native worker did not exit after close; device state is unknown.'));
-      }, 15000);
-      this.child.once('exit', () => {
-        clearTimeout(timer);
-        resolve();
-      });
-    });
-    if (existingFault) throw existingFault;
-    if (requestError) throw requestError;
+    let terminationError: unknown;
+    try {
+      await this.terminate();
+    } catch (error) {
+      terminationError = error;
+    }
+    const errors = [...new Set([existingFault, requestError, terminationError].filter(Boolean))];
+    if (errors.length)
+      throw new AggregateError(errors, 'Native worker process release was unclean.');
     if (!this.closeAcknowledged || this.child.exitCode !== 0)
       throw new Error(
         'Native worker did not confirm clean process release; device state is unknown.',
@@ -489,6 +573,8 @@ class NativeTaskBackend implements EmbodiedBackend {
   private readonly listeners = new Set<(update: BackendUpdate) => void>();
   private readonly frameListeners = new Set<(frame: BackendFrame) => void>();
   private readonly policyListeners = new Set<(event: BackendPolicyEvent) => void>();
+  private readonly faultListeners = new Set<(fault: BackendFault) => void>();
+  private activeRequest?: SubgoalRequest;
   private lastFrameImages?: {
     observationId: string;
     observedAt: string;
@@ -564,6 +650,51 @@ class NativeTaskBackend implements EmbodiedBackend {
         throw new Error('Policy event belongs to another run or execution.');
       for (const listener of this.policyListeners) listener(event);
     });
+    this.transport.setFaultListener(
+      (error, publication) => {
+        if (this.closed) throw new Error('Native worker fault arrived after task close.');
+        const status = this.status;
+        if (!publication && !status) return;
+        const fault = publication ?? {
+          executionId: status!.execution_id,
+          taskScope: structuredClone(status!.task_scope),
+          type: error.name,
+          message: error.message,
+        };
+        for (const listener of this.faultListeners) listener(structuredClone(fault));
+      },
+      (publication) => {
+        const fields = object(publication);
+        const scope = this.validator.parse('TaskScope', fields.task_scope) as TaskScope;
+        const executionId = string(fields.execution_id);
+        const type = string(fields.type);
+        const message = string(fields.message);
+        const request = this.activeRequest;
+        const requestScope = request && {
+          task_id: request.task_id,
+          goal_id: request.goal_id,
+          attempt_id: request.attempt_id,
+          ...(request.recovery_id ? { recovery_id: request.recovery_id } : {}),
+        };
+        if (
+          this.closed ||
+          !request ||
+          !isDeepStrictEqual(scope, requestScope) ||
+          scope.task_id !== this.runId ||
+          type.length > 128 ||
+          message.length > 8000 ||
+          executionId.length > 128 ||
+          Object.keys(fields).some(
+            (key) => !['execution_id', 'task_scope', 'type', 'message'].includes(key),
+          ) ||
+          (this.status &&
+            isDeepStrictEqual(this.status.task_scope, scope) &&
+            executionId !== this.status.execution_id)
+        )
+          throw new Error('Native worker fault differs from its admitted active execution.');
+        return { executionId, taskScope: scope, type, message };
+      },
+    );
   }
 
   private async sample(
@@ -784,6 +915,7 @@ class NativeTaskBackend implements EmbodiedBackend {
     )
       throw new Error('Native task port cannot start this execution.');
     this.validator.parse('SubgoalRequest', request);
+    this.activeRequest = structuredClone(request);
     const result = object(
       await this.transport.request(
         'start',
@@ -1043,6 +1175,10 @@ class NativeTaskBackend implements EmbodiedBackend {
     this.policyListeners.add(listener);
     return () => this.policyListeners.delete(listener);
   }
+  subscribeFaults(listener: (fault: BackendFault) => void): () => void {
+    this.faultListeners.add(listener);
+    return () => this.faultListeners.delete(listener);
+  }
 
   async close(): Promise<void> {
     if (this.closed) return;
@@ -1051,6 +1187,7 @@ class NativeTaskBackend implements EmbodiedBackend {
     this.transport.setListener(undefined);
     this.transport.setFrameListener(undefined);
     this.transport.setPolicyListener(undefined);
+    this.transport.setFaultListener(undefined);
     this.onClose();
   }
 }
