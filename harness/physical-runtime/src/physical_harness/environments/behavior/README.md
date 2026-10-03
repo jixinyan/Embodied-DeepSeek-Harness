@@ -367,3 +367,26 @@ Every archived file and symlink is independently compared against its original:
 The local and remote original configuration/audit summary archive
 `summary-records.tar.gz` has SHA-256
 `b2a32a17cffb4af5fda258c287ad01689996cbcd7a88fde84aca5a1c36862d09`.
+
+## Scoped graphics placement record
+
+The independent zero-task initialization probe from source
+`147c42ab42380d385443a8cc85da1ee511f7b083` selects physical GPU 4 through its
+complete CUDA UUID, native renderer index 4 and an exclusive NVIDIA application
+profile. All 195 original full-process NVIDIA XML snapshots independently
+reconstruct only GPU 4 `C` and `C+G` contexts for the owned processes. The original
+Kit device table identifies GPU 4 as active. Camera initialization does not pass:
+the native camera annotators report unavailable Fabric camera data and the head
+camera intrinsic matrix is degenerate. This record contains zero Tasks, policy
+inferences, controls or completed RGB-D captures.
+
+SDK PID 557104 exits with code 1 and an unconfirmed close acknowledgement. The
+native, owner and wrapper processes are subsequently confirmed absent. Exact-byte
+application-profile cleanup follows actual SDK exit. Original logs, all GPU XML,
+process identities, source identity, monotonic trace and the independent audit are
+retained locally and remotely under
+`.local/work/behavior-gpu-placement-20261003-04/original-placement-records.tar.gz`,
+with SHA-256
+`f9596278d4b50c622c2666f135221ed82c6ba63363037a10a46d37a66eafbdca`.
+Complete calibrated capture, native GT and confirmed normal close remain required
+for this device-selection configuration.
