@@ -1713,6 +1713,7 @@ export class UpperRun {
         return { execution: this.options.backend.query() ?? null };
       case 'execution.end': {
         this.owner(a);
+        if (!s('reason').trim()) throw new Error('Terminal review requires a nonempty reason.');
         const end = this.options.backend.end;
         if (!end) throw new Error('This physical provider does not support terminal review.');
         const execution = this.options.backend.query();

@@ -358,6 +358,40 @@ export class RunEventReferences {
             throw new Error('Operator pause request cannot claim a Planner assignment.');
           break;
         }
+        case 'execution.end-requested': {
+          const actor = assignment(detail.assignmentId);
+          const executionId = id.parse(detail.executionId);
+          const stateVersion = z.number().int().positive().safe().parse(detail.stateVersion);
+          z.string()
+            .min(1)
+            .max(12000)
+            .refine((value) => value.trim().length > 0)
+            .parse(detail.reason);
+          const status = state.executions.find(
+            (item) => item.execution_id === executionId && item.state_version >= stateVersion,
+          );
+          const request =
+            status &&
+            state.requests.find(
+              (item) =>
+                item.goal_id === status.task_scope.goal_id &&
+                item.attempt_id === status.task_scope.attempt_id &&
+                item.recovery_id === status.task_scope.recovery_id,
+            );
+          if (
+            !status ||
+            !request ||
+            status.task_scope.task_id !== runId ||
+            actor.id !== state.decisionAssignmentId ||
+            request.owner_assignment_id !== actor.id ||
+            request.decision_owner_id !== actor.sessionId
+          )
+            throw new Error(
+              'Terminal review event has no matching admitted owner and execution status.',
+            );
+          scope(status.task_scope);
+          break;
+        }
         case 'simulation.frame': {
           if (detail.runId !== runId) throw new Error('Simulation frame belongs to another run.');
           const executionId = id.parse(detail.executionId);

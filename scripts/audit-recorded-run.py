@@ -343,6 +343,8 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
     sessions = set()
     executions = {}
     requests = {}
+    terminal_reviews = {}
+    verification_boundaries = set()
     checked = {}
     verdicts = {}
     recoveries = {}
@@ -381,12 +383,35 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
                 require(status["task_scope"] == prior["task_scope"], "Execution scope changed.")
             executions[status["execution_id"]] = status
             controls += status["control_steps"] - (prior["control_steps"] if prior else 0)
+        elif kind == "execution.end-requested":
+            status = executions.get(detail["executionId"])
+            require(status is not None and status["state_version"] == detail["stateVersion"] and
+                    status["state"] in {"running", "pausing", "paused"},
+                    "Terminal review must reference the current admitted execution version.")
+            require(detail["assignmentId"] == run["decisionAssignmentId"] and
+                    isinstance(detail["reason"], str) and detail["reason"].strip(),
+                    "Terminal review requires the decision owner and its stated reason.")
+            owner = assignments[detail["assignmentId"]]
+            request = next(item for item in run["requests"] if
+                           item["goal_id"] == status["task_scope"]["goal_id"] and
+                           item["attempt_id"] == status["task_scope"]["attempt_id"])
+            require(request["owner_assignment_id"] == owner["id"] and
+                    request["decision_owner_id"] == owner["sessionId"] and
+                    request.get("recovery_id") == status["task_scope"].get("recovery_id"),
+                    "Terminal review must retain the admitted current decision ownership and scope.")
+            terminal_reviews[detail["executionId"]] = detail
         elif kind == "verification.requested":
             status = executions[detail["executionId"]]
             require(status["state"] == "ended" and status["device_confirmed"] and
                     status["stop_reason"] in {"policy_stop", "planner_stop", "episode_terminated", "budget_exhausted"},
                     "Formal verification began without an eligible confirmed end boundary.")
             require(status["boundary_event_id"] == detail["boundaryId"], "Verification boundary changed.")
+            if status["stop_reason"] == "planner_stop":
+                require(detail["executionId"] in terminal_reviews,
+                        "Planner stop requires an actual prior authorized terminal review.")
+            identity = (detail["executionId"], detail["boundaryId"])
+            require(identity not in verification_boundaries, "A stopped boundary started another Verifier.")
+            verification_boundaries.add(identity)
             assignment = assignments[detail["assignmentId"]]
             require(assignment["brief"]["task_scope"] == status["task_scope"], "Verifier scope differs.")
             require(assignment["sessionId"] != assignments[run["decisionAssignmentId"]]["sessionId"],

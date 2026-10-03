@@ -175,7 +175,7 @@ class ActionGate:
         if self._state == "paused" and not terminal:
             return self.snapshot()
         if self._state == "pausing":
-            if terminal:
+            if terminal and not (reason == "planner_stop" and self._terminal_stop):
                 self._terminal_stop, self._reason = True, reason
             if self._stop_task is not None:
                 await asyncio.shield(self._stop_task)

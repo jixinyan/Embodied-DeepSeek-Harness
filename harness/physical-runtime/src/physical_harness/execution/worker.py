@@ -724,10 +724,7 @@ class NativeWorkerSession:
                         self._last_boundary_publication is None):
                     await self._publish(await self._require_device().on_owner(self._environment.observe), self._last_control)
                 return {"status": self._status, "observation": self._observation_wire(self._latest_observation)}
-            snapshot = gate.snapshot()
             reason = "planner_stop" if review else ("user_stop" if terminal else "planner_pause")
-            if review and snapshot["state"] == "pausing" and snapshot["stop_reason"] not in ("planner_pause", "verifier_pause"):
-                reason = snapshot["stop_reason"]
             stopping = asyncio.create_task(gate.pause(reason, terminal=terminal))
             if self._policy is not None:
                 await self._policy.close()
