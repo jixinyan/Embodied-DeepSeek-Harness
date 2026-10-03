@@ -509,6 +509,7 @@ class RoboDojoEnvironment:
         native_physics = {key: receipt[key] for key in (
             "episode_id", "step_id", "physics_count_source", "native_physics_step_before",
             "native_physics_step_after", "simulation_time_s", "physics_timestep_s",
+            "camera_calibration",
         )}
         if native_physics["episode_id"] != self._episode_id:
             raise RuntimeError("RoboDojo native physics belongs to another episode.")

@@ -135,7 +135,7 @@ def conventional_policy_sources(run, request_directory, service_log, policy_mani
 
 
 def audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest, schema_path,
-                         native_frames=None, openpi_profile=None):
+                         native_frames=None, openpi_profile=None, robodojo_episode_root=None):
     require(all(value is not None for value in (samples, request_directory, service_log, schema_path)),
             "Learned-policy acceptance requires native samples, requests, service log and wire schema.")
     require((policy_manifest is not None) != (openpi_profile is not None),
@@ -153,6 +153,7 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
         provider, inferences, requests, provenance = conventional_policy_sources(
             run, request_directory, service_log, policy_manifest, schema_path,
         )
+    native_physics_sources = []
     by_sequence = {}
     for sample in samples:
         validator.parse("EvidenceRef", sample["evidence"])
@@ -210,6 +211,11 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
                 (recorded["native_step"]["observation_id"] == metadata["observationId"] or
                  status["state"] == "ended" and status["device_confirmed"]),
                 "Actual native receipt physics counts or post-action/stopped observation identity differ.")
+        if provider == "robodojo" and robodojo_episode_root is not None:
+            from physical_harness.environments.robodojo.audit import audit_native_physics
+            native_physics_sources.append(audit_native_physics(
+                robodojo_episode_root, recorded["native_step"]["native_physics"], action, raw_steps,
+            ))
         require(sample["evidence"]["visibility"] == "agent", "Native action receipt has invalid evidence visibility.")
         if sample["images"]:
             require(len(sample["images"]) == len(request["observation"]["cameras"]),
@@ -248,7 +254,9 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
                 detail["sample"]["evidence"]["task_scope"] == prior[segment["execution_id"]]["task_scope"],
                 "A native frame differs from its actual learned action receipt.")
     return {"identifiedLearnedRequests": len(inferences), "nativeActionReceipts": len(segments),
-            "nativePhysicsSteps": physics, **provenance,
+            "reportedNativeSteps": physics,
+            "nativePhysicsSteps": physics if provider != "robodojo" or native_physics_sources else None,
+            "nativePhysicsSourceAudit": native_physics_sources, **provenance,
             "uncommittedInferenceRequests": sorted(set(inferences) - set(committed)),
             }
 
@@ -308,7 +316,7 @@ def audit_role_completion(run, events):
 
 
 def audit(run, events, *, samples=None, request_directory=None, service_log=None, policy_manifest=None,
-          schema_path=None, simulation_videos=None, openpi_profile=None):
+          schema_path=None, simulation_videos=None, openpi_profile=None, robodojo_episode_root=None):
     require(run["source"] in {"simulation", "hardware"}, "Acceptance requires a real run source.")
     require(run["state"] in {"succeeded", "failed", "cancelled", "unknown", "interrupted"},
             "Acceptance requires a terminal run.")
@@ -440,7 +448,7 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
         if mode == "policy":
             require(not policy_sequences, "Learned-only execution contains a DSH policy Session.")
             learned = audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest,
-                                           schema_path, native_frames, openpi_profile)
+                                           schema_path, native_frames, openpi_profile, robodojo_episode_root)
             require(learned["nativeActionReceipts"] == controls, "Learned receipt/control counts differ.")
         else:
             require(mode in {"direct", "hybrid"} and policy_sequences,
@@ -449,7 +457,7 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
         require(run["configuration"]["launchProfile"]["executionMode"] == "policy" and not policy_sequences,
                 "Explicit learned-source acceptance requires learned-only policy execution.")
         learned = audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest,
-                                      schema_path, native_frames, openpi_profile)
+                                      schema_path, native_frames, openpi_profile, robodojo_episode_root)
         require(learned["nativeActionReceipts"] == controls, "Learned receipt/control counts differ.")
     return {"runId": run["id"], "source": run["source"], "state": run["state"],
             "checkedEvents": len(events), "independentUpperSessions": len(sessions),
@@ -473,6 +481,7 @@ def main():
     parser.add_argument("--openpi-bridge-audit", type=Path)
     parser.add_argument("--openpi-native-service-log", type=Path)
     parser.add_argument("--openpi-policy-id")
+    parser.add_argument("--robodojo-episode-root", type=Path)
     parser.add_argument("--simulation-videos", type=Path)
     parser.add_argument("--require-clean-role-completion", action="store_true")
     parser.add_argument("--schema-path", type=Path,
@@ -493,7 +502,7 @@ def main():
     report = audit(run, events, samples=samples, request_directory=args.policy_requests,
                    service_log=args.policy_service_log, policy_manifest=args.policy_manifest,
                    schema_path=args.schema_path, simulation_videos=args.simulation_videos,
-                   openpi_profile=openpi_profile)
+                   openpi_profile=openpi_profile, robodojo_episode_root=args.robodojo_episode_root)
     if args.require_clean_role_completion:
         report["roleCompletion"] = audit_role_completion(run, events)
     args.output.parent.mkdir(parents=True, exist_ok=True)

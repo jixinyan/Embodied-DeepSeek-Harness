@@ -1,4 +1,5 @@
 import hashlib
+import inspect
 import json
 from pathlib import Path
 from uuid import uuid4
@@ -67,6 +68,23 @@ class RoboDojoSession:
             "supports_joint_control": True, "motion_planner": "numerical_ik",
             "control_version": "edh_grounded_direct_v1", "cameras": list(CAMERA_NAMES),
             "gripper_semantics": "continuous_0_closed_1_open"}
+        sources = {}
+        for operation, function in (("take_action", env.take_action), ("native_control_step", env.step),
+                                    ("decimated_physics_step", env.sim.sim_step),
+                                    ("physics_counter", type(env.sim.sim).current_time_step_index.fget),
+                                    ("simulation_context", type(env.sim.sim))):
+            source_path = Path(inspect.getsourcefile(function)).resolve(strict=True)
+            data = source_path.read_bytes()
+            sources[operation] = {"path": str(source_path), "sha256": hashlib.sha256(data).hexdigest()}
+            (self.output / f"physics-source-{operation}.py").write_bytes(data)
+        write_json(self.output / "physics-provenance.json", {
+            "schema_version": "edh.robodojo.native_physics.v1",
+            "counter_source": self.metadata["physics_count_source"],
+            "physics_timestep_s": self.metadata["physics_timestep_s"],
+            "decimation": int(env.sim.cfg.decimation),
+            "collect_interval": int(env.obs_manager.collect_interval),
+            "sources": sources,
+        })
         env._stream_vision = lambda *arguments, **keywords: None
 
     def _check_identity(self, episode_id, step_id):
@@ -244,6 +262,11 @@ class RoboDojoSession:
                        simulation_time_s=float(self.env.sim.sim.current_time),
                        physics_timestep_s=self.metadata["physics_timestep_s"])
             row.update(episode_id=self.episode_id, physics_count_source=self.metadata["physics_count_source"])
+            row["camera_calibration"] = {
+                camera: {key: frame[key].tolist() if isinstance(frame[key], np.ndarray) else frame[key]
+                         for key in ("intrinsic_matrix", "camera_to_world", "near_m", "far_m")}
+                for camera, frame in observation["metric_frames"].items()
+            }
             write_json(self.episode_dir / f"action_{self.step_id - 1:06d}.json",
                        {**row, "executed_action": action.tolist(), "obs": {"states": observation["states"].tolist()}})
             rows.append(row)

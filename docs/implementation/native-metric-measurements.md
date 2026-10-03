@@ -29,6 +29,9 @@ RoboCasa captures read-only metric depth and verifies the original image identit
 Set `EDH_METRIC_RECORD_DIR` to retain actual measurement source PNGs, masks,
 `calibration.npz` arrays and `measurement.json`. BEHAVIOR's native process inherits
 this variable. No records are produced unless a measurement is requested.
+`scripts/check-recorded-metric.py --record DIRECTORY` recomputes the measurement
+through production metric geometry and compares every calculated value with the
+original record.
 
 RoboDojo action receipts include the actual Isaac SimulationContext physics counter
 before and after each admitted command, its physics timestep and simulator time.
@@ -37,6 +40,11 @@ RoboDojo interpolates targets over native control intervals and applies configur
 physics decimation. A control command can therefore execute multiple physics steps.
 Historical receipts without native counter provenance retain their reported counts
 and require separate source evidence for a physical-step claim.
+`scripts/audit-recorded-run.py --robodojo-episode-root DIRECTORY` verifies each
+worker receipt against the retained native episode action, observation calibration,
+simulator clock and hashed SDK source files. RoboDojo audit reports keep
+`reportedNativeSteps` separately and populate `nativePhysicsSteps` when this source
+audit succeeds. An omitted episode source leaves physical-step acceptance unavailable.
 
 The implementation passed Python compilation, TypeScript checks and installed SDK
 source/API inspection. Live metric and new physics-counter acceptance requires
