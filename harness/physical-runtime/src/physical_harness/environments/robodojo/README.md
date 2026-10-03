@@ -28,6 +28,12 @@ values, before/after state, observation digest and check/physics source digests.
 `native-check-provenance.json` and immutable copied SDK source files identify
 the original implementations. No score transition is evaluated by these reads.
 
+The native service records both structure checks after actual reset and every
+completed native control. These private source records preserve measured stage
+progression and can calibrate deployment budgets from a completed trajectory.
+They do not stop controls or supply a formal verdict. Authorized stopped checks
+produce fresh records through the same read-only evaluator.
+
 The base predicate checks original vertical separation and upright orientations;
 the middle predicate adds native board/support-circle geometry. Their exact
 thresholds come from the installed SDK. These predicates retain the SDK's

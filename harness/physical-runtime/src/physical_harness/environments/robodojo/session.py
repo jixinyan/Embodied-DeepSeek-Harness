@@ -190,6 +190,8 @@ class RoboDojoSession:
         write_json(self.output / "fk_validation.json", self.kinematics.check())
         self._observe(record=True)
         self.poisoned = False
+        if self.metadata["task"] == "build_tower":
+            self.tower_structure_checks(list(BUILD_TOWER_CHECK_IDS))
         self.metadata["instruction"] = self.obs["instruction"]
         result = {"episode_id": self.episode_id, "step_id": 0,
                   "initial_state_hash": hashlib.sha256(self.obs["states"].tobytes()).hexdigest(),
@@ -282,6 +284,8 @@ class RoboDojoSession:
             }
             write_json(self.episode_dir / f"action_{self.step_id - 1:06d}.json",
                        {**row, "executed_action": action.tolist(), "obs": {"states": observation["states"].tolist()}})
+            if self.metadata["task"] == "build_tower":
+                self.tower_structure_checks(list(BUILD_TOWER_CHECK_IDS))
             rows.append(row)
             if ended:
                 self._write_summary("terminal")
