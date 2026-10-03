@@ -8,6 +8,13 @@ official `wensi-ai/lerobot` `release/b1k` source at immutable revision
 `436812bd8ee39b768c645c248c91f1330834e687`. This preserves the
 published OmniGibson dependency and its `dataset` extra.
 
+The native `isaacsim-core==5.1.0.0` package pins `packaging==23.0`; the selected
+[LeRobot source](https://github.com/wensi-ai/lerobot/blob/436812bd8ee39b768c645c248c91f1330834e687/pyproject.toml)
+declares `packaging>=24.2,<26.0`. Whole-environment dependency validation reports
+this upstream constraint conflict. Retain the complete installed dependency
+metadata and native runtime import sources with acceptance records. Native task
+execution and package dependency validation have separate evidence states.
+
 Provider data belongs under `workspace/data/behavior`. The fixed public
 `behavior-1k/zipped-datasets` snapshot is
 `9f0d57d465726976ed98138d3f8b8ca3e2186775`. Required archives and

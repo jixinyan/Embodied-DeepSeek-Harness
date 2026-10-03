@@ -20,6 +20,10 @@ worker processes on the same host. Acquisition is immediate and reports
 `ResourceBusy` when another owner holds a requested resource. Multi-resource
 acquisition releases any already acquired locks if admission fails. Lock files
 contain no retained authority; the OS releases ownership when a process exits.
+The physical package accepts `filelock>=3.13.1,<4`, including Isaac Sim's native
+3.13.1 pin. Actual process exclusion, partial-acquisition cleanup and watchdog
+checks pass with 3.13.1 and 3.20.0. Install the physical package in each worker
+interpreter and record its resolved package versions with deployment evidence.
 
 Worker initialization accepts:
 
