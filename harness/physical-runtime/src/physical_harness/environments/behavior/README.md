@@ -210,3 +210,27 @@ inferences. Retained depth, calibration, source PNG and mask PNG reconstruct eve
 geometry value exactly in the originating native NumPy environment. The native
 process exits normally. This independent initialized scene has its own observation
 identity and does not describe the learned task's final scene.
+
+The October 3 native owner-deadline probe uses immutable EDH source
+`9a7778b78249703216ccdddd556f6cfdf76336e8`, BEHAVIOR source
+`b1979916ec1549b10a4e65e630bc6504a9af1b00` and the original instance-0
+`picking_up_trash` reset. It sends `SIGSTOP` to its owned SDK child PID 5352 while
+the production `NativeActionDevice.on_owner` awaits a real `observe` RPC.
+An `asyncio.timeout(0.75)` returns after 0.75334951 seconds. The original operation
+remains pending and uncancelled, with its Future retained for device cleanup.
+After `SIGCONT`, the original SDK observation completes on its original owner
+thread. Native scene `e6baf41e-6d84-4ff7-ac98-587996aae035`, physics counter 41,
+zero controlled physics steps, robot state and all three exact PNGs remain
+unchanged. Four native observations retain twelve original RGB-D camera records;
+their source digests, calibration arrays and metric geometry all pass independent
+recomputation at an unchanged simulation time.
+
+The probe creates zero policy clients, controls or StopAcknowledgements. Its scope
+is caller cancellation, retained native operation tracking and eventual owner
+completion. Actual SDK close acknowledges shutdown, returns exit code 0 and
+releases the owner thread and retained Future. Wrapper PID 4964, outer worker PID
+5287 and native PID 5352 are confirmed absent. Original monotonic trace, native
+source copies, arrays, process-release audit and exact source archive are retained
+under `.local/work/behavior-owner-deadline-20261003/`. The local and remote
+`deadline-records.tar.gz` SHA-256 is
+`c547a80539984f0ddeeb349b18ff145a9e05ebbc2c3e668b8a98e83dcc07661d`.
