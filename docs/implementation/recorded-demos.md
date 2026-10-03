@@ -11,12 +11,25 @@ attempt identity. TODO status includes the reporting member and completed count.
 ## Delivered recordings
 
 The native v1 integration recordings are retained under
-`.local/work/v1-20261003/` and `.local/work/v1-robotwin-20261003/`.
+`.local/work/v1-20261003/`, `.local/work/v1-robotwin-20261003/` and
+`.local/work/v1-robodojo-20261003-05/`.
 
 | Recording                                 | Actual task result                                                                                                                                | Model and policy                   | Duration  | Source                                 |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | --------- | -------------------------------------- |
 | `robodojo-qwen-pi05-success-reviewed.mp4` | Native task success, independent formal success and released resources; one recorded plan-parameter error                                         | Qwen3.8-27B / Pi0.5                | 80.167 s  | `02475b82-b6b6-457f-8cf8-3199ef265bc6` |
 | `robotwin-qwen-pi05-retry-success.mp4`    | Independent SceneAnalyst, failed first attempt, accepted Planner retry, formal success and released resources; two recorded plan-parameter errors | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 340.167 s | `66ff9b47-9e2d-4514-904c-cd61c869b44c` |
+| `robodojo-qwen-pi05-clean-retry-success.mp4` | Failed first attempt, retained-scene retry, independent formal success, completed TODOs and released resources; zero tool errors | Qwen3.8-27B / Pi0.5 | 126.250 s | `897f215d-119f-4880-9030-1d9edeb9fabb` |
+
+The clean RoboDojo composite includes 304 original events, 21 model analysis events,
+58 controls, four identified learned requests and 580 actual physics steps.
+It retains 58 native rollout frames and one initial observation per camera.
+Its two fresh Verifiers report failed and passed; all eleven owner TODOs complete.
+The original action, inference, checkpoint and native-counter audit passes.
+Its 1,515 encoded frames fully decode with every rendered text boundary checked.
+The MP4 SHA-256 is
+`0e78b0dce8f6da148e171085420fa4599f02bcdb22321afc06abfe279e959ce6`.
+Separate source-bound acceptance verifies a second task on the same ended episode
+with a fresh Verifier and zero new controls, physics steps or policy requests.
 
 The RoboDojo composite includes 223 original events, 11 model analysis events,
 59 admitted controls and four identified learned inferences. Three native videos

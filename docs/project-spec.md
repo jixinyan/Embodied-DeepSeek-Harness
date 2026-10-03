@@ -2,7 +2,7 @@
 
 Version: v1.70 · 2026-10-03
 
-Status: native Qwen/Pi0.5 RoboTwin recovery and RoboDojo task success have independent formal verification and original action/video evidence. Custom-role RoboTwin run `66ff9b47` succeeds with two retained tool errors; run `686c9767` verifies zero-tool-error recovery separately. RoboCasa and BEHAVIOR preserve their observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and packaged Desktop lifecycle have production acceptance. Native terminal preflight is implemented; unchanged-terminal repeated-task acceptance remains open. Evolver is paused and SceneState is deferred. Multi-goal, clean custom-role workflows and the complete installed configuration matrix remain pending.
+Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Custom-role RoboTwin run `66ff9b47` succeeds with two retained tool errors; run `686c9767` verifies zero-tool-error recovery separately. RoboCasa and BEHAVIOR preserve their observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention, configured service lifetimes and packaged Desktop lifecycle have production acceptance. Evolver is paused and SceneState is deferred. Multi-goal, clean custom-role workflows and the complete installed configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -36,8 +36,11 @@ contents contribute to the Team digest for every configured physical profile.
 Native Qwen/Pi0.5 RoboTwin run `686c9767` verifies failed-attempt recovery and
 successful completion with zero tool errors. The separate custom-role run `66ff9b47`
 completes its retained-scene retry and succeeds with two retained tool errors;
-zero-tool-error custom-role acceptance remains open. Native RoboDojo run `02475b82`
-verifies native and independent formal success with one retained tool error.
+zero-tool-error custom-role acceptance remains open. Native RoboDojo run `897f215d`
+verifies a failed attempt and Planner-owned retained-scene retry, followed by native
+and independent formal success with zero tool errors. Its subsequent same-Session
+task verifies the unchanged ended episode through fresh role contexts and a new
+confirmed boundary, with zero new actions or policy requests.
 Native Qwen/GR00T RoboCasa retry exhaustion concludes with the observed failed
 outcome, completed factual assessment TODOs and released resources. Structured
 plan parameters preserve their canonical types. SAM masks use bounded lossless

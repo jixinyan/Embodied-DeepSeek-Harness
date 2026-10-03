@@ -82,11 +82,36 @@ remains allocated. A fresh Verifier receives the new task/execution scope.
 Sequential task admission preserves the allocated environment and immutable
 configured benchmark criterion; different-scene tasks require a new Session.
 Checkpoint `85740a5` records these semantics in
-[Session task catalogs](session-task-catalogs.md). Python compilation/import checks
-pass. Actual first-task success followed by a second task on the unchanged ended
-native episode remains pending; the dedicated zero-action acceptance must remain
-separate from positive learned-policy execution acceptance. Evolver is paused and
-SceneState is deferred.
+[Session task catalogs](session-task-catalogs.md). Actual RoboDojo Session
+`88b93ebe-b2df-48f9-8170-30a724c0c0f9` completes first run `897f215d` and then
+second run `ca43312e` on its unchanged ended native episode. The second task uses
+a fresh confirmed execution boundary and independent Verifier, with zero new
+controls, physics steps, policy requests and tool errors. All twelve model-facing
+camera comparisons match the final original native NPZ; native counter 1424 and
+simulation time 5.696000270545483 seconds remain unchanged. Session resources release.
+The dedicated audit checks actual inference files, source-bound actions, ordered
+task membership and unchanged source journal SHA-256. Checkpoints `a1fecec` and
+`3406f71` supply its executable acceptance. Local evidence:
+`.local/work/retained-terminal-05-accepted/acceptance.json`. This zero-action
+acceptance is separate from the first task's positive learned-policy execution.
+Evolver is paused and SceneState is deferred.
+
+### Configured service ownership and strict Qwen tools
+
+Checkpoint `871b29b` exposes optional OpenAI-compatible `strictTools` and
+`toolChoice` settings; the local Qwen example requests strict parameter decoding.
+Checkpoint `b956833` validates all 25 actual Planner tools, including the native
+DSH Todo registration. Four actual Qwen calls cover native Chat Completions and
+DSH streaming with `auto` and `required` choices. Structured plans validate against
+the production schema, with model reasoning retained and zero schema issues.
+
+Checkpoints `dc1d5bc` and `456209f` bind configured model/policy services to
+owned process lifetimes and shared leases. Actual Pi0.5 processes verify readiness,
+two-lease sharing, continued service after the first release, termination after the
+last release, restart, unexpected exit and server-close cleanup. The console
+displays current service states and timestamps unavailable status; Session controls
+remain disabled until validated configuration arrives. These checks establish
+service and UI lifecycle separately from physical task acceptance.
 
 ### Native custom-role RoboTwin task
 
@@ -102,6 +127,21 @@ is false. Evidence: `.local/work/v1-robotwin-20261003/acceptance/`.
 This is a separate run from zero-tool-error recovery run `686c9767` below.
 
 ### Native RoboDojo task
+
+Clean run `897f215d-119f-4880-9030-1d9edeb9fabb` uses immutable source
+`2abd647`, strict local Qwen tools and the identified native ARX X5 Pi0.5 checkpoint.
+Attempt one ends at its 32-control budget with failed formal verification. Planner
+opens a new attempt on the retained scene; 26 additional controls reach original
+native task success and a passed independent Verifier. The complete 304-event
+audit verifies 58 admitted controls, 580 actual physics steps, four source-bound
+learned requests, two fresh formal roles and one recovery chain. All eleven owner
+TODOs complete, every terminal tool concludes its turn, tool errors are zero and
+there are no post-terminal model steps. All six native camera videos decode with
+zero timestamp error. Original NPZ actions, camera records, simulator counter
+increments, checkpoint files and policy-service logs are verified independently.
+Evidence: `.local/work/v1-robodojo-20261003-05/audit-task-1.json`.
+The following same-Session task passes the dedicated unchanged-terminal acceptance
+described above, and the Session releases resources.
 
 RoboDojo run `02475b82-b6b6-457f-8cf8-3199ef265bc6` uses local
 Qwen3.8-27B Planner/Verifier and the identified native OpenPI Pi0.5 checkpoint.
@@ -143,8 +183,8 @@ Verified source checkpoints:
 - `ec9ae85`: consistent structured planning workflows in provider role prompts.
 
 The remaining native gates include zero-tool-error custom-role RoboTwin planning,
-calibrated metrics across providers, a clean RoboDojo workflow, unchanged-terminal
-multi-task acceptance and the complete installed configuration matrix. Evolver
+original build_tower stage progression, calibrated metrics across providers,
+native fault handling and the complete installed configuration matrix. Evolver
 remains paused; SceneState remains deferred.
 
 ## 2026-09-30 delivery boundary

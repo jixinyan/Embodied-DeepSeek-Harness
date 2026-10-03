@@ -1,7 +1,7 @@
 # Live model and simulation acceptance
 
-The requested delivery covers the complete upper agent workflow, BEHAVIOR-1K,
-RoboCasa, RoboTwin and actual VLM/policy integration. DSH remains the agent runtime.
+The requested delivery covers the complete upper agent workflow, RoboDojo,
+BEHAVIOR-1K, RoboCasa, RoboTwin and actual VLM/policy integration. DSH remains the agent runtime.
 All commands, model checkpoints and simulator observations used for acceptance must
 come from the actual installed services. Generated task verdicts or scripted model
 responses cannot establish these gates.
@@ -24,8 +24,9 @@ responses cannot establish these gates.
 5. Model and policy services use isolated dependencies, deployment-selected devices and
    explicit source/checkpoint versions. Providers validate their camera/state/action
    mappings, units, normalization and controller modes before executing actions.
-6. The console selects admitted deployments and presents the same authoritative state,
-   task plan, real sensor observations, tool calls and verification events as the host.
+6. The console selects admitted deployments and presents authoritative Agent state,
+   task plans, tool calls and verification events. Headless native video stays on the
+   worker host and joins the original Agent trace in recorded exports.
    The installation of a checkpoint alone does not make it a compatible launch option.
 
 ## Evidence gates
@@ -38,8 +39,8 @@ responses cannot establish these gates.
 | Worker | Start a job; publish ordered status; confirm pause at the command boundary; reject stale actions/resume; enforce step/time budgets and disconnect handling. |
 | Verification | Start a fresh formal assignment after an eligible execution ends with a confirmed boundary; check scoped before/after evidence and limited GT for that boundary. Running observations remain outside the Verifier assignment. |
 | Planner | Receive images and scoped evidence; select subgoals and tools; own subsequent resume, retry or replan decisions through the native loop. |
-| Recovery | Observe a genuine failed attempt and Planner recovery decision; give Evolver the explicit prior attempt; record subsequent execution; publish a SKILL only after original-goal formal success. |
-| Session and console | Select a compatible deployment; run multiple tasks with one environment; expose real sensor/agent/tool/task state; release resources on session end. |
+| Recovery | Observe a genuine failed attempt, explicit Planner recovery decision and subsequent retained-scene execution. Evolver publication remains paused; its documented enablement requires original-goal formal success. |
+| Session and console | Select a compatible deployment; run multiple tasks with one environment; expose authoritative Agent/tool/task state and original recorded video; release resources on Session end. |
 
 A manual control input can verify an actual device boundary, but it does not establish
 learned-policy inference. A real policy can fail a task; retain the failed outcome and
@@ -50,10 +51,10 @@ reuse requires its own task and provenance evidence.
 
 | Provider | Native installation/reset | EDH worker and action admission | Actual policy and upper VLM task |
 | --- | --- | --- | --- |
-| RoboCasa 1.0.1 / PandaOmron | Passed: OpenCabinet reset, three cameras and native control | Real GR00T actions, frame capture, confirmed pause/stop and consecutive task ports passed | Console Planner execution and formal GT failure recorded; successful task/recovery acceptance pending |
-| BEHAVIOR-1K v3.9.2 / R1Pro | Native picking_up_trash reset, three-camera capture and GT pass; separate synchronous shutdown passes | Current asynchronous owner has zero learned controls and no confirmed successful close; owned native process integration pending | GR00T checkpoint load passes; actual policy controls and complete console lifecycle pending |
-| RoboTwin stable release / Aloha AgileX | Passed: adjust_bottle reset, three cameras, 14-channel state and native GT | Pi0.5 native success, pause/resume, confirmed termination and environment close pass | Console run `8fcb950b-eebf-4133-ae94-197ac8e6bb41` succeeds with 111 controls, seven actual requests, independent passed Verifier, Planner finish and released Session |
-| RoboDojo / dual ARX X5 | EDH-owned Isaac Sim 5.1 startup, three RGB-D cameras, FK and numerical motion tools pass | Owned Astra pause/resume/cancellation, manual controls and Session release pass; imported-service pickup has formal success and trace | Owned-deployment task success, build_tower success, identified ARX X5 Pi0.5 inference and hybrid acceptance pending |
+| RoboCasa 1.0.1 / PandaOmron | Native OpenCabinet reset, calibrated three-camera RGB-D and controller mapping pass | Actual GR00T controls, frame capture, confirmed pause/stop and released Sessions pass | Full-horizon run `b9822c9c` records 3,150 controls, 396 identified inferences, 78,750 physics steps, three failed formal verdicts and truthful retry exhaustion; task success remains pending |
+| BEHAVIOR-1K v3.9.2 / R1Pro | Native picking_up_trash reset, three cameras, GT and R1Pro yaw/pitch observation pass | Actual GR00T run `0b7da1de` records 48 controls, 192 physics steps, confirmed boundaries and released resources | Three fresh failed Verifiers and two retained-scene retries are recorded. The original 10,535-control horizon is under actual acceptance; native task success remains pending |
+| RoboTwin stable release / Aloha AgileX | Native adjust_bottle reset, three cameras, 14-channel state and native GT pass | Pi0.5 native success, pause/resume, cancellation and environment release pass | Run `686c9767` verifies zero-tool-error failed-attempt recovery and formal success; custom-role run `66ff9b47` succeeds with independent SceneAnalyst and two retained tool errors. A strict-tool clean custom-role rerun is active |
+| RoboDojo / dual ARX X5 | EDH-owned Isaac Sim 5.1 reset, three RGB-D cameras, FK, numerical motion tools and actual native counter provenance pass | Identified ARX X5 Pi0.5 controls pass. Original tower base/middle predicates are registered as separate scoped checks; final task_success is unchanged | Run `897f215d` records failed 32-control execution and successful 26-control retry with zero tool errors. Its full audit verifies 580 physics steps, four actual inferences, all eleven owner TODOs and six native camera videos. Same-Session run `ca43312e` verifies the unchanged ended episode with zero new actions/inferences and releases resources. build_tower and remaining hybrid acceptance are tracked separately |
 
 See [GPU integration](gpu-integration.md) for immutable source pins, dependency
 isolation and completed native checks. Record model family, exact checkpoint,
