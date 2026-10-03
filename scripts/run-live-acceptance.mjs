@@ -4,6 +4,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { setTimeout } from 'node:timers/promises';
+import { request } from 'undici';
 
 const { values } = parseArgs({
   options: {
@@ -28,7 +29,8 @@ const save = (name, value) =>
   writeFile(resolve(output, name), `${JSON.stringify(value, null, 2)}\n`);
 
 async function api(path, body) {
-  const response = await fetch(new URL(path, url), {
+  const response = await request(new URL(path, url), {
+    method: body === undefined ? 'GET' : 'POST',
     ...(body === undefined
       ? {}
       : {
@@ -37,9 +39,14 @@ async function api(path, body) {
           body: JSON.stringify(body),
         }),
     signal: AbortSignal.timeout(900000),
+    headersTimeout: 900000,
+    bodyTimeout: 900000,
   });
-  const result = await response.json();
-  assert(response.ok, JSON.stringify({ status: response.status, result }));
+  const result = await response.body.json();
+  assert(
+    response.statusCode >= 200 && response.statusCode < 300,
+    JSON.stringify({ status: response.statusCode, result }),
+  );
   return result;
 }
 
