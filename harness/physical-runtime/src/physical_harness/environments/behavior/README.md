@@ -136,6 +136,12 @@ The EDH bootstrap uses the public `SimulationApp` launch configuration with
 It then calls the original public `og.launch(device="cuda:0")` API before
 environment construction. Isaac SimulationContext configures the physics device
 during stage initialization, before native physics advancement.
+The original OmniGibson `gm.USE_GPU_DYNAMICS` setting determines the dynamics
+mode. Its default is `false`, with CPU dynamics and MBP broadphase; the original
+native device getter then reports `cpu`. Admission preserves that setting and
+records its source hashes, actual native device, CUDA setting and logical
+PyTorch device. Renderer placement and CUDA context identity remain separate
+measurements.
 
 [bootstrap.py](bootstrap.py) adapts the original `omnigibson.simulator._launch_app`
 sequence from revision `b1979916ec1549b10a4e65e630bc6504a9af1b00`, under its

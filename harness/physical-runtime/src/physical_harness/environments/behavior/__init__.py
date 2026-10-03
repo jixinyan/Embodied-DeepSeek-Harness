@@ -303,8 +303,22 @@ class BehaviorEnvironment:
         self._gpu_device["bootstrap"] = bootstrap
         # 原生公开 launch 在初始化 simulation context 时设置 CUDA 逻辑索引。
         og.launch(device="cuda:0")
-        if og.sim.device != "cuda:0":
-            raise RuntimeError("BEHAVIOR native physics device differs from its admitted CUDA device.")
+        expected_dynamics_device = "cuda:0" if gm.USE_GPU_DYNAMICS else "cpu"
+        if og.sim.device != expected_dynamics_device:
+            raise RuntimeError(f"BEHAVIOR original dynamics mode requires {expected_dynamics_device}; native device is {og.sim.device!r}.")
+        from omnigibson import lazy
+
+        cuda_device = lazy.carb.settings.get_settings().get_as_int("/physics/cudaDevice")
+        if cuda_device != 0 or torch.cuda.current_device() != 0:
+            raise RuntimeError("BEHAVIOR CUDA ordinal differs from its admitted single visible device.")
+        dynamics_source = Path(import_module("omnigibson.simulator").__file__).resolve(strict=True)
+        macros_source = Path(import_module("omnigibson.macros").__file__).resolve(strict=True)
+        self._gpu_device["native_dynamics"] = {
+            "device": og.sim.device, "use_gpu_dynamics": bool(gm.USE_GPU_DYNAMICS),
+            "configured_cuda_device": cuda_device,
+            "source_file": str(dynamics_source), "source_sha256": sha256(dynamics_source.read_bytes()).hexdigest(),
+            "macros_source_file": str(macros_source), "macros_source_sha256": sha256(macros_source.read_bytes()).hexdigest(),
+        }
         env = og.Environment(configs=selected)
         self._env = env
         robot = env.robots[0]
