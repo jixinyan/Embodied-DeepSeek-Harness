@@ -75,6 +75,9 @@ The reader checks original native model arguments, decision ownership, task scop
 immutable ended receipts, the recorded owner-thread StopAcknowledgement, actual
 action receipt counts and the single independent formal assignment. Add
 `--require-repeat` when the history contains repeated native model end calls.
+Add `--require-turn-completion` to require every successful start/end decision,
+and every resume returning running, to commit its original native result before
+a completed turn boundary. It rejects any additional model step in that turn.
 The reported task outcome comes from the original history.
 
 Actual run `d0178a6f` on immutable source `8aa11fc` delivers its first review at

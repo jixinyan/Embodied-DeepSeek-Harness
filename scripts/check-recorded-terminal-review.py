@@ -66,6 +66,60 @@ def inspect(args: argparse.Namespace) -> dict:
         elif event["type"] == "message.delivered" and detail["payload"].get("kind") == "running-review":
             reviews.append(event)
     require(bool(receipts), "No actual native model terminal-review receipt exists.")
+    completed_turns = []
+    if args.require_turn_completion:
+        for event in events:
+            if event["type"] != "tool.completed":
+                continue
+            detail = event["detail"]
+            execution = detail.get("result", {}).get("execution")
+            if detail["tool"] not in {"execution.start", "execution.end", "execution.resume"}:
+                continue
+            if detail["tool"] == "execution.resume" and execution["state"] != "running":
+                continue
+            call = next(candidate for candidate in events if
+                        candidate["type"] == "dsh.tool-call" and
+                        candidate["detail"]["data"]["callId"] == detail["callId"])
+            native = call["detail"]
+            started = next(candidate for candidate in events if
+                           candidate["type"] == "tool.started" and
+                           candidate["detail"]["callId"] == detail["callId"])
+            require(native["assignmentId"] == run["decisionAssignmentId"] and
+                    native["data"]["name"] == detail["tool"].replace(".", "__") and
+                    json.loads(native["data"]["arguments"]) == started["detail"]["args"],
+                    "The asynchronous decision lacks its actual decision-owner model call.")
+            result_event = next(candidate for candidate in events if
+                                candidate["type"] == "dsh.tool-result" and
+                                candidate["detail"]["data"]["message"]["source"]["callId"] == detail["callId"])
+            require(result_event["sequence"] > event["sequence"] and
+                    result_event["detail"]["turn"] == native["turn"],
+                    "The original asynchronous receipt was not committed in its native turn.")
+            blocks = result_event["detail"]["data"]["message"]["content"]
+            require(len(blocks) == 1 and blocks[0]["type"] == "tool-result" and
+                    blocks[0].get("isError") is False,
+                    "The asynchronous native tool result is unsuccessful.")
+            content = blocks[0]["content"]
+            require(len(content) == 1 and content[0]["type"] == "text" and
+                    json.loads(content[0]["text"]) == detail["result"],
+                    "The original native tool receipt differs from its published result.")
+            ending = next((candidate for candidate in events if
+                           candidate["type"] == "agent.turn-ended" and
+                           candidate["detail"]["assignmentId"] == native["assignmentId"] and
+                           candidate["detail"]["turn"] == native["turn"]), None)
+            require(ending is not None and ending["sequence"] > result_event["sequence"] and
+                    ending["detail"]["reason"]["kind"] == "completed",
+                    "The asynchronous decision did not complete its native turn after the receipt.")
+            require(not any(candidate["type"] == "agent.step-started" and
+                            candidate["detail"]["assignmentId"] == native["assignmentId"] and
+                            candidate["detail"]["turn"] == native["turn"] and
+                            candidate["detail"]["step"] > native["data"]["step"]
+                            for candidate in events),
+                    "The native turn issued another model step after its asynchronous receipt.")
+            completed_turns.append({"callId": detail["callId"], "tool": detail["tool"],
+                                    "turn": native["turn"], "step": native["data"]["step"],
+                                    "receiptSequence": result_event["sequence"],
+                                    "completedTurnSequence": ending["sequence"]})
+        require(bool(completed_turns), "No asynchronous native turn completion was recorded.")
     if args.require_running_review:
         require(bool(reviews), "No actual bounded Planner observation was delivered.")
     results = []
@@ -120,7 +174,8 @@ def inspect(args: argparse.Namespace) -> dict:
                         "returnedReceipts": len(returned), "formalAssignments": 1,
                         "stopRecordSha256": hashlib.sha256(stop_bytes).hexdigest()})
     return {"runId": run["id"], "taskOutcome": run["state"], "runningReviews": len(reviews),
-            "reviewExecutions": results, "observedInvariants": "passed"}
+            "reviewExecutions": results, "completedDecisionTurns": completed_turns,
+            "observedInvariants": "passed"}
 
 
 def main() -> None:
@@ -133,6 +188,7 @@ def main() -> None:
     parser.add_argument("--require-repeat", action="store_true")
     parser.add_argument("--require-running-review", action="store_true")
     parser.add_argument("--require-planner-stop", action="store_true")
+    parser.add_argument("--require-turn-completion", action="store_true")
     args = parser.parse_args()
     result = inspect(args)
     args.output.parent.mkdir(parents=True, exist_ok=True)
