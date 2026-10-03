@@ -301,6 +301,13 @@ class BehaviorEnvironment:
             sensor.image_height = 256
             sensor.image_width = 256
         og.sim.update_handles()
+        for sensor_name in CAMERA_SENSORS.values():
+            robot.sensors[sensor_name].initialize_sensors(names="camera_params")
+        # SDK camera_params annotator 需要四次 render 更新，随后保留原生实例 reset。
+        for _ in range(4):
+            og.sim.render()
+        for sensor_name in CAMERA_SENSORS.values():
+            robot.sensors[sensor_name].intrinsic_matrix
         env.load_observation_space()
         og.sim.stop()
         robot.base_footprint_link.mass = 250.0
