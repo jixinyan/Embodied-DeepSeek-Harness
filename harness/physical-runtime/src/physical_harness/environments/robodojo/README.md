@@ -14,9 +14,12 @@ and native service task to `build_tower`, and assign this JSON object to its
 with `args: []`. A Planner can create a base goal, a middle goal requiring both
 structure checks and a dependency on the base goal, then retain the original
 final goal with a dependency on the middle goal. Each dependency requires its
-own current passed formal result and matching attempt. A bounded execution
-ending in `budget_exhausted` or `policy_stop` provides an eligible confirmed
-boundary for each fresh Verifier while the native scene remains allocated.
+own current passed formal result and matching attempt. Planner can request
+`execution.end` for its current running subgoal; an acknowledged `planner_stop`
+provides an eligible confirmed boundary for a fresh Verifier while the native
+scene remains allocated. A bounded execution ending in `budget_exhausted` or
+`policy_stop` also permits formal verification. An ordinary pause retains the
+Planner's current decision and running subgoal.
 
 Stage checks run on the simulator owner thread. Each RPC requires the current
 episode and native control index, preserves all eight block poses, native
@@ -33,6 +36,22 @@ completed native control. These private source records preserve measured stage
 progression and can calibrate deployment budgets from a completed trajectory.
 They do not stop controls or supply a formal verdict. Authorized stopped checks
 produce fresh records through the same read-only evaluator.
+
+`scripts/check-robodojo-tower-stages.py` audits a closed actual episode using its
+original source copies, action receipts, retained NPZ observations and every
+stage record. It verifies false reset conditions, ordered native base/middle/final
+progression and unchanged physical/reward state for each read. Use
+`--episode-root <native-output-directory> --output <new-report-path>`;
+`--require-complete` requires a successful completed trajectory with all three
+observed transitions. A calibrated whole-task trajectory and an independently
+verified staged workflow have separate acceptance states. Keep the original
+native instruction for every learned-policy execution across the stage goals.
+
+The original Pi0.5 driver executes its complete 50-action prediction before the
+next inference. Set the selected worker's `policyMaxActionsPerInference` to `50`
+when using that native rollout profile. Each action retains its own ActionGate
+admission and actual native receipt; Planner review and terminal stop still use
+the current execution's authenticated ownership and generation.
 
 The base predicate checks original vertical separation and upright orientations;
 the middle predicate adds native board/support-circle geometry. Their exact
