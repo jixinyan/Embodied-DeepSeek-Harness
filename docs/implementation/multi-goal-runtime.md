@@ -1,5 +1,41 @@
 # Plan-selected subgoals and recovery
 
+## Actual provider history checks
+
+`scripts/check-recorded-session-continuity.mjs` reads a captured console journal through
+production LocalStore, SessionTaskHistory, SessionTaskCatalogs, RunHistory, TaskGoals,
+AssignmentHistory, VerdictHistory and historical task-context admission. It checks
+complete membership and reverse ownership, immutable native catalog criteria, per-goal
+attempt limits, independent role identities, actual requests and confirmed execution
+boundaries, accepted verdict sources, retired contexts and final Session resource release.
+It writes its audit into `.local/checks/` using a copy of the captured journal.
+It executes no model, native SDK or policy job.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-session-continuity.mjs .local/work/custom-role-demo-20260930/remote-acceptance/console
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-session-continuity.mjs .local/work/behavior-workflow-demo-20260930/data --require-multiple-tasks
+```
+
+Native RoboTwin histories `ef8f9d03` and `686c9767` pass these source-bound checks for
+failed-attempt recovery, final formal success and released resources. The actual BEHAVIOR
+journal contains a retained Session with two task admissions: `0906473e` fails before
+execution; `0b7da1de` subsequently completes three policy attempts and three independent
+failed Verifiers. Both retain independent run/role identities and inspectable context;
+the Session closes with released resources. This confirms admission/history continuity
+for the recorded outcomes. Successful multi-task continuation needs its own actual run.
+
+Current RoboCasa, RoboTwin, BEHAVIOR and RoboDojo native adapters advertise only the
+original `task_success` check. Distinct prerequisite conditions require independently
+supported native checks and authoritative catalog bindings. The auditor reports actual
+multiple-task history and distinct goal-condition sets separately. Supply
+`--require-distinct-goals` to require an actual recorded multi-goal history with different
+admitted conditions. Repeated attempts of one goal preserve their source identities.
+
+`planning.read.planWrite` supplies complete structured next-write arguments. Planner
+decides item statuses and dependencies; selecting or completing one prerequisite still
+requires that goal's current formal success. The final task retains its original
+criterion and requires its own latest confirmed verification boundary.
+
 Implemented in the upper application with a deterministic CPU fixture. DSH owns
 model turns, scoped tool dispatch, sessions and explicit followups. EDH supplies
 physical task identity, goal admission and verification/recovery rules.
@@ -152,8 +188,9 @@ delay, 650 ms backend ticks), requiring both task success and SKILL publication.
 Session audits append native events independently so total history can exceed the
 8 MiB single-record limit. The repository-wide command is `pnpm check`.
 
-Current limits: one active local run, sequential physical jobs, one observing recovery
-chain, fixed deployment-bound check arguments, bounded session/event/file budgets and
-read-only interrupted-run history. Concurrent physical goals, independent nested
-recoveries, resumable sessions, delivery reconciliation, retention/compaction and actual
-simulation/policy/perception providers remain follow-on work. See [progress](progress.md).
+The current upper application admits one active retained User Session with sequential
+physical jobs, one observing recovery chain, fixed deployment-bound check arguments,
+bounded Session/event/file budgets and read-only interrupted-run history. Each supported
+native task combination retains its own physical and formal-verification acceptance;
+see [progress](progress.md). Successful native multi-task continuation and distinct
+prerequisite checks require the actual evidence described above.
