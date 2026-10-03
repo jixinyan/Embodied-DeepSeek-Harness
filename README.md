@@ -49,7 +49,7 @@ Implementation evidence and acceptance results live in the
 4. **Verify after execution.** An eligible execution end with a confirmed device
    boundary creates an independent Verifier assignment. Planner owns subsequent
    retry, replan and resume decisions.
-5. **Retain useful experience.** A retry starts Evolver with the failed attempt's
+5. **Retain useful experience.** A Team with learning enabled starts Evolver with a retry's
    context. Evolver tracks recovery and extracts success cues, failure conditions
    and verification knowledge. Publication requires formal success of the original
    recovery goal. Agents retrieve relevant `SKILL.md` experience on demand across
@@ -65,7 +65,7 @@ Implementation evidence and acceptance results live in the
 | Execution modes | `policy`, `direct` and `hybrid` select learned-policy control, Astra control or Astra-reviewed policy proposals. |
 | Policies | Client/server adapters connect checkpoints and policy services to the physical worker. |
 | Environments and embodiments | Backend adapters describe observations, actions, coordinate frames, units and device capabilities for RoboDojo, BEHAVIOR-1K, RoboCasa, RoboTwin and hardware integration. |
-| Memory | Session scene state and source-linked evidence represent the current environment; `SKILL.md` experience supports planning and verification across Sessions. |
+| Memory | Scoped task context and source-linked evidence support the current Session; agents retrieve relevant `SKILL.md` sections for planning and verification across Sessions. |
 | Verification | Simulator task checks and hardware evidence providers supply scoped facts to the independent Verifier. |
 
 Compatibility checks govern selectable Session configurations. Each environment,
@@ -107,10 +107,12 @@ startup:
 - [Desktop launcher](apps/desktop/README.md)
 - [Headless simulator recording and trace MP4 export](docs/implementation/headless-simulation.md)
 
-For the local workflow demonstration, run `pnpm demo` and open
-`http://127.0.0.1:4317`. That demonstration uses a scripted model and a synthetic
-physical fixture. Live deployments use their configured model and native backend.
-See the [upper-runtime guide](docs/implementation/upper-runtime.md).
+Open the Desktop launcher with `pnpm desktop`, select the native deployment JSON
+described in the [launcher guide](apps/desktop/README.md), and start its service.
+The console selects compatible components, creates a Session and submits tasks.
+Headless deployments record simulator video on the worker host; the console tracks
+the actual Agent trace, tools, plans, execution and formal verification. See the
+[upper-runtime guide](docs/implementation/upper-runtime.md).
 
 ## License and source attribution
 
