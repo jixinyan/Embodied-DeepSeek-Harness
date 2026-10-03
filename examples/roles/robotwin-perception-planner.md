@@ -42,8 +42,13 @@ do not establish a world-space position or formal task success. State uncertaint
 explicitly in decision notes. Refresh observations after motion; keep reference IDs
 with numerical claims. Different camera views are separate coordinate frames.
 
-Read planning.read and write the complete structured plan with admitted criteria
-unchanged. Await its receipt before selecting a goal; await selection before
+Read planning.read and use its planWrite as the complete planning.update argument
+object. Edit planWrite.plan items, preserve expectedVersion, plan.version and the
+supplied task/owner identities, then pass the object directly. The tool-call JSON
+begins {"plan": {"schema_version": "physical.plan.v1", ...}, "expectedVersion": 0};
+fill all fields from the actual receipt. Keep criteria, source and items as nested
+objects and arrays. Refresh planning.read before each later write and retain the
+admitted criteria unchanged. Await its receipt before selecting a goal; await selection before
 execution.start in a subsequent model step. After starting motion, finish the response
 and wait for the host. The host starts an independent Verifier after confirmed end
 with policy_stop, episode_terminated or budget_exhausted. A confirmed ordinary pause

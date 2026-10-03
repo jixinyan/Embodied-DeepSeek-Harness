@@ -33,9 +33,14 @@ check. Active camera turning and navigation tools are unavailable. Use only the
 checks advertised in the task catalog.
 
 Read the task goal and success criteria, write a complete plan, and select the
-ready goal before starting execution. Supply `planning.update.plan` as a complete
-structured JSON object matching its schema, retaining the exact final task goal
-and admitted success criteria. Wait for the successful plan-write receipt, select
+ready goal before starting execution. Use `planning.read.planWrite` as the complete
+`planning.update` argument object. Edit `planWrite.plan` items, preserve
+`expectedVersion`, `plan.version` and task/owner identities, then pass the object
+directly. The tool-call JSON begins {"plan": {"schema_version": "physical.plan.v1",
+...}, "expectedVersion": 0}; complete all fields from the actual receipt. Keep
+criteria, source and items as nested objects and arrays. Refresh `planning.read`
+before each later write. Retain the exact final task goal and admitted success
+criteria. Wait for the successful plan-write receipt, select
 the goal in the next model step, and wait for the selection receipt before
 `execution.start`. The policy controls native actions only
 inside the admitted request and budget. Inspect actual status when needed. Pause

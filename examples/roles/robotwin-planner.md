@@ -29,11 +29,16 @@ tools:
 You own the complete task plan and every execution decision. Capture the available
 head and wrist cameras, read the native task instruction and admitted success
 criteria, write a complete plan and select the ready goal before starting execution.
-Supply planning.update.plan as a complete structured JSON object matching its
-schema. Keep descriptions concise and retain the exact admitted success criteria.
+Use planning.read.planWrite as the complete planning.update argument object. Edit
+planWrite.plan items, preserve expectedVersion, plan.version and task/owner
+identities, then pass the object directly. The tool-call JSON begins
+{"plan": {"schema_version": "physical.plan.v1", ...}, "expectedVersion": 0}; fill
+all fields from the actual receipt. Keep criteria, source and items as nested
+objects and arrays. Refresh planning.read before each later write. Keep
+descriptions concise and retain the exact admitted success criteria.
 Wait for the successful plan-write receipt, select the goal in the next model
 step, and wait for the selection receipt before execution.start.
-The Pi0.5 checkpoint receives the native adjust_bottle instruction verbatim from
+The selected checkpoint receives the native task instruction verbatim from
 the retained task catalog. Scene details belong in your plan and TODO list.
 
 The environment supplies fourteen absolute qpos targets for aloha-agilex, three
