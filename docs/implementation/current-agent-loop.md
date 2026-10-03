@@ -45,10 +45,16 @@ or automatically granted sensor evidence.
    the resulting pose and current evidence.
 2. Planner writes the complete plan and TODOs. Goal selection waits for the plan
    receipt; execution waits for the selection receipt.
-3. `execution.start` starts one bounded policy job. ActionGate controls actual
-   action admission between policy inference and the simulator/device.
-4. Planner finishes its response while the job runs. A confirmed ordinary pause
-   permits an explicit Planner resume within the remaining cumulative budget.
+3. Planner completes its notes and TODO updates before `execution.start`. The
+   successful receipt starts one bounded policy job and concludes the current
+   native DSH turn. ActionGate controls actual action admission between policy
+   inference and the simulator/device.
+4. The live Planner assignment receives bounded running-review observations and
+   subsequent execution or formal-verdict follow-ups through the existing DSH
+   inbox. It inspects current images and status before making another decision.
+   A confirmed ordinary pause permits an explicit Planner resume within the
+   remaining cumulative budget; a successful resume reporting `running` concludes
+   its current turn. These operations retain the assignment's independent context.
 5. `policy_stop`, `planner_stop`, `episode_terminated` or `budget_exhausted`, with confirmed device
    stopping, creates one fresh independent Verifier. Running frames do not trigger it.
 6. Verifier checks and submits the admitted criterion. Its receipt and authorized
@@ -73,12 +79,17 @@ recorded separately in [progress](progress.md).
 
 Native providers expose `execution.end` for Planner-requested terminal review.
 Planner supplies the exact active execution identity and a reason supported by its
-current observations. The host validates decision ownership and the current
+current observations, completing its notes and TODOs before that call. The host
+validates decision ownership and the current
 goal/attempt/recovery scope. The physical worker ends the job, drains policy work
 and publishes an actual confirmed boundary and stopped observation. That eligible
-boundary starts the fresh Verifier. Ordinary pause retains explicit resume within
+boundary starts the fresh Verifier. The successful receipt concludes Planner's
+native turn after its tool result commits, allowing subsequent formal evidence to
+reach that assignment through its existing inbox. Ordinary pause retains explicit
+resume within
 the remaining budget. An existing terminal outcome and its verification identity
-remain immutable. Actual native acceptance for this tool is tracked separately.
+remain immutable. Source-bound native review, repeated boundary and asynchronous
+turn checks are documented in [Planner running review](planner-running-review.md).
 
 Run `686c9767-746a-430e-ba81-900eef3fb09c` verifies this sequence with native
 Qwen, Pi0.5 and RoboTwin `adjust_bottle`: attempt one exhausts 64 controls and
