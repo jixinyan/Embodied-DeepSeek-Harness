@@ -250,7 +250,17 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
                     receipt["segment"]["execution_id"] == prior["execution_id"] and
                     receipt["segment"]["task_scope"] == prior["task_scope"],
                     "Prior provider episode lacks its original actual terminal action receipt.")
-        require(state["controlled_physics_steps"] == sum(item["raw_sim_steps"] for item in run["executions"]),
+        rotations = [event["detail"] for event in events if event["type"] == "tool.completed" and
+                     event["detail"]["tool"] == "observation.rotate"]
+        for rotation in rotations:
+            motion = rotation["result"]["rotation"]
+            require(provider == "behavior" and rotation["assignmentId"] == run["decisionAssignmentId"] and
+                    type(motion["control_steps"]) is int and motion["control_steps"] >= 0 and
+                    motion["raw_sim_steps"] == motion["control_steps"] * 4,
+                    "Native observation motion differs from its original owner or measured physics receipt.")
+        rotation_physics = sum(item["result"]["rotation"]["raw_sim_steps"] for item in rotations)
+        require(state["controlled_physics_steps"] ==
+                sum(item["raw_sim_steps"] for item in run["executions"]) + rotation_physics,
                 "Retained provider counter differs from the actual execution receipt history.")
         if provider == "behavior":
             termination = state["native_termination"]
@@ -282,6 +292,7 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
                         "nativeStatusRecords": [{"path": str(path), "sha256": sha256(path.read_bytes()).hexdigest()}
                                                 for path, _ in selected],
                         "retainedSceneId": baseline["scene_id"], "nativeState": state,
+                        "recordedObservationMotionPhysicsSteps": rotation_physics,
                         "currentNativeSuccess": baseline["current_task_success"],
                         "originalSourceRecords": baseline["sources"], "retainedCameraIdentity": True})
         previous = (status, observation)
