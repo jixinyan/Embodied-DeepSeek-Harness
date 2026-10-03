@@ -7,6 +7,7 @@ from io import BytesIO
 import hashlib
 import json
 import math
+import os
 import time
 from typing import Callable, Mapping, Sequence
 from uuid import uuid4
@@ -31,6 +32,7 @@ from physical_harness.environments import (
 )
 from physical_harness.validation import ContractValidator
 from physical_harness.perception.metric_geometry import summarize_metric_region
+from physical_harness.perception.metric_capture import MetricCapture
 
 
 CAMERA_NAMES = (
@@ -288,7 +290,13 @@ class RoboCasaEnvironment:
             }
         if float(env.sim.data.time) != simulation_time:
             raise RuntimeError("Read-only metric capture advanced the native simulator clock.")
-        return {"observation_id": str(uuid4()), "simulation_time_s": simulation_time, "cameras": captures}
+        observation_id = str(uuid4())
+        if os.environ.get("EDH_METRIC_CAPTURE_RECORD_DIR") is not None:
+            observed_at = captures[camera_names[0]]["observed_at"]
+            observation = NativeObservation(observation_id, observed_at, time.monotonic(),
+                                            {camera: frame["rgb_png"] for camera, frame in captures.items()}, {})
+            MetricCapture("robocasa", "robocasa.mujoco.world").replace(observation, simulation_time, captures)
+        return {"observation_id": observation_id, "simulation_time_s": simulation_time, "cameras": captures}
 
     def measure_object(self, observation_id: str, camera: str, source_image_sha256: str,
                        mask_png: bytes) -> dict[str, object]:
