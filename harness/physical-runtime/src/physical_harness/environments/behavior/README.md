@@ -8,10 +8,12 @@ official `wensi-ai/lerobot` `release/b1k` source at immutable revision
 `436812bd8ee39b768c645c248c91f1330834e687`. This preserves the
 published OmniGibson dependency and its `dataset` extra.
 
-The native `isaacsim-core==5.1.0.0` package pins `packaging==23.0`; the selected
+The native Isaac Sim 5.1.0.0 distributions pin `packaging==23.0`,
+`Pillow==11.3.0` and `websockets==12.0`. OmniGibson 3.9.2 declares
+`Pillow~=11.0.0` and `websockets>=15.0.1`; the selected
 [LeRobot source](https://github.com/wensi-ai/lerobot/blob/436812bd8ee39b768c645c248c91f1330834e687/pyproject.toml)
 declares `packaging>=24.2,<26.0`. Whole-environment dependency validation reports
-this upstream constraint conflict. Retain the complete installed dependency
+these upstream constraint conflicts. Retain the complete installed dependency
 metadata and native runtime import sources with acceptance records. Native task
 execution and package dependency validation have separate evidence states.
 
