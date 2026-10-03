@@ -259,21 +259,32 @@ async function startApplication(
     for (const record of store.scan<RunState>('run:'))
       history.interrupt(record.value, record.version);
     const workspaceIndex = (ownedWorkspaceIndex = new WorkspaceHistoryIndex(store));
-    if (options.imageRetention && !imageMaintenance?.objects)
+    const retentionBinding = deployment.storageRetention?.({
+      store,
+      validator,
+      providers: deployment.metadata.providers,
+      additionalTools: Object.keys(deployment.additionalTools),
+      ...(options.mountImages
+        ? {}
+        : { imageDirectory: resolve(options.dataDirectory, 'attachments') }),
+    });
+    const imagePolicy = options.imageRetention ?? retentionBinding?.imageRetention;
+    const domainPolicy = options.domainRetention ?? retentionBinding?.domainRetention;
+    if (imagePolicy && !imageMaintenance?.objects)
       throw new Error('The configured image provider does not support original-image collection.');
-    const imageRetention = options.imageRetention
-      ? new ImageRetention(store, validator, imageMaintenance!.objects!, options.imageRetention)
+    const imageRetention = imagePolicy
+      ? new ImageRetention(store, validator, imageMaintenance!.objects!, imagePolicy)
       : undefined;
     const originalCollection = () =>
       imageRetention
         ? { available: true, sourceIds: imageRetention.sourceIds }
         : { available: false, reason: 'Original-image retention ownership is not configured.' };
     const requestArchives = new RequestIdentityArchives(store);
-    const domainRetention = options.domainRetention
+    const domainRetention = domainPolicy
       ? new DomainRetention(store, validator, {
-          version: options.domainRetention.version,
-          sources: options.domainRetention.sources,
-          owners: workspaceRecordOwners(store, validator, options.domainRetention.references),
+          version: domainPolicy.version,
+          sources: domainPolicy.sources,
+          owners: workspaceRecordOwners(store, validator, domainPolicy.references),
         })
       : undefined;
     const recordRetirement = () =>

@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { copyFile, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { copyFile, cp, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { ContractValidator } from '@edh/contracts';
 import { LocalStore } from '@edh/storage';
 import { DomainRetention, DomainRetentionConflict } from '../apps/server/src/domain-retention.js';
 import { workspaceRecordOwners } from '../apps/server/src/workspace-record-owners.js';
+import { nativeWorkspaceRetention } from '../apps/server/src/native-workspace-retention.js';
 import {
   RequestIdentityArchives,
   RequestArchiveConflict,
@@ -24,6 +26,7 @@ const args = parseArgs({
   options: {
     'data-directory': { type: 'string' },
     'retire-private-copy': { type: 'boolean', default: false },
+    'native-binding': { type: 'boolean', default: false },
   },
 }).values;
 if (!args['data-directory']) throw new Error('Provide an actual retained data directory.');
@@ -36,6 +39,9 @@ const sourceDigest = await digest();
 await mkdir('.local/work', { recursive: true });
 const directory = await mkdtemp(resolve('.local/work/retained-storage-'));
 await copyFile(source, resolve(directory, 'records.jsonl'));
+const skillDirectory = resolve(args['data-directory'], 'skills');
+if (args['native-binding'] && existsSync(skillDirectory))
+  await cp(skillDirectory, resolve(directory, 'skills'), { recursive: true, errorOnExist: true });
 assert.equal(
   createHash('sha256')
     .update(await readFile(resolve(directory, 'records.jsonl')))
@@ -56,7 +62,19 @@ try {
     inspect: ({ key }: { key: string }) =>
       key.startsWith('archived-request:') ? [] : originalKeys,
   };
-  const owners = workspaceRecordOwners(store, validator, extension);
+  const native = args['native-binding']
+    ? nativeWorkspaceRetention({
+        store,
+        validator,
+        providers: ['robotwin', 'robocasa', 'behavior', 'robodojo'],
+        additionalTools: [],
+      })
+    : undefined;
+  const owners = workspaceRecordOwners(
+    store,
+    validator,
+    native?.domainRetention?.references ?? extension,
+  );
   const counts: Record<string, number> = {};
   for (const row of store.scan('')) {
     const owner = owners.find((candidate) => row.key.startsWith(candidate.prefix));
@@ -68,6 +86,7 @@ try {
   }
   checks.ownerRecords = counts;
   checks.originalRecords = originalKeys.length;
+  checks.retentionBinding = native ? 'edh-native-workspace-v1' : extension.version;
   if (args['retire-private-copy']) {
     const sessions = [...store.scan<UserSessionRecord>('user-session:')].map(({ value }) => value);
     assert.ok(sessions.length, 'Retirement requires actual closed session histories.');
@@ -79,8 +98,8 @@ try {
     index = new WorkspaceHistoryIndex(store);
     assert.ok(index.page('session').records.length);
     const retention = new DomainRetention(store, validator, {
-      version: 'private-copy-actual-history-v1',
-      sources: [],
+      version: native?.domainRetention?.version ?? 'private-copy-actual-history-v1',
+      sources: native?.domainRetention?.sources ?? [],
       owners,
     });
     const signal = new AbortController().signal;

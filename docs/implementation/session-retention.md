@@ -18,6 +18,42 @@ when the deployment has established that the payload has no additional dependenc
 An empty source array declares that no external consumer retains journal references.
 Changing reference interpretation requires changing the inspector version.
 
+The shared native deployment factory supplies
+`storageRetention: nativeWorkspaceRetention`. Application startup invokes this factory
+with the actual journal, validator, provider identities and tool bindings. Both
+standalone and desktop launchers receive the resulting record and original-image
+policies. Explicit `startServer` policy options override the corresponding deployment
+binding.
+
+The native binding supports the built-in RoboTwin, RoboCasa, BEHAVIOR and RoboDojo
+environments and EDH core tools. It validates native DSH message envelopes with the
+DSH Session reader, checks supported event payload schemas and tool names, preserves
+compaction/prune source sequences, and declares complete originating-run dependencies.
+Record text, model streams, reports and assignment files preserve additional cited
+journal keys and generated source identities. Source records shared by multiple runs
+remain dependencies of each run. Referenced history must be included in the deletion
+selection or remain retained. Archived request input reserves identifiers independently
+of source records.
+
+The `native-workspace-exports` lease checks the complete SKILL export inventory against
+immutable journal documents and holds their original file descriptors until inspection
+finishes. SKILL exports retain their journal sources and full recovery provenance.
+The native runtime stores assignment files, message audits and policy audit sources
+in this same exclusively owned journal. Record maintenance requires closed sessions,
+released environments and disposed runtime scopes. Image leases validate the full
+record owner inventory and retain structured native attachments, including those
+in raw streams and visual-history source markers. Text references additionally retain
+existing original objects in the owned local attachment directory. SKILL provenance
+retains its original evidence attachments. Original-image
+collection uses the separate immutable object inventory and its inspected revision.
+
+Unknown record namespaces, native event schemas, tool extensions, file attachments
+and conflicting exports stop inspection. Custom image providers supply their own image
+retention policy. Extension deployments supply their own
+complete `storageRetention` factory or explicit `startServer` policies. Applications
+without a binding display `Record retention ownership is not configured.`, disable
+history controls and return 501 for direct record maintenance requests.
+
 `workspaceRecordOwners` composes every built-in namespace owner: sessions, requests,
 evidence, reports and receipts, assignment/recovery history, runs and restart annotations,
 events, submissions, plans, clarifications, assignment files, native audits, archived
@@ -73,12 +109,12 @@ are confirmed released. It shows profile, creation time, task count and record c
 Selection changes invalidate the displayed deletion preview. The delete button requires
 a successful current preview and submits that preview's single-use token.
 
-| Route | Input | Behavior |
-| --- | --- | --- |
-| `GET /api/storage/retention` | No query parameters | Ownership capability, current sequence, blockers and eligible sessions |
-| `POST /api/storage/archive-requests` | `{ sessionIds, expectedSequence }` | Preserve request identities for the selected closed sessions |
-| `POST /api/storage/inspect-records` | `{ sessionIds }` | Capture exact selected record revisions and the complete reference graph |
-| `POST /api/storage/retire-records` | `{ token }` | Recheck versions/references and atomically retire the inspected selection |
+| Route                                | Input                              | Behavior                                                                  |
+| ------------------------------------ | ---------------------------------- | ------------------------------------------------------------------------- |
+| `GET /api/storage/retention`         | No query parameters                | Ownership capability, current sequence, blockers and eligible sessions    |
+| `POST /api/storage/archive-requests` | `{ sessionIds, expectedSequence }` | Preserve request identities for the selected closed sessions              |
+| `POST /api/storage/inspect-records`  | `{ sessionIds }`                   | Capture exact selected record revisions and the complete reference graph  |
+| `POST /api/storage/retire-records`   | `{ token }`                        | Recheck versions/references and atomically retire the inspected selection |
 
 Inputs are strict. A selection contains 1–64 distinct session identities. Invalid
 input returns 400; active admission or conflicting/stale references return 409;
@@ -104,10 +140,10 @@ explicit archival/preview/retirement, token replay rejection, SQLite reconciliat
 and archived request rejection after reopening. SHA-256 confirms that the original
 journal remains unchanged. Acceptance outputs stay beside each private copy.
 
-The private acceptance policy conservatively declares every original journal record
-as a payload source. That complete-source declaration is confined to the private copy;
-production deployments supply their actual semantic inspector and external leases.
-No model or provider executes during these storage checks.
+`--native-binding` validates the production native payload inspector and owned export
+leases. Without this option, the private acceptance policy conservatively declares
+every original journal record as a payload source. That complete-source declaration
+is confined to the private copy. No model or provider executes during these checks.
 
 Verified original histories include native custom-role recovery/success (918 selected
 records, two retained identities), recorded SAM/YOLO grounding and five clarifications
@@ -118,6 +154,13 @@ server completes selection, archival, inspection and deletion of the private cus
 copy with zero browser errors. The owned browser/server close after validation.
 
 These checks establish storage/reference behavior for those retained histories.
+The native binding additionally passed the current RoboDojo v1 journal: 626 selected
+records, two preserved request identities, and reconciled restart history.
+The default native factory also passed the Chrome DOM history and image lifecycle
+against a private journal and attachment copy: 626 retired records, two reserved request
+identities and 180 explicitly collected image objects (69,077,537 bytes). The original
+journal and all 180 original image SHA-256 values remained unchanged. The owned browser
+and local HTTP server closed after validation.
 Provider task success and image-byte integrity retain their independent evidence.
 Incomplete stored verification boundaries, missing source catalogs, undeclared custom
 references and external reference leases require complete source declarations before

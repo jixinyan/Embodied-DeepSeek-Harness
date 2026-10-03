@@ -14,6 +14,12 @@ export type {
   DeploymentServices,
 } from './deployment.js';
 export { UpperRun, type ApplicationOptions } from './application.js';
+export { nativeWorkspaceRetention } from './native-workspace-retention.js';
+export type {
+  DeploymentRetentionFactory,
+  DeploymentRetentionContext,
+  DeploymentRetentionBinding,
+} from './deployment-retention.js';
 export {
   DomainRetention,
   DomainRetentionConflict,

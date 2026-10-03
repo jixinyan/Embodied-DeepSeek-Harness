@@ -11,6 +11,7 @@ import {
 import type { ContractValidator } from '@edh/contracts';
 import { parseTaskDefinition, type TaskDefinition, type TaskCatalogDefinition } from '@edh/tasks';
 import type { ApplicationOptions } from './application.js';
+import type { DeploymentRetentionFactory } from './deployment-retention.js';
 import { CORE_TOOLS } from './application.js';
 import type { ModelBinding } from './runtime.js';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
@@ -102,6 +103,7 @@ export interface ServerDeployment {
   readonly providers?: readonly string[];
   readonly contextManagement?: ContextManagementOptions;
   readonly sessionHistory?: SessionHistoryOptions;
+  readonly storageRetention?: DeploymentRetentionFactory;
   readonly assignmentLifetimeMs?: number;
   /** Optional version-pinned simulation/embodiment/policy stack. */
   readonly physicalProfile?: PhysicalRuntimeProfile;
@@ -288,6 +290,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     depth: input.depth,
     depthIntrinsicsByCamera: input.depthIntrinsicsByCamera,
     sessionHistory,
+    storageRetention: input.storageRetention,
     ...(input.assignmentLifetimeMs === undefined
       ? {}
       : { assignmentLifetimeMs: input.assignmentLifetimeMs }),
