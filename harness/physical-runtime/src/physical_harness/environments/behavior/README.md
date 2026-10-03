@@ -152,3 +152,13 @@ records retain all 32 original model actions, the converted admitted prefix and 
 conversion identity. The recorded-run auditor verifies every admitted value against
 that precise clipping operation. Nonfinite outputs and incompatible controller mappings
 fail at their source. Native task success still uses the compiled BDDL criterion.
+
+The October 3 stationary `picking_up_trash` instance-0 probe validates all three
+256×256 RGB-D cameras with explicitly labeled complete-image region masks. Each
+mask has 65,536 valid depth pixels; median axial depths are 1.27918720 m for head,
+0.25709677 m for left wrist and 0.25578856 m for right wrist. Measurement preserves
+the native robot state and exact PNG bytes and issues zero policy controls or
+inferences. Retained depth, calibration, source PNG and mask PNG reconstruct every
+geometry value exactly in the originating native NumPy environment. The native
+process exits normally. This independent initialized scene has its own observation
+identity and does not describe the learned task's final scene.
