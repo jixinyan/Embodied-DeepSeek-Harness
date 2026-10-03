@@ -205,6 +205,7 @@ const identityFields = new Set([
   'evidenceId',
   'skill_id',
 ]);
+const generatedIdentity = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/;
 
 function strings(value: unknown): string[] {
   const result: string[] = [];
@@ -258,7 +259,11 @@ export function nativeWorkspaceRetention(
         const value = pending.pop();
         if (!value || typeof value !== 'object') continue;
         for (const [field, child] of Object.entries(value)) {
-          if (identityFields.has(field) && typeof child === 'string' && child.length >= 16)
+          if (
+            identityFields.has(field) &&
+            typeof child === 'string' &&
+            generatedIdentity.test(child)
+          )
             addIdentity(child, row.key);
           if (child && typeof child === 'object') pending.push(child);
         }
@@ -315,7 +320,7 @@ export function nativeWorkspaceRetention(
       }
   };
   const references = {
-    version: 'edh-native-payload-sources-v1',
+    version: 'edh-native-payload-sources-v2',
     inspect: ({ key, value }: { key: string; value: unknown }) => {
       if (key.startsWith('archived-request:')) return [];
       refresh();
@@ -382,9 +387,9 @@ export function nativeWorkspaceRetention(
   };
   const owners = workspaceRecordOwners(store, context.validator, references);
   return {
-    domainRetention: { version: 'edh-native-workspace-v1', references, sources: [nativeSource] },
+    domainRetention: { version: 'edh-native-workspace-v2', references, sources: [nativeSource] },
     imageRetention: {
-      version: 'edh-native-images-v1',
+      version: 'edh-native-images-v2',
       sources: [
         {
           id: 'native-payload-images',

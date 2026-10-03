@@ -27,9 +27,14 @@ const args = parseArgs({
     'data-directory': { type: 'string' },
     'retire-private-copy': { type: 'boolean', default: false },
     'native-binding': { type: 'boolean', default: false },
+    'session-id': { type: 'string' },
   },
 }).values;
 if (!args['data-directory']) throw new Error('Provide an actual retained data directory.');
+if (args['session-id'] && (!args['native-binding'] || !args['retire-private-copy']))
+  throw new Error(
+    'Selecting one retained session requires native binding and private-copy retirement.',
+  );
 const source = resolve(args['data-directory'], 'records.jsonl');
 const digest = async () =>
   createHash('sha256')
@@ -86,15 +91,24 @@ try {
   }
   checks.ownerRecords = counts;
   checks.originalRecords = originalKeys.length;
-  checks.retentionBinding = native ? 'edh-native-workspace-v1' : extension.version;
+  checks.retentionBinding = native?.domainRetention?.version ?? extension.version;
   if (args['retire-private-copy']) {
-    const sessions = [...store.scan<UserSessionRecord>('user-session:')].map(({ value }) => value);
+    const allSessions = [...store.scan<UserSessionRecord>('user-session:')].map(
+      ({ value }) => value,
+    );
+    const sessions = args['session-id']
+      ? allSessions.filter(({ id }) => id === args['session-id'])
+      : allSessions;
     assert.ok(sessions.length, 'Retirement requires actual closed session histories.');
     const selected = sessionRetirementSelection(
       store,
       sessions.map(({ id }) => id),
     );
     const archives = new RequestIdentityArchives(store);
+    const remainingSessions = allSessions.length - sessions.length;
+    const remainingRuns =
+      [...store.revisions('run:')].length -
+      selected.keys.filter((key) => key.startsWith('run:')).length;
     index = new WorkspaceHistoryIndex(store);
     assert.ok(index.page('session').records.length);
     const retention = new DomainRetention(store, validator, {
@@ -113,18 +127,19 @@ try {
     const preview = await retention.inspect(selected.keys, signal);
     const retired = await retention.retire(preview.token, signal);
     assert.equal(retired.removedRecords, selected.keys.length);
-    assert.equal(index.page('session').records.length, 0);
-    assert.equal(index.page('run').records.length, 0);
+    assert.equal(index.page('session').records.length === 0, remainingSessions === 0);
+    assert.equal(index.page('run').records.length === 0, remainingRuns === 0);
     await assert.rejects(retention.retire(preview.token, signal), DomainRetentionConflict);
     index.close();
     index = undefined;
     store.close();
     store = new LocalStore(directory);
     index = new WorkspaceHistoryIndex(store);
-    assert.equal(index.page('session').records.length, 0);
-    assert.equal(index.page('run').records.length, 0);
+    assert.equal(index.page('session').records.length === 0, remainingSessions === 0);
+    assert.equal(index.page('run').records.length === 0, remainingRuns === 0);
     const restarted = new UserSessions(store, new SessionTaskCatalogs(store, validator));
-    assert.equal(restarted.list().length, 0);
+    assert.equal(restarted.list().length, remainingSessions);
+    assert.equal([...store.revisions('run:')].length, remainingRuns);
     for (const session of sessions)
       assert.throws(() => restarted.replaySession(session), SessionConflict);
     for (const requestKey of selected.requestKeys) {
@@ -141,6 +156,8 @@ try {
     checks.retirement = {
       removedRecords: retired.removedRecords,
       remainingRecords: store.statistics().records,
+      remainingSessions,
+      remainingRuns,
     };
     checks.restart = {
       historyReconciled: true,

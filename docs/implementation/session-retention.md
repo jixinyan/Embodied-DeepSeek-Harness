@@ -144,6 +144,8 @@ journal remains unchanged. Acceptance outputs stay beside each private copy.
 leases. Without this option, the private acceptance policy conservatively declares
 every original journal record as a payload source. That complete-source declaration
 is confined to the private copy. No model or provider executes during these checks.
+`--native-binding --retire-private-copy --session-id <retained-session-id>` selects
+one existing session while preserving other sessions and their restart history.
 
 Verified original histories include native custom-role recovery/success (918 selected
 records, two retained identities), recorded SAM/YOLO grounding and five clarifications
@@ -156,6 +158,10 @@ copy with zero browser errors. The owned browser/server close after validation.
 These checks establish storage/reference behavior for those retained histories.
 The native binding additionally passed the current RoboDojo v1 journal: 626 selected
 records, two preserved request identities, and reconciled restart history.
+Independent session selection also passed the four-session grounding journal:
+455 selected records were retired while three other sessions remained available
+after reopening. Native generated source identities and explicit journal addresses
+declare text references; benchmark criterion names remain scoped task metadata.
 The default native factory also passed the Chrome DOM history and image lifecycle
 against a private journal and attachment copy: 626 retired records, two reserved request
 identities and 180 explicitly collected image objects (69,077,537 bytes). The original
