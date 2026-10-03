@@ -269,6 +269,8 @@ class RoboTwinEnvironment:
         env = self._require_env()
         if should_stop():
             return NativeStep(self.observe(), 0, False, 0, bool(env.eval_success))
+        if self.episode_terminated():
+            raise RuntimeError("RoboTwin episode has ended; a new native session is required.")
         if len(action) != 14 or any(
             type(value) not in (int, float) or not math.isfinite(value)
             or not ACTION_SPEC["channels"][index]["minimum"] <= value <= ACTION_SPEC["channels"][index]["maximum"]
@@ -324,6 +326,10 @@ class RoboTwinEnvironment:
             raise ValueError("Unsupported RoboTwin check ID.")
         value = bool(env.check_success())
         return tuple(NativeCheck(check_id, value) for check_id in check_ids)
+
+    def episode_terminated(self) -> bool:
+        env = self._require_env()
+        return bool(env.eval_success or env.take_action_cnt >= env.step_lim or env.check_success())
 
     def turn_view(self, direction: str) -> NativeObservation:
         raise ValueError(f"RoboTwin active view direction is unsupported: {direction}")

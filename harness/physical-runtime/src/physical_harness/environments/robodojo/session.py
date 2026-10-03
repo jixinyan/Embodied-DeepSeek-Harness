@@ -302,6 +302,12 @@ class RoboDojoSession:
         values = {key: value for key, value in arguments.items() if key not in ("episode_id", "step_id")}
         if operation == "teacher_observation":
             return self.obs
+        if operation == "episode_status":
+            ended = bool(self.env.end_flag[0])
+            success = bool(ended and self.env.success[0])
+            truncated = bool(ended and not success and self.step_id >= self.env.step_lim)
+            return {"terminated": bool(ended and not truncated), "truncated": truncated,
+                    "success": success, "finished": self.finished}
         if operation == "begin_combination":
             write_json(self.output / "combination.json", values)
             return {"physical_steps": 0}

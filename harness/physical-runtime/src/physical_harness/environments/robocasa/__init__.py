@@ -74,6 +74,7 @@ class RoboCasaEnvironment:
         self._simulation_time_s = 0.0
         self._scene_parameters: dict[str, object] | None = None
         self._camera_resolution = 256
+        self._native_done = False
 
     @staticmethod
     def _scene_configuration(configuration: Mapping[str, object]) -> dict[str, object]:
@@ -326,12 +327,15 @@ class RoboCasaEnvironment:
         env = self._require_env()
         if should_stop():
             return NativeStep(self.observe(), 0, False, 0, False)
+        if self.episode_terminated():
+            raise RuntimeError("RoboCasa episode has ended; a new native session is required.")
         if len(action) != 12 or any(type(value) not in (int, float) or not math.isfinite(value) or abs(value) > 1 for value in action):
             raise ValueError("RoboCasa action must contain 12 finite normalized values.")
         if abs(action[11]) != 1:
             raise ValueError("RoboCasa base_mode must be -1 or 1.")
         before = float(env.sim.data.time)
         raw, _reward, done, _info = env.step(np.asarray(action, dtype=np.float64))
+        self._native_done = bool(done)
         elapsed = float(env.sim.data.time) - before
         raw_steps = round(elapsed / env.model_timestep)
         if raw_steps <= 0:
@@ -343,6 +347,9 @@ class RoboCasaEnvironment:
             raw_steps, self._simulation_time_s,
         )
         return NativeStep(observation, 1, True, raw_steps, bool(done or env._check_success()), (frame,))
+
+    def episode_terminated(self) -> bool:
+        return self._native_done or bool(self._require_env()._check_success())
 
     def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]:
         env = self._require_env()

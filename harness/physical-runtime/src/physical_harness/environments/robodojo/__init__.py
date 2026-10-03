@@ -485,6 +485,8 @@ class RoboDojoEnvironment:
     ) -> NativeStep:
         if should_stop():
             return NativeStep(self.observe(), 0, False, 0, False)
+        if self.episode_terminated():
+            raise RuntimeError("RoboDojo episode has ended; a new native session is required.")
         if len(action) != 14 or any(type(value) not in (int, float) or not math.isfinite(value) for value in action):
             raise ValueError("RoboDojo action must contain 14 finite values.")
         if any(action[index] < 0 or action[index] > 1 for index in (6, 13)):
@@ -527,6 +529,14 @@ class RoboDojoEnvironment:
             )
         return NativeStep(observation, 1, True, raw_sim_steps, self._terminated or self._truncated,
                           (frame,), native_physics=native_physics)
+
+    def episode_terminated(self) -> bool:
+        status = self._require_rpc().request("episode_status", episode_id=self._episode_id, step_id=self._step_id)
+        if not isinstance(status, dict) or any(type(status.get(key)) is not bool
+                                               for key in ("terminated", "truncated", "success", "finished")):
+            raise RuntimeError("RoboDojo native episode status is invalid.")
+        self._terminated, self._truncated, self._success = status["terminated"], status["truncated"], status["success"]
+        return self._terminated or self._truncated or status["finished"]
 
     def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]:
         if not check_ids or any(check_id != "task_success" for check_id in check_ids):

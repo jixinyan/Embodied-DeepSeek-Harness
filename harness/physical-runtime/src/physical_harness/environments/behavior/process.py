@@ -188,6 +188,9 @@ class BehaviorProcessEnvironment:
     def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]:
         return self._rpc("check", tuple(check_ids))
 
+    def episode_terminated(self) -> bool:
+        return self._rpc("episode_terminated")
+
     def turn_view(self, direction: str) -> NativeObservation:
         return self._rpc("turn_view", direction)
 
@@ -275,7 +278,7 @@ def _serve(connection_fd: int) -> None:
                     result = environment.rotate_view(args[0], args[1], cancellation.is_set)
                 elif operation == "native_state":
                     result = _native_state(environment, scene_id)
-                elif operation in ("reset", "bind_task", "observe", "describe", "check", "turn_view", "measure_object", "close"):
+                elif operation in ("reset", "bind_task", "observe", "describe", "check", "turn_view", "measure_object", "episode_terminated", "close"):
                     result = getattr(environment, operation)(*args)
                 else:
                     raise ValueError(f"Unsupported BEHAVIOR native operation: {operation}")

@@ -363,7 +363,7 @@ class BehaviorEnvironment:
         env = self._require_env()
         if should_stop():
             return NativeStep(self.observe(), 0, False, 0, self._episode_terminated)
-        if self._episode_terminated:
+        if self.episode_terminated():
             raise RuntimeError("BEHAVIOR episode has ended; a new native session is required.")
         control_started = time.monotonic()
         channels = self._action_spec["channels"]
@@ -400,6 +400,10 @@ class BehaviorEnvironment:
             raise ValueError("Unsupported BEHAVIOR check ID.")
         success, _ = env.task.compiled_task.check_goal(env.task._evaluate_predicate)
         return tuple(NativeCheck(check_id, bool(success)) for check_id in check_ids)
+
+    def episode_terminated(self) -> bool:
+        self._require_env()
+        return self._episode_terminated or bool(self.check(("task_success",))[0].value)
 
     def turn_view(self, direction: str) -> NativeObservation:
         raise ValueError(f"BEHAVIOR active view direction is unsupported: {direction}")
