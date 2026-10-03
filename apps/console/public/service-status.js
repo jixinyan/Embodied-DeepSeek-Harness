@@ -4,6 +4,7 @@ export function bindServiceStatus(root, request) {
   const refresh = root.querySelector('[data-services="refresh"]');
   const controller = new AbortController();
   let pending = false;
+  let observedAt;
   const update = async () => {
     if (pending || controller.signal.aborted) return;
     pending = true;
@@ -15,6 +16,7 @@ export function bindServiceStatus(root, request) {
       );
       if (typeof snapshot.managed !== 'boolean' || !Array.isArray(snapshot.services))
         throw new Error('Invalid managed service status.');
+      observedAt = new Date().toISOString();
       root.hidden = !snapshot.services.length;
       const cards = snapshot.services.map((service) => {
         if (
@@ -30,6 +32,7 @@ export function bindServiceStatus(root, request) {
         heading.textContent = service.label;
         const detail = document.createElement('p');
         detail.textContent = `${service.state} · ${service.leases} active service leases`;
+        detail.dataset.observedDetail = detail.textContent;
         card.append(heading, detail);
         if (service.error) {
           const error = document.createElement('p');
@@ -47,7 +50,11 @@ export function bindServiceStatus(root, request) {
     } catch (error) {
       if (!controller.signal.aborted) {
         root.hidden = false;
-        status.textContent = error.message;
+        for (const detail of list.querySelectorAll('[data-observed-detail]'))
+          detail.textContent = `Last observed: ${detail.dataset.observedDetail}`;
+        status.textContent = observedAt
+          ? `Service status is unavailable. Last response: ${observedAt}. ${error.message}`
+          : `Service status is unavailable. ${error.message}`;
         status.setAttribute('role', 'alert');
       }
     } finally {

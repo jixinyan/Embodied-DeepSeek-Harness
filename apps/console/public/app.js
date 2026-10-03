@@ -190,6 +190,12 @@ async function refreshHistory() {
   return data.tasks;
 }
 function updateControls() {
+  if (!config) {
+    $('start').disabled = true;
+    $('create-session').disabled = true;
+    $('scenario').disabled = true;
+    return;
+  }
   const active = activeRunRecord;
   taskCatalog.select(activeUserSession());
   $('start').disabled =
@@ -1061,6 +1067,7 @@ $('inspector').addEventListener('click', (e) => {
 });
 try {
   config = await api('/api/config');
+  $('inspect-team').disabled = false;
   const publishedSource = $('published-source');
   const sourceUnavailable = $('source-unavailable');
   if (config.sourceCode?.state === 'published' && config.sourceCode.url) {
@@ -1098,6 +1105,7 @@ try {
   if (history?.activeId || history?.runs[0]) await loadRun(history.activeId || history.runs[0].id);
   else {
     text('connection', 'Local server ready');
+    text('run-state', 'No active task');
     updateControls();
   }
 } catch (e) {

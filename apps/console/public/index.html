@@ -78,7 +78,7 @@
         <div class="breadcrumb">Workspace <span>/</span> <strong>Mission control</strong></div>
         <div class="header-actions">
           <span id="deployment-source" class="tag fixture">CONNECTING</span
-          ><button id="inspect-team" class="button small">Inspect config</button>
+          ><button id="inspect-team" class="button small" disabled>Inspect config</button>
         </div>
       </header>
       <div id="error" class="error" role="alert" hidden></div>
@@ -167,39 +167,40 @@
           <select
             id="launch-profile"
             aria-label="Environment, embodiment, policy and model configuration"
+            disabled
           ></select>
-          <button id="create-session" class="button primary">New session</button>
+          <button id="create-session" class="button primary" disabled>New session</button>
           <button id="end-session" class="button small" disabled>End session</button>
           <button id="workspace-skills" class="button small">Experience library</button>
         </div>
         <div class="component-selectors" id="component-selectors">
           <label
             ><span>01 / Runtime</span
-            ><select id="select-source" aria-label="Runtime source"></select
+            ><select id="select-source" aria-label="Runtime source" disabled></select
           ></label>
           <label
             ><span>02 / Environment</span
-            ><select id="select-environment" aria-label="Environment"></select
+            ><select id="select-environment" aria-label="Environment" disabled></select
           ></label>
           <label
             ><span>03 / Embodiment</span
-            ><select id="select-embodiment" aria-label="Embodiment"></select
+            ><select id="select-embodiment" aria-label="Embodiment" disabled></select
           ></label>
           <label
             ><span>04 / Execution mode</span
-            ><select id="select-executionMode" aria-label="Execution mode"></select
+            ><select id="select-executionMode" aria-label="Execution mode" disabled></select
           ></label>
           <label
             ><span>05 / Checkpoint</span
-            ><select id="select-checkpoint" aria-label="Checkpoint"></select
+            ><select id="select-checkpoint" aria-label="Checkpoint" disabled></select
           ></label>
           <label
             ><span>06 / Policy</span
-            ><select id="select-policy" aria-label="Policy"></select
+            ><select id="select-policy" aria-label="Policy" disabled></select
           ></label>
           <label
             ><span>07 / Upper model default</span
-            ><select id="select-defaultModel" aria-label="Upper model default"></select
+            ><select id="select-defaultModel" aria-label="Upper model default" disabled></select
           ></label>
         </div>
         <div id="launch-details" class="launch-details"></div>
@@ -239,18 +240,14 @@
           <label for="instruction" class="eyebrow">TASK</label
           ><input id="instruction" value="Loading task configuration…" readonly />
           <div class="mission-meta">
-            <span id="team-name">console-demo</span><span>Deployment-bound success conditions</span>
+            <span id="team-name">Loading team configuration…</span
+            ><span>Deployment-bound success conditions</span>
           </div>
         </div>
         <div class="mission-actions">
           <label for="scenario" class="eyebrow">NEXT TASK CRITERIA</label
-          ><select id="scenario">
-            <option value="retry-success">Failure → recovery → success</option>
-            <option value="multi-goal-recovery">Placement → access repair → storage</option>
-            <option value="first-pass">First-attempt success</option>
-            <option value="unknown">Insufficient evidence</option>
-            <option value="backend-error">Backend error</option></select
-          ><button id="start" class="button primary">Run task</button>
+          ><select id="scenario" disabled></select
+          ><button id="start" class="button primary" disabled>Run task</button>
         </div>
       </section>
       <section class="task-composer" aria-label="Next task input" id="task-composer">
@@ -282,7 +279,9 @@
             Optional · Up to four tasks from this session. Planner receives recorded outcomes and
             must observe the current scene.
           </p>
-          <button id="inspect-next-criteria" class="text-button">Inspect next task criteria</button>
+          <button id="inspect-next-criteria" class="text-button" disabled>
+            Inspect next task criteria
+          </button>
           <button id="reload-task-catalog" class="text-button" disabled>Reload task catalog</button>
           <span id="task-catalog-status" role="status"></span>
           <button id="inspect-submission" class="text-button" disabled>
@@ -293,7 +292,7 @@
       <div class="run-strip">
         <div>
           <span id="run-dot" class="status-dot"></span
-          ><strong id="run-state" role="status">Ready</strong
+          ><strong id="run-state" role="status">Loading configuration…</strong
           ><span id="run-id" class="mono muted">No active run</span>
         </div>
         <div class="controls">
