@@ -1,8 +1,8 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.69 · 2026-09-30
+Version: v1.70 · 2026-10-03
 
-Status: local Qwen Planner and fresh independent Verifiers complete failed native RoboTwin attempts, explicit retained-scene retry and formal success through Pi0.5 and ActionGate. A custom SceneAnalyst independently receives images/context, publishes a selected-schema report and is acknowledged by Planner before execution; its task succeeds with eight retained plan-parameter errors. Source audits verify completed TODOs, terminal receipts, identified inference, decoded simulator video and released resources. Native RoboCasa and BEHAVIOR retries conclude their observed failed outcomes. Five MP4s retain these workflows and real SAM/YOLO grounding. Native tool budgets and connected post-execution checks have real task validation. R1Pro native yaw/pitch, cancellation and actual Qwen/production-worker yaw observation pass; original returned images match subsequent model requests. Device-supported tool exposure and admitted-job endpoint failure have actual model/provider evidence. Recovery learning is paused and SceneState implementation is deferred. Zero-tool-error custom-role planning, multi-goal and full four-provider acceptance remain pending.
+Status: native Qwen/Pi0.5 RoboTwin recovery and RoboDojo task success have independent formal verification and original action/video evidence. Custom-role RoboTwin run `66ff9b47` succeeds with two retained tool errors; run `686c9767` verifies zero-tool-error recovery separately. RoboCasa and BEHAVIOR preserve their observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and packaged Desktop lifecycle have production acceptance. Native terminal preflight is implemented; unchanged-terminal repeated-task acceptance remains open. Evolver is paused and SceneState is deferred. Multi-goal, clean custom-role workflows and the complete installed configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
 
@@ -11,9 +11,8 @@ Items marked “v1 default” are initial implementation choices that may evolve
 configuration or a documented decision. Model checkpoints, compute and robot models
 are deployment bindings; they do not block the framework design.
 
-This revision prioritizes all MVP-critical runtime mechanisms and foundation acceptance before
-a runnable simulation-to-console MVP. It preserves the verified DSH and contract baseline. Confirmed product requirements remain unchanged. Detailed
-wire payloads and validation rules are authoritative in the schema and
+This revision defines the complete v1 runtime and its production acceptance boundaries.
+Detailed wire payloads and validation rules are authoritative in the schema and
 [contract guide](implementation/contracts.md); examples below are conceptual excerpts,
 not complete copyable wire messages. Public documentation and SVG labels use English.
 
@@ -27,14 +26,18 @@ are SVG assets; include their directory when handing over this document.
 
 ### 0.1 Current work and next action
 
-The current priority is reliable upper-agent retry, source-bound perception metrics
-and continued native environment integration. Live Teams set `learning_enabled: false`;
+The current priority is complete native model/policy workflows, multi-task continuity
+and reproducible release configuration. Live Teams set `learning_enabled: false`;
 SceneState development is deferred. The [current Agent loop](implementation/current-agent-loop.md)
 records actual system prompt sources, context assembly, memory and retry behavior.
 Responsibility-bound numbered workflows and model-facing parameter/receipt guidance
 are documented in [prompt workflows](implementation/prompt-workflow.md). Their
 contents contribute to the Team digest for every configured physical profile.
-Native Qwen/Pi0.5 failed-attempt recovery and successful completion are verified.
+Native Qwen/Pi0.5 RoboTwin run `686c9767` verifies failed-attempt recovery and
+successful completion with zero tool errors. The separate custom-role run `66ff9b47`
+completes its retained-scene retry and succeeds with two retained tool errors;
+zero-tool-error custom-role acceptance remains open. Native RoboDojo run `02475b82`
+verifies native and independent formal success with one retained tool error.
 Native Qwen/GR00T RoboCasa retry exhaustion concludes with the observed failed
 outcome, completed factual assessment TODOs and released resources. Structured
 plan parameters preserve their canonical types. SAM masks use bounded lossless
@@ -44,6 +47,10 @@ The
 [Qwen headless handoff](implementation/qwen-headless-checkpoint.md) records exact task,
 source, checkpoint, verification and shutdown evidence, preserved work and the
 continuation requirements. The weekly DSH monitor performs read-only assessment.
+Selected upstream ToolCallRecovery and JSON intrinsic-constructor adaptations have
+live Qwen, persisted native-history and actual JavaScriptCore acceptance. Failed
+steps preserve completed results, record unknown/not-started outcomes and retain
+their original errors without replaying physical dispatch.
 
 The release objective is a complete v1 implementation of all agreed capabilities.
 The [v1 delivery register](implementation/v1-delivery.md) connects each remaining
@@ -63,8 +70,9 @@ GPU-host access is now available for simulation integration. The active delivery
 priority is a real environment-to-console workflow, retaining DSH role orchestration,
 policy client/server inference, action admission and formal verification. Supported
 versions and checkpoint/embodiment compatibility must be recorded from actual upstream
-sources and validated on the host. BEHAVIOR-1K, RoboCasa and RoboTwin remain integration
-targets; installed dependencies alone do not establish a working provider.
+sources and validated on the host. All four native providers have actual task or
+lifecycle evidence; successful task completion, clean workflows and each additional
+task/checkpoint combination retain independent acceptance requirements.
 
 Each simulator, upper model service and policy service uses an isolated dependency
 environment. Host system Python, existing environments and global graphics libraries
@@ -76,22 +84,24 @@ host directory layout. Providers declare their actual device requirements; deplo
 configuration selects compatible devices, rendering and inference settings. Each supported
 combination needs its own acceptance evidence, and unsupported combinations fail admission.
 
-The runtime choice is settled: reuse DSH, with EDH-owned composition and embodied
-behavior. Upper Team/Role, tools, TODOs, plans/files, verification, recovery, SKILL
-storage and a console now run with a scripted model and CPU fixture backend.
-Plan-selected sequential goals and prerequisite recovery now run with CPU fixtures.
-The local server accepts explicit deployment bindings for tasks, native DSH models,
-tools and backend factories; see the [deployment guide](implementation/deployments.md).
-This provides configuration assembly, not a connected physical provider.
-OpenAI-compatible VLM transport now reuses native DSH serialization and streaming.
+The runtime reuses DSH with EDH-owned Team/Role composition, tools, TODOs,
+persistent plans/private files, explicit communication, formal verification,
+recovery records, selective SKILL retrieval and the unified console. Native Qwen
+and learned-policy task runs validate the model-to-worker path, scoped evidence,
+explicit retained-scene retry, terminal receipts and resource release. Multi-goal
+and prerequisite-recovery acceptance with actual simulation remains open.
+The server accepts explicit deployment bindings for tasks, native DSH models,
+tools and backend factories. Built-in native factories validate saved configuration,
+Teams, compatible launch profiles and the configured benchmark catalog before
+environment allocation; see the [deployment guide](implementation/deployments.md).
+OpenAI-compatible VLM transport reuses native DSH serialization and streaming.
 Cloud API and vLLM bindings can be loaded from YAML/JSON with explicit authentication,
 model aliases, image capabilities and endpoint-specific request options. The configured
 image service resolves request images, and a non-secret configuration digest contributes
 to deployment identity. See [model configuration](implementation/model-configuration.md).
-WebSocket policy transport and a deterministic action gate run independently with CPU
-acceptance. Current work prioritizes GPU integration; unfinished upper capabilities,
-including domain retention and restart lifecycle, remain tracked. Atomic record retirement
-and live history-index reconciliation are implemented at the storage boundary. Application
+WebSocket learned-policy transport and ActionGate execute actual native controls.
+Atomic record retirement and live history-index reconciliation are implemented at
+the storage boundary. Application
 retention has a configured controller for declared record references, SKILL-source
 preservation, durable request identities and leased external sources. Session/request
 owners now inspect complete task membership, reverse ownership and catalog dependencies.
@@ -103,24 +113,25 @@ Assignment/recovery owners retain explicit delegation, evidence, formal-result a
 ordered event sources, including both failed and successful recovery provenance.
 Run/configuration/restart owners retain published history, typed task sources and
 selected historical context, with same-session and immutable configuration checks.
-Event/message ownership retains typed source references and supports versioned deployment
-extensions, including legacy inline history. Seven event checks use real journals and
-authored documents; no model or physical provider executes.
-Remaining record owners, host idle admission and reviewed console selection remain pending;
-see [domain retention](implementation/domain-retention.md).
-Live VLM image/tool rounds pass with independent native DSH Planner and Verifier
-sessions and a real RoboCasa reset image. Provider-backed criteria discovery and
-model-driven physical task acceptance remain pending. The desktop launcher
-now owns configured local-service startup; live deployment acceptance and signed
-distribution remain open. Active-task clarification
-has native/file/HTTP and console component acceptance; live task continuation remains
-required. Physical
-integration now has a host-to-Python worker bridge with actual reset, image transport,
-independent task identities and connection-failure checks. Learned-policy execution,
-post-execution formal verification and complete task acceptance remain
-required. See the
-[adapter guide and SVG](implementation/model-policy-adapters.md) for exact contracts,
-commands, examples and unimplemented integration. The execution port requires a confirmed pause and explicit Planner resume,
+Event/message ownership retains typed source references and supports versioned
+deployment extensions, including legacy inline history. Submission, plan, private
+file, clarification and native-audit owners complete the built-in native composition.
+Default native deployments bind explicit record/image source leases and fail on
+unknown payload formats. Idle-only archive/inspect/retire and original-image
+collection require current revisions and explicit operator admission. Private copies
+of actual journals verify independent Session selection, preserved other Sessions,
+restart reconciliation and retained request identities; original source audits remain
+unchanged. See [domain retention](implementation/domain-retention.md).
+The packaged Desktop launcher starts its owned local service from actual saved
+native configuration, opens the unified console and exposes compatible selectors.
+Actual Stop service and application-quit checks release journal writers, terminate
+owned children and close listeners. Signed distribution and the complete installed
+application task matrix remain open. Active-task clarification has native/file/HTTP
+and console acceptance; complete live clarification/pause/resume continuation still
+requires its own acceptance. The host-to-Python worker bridge preserves independent
+task identities, native observations and actual post-execution check authority.
+See the [adapter guide and SVG](implementation/model-policy-adapters.md) for exact
+interfaces, commands and provider-specific acceptance. The execution port requires a confirmed pause and explicit Planner resume,
 with execution/boundary/state-version preconditions and a matching published backend
 update. An owner ID in a prior subgoal is not a new authorization. See the
 [execution contract](../harness/agent-runtime/execution/README.md).
@@ -203,7 +214,9 @@ The console is the primary session launcher and status surface. The
 starts the existing server in an owned process and opens the console. It requires
 a prepared checkout and a trusted deployment factory. Stop and application quit
 wait for cleanup and process exit; abnormal exit preserves an explicit error.
-Published signed installers and live deployment acceptance remain open.
+Actual packaged launcher startup, saved native profile selection, Stop service and
+application-quit cleanup are verified. Published signed installers and installed
+task execution across the supported configuration matrix remain open.
 Launch selections must resolve installed environment,
 embodiment, policy/checkpoint, upper model and role/tool configurations before allocation.
 Experience is workspace-wide and explicitly retrieved across sessions, with source and
@@ -230,8 +243,14 @@ native DSH turn conclusion and followup delivery, plus a console response panel.
 Answer acceptance retains current criteria and execution permissions; resumed execution
 requires an explicit Planner decision. Restart interrupts unfinished interactions.
 See [clarification behavior and acceptance](implementation/user-clarification.md).
-Provider-backed acceptance of catalog discovery and live clarification/pause/resume acceptance
-remain open.
+Built-in native factories admit the configured benchmark task and preserve its
+criterion separately from editable user instructions. The environment remains
+allocated between sequential runs. Native terminal preflight obtains the provider's
+current ended state before creating a policy client; an ended episode publishes a
+fresh confirmed boundary and observation with zero new controls or policy requests.
+Actual repeated-task acceptance on an unchanged terminal environment remains open.
+Changing to a task that requires another native scene needs a new User Session.
+Live clarification/pause/resume acceptance remains provider-specific.
 
 ### 0.2 Repository and workspace
 
@@ -860,7 +879,9 @@ the attachment context and supplies its service to deployment, environment and t
 factories. Authorized model tools read images by persisted run/evidence/attachment
 identity. The console displays evidence references and Agent trace. Headless camera
 video is recorded on the simulator host and transferred after execution.
-Live VLM/provider acceptance, media retention and reference accounting remain required.
+Live VLM image transport and native observation round trips are verified. Built-in
+native retention binds image references and explicit source leases; additional
+extension formats require their own complete owner declarations.
 See the [image storage guide](implementation/image-storage.md).
 
 The domain journal supports explicit atomic compaction of superseded mutable-record
@@ -871,8 +892,9 @@ Compacted journals use a versioned checkpoint prefix and require a compatible re
 Image inventory reports original and model-request-cache usage. Explicit cache cleanup
 requires an idle workspace and a current service revision, preserves original objects,
 and permits request variants to regenerate on demand. Custom providers advertise this
-optional maintenance capability. Distinct-key, original-image and session/audit
-retention remain required. See the
+optional maintenance capability. Built-in native deployments provide distinct-key,
+original-image and Session/audit retention with explicit archive/inspect/retire
+admission and immutable request tombstones. See the
 [maintenance guide](implementation/storage-maintenance.md).
 
 Native audit inspection uses bounded assignment and event pages. The console selects

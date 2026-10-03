@@ -1,10 +1,107 @@
 # Implementation progress
 
-Spec: v1.69. Current checkpoint: **native Qwen/Pi0.5 RoboDojo task success; reusable native deployment factories; typed planning writes; request archival and Session retirement; device watchdog, process resource leases and hardware interface**. Full v1 acceptance remains in progress.
+Spec: v1.70. Current checkpoint: **native Qwen/Pi0.5 task success and retained-scene retry; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop startup and cleanup; authoritative native terminal preflight**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## 2026-10-03 native v1 integration
+
+### DSH recovery and engine portability
+
+Checkpoint `d4e010d` applies upstream
+`6a6f350b9437cf24e34a34f39ee4dfd107897d0c` and
+`068c552b1e057aa580ef2875efdaafcdfa2aacfb` from reviewed
+`dsh-v0.2.0-rc.1` source `4878cdabd87d4041bdaff61d04c966883b9fd07a`.
+The 128-file import manifest preserves original source hashes and records each
+adapted local hash. Live failed-step recovery and durable-prefix repair share the
+owned Session tracker. Completed results remain immutable; missing results become
+`TOOL_OUTCOME_UNKNOWN` or `TOOL_NOT_STARTED` in existing `role: user` tool-result
+blocks before step closure. Original errors propagate, and publication failure
+preserves both errors. Recovery never replays physical dispatch.
+
+Actual Qwen acceptance uses read-only repository files and a real exclusive-file
+publication failure. Four model requests and four file reads verify recovery,
+serialized Session restoration, subsequent model-visible results, independent
+contexts and original-error preservation, including failed recovery publication.
+Evidence: `.local/work/dsh-tool-recovery-live-ygLra4/acceptance.json`.
+Five retained native journals verify 149 actual interrupted call prefixes, balanced
+restoration and unchanged original source digests. The production-reader checks
+perform zero physical dispatches. Their evidence directories are
+`.local/work/dsh-recovery-history-2mBGjK/`,
+`.local/work/dsh-recovery-history-JsL4Zx/`,
+`.local/work/dsh-recovery-history-tSng0E/`,
+`.local/work/dsh-recovery-history-ND5HZA/` and
+`.local/work/dsh-recovery-history-aJVRIK/`.
+
+Actual Node/V8 and native JavaScriptCore checks use the real import manifest in
+same-engine and cross-realm contexts. Both engines accept plain JSON objects/arrays
+and reject custom prototypes; JavaScriptCore's actual multiline intrinsic text
+is retained in `.local/work/dsh-json-portability-YAW7sV/acceptance.json`.
+Public executable checks are documented in the
+[DSH adaptation guide](dsh-release-adaptation.md). TypeScript, script type checking,
+source provenance, read-only formatting, structure and whitespace checks pass.
+
+### Default native retention and Desktop lifecycle
+
+Checkpoints `f60ede6`, `782696c` and the native factory integration bind complete
+built-in native record/image ownership. Explicit payload formats, private files,
+SKILL provenance, native audits and source leases participate in maintenance
+admission. Unknown extension formats fail inspection. Archive, inspection and
+retirement preserve immutable request identities and require an idle workspace;
+original-image collection has separate explicit admission.
+
+Private copies of five actual histories contain 3,202 records and 19 archived
+request identities. Independent selection of Session
+`7ab8cc59-203f-4a75-b794-7c136e5c8a71` retires 455 selected records and preserves
+three other Sessions, their three runs and 407 records through restart.
+The default-factory HTTP/browser check retires 626 copied records, retains two
+request identities and explicitly collects 180 unreferenced private originals
+covering 69,077,537 bytes. Original journal and image digests remain unchanged.
+Evidence: `.local/work/native-retention-http-3i2P0k/http-acceptance.json`.
+
+The packaged Electron application opens the unified console from an actual saved
+RoboTwin/Qwen/Pi0.5 configuration and selects its compatible native profile.
+Separate Stop service and application-quit cycles release the writer lock,
+terminate owned service children and close the loopback listener. Browser errors
+are absent; sandbox/context isolation remain enabled with no Node access.
+This accepts configuration and process lifecycle without model inference or native
+environment allocation. Evidence: `.local/work/native-desktop-PVdQ8t/acceptance.json`.
+Checkpoint `1b42751` documents executable setup, packaging and native deployment
+instructions. Signed distribution and full installed task execution remain open.
+
+### Retained native task and terminal episode boundaries
+
+Provider checkpoint `1ed875e` supplies authoritative `episode_terminated()` for
+all four native environments and rejects controls after their actual ended state.
+Host/worker checkpoint `0b08ff1` checks that state before creating the policy client.
+An already-ended episode receives a fresh ActionGate-confirmed `episode_terminated`
+boundary and current observation, with zero new controls, physics steps or policy
+requests. The task's execution resources release while its native environment
+remains allocated. A fresh Verifier receives the new task/execution scope.
+
+Sequential task admission preserves the allocated environment and immutable
+configured benchmark criterion; different-scene tasks require a new Session.
+Checkpoint `85740a5` records these semantics in
+[Session task catalogs](session-task-catalogs.md). Python compilation/import checks
+pass. Actual first-task success followed by a second task on the unchanged ended
+native episode remains pending; the dedicated zero-action acceptance must remain
+separate from positive learned-policy execution acceptance. Evolver is paused and
+SceneState is deferred.
+
+### Native custom-role RoboTwin task
+
+Run `66ff9b47-9e2d-4514-904c-cd61c869b44c` uses native Qwen/Pi0.5 with
+independent Planner, SceneAnalyst and two fresh Verifiers. Its saved outcome is
+`succeeded`: attempt one ends after 64 controls with failed formal verification;
+the explicit retained-scene retry ends after 40 controls with native success and
+passed formal verification. Recorded totals are 104 controls, seven policy calls
+and 10,087 physics steps. All four assignments retire and Session
+`e59cbd72-c1b3-4e42-8497-30e73109c98a` closes with resources released.
+The original 765-event trace retains two tool errors, so clean-workflow acceptance
+is false. Evidence: `.local/work/v1-robotwin-20261003/acceptance/`.
+This is a separate run from zero-tool-error recovery run `686c9767` below.
+
+### Native RoboDojo task
 
 RoboDojo run `02475b82-b6b6-457f-8cf8-3199ef265bc6` uses local
 Qwen3.8-27B Planner/Verifier and the identified native OpenPI Pi0.5 checkpoint.
@@ -45,11 +142,10 @@ Verified source checkpoints:
   configuration, production Team/catalog and server startup checks pass.
 - `ec9ae85`: consistent structured planning workflows in provider role prompts.
 
-Actual-history retention checks use copies of completed journals and the production
-HTTP service. Explicit archive/inspect/retire operations preserve request tombstones
-and reject reuse after reopen. Default native ownership bindings, the clean
-RoboTwin custom-role run, calibrated metrics across providers and a clean RoboDojo
-rerun are active work. Evolver remains paused; SceneState remains deferred.
+The remaining native gates include zero-tool-error custom-role RoboTwin planning,
+calibrated metrics across providers, a clean RoboDojo workflow, unchanged-terminal
+multi-task acceptance and the complete installed configuration matrix. Evolver
+remains paused; SceneState remains deferred.
 
 ## 2026-09-30 delivery boundary
 
