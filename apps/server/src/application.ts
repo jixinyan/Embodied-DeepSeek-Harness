@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from 'node:util';
 import { parse as parsePath } from 'node:path';
-import { modelToolContractSchema } from './model-tool-schema.js';
+import { coreModelToolParameters, modelToolContractSchema } from './model-tool-schema.js';
 import { admitSensorSample, sensorImages, SensorSamples } from '@edh/perception';
 import type { SegmentationEngine, DepthEngine, DepthCameraIntrinsics } from '@edh/perception';
 import { createHash, randomUUID } from 'node:crypto';
@@ -57,7 +57,6 @@ export type { GoalBinding } from '@edh/tasks';
 export { CORE_TOOLS } from '@edh/tools';
 import {
   CORE_TOOL_PARAMETERS,
-  CORE_TOOL_OPTIONAL_PARAMETERS,
   CORE_TOOL_DESCRIPTIONS,
   assertObjectJsonSchema,
   validateJsonSchemaValue,
@@ -734,65 +733,18 @@ export class UpperRun {
               ? { timeoutMs: this.options.depth.timeoutMs }
               : {}),
             description,
-            parameters: {
-              type: 'object',
-              properties:
-                logical === 'agent.report'
-                  ? {
-                      ...properties,
-                      result: {
-                        description:
-                          'Structured role output; null when requesting missing context. Follow the selected role result schema.',
-                        oneOf: [
-                          this.sessions.team.members[a.member]!.outputSchema?.schema ?? {
-                            type: 'object',
-                            additionalProperties: true,
-                          },
-                          { type: 'null' },
-                        ],
-                      },
-                    }
-                  : logical === 'observation.rotate'
-                    ? Object.fromEntries(
-                        Object.entries(properties).map(([name, schema]) => [
-                          name,
-                          this.options.backend.rotationAxes!.includes(
-                            name === 'yawDeg' ? 'yaw' : 'pitch',
-                          )
-                            ? schema
-                            : {
-                                type: 'number',
-                                const: 0,
-                                description:
-                                  'This device does not support this rotation axis; supply 0.',
-                              },
-                        ]),
-                      )
-                    : logical === 'observation.turn_view'
-                      ? {
-                          ...properties,
-                          direction: {
-                            type: 'string',
-                            description:
-                              'One active observation direction supported by this device.',
-                            enum: [...this.options.backend.activeViewDirections!],
-                          },
-                        }
-                      : logical === 'planning.update'
-                        ? {
-                            ...properties,
-                            plan: {
-                              ...this.planToolSchema!,
-                              description:
-                                'Use planning.read.planWrite.plan, a nested JSON object with schema_version, task_id, version, owner_agent_id, owner_assignment_id and items. Edit its items for your decisions. Preserve the supplied identities and criteria, and pair it with planWrite.expectedVersion. The value begins with an object brace; keep objects, arrays and numeric versions as their JSON types.',
-                            },
-                          }
-                        : properties,
-              required: Object.keys(properties).filter(
-                (key) => !CORE_TOOL_OPTIONAL_PARAMETERS[logical]?.includes(key),
-              ),
-              additionalProperties: false,
-            },
+            parameters: coreModelToolParameters(logical, {
+              ...(this.planToolSchema ? { planSchema: this.planToolSchema } : {}),
+              ...(this.sessions.team.members[a.member]!.outputSchema
+                ? { roleOutputSchema: this.sessions.team.members[a.member]!.outputSchema!.schema }
+                : {}),
+              ...(this.options.backend.rotationAxes
+                ? { rotationAxes: this.options.backend.rotationAxes }
+                : {}),
+              ...(this.options.backend.activeViewDirections
+                ? { activeViewDirections: this.options.backend.activeViewDirections }
+                : {}),
+            }),
             output: {
               schema: { type: 'object', additionalProperties: true },
               render: (_args, value) => {

@@ -44,6 +44,9 @@ Its sampler defaults to the native implementation; `EDH_MODEL_FLASHINFER_SAMPLER
 selects FlashInfer sampling when the deployment supports it.
 The model file supplies `enable_thinking` and `preserve_thinking` through vLLM's
 `chat_template_kwargs`; it retains reasoning content between tool rounds. Roles
+use `strictTools: true` to activate vLLM's native schema-constrained tool arguments
+with its default strict-tool enforcement enabled. Tool selection remains `auto`.
+The optional `toolChoice: required` setting requires a tool call for each response.
 refer to the stable `brain` alias. Pi0.5 is a separate policy service and receives
 the admitted native subgoal instruction, actual camera group and joint state.
 The model file uses separate HTTP connections for streamed requests and native DSH

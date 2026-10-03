@@ -52,6 +52,8 @@ const endpoint = z
     systemRole: z.enum(['system', 'developer']).default('system'),
     maxTokensField: z.enum(['max_tokens', 'max_completion_tokens']).default('max_tokens'),
     passReasoningContent: z.boolean().default(false),
+    strictTools: z.boolean().default(false),
+    toolChoice: z.enum(['auto', 'required']).default('auto'),
     connectionMode: z.enum(['pooled', 'close-after-response']).default('pooled'),
     extraBody: z.record(z.string(), z.json()).default({}),
     imageRequest: z
@@ -96,6 +98,9 @@ export function parseModelConfiguration(input: unknown): ModelConfiguration {
   for (const name of Object.keys(result.endpoints))
     if (!Object.values(result.models).some((value) => value.endpoint === name))
       throw new Error(`Model endpoint has no model bindings: ${name}`);
+  for (const value of Object.values(result.endpoints))
+    if (value.protocol === 'responses' && (value.strictTools || value.toolChoice !== 'auto'))
+      throw new Error('Tool decoding options require a Chat Completions endpoint.');
   for (const value of Object.values(result.endpoints))
     if (
       value.connectionMode === 'close-after-response' &&
@@ -195,6 +200,8 @@ export function createConfiguredModels(
               systemRole: options.systemRole,
               maxTokensField: options.maxTokensField,
               passReasoningContent: options.passReasoningContent,
+              strictTools: options.strictTools,
+              toolChoice: options.toolChoice,
               connectionMode: options.connectionMode,
               extraBody: options.extraBody,
             }),

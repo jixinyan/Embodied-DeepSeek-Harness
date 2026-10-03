@@ -37,28 +37,30 @@ continue to use installed complete launch profiles and their existing validation
 
 ## Fields
 
-| Field | Behavior |
-| --- | --- |
-| `version` | Configuration format, currently `1` |
-| `defaultModel` | Existing alias in `models` |
-| `endpoints.<id>.hosting` | `cloud_api` or `vllm`; describes deployment location |
-| `endpoints.<id>.protocol` | `chat_completions` (default) or `responses`; selects the transport adapter |
-| `endpoints.<id>.connectionMode` | `pooled` (default); `close-after-response` opens a separate connection per request and requires HTTP Chat Completions |
-| `baseURL` | HTTP(S) API root; includes `/v1` where required; credentials/query/fragment are rejected |
-| `authentication` | Explicit `{ type: none }` or `{ type: environment, variable: ENV_NAME }` |
-| `systemRole` | Chat Completions: `system` by default; configurable as `developer`. Responses uses `instructions`. |
-| `maxTokensField` | Chat Completions: `max_tokens` by default; configurable as `max_completion_tokens`. Responses uses `max_output_tokens`. |
-| `timeoutMs` | Positive request deadline; default 120,000 ms |
-| `maxRequestBytes`, `maxResponseBytes` | Encoded transport limits; each defaults to 32 MiB |
-| `maxImagesPerRequest` | Default 16 image blocks |
-| `imageRequest` | Request-image projection policy; default 1,048,576 pixels and 2 MiB encoded-byte target |
-| `passReasoningContent` | Chat Completions opt-in for endpoints requiring reasoning-content history replay; Responses preserves returned output items. |
-| `extraBody` | Chat Completions generation extensions, including vLLM `chat_template_kwargs`; cannot replace DSH messages/model/tools/generation fields |
-| `models.<alias>.endpoint` | Existing endpoint ID |
-| `models.<alias>.model` | Exact cloud model ID or vLLM served model name |
-| `inputModalities` | Explicit unique list including `text`; include `image` for visual roles |
-| `name`, `contextWindow`, `maxTokens` | Optional display name, model capacity and default output-token limit |
-| `reasoningEffort` | Optional role/model binding: `low`, `medium`, `high`, `xhigh` or `max` |
+| Field                                 | Behavior                                                                                                                                      |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `version`                             | Configuration format, currently `1`                                                                                                           |
+| `defaultModel`                        | Existing alias in `models`                                                                                                                    |
+| `endpoints.<id>.hosting`              | `cloud_api` or `vllm`; describes deployment location                                                                                          |
+| `endpoints.<id>.protocol`             | `chat_completions` (default) or `responses`; selects the transport adapter                                                                    |
+| `endpoints.<id>.connectionMode`       | `pooled` (default); `close-after-response` opens a separate connection per request and requires HTTP Chat Completions                         |
+| `baseURL`                             | HTTP(S) API root; includes `/v1` where required; credentials/query/fragment are rejected                                                      |
+| `authentication`                      | Explicit `{ type: none }` or `{ type: environment, variable: ENV_NAME }`                                                                      |
+| `systemRole`                          | Chat Completions: `system` by default; configurable as `developer`. Responses uses `instructions`.                                            |
+| `maxTokensField`                      | Chat Completions: `max_tokens` by default; configurable as `max_completion_tokens`. Responses uses `max_output_tokens`.                       |
+| `timeoutMs`                           | Positive request deadline; default 120,000 ms                                                                                                 |
+| `maxRequestBytes`, `maxResponseBytes` | Encoded transport limits; each defaults to 32 MiB                                                                                             |
+| `maxImagesPerRequest`                 | Default 16 image blocks                                                                                                                       |
+| `imageRequest`                        | Request-image projection policy; default 1,048,576 pixels and 2 MiB encoded-byte target                                                       |
+| `passReasoningContent`                | Chat Completions opt-in for endpoints requiring reasoning-content history replay; Responses preserves returned output items.                  |
+| `strictTools`                         | Chat Completions: default `false`; `true` sends `strict: true` in each tool's function declaration for endpoint-supported schema constraints. |
+| `toolChoice`                          | Chat Completions: `auto` (default) or `required`; applies when the role supplies tools.                                                       |
+| `extraBody`                           | Chat Completions generation extensions, including vLLM `chat_template_kwargs`; cannot replace DSH messages/model/tools/generation fields      |
+| `models.<alias>.endpoint`             | Existing endpoint ID                                                                                                                          |
+| `models.<alias>.model`                | Exact cloud model ID or vLLM served model name                                                                                                |
+| `inputModalities`                     | Explicit unique list including `text`; include `image` for visual roles                                                                       |
+| `name`, `contextWindow`, `maxTokens`  | Optional display name, model capacity and default output-token limit                                                                          |
+| `reasoningEffort`                     | Optional role/model binding: `low`, `medium`, `high`, `xhigh` or `max`                                                                        |
 
 All endpoints must have model bindings. Aliases can share one served model when
 their declared capabilities agree. Unknown fields, routes, defaults and conflicting
@@ -74,6 +76,24 @@ The vLLM deployment must configure a compatible chat template and tool parser fo
 its checkpoint. Automatic tool calling requires the server's appropriate options;
 consult the [vLLM tool-calling documentation](https://docs.vllm.ai/en/stable/features/tool_calling/).
 Native Anthropic/Gemini protocols require their respective adapters.
+
+The Qwen example enables `strictTools` with `toolChoice: auto`. vLLM 0.30.0's
+official `qwen3_xml` parser activates native structural-tag decoding for strict
+tools; its default `VLLM_ENFORCE_STRICT_TOOL_CALLING=true` must remain enabled.
+The native DSH serializer preserves each tool's complete parameter schema.
+PlanDocument remains an object throughout model transport and production validation.
+Schema constraints govern argument syntax; EDH validates identities, versions,
+admitted criteria and execution authority when the actual tool executes.
+`required` selects at least one tool per response; roles conclude through their
+existing terminal tools. `auto` also permits their waiting text responses.
+
+`scripts/check-recorded-plan-model.mjs` accepts actual recorded `events`,
+`configuration`, `models`, `profile`, `member` and a new `output` directory through
+named arguments. It sends the selected recorded role's complete production tool
+schemas and actual `planning.read` receipt to the configured model, then checks
+both native API output and DSH streaming translation with strict `auto` and
+`required` requests. It retains exact native responses, token IDs and streamed
+blocks. This check exercises model transport without executing physical tools.
 
 ## Credentials, images and configuration identity
 
