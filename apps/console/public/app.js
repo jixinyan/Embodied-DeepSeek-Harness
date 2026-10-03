@@ -12,6 +12,7 @@ import { bindClarification } from './clarification.js';
 import { api } from './api.js';
 import { taskRequest, completeTaskRequest } from './task-request.js';
 import { bindStorageMaintenance } from './storage-maintenance.js';
+import { bindServiceStatus } from './service-status.js';
 import { bindSessionAudit } from './session-audit.js';
 import { bindReportHistory } from './report-history.js';
 import { bindAssignmentDetails, createAssignmentSelection } from './assignment-details.js';
@@ -25,6 +26,7 @@ import {
 } from './run-update.js';
 
 const $ = (id) => document.getElementById(id);
+const serviceStatus = bindServiceStatus($('service-status'), api);
 let selection = {};
 let config, current, stream;
 let busy = false;
@@ -1109,6 +1111,7 @@ historyTimer = setInterval(() => {
 window.addEventListener('pagehide', () => {
   stream?.close();
   clearInterval(historyTimer);
+  serviceStatus.close();
   workspaceHistory.close();
   taskHistory.close();
 });

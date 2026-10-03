@@ -118,6 +118,9 @@ importers:
       '@edh/verification':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/verification
+      ajv:
+        specifier: 8.17.1
+        version: 8.17.1
       zod:
         specifier: 4.4.3
         version: 4.4.3

@@ -33,6 +33,7 @@ const publicFiles: Record<string, string> = {
   'run-update.js': 'text/javascript; charset=utf-8',
   'sensor-images.js': 'text/javascript; charset=utf-8',
   'storage-maintenance.js': 'text/javascript; charset=utf-8',
+  'service-status.js': 'text/javascript; charset=utf-8',
   'session-audit.js': 'text/javascript; charset=utf-8',
   'report-history.js': 'text/javascript; charset=utf-8',
   'assignment-details.js': 'text/javascript; charset=utf-8',

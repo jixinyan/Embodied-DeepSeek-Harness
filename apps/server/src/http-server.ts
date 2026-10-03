@@ -128,6 +128,7 @@ export async function startServer(options: LocalServerOptions) {
     throw new Error('Configure the local image store or a custom image provider.');
   await ensureConsoleVendor(options.root);
   const imageContext = new Context();
+  let ownedDeployment: ServerDeployment | undefined;
   try {
     const directory = resolve(options.dataDirectory);
     let imageMaintenance: ImageStorageMaintenance | undefined;
@@ -167,6 +168,7 @@ export async function startServer(options: LocalServerOptions) {
       typeof options.deployment === 'function'
         ? await options.deployment(services)
         : options.deployment;
+    ownedDeployment = deployment;
     return await startApplication(
       { ...options, deployment },
       imageContext,
@@ -174,11 +176,19 @@ export async function startServer(options: LocalServerOptions) {
       imageMaintenance,
     );
   } catch (error) {
+    const errors: unknown[] = [error];
+    try {
+      await ownedDeployment?.serviceLifecycle?.close();
+    } catch (cleanup) {
+      errors.push(cleanup);
+    }
     try {
       await imageContext.fiber.dispose();
     } catch (cleanup) {
-      throw new AggregateError([error, cleanup], 'Application startup and image cleanup failed.');
+      errors.push(cleanup);
     }
+    if (errors.length > 1)
+      throw new AggregateError(errors, 'Application startup and resource cleanup failed.');
     throw error;
   }
 }
@@ -303,6 +313,9 @@ async function startApplication(
       ...(deployment.metadata.modelConfigurationDigest === undefined
         ? {}
         : { modelConfigurationDigest: deployment.metadata.modelConfigurationDigest }),
+      ...(deployment.metadata.serviceConfigurationDigest === undefined
+        ? {}
+        : { serviceConfigurationDigest: deployment.metadata.serviceConfigurationDigest }),
       imageStorage: {
         available: true,
         limits: services.images.imageLimits,
@@ -449,6 +462,14 @@ async function startApplication(
           return;
         if (method === 'GET' && url.pathname === '/api/config')
           return json(res, 200, publicConfiguration);
+        if (method === 'GET' && url.pathname === '/api/services') {
+          if ([...url.searchParams].length)
+            throw new HttpError(400, 'Service status reads accept no query parameters.');
+          return json(res, 200, {
+            managed: deployment.serviceLifecycle !== undefined,
+            services: deployment.serviceLifecycle?.inspect() ?? [],
+          });
+        }
         if (method === 'GET' && url.pathname === '/api/storage')
           return json(res, 200, await storageView());
         if (method === 'GET' && url.pathname === '/api/storage/retention') {
@@ -1103,6 +1124,7 @@ async function startApplication(
           await admissionDone;
           await cleanup(() => active?.close());
           await cleanup(() => sessionClose);
+          await cleanup(() => deployment.serviceLifecycle?.close());
           await cleanup(() => dsh.fiber.dispose());
           await cleanup(
             () =>

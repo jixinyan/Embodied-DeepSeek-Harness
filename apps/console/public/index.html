@@ -207,6 +207,19 @@
           Select an installed configuration to allocate an environment.
         </p>
       </section>
+      <section
+        id="service-status"
+        class="coordination-panel"
+        aria-label="Configured services"
+        hidden
+      >
+        <div class="panel-heading">
+          <h2>Model and policy services</h2>
+          <button data-services="refresh" class="button small">Refresh services</button>
+        </div>
+        <div data-services="list"></div>
+        <p data-services="status" class="section-note" role="status"></p>
+      </section>
       <section class="coordination-panel" aria-label="Team coordination">
         <div class="coordination-header">
           <div>

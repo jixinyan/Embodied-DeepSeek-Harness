@@ -15,6 +15,14 @@ export type {
 } from './deployment.js';
 export { UpperRun, type ApplicationOptions } from './application.js';
 export { nativeWorkspaceRetention } from './native-workspace-retention.js';
+export {
+  ManagedServices,
+  managedServiceConfigurations,
+  type ManagedServiceConfiguration,
+  type ManagedServiceLifecycle,
+  type ManagedServiceStatus,
+  type ManagedServiceLease,
+} from './managed-services.js';
 export type {
   DeploymentRetentionFactory,
   DeploymentRetentionContext,

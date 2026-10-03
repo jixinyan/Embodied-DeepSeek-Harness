@@ -1,4 +1,5 @@
 import { appendFile, mkdir, readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici';
@@ -17,6 +18,8 @@ import { parseTaskCatalog } from '@edh/tasks';
 import {
   createDshHost,
   createNativeWorkerEnvironment,
+  ManagedServices,
+  managedServiceConfigurations,
   nativeWorkspaceRetention,
   startServer,
 } from '../../apps/server/src/index.ts';
@@ -104,6 +107,14 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
   const config = JSON.parse(await readFile(resolve(file), 'utf8'));
   if (!config || typeof config !== 'object' || Array.isArray(config))
     throw new Error('Native deployment configuration must be a JSON object.');
+  const managedServices = managedServiceConfigurations.parse(config.managedServices ?? {});
+  const serviceIdsSchema = z
+    .array(nonblank)
+    .refine(
+      (ids) => new Set(ids).size === ids.length,
+      'Managed service identities must be unique.',
+    );
+  const commonServiceIds = serviceIdsSchema.parse(config.serviceIds ?? []);
   const validator = new ContractValidator(
     JSON.parse(
       await readFile(
@@ -191,6 +202,13 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
     if (!modelAliases.includes(plannerModel))
       throw new Error('Unknown native Planner model binding.');
     const mode = worker.executionMode ?? 'policy';
+    const serviceIds = serviceIdsSchema.parse([
+      ...commonServiceIds,
+      ...(provider === 'robodojo' ? serviceIdsSchema.parse(entry.serviceIds ?? []) : []),
+    ]);
+    for (const id of serviceIds)
+      if (!Object.hasOwn(managedServices, id))
+        throw new Error(`Unknown configured managed service: ${id}`);
     if ((provider !== 'robodojo' || mode === 'policy') && !worker.policyUri)
       throw new Error('A native learned-policy endpoint is required.');
     if (provider === 'robodojo' && mode === 'policy') {
@@ -225,6 +243,7 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
       checkpoint,
       plannerModel,
       mode,
+      serviceIds,
       label:
         metadata.label ??
         entry.label ??
@@ -252,6 +271,10 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
     if (team.definition.entrypoint !== team.definition.bindings.decision_owner)
       throw new Error('Native Team entrypoint must be its decision owner.');
   }
+  const boundServices = new Set(Object.values(profiles).flatMap((profile) => profile.serviceIds));
+  for (const id of Object.keys(managedServices))
+    if (!boundServices.has(id))
+      throw new Error(`Managed service has no launch profile binding: ${id}`);
   const port = Number(
     provider === 'robocasa'
       ? (environment.EDH_CONSOLE_PORT ?? config.consolePort ?? selected.port)
@@ -267,6 +290,7 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
     modelConfiguration,
     defaultModel,
     profiles,
+    managedServices,
     teamFile,
     roleRoot,
     dataDirectory: resolve(dataDirectory),
@@ -431,6 +455,7 @@ export function createNativeDeploymentFactory(settings) {
             },
           ],
         };
+    const serviceLifecycle = new ManagedServices(settings.managedServices);
     const launchProfiles = Object.fromEntries(
       Object.entries(settings.profiles).map(([id, profile]) => [
         id,
@@ -445,19 +470,89 @@ export function createNativeDeploymentFactory(settings) {
           defaultModel: profile.plannerModel,
           tasks: [],
           taskSource: 'environment',
-          createEnvironment: ({ signal, services }) =>
-            openNativeEnvironment(settings, profile, models, services, signal),
+          createEnvironment: async ({ signal, services }) => {
+            const lease = await serviceLifecycle.acquire(profile.serviceIds, signal);
+            let environment;
+            let closing;
+            const close = () =>
+              (closing ??= (async () => {
+                lease.signal.removeEventListener('abort', interrupted);
+                const errors = [];
+                for (const action of [() => environment?.close(), () => lease.release()]) {
+                  try {
+                    await action();
+                  } catch (error) {
+                    errors.push(error);
+                  }
+                }
+                if (errors.length)
+                  throw new AggregateError(
+                    errors,
+                    'Native environment and managed service release failed.',
+                  );
+              })());
+            const interrupted = () => {
+              void close().catch(console.error);
+            };
+            try {
+              environment = await openNativeEnvironment(
+                settings,
+                profile,
+                models,
+                services,
+                AbortSignal.any([signal, lease.signal]),
+              );
+              lease.signal.addEventListener('abort', interrupted, { once: true });
+              signal.throwIfAborted();
+              lease.signal.throwIfAborted();
+              return {
+                describeTasks: (options) => {
+                  lease.signal.throwIfAborted();
+                  return environment.describeTasks(options);
+                },
+                createTaskBackend: (taskId, options) => {
+                  lease.signal.throwIfAborted();
+                  return environment.createTaskBackend(taskId, {
+                    ...options,
+                    signal: AbortSignal.any([options.signal, lease.signal]),
+                  });
+                },
+                close,
+              };
+            } catch (error) {
+              try {
+                await close();
+              } catch (cleanup) {
+                throw new AggregateError(
+                  [error, cleanup],
+                  'Native allocation and service release failed.',
+                );
+              }
+              throw error;
+            }
+          },
         },
       ]),
     );
     return {
       id: `${settings.provider}-live`,
-      version: `${settings.selected.version}-factory-v1`,
+      version: `${settings.selected.version}-factory-v2`,
       source: 'simulation',
       description: `Native ${settings.selected.title} with independent DSH role Sessions`,
       teamFile: settings.teamFile,
       roleRoot: settings.roleRoot,
       storageRetention: nativeWorkspaceRetention,
+      serviceLifecycle,
+      serviceConfigurationDigest: createHash('sha256')
+        .update(
+          JSON.stringify({
+            definitions: settings.managedServices,
+            bindings: Object.fromEntries(
+              Object.entries(settings.profiles).map(([id, profile]) => [id, profile.serviceIds]),
+            ),
+          }),
+        )
+        .digest('hex'),
       ...models,
       tasks: {},
       launchProfiles,

@@ -12,6 +12,7 @@ import type { ContractValidator } from '@edh/contracts';
 import { parseTaskDefinition, type TaskDefinition, type TaskCatalogDefinition } from '@edh/tasks';
 import type { ApplicationOptions } from './application.js';
 import type { DeploymentRetentionFactory } from './deployment-retention.js';
+import type { ManagedServiceLifecycle } from './managed-services.js';
 import { CORE_TOOLS } from './application.js';
 import type { ModelBinding } from './runtime.js';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
@@ -94,6 +95,7 @@ export interface ServerDeployment {
   >;
   readonly adapters: readonly ModelBinding[];
   readonly modelConfigurationDigest?: string;
+  readonly serviceConfigurationDigest?: string;
   readonly tasks: Readonly<Record<string, TaskPreset>>;
   readonly additionalTools?: ApplicationOptions['additionalTools'];
   readonly segmentation?: SegmentationEngine;
@@ -104,6 +106,7 @@ export interface ServerDeployment {
   readonly contextManagement?: ContextManagementOptions;
   readonly sessionHistory?: SessionHistoryOptions;
   readonly storageRetention?: DeploymentRetentionFactory;
+  readonly serviceLifecycle?: ManagedServiceLifecycle;
   readonly assignmentLifetimeMs?: number;
   /** Optional version-pinned simulation/embodiment/policy stack. */
   readonly physicalProfile?: PhysicalRuntimeProfile;
@@ -126,6 +129,12 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
   if (!['test_fixture', 'simulation', 'hardware'].includes(input.source))
     throw new Error('Invalid deployment evidence source.');
   if (
+    input.serviceLifecycle !== undefined &&
+    (typeof input.serviceLifecycle.inspect !== 'function' ||
+      typeof input.serviceLifecycle.close !== 'function')
+  )
+    throw new Error('Deployment service lifecycle requires inspection and close methods.');
+  if (
     input.assignmentLifetimeMs !== undefined &&
     (!Number.isSafeInteger(input.assignmentLifetimeMs) ||
       input.assignmentLifetimeMs < 1_000 ||
@@ -138,6 +147,11 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
       !/^[a-f0-9]{64}$/.test(input.modelConfigurationDigest))
   )
     throw new Error('Invalid model configuration digest.');
+  if (
+    input.serviceConfigurationDigest !== undefined &&
+    !/^[a-f0-9]{64}$/.test(input.serviceConfigurationDigest)
+  )
+    throw new Error('Invalid managed service configuration digest.');
   const models = freeze(structuredClone(input.models));
   const providers = new Set<string>();
   const adapters = input.adapters.map((binding) => {
@@ -264,6 +278,9 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     ...(input.modelConfigurationDigest === undefined
       ? {}
       : { modelConfigurationDigest: input.modelConfigurationDigest }),
+    ...(input.serviceConfigurationDigest === undefined
+      ? {}
+      : { serviceConfigurationDigest: input.serviceConfigurationDigest }),
     launchProfiles: launchMetadata,
     tasks: taskMetadata,
     tools: [
@@ -291,6 +308,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     depthIntrinsicsByCamera: input.depthIntrinsicsByCamera,
     sessionHistory,
     storageRetention: input.storageRetention,
+    serviceLifecycle: input.serviceLifecycle,
     ...(input.assignmentLifetimeMs === undefined
       ? {}
       : { assignmentLifetimeMs: input.assignmentLifetimeMs }),

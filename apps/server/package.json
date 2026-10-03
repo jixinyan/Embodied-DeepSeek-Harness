@@ -20,6 +20,7 @@
     "@edh/files": "workspace:*",
     "@edh/tasks": "workspace:*",
     "@edh/perception": "workspace:*",
+    "ajv": "8.17.1",
     "zod": "4.4.3"
   }
 }

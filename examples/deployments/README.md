@@ -4,12 +4,12 @@ Each native module default-exports a `DeploymentFactory` for the desktop launche
 and starts its console when executed directly through `tsx`. Importing the module
 does not start a server, allocate an environment, or send model requests.
 
-| Module | Required configuration variable | Default console port |
-| --- | --- | --- |
-| `robotwin-live.mjs` | `EDH_ROBOTWIN_CONFIG` | 4323 |
-| `behavior-live.mjs` | `EDH_BEHAVIOR_CONFIG` | 4334 |
-| `robocasa-live.mjs` | `EDH_NATIVE_WORKER_CONFIG` | 4318 |
-| `robodojo-live.mjs` | `EDH_ROBODOJO_CONFIG` | 4318 |
+| Module              | Required configuration variable | Default console port |
+| ------------------- | ------------------------------- | -------------------- |
+| `robotwin-live.mjs` | `EDH_ROBOTWIN_CONFIG`           | 4323                 |
+| `behavior-live.mjs` | `EDH_BEHAVIOR_CONFIG`           | 4334                 |
+| `robocasa-live.mjs` | `EDH_NATIVE_WORKER_CONFIG`      | 4318                 |
+| `robodojo-live.mjs` | `EDH_ROBODOJO_CONFIG`           | 4318                 |
 
 Execute a selected module through `pnpm exec tsx --tsconfig tsconfig.runtime.json`
 with its path as the final argument. The named variable points to an actual JSON
@@ -66,8 +66,49 @@ belong to a selected GPT policy mode. The native factory also binds the complete
 production record/image retention policy for its native providers and built-in
 tools through `nativeWorkspaceRetention`.
 
-The startup check uses the actual loader, default factory, server, and HTTP
-metadata endpoint:
+Optional `managedServices` declares foreground model or policy processes owned by
+the console server. Each named service requires `label`, a `command` argument
+array, `cwd`, `env`, `startupTimeoutMs`, `probeTimeoutMs`, `probeIntervalMs`,
+`shutdownTimeoutMs`, and `readiness`. A `readiness.type` of `http_json` uses an HTTP
+`url`, optional `headers`, and a complete JSON `schema` for the real response;
+`websocket` uses a `ws:` or `wss:` URL and confirms an actual opening/closing
+handshake. HTTP model admission can require the selected model ID in `/v1/models`.
+Readiness performs no inference or physical control.
+
+Top-level `serviceIds` applies to every launch profile. RoboDojo profile entries
+can add their own `serviceIds`. Every ID must select a declared service, and every
+service requires a profile binding. Services start in the declared binding order
+when allocating a Session. Concurrent Sessions share a process and hold independent
+leases; their final release sends SIGTERM and awaits process exit. POSIX processes
+and their children share an owned process group. A shutdown deadline sends SIGKILL
+and reports the failed graceful termination. Commands must run the actual foreground
+service on the server's host; external/cloud endpoints retain their ordinary model
+and policy configuration. Configuration owns host paths, environments and device
+selection. An occupied endpoint prevents managed startup.
+
+`GET /api/services` and the console's service panel show lifecycle state, lease
+count, process ID and failure information. Commands, environment variables and
+readiness credentials remain private. An unexpected process exit interrupts its
+affected environment, prevents new service leases and remains visible until a new
+configured server lifetime. Server close releases Sessions and their services;
+startup cleanup also closes the service lifecycle.
+
+The actual process check requires a saved configuration that starts its real
+model/policy service:
+
+```bash
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-service-lifecycle.mjs \
+  --provider robotwin --config /absolute/path/managed-deployment.json \
+  --id robotwin-policy --output /absolute/path/unused-acceptance-directory
+```
+
+It checks two shared leases, first and final release, process restart, an explicitly
+triggered unexpected exit of its owned process, admission rejection, HTTP status and
+server cleanup. Native task acceptance requires its own physical run.
+Run the same command with `--close-held` and another new output directory to
+confirm actual server shutdown while the final service lease remains active.
+
+The configuration startup check accepts ordinary external service endpoints:
 
 ```bash
 pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-deployment.mjs \
