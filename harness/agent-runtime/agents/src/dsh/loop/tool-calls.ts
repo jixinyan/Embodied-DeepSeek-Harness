@@ -6,8 +6,7 @@
  * and drains started calls.
  *
  * Abort records synthetic error results for skipped calls so replay stays
- * valid. A terminal scheduler failure preserves already-recorded `tool/call`
- * events without fabricating results.
+ * valid. 调度失败等待已经开始的调用完成，所属 step 发布缺少结果的错误记录。
  * @module dsh-agent-loop/tool-calls
  */
 
@@ -45,8 +44,8 @@ interface GroupOutcome {
  * the signal still aborted after accepting started-call context through the
  * caller-supplied acceptor (the machine stages it in its next-step inbox for the
  * step boundary). An internal scheduler failure stops new dispatches, drains
- * already-started dispatches, and rejects with the first failure without
- * fabricating tool results.
+ * already-started dispatches, and rejects with the first failure.
+ * 所属 step 为尚未发布结果的请求补充错误记录。
  * The committed step's AgentLoop driver boundary supplies the initiating Agent
  * that becomes each explicit {@link ToolExecutionInput.agent}.
  *
@@ -116,8 +115,7 @@ function parseArguments(raw: string): unknown {
  * drain and remains for the caller's next barrier. Results and contexts commit
  * in model order. Abort stops starts, drains and commits started calls, accepts
  * their contexts into the owning batch, records results for skipped calls, and
- * returns an aborted outcome. Scheduler failure drains dispatches without
- * committing synthetic recovery results.
+ * returns an aborted outcome. 调度失败等待已经开始的调用完成，所属 step 负责结果恢复。
  */
 async function runGroup(
   ctx: Context,

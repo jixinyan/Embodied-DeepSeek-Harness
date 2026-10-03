@@ -43,6 +43,25 @@
         "harness/agent-runtime/memory/src/dsh/compaction-basic/index.ts"
       ],
       "patch": "Reserve routed output and pressure headroom while retaining EDH summary instructions; validate first-turn and dynamic request budgets before inference."
+    },
+    {
+      "tag": "dsh-v0.2.0-rc.1",
+      "release_commit": "4878cdabd87d4041bdaff61d04c966883b9fd07a",
+      "upstream_commits": ["6a6f350b9437cf24e34a34f39ee4dfd107897d0c"],
+      "destinations": [
+        "harness/agent-runtime/agents/src/dsh/loop/agent.ts",
+        "harness/agent-runtime/agents/src/dsh/loop/tool-calls.ts",
+        "harness/agent-runtime/storage/src/dsh/session/index.ts",
+        "harness/agent-runtime/storage/src/dsh/session/repair.ts"
+      ],
+      "patch": "Share Session-local pending-call recovery between live failed steps and interrupted durable prefixes. Preserve completed results, original errors and EDH role:user tool-result blocks; publish only conservative missing-result events without dispatching tools."
+    },
+    {
+      "tag": "dsh-v0.2.0-rc.1",
+      "release_commit": "4878cdabd87d4041bdaff61d04c966883b9fd07a",
+      "upstream_commits": ["068c552b1e057aa580ef2875efdaafcdfa2aacfb"],
+      "destinations": ["harness/agent-runtime/foundation/src/dsh/values/index.ts"],
+      "patch": "Compare intrinsic constructors with the current engine's native representation while retaining cross-realm JSON acceptance and custom prototype rejection."
     }
   ],
   "packages": [
@@ -402,8 +421,8 @@
       "source": "packages/core/agent-loop/src/agent.ts",
       "destination": "harness/agent-runtime/agents/src/dsh/loop/agent.ts",
       "source_sha256": "01109eaef935ea2b8e401af07d64724ab52f24c37482f9e0cf77ed6ca8fd80c0",
-      "local_sha256": "b360795647d48acae74f5fabc76b2be39bc609572e6909061b5ec6692e1bc4e5",
-      "modifications": ["Copy declared cancellation cause fields and suppress wake after disposed maintenance."]
+      "local_sha256": "17e448e114feaba0a80d67d7fb453781a18c732d489f2963d40208aa997103a1",
+      "modifications": ["Copy declared cancellation cause fields and suppress wake after disposed maintenance.", "Recover missing tool results at the failed live step boundary using Session-local tracking; preserve the original error and aggregate result-recording failure."]
     },
     {
       "source": "packages/core/agent-loop/src/assistant-stream.ts",
@@ -437,8 +456,8 @@
       "source": "packages/core/agent-loop/src/tool-calls.ts",
       "destination": "harness/agent-runtime/agents/src/dsh/loop/tool-calls.ts",
       "source_sha256": "1f8984127d4245b6a08c1e4b0c8b9d8fa7ce30ffcf08184187f16dc1bf57ae6d",
-      "local_sha256": "1f8984127d4245b6a08c1e4b0c8b9d8fa7ce30ffcf08184187f16dc1bf57ae6d",
-      "modifications": []
+      "local_sha256": "a931b61a9e2793c9194d31702790265a2b518df3e7c48ba6520bdc67950c2288",
+      "modifications": ["Document failed-step ownership of missing tool-result recovery after the existing scheduler drains started calls."]
     },
     {
       "source": "packages/core/agent/src/consumed-work.ts",
@@ -514,8 +533,8 @@
       "source": "packages/core/session/src/index.ts",
       "destination": "harness/agent-runtime/storage/src/dsh/session/index.ts",
       "source_sha256": "7244f6180d85306a58e16a6bf1cfe1b7a655a4968afb570198c4a1f08b1f4c7a",
-      "local_sha256": "036fa0ffcbd2cd2af8574dd30cda2f38e1c5d1ef32618692f87b6c9136a96949",
-      "modifications": ["Add verified resident-prefix release with an identity-bound synchronous archive reader; preserve absolute sequence, surface, request metadata and immutable reads, and avoid caching full archived snapshots."]
+      "local_sha256": "d7fb1e925d77f3caadca73920206193be488fa42c1d1f00dc21262038f908131",
+      "modifications": ["Add verified resident-prefix release with an identity-bound synchronous archive reader; preserve absolute sequence, surface, request metadata and immutable reads, and avoid caching full archived snapshots.", "Export the selected-source ToolCallRecovery for the live step owner."]
     },
     {
       "source": "packages/core/session/src/known-event-types.ts",
@@ -535,8 +554,8 @@
       "source": "packages/core/session/src/repair.ts",
       "destination": "harness/agent-runtime/storage/src/dsh/session/repair.ts",
       "source_sha256": "985740ced27041c1964ca721caea9099703af8b32fa6b610b537909c86f7a76a",
-      "local_sha256": "985740ced27041c1964ca721caea9099703af8b32fa6b610b537909c86f7a76a",
-      "modifications": []
+      "local_sha256": "90ba6a17d485caac5cbcc44d0e461c837f2d3438b5caf4826436390d25fc89de",
+      "modifications": ["Share pending-call tracking with live failed steps, retaining EDH role:user messages containing tool-result blocks, immutable recorded starts and conservative missing outcomes."]
     },
     {
       "source": "packages/core/session/src/request-header.ts",
@@ -863,8 +882,8 @@
       "source": "packages/util/values/src/index.ts",
       "destination": "harness/agent-runtime/foundation/src/dsh/values/index.ts",
       "source_sha256": "573c77ba7017fc747f90fdbd5445cfd565db6ff6d53a6b999f6c34ed842bbb8f",
-      "local_sha256": "573c77ba7017fc747f90fdbd5445cfd565db6ff6d53a6b999f6c34ed842bbb8f",
-      "modifications": []
+      "local_sha256": "51affcd5ddae6f5b7011703e34c84852f6bbad62752f2b88f0fd0e97c28764dd",
+      "modifications": ["Compare candidate intrinsic constructors against the current engine's constructor representation to support JavaScriptCore and other realms without accepting custom prototypes."]
     },
     {
       "source": "vendor/cordis/src/context.ts",

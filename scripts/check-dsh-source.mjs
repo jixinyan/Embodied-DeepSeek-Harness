@@ -10,12 +10,16 @@ assert.equal(imported.commit, locked.commit);
 const files = new Set(imported.files.map((file) => file.destination));
 assert.equal(files.size, imported.files.length, 'Duplicate import destinations');
 const commitId = /^[0-9a-f]{40}$/;
+const reviewedReleases = new Map([
+  ['dsh-v0.1.7-rc.1', '46a7f68b0922371ce7144b668b90e377d8e799f4'],
+  ['dsh-v0.2.0-rc.1', '4878cdabd87d4041bdaff61d04c966883b9fd07a'],
+]);
 const adaptedDestinations = new Set();
 for (const adaptation of imported.release_adaptations ?? []) {
-  assert.equal(adaptation.tag, 'dsh-v0.1.7-rc.1', 'Unexpected DSH release tag');
+  assert(reviewedReleases.has(adaptation.tag), 'Unexpected DSH release tag');
   assert.equal(
     adaptation.release_commit,
-    '46a7f68b0922371ce7144b668b90e377d8e799f4',
+    reviewedReleases.get(adaptation.tag),
     'Unexpected DSH release commit',
   );
   assert(commitId.test(adaptation.release_commit), 'Invalid DSH release commit');
@@ -29,8 +33,12 @@ for (const adaptation of imported.release_adaptations ?? []) {
   assert(adaptation.patch.trim().length > 0, 'Missing release patch explanation');
   for (const destination of adaptation.destinations) {
     assert(files.has(destination), `Unrecorded release destination: ${destination}`);
-    assert(!adaptedDestinations.has(destination), `Duplicate release destination: ${destination}`);
-    adaptedDestinations.add(destination);
+    const releaseDestination = `${adaptation.tag}:${destination}`;
+    assert(
+      !adaptedDestinations.has(releaseDestination),
+      `Duplicate release destination: ${destination}`,
+    );
+    adaptedDestinations.add(releaseDestination);
     const file = imported.files.find((item) => item.destination === destination);
     assert.notEqual(
       file.source_sha256,
