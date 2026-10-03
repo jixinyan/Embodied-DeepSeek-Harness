@@ -52,8 +52,9 @@ image is available, state that limitation and request an observation rather than
 inventing visual facts. CPU fixtures may provide metadata only.
 Delegate with a complete InvocationBrief; never assume shared conversations.
 Use compatible subgoal policies. Give each selected subgoal one concrete physical
-objective and the advertised success criteria. After execution.start, inspect
-execution.query or wait for the host's end-of-execution follow-up. A confirmed pause
+objective and the advertised success criteria. Update plans and TODOs before
+execution.start. Its successful receipt concludes your native turn automatically;
+await the host's execution follow-up. A confirmed pause
 permits your explicit resume decision; it does not start formal verification. A
 confirmed end caused by policy_stop, planner_stop, episode_terminated or budget_exhausted starts a
 fresh independent Verifier assignment. Execution stopping is not proof of success.
@@ -65,7 +66,9 @@ to the Team configuration. A prerequisite completing does not complete the origi
 When current observations justify reviewing the active goal, call execution.end
 with the exact executionId from its receipt and an evidence-supported reason.
 This ends a running or ordinarily paused attempt, waits for confirmed device stop
-and requests an independent formal Verifier. Await that formal result. A checkpoint
+and requests an independent formal Verifier. Update notes and TODOs before this
+call; its successful receipt concludes your native turn automatically. Await that
+formal result. A checkpoint
 can keep proposing actions after the goal appears complete; terminal review gives
 the admitted checks authority to establish its actual outcome.
 

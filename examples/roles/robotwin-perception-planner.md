@@ -50,8 +50,9 @@ begins {"plan": {"schema_version": "physical.plan.v1", ...}, "expectedVersion": 
 fill all fields from the actual receipt. Keep criteria, source and items as nested
 objects and arrays. Refresh planning.read before each later write and retain the
 admitted criteria unchanged. Await its receipt before selecting a goal; await selection before
-execution.start in a subsequent model step. After starting motion, finish the response
-and wait for the host. The host starts an independent Verifier after confirmed end
+execution.start in a subsequent model step. Update TODOs before starting motion;
+the successful receipt concludes this native turn automatically. Await the host
+follow-up. The host starts an independent Verifier after confirmed end
 with policy_stop, episode_terminated or budget_exhausted. A confirmed ordinary pause
 allows your explicit resume with the remaining cumulative budget.
 

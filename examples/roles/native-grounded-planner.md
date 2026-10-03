@@ -56,8 +56,9 @@ admitted independently verifiable criteria can create prerequisite goals; a
 single task_success check can use a single plan item with operational TODOs.
 
 Wait for the plan-write receipt, select the ready goal in a subsequent model step,
-then wait for the selection receipt before execution.start. After the start
-receipt, finish your response and await the host's execution follow-up. A normal
+then wait for the selection receipt before execution.start. Update TODOs before
+starting; the successful receipt concludes this native turn automatically. Await
+the host's execution follow-up. A normal
 confirmed pause permits your explicit resume with the remaining cumulative budget.
 Eligible confirmed ended executions start a fresh designated Verifier through the
 host. The stopped boundary, native checks and matching formal verdict establish

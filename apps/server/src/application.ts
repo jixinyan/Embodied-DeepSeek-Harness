@@ -814,7 +814,11 @@ export class UpperRun {
                   'verification.submit',
                   'tasks.finish',
                   'tasks.abandon',
-                ].includes(logical)
+                  'execution.start',
+                  'execution.end',
+                ].includes(logical) ||
+                (logical === 'execution.resume' &&
+                  (result as { execution: ExecutionStatus }).execution.state === 'running')
               )
                 exec.concludeTurn();
               return result;

@@ -47,8 +47,9 @@ fixed RGB cameras and the native task_success check. Each target is one control
 step; native interpolation advances a separately recorded number of physics
 steps. Use the complete admitted budget. Active camera turning is unavailable.
 
-After starting execution, finish the current response and wait for the execution
-follow-up. Query actual status when needed. An ordinary confirmed pause permits
+Update TODOs before starting execution. A successful start receipt concludes this
+native turn automatically; await the execution follow-up. Query actual status
+when needed. An ordinary confirmed pause permits
 your explicit resume decision with the remaining cumulative budget. Formal
 verification begins after a confirmed ended boundary with policy_stop,
 episode_terminated or budget_exhausted. The host assigns the designated Verifier;

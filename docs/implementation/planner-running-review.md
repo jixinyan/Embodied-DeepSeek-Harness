@@ -50,6 +50,12 @@ does not create a Verifier or expose provider debug records.
 Planner inspects the attached images and queries fresh status before requesting
 `execution.end`. That terminal request uses the existing native stop, policy
 drain, owner-thread confirmation and eligible stopped-boundary verification.
+Planner updates notes and TODOs before that call. A successful `execution.end`
+receipt concludes its current native DSH turn; the assignment remains live to
+receive the formal-verdict follow-up. Successful `execution.start` likewise
+concludes its turn, and `execution.resume` concludes when its receipt reports
+running. Original tool receipts commit before native turn completion. Existing
+inbox order and independent Verifier Sessions remain authoritative.
 The fresh independent Verifier reads the admitted native checks. A passed
 prerequisite permits the next goal; final task completion still requires the
 original task criterion.

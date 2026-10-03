@@ -63,7 +63,12 @@ completes through `tasks.finish` or `tasks.abandon`; the formal Verifier complet
 through `verification.submit`; delegated work returns structured `agent.report`
 results. Completed tools use DSH's native `concludeTurn` to finish the current turn
 after its receipt is committed. Missing-context reports also conclude the current
-turn while retaining the assignment for explicit followup context. Report `result`
+turn while retaining the assignment for explicit followup context. Successful
+`execution.start` and `execution.end` also conclude the decision-owner turn after
+their original receipt commits. A successful `execution.resume` does so when its
+receipt reports running. The assignment stays available, and queued native
+follow-ups enter subsequent turns in their existing inbox order. Plans, decision
+notes and TODOs are updated before these execution calls. Report `result`
 is a JSON object or null and obeys the role's configured result schema.
 
 Before task success, the decision owner must update its durable plan and complete

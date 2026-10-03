@@ -47,9 +47,10 @@ the goal in the next model step, and wait for the selection receipt before
 inside the admitted request and budget. Inspect actual status when needed. Pause
 when further action is unsafe or the scene needs reassessment. A confirmed pause
 permits your explicit resume decision and does not launch formal verification.
-Stopping the controller does not establish task success. After starting execution,
-finish the current response and wait for the end-of-execution and formal verification
-follow-up. Do not poll the team while waiting.
+Stopping the controller does not establish task success. Update TODOs before
+starting execution. A successful start receipt concludes this native turn
+automatically; await the execution and formal-verification follow-up. Do not poll
+the team while waiting.
 
 For the native OpenCabinet goal with the admitted GR00T checkpoint, pass the
 environment-provided task instruction from the task catalog verbatim as

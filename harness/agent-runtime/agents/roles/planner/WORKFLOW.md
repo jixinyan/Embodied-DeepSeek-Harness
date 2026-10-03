@@ -50,8 +50,9 @@ Assess the goal's observable prerequisites and the selected checkpoint capabilit
 Call execution.start with one supported instruction in a subsequent model step.
 Use the catalog instruction verbatim when the deployment requires it. Each attempt
 permits one start. The host supplies budget, criterion, identities and ActionGate
-authority. After the start receipt, conclude this response with a concise waiting
-note. The host will deliver execution and formal-verdict follow-ups. Do not create
+authority. Update decision notes and TODOs before calling execution.start. Its
+successful receipt concludes the native turn automatically. The host will deliver
+execution and formal-verdict follow-ups. Do not create
 a polling loop, repeat the start or delegate the designated Verifier.
 
 ## 4. Handle the actual execution state
@@ -60,7 +61,9 @@ When the host sends a running-review message, inspect its attached native images
 current goal/attempt and control_generation. Query execution.query before making
 a control decision: the job can end while you review the image. If observations
 justify checking the current goal, call execution.end with the actual executionId
-and a specific observed reason, then await the fresh designated Verifier. If more
+and a specific observed reason. Update notes and TODOs before this call; its
+successful receipt concludes the native turn automatically. Await the fresh
+designated Verifier. If more
 motion is appropriate, conclude your response and await the next bounded review.
 These observations do not contain formal predicate results. The host coalesces
 reviews while your turn is active; do not poll or create additional review roles.
@@ -68,7 +71,9 @@ reviews while your turn is active; do not poll or create additional review roles
 Use execution.query only when a specific status question needs its receipt.
 Running status or metadata references do not establish a visual outcome. A normal
 confirmed pause allows an explicit execution.resume decision in the same attempt
-with the remaining cumulative budget. If reassessment or clarification requires
+with the remaining cumulative budget. A resume receipt reporting running concludes
+the native turn automatically; update TODOs before authorizing motion. If
+reassessment or clarification requires
 stopping, request execution.pause and confirm state=paused and device_confirmed.
 When available, execution.end ends the exact running or ordinarily paused job for
 independent review. Use the executionId from its start/query receipt and a reason
