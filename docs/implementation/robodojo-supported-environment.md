@@ -20,6 +20,12 @@ requires Starlette 0.45.3, Pillow 11.3.0, Gymnasium 1.2.0, FlatDict 4.0.1,
 NumPy below 2 and Torch at least 2.7. The IsaacLab Python distribution version
 is 0.47.2. Retain original RoboDojo, cuRobo, XPolicyLab, assets, checkpoint,
 native task predicates, seed, horizon and physics configuration.
+The selected native profile must bind both its independent Python interpreter
+and RoboDojo SDK checkout. EDH's launcher prepends the SDK's
+`third_party/IsaacLab/source/isaaclab` and `third_party/curobo` to `PYTHONPATH`.
+That IsaacLab directory must resolve to the selected official source revision.
+Retain actual module-origin hashes together with distribution metadata during
+native admission.
 
 The candidate contains `isaaclab`, `isaaclab_assets`, `isaaclab_tasks`,
 `isaaclab_mimic` and `isaaclab_rl`. Install all five in editable source mode,
