@@ -17,6 +17,7 @@ from uuid import uuid4
 
 from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeRotation, NativeStep
 from physical_harness.environments.task_catalog import behavior_task_selection
+from physical_harness.environments.native_terminal_record import NativeTerminalRecorder
 from physical_harness.perception.metric_capture import MetricCapture
 from physical_harness.validation import ContractValidator
 
@@ -80,6 +81,7 @@ class BehaviorEnvironment:
         self._scene_config_id = 0
         self._evaluation_horizon = None
         self._metric_capture = MetricCapture("behavior", "behavior.omnigibson.world")
+        self._terminal_recorder = NativeTerminalRecorder("behavior")
         import_module("omnigibson")
 
     @staticmethod
@@ -387,6 +389,8 @@ class BehaviorEnvironment:
             raise RuntimeError("BEHAVIOR native control step did not complete four physics steps.")
         self._controlled_physics_steps += raw_sim_steps
         self._record_native_termination(terminated, truncated, info)
+        if self._episode_terminated:
+            self.episode_terminated()
         observation = self._observation(raw)
         frame = NativeFrame(
             observation.observation_id, observation.observed_at, observation.images,
@@ -428,8 +432,29 @@ class BehaviorEnvironment:
         return tuple(NativeCheck(check_id, bool(success)) for check_id in check_ids)
 
     def episode_terminated(self) -> bool:
-        self._require_env()
-        return self._episode_terminated or bool(self.check(("task_success",))[0].value)
+        env = self._require_env()
+        before = self._terminal_state()
+        success = bool(self.check(("task_success",))[0].value)
+        terminated = self._episode_terminated or success
+        self._terminal_recorder.record(
+            before=before, after=self._terminal_state(), current_success=success, terminated=terminated,
+            provider_source=Path(__file__), predicate=env.task.compiled_task.check_goal, control=env.step,
+            termination_source=Path(import_module("omnigibson.envs.env_base").__file__),
+        )
+        return terminated
+
+    def _terminal_state(self) -> dict:
+        env = self._require_env()
+        return {"task_id": self._task_id, "instance_id": self._instance_id,
+                "scene_model": self._scene_model, "instance_filename": self._instance_filename,
+                "scene_config_id": self._scene_config_id,
+                "native_control_counter": int(env._current_step),
+                "native_physics_step": int(self._og.sim.current_time_step_index),
+                "controlled_physics_steps": self._controlled_physics_steps,
+                "physics_count_source": "omnigibson.sim.current_time_step_index",
+                "simulation_time_s": float(self._og.sim.current_time),
+                "native_episode_terminated": self._episode_terminated,
+                "native_termination": deepcopy(self._last_native_termination)}
 
     def turn_view(self, direction: str) -> NativeObservation:
         raise ValueError(f"BEHAVIOR active view direction is unsupported: {direction}")

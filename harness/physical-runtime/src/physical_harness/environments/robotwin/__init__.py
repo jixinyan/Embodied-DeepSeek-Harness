@@ -20,6 +20,7 @@ import yaml
 
 from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeStep
 from physical_harness.environments.task_catalog import robotwin_task_selection
+from physical_harness.environments.native_terminal_record import NativeTerminalRecorder
 from physical_harness.perception.metric_capture import MetricCapture
 from physical_harness.validation import ContractValidator
 
@@ -77,6 +78,7 @@ class RoboTwinEnvironment:
         self._task_config = "demo_clean"
         self._task_instruction: str | None = None
         self._metric_capture = MetricCapture("robotwin", "robotwin.sapien.world")
+        self._terminal_recorder = NativeTerminalRecorder("robotwin")
 
     def _require_env(self):
         if self._env is None:
@@ -315,6 +317,8 @@ class RoboTwinEnvironment:
         if raw_steps < 0 or completed and not executed_actions:
             raise RuntimeError("RoboTwin native action returned inconsistent execution counts.")
         terminated = bool(env.eval_success or env.take_action_cnt == env.step_lim)
+        if terminated:
+            self.episode_terminated()
         return NativeStep(
             self.observe(), executed_actions, bool(completed), int(raw_steps), terminated, tuple(frames),
             "live_frame_capacity_exhausted" if live_frame_exhausted else (
@@ -331,7 +335,24 @@ class RoboTwinEnvironment:
 
     def episode_terminated(self) -> bool:
         env = self._require_env()
-        return bool(env.eval_success or env.take_action_cnt >= env.step_lim or env.check_success())
+        before = self._terminal_state()
+        success = bool(env.check_success())
+        terminated = bool(env.eval_success or env.take_action_cnt >= env.step_lim or success)
+        self._terminal_recorder.record(
+            before=before, after=self._terminal_state(), current_success=success, terminated=terminated,
+            provider_source=Path(__file__), predicate=env.check_success, control=env.take_action,
+        )
+        return terminated
+
+    def _terminal_state(self) -> dict:
+        env = self._require_env()
+        return {"task_id": self._task_id, "seed": self._seed, "task_config": self._task_config,
+                "native_control_counter": int(env.take_action_cnt), "native_step_limit": int(env.step_lim),
+                "native_eval_success": bool(env.eval_success),
+                "controlled_physics_steps": self._controlled_physics_steps,
+                "physics_count_source": "robotwin.take_action.on_physics_step",
+                "physics_timestep_s": float(env.scene.get_timestep()),
+                "simulation_time_s": self._controlled_physics_steps * float(env.scene.get_timestep())}
 
     def turn_view(self, direction: str) -> NativeObservation:
         raise ValueError(f"RoboTwin active view direction is unsupported: {direction}")

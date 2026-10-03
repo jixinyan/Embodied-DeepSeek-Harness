@@ -1,4 +1,5 @@
 import argparse
+import ast
 from datetime import datetime, timedelta
 from hashlib import sha256
 import json
@@ -18,6 +19,12 @@ def audit_retained_terminal_executions(run, events, samples, request_directory, 
     selected = [status for status in run["executions"] if status["control_steps"] == 0]
     if not selected:
         return []
+    providers = {sample["visualization"].get("provider") for sample in samples or []
+                 if sample["visualization"].get("executionId") in {
+                     status["execution_id"] for status in selected}}
+    if providers in ({"robotwin"}, {"behavior"}):
+        return audit_recorded_provider_terminals(run, events, samples, request_directory, schema_path,
+                                                 next(iter(providers)))
     require(all(value is not None for value in (samples, request_directory, episode_root, schema_path)),
             "Zero-control terminal admission requires original native samples, requests and episode sources.")
     from physical_harness.environments.robodojo.audit import audit_native_physics
@@ -141,6 +148,143 @@ def audit_retained_terminal_executions(run, events, samples, request_directory, 
                         "resetSha256": sha256(reset_path.read_bytes()).hexdigest(),
                         "currentNativeSuccess": summary["native_success"], "retainedCameraIdentity": True})
         previous = status
+    return reports
+
+
+def audit_recorded_provider_terminals(run, events, samples, request_directory, schema_path, provider):
+    require(request_directory is not None and samples is not None and schema_path is not None,
+            "Provider terminal admission requires original samples, requests and source records.")
+    validator = ContractValidator.from_path(schema_path)
+    sample_by_sequence = {sample["sequence"]: sample for sample in samples}
+    require(len(sample_by_sequence) == len(samples), "Provider sensor sample identities are duplicated.")
+    zero_ids = {status["execution_id"] for status in run["executions"] if status["control_steps"] == 0}
+    for path in request_directory.rglob("*.json"):
+        value = json.loads(path.read_text(encoding="utf-8"))
+        require(value.get("execution_id", value.get("segment", {}).get("execution_id")) not in zero_ids,
+                "Already-ended execution issued an additional native action or policy request.")
+    source_directory = request_directory / "native-episode-status" / provider
+    paths = sorted(source_directory.glob("*/status-*.json"))
+    require(paths, "Original provider terminal query records are unavailable.")
+    native_records = []
+    positions = {}
+    for path in paths:
+        record = json.loads(path.read_text(encoding="utf-8"))
+        scene = record["scene_id"]
+        require(record["schema_version"] == "edh.native_episode_status.v1" and
+                record["provider"] == provider and path.parent.name == scene and
+                record["audit_position"] == positions.get(scene, 0) and
+                path.name == f"status-{record['audit_position']:06d}.json" and
+                record["physical_steps"] == 0 and record["before"] == record["after"] and
+                type(record["current_task_success"]) is type(record["episode_terminated"]) is bool and
+                type(record["native_pid"]) is int and type(record["owner_thread_id"]) is int,
+                "Original provider terminal history changed identity, counters or boolean facts.")
+        positions[scene] = record["audit_position"] + 1
+        expected_sources = {"provider", "recorder", "predicate", "control"}
+        if provider == "behavior":
+            expected_sources.add("termination")
+        require(set(record["sources"]) == expected_sources,
+                "Provider terminal record lacks its original SDK/provider source identities.")
+        for source in record["sources"].values():
+            require(Path(source["retained_file"]).name == source["retained_file"],
+                    "Provider source copy must belong to its original terminal record directory.")
+            data = (path.parent / source["retained_file"]).read_bytes()
+            require(sha256(data).hexdigest() == source["sha256"], "Original native terminal source hash changed.")
+            ast.parse(data, filename=source["path"])
+        native_records.append((path, record))
+    reports = []
+    previous = None
+    for status in run["executions"]:
+        validator.parse("ExecutionStatus", status)
+        updates = [event for event in events if event["type"] == "execution.updated" and
+                   event["detail"]["execution"]["execution_id"] == status["execution_id"]]
+        require(updates and updates[-1]["detail"]["execution"] == status,
+                "Provider execution export differs from its actual final event.")
+        observation = sample_by_sequence[updates[-1]["detail"]["sensorSequence"]]
+        require(observation["visualization"]["provider"] == provider and
+                observation["evidence"]["task_scope"] == status["task_scope"] and
+                observation["evidence"]["id"] in status["observation_refs"] and observation["images"],
+                "Provider terminal boundary lacks its admitted original native camera observation.")
+        if status["control_steps"]:
+            previous = (status, observation)
+            continue
+        require(previous is not None, "Provider terminal admission requires a prior actual native execution.")
+        prior, prior_observation = previous
+        require(prior["stop_reason"] == status["stop_reason"] == "episode_terminated" and
+                prior["state"] == status["state"] == "ended" and prior["device_confirmed"] is True and
+                status["device_confirmed"] is True and status["policy_calls"] == status["raw_sim_steps"] == 0 and
+                status["state_version"] == 1 and len(updates) == 1 and
+                status["clock_id"] == prior["clock_id"] and status["task_scope"] != prior["task_scope"] and
+                status["boundary_event_id"] != prior["boundary_event_id"] and
+                observation["images"] == prior_observation["images"],
+                "Provider terminal execution lacks its fresh zero-control retained observation boundary.")
+        end = datetime.fromisoformat(status["recorded_at"].replace("Z", "+00:00"))
+        start = end - timedelta(seconds=status["elapsed_wall_time_s"])
+        selected = [(path, record) for path, record in native_records if start <=
+                    datetime.fromisoformat(record["recorded_at"].replace("Z", "+00:00")) <= end]
+        require(selected, "Zero-control provider execution lacks its original timed native preflight record.")
+        baseline_path, baseline = selected[0]
+        state = baseline["after"]
+        require(all(record["episode_terminated"] is True and record["scene_id"] == baseline["scene_id"] and
+                    record["native_pid"] == baseline["native_pid"] and
+                    record["owner_thread_id"] == baseline["owner_thread_id"] and
+                    record["after"] == state and record["sources"] == baseline["sources"]
+                    for _, record in selected), "Provider preflight changed native owner, scene or original counters.")
+        prior_end = datetime.fromisoformat(prior["recorded_at"].replace("Z", "+00:00"))
+        prior_start = prior_end - timedelta(seconds=prior["elapsed_wall_time_s"])
+        earlier = [(path, record) for path, record in native_records if record["scene_id"] == baseline["scene_id"] and
+                   prior_start <= datetime.fromisoformat(record["recorded_at"].replace("Z", "+00:00")) <= prior_end]
+        require(earlier and earlier[-1][1]["after"] == state and
+                earlier[-1][1]["native_pid"] == baseline["native_pid"] and
+                earlier[-1][1]["episode_terminated"] is True,
+                "Prior provider execution lacks its actual terminal native state matching the new preflight.")
+        metadata = prior_observation["visualization"]
+        if prior["control_steps"]:
+            receipt_path = request_directory / prior["execution_id"] / metadata["policyRequestId"] / (
+                metadata["segmentId"] + ".json")
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            validator.parse("ActionSegment", receipt["segment"])
+            validator.parse("ActionReceipt", receipt["receipt"])
+            require(receipt["schema_version"] == "edh.native_policy_receipt.v1" and
+                    receipt["native_step"]["episode_terminated"] is True and receipt["uncertain_actions"] == 0 and
+                    receipt["control_index"] == prior["control_steps"] and
+                    receipt["segment"]["execution_id"] == prior["execution_id"] and
+                    receipt["segment"]["task_scope"] == prior["task_scope"],
+                    "Prior provider episode lacks its original actual terminal action receipt.")
+        require(state["controlled_physics_steps"] == sum(item["raw_sim_steps"] for item in run["executions"]),
+                "Retained provider counter differs from the actual execution receipt history.")
+        if provider == "behavior":
+            termination = state["native_termination"]
+            require(state["physics_count_source"] == "omnigibson.sim.current_time_step_index" and
+                    state["native_episode_terminated"] is True and termination is not None and
+                    (termination["terminated"] is True or termination["truncated"] is True) and
+                    termination["environment_step"] == state["native_control_counter"] and
+                    termination["source_sha256"] == baseline["sources"]["termination"]["sha256"] and
+                    termination["source_file"] == baseline["sources"]["termination"]["path"] and
+                    state["controlled_physics_steps"] == state["native_control_counter"] * 4,
+                    "BEHAVIOR terminal source differs from its original SDK flags and actual counters.")
+        else:
+            require(state["physics_count_source"] == "robotwin.take_action.on_physics_step" and
+                    (state["native_eval_success"] is True or
+                     state["native_control_counter"] >= state["native_step_limit"] or
+                     baseline["current_task_success"] is True),
+                    "RoboTwin terminal source differs from its original native predicate or horizon.")
+        facts = [event["detail"] for event in events if event["type"] == "verification.checked" and
+                 event["detail"]["evidence"]["task_scope"] == status["task_scope"]]
+        require(len(facts) == 1, "Provider terminal execution requires one fresh formal native check.")
+        checked = next(sample for sample in samples if sample["evidence"]["id"] == facts[0]["evidence"]["id"])
+        require(checked["images"] == observation["images"] and
+                len(facts[0]["facts"]) == 1 and facts[0]["facts"][0]["check_id"] == "task_success" and
+                facts[0]["facts"][0]["value"] is baseline["current_task_success"] and
+                facts[0]["facts"][0].get("reason") is None,
+                "Fresh provider formal check differs from its retained camera evidence or current native predicate.")
+        reports.append({"executionId": status["execution_id"], "boundaryId": status["boundary_event_id"],
+                        "provider": provider, "actualControls": 0, "policyCalls": 0, "reportedNativeSteps": 0,
+                        "nativeStatusRecords": [{"path": str(path), "sha256": sha256(path.read_bytes()).hexdigest()}
+                                                for path, _ in selected],
+                        "retainedSceneId": baseline["scene_id"], "nativeState": state,
+                        "currentNativeSuccess": baseline["current_task_success"],
+                        "originalSourceRecords": baseline["sources"], "retainedCameraIdentity": True})
+        previous = (status, observation)
     return reports
 
 

@@ -64,6 +64,19 @@ verification. The report records these executions separately under
 learned-action and decoded-video checks. This admission preserves the current
 native success value; an exhausted unsuccessful episode remains unsuccessful.
 
+RoboTwin and BEHAVIOR retain provider-owned terminal query records under
+`EDH_POLICY_REQUEST_RECORD_DIR/native-episode-status/<provider>/<scene-id>/`.
+Each query records the current original task predicate, native scene identity,
+owner thread, counters before and after the read, and retained SDK/provider source
+copies with hashes. RoboTwin identifies its original control counter and counted
+native physics callbacks. BEHAVIOR records the original OmniGibson physics counter
+and exact retained SDK termination flags and conditions. Admission requires the
+prior terminal action, timed fresh preflight and independent formal-check cameras
+to identify the same retained state. Original histories without these native source
+records retain their reported counters and formal outcomes; independent terminal
+source verification remains unavailable for those histories. These provider bindings
+require genuine native record acceptance in addition to source checks.
+
 For an actual completed run, transfer the worker's execution directories and retain
 the policy log, requests and native sensor samples. Export and render with:
 
