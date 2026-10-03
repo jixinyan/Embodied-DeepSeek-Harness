@@ -39,6 +39,10 @@ class LifecycleValidator:
             errors.append("stale_state_version")
         if next_state["clock_id"] != previous["clock_id"]:
             errors.append("clock_mismatch")
+        if "control_generation" in previous and (
+                "control_generation" not in next_state
+                or next_state["control_generation"] < previous["control_generation"]):
+            errors.append("control_generation_regression")
         if any(next_state[key] < previous[key] for key in ("control_steps", "policy_calls", "elapsed_wall_time_s")) or ("raw_sim_steps" in previous and ("raw_sim_steps" not in next_state or next_state["raw_sim_steps"] < previous["raw_sim_steps"])):
             errors.append("counter_regression")
         if next_state["control_steps"] > request["budget"]["max_control_steps"]:

@@ -33,6 +33,7 @@ export type {
   BackendCallOptions,
   BackendResumeOptions,
   BackendEndOptions,
+  BackendReviewOptions,
   BackendCheckOptions,
   BackendCheckResult,
   BackendObjectMeasurementInput,

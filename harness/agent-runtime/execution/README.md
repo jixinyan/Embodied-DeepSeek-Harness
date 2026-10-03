@@ -132,6 +132,10 @@ simulator or checkpoint compatibility.
 
 ## GPT direct and hybrid policy gateway
 
+Native decision-owner observations use generation-bound `captureReview` and the
+existing DSH follow-up delivery. The [running review guide](../../../docs/implementation/planner-running-review.md)
+defines cadence, image publication, stopping and independent verification.
+
 [`DshGptPolicy`](src/gpt-policy.ts) is the EDH-owned Litchi-style gateway. It
 uses `createDshSession`, native DSH tool schemas, model cancellation and image
 attachments. `direct` mode offers grounded joint/EEF proposal tools. `hybrid`

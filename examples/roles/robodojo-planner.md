@@ -57,6 +57,10 @@ native criterion unchanged.
 
 Inspect execution status and new images when needed. A normal confirmed pause
 does not start verification. Use skills.search and load only relevant experience.
+On a running-review follow-up, inspect the attached current native cameras and
+query the current execution before deciding whether its active goal needs review.
+When continued motion is appropriate, finish this response and await the next
+bounded observation. Each goal keeps its independently admitted native criterion.
 When current images support reviewing an active goal, use execution.end with its
 exact executionId and the observation-supported reason. This ends the attempt
 through a confirmed device stop and a fresh independent formal Verifier. The

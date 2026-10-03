@@ -13,6 +13,7 @@ import { parseTaskDefinition, type TaskDefinition, type TaskCatalogDefinition } 
 import type { ApplicationOptions } from './application.js';
 import type { DeploymentRetentionFactory } from './deployment-retention.js';
 import type { ManagedServiceLifecycle } from './managed-services.js';
+import { plannerReviewSchema, type PlannerReviewPolicy } from './planner-review.js';
 import { CORE_TOOLS } from './application.js';
 import type { ModelBinding } from './runtime.js';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
@@ -46,6 +47,7 @@ export interface SessionEnvironment {
   close(): Promise<void>;
 }
 export interface LaunchProfile {
+  readonly plannerReview?: PlannerReviewPolicy;
   readonly source?: EmbodiedBackend['source'];
   readonly label: string;
   readonly environment: string;
@@ -75,6 +77,7 @@ export interface TaskPreset extends TaskDefinition {
 }
 /** Trusted deployment composition; executable factories and credentials are never served over HTTP. */
 export interface ServerDeployment {
+  readonly plannerReview?: PlannerReviewPolicy;
   readonly id: string;
   /** Version of executable bindings; bump when factory/adapter behavior changes. */
   readonly version: string;
@@ -202,6 +205,10 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     string,
     LaunchProfile & { physicalProfile?: ResolvedPhysicalRuntimeProfile }
   > = Object.create(null);
+  const plannerReview =
+    input.plannerReview === undefined
+      ? undefined
+      : freeze(plannerReviewSchema.parse(input.plannerReview));
   const launchMetadata: Record<
     string,
     Omit<LaunchProfile, 'createEnvironment' | 'physicalProviders'>
@@ -249,6 +256,9 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
         defaultModel: profile.defaultModel,
         tasks: [...profile.tasks],
         taskSource: profile.taskSource ?? 'deployment',
+        ...(profile.plannerReview === undefined && plannerReview === undefined
+          ? {}
+          : { plannerReview: plannerReviewSchema.parse(profile.plannerReview ?? plannerReview) }),
         ...(resolved ? { physicalProfile: resolved } : {}),
       }),
     );
@@ -269,6 +279,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     description: input.description,
     defaultModel: input.defaultModel,
     sessionHistory,
+    ...(plannerReview === undefined ? {} : { plannerReview }),
     ...(input.assignmentLifetimeMs === undefined
       ? {}
       : { assignmentLifetimeMs: input.assignmentLifetimeMs }),
@@ -309,6 +320,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     sessionHistory,
     storageRetention: input.storageRetention,
     serviceLifecycle: input.serviceLifecycle,
+    ...(plannerReview === undefined ? {} : { plannerReview }),
     ...(input.assignmentLifetimeMs === undefined
       ? {}
       : { assignmentLifetimeMs: input.assignmentLifetimeMs }),

@@ -1,6 +1,7 @@
 import { isDeepStrictEqual } from 'node:util';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
+import { plannerReviewSchema } from './planner-review.js';
 import { AssignmentReports } from '@edh/communication';
 import { isWireTimestamp, type ContractValidator } from '@edh/contracts';
 import { SensorSamples, validateImageAttachmentReference } from '@edh/perception';
@@ -67,6 +68,7 @@ const messageKinds = new Set([
   'recovery-progress',
   'recovery-success',
   'monitor',
+  'running-review',
   'formal-verification',
   'resume-request',
   'user-clarification',
@@ -521,6 +523,38 @@ export class RunEventReferences {
           if (payload.brief !== undefined) brief(payload.brief);
           if (payload.execution !== undefined) execution(payload.execution);
           if (payload.sample !== undefined) sample(payload.sample);
+          if (payload.kind === 'running-review') {
+            const cadence = plannerReviewSchema.parse(payload.cadence);
+            const status = this.validator.parse('ExecutionStatus', payload.execution);
+            const sensor = object.parse(payload.sample);
+            const scope = this.validator.parse('EvidenceRef', object.parse(sensor.evidence));
+            const recipient = assignment(detail.recipient);
+            const admitted = state.executions.find(
+              (row) => row.execution_id === status.execution_id,
+            );
+            const request = state.requests.find(
+              (row) =>
+                row.attempt_id === status.task_scope.attempt_id &&
+                row.goal_id === status.task_scope.goal_id,
+            );
+            if (
+              detail.sender !== 'execution-monitor' ||
+              !cadence.enabled ||
+              status.state !== 'running' ||
+              status.control_generation === undefined ||
+              !admitted ||
+              admitted.control_generation === undefined ||
+              status.control_generation > admitted.control_generation ||
+              status.state_version > admitted.state_version ||
+              status.control_steps > admitted.control_steps ||
+              !isDeepStrictEqual(status.task_scope, admitted.task_scope) ||
+              !isDeepStrictEqual(scope.task_scope, status.task_scope) ||
+              scope.visibility !== 'agent' ||
+              request?.owner_assignment_id !== recipient.id ||
+              request.decision_owner_id !== recipient.sessionId
+            )
+              throw new Error('Planner running review has conflicting native ownership.');
+          }
           if (payload.evidence !== undefined)
             for (const value of z.array(z.unknown()).parse(payload.evidence)) sample(value);
           if (payload.kind === 'agent-report') {

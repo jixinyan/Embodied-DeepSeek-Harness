@@ -70,6 +70,12 @@ export class LifecycleValidator {
     if (next.state_version <= previous.state_version) errors.push('stale_state_version');
     if (next.clock_id !== previous.clock_id) errors.push('clock_mismatch');
     if (
+      previous.control_generation !== undefined &&
+      (next.control_generation === undefined ||
+        next.control_generation < previous.control_generation)
+    )
+      errors.push('control_generation_regression');
+    if (
       next.control_steps < previous.control_steps ||
       next.policy_calls < previous.policy_calls ||
       next.elapsed_wall_time_s < previous.elapsed_wall_time_s ||

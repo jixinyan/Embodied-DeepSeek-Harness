@@ -344,6 +344,8 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
     executions = {}
     requests = {}
     terminal_reviews = {}
+    running_reviews = {}
+    running_review_count = 0
     verification_boundaries = set()
     checked = {}
     verdicts = {}
@@ -381,8 +383,43 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
                 require(status["state_version"] > prior["state_version"], "Execution version did not advance.")
                 require(status["control_steps"] >= prior["control_steps"], "Control count decreased.")
                 require(status["task_scope"] == prior["task_scope"], "Execution scope changed.")
+                if "control_generation" in prior:
+                    require("control_generation" in status and
+                            status["control_generation"] >= prior["control_generation"],
+                            "Native execution control generation regressed.")
+                require(prior["state"] != "ended", "Native execution published after its immutable end.")
             executions[status["execution_id"]] = status
             controls += status["control_steps"] - (prior["control_steps"] if prior else 0)
+        elif kind == "message.delivered" and detail["payload"].get("kind") == "running-review":
+            payload = detail["payload"]
+            status, sample, cadence = (payload[key] for key in ("execution", "sample", "cadence"))
+            require(status == executions.get(status["execution_id"]) and status["state"] == "running" and
+                    "control_generation" in status, "Planner review lacks its current admitted native generation.")
+            owner = assignments[detail["recipient"]]
+            request = next(item for item in run["requests"] if
+                           item["goal_id"] == status["task_scope"]["goal_id"] and
+                           item["attempt_id"] == status["task_scope"]["attempt_id"])
+            require(detail["sender"] == "execution-monitor" and owner["id"] == run["decisionAssignmentId"] and
+                    request["owner_assignment_id"] == owner["id"] and
+                    request["decision_owner_id"] == owner["sessionId"] and
+                    sample["evidence"]["task_scope"] == status["task_scope"] and
+                    sample["evidence"]["visibility"] == "agent" and detail["images"] == sample["images"] and
+                    bool(detail["images"]), "Planner review differs from its owner or authorized native images.")
+            require(cadence["enabled"] is True and type(cadence["controlStepInterval"]) is int and
+                    1 <= cadence["controlStepInterval"] <= 1_000_000 and
+                    type(cadence["wallTimeIntervalMs"]) is int and
+                    1000 <= cadence["wallTimeIntervalMs"] <= 3_600_000,
+                    "Planner review cadence is invalid.")
+            identity = (status["execution_id"], status["control_generation"])
+            earlier = running_reviews.get(identity)
+            if earlier:
+                prior_status, prior_time, prior_cadence = earlier
+                require(cadence == prior_cadence and
+                        status["control_steps"] - prior_status["control_steps"] >= cadence["controlStepInterval"] and
+                        (current_time - prior_time).total_seconds() * 1000 >= cadence["wallTimeIntervalMs"],
+                        "Planner review exceeded its admitted control/time cadence.")
+            running_reviews[identity] = (status, current_time, cadence)
+            running_review_count += 1
         elif kind == "execution.end-requested":
             status = executions.get(detail["executionId"])
             require(status is not None and status["state_version"] == detail["stateVersion"] and
@@ -506,6 +543,7 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
             "checkedEvents": len(events), "independentUpperSessions": len(sessions),
             "executionPolicySessions": len(policy_sequences), "executedControls": controls,
             "recordedSimulatorFrames": frames, "formalVerdicts": len(verdicts),
+            "runningPlannerReviews": running_review_count, "terminalReviewRequests": len(terminal_reviews),
             "workerRecordedFrames": sum(len(group) for group in native_frames.values()) if native_frames else 0,
             "workerVideos": videos,
             "recoveryChains": len(recoveries), "observedInvariants": "passed",

@@ -279,6 +279,7 @@ export interface AgentReport {
   };
 }
 export interface ExecutionStatus {
+  control_generation?: number;
   execution_id: string;
   task_scope: ExecutionScope;
   state: "accepted" | "running" | "pausing" | "paused" | "ended";

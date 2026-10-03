@@ -57,6 +57,11 @@ export interface BackendEndOptions extends BackendCallOptions {
   ownerAssignmentId: string;
   taskScope: TaskScope;
 }
+export interface BackendReviewOptions extends BackendCallOptions {
+  executionId: string;
+  controlGeneration: number;
+  taskScope: TaskScope;
+}
 export interface BackendCheckOptions extends BackendCallOptions {
   /** Reject the request if the worker no longer owns this stopped boundary. */
   executionId: string;
@@ -141,6 +146,7 @@ export interface EmbodiedBackend {
   /** Immediate local status projection; remote clients update it before notifying subscribers. */
   query(): ExecutionStatus | undefined;
   capture(options?: BackendCallOptions): SensorSample | Promise<SensorSample>;
+  captureReview?(options: BackendReviewOptions): Promise<SensorSample | undefined>;
   measureObject?(
     input: BackendObjectMeasurementInput,
     options?: BackendCallOptions,

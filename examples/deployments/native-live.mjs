@@ -21,6 +21,8 @@ import {
   ManagedServices,
   managedServiceConfigurations,
   nativeWorkspaceRetention,
+  nativePlannerReview,
+  plannerReviewSchema,
   startServer,
 } from '../../apps/server/src/index.ts';
 
@@ -244,6 +246,9 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
       plannerModel,
       mode,
       serviceIds,
+      plannerReview: plannerReviewSchema.parse(
+        entry.plannerReview ?? config.plannerReview ?? nativePlannerReview,
+      ),
       label:
         metadata.label ??
         entry.label ??
@@ -462,6 +467,7 @@ export function createNativeDeploymentFactory(settings) {
         {
           source: 'simulation',
           label: profile.label,
+          plannerReview: profile.plannerReview,
           environment: profile.environment,
           embodiment: settings.selected.embodiment,
           executionMode: profile.mode,
@@ -536,7 +542,7 @@ export function createNativeDeploymentFactory(settings) {
     );
     return {
       id: `${settings.provider}-live`,
-      version: `${settings.selected.version}-factory-v2`,
+      version: `${settings.selected.version}-factory-v3`,
       source: 'simulation',
       description: `Native ${settings.selected.title} with independent DSH role Sessions`,
       teamFile: settings.teamFile,

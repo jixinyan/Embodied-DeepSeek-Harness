@@ -16,6 +16,7 @@ import {
   type VerificationResult,
   type EvidenceRef,
   type PlanDocument,
+  type ExecutionStatus,
 } from '@edh/contracts';
 import {
   TeamSessions,
@@ -33,6 +34,7 @@ import { AssignmentEvidenceGrants, SkillLibrary } from '@edh/memory';
 import { VerificationBoundaries, VerificationContexts } from '@edh/verification';
 import { skillSourceLimitations } from './skill-provenance.js';
 import { UserClarifications, ClarificationConflict, readClarification } from './clarifications.js';
+import { plannerReviewSchema, type PlannerReviewPolicy } from './planner-review.js';
 import {
   readPolicyEvent,
   type BackendPolicyEvent,
@@ -79,6 +81,7 @@ interface RecoveryObservation {
   error?: string;
 }
 export interface ApplicationOptions {
+  plannerReview?: PlannerReviewPolicy;
   runId?: string;
   sessionHistory?: SessionHistoryOptions;
   goal: GoalBinding;
@@ -148,7 +151,23 @@ export class UpperRun {
   private readonly executionRequestedAt = new Map<string, string>();
   private planToolSchema: Record<string, unknown> | undefined;
   private activeObservation = false;
+  private readonly plannerReview: Readonly<PlannerReviewPolicy> | undefined;
+  private runningReview:
+    | {
+        execution: ExecutionStatus;
+        lastControlSteps: number;
+        lastDeliveredAt: number;
+        busy: boolean;
+        timer?: ReturnType<typeof setTimeout>;
+      }
+    | undefined;
   constructor(private readonly options: ApplicationOptions) {
+    this.plannerReview =
+      options.plannerReview === undefined
+        ? undefined
+        : Object.freeze(plannerReviewSchema.parse(options.plannerReview));
+    if (this.plannerReview?.enabled && !options.backend.captureReview)
+      throw new Error('Enabled Planner review requires generation-bound native capture.');
     if (
       options.backend.toolTimeoutMs !== undefined &&
       (!Number.isSafeInteger(options.backend.toolTimeoutMs) ||
@@ -2192,6 +2211,116 @@ export class UpperRun {
       })(),
     );
   }
+  private clearRunningReview(): void {
+    if (this.runningReview?.timer) clearTimeout(this.runningReview.timer);
+    this.runningReview = undefined;
+  }
+
+  private queueRunningReview(status: ExecutionStatus): void {
+    const policy = this.plannerReview;
+    if (!policy?.enabled) return;
+    if (status.state !== 'running' || terminal(this.state.state) || this.closing) {
+      this.clearRunningReview();
+      return;
+    }
+    if (status.control_generation === undefined)
+      throw new Error('Planner running review requires the native control generation.');
+    if (
+      this.runningReview?.execution.execution_id !== status.execution_id ||
+      this.runningReview.execution.control_generation !== status.control_generation
+    ) {
+      this.clearRunningReview();
+      this.runningReview = {
+        execution: structuredClone(status),
+        lastControlSteps: status.control_generation === 0 ? 0 : status.control_steps,
+        lastDeliveredAt: performance.now(),
+        busy: false,
+      };
+    } else this.runningReview.execution = structuredClone(status);
+    const review = this.runningReview;
+    if (review.busy || review.timer) return;
+    if (status.control_steps - review.lastControlSteps < policy.controlStepInterval) return;
+    const wait = policy.wallTimeIntervalMs - (performance.now() - review.lastDeliveredAt);
+    if (wait > 0) {
+      review.timer = setTimeout(() => {
+        delete review.timer;
+        if (this.runningReview === review) this.queueRunningReview(review.execution);
+      }, wait);
+      return;
+    }
+    const owner = this.state.decisionAssignmentId;
+    if (!this.sessions.acceptsMessages(owner)) return;
+    review.busy = true;
+    this.spawn(
+      (async () => {
+        try {
+          await this.sessions.whenIdle(owner);
+          const current = () => {
+            const status = this.options.backend.query();
+            return (
+              this.runningReview === review &&
+              !terminal(this.state.state) &&
+              !this.closing &&
+              this.state.decisionAssignmentId === owner &&
+              this.sessions.acceptsMessages(owner) &&
+              status?.state === 'running' &&
+              status.execution_id === review.execution.execution_id &&
+              status.control_generation === review.execution.control_generation &&
+              isDeepStrictEqual(status.task_scope, review.execution.task_scope)
+            );
+          };
+          if (!current()) {
+            if (this.runningReview === review) this.clearRunningReview();
+            return;
+          }
+          const execution = review.execution;
+          const sample = await this.options.backend.captureReview!({
+            executionId: execution.execution_id,
+            controlGeneration: execution.control_generation!,
+            taskScope: execution.task_scope,
+          });
+          if (!sample || !current()) {
+            if (this.runningReview === review) this.clearRunningReview();
+            return;
+          }
+          if (
+            sample.evidence.visibility !== 'agent' ||
+            !isDeepStrictEqual(sample.evidence.task_scope, execution.task_scope)
+          )
+            throw new Error('Planner review evidence does not belong to its execution scope.');
+          const assignment = this.sessions.get(owner);
+          const admitted = this.observe(assignment, sample);
+          const latest = structuredClone(review.execution);
+          review.lastControlSteps = latest.control_steps;
+          review.lastDeliveredAt = performance.now();
+          await this.sessions.deliver(
+            owner,
+            {
+              kind: 'running-review',
+              cadence: policy,
+              execution: latest,
+              sample: admitted,
+              instructions:
+                'Review this current goal and generation using the attached native observation. ' +
+                'Query execution.query before any control decision. Request execution.end with its ' +
+                'exact executionId when current observations justify independent terminal review. ' +
+                'Formal success requires the fresh designated Verifier. Otherwise conclude this ' +
+                'response and await the next bounded observation; do not poll.',
+            },
+            'execution-monitor',
+            sensorImages([admitted]),
+          );
+        } catch (error) {
+          if (this.runningReview === review) this.clearRunningReview();
+          throw error;
+        } finally {
+          review.busy = false;
+          if (this.runningReview === review) this.queueRunningReview(review.execution);
+        }
+      })(),
+    );
+  }
+
   private backendUpdate(update: BackendUpdate): void {
     if (this.closed) return;
     this.options.validator.parse('ExecutionStatus', update.status);
@@ -2263,6 +2392,7 @@ export class UpperRun {
       execution: update.status,
       sensorSequence: update.sample.sequence,
     });
+    this.queueRunningReview(update.status);
     if (
       !terminal(this.state.state) &&
       (update.status.state === 'paused' || this.gates.requiresVerification(update.status))
@@ -2529,6 +2659,7 @@ export class UpperRun {
     while (this.pending.size) await Promise.all([...this.pending]);
   }
   private async cancelAndStop(type: string, detail: Record<string, unknown>): Promise<void> {
+    this.clearRunningReview();
     const errors: unknown[] = [];
     try {
       this.clarifications.cancel('The task ended.');
@@ -2552,6 +2683,7 @@ export class UpperRun {
   close(): Promise<void> {
     if (this.closePromise) return this.closePromise;
     this.closing = true;
+    this.clearRunningReview();
     this.closePromise = Promise.resolve().then(async () => {
       const errors: unknown[] = [];
       const cleanup = async (action: () => unknown) => {

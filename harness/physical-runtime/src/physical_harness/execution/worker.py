@@ -196,6 +196,7 @@ class NativeWorkerSession:
         status: dict[str, Any] = {
             "schema_version": "physical.execution.v1",
             "execution_id": snapshot["execution_id"],
+            "control_generation": snapshot["generation"],
             "task_scope": gate_scope(self._request),
             "state": state,
             "control_steps": device.executed_actions,
@@ -813,6 +814,33 @@ class NativeWorkerSession:
             self._measurement_control_counts = (device.executed_actions, device.raw_sim_steps)
         return {"run_task_id": run_task_id, "observation": self._observation_wire(observation)}
 
+    async def capture_review(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        async with self._control_lock:
+            if self._run_task_id is None or arguments["run_task_id"] != self._run_task_id:
+                raise ValueError("Review capture requires the current session task identity.")
+            if arguments["task_scope"] != gate_scope(self._request):
+                raise ValueError("Review capture requires the admitted execution scope.")
+            gate = self._require_gate()
+            generation = arguments["control_generation"]
+            if isinstance(generation, bool) or not isinstance(generation, int) or generation < 0:
+                raise ValueError("Review capture requires a nonnegative control generation.")
+
+            def current() -> bool:
+                snapshot = gate.snapshot()
+                return (self._host_connected and snapshot["state"] == "running"
+                        and snapshot["execution_id"] == arguments["execution_id"]
+                        and snapshot["generation"] == generation)
+
+            if not current():
+                return {"review_available": False}
+            observation = await self._require_device().on_owner(self._environment.observe)
+            if not current():
+                return {"review_available": False}
+            return {"review_available": True, "run_task_id": self._run_task_id,
+                    "execution_id": arguments["execution_id"], "control_generation": generation,
+                    "task_scope": gate_scope(self._request),
+                    "observation": self._observation_wire(observation)}
+
     async def measure_object(self, arguments: dict[str, Any]) -> dict[str, Any]:
         async with self._control_lock:
             if not callable(getattr(self._environment, "measure_object", None)):
@@ -1035,6 +1063,7 @@ async def serve() -> None:
         "end": lambda args: session.pause(args, terminal=True, review=True),
         "resume": session.resume,
         "capture": session.capture,
+        "capture_review": session.capture_review,
         "measure_object": session.measure_object,
         "turn_view": session.turn_view,
         "rotate_view": session.rotate_view,

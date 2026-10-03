@@ -56,6 +56,15 @@ a polling loop, repeat the start or delegate the designated Verifier.
 
 ## 4. Handle the actual execution state
 
+When the host sends a running-review message, inspect its attached native images,
+current goal/attempt and control_generation. Query execution.query before making
+a control decision: the job can end while you review the image. If observations
+justify checking the current goal, call execution.end with the actual executionId
+and a specific observed reason, then await the fresh designated Verifier. If more
+motion is appropriate, conclude your response and await the next bounded review.
+These observations do not contain formal predicate results. The host coalesces
+reviews while your turn is active; do not poll or create additional review roles.
+
 Use execution.query only when a specific status question needs its receipt.
 Running status or metadata references do not establish a visual outcome. A normal
 confirmed pause allows an explicit execution.resume decision in the same attempt

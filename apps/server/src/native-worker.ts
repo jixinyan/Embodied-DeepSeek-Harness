@@ -825,6 +825,51 @@ class NativeTaskBackend implements EmbodiedBackend {
     return this.sample(result.observation as WorkerObservation);
   }
 
+  async captureReview(
+    options: import('@edh/execution').BackendReviewOptions,
+  ): Promise<SensorSample | undefined> {
+    options.signal?.throwIfAborted();
+    const result = object(
+      await this.transport.request(
+        'capture_review',
+        {
+          run_task_id: this.runId,
+          execution_id: options.executionId,
+          control_generation: options.controlGeneration,
+          task_scope: options.taskScope,
+        },
+        { signal: options.signal },
+      ),
+    );
+    options.signal?.throwIfAborted();
+    if (result.review_available === false) return undefined;
+    if (
+      result.review_available !== true ||
+      result.run_task_id !== this.runId ||
+      result.execution_id !== options.executionId ||
+      result.control_generation !== options.controlGeneration ||
+      !isDeepStrictEqual(result.task_scope, options.taskScope)
+    )
+      throw new Error('Native review capture belongs to another execution generation or scope.');
+    const sample = await this.sample(
+      result.observation as WorkerObservation,
+      undefined,
+      undefined,
+      undefined,
+      options.taskScope,
+    );
+    const current = this.query();
+    if (
+      !current ||
+      current.state !== 'running' ||
+      current.execution_id !== options.executionId ||
+      current.control_generation !== options.controlGeneration ||
+      !isDeepStrictEqual(current.task_scope, options.taskScope)
+    )
+      return undefined;
+    return sample;
+  }
+
   async turnView(
     direction: 'left' | 'center' | 'right',
     options?: { signal?: AbortSignal },

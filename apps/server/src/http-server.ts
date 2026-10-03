@@ -788,6 +788,9 @@ async function startApplication(
                   allowedSubgoalChecks: submission.allowedSubgoalChecks,
                   predefinedGoals: submission.predefinedGoals,
                   additionalTools: deployment.additionalTools,
+                  ...(profile.plannerReview === undefined
+                    ? {}
+                    : { plannerReview: profile.plannerReview }),
                   images: services.images,
                   ...(deployment.segmentation ? { segmentation: deployment.segmentation } : {}),
                   ...(deployment.depth
@@ -910,6 +913,9 @@ async function startApplication(
                 allowedSubgoalChecks: task.allowedSubgoalChecks ?? [],
                 predefinedGoals: task.predefinedGoals ?? [],
                 additionalTools: deployment.additionalTools,
+                ...(deployment.plannerReview === undefined
+                  ? {}
+                  : { plannerReview: deployment.plannerReview }),
                 images: services.images,
                 ...(deployment.segmentation ? { segmentation: deployment.segmentation } : {}),
                 ...(deployment.depth
