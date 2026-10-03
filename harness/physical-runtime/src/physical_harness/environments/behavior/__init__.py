@@ -19,6 +19,7 @@ from physical_harness.environments import NativeCheck, NativeEnvironmentDescript
 from physical_harness.environments.task_catalog import behavior_task_selection
 from physical_harness.environments.native_terminal_record import NativeTerminalRecorder
 from physical_harness.environments.behavior.gpu_device import admit_gpu_device
+from physical_harness.environments.behavior.bootstrap import launch_behavior_app
 from physical_harness.perception.metric_capture import MetricCapture
 from physical_harness.validation import ContractValidator
 
@@ -298,6 +299,8 @@ class BehaviorEnvironment:
             self._evaluation_horizon = official_task_horizon(self._source_root, data_root, task_id)
             selected["task"]["termination_config"]["max_steps"] = self._evaluation_horizon["max_controls"]
         self._og = og
+        og.app, bootstrap = launch_behavior_app(self._gpu_device)
+        self._gpu_device["bootstrap"] = bootstrap
         # 原生公开 launch 在初始化 simulation context 时设置 CUDA 逻辑索引。
         og.launch(device="cuda:0")
         if og.sim.device != "cuda:0":

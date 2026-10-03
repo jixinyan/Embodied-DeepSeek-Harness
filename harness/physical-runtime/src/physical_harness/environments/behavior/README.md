@@ -95,10 +95,22 @@ Admission reads the actual index, UUID, PCI bus and device name through
 `nvidia-smi --query-gpu=index,uuid,pci.bus_id,name` and requires the two selections
 to identify the same device. Numeric CUDA visibility lists are not admitted.
 Exactly one CUDA-visible device is required; PyTorch uses logical device 0.
-The provider calls the original public `og.launch(device="cuda:0")` API before
+The EDH bootstrap uses the public `SimulationApp` launch configuration with
+`active_gpu` set to the physical renderer index, `physics_gpu: 0`,
+`multi_gpu: false` and `max_gpu_count: 1` before application initialization.
+It then calls the original public `og.launch(device="cuda:0")` API before
 environment construction. Isaac SimulationContext configures the physics device
-during stage initialization, before native physics advancement. OmniGibson retains its physical renderer
-index and original `multi_gpu=False` launch setting.
+during stage initialization, before native physics advancement.
+
+[bootstrap.py](bootstrap.py) adapts the original `omnigibson.simulator._launch_app`
+sequence from revision `b1979916ec1549b10a4e65e630bc6504a9af1b00`, under its
+[MIT license](BOOTSTRAP-LICENSE). The complete source SHA-256 must be
+`d800c2832f24962c440c4781ebfdb4ea78c74aac37d2c74ee7894ae430f1e2a9`.
+It preserves the original SDK experience, asset/version admission, material path,
+portable application directories, logging, native UI/hotkey setup, shutdown
+subscription and controller backend configuration. Native library files remain
+unchanged. The initial launch configuration, complete upstream source hash,
+experience hash and EDH bootstrap hash are retained in scene metadata.
 
 Scene metadata retains the actual device identity, visibility, CUDA logical
 index, physics device and renderer selection. Deployment-specific GPU indices
