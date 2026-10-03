@@ -44,8 +44,9 @@ with an explicitly selected GPU, `XLA_PYTHON_CLIENT_PREALLOCATE=false`,
 using the installed cuBLAS GEMM compiler path. It requires
 one visible JAX GPU and verifies the pinned 18-file checkpoint before loading
 `pi05_base_aloha_full_sim_arx-x5_seed_0`. Its welcome metadata identifies the
-checkpoint, model config, backend, action dimensions and continuous gripper
-semantics. Each inference identifies its sequence and SHA256 of the actual input
+checkpoint, absolute checkpoint directory, model config, backend, action dimensions,
+continuous gripper semantics and the imported OpenPI Python source inventory.
+Each inference identifies its sequence and SHA256 of the actual input
 state and all three camera arrays.
 
 Start [the EDH JSON bridge](../../examples/policies/serve_openpi_robodojo.py)
@@ -83,8 +84,12 @@ match the bridge's admitted arrays. Request identities are
 `811c12df-39df-4873-955a-6361df391596`. The private source and reports are retained
 under `.local/work/robodojo-openpi-20260930` on the deployment host.
 
-Full RoboDojo learned and hybrid task execution, formal success, interruption and
-recovery remain separate acceptance requirements.
+October 3 run `02475b82-b6b6-457f-8cf8-3199ef265bc6` performs 59 admitted
+controls and four learned inferences. The native simulator reports task success;
+a fresh Qwen Verifier checks the same criterion and Planner completes the task.
+The Session releases its native resources. One plan-argument tool error is retained
+in this run; clean workflow, physics counters, interruption, recovery and hybrid
+acceptance remain separate requirements.
 
 ## Recorded source and rollout audit
 
@@ -130,8 +135,8 @@ also audit failed/cancelled terminal tasks with recorded controls; they retain
 the original task outcome. The selected policy ID and checkpoint label must
 match the actual launch profile.
 
-The native service's current telemetry does not contain its checkpoint directory
-or upstream implementation revision. Audit output preserves their evidence
-availability separately from the verified checkpoint digest and model config.
-The deployment's declared XPolicyLab source pin remains explicit. Complete
-private-source SHA inventories provide separate source evidence.
+The native service records its absolute checkpoint directory and the imported
+OpenPI Python source paths, individual SHA256 hashes and aggregate source digest.
+Startup, bridge and inference records must preserve the same identity. Retained
+records without these fields expose their availability explicitly. The deployment's
+declared XPolicyLab revision and imported file hashes remain separate evidence.

@@ -10,16 +10,14 @@ requirement or deployment binding is unclear.
 
 - EDH owns the repository. Absorb selected DSH source into its modules with
   provenance. Do not import the entire upstream repository or write a new loop.
-- DSH-backed upper roles, tools, recovery, storage and a local console run with
-  explicitly labeled CPU fixtures. HTTP model and WebSocket policy adapters plus
-  standalone action admission are CPU-tested. Native RoboCasa reset, manual control
-  through ActionGate and live VLM image/tool rounds are verified. Native worker reset,
-  image transport and connection-failure boundaries pass real process checks.
-  Real GR00T worker controls and confirmed pause/stop pass. A console Planner run
-  records 1,050 controls, formal GT failure, a later model transport failure and
-  an inspectable camera/event replay. RoboTwin native task reset passes; BEHAVIOR
-  native reset returns observations and GT with clean shutdown. Successful tasks/recovery and remaining
-  provider control checks are pending.
+- Native Qwen/Pi0.5 RoboTwin task success and retained-scene retry pass with fresh
+  formal Verifiers, actual action receipts, native videos and released resources.
+  Native Qwen/Pi0.5 RoboDojo task success passes; its clean workflow rerun is pending.
+  RoboCasa and BEHAVIOR preserve unsuccessful task outcomes with actual controls.
+  Native perception, active observation, transport and confirmed stop checks have
+  separate evidence. Default deployment factories and maintenance bindings require
+  their complete product acceptance. Evolver development is paused and SceneState
+  implementation is deferred under current user instructions.
   Read progress for actual capability. Do not label a placeholder, mock or directory
   as a working physical provider or completed implementation step.
 - Reuse DSH tool registration/dispatch/validation, sessions, inbox/followup, model

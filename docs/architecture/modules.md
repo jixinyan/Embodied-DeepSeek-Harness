@@ -1,19 +1,20 @@
 # Architecture and module ownership
 
-EDH is the product and repository owner. Selected runtime implementations are absorbed
-from DSH into these modules. Step 00 verifies the original loop and scoped lifecycle;
-upper Team, planning, verification and experience services now run with CPU fixtures.
-OpenAI-compatible and Responses model transport, WebSocket policy transport and action admission
-are executable with local protocol/CPU tests. WebSocket direct and reviewed hybrid envelopes
-normalize into the same canonical ActionChunk. The RoboCasa native adapter and action device
-also pass GPU rendering and manual-control boundary checks. The native worker passes
-actual reset, image transport and connection-failure checks. A console-driven
-Planner task records 1,050 GR00T controls and formal native GT failure; its replay
-preserves the camera frames, agent events and subsequent model transport failure.
-RoboTwin completes an actual Pi0.5 task with independent formal verification and
-confirmed Session release. BEHAVIOR native reset returns R1Pro observations and
-GT with clean shutdown. Remaining provider controls and recovery acceptance are
-tracked separately.
+EDH owns the application, agent roles, task coordination, physical boundary and
+console. Selected DSH loop, tool dispatch, model transport and private Session
+mechanisms are absorbed into its modules with source provenance. OpenAI-compatible
+cloud/local model endpoints and learned/direct/hybrid WebSocket policy envelopes
+connect through the same canonical ActionChunk and ActionGate.
+
+Actual Qwen/Pi0.5 RoboTwin tasks verify failed attempts, explicit Planner retry,
+independent formal success and resource release. Actual Qwen/Pi0.5 RoboDojo
+execution verifies native task success after 59 controls and four learned
+inferences. RoboCasa and BEHAVIOR retain truthful unsuccessful task evidence,
+plus separate native perception/active-observation checks. Reusable native
+deployment factories validate configured Teams and task catalogs before allocation.
+The independent device watchdog, process resource leases and hardware interface
+have production checks; further native safety and complete release acceptance
+are tracked in the [v1 register](../implementation/v1-delivery.md).
 See the [adapter boundaries](../implementation/model-policy-adapters.md).
 
 ![Architecture](assets/framework-overview.svg)

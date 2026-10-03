@@ -37,3 +37,15 @@ checks in `audit-recorded-run.py`; the HTTP driver alone does not certify policy
 identity, metric accuracy or every physical safety boundary. Use
 `check-recorded-session-continuity.mjs` for actual retained Session histories and
 the [replay guide](REPLAY.md) for source-verified MP4 exports.
+
+`export-recorded-sensors.mjs` exports immutable native samples from a copied,
+closed console journal and checks each sample through the production reader.
+The output file must be new. Use a journal copy after its original server has
+closed; opening a journal requires its writer lease.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/export-recorded-sensors.mjs \
+  --run .local/work/acceptance-001/task-1/run.json \
+  --journal .local/work/acceptance-001/journal-copy \
+  --output .local/work/acceptance-001/sensor-samples.json
+```

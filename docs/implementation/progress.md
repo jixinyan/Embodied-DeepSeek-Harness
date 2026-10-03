@@ -1,10 +1,57 @@
 # Implementation progress
 
-Spec: v1.69. Current checkpoint: **native Qwen/Pi0.5 completes formally failed attempts followed by explicit Planner retry and independent formal success, including an explicit custom SceneAnalyst report; native Qwen/GR00T concludes retry exhaustion with truthful failed outcomes; five source-verified MP4s show actual Agent decisions, tools and simulator evidence; actual Qwen/R1Pro active observation returns source-matched camera images through the production worker**.
+Spec: v1.69. Current checkpoint: **native Qwen/Pi0.5 RoboDojo task success; reusable native deployment factories; typed planning writes; request archival and Session retirement; device watchdog, process resource leases and hardware interface**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
-## Current delivery boundary
+## 2026-10-03 native v1 integration
+
+RoboDojo run `02475b82-b6b6-457f-8cf8-3199ef265bc6` uses local
+Qwen3.8-27B Planner/Verifier and the identified native OpenPI Pi0.5 checkpoint.
+It records 59 admitted controls, four learned inferences and native
+`task_success=true`, followed by one fresh independent passed Verifier and
+Planner task completion. Both assignments retire and the Session releases its
+native resources. The simulator's original summary records `native_success=true`,
+`complete=true`, `valid_for_success_rate=true`, step 59 and a 200-control limit.
+The trace contains one rejected string-valued plan argument; clean-workflow
+acceptance is false. Canonical provider prompts now use structured
+`planning.read.planWrite` arguments.
+
+The source audit checks 223 ordered events, 121 immutable sensor samples,
+four source-matched PolicyRequests, 59 exact admitted action receipts and three
+fully decoded native camera recordings. The composite MP4 retains the actual
+model text, tools, plan, verification and camera timeline: 962 frames,
+80.166667 seconds, 1920×1080, H.264/yuv420p at 12 FPS. Full decoding, original
+source hashes and every rendered text boundary pass. This run's reported step
+counter does not independently establish native physics-step totals. Native
+counter instrumentation is under acceptance.
+
+Private evidence is retained under `.local/work/v1-20261003/` on the local and
+deployment hosts. The code snapshot is independent of the remote dirty checkout;
+the worker interpreter is the EDH-owned `.local/envs/edh-v1-worker`. Qwen uses
+GPU 2, RoboDojo uses GPU 0 and its learned policy uses GPU 6. Completed run
+services have been terminated; the shared Qwen service supports the next active
+acceptance experiment. No unrelated workload is stopped.
+
+Verified source checkpoints:
+
+- `b6ae21d`: complete typed plan-write templates and the configurable SceneAnalyst Team.
+- `0a8a64f`: independent device watchdog, OS-backed leases and hardware capability/stop interface.
+- `4c08135`: production-reader audits of actual retained Session and goal histories.
+- `031efb4`, `ec0ef2d`: identified OpenPI checkpoint/action audits and actual HTTP task driver.
+- `663efdb`, `27d00b0`: native task catalog configuration and retained record ownership,
+  immutable archived request identities, HTTP/console cleanup and restart checks.
+- `7431f77`: import-safe factories for all four native providers; actual saved
+  configuration, production Team/catalog and server startup checks pass.
+- `ec9ae85`: consistent structured planning workflows in provider role prompts.
+
+Actual-history retention checks use copies of completed journals and the production
+HTTP service. Explicit archive/inspect/retire operations preserve request tombstones
+and reject reuse after reopen. Default native ownership bindings, the clean
+RoboTwin custom-role run, calibrated metrics across providers and a clean RoboDojo
+rerun are active work. Evolver remains paused; SceneState remains deferred.
+
+## 2026-09-30 delivery boundary
 
 ### Idle-service handoff
 

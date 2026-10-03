@@ -56,6 +56,9 @@ def checkpoint_identity(path: Path) -> tuple[dict, dict]:
 def verify_identity(record: dict, identity: dict) -> None:
     require(all(record.get(name) == identity[name] for name in IDENTITY_FIELDS),
             "Actual OpenPI service or inference differs from its verified checkpoint/configuration identity.")
+    for name in ("checkpoint_path", "policy_source_directory", "policy_source_files_sha256", "policy_source_sha256"):
+        if name in identity:
+            require(record.get(name) == identity[name], "Imported policy sources or checkpoint path changed.")
 
 
 def service_sources(verification_path: Path, bridge_log: Path, native_log: Path) -> tuple[dict, dict, list[dict]]:
@@ -67,6 +70,23 @@ def service_sources(verification_path: Path, bridge_log: Path, native_log: Path)
     require(len(bridge_start) == len(native_start) == 1,
             "OpenPI acceptance requires one identified native startup and one JSON bridge startup.")
     verify_identity(native_start[0], identity)
+    source = native_start[0]
+    source_fields = ("checkpoint_path", "policy_source_directory", "policy_source_files_sha256", "policy_source_sha256")
+    if any(name in source for name in source_fields):
+        require(all(name in source for name in source_fields), "Native policy source identity is incomplete.")
+        require(isinstance(source["checkpoint_path"], str) and Path(source["checkpoint_path"]).is_absolute() and
+                isinstance(source["policy_source_directory"], str) and Path(source["policy_source_directory"]).is_absolute(),
+                "Native policy sources and checkpoint require absolute recorded paths.")
+        hashes = source["policy_source_files_sha256"]
+        require(isinstance(hashes, dict) and hashes, "Native policy sources have no file hashes.")
+        for name, digest in hashes.items():
+            require(isinstance(name, str) and name.endswith(".py") and not Path(name).is_absolute() and
+                    ".." not in Path(name).parts and isinstance(digest, str) and re.fullmatch(r"[a-f0-9]{64}", digest),
+                    "Native policy source file identity is invalid.")
+        require(source["policy_source_sha256"] == sha256(
+            json.dumps(hashes, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+            "Imported OpenPI source file inventory differs from its aggregate SHA256.")
+        identity.update({name: source[name] for name in source_fields})
     verify_identity(bridge_start[0]["metadata"], identity)
     require(bridge_start[0]["checkpoint_sha256"] == identity["checkpoint_sha256"] and
             bridge_start[0]["metadata"]["inferences"] == 0,
@@ -164,7 +184,7 @@ def task_sources(run: dict, request_directory: Path, bridge_directory: Path, bri
         require(request == bridge_request, "JSON bridge canonical PolicyRequest differs from the recorded worker request.")
         require(all(record[name] == inference[name] == request[name] for name in REQUEST_FIELDS),
                 "OpenPI inference identity differs from the actual worker and bridge requests.")
-        require(all(inference[name] == record[name] for name in (*IDENTITY_FIELDS, "inference_index", "state_sha256",
+        require(all(inference[name] == record[name] for name in (*identity, "inference_index", "state_sha256",
                     "camera_sha256", "native_instruction", "raw_actions", "actions", "gripper_transform", "elapsed_s")),
                 "Retained OpenPI inference differs from its actual native/bridge log.")
         verify_request_inputs(request, record)
@@ -182,8 +202,13 @@ def task_sources(run: dict, request_directory: Path, bridge_directory: Path, bri
         inferences[request_id] = {**record, "actions": actions}
     require(inferences, "OpenPI service has no identified completed inference for this actual task.")
     provenance = {"checkpointRevision": identity["checkpoint_revision"],
-                  "checkpointPath": None, "checkpointPathEvidence": "not recorded by native service",
+                  "checkpointPath": identity.get("checkpoint_path"),
+                  "checkpointPathEvidence": "native service and inference records" if "checkpoint_path" in identity
+                  else "not recorded by native service",
                   "policyImplementationSource": identity["config"],
+                  "importedPolicySourceDirectory": identity.get("policy_source_directory"),
+                  "importedPolicySourceSha256": identity.get("policy_source_sha256"),
+                  "importedPolicySourceFileSha256": identity.get("policy_source_files_sha256"),
                   "declaredPolicySourceRevision": POLICY_SOURCE_REVISION,
                   "policySourceRevisionEvidence": "deployment source pin; absent from service telemetry",
                   "checkpointDigest": identity["checkpoint_sha256"],

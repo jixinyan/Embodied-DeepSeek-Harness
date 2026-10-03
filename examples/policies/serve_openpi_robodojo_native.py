@@ -45,7 +45,8 @@ def main():
     parser.add_argument("--verification-output", required=True, type=Path)
     parser.add_argument("--port", type=int, default=18830)
     args = parser.parse_args()
-    verified = verify_checkpoint(args.checkpoint, args.inventory)
+    checkpoint = args.checkpoint.resolve(strict=True)
+    verified = verify_checkpoint(checkpoint, args.inventory)
     if verified["revision"] != "35efbc7dedfdbeeb6e95fb749bd885d73d483e41" or len(verified["files"]) != 18:
         raise ValueError("The selected RoboDojo inference checkpoint requires the pinned 18-file revision.")
     args.verification_output.parent.mkdir(parents=True, exist_ok=True)
@@ -54,9 +55,22 @@ def main():
     if len(devices) != 1 or devices[0].platform != "gpu":
         raise RuntimeError("RoboDojo OpenPI requires exactly one explicitly selected GPU.")
     name = "pi05_base_aloha_full_sim_arx-x5_seed_0"
-    trained = policy_config.create_trained_policy(config.get_config(name), args.checkpoint)
+    trained = policy_config.create_trained_policy(config.get_config(name), checkpoint)
+    source_directory = Path(policy_config.__file__).resolve(strict=True).parents[1]
+    source_hashes = {
+        str(path.relative_to(source_directory)): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in sorted(source_directory.rglob("*.py"))
+    }
+    if not source_hashes:
+        raise RuntimeError("The imported OpenPI implementation has no inspectable Python sources.")
+    source_digest = hashlib.sha256(
+        json.dumps(source_hashes, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
     identity = {"checkpoint_sha256": verified["checkpoint_sha256"], "config": name,
                 "backend": "OpenPI/JAX", "checkpoint_revision": verified["revision"],
+                "checkpoint_path": str(checkpoint),
+                "policy_source_directory": str(source_directory),
+                "policy_source_files_sha256": source_hashes, "policy_source_sha256": source_digest,
                 "action_horizon": 50, "action_dim": 14,
                 "gripper_semantics": "continuous_0_closed_1_open"}
     policy = IdentifiedPolicy(trained, identity)
