@@ -54,7 +54,7 @@ const store = new LocalStore(directory);
 try {
   const sessionId = required('session-id');
   const provider = required('provider');
-  assert(['robodojo', 'robotwin', 'behavior'].includes(provider));
+  assert(['robodojo', 'robotwin', 'behavior', 'robocasa'].includes(provider));
   const session = store.get<UserSessionRecord>(`user-session:${sessionId}`)?.value;
   assert(session, 'Retained User Session is missing.');
   assert.equal(session.state, 'closed');
