@@ -417,3 +417,56 @@ PNG/NPZ arrays, region masks, measurements, GT results and independent audit are
 preserved locally and remotely under
 `.local/work/behavior-gpu-placement-20261003-05/admission-records.tar.gz`, with
 SHA-256 `9b26d132f4c4479ca6f8810af8c4ea9c4f89ea472140b8c0a87d52b6e5d45883`.
+
+## Native radio task record
+
+The independent production Task from immutable EDH source
+`3e4d38c056f91945216b533a4777a7384e49b171` selects native `turning_on_radio`,
+hidden instance 0 and scene 0 with the original `task_success` criterion. It uses
+Qwen3.8-27B and the original
+`nvidia/GR00T-N1.6-BEHAVIOR1k@300db814db8ab5dd010026d5631f280048d06b91`
+checkpoint, whose identified digest is
+`320b364d8bbce8d995fc41d91c0318719329993514d89a2701156aa4d0706af7`.
+The configured native human-demo horizon and goal budget are 4,299 controls.
+Before the first learned action, four original three-camera captures preserve
+the reset pose and simulator clock; twelve calibrated PNG/NPZ camera records
+pass independent source, byte and metric reconstruction.
+
+Task `957a9bc5-2a37-4a9a-935b-52b15d27d3a9` finishes failed after three
+Planner-requested terminal reviews. The attempts execute 1,579, 405 and 467
+learned controls, with 198, 51 and 59 real GR00T requests. Each `planner_stop`
+has its own confirmed native StopAcknowledgement and fresh independent failed
+Verifier. The Planner requests one later observation rotation before attempt 3:
+60 degrees yaw produces 58.504477 degrees measured yaw through 159 controls and
+636 physics updates. Learned execution contributes 2,451 controls and 9,804
+physics updates; the complete native scene contributes 2,610 controls and
+10,440 physics updates. The final original SDK record reports `terminated=false`,
+`truncated=false` and native task success false. These Planner stops occur before
+the configured native horizon.
+
+The recorded-run auditor validates 5,424 events, 4,921 production sensor samples,
+all 2,451 learned receipts, all 308 checkpoint-bound inference requests and nine
+fully decoded native videos. Each camera video contains its attempt's exact
+native frame timestamps with zero timestamp error. There are zero tool errors.
+The separate source/physics audit validates all 776 immutable EDH source files,
+2,454 unchanged read-only native status records, every learned physics increment,
+the observed rotation's counter interval and all three native stop records.
+All 1,189 original full NVIDIA XML snapshots reconstruct only policy GPU 3 and
+SDK GPU 4 contexts, including graphics-only and combined context entries.
+
+Session `d342bc62-8ece-442c-b536-56e2509670ca` closes with resources released at
+`2026-10-03T17:42:32.843Z`. SDK PID 647762, worker PID 647679, driver PID 647637,
+policy PID 625407, Console PIDs 625480/625491 and monitor PID 643976 are confirmed
+absent, along with their owned process groups; ports 4385 and 8017 have no
+listener. The authenticated native profile cleanup records SDK, owner and group
+absence before exact-byte profile removal. The GPU monitor's original SIGTERM
+diagnostic is retained with its timestamp after Session closure. Shared services
+and unrelated workloads have independent ownership records.
+
+Complete original Console, policy, SDK, RGB-D array and video records remain on
+`jd_B300` under `.local/work/v1-behavior-radio-20261003/`. The local and remote
+`summary-records.tar.gz` preserves 2,478 original configuration, outcome, audit,
+GPU, video and pre-policy calibrated capture files, with SHA-256
+`364aa0dee920082f481455b9d15d313ffb833b01f8e11c69e7881b828b428f88`.
+The summary contains 22,880,053 compressed bytes; complete action arrays and the
+Console journal remain in the original remote directory.
