@@ -114,5 +114,28 @@ worker review retains the same status and observation, with one ended publicatio
 and unchanged native state and image bytes. The worker and native process close.
 This physical boundary check supplies no task-success result.
 
+Actual Tower run `949ece77-1d89-475a-a258-ff4a297f7c9f` uses immutable source
+`9b32f37` and the original native instruction, 50-action learned prefix and
+1,050-control episode horizon. Its retained 1,617-event prefix contains 16 bounded
+running reviews for execution `e6aa1117-18ca-4b4c-bb46-47d574b74438`, goal
+`tower_base`, attempt `attempt-2`, generation zero. Start result 46 precedes
+completed turn 47. Each of 15 explicit scoped query results commits before the
+next completed-turn event; the first result 169 completes turn 170 in 24 ms,
+and its next review arrives at event 204 with 66 controls and three images.
+No additional model step enters those completed turns.
+
+The Planner's actual end result 1515 precedes completed turn 1516. The recorded
+owner acknowledgement confirms generation one, 563 controls and 5,630 physics
+steps at boundary `46f8743d-8222-4354-a4db-26fa002c5f96`. One independent Verifier
+returns failed at event 1544: the original native base predicate is false. Planner
+consumes that feedback in turn 18, publishes plan version two with the base still
+active and retains the dependent middle and final goals. Its same-episode retry
+starts execution `15f1685b-307d-4f9c-b897-796712beb1a0`, attempt three, recovery
+`a0d938f7-9f87-4442-8120-e314d7a64b12`; original start result 1591 precedes completed
+turn 1592 in 41 ms. The public reader passes all three required flags for this
+prefix. These records establish observation delivery, completed-turn handoff,
+independent failed feedback and retained-scene retry. They preserve the running
+task outcome and supply no passed stage or final-task result.
+
 Multi-goal task completion requires its own retained native goal and verification
 records.

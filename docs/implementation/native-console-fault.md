@@ -17,8 +17,8 @@ with the original Git archive before evidence export. The production Console
 creates the native BEHAVIOR Session and submits its advertised `picking_up_trash`
 task. Its Qwen3.8-27B Planner starts GR00T-N1.6-BEHAVIOR1k, revision
 `300db814db8ab5dd010026d5631f280048d06b91`, with the original native task criterion.
-The configured device deadline is five seconds. The policy has eight admitted
-controls available in this fault experiment.
+The configured device deadline is five seconds. Each policy response permits
+eight action proposals; the original 10,535-control native task budget is retained.
 
 The original policy request `0c38b4d3-96af-427d-8d14-0f3fa1d24abf` binds execution
 `e64d162f-13d8-4cf2-a3ef-3dccc77f45b6`, generation zero and the complete attempt
@@ -67,7 +67,40 @@ The unchanged closed journal SHA-256 is
 `fe2b924831d347fc21f35a99bc8c6e15d534f4e3afb994f2d34253d21508f6ba`.
 Private evidence lives under `.local/work/native-console-fault-20261003`.
 
-## Executable audit
+## Confirmed device-error boundary
+
+Actual run `4d780936-3971-4ec9-9baa-6f017c93922c` uses immutable source
+`89a138abd27abcab068a64e19496554dc950f3d8`. Its original BEHAVIOR task retains the
+10,535-control horizon and native criterion. This configured experiment uses a
+five-second device deadline, eight proposals per inference and bounded Planner
+reviews. Six actual scoped query calls complete their native turns and permit
+subsequent review messages.
+
+`ActionGate.execute` reaches its configured deadline while awaiting
+`NativeActionDevice.dispatch` through the serialized owner Future. Its original
+trace records `TimeoutError`; no operator suspension is sent. The owner operation
+subsequently completes. At `2026-10-03T13:19:50.851267Z`, the original recorded
+StopAcknowledgement confirms generation one, 361 native controls, 1,444 physics
+steps and one uncertain action. The 360 successful action receipts account for
+360 controls. The uncertain operation remains charged and is not replayed.
+
+The host accepts the original confirmed `backend_error` status at `13:19:51.103Z`
+and fails the run at `13:19:51.379Z`. The complete 536-event history has zero formal
+Verifiers, zero verdicts and zero tool errors. No background fault publication or
+background-fault diagnostic is emitted on this confirmed-stop path. Production
+Session close returns HTTP 200 with released resources. Original worker PID
+171025, SDK PID 171232 and their owned group are absent; owned Console and policy
+processes, listeners and writer lock are also absent.
+
+The original complete bundle retains native RGB-D arrays, source inventory,
+action/request records, journal, exception log, API close and process proofs under
+`.local/work/native-console-fault-20261003-02`. Native video recording is disabled
+in this experiment. Complete bundle SHA-256:
+`1f7626b9dd8f5780efe5294cb8fe4121a7accdb726886671a7868375b29fda03`.
+Its journal SHA-256:
+`d8ca82c48c01e435169f0e17052fcdd5cd097817187c8c6b861ae59abfab560d`.
+
+## Executable background-fault audit
 
 Extract the original bundle into an owned directory, then run:
 
