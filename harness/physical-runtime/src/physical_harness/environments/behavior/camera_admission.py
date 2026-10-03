@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import time
+from uuid import uuid4
 
 
 def admit_camera_parameters(simulator, sensors: dict):
@@ -27,10 +28,14 @@ def admit_camera_parameters(simulator, sensors: dict):
             "fabric_render_product_valid": bool(simulator.usdrt_stage.GetPrimAtPath(sensor.render_product.path)),
         }
     record = None
+    admission_id = str(uuid4())
     if "EDH_METRIC_CAPTURE_RECORD_DIR" in os.environ:
-        record = Path(os.environ["EDH_METRIC_CAPTURE_RECORD_DIR"]) / "camera-annotator-admission.json"
+        directory = Path(os.environ["EDH_METRIC_CAPTURE_RECORD_DIR"]).resolve(strict=True) / "native-camera-admission"
+        directory.mkdir(exist_ok=True)
+        record = directory / f"{admission_id}.json"
         with record.open("x") as output:
-            json.dump({"stage_identifier": simulator.stage.GetRootLayer().identifier, "bindings": bindings}, output)
+            json.dump({"admission_id": admission_id, "native_pid": os.getpid(),
+                       "stage_identifier": simulator.stage.GetRootLayer().identifier, "bindings": bindings}, output)
             output.flush()
             os.fsync(output.fileno())
     if any(not value["camera_schema_valid"] or value["camera_targets"] != [value["camera_path"]]
@@ -60,7 +65,8 @@ def admit_camera_parameters(simulator, sensors: dict):
                              "parameters": parameters})
         if record is not None:
             with record.open("w") as output:
-                json.dump({"stage_identifier": simulator.stage.GetRootLayer().identifier,
+                json.dump({"admission_id": admission_id, "native_pid": os.getpid(),
+                           "stage_identifier": simulator.stage.GetRootLayer().identifier,
                            "bindings": bindings, "native_before": before, "observations": observations},
                           output, allow_nan=False)
                 output.flush()
@@ -75,6 +81,7 @@ def admit_camera_parameters(simulator, sensors: dict):
                 "native_before": before, "native_after": after, "render_updates": rendered,
                 "observations": observations, "intrinsics": intrinsics,
                 "bindings": bindings,
+                "admission_id": admission_id, "record_file": str(record) if record is not None else None,
                 "source_file": str(source), "source_sha256": sha256(source.read_bytes()).hexdigest(),
             }
         if time.monotonic() - started >= 30:
