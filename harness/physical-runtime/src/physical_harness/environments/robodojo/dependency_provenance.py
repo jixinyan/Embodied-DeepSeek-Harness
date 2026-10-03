@@ -17,8 +17,15 @@ def record_native_dependencies(output: Path) -> dict:
     packages = {}
     for name in ("isaacsim-kernel", *modules):
         package = distribution(name)
+        metadata_files = [item for item in package.files
+                          if item.name in {"METADATA", "PKG-INFO"}
+                          and any(part.endswith((".dist-info", ".egg-info")) for part in item.parts)]
+        if len(metadata_files) != 1:
+            raise RuntimeError(f"Native dependency {name} has no unique original distribution metadata file.")
+        metadata_path = Path(package.locate_file(metadata_files[0])).resolve(strict=True)
         row = {"version": package.version, "requires": package.requires,
-               "metadata_sha256": sha256(package.read_text("METADATA").encode()).hexdigest()}
+               "metadata_path": str(metadata_path),
+               "metadata_sha256": sha256(metadata_path.read_bytes()).hexdigest()}
         if name in modules:
             module = modules[name]
             path = Path(module.__file__).resolve(strict=True)
