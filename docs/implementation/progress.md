@@ -1,10 +1,32 @@
 # Implementation progress
 
-Spec: v1.71. Current checkpoint: **native Qwen/Pi0.5 task success and retained-scene retry; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop startup and cleanup; authoritative native terminal preflight; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.72. Current checkpoint: **native Qwen/Pi0.5 task success and retained-scene retry; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; confirmed Planner review and terminal races; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## 2026-10-03 native v1 integration
+
+### Packaged Desktop tasks and synchronized success recording
+
+The packaged Electron application creates native Session `30d91ef8` and submits
+two actual RoboTwin tasks through its Console. Run `bd3e1606` verifies independent
+SceneAnalyst communication, 64-control formal failure, explicit retained-scene
+retry and 37-control formal success. Its 724 original events, seven identified
+Pi0.5 inferences, 101 action receipts, 493 sensor samples and six native camera
+videos pass complete checks. All nine TODOs complete and four assignments retire.
+The subsequent `9f81a1ec` task explicitly selects earlier task context and obtains
+a fresh passed verdict on the same terminal scene, without new controls or policy
+requests. All eight TODOs complete and its three independent assignments retire.
+
+Actual Session close and service stop release resources and writer ownership,
+exit children and close listeners; browser errors are absent. Production readers
+verify both tasks on a copy of the unchanged closed journal. Local and remote
+751-file source inventories match immutable `d1dc4ab`; native evidence archive
+digests match across hosts. Independent native terminal-source verification for
+the zero-control task is unavailable in this original source.
+The Agent-trace/camera composite fully decodes 2,004 frames over 167 seconds with
+verified text bounds and source hashes. Exact identities, digests and scope:
+[native Desktop acceptance](desktop-native-acceptance.md).
 
 ### One native workspace with profile-specific Teams
 

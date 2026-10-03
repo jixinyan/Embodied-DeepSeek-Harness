@@ -127,3 +127,15 @@ writer, exited the service child and closed its loopback listener. The renderers
 retained sandbox/context isolation with no Node access or JavaScript errors.
 This configuration/lifecycle check performed no model inference or environment
 allocation; physical task acceptance is recorded independently.
+
+The packaged application also passes actual two-task native execution through its
+Console. RoboTwin run `bd3e1606` verifies SceneAnalyst communication, a failed
+64-control attempt, an explicit 37-control retained-scene retry and independent
+formal success with zero tool errors. The second task explicitly selects that
+history and verifies the current terminal scene without additional controls or
+policy inference. Both tasks complete their TODOs and retire their independent
+roles. Session/service shutdown releases resources and the writer, exits owned
+children and closes listeners. Original source/action/video checks and the
+synchronized 167-second Agent-trace MP4 pass. The
+[native Desktop acceptance record](../../docs/implementation/desktop-native-acceptance.md)
+defines the exact sources, evidence and independent native-counter scope.

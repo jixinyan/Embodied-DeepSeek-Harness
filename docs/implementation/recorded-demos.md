@@ -20,6 +20,17 @@ The native v1 integration recordings are retained under
 | `robotwin-qwen-pi05-retry-success.mp4`    | Independent SceneAnalyst, failed first attempt, accepted Planner retry, formal success and released resources; two recorded plan-parameter errors | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 340.167 s | `66ff9b47-9e2d-4514-904c-cd61c869b44c` |
 | `robodojo-qwen-pi05-clean-retry-success.mp4` | Failed first attempt, retained-scene retry, independent formal success, completed TODOs and released resources; zero tool errors | Qwen3.8-27B / Pi0.5 | 126.250 s | `897f215d-119f-4880-9030-1d9edeb9fabb` |
 | `robotwin-qwen-pi05-clean-team-retry-success.mp4` | Independent SceneAnalyst, explicit report acknowledgement, failed first attempt, retained-scene retry and formal success; zero tool errors and released resources | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 276.000 s | `a5d9132e-f4fb-438e-8c71-e81394cffd39` |
+| `desktop-qwen-pi05-team-retry-success.mp4` | Actual packaged Desktop submission, independent SceneAnalyst, formal failure, Planner retry and formal success; completed TODOs, zero tool errors and confirmed Session/service cleanup | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 167.000 s | `bd3e1606-3430-47f1-ae0d-df234052ec9e` |
+
+The packaged Desktop composite is retained in
+`.local/work/native-desktop-frozen-twin-20261003/`. Its 724 original events include
+24 model-analysis outputs, 101 actual controls, seven identified Pi0.5 requests
+and failed/passed formal verdicts. Three native views retain 386 rollout frames
+each, plus their initial observation. All 2,004 encoded frames, original source
+hashes and text bounds pass checks. MP4 SHA-256:
+`d0dbef0d82661fcdb8d35014dd25dffd8bc7aad89690965db316727e0ae252fa`.
+The [Desktop acceptance record](desktop-native-acceptance.md) defines its native
+sources, same-Session second task and process cleanup.
 
 The clean RoboTwin Team composite contains 773 original events, 26 model analysis
 events, 113 actual controls, eight identified learned inferences and 10,494 native
