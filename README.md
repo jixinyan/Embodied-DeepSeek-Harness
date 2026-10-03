@@ -71,6 +71,8 @@ Implementation evidence and acceptance results live in the
 Compatibility checks govern selectable Session configurations. Each environment,
 policy and hardware binding has its own installation and acceptance requirements;
 the [integration guide](docs/implementation/live-integration.md) records them.
+The [native workspace deployment](docs/implementation/native-workspace.md) combines
+configured environments and their independent Teams in one Console launcher.
 
 ## Repository map
 

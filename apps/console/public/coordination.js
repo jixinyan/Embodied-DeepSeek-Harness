@@ -139,7 +139,13 @@ export function renderCoordination(configuration, run) {
     ['Verify', verdict?.status ?? (isRunning('final_verifier') ? 'active' : 'waiting')],
     [
       'Experience',
-      isRunning('recovery_evolver') ? 'active' : run?.skillIds?.length ? 'published' : 'waiting',
+      isRunning('recovery_evolver')
+        ? 'active'
+        : run?.skillIds?.length
+          ? 'published'
+          : configuration?.team?.learning_enabled === false
+            ? 'disabled'
+            : 'waiting',
     ],
   ];
   for (const [name, state] of phases) {

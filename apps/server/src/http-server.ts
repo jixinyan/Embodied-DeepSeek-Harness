@@ -202,11 +202,16 @@ async function startApplication(
   const validator = await readValidator(options.root);
   const deployment = prepareDeployment(options.deployment, validator);
   const scenarios = Object.keys(deployment.tasks);
-  const loadTeam = (defaultModel: string, physicalProfile?: ResolvedPhysicalRuntimeProfile) =>
+  const loadTeam = (
+    defaultModel: string,
+    physicalProfile?: ResolvedPhysicalRuntimeProfile,
+    teamFile = deployment.teamFile,
+    roleRoot = deployment.roleRoot,
+  ) =>
     new FileTeamLoader({
       validator,
       builtinDirectory: resolve(options.root, 'harness/agent-runtime/agents/roles'),
-      roleRoot: deployment.roleRoot,
+      roleRoot,
       defaultModel,
       models: Object.keys(deployment.metadata.models),
       tools: deployment.metadata.tools,
@@ -219,7 +224,7 @@ async function startApplication(
               : {}),
           }
         : {}),
-    }).inspect(deployment.teamFile);
+    }).inspect(teamFile);
   const team = await loadTeam(deployment.metadata.defaultModel, deployment.physicalProfile);
   for (const tool of deployment.physicalProfile?.embodiment.requiredTools ?? [])
     if (!deployment.metadata.tools.includes(tool))
@@ -231,7 +236,12 @@ async function startApplication(
     for (const tool of profile.physicalProfile?.embodiment.requiredTools ?? [])
       if (!deployment.metadata.tools.includes(tool))
         throw new Error(`Launch profile requires unavailable tool: ${tool}`);
-    const selected = await loadTeam(profile.defaultModel, profile.physicalProfile);
+    const selected = await loadTeam(
+      profile.defaultModel,
+      profile.physicalProfile,
+      profile.teamFile,
+      profile.roleRoot,
+    );
     if (selected.definition.entrypoint !== selected.definition.bindings.decision_owner)
       throw new Error('Launch team entrypoint must be decision owner.');
     launchTeams.set(id, selected);

@@ -1,6 +1,8 @@
 # Agent workbench
 
-The [browser client](public/app.js) connects to the local server started with `pnpm demo`.
+The [browser client](public/app.js) connects to the configured local server.
+The [native workspace deployment](../../docs/implementation/native-workspace.md)
+provides one launcher for configured RoboDojo, RoboTwin, RoboCasa and BEHAVIOR profiles.
 It displays actual DSH output, native tool arguments/results, TODO status/history,
 agent assignments/briefs, task plans, execution, verification and recovery.
 Historical runs are read-only. Simulator cameras are recorded on the worker host;
@@ -22,7 +24,7 @@ Execution budgets come from the matching subgoal request. Session lifecycle, for
 verdicts and recovery publication are separate states. Historical run selection is
 protected against out-of-order responses. Scrolling upward with the mouse wheel
 turns off Follow; enabling it returns to the latest output. Search has an explicit
-empty state. Synthetic cabinet geometry reflects the displayed frame's open state.
+empty state.
 
 Provider output and concise decision notes can be inspected; absent internal reasoning
 must not be invented. TODO completion is distinct from formal physical success.
@@ -32,8 +34,7 @@ Task presets and source labels come from deployment configuration. Newly admitte
 retain their own public configuration for historical inspection; legacy runs explicitly
 report that configuration is unavailable and show their recorded assignments. The Next
 Task selector uses the current deployment, while the workspace shows the selected run.
-Samples containing admitted image references show a multi-image observation viewer.
-Samples without images show their available metadata.
+Observation audit views expose retained sensor identities and available metadata.
 See the [deployment guide](../../docs/implementation/deployments.md).
 
 ## User-session launcher
@@ -73,6 +74,9 @@ See the [session guide](../../docs/implementation/user-sessions.md).
 The logo and blue/white theme appear throughout the workspace. A locally served Mermaid
 graph shows configured roles and actual delegation relationships. Role cards expose
 assignment status, tool counts, resolved model aliases and configuration inspection.
+The selected launch profile supplies the Team graph, assignment sidebar and role
+filter before Session allocation. Teams with learning disabled show disabled
+experience publication while retaining Planner recovery inspection.
 Observation, planning, execution, verification and experience have distinct state indicators;
 execution end does not mark verification as passed. Active-state animations respect
 reduced-motion preferences. Native logs, model output and TODO/plan inspection stay visible.

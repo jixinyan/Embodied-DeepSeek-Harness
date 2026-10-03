@@ -37,6 +37,7 @@ The executable contract is
 | `source`                               | `test_fixture`, `simulation` or `hardware`; each created backend must report the same source                                                                                                                                                              |
 | `teamFile`, `roleRoot`                 | Team YAML and allowed role-file root; roles and result schemas are resolved during preflight                                                                                                                                                              |
 | `models`, `defaultModel`               | Named aliases such as `brain: { provider: 'fixture', model: 'fixture' }`; roles select an alias                                                                                                                                                           |
+| `launchProfiles.*.teamFile`, `roleRoot` | Optional trusted Team and role-directory bindings for each profile; inherited from the deployment when omitted. Each resolved Team is validated and included in the immutable deployment digest. |
 | `physicalProfile`, `physicalProviders` | Immutable stack configuration and installed adapter validators; see [physical profiles](physical-profiles.md)                                                                                                                                             |
 | `contextManagement`                    | Optional native DSH compaction/measurement policy; automatic mode requires adapter-declared model capacity; see [context management](context-management.md)                                                                                               |
 | `sessionHistory`                       | Native event-body residency policy; defaults to 256 events and 8 MiB at audit checkpoints; see [history management](session-history.md)                                                                                                                   |
@@ -63,6 +64,10 @@ owner. This is checked before opening the store or allocating a backend. Unknown
 model aliases/providers, duplicate adapter bindings, invalid tasks/budgets and
 unresolved team dependencies fail startup preflight. Backend connection and model
 inference are not health-checked by preflight.
+
+The [native workspace entry](native-workspace.md) composes multiple native provider
+configurations without changing the DSH loop. Session selection loads each profile's
+resolved Team, preserving independent prompts and explicit role contexts across bodies.
 
 Preset root/predefined goals use the task module's shared
 [GoalBinding admission](../../harness/agent-runtime/tasks/README.md#goal-binding-admission).
@@ -103,9 +108,8 @@ a snapshot are explicitly labeled; the console can show their recorded assignmen
 but cannot reconstruct their original prompts. Restarted histories remain read-only;
 no agent session or physical command is automatically resumed.
 
-The observation panel displays admitted image references through scoped HTTP reads;
-samples without images retain their available metadata. The synthetic cabinet
-illustration is shown only for fixture evidence without image references.
+The trace-only Console displays sensor identities and available observation metadata.
+Model reads use scoped image references; native camera recordings remain on the worker host.
 A `simulation` or `hardware` declaration is not evidence that a provider is healthy.
 
 ## Native provider deployment

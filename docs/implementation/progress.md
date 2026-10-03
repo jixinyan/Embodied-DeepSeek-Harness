@@ -6,6 +6,25 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## 2026-10-03 native v1 integration
 
+### One native workspace with profile-specific Teams
+
+`native-workspace.mjs` composes actual configured RoboDojo, RoboTwin, RoboCasa and
+BEHAVIOR providers under the existing DSH host and Console. Each immutable launch
+profile carries its trusted Team and role directory; startup validates and hashes
+each resolved Team. Shared model/perception settings are checked before startup.
+Component selectors continue to admit only complete compatible profiles, while
+the selected Team drives both the graph and assignment sidebar. Disabled learning
+is visible in experience/recovery projections.
+
+Actual production startup reads four original native configurations. Browser
+selection verifies all four environment/body/checkpoint bindings, the independent
+RoboTwin SceneAnalyst Team, disabled learning and zero browser errors/warnings.
+Normal close releases the writer lock and loopback listener; original configuration
+hashes remain unchanged. `pnpm check`, read-only native-module formatting and
+whitespace checks pass. Evidence: `.local/work/native-workspace-20261003/`.
+This establishes configuration, selection and cleanup without simulator allocation
+or model inference. Installed multi-provider task switching has separate acceptance.
+
 ### DSH recovery and engine portability
 
 Checkpoint `d4e010d` applies upstream

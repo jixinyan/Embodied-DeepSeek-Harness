@@ -465,6 +465,8 @@ export function createNativeDeploymentFactory(settings) {
       Object.entries(settings.profiles).map(([id, profile]) => [
         id,
         {
+          teamFile: settings.teamFile,
+          roleRoot: settings.roleRoot,
           source: 'simulation',
           label: profile.label,
           plannerReview: profile.plannerReview,
@@ -542,7 +544,7 @@ export function createNativeDeploymentFactory(settings) {
     );
     return {
       id: `${settings.provider}-live`,
-      version: `${settings.selected.version}-factory-v3`,
+      version: `${settings.selected.version}-factory-v4`,
       source: 'simulation',
       description: `Native ${settings.selected.title} with independent DSH role Sessions`,
       teamFile: settings.teamFile,

@@ -40,6 +40,13 @@ let inspectedHistory = null;
 let eventPageRevision = 0;
 let eventPageLoading = false;
 const activeUserSession = () => activeSessionRecord;
+const displayedConfiguration = () =>
+  current
+    ? current.configuration
+    : (activeUserSession()?.configuration ?? {
+        ...config,
+        ...config?.launchTeams?.[$('launch-profile').value],
+      });
 const hasLauncher = () => Object.keys(config?.launchProfiles ?? {}).length > 0;
 const ended = (state) =>
   ['succeeded', 'failed', 'cancelled', 'interrupted', 'unknown'].includes(state);
@@ -153,10 +160,20 @@ function renderLauncher() {
     !profile;
   $('end-session').disabled = busy || !session || ['opening', 'closing'].includes(session.state);
   $('launch-profile').disabled = busy || Boolean(activeUserSessionId);
-  const view = current
-    ? current.configuration
-    : (session?.configuration ?? config.launchTeams?.[profileSelector.value] ?? config);
+  const view = displayedConfiguration();
   renderCoordination(view, current);
+  if (!current) {
+    renderDeployment();
+    renderAgents();
+    const learningEnabled = view?.team?.learning_enabled !== false;
+    text('skill-count', learningEnabled ? '0 SKILLS' : 'LEARNING DISABLED');
+    text(
+      'recovery-copy',
+      learningEnabled
+        ? 'Waiting for a formal failure and a Planner recovery decision.'
+        : 'Planner controls retries. Automatic experience publication is disabled for this Team.',
+    );
+  }
 }
 const taskHistory = bindTaskContextHistory(
   $('task-context-navigation'),
@@ -243,7 +260,7 @@ function updateTaskComposer() {
 }
 const archivedTodo = createAssignmentSelection(api, () => renderTodos(), error);
 function renderDeployment() {
-  const view = current ? current.configuration : config;
+  const view = displayedConfiguration();
   const source = current?.source ?? config.mode;
   text('deployment-source', source.replaceAll('_', ' ').toUpperCase());
   $('deployment-source').classList.toggle('fixture', source === 'test_fixture');
@@ -256,7 +273,7 @@ function renderAgents() {
   const assignments = Object.values(current?.assignments ?? {});
   text('session-count', `${assignments.length} ASSIGNMENTS`);
   $('agents').replaceChildren();
-  const team = (current ? current.configuration : config)?.team;
+  const team = displayedConfiguration()?.team;
   const members = [
     ...new Set([...Object.keys(team?.members ?? {}), ...assignments.map((a) => a.member)]),
   ];
@@ -634,7 +651,7 @@ function renderFeed() {
                 : event.type === 'verification.completed'
                   ? `Formal verification: ${d.result.status} · ${d.result.task_scope.attempt_id}`
                   : event.type === 'recovery.opened'
-                    ? 'Planner opened recovery; Evolver is joining with an explicit failed-attempt brief.'
+                    ? 'Planner opened a recovery chain.'
                     : event.type === 'skill.saved'
                       ? 'SKILL.md saved with failed and successful evidence.'
                       : `${event.type}: ${summarize(event)}`;
@@ -767,6 +784,7 @@ function render() {
   );
   $('inspect-verdict').disabled = !verdict;
   const recoverySaved = current.skillIds.includes(current.recoveryId);
+  const learningEnabled = displayedConfiguration()?.team?.learning_enabled !== false;
   const recoveryState = recoverySaved
     ? 'SAVED'
     : current.activeRecoveryId && !ended(current.state)
@@ -774,7 +792,12 @@ function render() {
       : current.recoveryId
         ? 'PENDING'
         : 'STANDBY';
-  text('skill-count', `${recoveryState} · ${current.skillIds.length}`);
+  text(
+    'skill-count',
+    learningEnabled || recoverySaved
+      ? `${recoveryState} · ${current.skillIds.length}`
+      : 'LEARNING DISABLED',
+  );
   $('phase-replan').classList.toggle('active', Boolean(current.recoveryId));
   $('phase-record').classList.toggle(
     'active',
@@ -791,13 +814,17 @@ function render() {
       ? `Experience recording failed: ${recovery.error}`
       : recoverySaved
         ? 'SKILL saved with failure signals, recovery guidance and verification evidence.'
-        : recovery?.resolved
-          ? 'Original subgoal verified. Awaiting experience publication.'
-          : current.activeRecoveryId && !ended(current.state)
-            ? 'Recording planner and execution progress until the original subgoal is verified.'
-            : current.recoveryId
-              ? 'Run ended before experience publication. Inspect the recovery trace.'
-              : 'Waiting for a formal failure and a Planner recovery decision.',
+        : !learningEnabled
+          ? current.recoveryId
+            ? 'Planner recovery is recorded. Automatic experience publication is disabled for this Team.'
+            : 'Planner controls retries. Automatic experience publication is disabled for this Team.'
+          : recovery?.resolved
+            ? 'Original subgoal verified. Awaiting experience publication.'
+            : current.activeRecoveryId && !ended(current.state)
+              ? 'Recording planner and execution progress until the original subgoal is verified.'
+              : current.recoveryId
+                ? 'Run ended before experience publication. Inspect the recovery trace.'
+                : 'Waiting for a formal failure and a Planner recovery decision.',
   );
   $('inspect-recovery').disabled = !current.recoveryId;
   $('inspect-skill').disabled = !current.skills?.length;

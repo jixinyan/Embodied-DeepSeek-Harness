@@ -47,6 +47,8 @@ export interface SessionEnvironment {
   close(): Promise<void>;
 }
 export interface LaunchProfile {
+  readonly teamFile?: string;
+  readonly roleRoot?: string;
   readonly plannerReview?: PlannerReviewPolicy;
   readonly source?: EmbodiedBackend['source'];
   readonly label: string;
@@ -131,6 +133,8 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     throw new Error('Deployment requires an ID, version and description.');
   if (!['test_fixture', 'simulation', 'hardware'].includes(input.source))
     throw new Error('Invalid deployment evidence source.');
+  if ([input.teamFile, input.roleRoot].some((value) => typeof value !== 'string' || !value.trim()))
+    throw new Error('Deployment requires a Team file and role directory.');
   if (
     input.serviceLifecycle !== undefined &&
     (typeof input.serviceLifecycle.inspect !== 'function' ||
@@ -217,6 +221,9 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     if (
       !validId(id) ||
       !profile ||
+      [profile.teamFile, profile.roleRoot].some(
+        (value) => value !== undefined && (typeof value !== 'string' || !value.trim()),
+      ) ||
       (profile.source !== undefined &&
         !['test_fixture', 'simulation', 'hardware'].includes(profile.source)) ||
       [
@@ -246,6 +253,8 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     // Whitelist public metadata: executable factories and credentials stay private.
     const data = freeze(
       structuredClone({
+        teamFile: profile.teamFile ?? input.teamFile,
+        roleRoot: profile.roleRoot ?? input.roleRoot,
         source: profile.source ?? input.source,
         label: profile.label,
         environment: profile.environment,

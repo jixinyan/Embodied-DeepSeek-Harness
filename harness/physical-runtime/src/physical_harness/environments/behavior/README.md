@@ -131,8 +131,8 @@ for attempting to abandon the required final goal; the run does not establish a
 zero-tool-error complete acceptance. The current Planner instructions retain the
 required goal and conclude unsuccessful tasks through `tasks.abandon`.
 
-Original `picking_up_trash` success, a complete upper run without tool errors and
-additional task/scene/checkpoint combinations remain separate acceptance gates.
+Original `picking_up_trash` success and additional task/scene/checkpoint combinations
+remain separate acceptance gates.
 
 Actual Qwen/GR00T run `c2f2a9e0-7322-4c1c-baba-9e2f52fbbe7c` admits the
 official 10,535-control human-demo horizon and executes 1,088 controls with 4,352
@@ -152,6 +152,36 @@ records retain all 32 original model actions, the converted admitted prefix and 
 conversion identity. The recorded-run auditor verifies every admitted value against
 that precise clipping operation. Nonfinite outputs and incompatible controller mappings
 fail at their source. Native task success still uses the compiled BDDL criterion.
+
+Actual full-horizon Qwen/GR00T run `96c0b983-ab94-4ec8-b13e-783749ab4197`
+uses source `c3defeb2b09d8640cce8a5b28bd85b331cfbca15`, checkpoint revision
+`300db814db8ab5dd010026d5631f280048d06b91` and the original hidden instance 0,
+scene configuration 0 and compiled BDDL criterion. It admits 10,535 controls;
+the native episode ends after 9,983 controls, 1,248 actual learned inferences
+and 39,932 reported physics steps. Its confirmed `episode_terminated` boundary
+is recorded at `2026-10-03T09:56:38.710Z`. The independent formal Verifier returns
+`task_success=false`. A subsequent execution in that retained episode ends during
+native preflight with zero additional controls or inferences and another fresh
+failed Verifier. Planner concludes the unsuccessful task. The original individual
+native `terminated` and `truncated` fields were unavailable in this retained run;
+its specific native termination cause is unclassified.
+
+The original-source audit checks 10,237 events, 9,996 production-validated sensor
+samples, 9,983 action receipts and all 1,248 learned inference identities. Each of
+the three original camera videos fully decodes 9,983 frames with exact native
+timestamps. Every admitted prefix is verified against the raw prediction and
+canonical controller clipping. The run records zero tool errors, two fresh
+failed Verifiers and one recovery chain. Its Session closes with resources
+released; owned policy, console, worker and SDK processes exit. The positive
+action/source/video audit and retained upper boundaries pass. A durable provider
+source audit for the zero-control native preflight is unavailable in this historical
+record.
+
+Future action receipts and native diagnostics retain the exact SDK-returned
+`terminated` and `truncated` flags, each original termination condition's `done`
+and `success` values, environment step, actual before/after physics counters and
+the native `_post_step` implementation's file hash. The original combined
+`episode_terminated` admission and independent formal Verifier remain authoritative.
 
 The October 3 stationary `picking_up_trash` instance-0 probe validates all three
 256×256 RGB-D cameras with explicitly labeled complete-image region masks. Each

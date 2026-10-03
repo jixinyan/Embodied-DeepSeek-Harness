@@ -10,6 +10,7 @@ does not start a server, allocate an environment, or send model requests.
 | `behavior-live.mjs` | `EDH_BEHAVIOR_CONFIG`           | 4334                 |
 | `robocasa-live.mjs` | `EDH_NATIVE_WORKER_CONFIG`      | 4318                 |
 | `robodojo-live.mjs` | `EDH_ROBODOJO_CONFIG`           | 4318                 |
+| `native-workspace.mjs` | `EDH_NATIVE_WORKSPACE_CONFIG` | Configured |
 
 Execute a selected module through `pnpm exec tsx --tsconfig tsconfig.runtime.json`
 with its path as the final argument. The named variable points to an actual JSON
@@ -17,6 +18,10 @@ configuration. `native-live.mjs` contains the shared configuration loader and
 factory. The desktop launch configuration selects the same provider module as
 `deployment`, supplies its environment file, and controls console port and data
 directory. See the [desktop launcher](../../apps/desktop/README.md).
+
+The [native workspace](../../docs/implementation/native-workspace.md) loads multiple
+configured providers and Teams into one Console. It reuses these native factories,
+one shared model catalog and each selected profile's original task/checkpoint bindings.
 
 Configuration requires `modelConfiguration`, `dataDirectory`, and an actual native
 `worker`. RoboTwin, BEHAVIOR and RoboCasa have one `worker` and `checkpoint` at the
