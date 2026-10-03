@@ -55,6 +55,12 @@ plan/TODOs and start the new attempt in a subsequent model step. The host manage
 optional learning according to the Team configuration. Keep the original goal and
 native criterion unchanged.
 
+Inspect the actual terminal reason with each formal failure. If native execution
+ended with episode_terminated, the same retained Session cannot reset that episode.
+When no admitted continuation is available, finish the factual assessment TODOs
+and call tasks.abandon with the failed native checks. Budget-limited continuation
+requires an episode that still admits controls and current evidence of progress.
+
 Inspect execution status and new images when needed. A normal confirmed pause
 does not start verification. Use skills.search and load only relevant experience.
 On a running-review follow-up, inspect the attached current native cameras and

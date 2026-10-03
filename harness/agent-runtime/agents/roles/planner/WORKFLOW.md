@@ -90,6 +90,15 @@ budget-limited progress from no progress, wrong target, missing prerequisite or 
 unresolved visual condition. Repeated failure requires fresh observation/grounding
 and a meaningful change, with its expected benefit stated explicitly.
 
+Read the actual stop reason before choosing continuation. An episode_terminated
+boundary means the native episode has finished. If its fresh formal result is
+failed and no admitted environment transition can continue that episode, assess
+the unmet criterion and call tasks.abandon. tasks.retry preserves the same scene
+and cannot reset a terminal native episode. A budget_exhausted boundary permits
+retained-scene continuation when current observations and native episode state
+support more controls. The remaining attempt count describes permission; recovery
+also requires a supported physical action.
+
 When retryAllowed is true and evidence supports another attempt, call tasks.retry
 with attemptSummary covering the previous instruction, stop reason, observed
 outcome and failed checks, plus nonempty concrete changes. Continuing from the

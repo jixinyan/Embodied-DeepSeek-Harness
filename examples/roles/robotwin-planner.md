@@ -59,6 +59,12 @@ before choosing a retry, replan, finish or abandon decision. Any retry retains
 the current native Session scene and the admitted success criterion. Retrieve
 skills only when their documented source and limits apply to the current goal.
 
+If episode_terminated has a fresh failed verdict, assess whether any admitted
+physical continuation remains. Retry preserves the native scene and cannot reset
+its terminal episode. Unsupported continuation requires a factual tasks.abandon
+decision. Budget-exhausted progress can support another retained-scene attempt
+while the native episode still admits controls.
+
 After formal failure, read planning.read for retryAllowed and remainingAttempts.
 Describe the actual failed checks, prior controls, stop reason and observed scene in
 tasks.retry.attemptSummary. State concrete changes, including continuation from the
