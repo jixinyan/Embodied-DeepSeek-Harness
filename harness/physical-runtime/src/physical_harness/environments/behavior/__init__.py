@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import datetime, timezone
+from hashlib import sha256
 from importlib import import_module
 from importlib.metadata import version
 from io import BytesIO
@@ -73,6 +74,7 @@ class BehaviorEnvironment:
         self._action_spec: dict[str, object] | None = None
         self._controlled_physics_steps = 0
         self._episode_terminated = False
+        self._last_native_termination: dict[str, object] | None = None
         self._last_control_duration_s = 0.0
         self._close_diagnostics: dict[str, object] | None = None
         self._scene_config_id = 0
@@ -340,6 +342,7 @@ class BehaviorEnvironment:
         self._action_spec = self._native_action_spec()
         self._controlled_physics_steps = 0
         self._episode_terminated = False
+        self._last_native_termination = None
         self.describe()
         return self._observation(raw)
 
@@ -376,14 +379,14 @@ class BehaviorEnvironment:
         if should_stop():
             return NativeStep(self.observe(), 0, False, 0, self._episode_terminated)
         before = int(self._og.sim.current_time_step_index)
-        raw, _reward, terminated, truncated, _info = env.step(
+        raw, _reward, terminated, truncated, info = env.step(
             {"robot_r1": torch.tensor(action, dtype=torch.float32)}, n_render_iterations=1
         )
         raw_sim_steps = int(self._og.sim.current_time_step_index) - before
         if raw_sim_steps != 4:
             raise RuntimeError("BEHAVIOR native control step did not complete four physics steps.")
         self._controlled_physics_steps += raw_sim_steps
-        self._episode_terminated = bool(terminated or truncated)
+        self._record_native_termination(terminated, truncated, info)
         observation = self._observation(raw)
         frame = NativeFrame(
             observation.observation_id, observation.observed_at, observation.images,
@@ -394,7 +397,28 @@ class BehaviorEnvironment:
         return NativeStep(
             observation, 1, True, raw_sim_steps, self._episode_terminated,
             (frame,), "live_frame_capacity_exhausted" if live_exhausted else None,
+            {"native_physics_step_before": before,
+             "native_physics_step_after": int(self._og.sim.current_time_step_index),
+             "physics_count_source": "omnigibson.sim.current_time_step_index",
+             "native_termination": deepcopy(self._last_native_termination)},
         )
+
+    def _record_native_termination(self, terminated: bool, truncated: bool, info: Mapping[str, object]) -> None:
+        self._require_owner()
+        conditions = info["done"]["termination_conditions"]
+        source = Path(import_module("omnigibson.envs.env_base").__file__).resolve(strict=True)
+        self._last_native_termination = {
+            "terminated": bool(terminated), "truncated": bool(truncated),
+            "termination_conditions": {
+                name: {"done": bool(value["done"]), "success": bool(value["success"])}
+                for name, value in conditions.items()
+            },
+            "success": bool(info["done"]["success"]),
+            "environment_step": int(self._require_env()._current_step),
+            "source": "omnigibson.envs.env_base.Environment._post_step",
+            "source_file": str(source), "source_sha256": sha256(source.read_bytes()).hexdigest(),
+        }
+        self._episode_terminated = bool(terminated or truncated)
 
     def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]:
         env = self._require_env()

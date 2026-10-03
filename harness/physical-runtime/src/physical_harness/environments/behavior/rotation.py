@@ -90,14 +90,14 @@ class NativeViewRotation:
                 if not channel["minimum"] <= float(value) <= channel["maximum"]:
                     raise RuntimeError("BEHAVIOR rotation exceeded a native action channel limit.")
             before = int(self.environment._og.sim.current_time_step_index)
-            _, _, terminated, truncated, _ = self.env.step({"robot_r1": command}, n_render_iterations=1)
+            _, _, terminated, truncated, info = self.env.step({"robot_r1": command}, n_render_iterations=1)
             consumed = int(self.environment._og.sim.current_time_step_index) - before
             if consumed != 4:
                 raise RuntimeError("BEHAVIOR rotation must consume exactly four native physics steps per control.")
             control_steps += 1
             raw_steps += consumed
             self.environment._controlled_physics_steps += consumed
-            self.environment._episode_terminated = bool(terminated or truncated)
+            self.environment._record_native_termination(terminated, truncated, info)
 
         while True:
             _, yaw, pitch = self.pose()

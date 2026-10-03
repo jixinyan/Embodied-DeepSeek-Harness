@@ -239,6 +239,7 @@ def _native_state(environment, scene_id: str) -> dict:
         "native_time_step_index": int(environment._og.sim.current_time_step_index) if environment._env is not None else None,
         "controlled_physics_steps": environment._controlled_physics_steps,
         "episode_terminated": environment._episode_terminated,
+        "native_termination": environment._last_native_termination,
         "last_control_duration_s": environment._last_control_duration_s,
         "close_diagnostics": environment._close_diagnostics,
     }
