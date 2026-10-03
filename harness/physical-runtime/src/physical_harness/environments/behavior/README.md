@@ -146,6 +146,13 @@ native device getter then reports `cpu`. Admission preserves that setting and
 records its source hashes, actual native device, CUDA setting and logical
 PyTorch device. Renderer placement and CUDA context identity remain separate
 measurements.
+Native camera admission reads the original `camera_params` annotator outputs
+during at most 64 owner-thread render updates and 30 seconds. All three cameras
+must report their configured 256×256 render product and valid finite projection
+parameters before the original `intrinsic_matrix` getter is admitted. The actual
+projection arrays, readiness observations, source hash and unchanged native
+physics/time are retained in scene metadata. Empty annotator output or an expired
+deadline prevents task admission.
 
 [bootstrap.py](bootstrap.py) adapts the original `omnigibson.simulator._launch_app`
 sequence from revision `b1979916ec1549b10a4e65e630bc6504a9af1b00`, under its
