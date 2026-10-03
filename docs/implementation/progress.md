@@ -16,6 +16,16 @@ configuration and does not constrain the framework's portability.
 
 ### Native RoboCasa task success
 
+Independent run `7e3f76b6` also accepts successful retained-scene recovery on the
+original CloseDrawer criterion. Planner ends an operator-requested first review
+at 84 controls; a fresh Verifier fails that assessment. Planner authorizes retry,
+and 306 further controls reach native success with a separate passed Verifier.
+All 685 events, 390 action receipts, 50 identified inferences, six native videos
+and thirteen completed TODOs pass source checks with zero tool errors. Session
+close releases resources and recorded owned processes exit. The 108.167-second
+Agent-trace MP4 passes complete decoding and text bounds. This run uses only
+physical GPUs 2–4. Ended-scene sequential-task source acceptance remains separate.
+
 Qwen/GR00T `CloseDrawer` run `043520a2` completes the original native criterion
 after 382 controls and 48 identified inferences. Five running reviews precede its
 confirmed episode end and fresh independent Verifier. Planner consumes the passed

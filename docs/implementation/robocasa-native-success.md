@@ -83,6 +83,48 @@ matches on the local and deployment hosts, with SHA-256
 `70382b9f1118d795d97ad194bef867544e36a4478015e2f370fb3c433deca28a`.
 This accepts the selected
 CloseDrawer configuration. OpenCabinet outcomes, other task/seed combinations,
-retained-scene recovery and a second task on an ended Casa scene retain their
-own actual acceptance requirements. See [release validation](release-validation.md)
+and a second task on an ended Casa scene retain their own actual acceptance
+requirements. Retained-scene recovery has the separate native acceptance below.
+See [release validation](release-validation.md)
 and [recorded demos](recorded-demos.md) for reproduction.
+
+## Retained-scene retry success
+
+Run `7e3f76b6-48e2-40eb-b218-49ba404362bc` uses frozen EDH
+`7adaa4368db4ce2f594ecb95e86f794c071ad64d`; all 769 executing files match its
+source archive. The SDK, checkpoint, native seed-zero scene selection and original
+`task_success` criterion match the binding above. The admitted budget is 1,050
+controls and 1,800 wall-clock seconds. Qwen uses physical GPU 2, GR00T GPU 3,
+and the MuJoCo EGL renderer GPU 4.
+
+The admitted operator profile requests an initial stopped progress assessment.
+Planner explicitly ends the first attempt at 84 controls and 11 learned inferences;
+the fresh independent Verifier returns `task_success=false`. Planner consumes that
+verdict, records the failed attempt and authorizes continuation in the retained
+scene. The second execution performs 306 controls and 39 learned inferences,
+reaches its original native episode end and obtains a new independent passed
+verdict. The scene clock remains the same across both executions. The 9,750 reported
+physics steps derive from native elapsed time and model timestep.
+
+All 685 original events, 399 immutable sensor samples, 390 action receipts and 50
+identified learned requests pass the production audit. Each attempt retains three
+fully decoded native videos with 84 or 306 frames and exact timestamps. The failed
+and passed Verifiers have distinct contexts; Planner consumes both verdicts and
+completes all thirteen TODOs. No formal verification occurs during running
+execution, no tool errors or post-terminal model steps occur, and one recovery
+chain resolves without an Evolver assignment or new SKILL.
+
+Session `60fa1fbf-870e-47b1-b6c6-20cefcdb1775` closes normally with resources
+released. Recorded owned worker, Console, policy and driver PIDs and the service
+group are absent; both listeners refuse connections and writer ownership ends.
+Original evidence is retained under
+`.local/work/v1-robocasa-retry-terminal-20261003-02/`. Its closed archive SHA-256 is
+`cd025c9c0c071d835478bf49a5ea22810c780722b3c570aac7d9d68d6958655f`.
+This run accepts the selected native recovery workflow.
+
+`robocasa-qwen-gr00t-retry-success.mp4` contains three native views, 29 actual
+model-analysis outputs, plan/TODO updates, the failed assessment, explicit retry,
+successful independent verification and task completion. Its 1,298 frames encode
+108.167 seconds at 12 FPS and 1920×1080. Complete decoding, original source hashes
+and every rendered text boundary pass. MP4 SHA-256:
+`72c4ef6a446e837f3780b5485c0e81fe74dfcc6d2ce0cafc127564d3d7789ef0`.

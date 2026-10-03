@@ -22,6 +22,7 @@ The native v1 integration recordings are retained under
 | `robotwin-qwen-pi05-clean-team-retry-success.mp4` | Independent SceneAnalyst, explicit report acknowledgement, failed first attempt, retained-scene retry and formal success; zero tool errors and released resources | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 276.000 s | `a5d9132e-f4fb-438e-8c71-e81394cffd39` |
 | `desktop-qwen-pi05-team-retry-success.mp4` | Actual packaged Desktop submission, independent SceneAnalyst, formal failure, Planner retry and formal success; completed TODOs, zero tool errors and confirmed Session/service cleanup | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 167.000 s | `bd3e1606-3430-47f1-ae0d-df234052ec9e` |
 | `robocasa-qwen-gr00t-close-drawer-success.mp4` | Original CloseDrawer task success, independent formal verification, completed plan/TODOs and released resources; zero tool errors | Qwen3.8-27B / GR00T | 81.250 s | `043520a2-1e9a-4b18-af1b-821a84a7ba7a` |
+| `robocasa-qwen-gr00t-retry-success.mp4` | Planner-ended failed assessment, retained-scene retry, fresh formal success, thirteen completed TODOs, zero tool errors and released resources | Qwen3.8-27B / GR00T | 108.167 s | `7e3f76b6-48e2-40eb-b218-49ba404362bc` |
 
 The native RoboCasa composite is retained in
 `.local/work/v1-robocasa-close-drawer-20261003-01/`. Its 598 original events
