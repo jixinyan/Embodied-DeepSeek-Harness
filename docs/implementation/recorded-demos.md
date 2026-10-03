@@ -10,16 +10,42 @@ attempt identity. TODO status includes the reporting member and completed count.
 
 ## Delivered recordings
 
+The native v1 integration recordings are retained under
+`.local/work/v1-20261003/` and `.local/work/v1-robotwin-20261003/`.
+
+| Recording                                 | Actual task result                                                                                                                                | Model and policy                   | Duration  | Source                                 |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | --------- | -------------------------------------- |
+| `robodojo-qwen-pi05-success-reviewed.mp4` | Native task success, independent formal success and released resources; one recorded plan-parameter error                                         | Qwen3.8-27B / Pi0.5                | 80.167 s  | `02475b82-b6b6-457f-8cf8-3199ef265bc6` |
+| `robotwin-qwen-pi05-retry-success.mp4`    | Independent SceneAnalyst, failed first attempt, accepted Planner retry, formal success and released resources; two recorded plan-parameter errors | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 340.167 s | `66ff9b47-9e2d-4514-904c-cd61c869b44c` |
+
+The RoboDojo composite includes 223 original events, 11 model analysis events,
+59 admitted controls and four identified learned inferences. Three native videos
+retain their original frame timestamps. Its 962 composite frames fully decode;
+the MP4 SHA-256 is
+`436d2dc818ec1206b84c4ae3f45107064cd53468b03fac6351b58ecb8484f269`.
+This recording's legacy native step counter does not establish physics-step totals.
+
+The RoboTwin composite includes 765 original events, 30 model analysis events,
+104 controls, seven identified learned inferences and 10,087 native physics steps.
+It retains 390 rollout frames and one initial observation per camera. Formal
+verdicts are failed, then passed. Its 4,082 composite frames fully decode;
+the MP4 SHA-256 is
+`ec157d72d8e9002aeb083b9de3b2b63ffbc7b54d4c2550f6ce3756749f4fa930`.
+Both composites preserve their original tool errors and pass source-integrity,
+duration, encoding and every-frame text-boundary checks. These runs precede
+the configured Qwen strict-tool decoding checkpoint; clean-workflow acceptance
+is recorded independently.
+
 Private artifacts are retained under `.local/work/demos-20260930/`; generated media,
 model requests and simulator data are excluded from Git.
 
-| Recording | Actual task result | Model and policy | Duration | Source |
-| --- | --- | --- | --- | --- |
-| `robotwin-retry-success.mp4` | Failed first attempt, accepted Planner retry, independent formal success | Qwen3.8-27B / Pi0.5 | 101.417 s | `686c9767-746a-430e-ba81-900eef3fb09c` |
-| `robocasa-retry-exhaustion.mp4` | Three failed formal verdicts, two accepted retries, Planner concludes failure | Qwen3.8-27B / GR00T | 118.667 s | `7dfb663e-debb-44fb-a4da-96be2b88e664` |
-| `sam-yolo-grounding.mp4` | Pre-motion perception and user clarification; zero physical controls | Qwen3.8-27B / SAM3.1 / YOLO26 depth | 40.083 s | `0b6b7450-0bb9-483a-9ff4-2631d65530df` |
-| `behavior-retry-exhaustion.mp4` | Three failed formal verdicts, two accepted retries, Planner concludes failure; one recorded tool error | Qwen3.8-27B / GR00T | 128.833 s | `0b7da1de-19c2-4f9f-8229-bb346a178c16` |
-| `custom-role-retry-success.mp4` | Explicit specialist report and acknowledgement, failed first attempt, successful retry; eight recorded plan-parameter errors | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 189.083 s | `ef8f9d03-c9e6-4671-aac4-99c965631ae4` |
+| Recording                       | Actual task result                                                                                                           | Model and policy                    | Duration  | Source                                 |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- | --------- | -------------------------------------- |
+| `robotwin-retry-success.mp4`    | Failed first attempt, accepted Planner retry, independent formal success                                                     | Qwen3.8-27B / Pi0.5                 | 101.417 s | `686c9767-746a-430e-ba81-900eef3fb09c` |
+| `robocasa-retry-exhaustion.mp4` | Three failed formal verdicts, two accepted retries, Planner concludes failure                                                | Qwen3.8-27B / GR00T                 | 118.667 s | `7dfb663e-debb-44fb-a4da-96be2b88e664` |
+| `sam-yolo-grounding.mp4`        | Pre-motion perception and user clarification; zero physical controls                                                         | Qwen3.8-27B / SAM3.1 / YOLO26 depth | 40.083 s  | `0b6b7450-0bb9-483a-9ff4-2631d65530df` |
+| `behavior-retry-exhaustion.mp4` | Three failed formal verdicts, two accepted retries, Planner concludes failure; one recorded tool error                       | Qwen3.8-27B / GR00T                 | 128.833 s | `0b7da1de-19c2-4f9f-8229-bb346a178c16` |
+| `custom-role-retry-success.mp4` | Explicit specialist report and acknowledgement, failed first attempt, successful retry; eight recorded plan-parameter errors | Qwen3.8-27B / SceneAnalyst / Pi0.5  | 189.083 s | `ef8f9d03-c9e6-4671-aac4-99c965631ae4` |
 
 The RoboTwin recording contains 292 events, 113 admitted controls, eight identified
 Pi0.5 inferences and 416 native frame groups across three cameras. Its two formal
