@@ -53,6 +53,7 @@ async def main() -> None:
             "completed_at": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z"),
             "duration_s": monotonic() - started,
             "action_count": len(actions),
+            "actions": actions,
         }), flush=True)
         return actions
 
