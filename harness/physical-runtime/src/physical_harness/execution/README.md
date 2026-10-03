@@ -18,7 +18,11 @@ continued the same scene; a stop during a 16-action chunk halted after one step.
 The scene remained stationary after its stop acknowledgement. These checks establish
 the native gate/device boundary. The host bridge and job/frame event mapping also
 carry actual GR00T policy controls and stopped-boundary checks. The independent
-watchdog and shared resource arbiter remain open. See the
+watchdog fences native admission on lease loss or the original wall deadline.
+Same-host OS resource locks serialize policy and active-view motion across
+workers with an explicitly shared device scope. Paused executions retain ownership;
+confirmed ended executions release it. See the
+[physical safety guide](../../../../../docs/implementation/physical-safety.md) and the
 [adapter guide](../../../../../docs/implementation/model-policy-adapters.md).
 
 `encode_policy_observation` admits named PNG RGB cameras and finite proprioception

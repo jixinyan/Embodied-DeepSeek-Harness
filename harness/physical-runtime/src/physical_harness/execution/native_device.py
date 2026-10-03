@@ -31,12 +31,23 @@ class NativeActionDevice:
     async def on_owner(self, action: Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
         if self._closed:
             raise RuntimeError("Native simulation owner is closed.")
-        return await asyncio.get_running_loop().run_in_executor(self._executor, partial(action, *args, **kwargs))
+        operation = asyncio.get_running_loop().run_in_executor(self._executor, partial(action, *args, **kwargs))
+        try:
+            return await asyncio.shield(operation)
+        except asyncio.CancelledError:
+            # 等待所属线程结束操作，之后才能释放物理资源。
+            await asyncio.shield(operation)
+            raise
 
     @property
     def raw_sim_steps(self) -> int:
         with self._lock:
             return self._raw_sim_steps
+
+    @property
+    def execution_id(self) -> str | None:
+        with self._lock:
+            return self._execution_id
 
     @property
     def executed_actions(self) -> int:
@@ -76,6 +87,11 @@ class NativeActionDevice:
     def _should_stop(self, execution_id: str, generation: int) -> bool:
         with self._lock:
             return self._closed or self._stopped or self._execution_id != execution_id or self._generation != generation
+
+    def fence_execution(self, execution_id: str) -> None:
+        with self._lock:
+            if self._execution_id == execution_id:
+                self._stopped = True
 
     async def dispatch(self, segment: dict) -> dict:
         execution_id = segment["execution_id"]

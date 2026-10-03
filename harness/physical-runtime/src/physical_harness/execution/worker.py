@@ -19,6 +19,8 @@ from physical_harness.environments import NativeEnvironment, NativeFrame, Native
 from physical_harness.execution.action_gate import ActionGate
 from physical_harness.execution.modes import ExecutionMode
 from physical_harness.execution.native_device import NativeActionDevice
+from physical_harness.execution.resources import ResourceArbiter, ResourceBusy, ResourceLease
+from physical_harness.execution.watchdog import ExecutionWatchdog
 from physical_harness.execution.policy_observation import encode_policy_observation
 from physical_harness.policies.client import WebSocketPolicyClient
 from physical_harness.validation import ContractValidator
@@ -131,10 +133,44 @@ class NativeWorkerSession:
         self._publish_lock = asyncio.Lock()
         self._last_boundary_publication: dict[str, Any] | None = None
         self._last_control: dict[str, Any] | None = None
+        self._arbiter: ResourceArbiter | None = None
+        self._motion_lease: ResourceLease | None = None
+        self._watchdog: ExecutionWatchdog | None = None
+        self._watchdog_stop: asyncio.Task[None] | None = None
 
     def revoke_lease(self) -> None:
         self._lease_active = False
         self._host_connected = False
+        if self._device is not None and self._device.execution_id is not None:
+            self._device.fence_execution(self._device.execution_id)
+
+    def _execution_lease_valid(self) -> bool:
+        return (self._host_connected and self._lease_active
+                and self._motion_lease is not None and self._motion_lease.valid())
+
+    def _release_execution_resources(self) -> None:
+        if self._gate is not None:
+            snapshot = self._gate.snapshot()
+            if snapshot["state"] != "ended" or not snapshot["device_confirmed"]:
+                raise RuntimeError("Physical resources require a confirmed terminal boundary before release.")
+        if self._watchdog is not None:
+            self._watchdog.close()
+            self._watchdog = None
+        if self._motion_lease is not None:
+            self._motion_lease.release()
+            self._motion_lease = None
+
+    async def _watchdog_expired(self, gate: ActionGate, reason: str) -> None:
+        async with self._control_lock:
+            if self._gate is not gate or gate.snapshot()["state"] == "ended":
+                return
+            self._failure_detail = f"Independent device watchdog: {reason}"
+            await gate.pause(reason, terminal=True)
+            if self._policy is not None:
+                await self._policy.close()
+            self._release_execution_resources()
+            if self._host_connected:
+                await self._publish(await self._require_device().on_owner(self._environment.observe), self._last_control)
 
     @property
     def transport_write_timeout_s(self) -> float:
@@ -260,6 +296,13 @@ class NativeWorkerSession:
         if type(self._policy_max_actions_per_inference) is not int or not 1 <= self._policy_max_actions_per_inference <= 512:
             raise ValueError("Policy action limit must contain 1 to 512 control commands.")
         self._validator = ContractValidator.from_path(arguments["schema_path"])
+        scope = arguments.get("shared_resource_scope", self._clock_id)
+        directory = arguments.get("resource_lock_directory")
+        if directory is not None and (not isinstance(directory, str) or not Path(directory).is_absolute()):
+            raise ValueError("Resource lock directory must be an absolute path.")
+        lock_directory = (Path(directory) if directory is not None else
+                          Path(arguments["schema_path"]).resolve().parents[3] / ".local" / "physical-resources")
+        self._arbiter = ResourceArbiter(lock_directory, scope)
         if provider == "robocasa":
             if "source_root" in arguments:
                 raise ValueError("RoboCasa does not use a worker source_root override.")
@@ -309,6 +352,35 @@ class NativeWorkerSession:
         }
 
     async def start(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        if self._arbiter is None:
+            raise RuntimeError("Native resource arbiter has not been initialized.")
+        if self._motion_lease is not None:
+            snapshot = self._require_gate().snapshot()
+            if snapshot["state"] != "ended" or not snapshot["device_confirmed"]:
+                raise ResourceBusy("Policy execution owns the device motion resources.")
+            self._release_execution_resources()
+        if self._pump is not None and self._gate is not None and self._gate.snapshot()["state"] == "ended":
+            await self._pump
+            self._pump = None
+        previous_gate = self._gate
+        previous_execution = self._require_device().execution_id
+        self._motion_lease = self._arbiter.acquire(("motion",))
+        try:
+            return await self._start(arguments)
+        except BaseException:
+            if self._gate is not previous_gate:
+                await self._gate.pause("backend_error", terminal=True)
+            elif self._require_device().execution_id != previous_execution:
+                execution_id = self._require_device().execution_id
+                self._require_device().fence_execution(execution_id)
+                await self._require_device().stop(execution_id, 1)
+            if self._policy is not None and self._gate is not previous_gate:
+                await self._policy.close()
+                self._policy = None
+            self._release_execution_resources()
+            raise
+
+    async def _start(self, arguments: dict[str, Any]) -> dict[str, Any]:
         async with self._control_lock:
             if not self._host_connected or not self._lease_active:
                 raise RuntimeError("Native task lease is unavailable.")
@@ -370,12 +442,28 @@ class NativeWorkerSession:
                 task_scope=gate_scope(request), action_spec=self._description.action_spec,
                 max_control_steps=request["budget"]["max_control_steps"],
                 max_wall_time_s=request["budget"]["max_wall_time_s"],
-                lease_valid=lambda: self._lease_active, max_segment_actions=1,
+                lease_valid=self._execution_lease_valid, max_segment_actions=1,
                 max_policy_actions=self._policy_max_actions_per_inference,
                 observation_ttl_s=arguments.get("observation_ttl_s", 30),
                 device_timeout_s=arguments.get("device_timeout_s", 30),
                 on_segment=self._on_segment,
             )
+            gate = self._gate
+            loop = asyncio.get_running_loop()
+
+            def expired(reason: str) -> None:
+                def schedule_stop() -> None:
+                    self._watchdog_stop = asyncio.create_task(self._watchdog_expired(gate, reason))
+                    self._watchdog_stop.add_done_callback(lambda task: None if task.cancelled() else task.exception())
+                loop.call_soon_threadsafe(schedule_stop)
+
+            self._watchdog = ExecutionWatchdog(
+                deadline=self._started + request["budget"]["max_wall_time_s"],
+                lease_valid=self._execution_lease_valid,
+                fence=lambda: self._require_device().fence_execution(execution_id),
+                notify=expired,
+            )
+            self._watchdog.start()
             self._policy = WebSocketPolicyClient(
                 self._policy_uri, self._validator,
                 timeout_s=self._policy_timeout_s,
@@ -450,16 +538,22 @@ class NativeWorkerSession:
                         )
         except asyncio.CancelledError:
             if gate.snapshot()["state"] == "running":
-                await gate.pause("backend_error", terminal=True)
+                await gate.pause(gate.failure_reason(), terminal=True)
             if gate.snapshot()["state"] in ("paused", "ended") and gate.snapshot()["stop_reason"] not in ("planner_pause", "user_stop"):
                 await self._publish(await self._require_device().on_owner(self._environment.observe), self._last_control)
         except Exception as error:
             traceback.print_exception(error, file=sys.stderr)
             self._failure_detail = f"{type(error).__name__}: {error}"[:1000]
-            if gate.snapshot()["state"] in ("running", "pausing"):
-                await gate.pause("backend_error", terminal=True)
+            snapshot = gate.snapshot()
+            if snapshot["state"] == "running":
+                await gate.pause(gate.failure_reason(), terminal=True)
+            elif snapshot["state"] == "pausing":
+                await gate.pause(snapshot["stop_reason"], terminal=True)
             if gate.snapshot()["state"] in ("paused", "ended"):
                 await self._publish(await self._require_device().on_owner(self._environment.observe), self._last_control)
+        finally:
+            if self._gate is gate and gate.snapshot()["state"] == "ended" and gate.snapshot()["device_confirmed"]:
+                self._release_execution_resources()
 
     async def _policy_event(self, request: dict[str, Any], event: dict[str, Any]) -> None:
         gate = self._require_gate()
@@ -732,16 +826,21 @@ class NativeWorkerSession:
             return {"run_task_id": run_task_id, "measurement": result}
 
     async def turn_view(self, arguments: dict[str, Any]) -> dict[str, Any]:
-        direction = arguments["direction"]
-        if direction not in self._description.active_view_directions:
-            raise ValueError("Active observation direction is unsupported by this provider.")
-        run_task_id = self._run_task_id
-        if run_task_id is None:
-            raise RuntimeError("Active observation requires an open session task.")
-        observation = await self._require_device().on_owner(lambda: self._environment.turn_view(direction))
-        if run_task_id != self._run_task_id or not self._host_connected:
-            raise RuntimeError("Native task identity changed during active observation.")
-        return {"run_task_id": run_task_id, "observation": self._observation_wire(observation)}
+        async with self._control_lock:
+            direction = arguments["direction"]
+            if direction not in self._description.active_view_directions:
+                raise ValueError("Active observation direction is unsupported by this provider.")
+            run_task_id = self._run_task_id
+            if run_task_id is None or not self._host_connected or not self._lease_active:
+                raise RuntimeError("Active observation requires a connected session task.")
+            lease = self._arbiter.acquire(("motion",))
+            try:
+                observation = await self._require_device().on_owner(lambda: self._environment.turn_view(direction))
+                if run_task_id != self._run_task_id or not self._host_connected:
+                    raise RuntimeError("Native task identity changed during active observation.")
+                return {"run_task_id": run_task_id, "observation": self._observation_wire(observation)}
+            finally:
+                lease.release()
 
     async def rotate_view(self, arguments: dict[str, Any]) -> dict[str, Any]:
         async with self._control_lock:
@@ -762,9 +861,13 @@ class NativeWorkerSession:
                 raise RuntimeError("Rotation requires a confirmed ended execution.")
             if self._pump is not None and not self._pump.done():
                 raise RuntimeError("Policy execution still owns the motion resource.")
-            result = await self._require_device().on_owner(lambda: self._environment.rotate_view(
-                float(yaw), float(pitch), lambda: not self._host_connected or not self._lease_active
-            ))
+            lease = self._arbiter.acquire(("motion",))
+            try:
+                result = await self._require_device().on_owner(lambda: self._environment.rotate_view(
+                    float(yaw), float(pitch), lambda: not self._host_connected or not self._lease_active or not lease.valid()
+                ))
+            finally:
+                lease.release()
             if not isinstance(result, NativeRotation):
                 raise RuntimeError("Native rotation did not provide its measured receipt.")
             self._measurement_observation = None
@@ -827,6 +930,7 @@ class NativeWorkerSession:
         self._catalog_task_id = None
         self._run_task_id = None
         self._lease_active = False
+        self._release_execution_resources()
         return {"closed": True, "execution_id": self._gate.snapshot()["execution_id"]}
 
     async def close(self) -> dict[str, Any]:
@@ -843,6 +947,8 @@ class NativeWorkerSession:
             if self._policy is not None:
                 await self._policy.close()
             await stopping
+        if self._gate is not None:
+            self._release_execution_resources()
         if self._device is not None:
             await self._device.close()
         if self._video_recorder is not None:
@@ -923,7 +1029,13 @@ async def serve() -> None:
         else:
             await emit({"id": request_id, "result": result})
 
-    while line := await asyncio.to_thread(sys.stdin.readline):
+    def read_request_line() -> str:
+        line = sys.stdin.readline()
+        if not line:
+            session.revoke_lease()
+        return line
+
+    while line := await asyncio.to_thread(read_request_line):
         if len(line) > 32 * 1024 * 1024:
             raise ValueError("Native worker request exceeds the transport bound.")
         message = require_object(json.loads(line))
