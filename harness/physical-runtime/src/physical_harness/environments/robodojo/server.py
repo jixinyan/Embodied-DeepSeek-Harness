@@ -77,6 +77,13 @@ def serve(session, port):
 
 
 def main():
+    from physical_harness.environments.nvidia_profile import owned_nvidia_profile
+
+    with owned_nvidia_profile():
+        run_native_service()
+
+
+def run_native_service():
     parser = argparse.ArgumentParser(description="EDH-owned RoboDojo simulator and numerical tool service.")
     parser.add_argument("--task", required=True)
     parser.add_argument("--output", type=Path, required=True)

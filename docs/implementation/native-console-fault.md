@@ -184,3 +184,50 @@ Forced process termination preserves the original task failure, unknown device
 boundary and unclean close error. It supplies no StopAcknowledgement or formal
 Verifier. Fresh real native fault acceptance remains required for this owned
 RoboDojo process-group binding.
+
+## Configured graphics-profile cleanup
+
+Native worker configuration accepts optional `profileCleanup`:
+
+```json
+{
+  "command": [
+    "/absolute/environment/bin/python",
+    "-m",
+    "physical_harness.environments.nvidia_profile"
+  ],
+  "cwd": "/absolute/workspace",
+  "env": {
+    "PYTHONPATH": "/absolute/source/harness/physical-runtime/src"
+  },
+  "recordDirectory": "/absolute/existing/profile-records",
+  "timeoutMs": 30000
+}
+```
+
+The binding names a trusted executable and its environment. A deployment using
+SSH supplies its own configured command that forwards the helper's arguments.
+The helper's record root must exist on the native host. Its preflight validates
+imports and exclusive, synchronized file creation before the worker starts.
+The host supplies a fresh 32-character ownership token and the configured profile
+record root to that worker. Each native profile records its actual PID, parent
+PID, creation times, group/session and exact bytes/hash before driver imports.
+
+After the worker's owned process group exits, the host invokes the same configured
+helper. It admits only strict `edh-` profile identities carrying that transport's
+token, requires original native/parent PID and group absence, and validates the
+exclusive NVIDIA rule and file content before removing the owned profile. The
+host validates the resulting receipt and records it independently of device
+state. Log messages supply no deletion paths. Original termination errors and
+profile-cleanup errors retain their failure status.
+
+RoboDojo enables the profile before OpenCV/Isaac initialization. Optional
+`EDH_NVIDIA_RENDERER_GPU_INDEX` selects the explicitly admitted renderer
+enumeration; the existing `rendererGpu` configuration remains the default.
+Actual compute and graphics placement must be checked before Task submission.
+The production host binding passes a real SSH helper preflight against the
+existing `edh-behavior` interpreter and an independently created recording root.
+Its empty-root cleanup returns the matching token/root and zero profile receipts;
+repeated host release remains idempotent. This check allocates no simulator,
+profile or model request.
+The full native forced-exit acceptance of this host binding remains pending.

@@ -20,6 +20,11 @@ def main():
     renderer_gpu = config.get("rendererGpu", 0)
     if type(renderer_gpu) is not int or renderer_gpu < 0:
         raise ValueError("rendererGpu must be a nonnegative physical GPU index.")
+    renderer_index = os.environ.get("EDH_NVIDIA_RENDERER_GPU_INDEX")
+    if renderer_index is not None:
+        if not renderer_index.isascii() or not renderer_index.isdecimal():
+            raise ValueError("EDH_NVIDIA_RENDERER_GPU_INDEX must be a nonnegative renderer index.")
+        renderer_gpu = int(renderer_index)
     root = Path(config["workspace"]).resolve(strict=True)
     python, sdk, data = (Path(config[name]).resolve(strict=True) for name in ("python", "sdk", "data"))
     output = (args.output or Path(config["output"])).resolve()
@@ -51,8 +56,8 @@ def main():
     if config.get("nvrtcLibrary"):
         command.extend(["--nvrtc-library", str(Path(config["nvrtcLibrary"]).resolve(strict=True))])
     kit_arguments = config.get("kitArguments", "")
-    if "rendererGpu" in config:
-        # AppLauncher 的初始 renderer 使用物理索引，EvalEnv 保持 CUDA 逻辑设备 0。
+    if "rendererGpu" in config or renderer_index is not None:
+        # AppLauncher 使用配置选择的 renderer 索引，EvalEnv 保持 CUDA 逻辑设备 0。
         kit_arguments += f" --/renderer/activeGpu={renderer_gpu} --/renderer/multiGpu/enabled=False --/physics/cudaDevice=0"
     if kit_arguments:
         command.extend(["--kit_args", kit_arguments])

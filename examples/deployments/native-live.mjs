@@ -25,6 +25,7 @@ import {
   plannerReviewSchema,
   startServer,
 } from '../../apps/server/src/index.ts';
+import { nativeProfileCleanupSchema } from '../../apps/server/src/native-profile-cleanup.ts';
 
 export const nativeDeploymentRoot = fileURLToPath(new URL('../../', import.meta.url));
 const nonblank = z.string().trim().min(1);
@@ -52,6 +53,7 @@ const workerSchema = z
     executionMode: z.enum(['policy', 'direct', 'hybrid']).optional(),
     policyMaxActionsPerInference: z.number().int().min(1).max(512).optional(),
     enableSimulatorInspection: z.boolean().optional(),
+    profileCleanup: nativeProfileCleanupSchema.optional(),
     catalog: z.unknown(),
   })
   .passthrough();

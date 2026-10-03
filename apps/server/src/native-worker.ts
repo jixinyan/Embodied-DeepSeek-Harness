@@ -30,6 +30,10 @@ import {
 import { parseTaskCatalog, type TaskCatalogDefinition, type TaskDefinition } from '@edh/tasks';
 import type { DeploymentServices, SessionEnvironment } from './deployment.js';
 import { waitFor } from './managed-services.js';
+import {
+  NativeProfileCleanup,
+  type NativeProfileCleanupConfiguration,
+} from './native-profile-cleanup.js';
 
 type JsonObject = Record<string, unknown>;
 
@@ -73,6 +77,7 @@ export interface NativeWorkerConfiguration {
   readonly transportWriteTimeoutS?: number;
   readonly initializeTimeoutMs?: number;
   readonly closeTimeoutMs?: number;
+  readonly profileCleanup?: NativeProfileCleanupConfiguration;
   readonly catalog: TaskCatalogDefinition;
 }
 
@@ -273,8 +278,15 @@ class NativeWorkerTransport {
   private readonly exited: Promise<void>;
   private termination: Promise<void> | undefined;
   private closing: Promise<void> | undefined;
-
-  constructor(private readonly configuration: NativeWorkerConfiguration) {
+  constructor(
+    private readonly configuration: NativeWorkerConfiguration,
+    private readonly profileCleanup: NativeProfileCleanup | undefined,
+  ) {
+    if (
+      (configuration.env.EDH_NVIDIA_EGL_PROFILE ?? process.env.EDH_NVIDIA_EGL_PROFILE) === '1' &&
+      !this.profileCleanup
+    )
+      throw new Error('Native worker NVIDIA profiles require a trusted cleanup binding.');
     for (const timeout of [configuration.initializeTimeoutMs, configuration.closeTimeoutMs]) {
       if (
         timeout !== undefined &&
@@ -284,7 +296,7 @@ class NativeWorkerTransport {
     }
     this.child = spawn(configuration.command[0], configuration.command.slice(1), {
       cwd: configuration.cwd,
-      env: { ...process.env, ...configuration.env },
+      env: { ...process.env, ...configuration.env, ...this.profileCleanup?.workerEnvironment },
       stdio: ['pipe', 'pipe', 'pipe', 'pipe'],
       detached: process.platform !== 'win32',
     });
@@ -415,29 +427,49 @@ class NativeWorkerTransport {
         await waitFor(this.exited, deadline);
         while (alive()) await delay(50, undefined, { signal: deadline });
       };
+      let terminationError: unknown;
       try {
-        await released();
-      } catch (gracefulError) {
-        signal('SIGTERM');
         try {
           await released();
-        } catch (termError) {
-          signal('SIGKILL');
-          let releaseError: unknown;
+        } catch (gracefulError) {
+          signal('SIGTERM');
           try {
             await released();
-          } catch (error) {
-            releaseError = error;
+          } catch (termError) {
+            signal('SIGKILL');
+            let releaseError: unknown;
+            try {
+              await released();
+            } catch (error) {
+              releaseError = error;
+            }
+            throw new AggregateError(
+              [gracefulError, termError, ...(releaseError ? [releaseError] : [])],
+              'Native worker required forced process termination; device state is unknown.',
+            );
           }
-          throw new AggregateError(
-            [gracefulError, termError, ...(releaseError ? [releaseError] : [])],
-            'Native worker required forced process termination; device state is unknown.',
-          );
+          throw new Error('Native worker exceeded its graceful exit deadline.', {
+            cause: gracefulError,
+          });
         }
-        throw new Error('Native worker exceeded its graceful exit deadline.', {
-          cause: gracefulError,
-        });
+      } catch (error) {
+        terminationError = error;
       }
+      let profileError: unknown;
+      if (!alive() && this.profileCleanup) {
+        try {
+          await this.profileCleanup.release();
+        } catch (error) {
+          profileError = error;
+        }
+      }
+      if (terminationError && profileError)
+        throw new AggregateError(
+          [terminationError, profileError],
+          'Native worker process and NVIDIA profile release failed.',
+        );
+      if (terminationError) throw terminationError;
+      if (profileError) throw profileError;
     })());
   }
 
@@ -1331,7 +1363,11 @@ export async function createNativeWorkerEnvironment(
     policyMaxActionsPerInference > 512
   )
     throw new Error('Native policy action limit must contain 1 to 512 control commands.');
-  const transport = new NativeWorkerTransport(configuration);
+  const profileCleanup = configuration.profileCleanup
+    ? new NativeProfileCleanup(configuration.profileCleanup)
+    : undefined;
+  await profileCleanup?.prepare();
+  const transport = new NativeWorkerTransport(configuration, profileCleanup);
   try {
     const description = object(
       await transport.request('initialize', {
