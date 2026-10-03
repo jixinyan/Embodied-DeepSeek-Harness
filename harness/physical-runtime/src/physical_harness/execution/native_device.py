@@ -67,6 +67,21 @@ class NativeActionDevice:
         with self._lock:
             return self._uncertain_actions
 
+    def diagnostic_snapshot(self) -> dict:
+        with self._lock:
+            return {
+                "execution_id": self._execution_id,
+                "generation": self._generation,
+                "stopped": self._stopped,
+                "closed": self._closed,
+                "executed_actions": self._executed_actions,
+                "uncertain_actions": self._uncertain_actions,
+                "raw_sim_steps": self._raw_sim_steps,
+                "pending_owner_operations": sum(not operation.done() for operation in self._owner_operations),
+                "retained_cancelled_operations": len(self._cancelled_operations),
+                "pending_cancelled_operations": sum(not operation.done() for operation in self._cancelled_operations),
+            }
+
     @property
     def last_observation(self) -> NativeObservation | None:
         with self._lock:

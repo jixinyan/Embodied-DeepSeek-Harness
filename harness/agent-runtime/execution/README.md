@@ -128,6 +128,13 @@ admitted request and published execution before failing the active run. Disconne
 rejects outstanding calls and closes transport admission. Fault handling produces
 no execution status, stop acknowledgement or formal verification boundary.
 
+The Python worker also records `native_background_fault_diagnostic` on stderr.
+It contains the actual ActionGate snapshot and the native device's locked counter
+snapshot at the fault: reserved, executed and uncertain actions, generation,
+fencing state and pending owner operations. These diagnostics remain separate from
+the last published execution status and identify unconfirmed work during cleanup.
+They do not declare a device boundary or release physical resources.
+
 Native workers own a separate POSIX process group. Shutdown requires the original
 clean close acknowledgement, successful leader exit and absence of that owned
 group. Each graceful, SIGTERM and SIGKILL release wait has a 15-second deadline;

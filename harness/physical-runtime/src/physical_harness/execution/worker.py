@@ -171,6 +171,15 @@ class NativeWorkerSession:
             if self._background_fault is None:
                 self._background_fault = error
                 self.revoke_lease()
+                print(json.dumps({
+                    "event": "native_background_fault_diagnostic",
+                    "recorded_at": datetime.now(timezone.utc).isoformat(timespec="milliseconds"),
+                    "task_scope": gate_scope(self._request),
+                    "gate": self._require_gate().snapshot(),
+                    "device": self._require_device().diagnostic_snapshot(),
+                    "type": type(error).__name__,
+                    "message": str(error)[:1000] or type(error).__name__,
+                }, allow_nan=False), file=sys.stderr, flush=True)
                 traceback.print_exception(error, file=sys.stderr)
                 await self._emit({"event": "fault", "data": {
                     "execution_id": self._require_gate().snapshot()["execution_id"],
