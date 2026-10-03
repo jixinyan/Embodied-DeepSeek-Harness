@@ -12,6 +12,19 @@ finish before confirming a stopped boundary. Actual step completion and counters
 are recorded on that thread, so cancelling an asynchronous waiter does not erase
 physical effects. A new execution can bind only after the prior execution stops.
 
+Owner-thread waits propagate cancellation at the caller's admitted deadline.
+The device retains outstanding Futures, fences an uncertain dispatch and checks
+late operation errors during close. Deadline expiry supplies no stop acknowledgement.
+Background policy or watchdog failure reaches the upper task through a scoped
+native fault, preserving the last recorded physical state and independent formal
+verification rules. Native transport closure confirms the owned process group
+has exited; unclean termination retains its original error.
+
+Configured `EDH_POLICY_REQUEST_RECORD_DIR` and `EDH_METRIC_CAPTURE_RECORD_DIR`
+must be absolute, existing writable directories. Initialization checks actual
+exclusive-file creation and deletion before allocating the SDK environment.
+An unconfigured recorder requires no directory. The operator owns these paths.
+
 Native providers recheck that stop predicate immediately before physical dispatch,
 including after an authoritative episode-status read. When
 `EDH_POLICY_REQUEST_RECORD_DIR` is configured, `NativeActionDevice.stop` retains

@@ -36,6 +36,24 @@ def require_object(value: Any) -> dict[str, Any]:
     return value
 
 
+def validate_recording_directories() -> None:
+    for name in ("EDH_POLICY_REQUEST_RECORD_DIR", "EDH_METRIC_CAPTURE_RECORD_DIR"):
+        configured = os.environ.get(name)
+        if configured is None:
+            continue
+        path = Path(configured)
+        if not path.is_absolute():
+            raise ValueError(f"{name} must name an absolute existing recording directory.")
+        directory = path.resolve(strict=True)
+        if not directory.is_dir():
+            raise ValueError(f"{name} must name a recording directory.")
+        probe = directory / f".edh-recording-check-{uuid4()}"
+        with probe.open("xb") as output:
+            output.flush()
+            os.fsync(output.fileno())
+        probe.unlink()
+
+
 def record_policy_request(ticket: dict[str, Any], directory: Path) -> None:
     request_id = ticket["request_id"]
     if not isinstance(request_id, str) or not request_id.isascii() or not all(
@@ -280,6 +298,7 @@ class NativeWorkerSession:
     async def initialize(self, arguments: dict[str, Any]) -> dict[str, Any]:
         if self._device is not None:
             raise RuntimeError("Native session is already initialized.")
+        validate_recording_directories()
         transport_write_timeout_s = arguments.get("transport_write_timeout_s", 30)
         if (type(transport_write_timeout_s) not in (int, float)
                 or not math.isfinite(transport_write_timeout_s)
