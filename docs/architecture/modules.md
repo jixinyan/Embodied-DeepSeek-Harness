@@ -30,9 +30,10 @@ It records no retry or recovery-SKILL publication. Local Qwen/Pi0.5 run
 Its trace-only console requests no camera images. The exact evidence and remaining
 acceptance are in the [Qwen handoff](../implementation/qwen-headless-checkpoint.md).
 
-The diagram shows the target architecture. The minimal DSH host/session integration
-is verified; consult the [capability map](../implementation/features.md) for implemented upper services and pending providers. No separate upstream
-application is copied. See [runtime integration](../implementation/dsh-integration.md).
+The diagram shows the framework architecture. Consult the
+[capability map](../implementation/features.md) for implemented services and
+remaining native acceptance. Selected DSH mechanisms are incorporated into the
+module owners. See [runtime integration](../implementation/dsh-integration.md).
 
 ## One harness, two runtime responsibilities
 
@@ -86,8 +87,8 @@ host. Authorized observation tools continue to supply images to models. See
 
 Source interfaces depend on `contracts`; application assembly composes the modules.
 Native runtime mechanisms remain DSH-owned; see [reuse decision](../implementation/decisions/0003-reuse-dsh-mechanisms.md).
-Concrete runtime coupling is introduced only when implementing each step, with
-explicit interfaces and tests. `contracts` must not import agents, apps or Python.
+Application assembly connects the runtime services through explicit interfaces.
+`contracts` must not import agents, apps or Python.
 Communication uses storage for persistence; agents receive authorized evidence
 through memory/tools, not direct unrestricted storage handles. Python optional
 providers must not be imported by the base package at startup.
@@ -104,11 +105,12 @@ not three implementations of the same agent.
 
 ## Wire contract maturity
 
-The authoritative draft schema now has matching TypeScript/Python wire validation
-and pure lifecycle gates for attempt identity, budgets, formal verdicts and recovery
-lineage. See [contract integration](../implementation/contracts.md). Semantic context
-sufficiency, authentication, event payload registration, evidence authorization and
-runtime enforcement remain service work in Steps 02–10. Generated TypeScript and
+The authoritative schema has matching TypeScript/Python wire validation and
+lifecycle gates for attempt identity, budgets, formal verdicts and recovery lineage.
+Runtime services enforce role authority, explicit evidence access, registered event
+payloads, resource ownership and confirmed execution boundaries. Native task
+acceptance checks their integration with actual models and simulators. See
+[contract integration](../implementation/contracts.md). Generated TypeScript and
 Python Protocol annotations alone do not validate runtime data.
 
 
@@ -199,12 +201,14 @@ removed keys and retained ownership. Application reference closure, preserved re
 identities and SKILL sources must be established before exposing record deletion.
 DomainRetention in `apps/server` owns configured reference inspection, source leases,
 mandatory provenance/request retention and single-use versioned previews. Record owners
-declare their namespaces and complete edges. A complete built-in ownership policy and
-HTTP/console admission remain pending. See [domain retention](../implementation/domain-retention.md).
+declare their namespaces and complete edges. Native deployments bind the production
+ownership policy, source-image retention and HTTP/console maintenance admission.
+Actual copied multi-session journals verify scoped retirement and restart consistency.
+See [domain retention](../implementation/domain-retention.md).
 SessionTaskHistory owns full published membership enumeration. The server's
 sessionRecordOwners declares Session/request/catalog dependencies and validates reverse
-task ownership before retention admission. Request identity records retain their replay
-sources; an archive/tombstone lifecycle remains required for deleting those sources.
+task ownership before retention admission. Request identity archives preserve the
+admission digest and retired source identities before the selected sources are deleted.
 `evidenceRecordOwners` in the same application layer composes sensor, assignment and
 verification readers to declare run/evidence/boundary/context dependencies. Perception
 owns shared image metadata validation; the image provider owns byte integrity. These
@@ -221,8 +225,9 @@ published session membership. Its inline event inspector is explicitly versioned
 `RunEventReferences` declares typed event/message dependencies, resolves historical
 report/verdict sources and checks recovery page contents. Its versioned extension
 inspects deployment payload references; the same inspector handles legacy inline events.
-Submission/plan/file/clarification and native-audit owners remain required for a
-complete application retention policy.
+Submission, plan, private files, clarification and native-audit owners participate in
+the built-in application policy. Unknown extension namespaces require their own
+versioned inspectors before history retirement can proceed.
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys
