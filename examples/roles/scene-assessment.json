@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "properties": {
+    "target": {
+      "type": "string",
+      "description": "Task target identified from explicitly authorized camera evidence."
+    },
+    "observation": {
+      "type": "string",
+      "description": "Observed target pose, arm relationship and uncertainties."
+    },
+    "evidenceIds": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Actual authorized observation IDs inspected for this assessment."
+    },
+    "confidence": { "type": "string", "enum": ["low", "high"] },
+    "taskInstruction": {
+      "type": "string",
+      "description": "Exact admitted native task instruction supplied by the caller."
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Unsettled scene conditions and limits of the available observations."
+    }
+  },
+  "required": [
+    "target",
+    "observation",
+    "evidenceIds",
+    "confidence",
+    "taskInstruction",
+    "limitations"
+  ],
+  "additionalProperties": false
+}

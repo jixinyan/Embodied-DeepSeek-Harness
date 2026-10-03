@@ -784,7 +784,7 @@ export class UpperRun {
                             plan: {
                               ...this.planToolSchema!,
                               description:
-                                'Nested JSON object with schema_version, task_id, version, owner_agent_id, owner_assignment_id and items. Copy identities and criteria from planning.read. Keep objects, arrays and numeric versions as their JSON types throughout the tool arguments.',
+                                'Use planning.read.planWrite.plan, a nested JSON object with schema_version, task_id, version, owner_agent_id, owner_assignment_id and items. Edit its items for your decisions. Preserve the supplied identities and criteria, and pair it with planWrite.expectedVersion. The value begins with an object brace; keep objects, arrays and numeric versions as their JSON types.',
                             },
                           }
                         : properties,
@@ -1181,11 +1181,22 @@ export class UpperRun {
           delivery: this.reports.delivery(record.id)?.state ?? 'unconfirmed',
         };
       }
-      case 'planning.read':
+      case 'planning.read': {
+        const owner = this.sessions.get(this.state.decisionAssignmentId);
+        const finalGoal = this.goals.get(this.goals.catalog().finalGoalId);
         return {
           plan: this.plans.read(this.state.id) ?? null,
+          planWrite: this.plans.nextWrite(
+            this.state.id,
+            { agentId: owner.sessionId, assignmentId: owner.id },
+            {
+              id: finalGoal.id,
+              description: this.state.instruction,
+              successContract: finalGoal.successContract,
+            },
+          ),
           taskId: this.state.id,
-          ownerAgentId: this.sessions.get(this.state.decisionAssignmentId).sessionId,
+          ownerAgentId: owner.sessionId,
           ownerAssignmentId: this.state.decisionAssignmentId,
           successContract: structuredClone(this.goal.successContract),
           activeGoalId: this.goal.id,
@@ -1194,6 +1205,7 @@ export class UpperRun {
           learningEnabled: this.sessions.team.definition.learning_enabled !== false,
           ...this.goals.catalog(),
         };
+      }
       case 'planning.update': {
         this.owner(a);
         const plan = this.options.validator.parse('PlanDocument', args.plan);

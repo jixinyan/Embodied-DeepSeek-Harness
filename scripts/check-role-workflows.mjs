@@ -30,6 +30,7 @@ const teams = [
   'behavior-live',
   'robotwin-live',
   'robotwin-perception',
+  'robotwin-scene-analyst',
   'robocasa-live',
   'robocasa-sam-live',
   'robodojo-live',
@@ -47,6 +48,23 @@ for (const name of teams) {
       assert(!member.instructions.includes(verifier));
   }
 }
+const sceneTeam = await loader.inspect(resolve('examples/teams/robotwin-scene-analyst.yaml'));
+assert.equal(sceneTeam.definition.learning_enabled, false);
+assert.equal(sceneTeam.members.analyst.definition.role_id, 'robotwin-scene-analyst');
+assert.deepEqual(sceneTeam.members.analyst.definition.tools, [
+  'evidence.read',
+  'context.request',
+  'agent.report',
+  'team.query',
+  'team.ack_report',
+]);
+assert.equal(sceneTeam.members.analyst.outputSchema.reference, 'scene-assessment.json');
+assert.equal(sceneTeam.members.analyst.outputSchema.schema.additionalProperties, false);
+assert(sceneTeam.members.analyst.outputSchema.schema.required.includes('limitations'));
+assert(sceneTeam.members.lead.definition.tools.includes('team.query'));
+assert(sceneTeam.members.lead.definition.tools.includes('team.ack_report'));
+assert.match(sceneTeam.members.analyst.instructions, /status=insufficient_context/);
+assert.match(sceneTeam.members.analyst.instructions, /preceding successful report receipt/);
 const plan = await modelToolContractSchema(validator, 'PlanDocument');
 assert.deepEqual([...plan.required].sort(), Object.keys(plan.properties).sort());
 assert.match(plan.properties.version.description, /minimum=1/);
@@ -74,6 +92,7 @@ console.log(
     configuredTeams: teams.length,
     describedCoreTools: Object.keys(CORE_TOOL_PARAMETERS).length,
     canonicalPlanProjection: 'passed',
+    sceneAnalystOutputSchema: 'passed',
     scope: 'Authored role/schema checks; no model or simulation execution.',
   }),
 );

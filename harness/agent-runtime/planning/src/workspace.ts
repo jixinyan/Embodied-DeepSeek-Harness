@@ -4,6 +4,7 @@ import type {
   PlanDocument,
   VerificationResult,
   SubgoalRequest,
+  SuccessContract,
 } from '@edh/contracts';
 import type { LocalStore } from '@edh/storage';
 /** Owner-bound planning; a claimed done item must reference an accepted formal verdict. */
@@ -14,6 +15,41 @@ export class TaskPlans {
   ) {}
   read(taskId: string): PlanDocument | undefined {
     return this.store.get<PlanDocument>(`plan:${taskId}`)?.value;
+  }
+  nextWrite(
+    taskId: string,
+    owner: { agentId: string; assignmentId: string },
+    finalGoal: { id: string; description: string; successContract: SuccessContract },
+  ): { plan: PlanDocument; expectedVersion: number } {
+    const current = this.read(taskId);
+    if (
+      current &&
+      (current.owner_agent_id !== owner.agentId ||
+        current.owner_assignment_id !== owner.assignmentId)
+    )
+      throw new Error('Plan requires decision owner.');
+    const expectedVersion = current?.version ?? 0;
+    const plan: PlanDocument = current
+      ? structuredClone(current)
+      : {
+          schema_version: 'physical.plan.v1',
+          task_id: taskId,
+          owner_agent_id: owner.agentId,
+          owner_assignment_id: owner.assignmentId,
+          version: 1,
+          items: [
+            {
+              goal_id: finalGoal.id,
+              description: finalGoal.description,
+              status: 'planned',
+              dependencies: [],
+              success_contract: structuredClone(finalGoal.successContract),
+            },
+          ],
+        };
+    plan.version = expectedVersion + 1;
+    this.validator.parse('PlanDocument', plan);
+    return { plan, expectedVersion };
   }
   update(
     plan: PlanDocument,

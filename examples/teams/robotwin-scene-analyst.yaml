@@ -1,0 +1,12 @@
+schema_version: physical.team.v1
+team_id: robotwin-scene-analyst
+learning_enabled: false
+entrypoint: lead
+members:
+  lead: ../roles/robotwin-scene-planner.md
+  analyst: ../roles/robotwin-scene-analyst.md
+  verifier: builtin:verifier
+bindings:
+  decision_owner: lead
+  final_verifier: verifier
+tool_bindings: {}

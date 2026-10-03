@@ -56,6 +56,23 @@ agent.report.result uses the configured role output schema or a JSON object, plu
 null. Both values are structured objects. Their dynamic schemas follow the same
 native DSH registration and serialization path as other tools.
 
+planning.read.planWrite returns the complete typed planning.update argument object.
+Its numeric expectedVersion and next plan.version, owner/task identities and original
+criteria come from current authoritative state. The initial template contains the
+required final goal; subsequent templates preserve all current items. Planner edits
+descriptions, statuses and dependencies before submitting that object. Reading the
+template has no write effect and no status inference. The ordinary owner, criterion,
+version and formal-verdict checks apply when the write is submitted.
+
+The configured [RoboTwin scene-analysis Team](../../examples/teams/robotwin-scene-analyst.yaml)
+uses independent Planner, SceneAnalyst and formal Verifier Sessions. Planner explicitly
+sends camera evidence and admitted context, queries each report body and acknowledges
+the exact report version. An insufficient_context report suspends the specialist until
+its caller supplies the requested context and authorized observations. The specialist's
+[output schema](../../examples/roles/scene-assessment.json) retains the supplied native
+instruction, inspected evidence IDs and limitations. Its report does not change the
+original criterion or grant formal verification authority.
+
 DSH supports type, properties, required, items, additionalProperties, enum, const,
 oneOf and annotations. The [domain projection](../../apps/server/src/model-tool-schema.ts)
 preserves supported structure and exposes numeric/string/array bounds in descriptions.
@@ -67,7 +84,7 @@ description and parameters to the model. Output schemas validate host-side value
 
 | Input | Receipt source |
 | --- | --- |
-| Plan identities and initial version | planning.read taskId, ownerAgentId, ownerAssignmentId and plan |
+| Complete next plan-write arguments | planning.read.planWrite with actual identities, criteria and numeric versions |
 | Goal selection | Admitted plan row goal_id after successful plan-write receipt |
 | Source camera | Capture/evidence receipt evidence.id and images[index].attachmentId |
 | Selected SAM mask | Segment receipt maskEvidenceId and instances[index].maskAttachmentId |
@@ -82,6 +99,27 @@ evidence permissions, ownership checks, confirmed boundaries and version checks
 remain enforced.
 
 ## Validation
+
+`scripts/check-recorded-plan-writes.mjs` accepts an actual replay directory and applies
+the production DSH input validator and TaskPlans reader/writer to its recorded calls,
+execution requests and formal verdicts. The retained custom-role source `ef8f9d03`
+checks eight rejected string-valued plans and three accepted object-valued writes.
+Four generated write templates retain their actual source criteria, owners and plan
+items without changing the journal. These source-bound checks execute no model or
+simulator and establish no new clean-workflow task acceptance. Run with:
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-plan-writes.mjs .local/work/custom-role-demo-20260930/remote-acceptance/replay
+```
+
+The same production-function check passes three accepted plan writes and four templates
+from RoboTwin `686c9767`, retaining failed/passed verdicts, and four writes/five templates
+from RoboCasa `7dfb663e`, retaining three failed verdicts. Their event SHA-256 identities
+and generated audit journals are stored under `.local/checks/recorded-plans-*`.
+Seven configured live Teams load with their responsibility workflows; the RoboTwin
+specialist's authored output schema and explicit query/acknowledgement tools pass checks.
+Formatting, TypeScript checks and DSH source-provenance checks pass. Actual model/provider
+acceptance of the new planWrite guidance and the configured specialist remains required.
 
 Actual Qwen/Pi0.5 RoboTwin run `686c9767-746a-430e-ba81-900eef3fb09c` completes
 64 controls with failed formal verification, an explicit retained-scene retry,

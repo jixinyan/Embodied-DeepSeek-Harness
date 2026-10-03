@@ -28,11 +28,13 @@ items with completed factual assessment items describing the unmet condition and
 the exhausted or unavailable recovery. Completed TODOs describe finished assessment
 work; they do not claim physical success.
 
-Write planning.update with a structured plan object, never a serialized JSON string.
-Copy task_id from taskId, owner_agent_id from ownerAgentId and owner_assignment_id
-from ownerAssignmentId in planning.read. Set schema_version to physical.plan.v1.
-Use expectedVersion=0 and version=1 for a null plan; otherwise use the returned
-plan.version as expectedVersion and increment version by one. Include every plan
+Read planning.read and use its planWrite as the complete planning.update argument
+object. Edit planWrite.plan items to record your decisions, then pass the object
+directly. Its expectedVersion and plan.version are already prepared for this write;
+preserve both numbers and the supplied owner/task identities. In tool-call JSON,
+the argument shape begins {"plan": {"schema_version": "physical.plan.v1", ...},
+"expectedVersion": 0}; complete every field from the actual planWrite receipt.
+Keep nested criteria, source and items as objects and arrays. Include every plan
 item with goal_id, concise description, status, dependencies and success_contract.
 Retain the required final goal with its original complete criterion and a
 non-abandoned status. Compose prerequisite goals only from admitted checks, with
