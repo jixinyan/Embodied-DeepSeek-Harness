@@ -45,8 +45,6 @@ def register_native_evaluation(env):
 
 class RoboDojoSession:
     def __init__(self, env, output, task):
-        if get_stage_units() != 1.0:
-            raise ValueError("RoboDojo metric measurements require a meter-based native stage.")
         self.env, self.output = env, Path(output)
         self.output.mkdir(parents=True, exist_ok=False)
         self.episode_id, self.step_id = None, 0
@@ -59,7 +57,6 @@ class RoboDojoSession:
             "task": task, "instruction": task, "simulator": "RoboDojo",
             "service": "EDH", "robot_adapter": "dual_arx_x5",
             "control_dt": 1 / env.obs_manager.collect_freq,
-            "physics_timestep_s": float(env.sim.sim.get_physics_dt()),
             "physics_count_source": "isaac_simulation_context.current_time_step_index",
             "max_episode_steps": int(env.step_lim), "action_dim": 14, "action_horizon": 150,
             "frame": "environment_origin", "eef_link": "link6", "no_rollback": True,
@@ -68,6 +65,13 @@ class RoboDojoSession:
             "supports_joint_control": True, "motion_planner": "numerical_ik",
             "control_version": "edh_grounded_direct_v1", "cameras": list(CAMERA_NAMES),
             "gripper_semantics": "continuous_0_closed_1_open"}
+        env._stream_vision = lambda *arguments, **keywords: None
+
+    def _record_physics_provenance(self):
+        env = self.env
+        if get_stage_units() != 1.0:
+            raise ValueError("RoboDojo metric measurements require a meter-based native stage.")
+        self.metadata["physics_timestep_s"] = float(env.sim.sim.get_physics_dt())
         sources = {}
         for operation, function in (("take_action", env.take_action), ("native_control_step", env.step),
                                     ("decimated_physics_step", env.sim.sim_step),
@@ -85,7 +89,6 @@ class RoboDojoSession:
             "collect_interval": int(env.obs_manager.collect_interval),
             "sources": sources,
         })
-        env._stream_vision = lambda *arguments, **keywords: None
 
     def _check_identity(self, episode_id, step_id):
         if self.poisoned or episode_id != self.episode_id or step_id != self.step_id:
@@ -167,6 +170,7 @@ class RoboDojoSession:
         if source not in ("student", "gpt_eef", "gpt_joint"):
             raise ValueError("Invalid control source.")
         self.env.reset(seed=[seed])
+        self._record_physics_provenance()
         write_json(self.output / "native_evaluation.json", register_native_evaluation(self.env))
         self.episode_id = uuid4().hex
         self.episode_dir = self.output / self.episode_id
