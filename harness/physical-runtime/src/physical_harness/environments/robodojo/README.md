@@ -72,6 +72,16 @@ locations. The service has no LitchiAgent or GPT-as-Policy imports. Upper roles
 and the execution policy remain native EDH DSH Sessions; each actual control is
 admitted by the worker's ActionGate before reaching this service.
 
+Native service configuration selects CUDA visibility through `gpu`, including a
+single complete GPU UUID. Optional `rendererGpu` selects the physical graphics
+index in the original AppLauncher configuration before Kit starts. The launcher
+disables multi-GPU rendering and supplies logical physics device `0` through the
+original Kit arguments. Native EvalEnv and cuRobo continue to use the CUDA device
+selected by their existing `torch.cuda.current_device()` configuration. Deployment
+admission must verify the initialized Kit device and every owned process's full
+graphics and compute allocation before submitting a task. This explicit startup
+binding has source and compilation checks; native placement acceptance is pending.
+
 Immutable source `d98f2af` accepts independent native watchdog fencing on
 `general_pickup`, seed 0, with the identified ARX X5 Pi0.5 checkpoint
 `fbf1abbda5863ebe4193754a9db16a1637d9127f042052b828e2aaeee7cc5dc7`.

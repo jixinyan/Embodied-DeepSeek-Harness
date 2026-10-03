@@ -14,9 +14,12 @@ def main():
     args = parser.parse_args()
     config = json.loads(args.configuration.read_text())
     required = {"python", "sdk", "data", "output", "task", "port", "gpu", "workspace"}
-    allowed = required | {"nvrtcLibrary", "graphicsLibraryDirectory", "kitArguments", "evalSeed"}
+    allowed = required | {"nvrtcLibrary", "graphicsLibraryDirectory", "kitArguments", "evalSeed", "rendererGpu"}
     if required - config.keys() or config.keys() - allowed:
         raise ValueError("RoboDojo deployment has missing or unknown fields.")
+    renderer_gpu = config.get("rendererGpu", 0)
+    if type(renderer_gpu) is not int or renderer_gpu < 0:
+        raise ValueError("rendererGpu must be a nonnegative physical GPU index.")
     root = Path(config["workspace"]).resolve(strict=True)
     python, sdk, data = (Path(config[name]).resolve(strict=True) for name in ("python", "sdk", "data"))
     output = (args.output or Path(config["output"])).resolve()
@@ -44,11 +47,15 @@ def main():
         environment["LD_LIBRARY_PATH"] = str(graphics) + os.pathsep + environment.get("LD_LIBRARY_PATH", "")
     command = [str(python), "-m", "physical_harness.environments.robodojo.server",
                "--task", config["task"], "--port", str(config["port"]), "--output", str(output),
-               "--eval-seed", str(config.get("evalSeed", 0)), "--device", "cuda:0", "--headless"]
+               "--eval-seed", str(config.get("evalSeed", 0)), "--device", f"cuda:{renderer_gpu}", "--headless"]
     if config.get("nvrtcLibrary"):
         command.extend(["--nvrtc-library", str(Path(config["nvrtcLibrary"]).resolve(strict=True))])
-    if config.get("kitArguments"):
-        command.extend(["--kit_args", config["kitArguments"]])
+    kit_arguments = config.get("kitArguments", "")
+    if "rendererGpu" in config:
+        # AppLauncher 的初始 renderer 使用物理索引，EvalEnv 保持 CUDA 逻辑设备 0。
+        kit_arguments += f" --/renderer/activeGpu={renderer_gpu} --/renderer/multiGpu/enabled=False --/physics/cudaDevice=0"
+    if kit_arguments:
+        command.extend(["--kit_args", kit_arguments])
     if sys.platform == "linux":
         parent = os.getppid()
         libc = ctypes.CDLL(None, use_errno=True)
