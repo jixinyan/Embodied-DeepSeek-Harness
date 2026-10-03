@@ -15,7 +15,9 @@ requirement or deployment binding is unclear.
   Native Qwen/Pi0.5 RoboDojo zero-tool-error retry and task success pass. Its same-
   Session terminal task passes independent zero-action verification and releases
   resources. Clean custom-role RoboTwin source/action/video acceptance also passes.
-  RoboCasa and BEHAVIOR preserve unsuccessful task outcomes with actual controls.
+  Native Qwen/GR00T RoboCasa CloseDrawer succeeds with fresh formal verification,
+  completed plan/TODOs, source-bound action/video evidence and released resources.
+  BEHAVIOR preserves unsuccessful task outcomes with actual controls.
   Native perception, active observation, transport and confirmed stop checks have
   separate evidence. Default deployment factories and maintenance bindings require
   their complete product acceptance. Evolver development is paused and SceneState
