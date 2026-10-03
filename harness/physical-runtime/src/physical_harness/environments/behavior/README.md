@@ -158,7 +158,13 @@ uses source `c3defeb2b09d8640cce8a5b28bd85b331cfbca15`, checkpoint revision
 `300db814db8ab5dd010026d5631f280048d06b91` and the original hidden instance 0,
 scene configuration 0 and compiled BDDL criterion. It admits 10,535 controls;
 the native episode ends after 9,983 controls, 1,248 actual learned inferences
-and 39,932 reported physics steps. Its confirmed `episode_terminated` boundary
+and 39,932 reported physics steps during learned execution. Five original
+pre-policy `observation.rotate` calls consume another 553 controls and 2,212
+physics steps. The complete reported native motion is 10,536 controls and
+42,144 physics steps. These Planner observations change the hidden instance's
+initial robot yaw and camera pitch before checkpoint execution; the official
+evaluation begins at the original instance reset pose. This run retains those
+actual conditioning changes. Its confirmed `episode_terminated` boundary
 is recorded at `2026-10-03T09:56:38.710Z`. The independent formal Verifier returns
 `task_success=false`. A subsequent execution in that retained episode ends during
 native preflight with zero additional controls or inferences and another fresh
