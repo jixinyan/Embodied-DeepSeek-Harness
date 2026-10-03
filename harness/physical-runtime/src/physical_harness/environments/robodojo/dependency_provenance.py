@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
 
 
 def record_native_dependencies(output: Path) -> dict:
@@ -19,7 +20,10 @@ def record_native_dependencies(output: Path) -> dict:
         package = distribution(name)
         metadata_files = [item for item in package.files
                           if item.name in {"METADATA", "PKG-INFO"}
-                          and any(part.endswith((".dist-info", ".egg-info")) for part in item.parts)]
+                          and item.parent.name.endswith((".dist-info", ".egg-info"))
+                          and (canonicalize_name(item.parent.name.rsplit(".", 1)[0]) == canonicalize_name(name)
+                               or canonicalize_name(item.parent.name.rsplit(".", 1)[0]).startswith(
+                                   canonicalize_name(name) + "-"))]
         if len(metadata_files) != 1:
             raise RuntimeError(f"Native dependency {name} has no unique original distribution metadata file.")
         metadata_path = Path(package.locate_file(metadata_files[0])).resolve(strict=True)
