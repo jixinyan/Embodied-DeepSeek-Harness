@@ -265,3 +265,53 @@ source copies, arrays, process-release audit and exact source archive are retain
 under `.local/work/behavior-owner-deadline-20261003/`. The local and remote
 `deadline-records.tar.gz` SHA-256 is
 `c547a80539984f0ddeeb349b18ff145a9e05ebbc2c3e668b8a98e83dcc07661d`.
+
+## Original-pose full-horizon task record
+
+Actual Qwen/GR00T run `f98a9aab-68fb-47de-b478-0126ca3bb20b` uses immutable
+EDH source `3c510f59fef69f104961dc1dc8a8b704d24c7fee`, checkpoint revision
+`300db814db8ab5dd010026d5631f280048d06b91` and original `picking_up_trash`
+hidden instance 0, scene configuration 0. Its configured checkpoint Team reads
+all three cameras and prepares its plan while retaining the original reset
+robot pose. Four pre-policy observations preserve the exact robot state, camera
+bytes and native simulation time; no active rotation precedes learned execution.
+The twelve retained RGB-D camera records pass source-hash, array/calibration and
+metric recomputation checks.
+
+The original native horizon and compiled BDDL criterion remain unchanged.
+Planner ends the first two attempts after 790 and 671 controls with confirmed
+`planner_stop` boundaries and fresh failed Verifiers. Its retained-scene third
+attempt executes 9,075 controls and reaches `episode_terminated`. The complete
+task retains 10,536 controls, 1,318 identified learned requests and 42,144 native
+physics steps. The SDK counter advances continuously from 41 to 42,185. Its final
+original `_post_step` result is `terminated=false`, `truncated=true`,
+`timeout.done=true`, `predicate.done=false` and `success=false`, at environment
+step 10,536. The source hash is
+`ab3e0cefd46a583a8fa9e8ccd42e5cc29590f0b9efddfb0a6f34dab74e4f6c7c`.
+The third independent formal Verifier also returns failure. Planner concludes
+the unsuccessful task with zero tool errors and zero uncertain actions.
+
+The original-source audit validates 24,035 events, 21,296 production sensor
+samples, every action receipt and learned inference identity, canonical controller
+clipping and all nine fully decoded camera videos. Each attempt's three videos
+contain its exact 790, 671 or 9,075 native frame timestamps with zero timestamp
+error. An independent physics/source audit validates 10,540 unchanged read-only
+native status records and all three original StopAcknowledgements. All 765 files
+in the executing source archive match its immutable source. These checks establish
+source, action, observation and lifecycle integrity; the native task remains failed.
+
+Session `7f4b6726-fa05-4379-a1fb-4acdba2ea856` closes with resources released at
+`2026-10-03T14:04:37.663Z`. Owned SDK PID 71044, worker PID 70977, policy,
+Console and driver processes are confirmed absent; ports 4385 and 8017 close.
+The original shutdown log is retained with the complete SDK diagnostics. This
+historical run uses SDK GPU 4 and policy GPU 5; its original device records remain
+part of the evidence.
+
+Complete original records remain on `jd_B300` under
+`.local/work/v1-behavior-20261003-checkpoint/acceptance-records.tar.gz`.
+Every archived file and symlink is independently compared against its original:
+138,677 files contain 13,800,675,116 uncompressed bytes, with archive SHA-256
+`7b4e7b197bb97a67433284ac4d468a6ca2931c4e237bdcd33d43b9b15334bbae`.
+The local and remote original configuration/audit summary archive
+`summary-records.tar.gz` has SHA-256
+`b2a32a17cffb4af5fda258c287ad01689996cbcd7a88fde84aca5a1c36862d09`.
