@@ -11,7 +11,7 @@ from uuid import uuid4
 
 class NativeTerminalRecorder:
     def __init__(self, provider: str) -> None:
-        if provider not in {"robotwin", "behavior"}:
+        if provider not in {"robotwin", "behavior", "robocasa"}:
             raise ValueError("Unsupported native terminal recorder provider.")
         self.provider = provider
         self.scene_id = str(uuid4())

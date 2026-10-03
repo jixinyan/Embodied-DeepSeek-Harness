@@ -95,6 +95,24 @@ try {
   await save('catalog.json', catalog);
   for (const [index, scenario] of values.task.entries()) {
     assert(catalog.tasks[scenario], `Unknown admitted task: ${scenario}`);
+    const readyDeadline = Date.now() + timeoutMs;
+    const lifecycle = [];
+    for (;;) {
+      const current = await api(`/api/sessions/${session.id}`);
+      assert.equal(current.id, session.id);
+      assert.equal(current.resources, 'held', JSON.stringify(current));
+      if (lifecycle.at(-1)?.state !== current.state) {
+        lifecycle.push({ state: current.state, updatedAt: current.updatedAt });
+        await save(`session-lifecycle-before-task-${index + 1}.json`, lifecycle);
+      }
+      if (current.state === 'ready') {
+        await save(`ready-before-task-${index + 1}.json`, current);
+        break;
+      }
+      assert(index > 0 && ['running', 'draining'].includes(current.state), JSON.stringify(current));
+      assert(Date.now() < readyDeadline, 'Session did not finish retiring its previous task.');
+      await setTimeout(300);
+    }
     const directory = resolve(output, `task-${index + 1}`);
     await mkdir(directory);
     const submission = await api(`/api/sessions/${session.id}/tasks`, {

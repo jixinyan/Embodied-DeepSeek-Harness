@@ -16,7 +16,7 @@ def audit(packet, schema_path):
     reader = importlib.util.module_from_spec(specification)
     specification.loader.exec_module(reader)
     provider = packet["provider"]
-    require(provider in {"robotwin", "behavior"}, "Unsupported retained provider terminal source.")
+    require(provider in {"robotwin", "behavior", "robocasa"}, "Unsupported retained provider terminal source.")
     first, second = packet["first"], packet["second"]
     require(first["run"]["state"] == second["run"]["state"] == "succeeded" and
             first["run"]["id"] != second["run"]["id"] and

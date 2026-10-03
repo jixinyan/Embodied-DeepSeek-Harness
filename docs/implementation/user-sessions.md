@@ -71,6 +71,12 @@ restart, unfinished sessions become `interrupted / unknown`, with no physical co
 replay. Historical sessions are read-only; provider resource reconciliation remains an
 integration requirement. A closed session retains its conversation task records and skills.
 
+`scripts/run-live-acceptance.mjs` waits for the retained Session's `ready / held`
+state before each sequential task submission. It records the observed lifecycle
+transitions and ready admission record. A terminal task outcome can precede the
+completion of role retirement; a subsequent task requires that retirement to
+finish. Unexpected resource or lifecycle states fail the acceptance immediately.
+
 ## Session-open request identity
 
 UserSessions owns `session-open-request:{requestId}` records with format

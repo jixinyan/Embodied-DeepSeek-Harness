@@ -40,6 +40,15 @@ the terminal boundary. This matches the official GR00T evaluation wrapper's
 `terminate_on_success` setting. The independent Verifier still evaluates
 `task_success` after the confirmed end. The adapter stores no success latch;
 task binding preserves the scene and subsequent checks read its current state.
+With `EDH_POLICY_REQUEST_RECORD_DIR`, original terminal-query records retain the
+native control counter, horizon, current MuJoCo clock, complete native state and
+control hashes, scene configuration, owner identity and predicate/control source
+digests. Each query checks that those values remain unchanged. Physics receipt
+totals remain derived from elapsed simulation time and `model_timestep`.
+The strict retained-provider reader supports RoboCasa's fresh zero-action
+boundaries and compares the original terminal state across sequential tasks.
+Actual same-Session success-predicate acceptance requires a closed native run
+with both task histories and these source records.
 Qwen/GR00T `CloseDrawer` run `043520a2` verifies this successful-predicate branch
 with a confirmed device boundary and fresh independent formal success.
 

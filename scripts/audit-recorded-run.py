@@ -22,7 +22,7 @@ def audit_retained_terminal_executions(run, events, samples, request_directory, 
     providers = {sample["visualization"].get("provider") for sample in samples or []
                  if sample["visualization"].get("executionId") in {
                      status["execution_id"] for status in selected}}
-    if providers in ({"robotwin"}, {"behavior"}):
+    if providers in ({"robotwin"}, {"behavior"}, {"robocasa"}):
         return audit_recorded_provider_terminals(run, events, samples, request_directory, schema_path,
                                                  next(iter(providers)))
     require(all(value is not None for value in (samples, request_directory, episode_root, schema_path)),
@@ -284,6 +284,17 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
                     termination["source_file"] == baseline["sources"]["termination"]["path"] and
                     state["controlled_physics_steps"] == state["native_control_counter"] * 4,
                     "BEHAVIOR terminal source differs from its original SDK flags and actual counters.")
+        elif provider == "robocasa":
+            require(state["physics_count_source"] == "robocasa.mujoco.elapsed_time/model_timestep" and
+                    (state["native_done"] is True or baseline["current_task_success"] is True) and
+                    type(state["physics_timestep_s"]) is float and state["physics_timestep_s"] > 0 and
+                    math.isclose(state["reported_simulation_time_s"],
+                                 state["controlled_physics_steps"] * state["physics_timestep_s"],
+                                 rel_tol=1e-9, abs_tol=1e-8) and
+                    all(isinstance(state[key], str) and len(state[key]) == 64 and
+                        all(character in "0123456789abcdef" for character in state[key])
+                        for key in ("native_state_sha256", "native_control_sha256")),
+                    "RoboCasa terminal source differs from its original predicate, state or clock-derived receipts.")
         else:
             require(state["physics_count_source"] == "robotwin.take_action.on_physics_step" and
                     (state["native_eval_success"] is True or

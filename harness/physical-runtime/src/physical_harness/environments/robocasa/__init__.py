@@ -8,6 +8,7 @@ import hashlib
 import json
 import math
 import os
+from pathlib import Path
 import time
 from typing import Callable, Mapping, Sequence
 from uuid import uuid4
@@ -33,6 +34,7 @@ from physical_harness.environments import (
 from physical_harness.validation import ContractValidator
 from physical_harness.perception.metric_geometry import summarize_metric_region
 from physical_harness.perception.metric_capture import MetricCapture
+from physical_harness.environments.native_terminal_record import NativeTerminalRecorder
 
 
 CAMERA_NAMES = (
@@ -77,6 +79,8 @@ class RoboCasaEnvironment:
         self._scene_parameters: dict[str, object] | None = None
         self._camera_resolution = 256
         self._native_done = False
+        self._controlled_physics_steps = 0
+        self._terminal_recorder = NativeTerminalRecorder("robocasa")
 
     @staticmethod
     def _scene_configuration(configuration: Mapping[str, object]) -> dict[str, object]:
@@ -351,15 +355,41 @@ class RoboCasaEnvironment:
         if raw_steps <= 0:
             raise RuntimeError("RoboCasa did not advance simulation time for the control action.")
         self._simulation_time_s += elapsed
+        self._controlled_physics_steps += raw_steps
         observation = self._observation(raw)
         frame = NativeFrame(
             observation.observation_id, observation.observed_at, observation.images,
             raw_steps, self._simulation_time_s,
         )
-        return NativeStep(observation, 1, True, raw_steps, bool(done or env._check_success()), (frame,))
+        return NativeStep(observation, 1, True, raw_steps, self.episode_terminated(), (frame,))
 
     def episode_terminated(self) -> bool:
-        return self._native_done or bool(self._require_env()._check_success())
+        env = self._require_env()
+        before = self._terminal_state()
+        success = bool(env._check_success())
+        terminated = self._native_done or success
+        self._terminal_recorder.record(
+            before=before, after=self._terminal_state(), current_success=success, terminated=terminated,
+            provider_source=Path(__file__), predicate=env._check_success, control=env.step,
+        )
+        return terminated
+
+    def _terminal_state(self) -> dict:
+        env = self._require_env()
+        native_state = np.asarray(env.sim.get_state().flatten(), dtype=np.float64)
+        control = np.asarray(env.sim.data.ctrl, dtype=np.float64)
+        if not np.isfinite(native_state).all() or not np.isfinite(control).all():
+            raise RuntimeError("RoboCasa terminal state contains nonfinite native physics values.")
+        return {"task_id": self._task_id, "scene_configuration": deepcopy(self._scene_parameters),
+                "native_control_counter": int(env.timestep), "native_step_limit": int(env.horizon),
+                "native_done": self._native_done,
+                "controlled_physics_steps": self._controlled_physics_steps,
+                "physics_count_source": "robocasa.mujoco.elapsed_time/model_timestep",
+                "physics_timestep_s": float(env.model_timestep),
+                "simulation_time_s": float(env.sim.data.time),
+                "reported_simulation_time_s": self._simulation_time_s,
+                "native_state_sha256": hashlib.sha256(native_state.tobytes()).hexdigest(),
+                "native_control_sha256": hashlib.sha256(control.tobytes()).hexdigest()}
 
     def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]:
         env = self._require_env()
