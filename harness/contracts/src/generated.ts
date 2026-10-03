@@ -287,6 +287,7 @@ export interface ExecutionStatus {
   raw_sim_steps?: number;
   stop_reason?:
     | "policy_stop"
+    | "planner_stop"
     | "budget_exhausted"
     | "verifier_pause"
     | "planner_pause"

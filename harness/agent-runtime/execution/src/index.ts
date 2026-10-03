@@ -32,6 +32,7 @@ export type {
   BackendPolicyEvent,
   BackendCallOptions,
   BackendResumeOptions,
+  BackendEndOptions,
   BackendCheckOptions,
   BackendCheckResult,
   BackendObjectMeasurementInput,

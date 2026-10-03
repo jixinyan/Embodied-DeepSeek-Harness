@@ -909,6 +909,33 @@ class NativeTaskBackend implements EmbodiedBackend {
     await this.transport.request('pause', { execution_id: this.status.execution_id });
   }
 
+  async end(options: import('@edh/execution').BackendEndOptions): Promise<void> {
+    options.signal?.throwIfAborted();
+    const result = object(
+      await this.transport.request(
+        'end',
+        {
+          execution_id: options.executionId,
+          owner_id: options.ownerId,
+          owner_assignment_id: options.ownerAssignmentId,
+          task_scope: options.taskScope,
+        },
+        { signal: options.signal },
+      ),
+    );
+    const status = this.validator.parse('ExecutionStatus', result.status);
+    if (
+      status.execution_id !== options.executionId ||
+      !isDeepStrictEqual(status.task_scope, options.taskScope) ||
+      status.state !== 'ended' ||
+      !status.device_confirmed ||
+      !isDeepStrictEqual(this.status, status)
+    )
+      throw new Error(
+        'Native terminal review receipt differs from its published confirmed boundary.',
+      );
+  }
+
   async resume(
     ownerId: string,
     options: { executionId: string; boundaryId: string; stateVersion: number },

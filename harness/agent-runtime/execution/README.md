@@ -56,6 +56,26 @@ Planner's perception tool result and the Verifier-to-Planner feedback use native
 image content. Return no raw bytes or arbitrary URLs in this metadata port. See the
 [image routing guide](../../../docs/implementation/model-policy-adapters.md).
 
+## Planner terminal review
+
+Native deployments expose `execution.end` when their backend implements `end`.
+The authenticated decision owner supplies the exact `executionId` and an
+observation-supported review reason. `BackendEndOptions` carries that execution,
+owner, assignment and immutable task/goal/attempt/recovery scope to the worker.
+The worker validates the complete binding under its existing control lock.
+
+A running or ordinarily paused job ends through the existing ActionGate with
+`planner_stop`. Its policy work drains, the device confirms stopping and the
+owner thread captures a stopped observation. The host admits that fresh boundary
+and creates an independent formal Verifier. An already ended job returns its
+published immutable status; concurrent native termination or failure keeps its
+original reason and boundary. Repeated review cannot create another boundary or
+Verifier for the same ended execution. Policy drain and device-stop failures
+remain explicit. Ordinary pause retains its separate resume behavior.
+
+Terminal review ends the attempt without asserting success. Goal selection,
+retry and task completion still require the applicable admitted formal result.
+
 ## Bound resume decisions
 
 The native `execution.resume` tool admits one in-flight resume decision at a time.

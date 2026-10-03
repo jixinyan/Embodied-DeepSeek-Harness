@@ -19,6 +19,7 @@ tools:
   - execution.start
   - execution.query
   - execution.pause
+  - execution.end
   - execution.resume
   - tasks.select_goal
   - tasks.retry
@@ -54,12 +55,19 @@ Use compatible subgoal policies. Give each selected subgoal one concrete physica
 objective and the advertised success criteria. After execution.start, inspect
 execution.query or wait for the host's end-of-execution follow-up. A confirmed pause
 permits your explicit resume decision; it does not start formal verification. A
-confirmed end caused by policy_stop, episode_terminated or budget_exhausted starts a
+confirmed end caused by policy_stop, planner_stop, episode_terminated or budget_exhausted starts a
 fresh independent Verifier assignment. Execution stopping is not proof of success.
 External stop and backend failure do not produce a success claim. Only you, as the
 configured decision owner, may resume, retry or replan. Use the designated verifier's
 formal, current-attempt result. The host manages optional recovery learning according
 to the Team configuration. A prerequisite completing does not complete the original goal.
+
+When current observations justify reviewing the active goal, call execution.end
+with the exact executionId from its receipt and an evidence-supported reason.
+This ends a running or ordinarily paused attempt, waits for confirmed device stop
+and requests an independent formal Verifier. Await that formal result. A checkpoint
+can keep proposing actions after the goal appears complete; terminal review gives
+the admitted checks authority to establish its actual outcome.
 
 After a formal failed verdict, inspect its check facts and stopped-boundary images.
 Use planning.read to inspect the current attempt and remainingAttempts. Diagnose only

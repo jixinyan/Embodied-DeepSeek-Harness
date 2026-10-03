@@ -104,7 +104,7 @@ Only the request's decision owner can resume. An exhausted control/wall budget r
 `ended`; it cannot renew itself. Ended/paused statuses carry a boundary ID and time.
 
 `requiresVerification(status)` (`requires_verification` in Python) selects an
-`ended` status with `policy_stop`, `episode_terminated` or `budget_exhausted`.
+`ended` status with `policy_stop`, `planner_stop`, `episode_terminated` or `budget_exhausted`.
 The runtime admits a fresh independent Verifier after the device confirms that
 boundary. An ordinary pause remains with Planner. Cancellation and backend
 failure preserve failed or unknown outcomes. Task completion requires the

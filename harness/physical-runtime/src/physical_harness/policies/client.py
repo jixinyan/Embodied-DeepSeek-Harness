@@ -157,10 +157,12 @@ class WebSocketPolicyClient:
     async def close(self) -> None:
         self._closed = True
         active = self._active
-        if active is not None and active is not asyncio.current_task():
-            active.cancel()
-            try:
-                await active
-            except (Exception, asyncio.CancelledError):
-                pass
-        await self._disconnect()
+        try:
+            if active is not None and active is not asyncio.current_task():
+                active.cancel()
+                try:
+                    await active
+                except asyncio.CancelledError:
+                    pass
+        finally:
+            await self._disconnect()

@@ -25,7 +25,7 @@ class LifecycleValidator:
     def requires_verification(self, status):
         self.contracts.parse("ExecutionStatus", status)
         return status["state"] == "ended" and status.get("stop_reason") in (
-            "policy_stop", "episode_terminated", "budget_exhausted"
+            "policy_stop", "planner_stop", "episode_terminated", "budget_exhausted"
         )
 
     def execution(self, request, previous, next_state, actor_agent_id=None):

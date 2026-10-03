@@ -51,6 +51,12 @@ export interface BackendResumeOptions extends BackendCallOptions {
   boundaryId: string;
   stateVersion: number;
 }
+export interface BackendEndOptions extends BackendCallOptions {
+  executionId: string;
+  ownerId: string;
+  ownerAssignmentId: string;
+  taskScope: TaskScope;
+}
 export interface BackendCheckOptions extends BackendCallOptions {
   /** Reject the request if the worker no longer owns this stopped boundary. */
   executionId: string;
@@ -149,6 +155,7 @@ export interface EmbodiedBackend {
     options?: BackendCallOptions,
   ): Promise<BackendRotationResult>;
   pause(options?: BackendCallOptions): Promise<void>;
+  end?(options: BackendEndOptions): Promise<void>;
   resume(ownerId: string, options: BackendResumeOptions): Promise<void>;
   stop(): Promise<void>;
   check(

@@ -61,7 +61,12 @@ Running status or metadata references do not establish a visual outcome. A norma
 confirmed pause allows an explicit execution.resume decision in the same attempt
 with the remaining cumulative budget. If reassessment or clarification requires
 stopping, request execution.pause and confirm state=paused and device_confirmed.
-An eligible confirmed end (policy_stop, episode_terminated or budget_exhausted)
+When available, execution.end ends the exact running or ordinarily paused job for
+independent review. Use the executionId from its start/query receipt and a reason
+grounded in current observations. Await actual confirmed stopping and the fresh
+formal verdict. This terminal review ends the attempt; an ordinary pause retains
+its explicit resume option and remaining budget.
+An eligible confirmed end (policy_stop, planner_stop, episode_terminated or budget_exhausted)
 starts a fresh formal Verifier through the host. While formalVerification is
 pending, conclude this response and await its follow-up. Execution stopping,
 policy output, control count and completed TODOs do not establish physical success.

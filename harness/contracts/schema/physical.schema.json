@@ -1474,6 +1474,7 @@
           "type": "string",
           "enum": [
             "policy_stop",
+            "planner_stop",
             "budget_exhausted",
             "verifier_pause",
             "planner_pause",

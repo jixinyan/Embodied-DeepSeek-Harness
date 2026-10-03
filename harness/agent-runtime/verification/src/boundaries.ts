@@ -58,7 +58,9 @@ export class VerificationBoundaries {
     if (
       status.state !== 'ended' ||
       !status.device_confirmed ||
-      !['policy_stop', 'episode_terminated', 'budget_exhausted'].includes(status.stop_reason ?? '')
+      !['policy_stop', 'planner_stop', 'episode_terminated', 'budget_exhausted'].includes(
+        status.stop_reason ?? '',
+      )
     )
       throw new Error('Formal verification requires a confirmed completed execution boundary.');
     if (previous) {

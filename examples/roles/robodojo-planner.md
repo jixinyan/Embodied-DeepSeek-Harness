@@ -14,6 +14,7 @@ tools:
   - execution.start
   - execution.query
   - execution.pause
+  - execution.end
   - execution.resume
   - tasks.select_goal
   - tasks.retry
@@ -56,6 +57,11 @@ native criterion unchanged.
 
 Inspect execution status and new images when needed. A normal confirmed pause
 does not start verification. Use skills.search and load only relevant experience.
+When current images support reviewing an active goal, use execution.end with its
+exact executionId and the observation-supported reason. This ends the attempt
+through a confirmed device stop and a fresh independent formal Verifier. The
+selected learned checkpoint can keep proposing controls after a stage appears
+complete. Await the admitted check result before selecting the next goal or retry.
 Finish only after the designated verifier supplies the matching formal verdict.
 After final formal success, set the final plan row to done with that verdict's
 last_verdict_ref, complete every remaining plan row and TODO, then call tasks.finish.

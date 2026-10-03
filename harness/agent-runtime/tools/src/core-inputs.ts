@@ -145,6 +145,10 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
   },
   'execution.query': {},
   'execution.pause': {},
+  'execution.end': {
+    executionId: text('Exact current execution_id from the accepted start or query receipt.'),
+    reason: text('Observation-supported reason to end this attempt for independent formal review.'),
+  },
   'execution.resume': {},
   'tasks.select_goal': {
     goalId: text('Exact goal_id of a ready item in the last successfully written plan.'),
@@ -245,6 +249,8 @@ export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
     'Read the current published job status without starting motion. Returns execution (null when absent) and formalVerification (null or assignmentId/status/verdictStatus/nextStep). Inspect control_steps, policy_calls, stop_reason, device_confirmed and boundary_event_id. A pending formalVerification is host-owned: finish this response and wait for its verdict follow-up. Status references can be metadata-only while running; do not interpret those as images or success.',
   'execution.pause':
     'Decision owner requests confirmed stopping of the current job. Returns execution status after the request; require state=paused and device_confirmed before treating motion as paused. Ordinary pause preserves the current attempt and cumulative budget and creates no formal Verifier.',
+  'execution.end':
+    'Decision owner ends the exact current running or ordinarily paused job for independent formal review. Supply its executionId and an observation-supported reason. The worker drains policy work, confirms device stop and publishes a fresh ended boundary with planner_stop; the host assigns a fresh Verifier. Returns the actual current execution. A concurrent native end retains its original reason and boundary. This action ends the attempt and declares no physical success; await the formal verdict before goal selection, retry or completion.',
   'execution.resume':
     'Decision owner explicitly resumes a confirmed ordinarily paused job in the same attempt with its remaining cumulative budget. Returns execution status. Reassess the scene and current goal before authorization; ended jobs require the formal outcome and explicit retry instead.',
   'verification.check':

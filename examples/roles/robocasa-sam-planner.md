@@ -18,6 +18,7 @@ tools:
   - execution.start
   - execution.query
   - execution.pause
+  - execution.end
   - execution.resume
   - tasks.select_goal
   - tasks.retry

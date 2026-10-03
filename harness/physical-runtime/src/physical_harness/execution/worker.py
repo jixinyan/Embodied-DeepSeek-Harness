@@ -704,24 +704,42 @@ class NativeWorkerSession:
         if gate.snapshot()["state"] == "running":
             await self._publish(observation, self._last_control, require_running=True)
 
-    async def pause(self, arguments: dict[str, Any], *, terminal: bool = False) -> dict[str, Any]:
+    async def pause(self, arguments: dict[str, Any], *, terminal: bool = False,
+                    review: bool = False) -> dict[str, Any]:
         async with self._control_lock:
             gate = self._require_gate()
             if "execution_id" in arguments and arguments["execution_id"] != gate.snapshot()["execution_id"]:
                 raise ValueError("Stop request belongs to another execution.")
+            if review:
+                if (arguments["execution_id"] != gate.snapshot()["execution_id"] or
+                        arguments["owner_id"] != self._request["decision_owner_id"] or
+                        arguments["owner_assignment_id"] != self._request["owner_assignment_id"] or
+                        arguments["task_scope"] != self._status["task_scope"]):
+                    raise ValueError("Terminal review requires the current admitted decision owner and task scope.")
             if gate.snapshot()["state"] == "ended":
+                if self._pump is not None:
+                    await self._pump
+                    self._pump = None
+                if (self._status["state"] != "ended" or
+                        self._last_boundary_publication is None):
+                    await self._publish(await self._require_device().on_owner(self._environment.observe), self._last_control)
                 return {"status": self._status, "observation": self._observation_wire(self._latest_observation)}
-            reason = "user_stop" if terminal else "planner_pause"
+            snapshot = gate.snapshot()
+            reason = "planner_stop" if review else ("user_stop" if terminal else "planner_pause")
+            if review and snapshot["state"] == "pausing" and snapshot["stop_reason"] not in ("planner_pause", "verifier_pause"):
+                reason = snapshot["stop_reason"]
             stopping = asyncio.create_task(gate.pause(reason, terminal=terminal))
             if self._policy is not None:
                 await self._policy.close()
                 self._policy = None
             await stopping
-            observation = await self._require_device().on_owner(self._environment.observe)
-            publication = await self._publish(observation, self._last_control)
             if self._pump is not None:
                 await self._pump
                 self._pump = None
+            observation = await self._require_device().on_owner(self._environment.observe)
+            publication = await self._publish(observation, self._last_control)
+            if terminal:
+                self._release_execution_resources()
             return publication
 
     async def resume(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -1017,6 +1035,7 @@ async def serve() -> None:
         "start": session.start,
         "pause": session.pause,
         "stop": lambda args: session.pause(args, terminal=True),
+        "end": lambda args: session.pause(args, terminal=True, review=True),
         "resume": session.resume,
         "capture": session.capture,
         "measure_object": session.measure_object,

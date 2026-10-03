@@ -46,7 +46,9 @@ export class LifecycleValidator {
     this.contracts.parse('ExecutionStatus', status);
     return (
       status.state === 'ended' &&
-      ['policy_stop', 'episode_terminated', 'budget_exhausted'].includes(status.stop_reason ?? '')
+      ['policy_stop', 'planner_stop', 'episode_terminated', 'budget_exhausted'].includes(
+        status.stop_reason ?? '',
+      )
     );
   }
   execution(

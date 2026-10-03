@@ -681,6 +681,7 @@ export class UpperRun {
   private tools(a: Assignment): ToolDefinition[] {
     return a.brief.tools_and_limits.allowed_tools
       .filter((logical) => logical !== 'todo_write')
+      .filter((logical) => logical !== 'execution.end' || Boolean(this.options.backend.end))
       .map((logical) => {
         const extra = this.options.additionalTools?.[logical];
         let native: ToolDefinition;
@@ -718,6 +719,7 @@ export class UpperRun {
               'observation.rotate',
               'execution.start',
               'execution.pause',
+              'execution.end',
               'execution.resume',
               'verification.check',
               'tasks.abandon',
@@ -1709,6 +1711,49 @@ export class UpperRun {
         this.owner(a);
         await this.pause('planner', a.id);
         return { execution: this.options.backend.query() ?? null };
+      case 'execution.end': {
+        this.owner(a);
+        const end = this.options.backend.end;
+        if (!end) throw new Error('This physical provider does not support terminal review.');
+        const execution = this.options.backend.query();
+        const request = this.currentRequest();
+        if (
+          !execution ||
+          !request ||
+          !['running', 'pausing', 'paused', 'ended'].includes(execution.state) ||
+          execution.execution_id !== s('executionId') ||
+          execution.task_scope.task_id !== this.state.id ||
+          execution.task_scope.goal_id !== this.goal.id ||
+          execution.task_scope.attempt_id !== `attempt-${this.state.attempt}` ||
+          execution.task_scope.recovery_id !== request.recovery_id ||
+          request.decision_owner_id !== a.sessionId ||
+          request.owner_assignment_id !== a.id
+        )
+          throw new Error('Terminal review must match the current owned goal execution.');
+        if (execution.state !== 'ended')
+          this.event('execution.end-requested', {
+            assignmentId: a.id,
+            executionId: execution.execution_id,
+            stateVersion: execution.state_version,
+            reason: s('reason'),
+          });
+        const ending = end.call(this.options.backend, {
+          executionId: execution.execution_id,
+          ownerId: a.sessionId,
+          ownerAssignmentId: a.id,
+          taskScope: structuredClone(execution.task_scope),
+          signal,
+        });
+        this.spawn(ending);
+        await ending;
+        const current = this.options.backend.query();
+        if (!current || current.execution_id !== execution.execution_id)
+          throw new Error('Terminal review receipt lost its execution identity.');
+        this.options.validator.parse('ExecutionStatus', current);
+        if (current.state !== 'ended' || !current.device_confirmed)
+          throw new Error('Terminal review requires an actual confirmed ended boundary.');
+        return { execution: current };
+      }
       case 'execution.resume':
         return this.resumeExecution(a, signal);
       case 'tasks.select_goal': {
