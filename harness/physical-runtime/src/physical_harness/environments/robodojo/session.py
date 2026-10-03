@@ -1,7 +1,9 @@
 import hashlib
 import inspect
 import json
+from datetime import datetime, timezone
 from pathlib import Path
+import time
 from uuid import uuid4
 
 import imageio.v2 as imageio
@@ -48,6 +50,7 @@ class RoboDojoSession:
         self.env, self.output = env, Path(output)
         self.output.mkdir(parents=True, exist_ok=False)
         self.episode_id, self.step_id = None, 0
+        self.status_audit_position = 0
         self.terminated = self.truncated = self.success = False
         self.poisoned, self.finished = True, False
         self.video_writer, self.video_frames = None, 0
@@ -293,6 +296,43 @@ class RoboDojoSession:
             "reason": self.finish_reason or reason, "video_frames": self.video_frames,
             "control_dt": self.metadata["control_dt"], "native_step_limit": self.metadata["max_episode_steps"]})
 
+    def episode_status(self):
+        simulator = self.env.sim.sim
+        physics_before = int(simulator.current_time_step_index)
+        time_before = float(simulator.current_time)
+        native_counter = int(self.env.take_action_cnt[0])
+        native_ended, native_success = bool(self.env.end_flag[0]), bool(self.env.success[0])
+        if native_counter != self.step_id:
+            raise RuntimeError("Native episode status control counter differs from the retained episode step.")
+        success = bool(native_ended and native_success)
+        truncated = bool(native_ended and not success and self.step_id >= self.env.step_lim)
+        status = {"terminated": bool(native_ended and not truncated), "truncated": truncated,
+                  "success": success, "finished": self.finished}
+        observation_path = self.episode_dir / "observations" / f"{self.step_id:06d}.npz"
+        provenance_path = self.output / "physics-provenance.json"
+        physics_after, time_after = int(simulator.current_time_step_index), float(simulator.current_time)
+        if physics_before != physics_after or time_before != time_after:
+            raise RuntimeError("Read-only native episode status advanced the physics counter or simulation time.")
+        record = {
+            "schema_version": "edh.robodojo.episode_status.v1",
+            "episode_id": self.episode_id, "step_id": self.step_id,
+            "audit_position": self.status_audit_position, "monotonic_ns": time.monotonic_ns(),
+            "recorded_at": datetime.now(timezone.utc).isoformat(timespec="milliseconds"),
+            "native_control_counter": native_counter, "native_end_flag": native_ended,
+            "native_success_flag": native_success, "native_step_limit": int(self.env.step_lim),
+            **status, "native_physics_step_before": physics_before,
+            "native_physics_step_after": physics_after, "simulation_time_before_s": time_before,
+            "simulation_time_after_s": time_after, "physics_timestep_s": float(simulator.get_physics_dt()),
+            "physics_count_source": self.metadata["physics_count_source"], "physical_steps": 0,
+            "observation_path": str(observation_path.relative_to(self.output)),
+            "observation_sha256": hashlib.sha256(observation_path.read_bytes()).hexdigest(),
+            "physics_provenance_sha256": hashlib.sha256(provenance_path.read_bytes()).hexdigest(),
+        }
+        with (self.episode_dir / f"episode_status_{self.status_audit_position:06d}.json").open("x") as output:
+            output.write(json.dumps(record, indent=2, allow_nan=False) + "\n")
+        self.status_audit_position += 1
+        return status
+
     def dispatch(self, operation, arguments):
         if operation == "metadata":
             return self.metadata
@@ -303,11 +343,7 @@ class RoboDojoSession:
         if operation == "teacher_observation":
             return self.obs
         if operation == "episode_status":
-            ended = bool(self.env.end_flag[0])
-            success = bool(ended and self.env.success[0])
-            truncated = bool(ended and not success and self.step_id >= self.env.step_lim)
-            return {"terminated": bool(ended and not truncated), "truncated": truncated,
-                    "success": success, "finished": self.finished}
+            return self.episode_status()
         if operation == "begin_combination":
             write_json(self.output / "combination.json", values)
             return {"physical_steps": 0}
