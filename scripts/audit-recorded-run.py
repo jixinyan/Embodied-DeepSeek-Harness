@@ -62,7 +62,14 @@ def conventional_policy_sources(run, request_directory, service_log, policy_mani
     validator = ContractValidator.from_path(schema_path)
     manifest = json.loads(policy_manifest.read_text(encoding="utf-8"))
     pinned = manifest["upstream"]
-    embodiment_id = manifest["action"]["action_spec"]["embodiment_id"]
+    if manifest["id"] == "gr00t-n1d6-behavior-r1pro":
+        require(pinned["embodiment_tag"] == "BEHAVIOR_R1_PRO" and
+                manifest["action"]["control_mode"] == "behavior.r1pro_native" and
+                manifest["action"]["native_channels"] == 23 and manifest["action"]["horizon"] == 32,
+                "The BEHAVIOR policy manifest has an incompatible native controller binding.")
+        embodiment_id = "behavior.r1pro"
+    else:
+        embodiment_id = manifest["action"]["action_spec"]["embodiment_id"]
     provider = embodiment_id.split(".", 1)[0]
     require(provider in {"robotwin", "robocasa", "behavior"},
             "The pinned learned manifest has no admitted native provider.")
