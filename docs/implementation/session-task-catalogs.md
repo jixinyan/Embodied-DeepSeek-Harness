@@ -93,6 +93,37 @@ repeated-task acceptance for a genuinely terminated native scene is tracked in t
 [delivery record](v1-delivery.md), independently from positive learned-policy action
 acceptance. Historical journal inspection does not execute or resume an environment.
 
+`scripts/check-retained-terminal-task.ts` reads a private copy of an actual closed
+Session journal through production membership, catalog, event, assignment, sensor,
+boundary and verdict readers. It requires a succeeded native first task and a
+second task with a new confirmed terminal boundary, independent Verifier and zero
+new policy calls, controls or physics steps. The native helper verifies the same
+RoboDojo episode through its retained `episode_status` records, actual SDK counter,
+current native GT and final NPZ camera arrays. It also checks original request,
+ActionSegment and policy-service sources. This dedicated check preserves the
+positive learned-policy auditor's requirement for actual inference and controls.
+
+Run against original completed records using an installed Python environment with
+the native audit dependencies:
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-retained-terminal-task.ts \
+  --data-directory "$EDH_COMPLETED_CONSOLE_DIRECTORY" \
+  --session-id "$EDH_COMPLETED_SESSION_ID" \
+  --first-run-id "$EDH_SUCCEEDED_NATIVE_RUN_ID" \
+  --second-run-id "$EDH_RETAINED_TERMINAL_RUN_ID" \
+  --native-episode-root "$EDH_RETAINED_NATIVE_EPISODE_ROOT" \
+  --policy-request-directory "$EDH_RETAINED_POLICY_REQUEST_DIRECTORY" \
+  --bridge-service-log "$EDH_RETAINED_BRIDGE_SERVICE_LOG" \
+  --native-policy-service-log "$EDH_RETAINED_NATIVE_POLICY_SERVICE_LOG" \
+  --python "$EDH_NATIVE_AUDIT_PYTHON"
+```
+
+The command writes private acceptance artifacts under `.local/work/` and leaves
+the original journal/images unchanged. Missing native sources or unresolved
+ownership fail the check. Its actual repeated-task gate remains open until an
+accepted closed native two-task record is retained.
+
 ## Console behavior and verification
 
 The console loads the active session's catalog, displays its tasks, and uses the same
