@@ -54,6 +54,39 @@ The fresh independent Verifier reads the admitted native checks. A passed
 prerequisite permits the next goal; final task completion still requires the
 original task criterion.
 
-Source checks validate the declared interface and schemas. Actual cadence,
-terminal review, race handling and multi-goal acceptance require retained native
-worker, model, action and verification records.
+Inspect complete actual task histories and original worker policy records with:
+
+```bash
+PYTHONPATH=harness/physical-runtime/src python scripts/check-recorded-terminal-review.py \
+  --run data/acceptance/run.json --events data/acceptance/events.json \
+  --policy-records data/acceptance/policy-requests \
+  --schema-path harness/contracts/schema/physical.schema.json \
+  --output data/acceptance/terminal-review-audit.json \
+  --require-running-review --require-planner-stop
+```
+
+The reader checks original native model arguments, decision ownership, task scope,
+immutable ended receipts, the recorded owner-thread StopAcknowledgement, actual
+action receipt counts and the single independent formal assignment. Add
+`--require-repeat` when the history contains repeated native model end calls.
+The reported task outcome comes from the original history.
+
+Actual run `d0178a6f` on immutable source `8aa11fc` delivers its first review at
+32 controls. Planner ends the native job at 108 controls and 1,080 physics steps,
+with seven learned requests and one confirmed `planner_stop` boundary. One fresh
+Verifier finds the original tower criterion false; the task ends as failed and
+releases its resources. The complete 347-event audit checks 220 sensor records,
+three original camera videos and zero tool errors. This run contains one model
+end call. Its final task TODO remains in progress in the retained failed outcome.
+
+The separate actual native worker race `aab51787` uses eight learned controls and
+80 physics steps. Its real budget stop waits behind an owner-thread observation
+while the owned SDK process is suspended. An authenticated Planner review during
+that pending confirmation preserves `budget_exhausted`. After process continuation,
+the original acknowledgement confirms the same generation and counters. Repeated
+worker review retains the same status and observation, with one ended publication
+and unchanged native state and image bytes. The worker and native process close.
+This physical boundary check supplies no task-success result.
+
+Multi-goal task completion requires its own retained native goal and verification
+records.
