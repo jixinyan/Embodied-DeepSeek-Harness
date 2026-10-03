@@ -100,6 +100,37 @@ retained RGB, depth, mask and calibration arrays reproduces every metric field
 exactly. Complete original records and the successful audit are retained on both
 hosts under `.local/work/v1-robodojo-watchdog-20261003/`.
 
+The isolated outer worker installs the declared physical distribution and its
+`policy`, `catalog` and `robodojo` extras. Its 17-package dependency check and
+production imports pass. The separate OpenPI environment retains 189 packages
+with its own passing dependency check. The native simulator installs the declared
+`catalog` and `robodojo-server` extras and retains 308 packages, including the
+original Isaac Sim kernel 5.1.0.0, FastAPI 0.115.7 and IsaacLab 0.54.3. Their
+upstream requirements are incompatible: the kernel pins FastAPI 0.115.7,
+FastAPI requires Starlette `>=0.40.0,<0.46.0`, and IsaacLab requires
+Starlette `==0.49.1`. The outer native environment installs Starlette 0.49.1
+and its package dependency check reports the FastAPI constraint conflict.
+
+After actual `SimulationApp` initialization, the original Isaac Sim
+`pip_prebundle` supplies FastAPI 0.115.7 and Starlette 0.45.3. The native service
+records those actual module paths, original distribution metadata, complete
+requirements and file hashes in `native-dependencies.json`. At runtime the
+IsaacLab Starlette requirement remains unsatisfied. SDK packages, bundled
+dependency files and their metadata are preserved. Package dependency validation
+and observed native SDK execution have separate evidence states.
+
+Actual zero-control SDK admission uses immutable
+`665823df681cec3bc684aaeda599a66b06d4dc06` under
+`.local/work/robodojo-sdk-deps-20261003-04/`. It directly imports the genuine
+initialized SDK dependencies, captures all three calibrated cameras, checks
+original native `task_success=false` and exactly recomputes every retained RGB-D
+measurement. Native control/physics counters, simulation time, NPZ digest,
+robot state and PNG bytes remain unchanged. It creates zero policy clients or
+inferences. Native PID 473038 exits normally and its owner checker exits.
+This accepts native capture, GT, calibration and close with the declared
+dependency conflicts. ASGI serving was not exercised. The complete original
+records and environment manifests remain available independently of task demos.
+
 `kinematics.py` uses `yourdfpy` to read the robot URDF. Native reset validates
 its FK against both measured EEF poses before permitting tools or actions.
 `geometry.py` uses the optical camera's actual intrinsics and USD world pose.
