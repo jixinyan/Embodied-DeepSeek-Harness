@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.72 · 2026-10-03
+Version: v1.73 · 2026-10-03
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. RoboCasa and BEHAVIOR preserve their observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -33,6 +33,15 @@ records actual system prompt sources, context assembly, memory and retry behavio
 Responsibility-bound numbered workflows and model-facing parameter/receipt guidance
 are documented in [prompt workflows](implementation/prompt-workflow.md). Their
 contents contribute to the Team digest for every configured physical profile.
+Planner can explicitly complete its native turn with `execution.query` and
+`completeTurn: true` after reviewing the current admitted execution. Its scoped
+status receipt precedes turn completion and delivery of subsequent observations or
+formal verdicts. Ordinary query behavior remains available within a decision turn.
+Native background faults fail the active run and retire roles through the existing
+host. Owned process-group cleanup preserves original errors and unconfirmed device
+state; it creates no stop acknowledgement or verification boundary. The
+[production fault record](implementation/native-console-fault.md) retains actual
+model, SDK, scope, deadline, event, source and OS-release evidence.
 Native Qwen/Pi0.5 RoboTwin run `686c9767` verifies failed-attempt recovery and
 successful completion with zero tool errors. Clean custom-role run `a5d9132e`
 completes its retained-scene retry with explicit SceneAnalyst evidence/report
@@ -64,6 +73,9 @@ identity. Selecting a profile shows its configured roles; admitting a Session
 fixes that configuration until the Session closes. Actual four-provider startup,
 browser selection and normal shutdown pass without simulator allocation or model
 inference. Allocated-environment task switching requires its own native acceptance.
+Sequential allocated BEHAVIOR and RoboCasa Sessions also verify native capture,
+actual Qwen inspection and confirmed close through the unified Console; these
+inspection tasks produce no learned actions or formal task success.
 
 The release objective is a complete v1 implementation of all agreed capabilities.
 The [v1 delivery register](implementation/v1-delivery.md) connects each remaining

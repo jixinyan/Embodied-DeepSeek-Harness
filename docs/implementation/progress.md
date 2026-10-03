@@ -1,10 +1,43 @@
 # Implementation progress
 
-Spec: v1.72. Current checkpoint: **native Qwen/Pi0.5 task success and retained-scene retry; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; confirmed Planner review and terminal races; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.73. Current checkpoint: **native Qwen/Pi0.5 task success and retained-scene retry; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## 2026-10-03 native v1 integration
+
+### Planner observation turns and native fault ownership
+
+`execution.query` accepts optional `completeTurn: true` for the decision owner and
+the current admitted task/goal/attempt/recovery scope. The actual status receipt
+commits before DSH completes that turn. Planner uses this explicit boundary after
+deciding to continue motion or await pending formal verification; the same role
+context receives subsequent bounded observations and verdicts. Ordinary status
+queries retain their informational behavior. All native Planner instructions and
+host follow-ups describe this workflow. Actual Qwen Tower run `949ece77` records
+the current running receipt at sequence 168, matching native tool result at 169,
+and completed turn at 170, 24 milliseconds after the receipt. Its next bounded
+three-image review arrives after that completed turn. This running prefix contains
+zero Verifier assignments, verdicts or tool errors. Full native multi-goal acceptance
+remains open in the [running review guide](planner-running-review.md).
+
+Actual production run `ff830ddc` receives one genuine GR00T response after its
+owned BEHAVIOR SDK is suspended. The scoped device timeout fails the run, retires
+its Planner and creates no Verifier or StopAcknowledgement. Its 110-event journal,
+original request/inference, 763-file source inventory and fault identity pass the
+production reader. Session close reports HTTP 400 and unknown device/resources;
+OS inspection independently confirms absence of the owned worker, SDK, process
+group, Console, policy listener and writer lock. Historical execution counters and
+earlier active-observation controls retain their distinct scope. Exact evidence:
+[native Console fault acceptance](native-console-fault.md).
+
+Native owner-call cancellation preserves unfinished operations while returning to
+the caller's deadline. A separate real BEHAVIOR suspension/restoration check
+returns after 0.75334951 seconds under its 0.75-second bound, then confirms original
+observation completion, unchanged scene/cameras/counters and successful native
+close. Fault diagnostics additionally record actual gate/device counters and
+pending owner operations; their numerical production acceptance has its own
+source-bound record.
 
 ### Packaged Desktop tasks and synchronized success recording
 
@@ -46,6 +79,13 @@ hashes remain unchanged. `pnpm check`, read-only native-module formatting and
 whitespace checks pass. Evidence: `.local/work/native-workspace-20261003/`.
 This establishes configuration, selection and cleanup without simulator allocation
 or model inference. Installed multi-provider task switching has separate acceptance.
+
+Allocated BEHAVIOR and RoboCasa profiles also pass sequential Session creation,
+native three-camera capture, actual Qwen inspection and confirmed close through one
+Console. Both use their own Team and preserve original source, checkpoint, scene,
+criterion and budget. This inspection advances no learned controls and supplies no
+formal task result. Original paired RGB-D geometry and resource-release records are
+retained in [allocated profile acceptance](native-workspace.md#allocated-profile-switching-acceptance).
 
 ### DSH recovery and engine portability
 

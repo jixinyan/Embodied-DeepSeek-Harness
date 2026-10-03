@@ -42,6 +42,32 @@ actual native task submission, source-bound audits and product/safety evidence.
 
 ## Execution order
 
+### Source-bound integration checkpoints
+
+Actual Qwen Tower run `949ece77` verifies an explicitly completed observation turn:
+the scoped `execution.query` receipt, matching native tool result and completed
+turn precede the next bounded three-image review. The observed prefix has no
+Verifier, verdict or tool error. Full original Tower completion remains open.
+
+Production BEHAVIOR fault run `ff830ddc` verifies a genuine learned response,
+scoped native timeout, failed task and retired Planner without a fabricated stop
+acknowledgement or formal verdict. Its original 110-event journal and source
+inventory pass the [recorded fault reader](native-console-fault.md). Session close
+preserves unknown device/resources while OS inspection confirms removal of the
+owned process group and listeners. Numerical gate/device diagnostics retain their
+own production acceptance requirement.
+
+One unified Console sequentially allocates BEHAVIOR and RoboCasa Sessions,
+captures three native cameras, delivers actual Qwen inspection and confirms both
+closes. This proves allocated profile switching for those inspection workflows;
+it produces no learned controls or formal task result. See
+[allocated profile acceptance](native-workspace.md#allocated-profile-switching-acceptance).
+All four providers separately verify source-bound, calibrated stationary RGB-D
+regions. Semantic object measurement and policy task completion keep their
+individual acceptance requirements.
+
+### Remaining execution
+
 1. Complete zero-tool-error local Qwen custom-role planning, additional explicit
    evidence workflows and multi-goal acceptance. Continue RoboDojo learned-policy
    dependency/inference validation. Preserve ActionGate and independent post-execution
