@@ -46,6 +46,14 @@ active-observation result cannot update a finished run, and a delayed resume rep
 cannot change a cancelled run back to running. These are admission rules for upper
 state, not a physical emergency-stop mechanism.
 
+The decision owner may call `execution.query` with optional `completeTurn: true`
+for its current admitted task/goal/attempt/recovery execution. The actual status
+and formal-verification receipt commit before native DSH turn completion. This
+read permits the next bounded running review or pending formal-verdict follow-up
+to arrive without changing execution state, motion or task criteria. Omitted or
+false preserves an informational query. Missing or stale scope fails before the
+turn can complete.
+
 Acceptance uses asynchronous CPU adapters through native DSH tools, including a
 successful retry/SKILL loop, a deliberately uncooperative late capture after stop,
 and a GT response arriving after a simulated boundary change. This proves the

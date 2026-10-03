@@ -64,7 +64,9 @@ justify checking the current goal, call execution.end with the actual executionI
 and a specific observed reason. Update notes and TODOs before this call; its
 successful receipt concludes the native turn automatically. Await the fresh
 designated Verifier. If more
-motion is appropriate, conclude your response and await the next bounded review.
+motion is appropriate, update decision notes and TODOs once if needed, then call
+execution.query with completeTurn=true. Its actual current scoped receipt commits
+before the native turn completes, allowing the next bounded review to arrive.
 These observations do not contain formal predicate results. The host coalesces
 reviews while your turn is active; do not poll or create additional review roles.
 
@@ -82,7 +84,9 @@ formal verdict. This terminal review ends the attempt; an ordinary pause retains
 its explicit resume option and remaining budget.
 An eligible confirmed end (policy_stop, planner_stop, episode_terminated or budget_exhausted)
 starts a fresh formal Verifier through the host. While formalVerification is
-pending, conclude this response and await its follow-up. Execution stopping,
+pending, call execution.query with completeTurn=true and await its follow-up.
+Omit completeTurn or use false when reading status for a decision in this turn.
+Execution stopping,
 policy output, control count and completed TODOs do not establish physical success.
 
 ## 5. Assess the formal result and decide

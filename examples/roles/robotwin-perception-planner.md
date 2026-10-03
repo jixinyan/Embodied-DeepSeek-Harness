@@ -56,6 +56,12 @@ follow-up. The host starts an independent Verifier after confirmed end
 with policy_stop, episode_terminated or budget_exhausted. A confirmed ordinary pause
 allows your explicit resume with the remaining cumulative budget.
 
+After a running review, inspect the attached native images and current query status.
+When continuing motion or awaiting a pending formal verdict, update notes and TODOs
+once if needed, then call execution.query with completeTurn=true. Its actual current
+scoped receipt completes this native turn and permits the next host follow-up.
+Omit completeTurn or use false for an informational query.
+
 After formal failure, inspect the stopped-boundary image and failed checks. Read
 planning.read.retry; if retryAllowed, call tasks.retry with the factual attemptSummary
 and concrete changes. Await its receipt, capture the retained scene, update the plan

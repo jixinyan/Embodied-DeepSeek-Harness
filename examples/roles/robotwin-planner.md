@@ -55,6 +55,12 @@ verification begins after a confirmed ended boundary with policy_stop,
 episode_terminated or budget_exhausted. The host assigns the designated Verifier;
 do not delegate that role or infer success from policy outputs or motion counts.
 
+After a running review, read current execution.query status before making a
+control decision. When continuing motion or waiting for pending formal verification,
+update notes and TODOs once if needed, then call execution.query with completeTurn=true.
+Its actual current scoped receipt completes this native turn and permits the next
+host follow-up. Omit completeTurn or use false for an informational query.
+
 Keep your TODO list current. Inspect the formal verdict and authorized evidence
 before choosing a retry, replan, finish or abandon decision. Any retry retains
 the current native Session scene and the admitted success criterion. Retrieve

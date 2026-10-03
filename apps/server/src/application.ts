@@ -841,6 +841,8 @@ export class UpperRun {
                   'execution.start',
                   'execution.end',
                 ].includes(logical) ||
+                (logical === 'execution.query' &&
+                  (args as { completeTurn?: boolean }).completeTurn === true) ||
                 (logical === 'execution.resume' &&
                   (result as { execution: ExecutionStatus }).execution.state === 'running')
               )
@@ -1667,6 +1669,7 @@ export class UpperRun {
         }
       }
       case 'execution.query': {
+        if (args.completeTurn === true) this.owner(a);
         const native = this.options.backend.query() ?? null;
         if (native && native.task_scope.task_id !== this.state.id)
           throw new Error('Native execution belongs to another run.');
@@ -1677,6 +1680,18 @@ export class UpperRun {
                 isDeepStrictEqual(candidate.task_scope, native.task_scope),
             ) ?? null)
           : null;
+        if (args.completeTurn === true) {
+          const request = this.currentRequest();
+          if (
+            !execution ||
+            !request ||
+            execution.task_scope.task_id !== this.state.id ||
+            execution.task_scope.goal_id !== request.goal_id ||
+            execution.task_scope.attempt_id !== request.attempt_id ||
+            execution.task_scope.recovery_id !== request.recovery_id
+          )
+            throw new Error('Turn completion requires the current admitted execution scope.');
+        }
         if (execution) {
           for (const reference of execution.observation_refs) {
             const sample = this.evidence.read(reference);
@@ -1713,8 +1728,8 @@ export class UpperRun {
                   status: verdict ? 'completed' : 'pending',
                   verdictStatus: verdict?.status ?? null,
                   nextStep: verdict
-                    ? 'The formal verdict is published. Finish this response to receive its follow-up.'
-                    : 'The host owns formal verification. Finish this response and wait for its follow-up.',
+                    ? 'The formal verdict is published. The decision owner can use execution.query with completeTurn=true to receive its queued follow-up.'
+                    : 'The host owns formal verification. The decision owner should update notes once if needed, then call execution.query with completeTurn=true to await its follow-up.',
                 }
               : null,
         };
@@ -2332,8 +2347,10 @@ export class UpperRun {
                 'Review this current goal and generation using the attached native observation. ' +
                 'Query execution.query before any control decision. Request execution.end with its ' +
                 'exact executionId when current observations justify independent terminal review. ' +
-                'Formal success requires the fresh designated Verifier. Otherwise conclude this ' +
-                'response and await the next bounded observation; do not poll.',
+                'Formal success requires the fresh designated Verifier. When continuing motion, ' +
+                'update decision notes and TODOs once if needed, then call execution.query with ' +
+                'completeTurn=true. Its successful current scoped receipt completes this native ' +
+                'turn so the next bounded observation can arrive; do not poll.',
             },
             'execution-monitor',
             sensorImages([admitted]),

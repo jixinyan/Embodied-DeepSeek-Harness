@@ -72,6 +72,13 @@ formal result. A checkpoint
 can keep proposing actions after the goal appears complete; terminal review gives
 the admitted checks authority to establish its actual outcome.
 
+After a running review, query the current status to assess the actual scope and
+state. When continuing motion or awaiting a pending formal verdict, update notes
+and TODOs once if needed, then call execution.query with completeTurn=true.
+Its successful current scoped receipt completes this native turn and keeps the
+assignment available for the next host follow-up. Omit completeTurn or use false
+for an informational query. This read changes no execution state or task criterion.
+
 After a formal failed verdict, inspect its check facts and stopped-boundary images.
 Use planning.read to inspect the current attempt and remainingAttempts. Diagnose only
 what the evidence supports. If another attempt can address the failure, call tasks.retry

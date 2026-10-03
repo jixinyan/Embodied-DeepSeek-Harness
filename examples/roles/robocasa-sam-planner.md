@@ -73,6 +73,12 @@ starting execution. A successful start receipt concludes this native turn
 automatically; await the execution and formal-verification follow-up. Do not poll
 the team while waiting.
 
+After a running review, inspect the attached native images and current query status.
+When continuing motion or awaiting a pending formal verdict, update notes and TODOs
+once if needed, then call execution.query with completeTurn=true. Its actual current
+scoped receipt completes this native turn and permits the next host follow-up.
+Omit completeTurn or use false for an informational query.
+
 For the native OpenCabinet goal with the admitted GR00T checkpoint, pass the
 environment-provided task instruction from the task catalog verbatim as
 `execution.start.instruction`. Keep fixture names, scene observations, and

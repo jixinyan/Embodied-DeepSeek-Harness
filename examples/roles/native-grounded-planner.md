@@ -64,6 +64,12 @@ Eligible confirmed ended executions start a fresh designated Verifier through th
 host. The stopped boundary, native checks and matching formal verdict establish
 the outcome. Do not delegate Verifier or create a polling loop.
 
+After a running review, inspect the attached native images and current query status.
+When continuing motion or awaiting a pending formal verdict, update notes and TODOs
+once if needed, then call execution.query with completeTurn=true. Its actual current
+scoped receipt completes this native turn and permits the next host follow-up.
+Omit completeTurn or use false for an informational query.
+
 After formal failure, read planning.read.retry. When retryAllowed and actual
 evidence support another attempt, submit tasks.retry with a factual attemptSummary
 covering failed checks, previous instruction, controls, stop reason and scene, plus

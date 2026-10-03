@@ -73,7 +73,7 @@ def inspect(args: argparse.Namespace) -> dict:
                 continue
             detail = event["detail"]
             execution = detail.get("result", {}).get("execution")
-            if detail["tool"] not in {"execution.start", "execution.end", "execution.resume"}:
+            if detail["tool"] not in {"execution.start", "execution.end", "execution.resume", "execution.query"}:
                 continue
             if detail["tool"] == "execution.resume" and execution["state"] != "running":
                 continue
@@ -84,6 +84,17 @@ def inspect(args: argparse.Namespace) -> dict:
             started = next(candidate for candidate in events if
                            candidate["type"] == "tool.started" and
                            candidate["detail"]["callId"] == detail["callId"])
+            if detail["tool"] == "execution.query" and started["detail"]["args"].get("completeTurn") is not True:
+                continue
+            if detail["tool"] == "execution.query":
+                status = validator.parse("ExecutionStatus", execution)
+                request = next(candidate for candidate in run["requests"] if
+                               candidate["goal_id"] == status["task_scope"]["goal_id"] and
+                               candidate["attempt_id"] == status["task_scope"]["attempt_id"])
+                require(status["task_scope"]["task_id"] == run["id"] and
+                        request["owner_assignment_id"] == run["decisionAssignmentId"] and
+                        request.get("recovery_id") == status["task_scope"].get("recovery_id"),
+                        "The turn-completing query differs from its admitted execution scope.")
             require(native["assignmentId"] == run["decisionAssignmentId"] and
                     native["data"]["name"] == detail["tool"].replace(".", "__") and
                     json.loads(native["data"]["arguments"]) == started["detail"]["args"],

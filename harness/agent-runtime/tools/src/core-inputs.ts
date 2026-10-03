@@ -143,7 +143,13 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
       'One concrete instruction accepted by the selected checkpoint for the active goal. Use the catalog instruction verbatim when required by this deployment; at most 12000 UTF-8 bytes.',
     ),
   },
-  'execution.query': {},
+  'execution.query': {
+    completeTurn: {
+      type: 'boolean',
+      description:
+        'Optional; false or omitted reads status. true is decision-owner only: commit the actual current scoped execution receipt and complete this native turn while awaiting the next running review or formal verdict. Update notes and TODOs before calling.',
+    },
+  },
   'execution.pause': {},
   'execution.end': {
     executionId: text('Exact current execution_id from the accepted start or query receipt.'),
@@ -210,6 +216,7 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
 };
 export const CORE_TOOLS = [...Object.keys(CORE_TOOL_PARAMETERS), 'todo_write'];
 export const CORE_TOOL_OPTIONAL_PARAMETERS: Readonly<Record<string, readonly string[]>> = {
+  'execution.query': ['completeTurn'],
   'team.query': ['beforeReportId', 'includeBodies'],
   'skills.load': ['sections'],
 };
@@ -246,7 +253,7 @@ export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
   'execution.start':
     'Start one nonblocking, bounded policy job for the selected ready goal and current attempt, after its successful selection receipt. Returns execution identity, state and admitted budget; actions pass through ActionGate. The host supplies goal, attempt, criterion and resource identities. A successful receipt concludes this native turn; update plans and TODOs before calling, then await execution/formal-verdict follow-ups. At most one start per attempt; no polling loop or duplicate start. A new failed-goal attempt requires an accepted tasks.retry first.',
   'execution.query':
-    'Read the current published job status without starting motion. Returns execution (null when absent) and formalVerification (null or assignmentId/status/verdictStatus/nextStep). Inspect control_steps, policy_calls, stop_reason, device_confirmed and boundary_event_id. A pending formalVerification is host-owned: finish this response and wait for its verdict follow-up. Status references can be metadata-only while running; do not interpret those as images or success.',
+    'Read the current published job status without starting motion. Returns execution (null when absent) and formalVerification (null or assignmentId/status/verdictStatus/nextStep). Inspect control_steps, policy_calls, stop_reason, device_confirmed and boundary_event_id. Omit completeTurn or use false for an informational query. The decision owner can supply completeTurn=true only for the current admitted task/goal/attempt execution: its successful receipt completes the native turn and preserves this assignment for the next bounded review or formal verdict. When continuing motion or awaiting host-owned formal verification, update notes and TODOs once, then call with completeTurn=true. Status references can be metadata-only while running; do not interpret those as images or success.',
   'execution.pause':
     'Decision owner requests confirmed stopping of the current job. Returns execution status after the request; require state=paused and device_confirmed before treating motion as paused. Ordinary pause preserves the current attempt and cumulative budget and creates no formal Verifier.',
   'execution.end':

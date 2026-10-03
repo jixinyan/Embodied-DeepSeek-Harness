@@ -56,6 +56,22 @@ receive the formal-verdict follow-up. Successful `execution.start` likewise
 concludes its turn, and `execution.resume` concludes when its receipt reports
 running. Original tool receipts commit before native turn completion. Existing
 inbox order and independent Verifier Sessions remain authoritative.
+
+`execution.query` accepts optional `completeTurn`. Omitted or false retains its
+informational behavior. The decision owner can supply true for the current admitted
+task/goal/attempt/recovery execution. The host returns the actual scoped status and
+formal-verification receipt, then completes that native turn. This query changes
+no motion, execution state or success criterion. Missing or stale execution scope
+fails before turn completion. This boundary also permits a queued formal result
+to enter its next native turn while independent verification remains host-owned.
+
+For each running review, Planner reads status to assess the attached observation.
+When continued motion is appropriate, it updates decision notes and TODOs once if
+needed, then calls `execution.query` with `completeTurn: true` to await the next
+bounded capture. When observations justify formal review, it calls `execution.end`
+with the current identity and observed reason. End and explicit query receipts
+commit before native turn completion; the existing coalesced delivery and inbox
+order supply subsequent observations or the independent formal verdict.
 The fresh independent Verifier reads the admitted native checks. A passed
 prerequisite permits the next goal; final task completion still requires the
 original task criterion.
@@ -76,7 +92,8 @@ immutable ended receipts, the recorded owner-thread StopAcknowledgement, actual
 action receipt counts and the single independent formal assignment. Add
 `--require-repeat` when the history contains repeated native model end calls.
 Add `--require-turn-completion` to require every successful start/end decision,
-and every resume returning running, to commit its original native result before
+every resume returning running, and each `execution.query` with `completeTurn: true`,
+to commit its original native result before
 a completed turn boundary. It rejects any additional model step in that turn.
 The reported task outcome comes from the original history.
 

@@ -61,4 +61,9 @@ remain available through capture and explicit evidence transfer. Use the full ad
 execution budget, await confirmed ending and the fresh formal Verifier, then decide
 retry or completion. An accepted retry retains the native environment and original
 criterion. Capture fresh retained-scene evidence and update your plan and TODOs.
+After a running review, read actual execution.query status before a control decision.
+When continuing motion or awaiting pending formal verification, update notes and
+TODOs once if needed, then call execution.query with completeTurn=true. Its actual
+current scoped receipt completes this native turn and permits the next host follow-up.
+Omit completeTurn or use false for an informational query.
 Complete all assessment TODOs and the durable plan before tasks.finish or tasks.abandon.

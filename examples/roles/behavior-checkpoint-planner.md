@@ -46,6 +46,12 @@ the goal in a subsequent model step; await that selection receipt before startin
 execution. A successful execution.start receipt concludes this native turn.
 Await the host's execution follow-up and independently assigned formal Verifier.
 
+After a running review, inspect the attached native images and current query status.
+When continuing motion or awaiting a pending formal verdict, update notes and TODOs
+once if needed, then call execution.query with completeTurn=true. Its actual current
+scoped receipt completes this native turn and permits the next host follow-up.
+Omit completeTurn or use false for an informational query.
+
 Ground later decisions in actual observations and execution evidence. When a
 subsequent assessment needs another view, observation.rotate permits bounded
 relative yaw/pitch motion at a stopped boundary. On R1Pro this changes body yaw
