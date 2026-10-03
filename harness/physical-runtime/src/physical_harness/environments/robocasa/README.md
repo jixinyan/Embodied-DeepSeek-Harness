@@ -49,7 +49,7 @@ call. Both arrays use top-left image coordinates. Official robosuite
 `get_camera_extrinsic_matrix` supply axial depth in metres, intrinsic calibration
 and the camera-to-world transform. The capture includes observation identity,
 per-camera timestamps, simulation time and clipping distances; it advances no
-controls. The backend advertises `measureObject` only for RoboCasa and uses the
+controls. The backend exposes `measureObject` for this provider and uses the
 native worker's read-only `measure_object` operation. Input binds an observation
 identity, actual named camera, original image SHA-256 and binary PNG mask. The
 worker requires its latest explicit capture, unchanged control counters and a
