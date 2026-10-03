@@ -151,7 +151,8 @@ def audit_retained_terminal_executions(run, events, samples, request_directory, 
     return reports
 
 
-def audit_recorded_provider_terminals(run, events, samples, request_directory, schema_path, provider):
+def audit_recorded_provider_terminals(run, events, samples, request_directory, schema_path, provider,
+                                      *, prior_execution=None, retained_runs=None):
     require(request_directory is not None and samples is not None and schema_path is not None,
             "Provider terminal admission requires original samples, requests and source records.")
     validator = ContractValidator.from_path(schema_path)
@@ -167,6 +168,7 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
     require(paths, "Original provider terminal query records are unavailable.")
     native_records = []
     positions = {}
+    monotonic = {}
     for path in paths:
         record = json.loads(path.read_text(encoding="utf-8"))
         scene = record["scene_id"]
@@ -176,9 +178,11 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
                 path.name == f"status-{record['audit_position']:06d}.json" and
                 record["physical_steps"] == 0 and record["before"] == record["after"] and
                 type(record["current_task_success"]) is type(record["episode_terminated"]) is bool and
-                type(record["native_pid"]) is int and type(record["owner_thread_id"]) is int,
+                type(record["native_pid"]) is int and type(record["owner_thread_id"]) is int and
+                type(record["monotonic_ns"]) is int and record["monotonic_ns"] > monotonic.get(scene, -1),
                 "Original provider terminal history changed identity, counters or boolean facts.")
         positions[scene] = record["audit_position"] + 1
+        monotonic[scene] = record["monotonic_ns"]
         expected_sources = {"provider", "recorder", "predicate", "control"}
         if provider == "behavior":
             expected_sources.add("termination")
@@ -192,7 +196,8 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
             ast.parse(data, filename=source["path"])
         native_records.append((path, record))
     reports = []
-    previous = None
+    previous = prior_execution
+    histories = retained_runs if retained_runs is not None else [run]
     for status in run["executions"]:
         validator.parse("ExecutionStatus", status)
         updates = [event for event in events if event["type"] == "execution.updated" and
@@ -235,6 +240,9 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
                    prior_start <= datetime.fromisoformat(record["recorded_at"].replace("Z", "+00:00")) <= prior_end]
         require(earlier and earlier[-1][1]["after"] == state and
                 earlier[-1][1]["native_pid"] == baseline["native_pid"] and
+                earlier[-1][1]["owner_thread_id"] == baseline["owner_thread_id"] and
+                earlier[-1][1]["sources"] == baseline["sources"] and
+                earlier[-1][1]["current_task_success"] == baseline["current_task_success"] and
                 earlier[-1][1]["episode_terminated"] is True,
                 "Prior provider execution lacks its actual terminal native state matching the new preflight.")
         metadata = prior_observation["visualization"]
@@ -250,17 +258,21 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
                     receipt["segment"]["execution_id"] == prior["execution_id"] and
                     receipt["segment"]["task_scope"] == prior["task_scope"],
                     "Prior provider episode lacks its original actual terminal action receipt.")
-        rotations = [event["detail"] for event in events if event["type"] == "tool.completed" and
-                     event["detail"]["tool"] == "observation.rotate"]
-        for rotation in rotations:
+        rotations = [(history, event["detail"]) for history in histories for event in history["events"]
+                     if event["type"] == "tool.completed" and event["detail"]["tool"] == "observation.rotate"]
+        for history, rotation in rotations:
             motion = rotation["result"]["rotation"]
-            require(provider == "behavior" and rotation["assignmentId"] == run["decisionAssignmentId"] and
+            require(provider == "behavior" and rotation["assignmentId"] == history["decisionAssignmentId"] and
                     type(motion["control_steps"]) is int and motion["control_steps"] >= 0 and
                     motion["raw_sim_steps"] == motion["control_steps"] * 4,
                     "Native observation motion differs from its original owner or measured physics receipt.")
-        rotation_physics = sum(item["result"]["rotation"]["raw_sim_steps"] for item in rotations)
+        rotation_physics = sum(item["result"]["rotation"]["raw_sim_steps"] for _, item in rotations)
+        rotation_controls = sum(item["result"]["rotation"]["control_steps"] for _, item in rotations)
+        require(state["native_control_counter"] ==
+                sum(item["control_steps"] for history in histories for item in history["executions"]) + rotation_controls,
+                "Retained native control counter differs from original learned and observation receipts.")
         require(state["controlled_physics_steps"] ==
-                sum(item["raw_sim_steps"] for item in run["executions"]) + rotation_physics,
+                sum(item["raw_sim_steps"] for history in histories for item in history["executions"]) + rotation_physics,
                 "Retained provider counter differs from the actual execution receipt history.")
         if provider == "behavior":
             termination = state["native_termination"]
@@ -278,6 +290,16 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
                      state["native_control_counter"] >= state["native_step_limit"] or
                      baseline["current_task_success"] is True),
                     "RoboTwin terminal source differs from its original native predicate or horizon.")
+        stop_path = request_directory / status["execution_id"] / f"stop-{status['boundary_event_id']}.json"
+        stop = json.loads(stop_path.read_text(encoding="utf-8"))
+        acknowledgement = validator.parse("StopAcknowledgement", stop["acknowledgement"])
+        require(stop["schema_version"] == "edh.native_stop_record.v1" and
+                acknowledgement["execution_id"] == status["execution_id"] and
+                acknowledgement["boundary_id"] == status["boundary_event_id"] and
+                acknowledgement["device_confirmed"] is True and
+                stop["executed_actions"] == stop["raw_sim_steps"] == stop["uncertain_actions"] == 0 and
+                start <= datetime.fromisoformat(stop["recorded_at"].replace("Z", "+00:00")) <= end,
+                "Zero-control native boundary lacks its actual unchanged device stop acknowledgement.")
         facts = [event["detail"] for event in events if event["type"] == "verification.checked" and
                  event["detail"]["evidence"]["task_scope"] == status["task_scope"]]
         require(len(facts) == 1, "Provider terminal execution requires one fresh formal native check.")
@@ -292,6 +314,7 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
                         "nativeStatusRecords": [{"path": str(path), "sha256": sha256(path.read_bytes()).hexdigest()}
                                                 for path, _ in selected],
                         "retainedSceneId": baseline["scene_id"], "nativeState": state,
+                        "nativeStopRecord": {"path": str(stop_path), "sha256": sha256(stop_path.read_bytes()).hexdigest()},
                         "recordedObservationMotionPhysicsSteps": rotation_physics,
                         "currentNativeSuccess": baseline["current_task_success"],
                         "originalSourceRecords": baseline["sources"], "retainedCameraIdentity": True})
@@ -299,7 +322,7 @@ def audit_recorded_provider_terminals(run, events, samples, request_directory, s
     return reports
 
 
-def audit_native_videos(run, directory, retained_terminal_ids):
+def audit_native_videos(run, directory, retained_terminal_ids, *, allow_terminal_only=False):
     frames = {}
     videos = []
     for status in run["executions"]:
@@ -345,7 +368,11 @@ def audit_native_videos(run, directory, retained_terminal_ids):
                            check=True, capture_output=True)
             videos.append({"executionId": execution_id, "camera": camera, "frames": len(journal),
                            "maxTimestampErrorS": error, "sha256": sha256(video.read_bytes()).hexdigest()})
-    require(frames, "Native video acceptance requires actual recorded frames.")
+    require(frames or (allow_terminal_only and run["executions"] and
+                      {item["execution_id"] for item in run["executions"]} == retained_terminal_ids and
+                      all(item["control_steps"] == item["policy_calls"] == item["raw_sim_steps"] == 0
+                          for item in run["executions"])),
+            "Native video acceptance requires actual recorded frames or authenticated zero-control terminal tasks.")
     return frames, videos
 
 

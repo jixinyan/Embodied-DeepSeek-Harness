@@ -6,6 +6,7 @@ import { delimiter, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { ContractValidator, type ExecutionStatus } from '@edh/contracts';
 import { SensorSamples } from '@edh/perception';
+import type { SensorSample } from '@edh/execution';
 import { LocalStore } from '@edh/storage';
 import { AssignmentHistory, RunHistory, VerdictHistory, type RunState } from '@edh/tasks';
 import { VerificationBoundaries, VerificationContexts } from '@edh/verification';
@@ -28,6 +29,9 @@ const args = parseArgs({
     'bridge-service-log': { type: 'string' },
     'native-policy-service-log': { type: 'string' },
     python: { type: 'string' },
+    provider: { type: 'string', default: 'robodojo' },
+    'policy-manifest': { type: 'string' },
+    'simulation-videos': { type: 'string' },
   },
 }).values;
 for (const [name, value] of Object.entries(args)) assert(value, `Missing --${name}.`);
@@ -49,6 +53,8 @@ const validator = new ContractValidator(
 const store = new LocalStore(directory);
 try {
   const sessionId = required('session-id');
+  const provider = required('provider');
+  assert(['robodojo', 'robotwin', 'behavior'].includes(provider));
   const session = store.get<UserSessionRecord>(`user-session:${sessionId}`)?.value;
   assert(session, 'Retained User Session is missing.');
   assert.equal(session.state, 'closed');
@@ -171,7 +177,7 @@ try {
     for (const evidenceId of [end.observation_refs[0]!, context.evidenceId]) {
       const sample = samples.read(evidenceId);
       assert(sample && sample.images?.length === 3);
-      assert.equal(sample.visualization.provider, 'robodojo');
+      assert.equal(sample.visualization.provider, provider);
       assert.equal(sample.visualization.uncertainActions, 0);
       assert.deepEqual(sample.evidence.task_scope, end.task_scope);
       const images: Record<string, { path: string; sha256: string }> = {};
@@ -198,11 +204,33 @@ try {
   const segment = firstBoundarySample.visualization.segmentId;
   assert.equal(typeof nativeRequest, 'string');
   assert.equal(typeof segment, 'string');
+  const retainedSamples = (run: RunState) => {
+    const samples = new SensorSamples(store, validator, run.id, run.source);
+    return store
+      .list<SensorSample>(`sensor-sample:[${JSON.stringify(run.id)},`)
+      .map(({ value }) => {
+        const sample = samples.read(value.evidence.id);
+        assert(sample);
+        return sample;
+      })
+      .sort((a, b) => a.sequence - b.sequence);
+  };
   const packet = {
+    provider,
     sessionId,
     catalogDigest: catalog.descriptor.digest,
-    first: { run: first.run, end: firstEnd, formal: firstFormal },
-    second: { run: second.run, end: secondEnd, formal: secondFormal },
+    first: {
+      run: first.run,
+      end: firstEnd,
+      formal: firstFormal,
+      samples: retainedSamples(first.run),
+    },
+    second: {
+      run: second.run,
+      end: secondEnd,
+      formal: secondFormal,
+      samples: retainedSamples(second.run),
+    },
     imageSources,
     finalReceipt: resolve(
       required('policy-request-directory'),
@@ -214,6 +242,12 @@ try {
     policyRequestDirectory: resolve(required('policy-request-directory')),
     bridgeServiceLog: resolve(required('bridge-service-log')),
     nativePolicyServiceLog: resolve(required('native-policy-service-log')),
+    ...(provider === 'robodojo'
+      ? {}
+      : {
+          policyManifest: resolve(required('policy-manifest')),
+          simulationVideos: resolve(required('simulation-videos')),
+        }),
   };
   const packetPath = resolve(directory, 'source-records.json');
   await writeFile(packetPath, `${JSON.stringify(packet, null, 2)}\n`, { flag: 'wx' });
@@ -221,7 +255,9 @@ try {
   execFileSync(
     required('python'),
     [
-      'scripts/check-retained-terminal-native.py',
+      provider === 'robodojo'
+        ? 'scripts/check-retained-terminal-native.py'
+        : 'scripts/check-retained-provider-terminal-native.py',
       '--source-records',
       packetPath,
       '--output',

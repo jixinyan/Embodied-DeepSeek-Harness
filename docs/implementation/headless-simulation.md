@@ -77,6 +77,18 @@ records retain their reported counters and formal outcomes; independent terminal
 source verification remains unavailable for those histories. These provider bindings
 require genuine native record acceptance in addition to source checks.
 
+`scripts/check-retained-terminal-task.ts` reads a private copy of a closed original
+Session journal and checks two distinct successful tasks, released resources,
+unchanged admitted criteria, independent retired role contexts and a fresh formal
+Verifier for the second task. Use `--provider robotwin` or `--provider behavior`
+with `--policy-manifest` and `--simulation-videos` for these provider source records.
+The first task retains the complete learned-control and decoded-video audit. The
+second task requires an original empty video journal, zero new inference or action
+requests, an authenticated device stop record, matching timed native terminal
+queries and identical original camera bytes. The two original task histories remain
+separate throughout the audit. The default provider remains RoboDojo and uses its
+original NPZ, native action, physics and policy-service source checks.
+
 For an actual completed run, transfer the worker's execution directories and retain
 the policy log, requests and native sensor samples. Export and render with:
 
