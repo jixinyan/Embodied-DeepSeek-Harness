@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
+import * as Todo from '@deepseek-ai/dsh-tool-todo';
 import { ContractValidator } from '@edh/contracts';
 import { readModelConfiguration, OpenAICompatibleAdapter } from '@edh/models';
 import { CORE_TOOL_DESCRIPTIONS, validateJsonSchemaValue } from '@edh/tools';
@@ -10,6 +11,7 @@ import {
   coreModelToolParameters,
   modelToolContractSchema,
 } from '../apps/server/src/model-tool-schema.ts';
+import { createDshHost } from '../apps/server/src/runtime.ts';
 
 const { values } = parseArgs({
   options: {
@@ -54,6 +56,17 @@ const tools = role.definition.tools
     }),
   }));
 assert(tools.every((tool) => tool.description));
+if (role.definition.tools.includes('todo_write')) {
+  const host = await createDshHost([]);
+  try {
+    await host.plugin(Todo, { allowParallelInProgress: true });
+    const todo = host.tools.schemas().find((tool) => tool.name === 'todo_write');
+    assert(todo);
+    tools.push(todo);
+  } finally {
+    await host.fiber.dispose();
+  }
+}
 const parameters = tools.find((tool) => tool.name === 'planning__update').parameters;
 assert.deepEqual(validateJsonSchemaValue(parameters, receipt.planWrite, 'arguments'), []);
 const modelConfiguration = await readModelConfiguration(values.models);
