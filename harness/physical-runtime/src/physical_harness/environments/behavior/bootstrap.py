@@ -18,6 +18,7 @@ SOURCE_SHA256 = "d800c2832f24962c440c4781ebfdb4ea78c74aac37d2c74ee7894ae430f1e2a
 
 
 def launch_behavior_app(device: dict[str, object]):
+    os.environ["OMNI_KIT_ACCEPT_EULA"] = "YES"
     import isaacsim
     import omnigibson as og
     from omnigibson import lazy
