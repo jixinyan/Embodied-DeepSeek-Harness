@@ -27,8 +27,19 @@ with normal dependency resolution. The [official RoboDojo installation source](h
 specifies Torch 2.7.0 with CUDA 12.8, Isaac Sim 5.1, NumPy 1.26.0,
 Pillow 11.3.0 through the SDK and Starlette 0.45.3 through its runtime constraints.
 Record the complete resolved package manifest and require `python -m pip check`
-to pass before native admission. Dependency resolution for this candidate has
-not yet been accepted.
+to pass before native admission. A normal pip 26.2.1 dry-run against the recorded
+installed environment accepts all five original package dependency declarations.
+Its eight installation entries are the five IsaacLab packages, FlatDict 4.0.1,
+Gymnasium 1.2.0 and Starlette 0.45.3. The original report SHA-256 is
+`7991ffaa27cb70117f422b253efa7d6e90053d30e1a428718134905015ef3195`.
+This check leaves the shared environment unchanged; an independent installation
+and its complete dependency check remain required.
+
+FlatDict 4.0.1 uses `pkg_resources` during its original source build. Use pip's
+`--build-constraint` with `setuptools==80.9.0` for isolated build environments.
+This preserves the original package build and complete runtime dependency
+resolution. Retain the build constraint alongside the runtime constraints and
+resolved installation report.
 
 ## Native behavior that must be verified
 
