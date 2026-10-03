@@ -450,6 +450,16 @@ class NativeWorkerSession:
                 on_segment=self._on_segment,
             )
             gate = self._gate
+            # 保留 native episode 的终止状态，为当前任务取得新的确认边界。
+            episode_terminated = await self._device.on_owner(self._environment.episode_terminated)
+            if type(episode_terminated) is not bool:
+                raise RuntimeError("Native environment returned an invalid episode termination state.")
+            if episode_terminated:
+                await gate.pause("episode_terminated", terminal=True)
+                observation = await self._device.on_owner(self._environment.observe)
+                publication = await self._publish(observation)
+                self._release_execution_resources()
+                return publication
             loop = asyncio.get_running_loop()
 
             def expired(reason: str) -> None:
