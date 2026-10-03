@@ -33,6 +33,16 @@ actual model aliases, role files, tools, provider constraints, and the decision
 owner. For the camera specialist workflow select
 `examples/teams/robotwin-scene-analyst.yaml` with `roleRoot: "examples"`.
 
+`segmentationURL` enables SAM 3.1 and calibrated native `perception.measure_object`
+for all four providers. Native initialization must advertise its actual metric
+port. RoboTwin, BEHAVIOR and RoboDojo select their `*-grounded.yaml` Team when SAM
+is configured; RoboCasa retains its `robocasa-sam-live.yaml` Team. The grounded
+Planner preserves image/mask identity, native calibration, units and stopped-control
+requirements. A RoboTwin configuration with both SAM and `depthURL` retains the
+existing `robotwin-perception.yaml` Team. `depthURL` enables YOLO26 independently
+for every provider; optional `depthIntrinsicsByCamera` retains each camera's
+declared calibration. Select a Team with its advertised tools when using depth.
+
 An optional `profile` object accepts `id`, `label`, and `environment` on each worker
 configuration or RoboDojo profile entry. IDs must satisfy the console's profile
 identity rules. With existing default tasks the profile IDs remain
@@ -50,6 +60,11 @@ options retain their meaning. Native learned-policy profiles require `policyUri`
 RoboDojo `direct` and `hybrid` profiles bind GPT-6 Astra through `policyModel`, with
 their gateway and DSH host owned by the allocated Session environment. Closing
 that environment releases those resources and flushes its audit records.
+Learned RoboDojo profiles select the `student` source and retain only applicable
+student execution metadata. Teacher model, context and prompt provenance fields
+belong to a selected GPT policy mode. The native factory also binds the complete
+production record/image retention policy for its native providers and built-in
+tools through `nativeWorkspaceRetention`.
 
 The startup check uses the actual loader, default factory, server, and HTTP
 metadata endpoint:

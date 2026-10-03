@@ -17,6 +17,7 @@ import { parseTaskCatalog } from '@edh/tasks';
 import {
   createDshHost,
   createNativeWorkerEnvironment,
+  nativeWorkspaceRetention,
   startServer,
 } from '../../apps/server/src/index.ts';
 
@@ -131,16 +132,18 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
     provider === 'robocasa'
       ? (environment.EDH_SAM31_BASE_URL ?? config.segmentationURL)
       : config.segmentationURL;
-  if (provider === 'robotwin' && Boolean(segmentationURL) !== Boolean(config.depthURL))
-    throw new Error('The grounded perception Team requires both SAM 3.1 and YOLO26 endpoints.');
+  z.string().url().optional().parse(segmentationURL);
+  z.string().url().optional().parse(config.depthURL);
   const teamFile = resolve(
     nativeDeploymentRoot,
     nonblank.optional().parse(config.teamFile) ??
-      (provider === 'robotwin' && segmentationURL
+      (provider === 'robotwin' && segmentationURL && config.depthURL
         ? 'examples/teams/robotwin-perception.yaml'
         : provider === 'robocasa' && segmentationURL
           ? 'examples/teams/robocasa-sam-live.yaml'
-          : `examples/teams/${provider}-live.yaml`),
+          : segmentationURL
+            ? `examples/teams/${provider}-grounded.yaml`
+            : `examples/teams/${provider}-live.yaml`),
   );
   const roleRoot = resolve(
     nativeDeploymentRoot,
@@ -190,6 +193,20 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
     const mode = worker.executionMode ?? 'policy';
     if ((provider !== 'robodojo' || mode === 'policy') && !worker.policyUri)
       throw new Error('A native learned-policy endpoint is required.');
+    if (provider === 'robodojo' && mode === 'policy') {
+      if ((worker.sceneConfiguration.source ?? 'student') !== 'student')
+        throw new Error('RoboDojo learned-policy execution requires the student control source.');
+      const teacherFields = [
+        'teacher_model',
+        'teacher_model_provider',
+        'context_version',
+        'prompt_sha256',
+      ];
+      if (teacherFields.some((field) => Object.hasOwn(worker.sceneConfiguration, field)))
+        throw new Error(
+          'RoboDojo learned-policy metadata must identify its selected student execution.',
+        );
+    }
     if (provider === 'robodojo' && mode !== 'policy') {
       const binding = modelConfiguration.models[entry.policyModel ?? defaultModel];
       if (!binding || binding.model !== 'gpt-6-astra')
@@ -440,6 +457,7 @@ export function createNativeDeploymentFactory(settings) {
       description: `Native ${settings.selected.title} with independent DSH role Sessions`,
       teamFile: settings.teamFile,
       roleRoot: settings.roleRoot,
+      storageRetention: nativeWorkspaceRetention,
       ...models,
       tasks: {},
       launchProfiles,
@@ -449,15 +467,13 @@ export function createNativeDeploymentFactory(settings) {
       ...(settings.segmentationURL
         ? { segmentation: new Sam31HttpClient(settings.segmentationURL) }
         : {}),
-      ...(settings.provider === 'robotwin' && settings.config.depthURL
+      ...(settings.config.depthURL
         ? {
             depth: new Yolo26HttpClient(settings.config.depthURL),
             depthIntrinsicsByCamera: settings.config.depthIntrinsicsByCamera ?? {},
           }
         : {}),
-      ...(settings.provider === 'robocasa'
-        ? { enableObjectMeasurement: Boolean(settings.segmentationURL) }
-        : {}),
+      enableObjectMeasurement: Boolean(settings.segmentationURL),
     };
   };
 }

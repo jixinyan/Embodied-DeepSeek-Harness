@@ -68,6 +68,10 @@ try {
     assert.deepEqual(profile.tasks, []);
     assert.equal(profile.checkpoint, settings.profiles[id].checkpoint);
   }
+  const retentionResponse = await fetch(`${server.url}/api/storage/retention`);
+  assert.equal(retentionResponse.status, 200);
+  const retention = await retentionResponse.json();
+  assert.equal(retention.recordRetirement.available, true);
   const result = {
     provider: values.provider,
     configuration: resolve(values.config),
@@ -77,6 +81,7 @@ try {
     nativeTasks: Object.values(settings.profiles).map((profile) => profile.worker.nativeTaskId),
     defaultFactoryLoaded: true,
     serverMetadataRead: true,
+    nativeRecordRetentionAvailable: retention.recordRetirement.available,
     nativeEnvironmentAllocated: false,
     modelInferencePerformed: false,
     ...(sourceJournal ? { sourceJournal } : {}),

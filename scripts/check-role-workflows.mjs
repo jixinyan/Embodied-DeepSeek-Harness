@@ -28,12 +28,15 @@ const loader = new FileTeamLoader({
 });
 const teams = [
   'behavior-live',
+  'behavior-grounded',
   'robotwin-live',
+  'robotwin-grounded',
   'robotwin-perception',
   'robotwin-scene-analyst',
   'robocasa-live',
   'robocasa-sam-live',
   'robodojo-live',
+  'robodojo-grounded',
 ];
 const planner = await readFile('harness/agent-runtime/agents/roles/planner/WORKFLOW.md', 'utf8');
 const verifier = await readFile('harness/agent-runtime/agents/roles/verifier/WORKFLOW.md', 'utf8');
@@ -41,6 +44,13 @@ for (const name of teams) {
   const team = await loader.inspect(resolve(`examples/teams/${name}.yaml`));
   assert(team.members[team.definition.bindings.decision_owner].instructions.endsWith(planner));
   assert(team.members[team.definition.bindings.final_verifier].instructions.endsWith(verifier));
+  if (name.endsWith('-grounded')) {
+    const owner = team.members[team.definition.bindings.decision_owner];
+    assert(owner.definition.tools.includes('perception.segment_objects'));
+    assert(owner.definition.tools.includes('perception.measure_object'));
+    assert.match(owner.instructions, /planning.read.planWrite/);
+    assert.equal(team.definition.learning_enabled, false);
+  }
   for (const [alias, member] of Object.entries(team.members)) {
     if (alias !== team.definition.bindings.decision_owner)
       assert(!member.instructions.includes(planner));
