@@ -85,3 +85,53 @@ under `.local/work/robodojo-openpi-20260930` on the deployment host.
 
 Full RoboDojo learned and hybrid task execution, formal success, interruption and
 recovery remain separate acceptance requirements.
+
+## Recorded source and rollout audit
+
+`scripts/audit-openpi-robodojo.py` checks retained actual inference reports against
+both native and JSON bridge logs and the canonical verified checkpoint inventory.
+It validates service startup identities, contiguous inference sequences,
+cross-service state/camera hashes, original finite 50×14 actions, the exact
+continuous-gripper conversion and preserved response prefixes. Its output keeps
+device receipt counts at zero and task-completion acceptance false. Original
+PolicyRequest camera arrays remain unavailable in the September 30 retained
+reports; that source audit does not claim decoded-input verification.
+
+For a complete actual worker rollout, the bridge's `--audit-directory` retains
+`<request_id>.request.json` and `<request_id>.inference.json`. Set
+`EDH_POLICY_REQUEST_RECORD_DIR` on the worker to retain its original requests and
+the admitted segment/receipt/native-step records. The same directory may contain
+both sources because their filenames differ. Capture the original native and
+bridge logs and the checkpoint verification file.
+
+`scripts/audit-recorded-run.py` admits the explicit OpenPI inventory profile with:
+
+```sh
+.venv/bin/python scripts/audit-recorded-run.py \
+  --export .local/work/v1-20261003/export \
+  --output .local/work/v1-20261003/rollout-audit.json \
+  --sensor-samples .local/work/v1-20261003/sensor-samples.json \
+  --policy-requests .local/work/v1-20261003/policy-requests \
+  --policy-service-log .local/work/v1-20261003/bridge.log \
+  --openpi-checkpoint-verification .local/work/v1-20261003/checkpoint-verified.json \
+  --openpi-bridge-audit .local/work/v1-20261003/policy-requests \
+  --openpi-native-service-log .local/work/v1-20261003/native-policy.log \
+  --openpi-policy-id openpi-pi05-robodojo-arx-x5 \
+  --simulation-videos .local/work/v1-20261003/videos \
+  --require-clean-role-completion
+```
+
+Bind these paths to the retained actual run. The OpenPI profile validates decoded
+request PNG→CHW RGB and float32 state hashes, the unchanged worker/bridge request,
+the exact returned model prefix, each admitted ActionSegment/ActionReceipt,
+native control and physics totals, camera/frame identities, decoded simulator
+video and fresh independent formal verification. Explicit learned-source flags
+also audit failed/cancelled terminal tasks with recorded controls; they retain
+the original task outcome. The selected policy ID and checkpoint label must
+match the actual launch profile.
+
+The native service's current telemetry does not contain its checkpoint directory
+or upstream implementation revision. Audit output preserves their evidence
+availability separately from the verified checkpoint digest and model config.
+The deployment's declared XPolicyLab source pin remains explicit. Complete
+private-source SHA inventories provide separate source evidence.

@@ -58,10 +58,7 @@ def audit_native_videos(run, directory):
     return frames, videos
 
 
-def audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest, schema_path,
-                         native_frames=None):
-    require(all(value is not None for value in (samples, request_directory, service_log, policy_manifest)),
-            "Learned-policy acceptance requires native samples, requests, service log and pinned manifest.")
+def conventional_policy_sources(run, request_directory, service_log, policy_manifest, schema_path):
     validator = ContractValidator.from_path(schema_path)
     manifest = json.loads(policy_manifest.read_text(encoding="utf-8"))
     pinned = manifest["upstream"]
@@ -130,6 +127,32 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
                                    for index, value in enumerate(predicted)],
                         "RoboTwin gripper conversion changed its original model arm targets.")
         requests[request_id] = request
+    provenance = {"checkpointRevision": pinned["checkpoint_revision"], "checkpointPath": checkpoint_path,
+                  "policyImplementationSource": implementation_source,
+                  "checkpointDigest": digest, "checkpointWeightSha256": weights,
+                  "policyServiceLogSha256": sha256(service_log.read_bytes()).hexdigest()}
+    return provider, inferences, requests, provenance
+
+
+def audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest, schema_path,
+                         native_frames=None, openpi_profile=None):
+    require(all(value is not None for value in (samples, request_directory, service_log, schema_path)),
+            "Learned-policy acceptance requires native samples, requests, service log and wire schema.")
+    require((policy_manifest is not None) != (openpi_profile is not None),
+            "Learned-policy acceptance requires exactly one conventional manifest or explicit OpenPI inventory profile.")
+    validator = ContractValidator.from_path(schema_path)
+    if openpi_profile is not None:
+        from physical_harness.policies.openpi_audit import task_sources
+        inferences, requests, provenance = task_sources(
+            run, request_directory, openpi_profile["bridge_directory"], service_log,
+            openpi_profile["native_log"], openpi_profile["verification"], validator,
+            openpi_profile["policy_id"],
+        )
+        provider = "robodojo"
+    else:
+        provider, inferences, requests, provenance = conventional_policy_sources(
+            run, request_directory, service_log, policy_manifest, schema_path,
+        )
     by_sequence = {}
     for sample in samples:
         validator.parse("EvidenceRef", sample["evidence"])
@@ -172,7 +195,7 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
         validator.parse("ActionSegment", segment)
         validator.parse("ActionReceipt", receipt)
         require(all(segment[key] == request[key] for key in
-                    ("request_id", "execution_id", "task_scope", "generation", "observation_id", "action_spec")) and
+                    ("request_id", "execution_id", "task_scope", "generation", "observation_id", "valid_until", "action_spec")) and
                 all(receipt[key] == segment[key] for key in ("execution_id", "generation", "segment_id")) and
                 segment["segment_id"] == segment_id and segment["actions"] == [action] and
                 receipt["executed_actions"] == recorded["native_step"]["executed_actions"] == count and
@@ -225,11 +248,9 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
                 detail["sample"]["evidence"]["task_scope"] == prior[segment["execution_id"]]["task_scope"],
                 "A native frame differs from its actual learned action receipt.")
     return {"identifiedLearnedRequests": len(inferences), "nativeActionReceipts": len(segments),
-            "nativePhysicsSteps": physics, "checkpointRevision": pinned["checkpoint_revision"],
-            "checkpointPath": checkpoint_path, "policyImplementationSource": implementation_source,
+            "nativePhysicsSteps": physics, **provenance,
             "uncommittedInferenceRequests": sorted(set(inferences) - set(committed)),
-            "checkpointDigest": digest, "checkpointWeightSha256": weights,
-            "policyServiceLogSha256": sha256(service_log.read_bytes()).hexdigest()}
+            }
 
 
 def audit_role_completion(run, events):
@@ -287,7 +308,7 @@ def audit_role_completion(run, events):
 
 
 def audit(run, events, *, samples=None, request_directory=None, service_log=None, policy_manifest=None,
-          schema_path=None, simulation_videos=None):
+          schema_path=None, simulation_videos=None, openpi_profile=None):
     require(run["source"] in {"simulation", "hardware"}, "Acceptance requires a real run source.")
     require(run["state"] in {"succeeded", "failed", "cancelled", "unknown", "interrupted"},
             "Acceptance requires a terminal run.")
@@ -419,11 +440,17 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
         if mode == "policy":
             require(not policy_sequences, "Learned-only execution contains a DSH policy Session.")
             learned = audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest,
-                                           schema_path, native_frames)
+                                           schema_path, native_frames, openpi_profile)
             require(learned["nativeActionReceipts"] == controls, "Learned receipt/control counts differ.")
         else:
             require(mode in {"direct", "hybrid"} and policy_sequences,
                     "Direct/hybrid success requires independent actual DSH policy Session telemetry.")
+    elif policy_manifest is not None or openpi_profile is not None:
+        require(run["configuration"]["launchProfile"]["executionMode"] == "policy" and not policy_sequences,
+                "Explicit learned-source acceptance requires learned-only policy execution.")
+        learned = audit_learned_policy(run, events, samples, request_directory, service_log, policy_manifest,
+                                      schema_path, native_frames, openpi_profile)
+        require(learned["nativeActionReceipts"] == controls, "Learned receipt/control counts differ.")
     return {"runId": run["id"], "source": run["source"], "state": run["state"],
             "checkedEvents": len(events), "independentUpperSessions": len(sessions),
             "executionPolicySessions": len(policy_sequences), "executedControls": controls,
@@ -442,17 +469,31 @@ def main():
     parser.add_argument("--policy-requests", type=Path)
     parser.add_argument("--policy-service-log", type=Path)
     parser.add_argument("--policy-manifest", type=Path)
+    parser.add_argument("--openpi-checkpoint-verification", type=Path)
+    parser.add_argument("--openpi-bridge-audit", type=Path)
+    parser.add_argument("--openpi-native-service-log", type=Path)
+    parser.add_argument("--openpi-policy-id")
     parser.add_argument("--simulation-videos", type=Path)
     parser.add_argument("--require-clean-role-completion", action="store_true")
     parser.add_argument("--schema-path", type=Path,
                         default=Path(__file__).resolve().parents[1] / "harness/contracts/schema/physical.schema.json")
     args = parser.parse_args()
+    openpi_arguments = (args.openpi_checkpoint_verification, args.openpi_bridge_audit,
+                        args.openpi_native_service_log, args.openpi_policy_id)
+    require(not any(value is not None for value in openpi_arguments) or
+            all(value is not None for value in openpi_arguments),
+            "OpenPI task audit requires checkpoint verification, bridge audit, native service log and admitted policy ID.")
+    openpi_profile = ({"verification": args.openpi_checkpoint_verification,
+                       "bridge_directory": args.openpi_bridge_audit,
+                       "native_log": args.openpi_native_service_log, "policy_id": args.openpi_policy_id}
+                      if args.openpi_checkpoint_verification is not None else None)
     run = json.loads((args.export / "source/run.json").read_text(encoding="utf-8"))
     events = json.loads((args.export / "source/events.json").read_text(encoding="utf-8"))
     samples = json.loads(args.sensor_samples.read_text(encoding="utf-8")) if args.sensor_samples else None
     report = audit(run, events, samples=samples, request_directory=args.policy_requests,
                    service_log=args.policy_service_log, policy_manifest=args.policy_manifest,
-                   schema_path=args.schema_path, simulation_videos=args.simulation_videos)
+                   schema_path=args.schema_path, simulation_videos=args.simulation_videos,
+                   openpi_profile=openpi_profile)
     if args.require_clean_role_completion:
         report["roleCompletion"] = audit_role_completion(run, events)
     args.output.parent.mkdir(parents=True, exist_ok=True)
