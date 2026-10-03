@@ -189,6 +189,18 @@ and `success` values, environment step, actual before/after physics counters and
 the native `_post_step` implementation's file hash. The original combined
 `episode_terminated` admission and independent formal Verifier remain authoritative.
 
+Actual source `665823df681cec3bc684aaeda599a66b06d4dc06` validates these fields
+with one genuine checkpoint inference and one admitted native control in an
+independent original `picking_up_trash` reset. The SDK physics counter advances
+from 41 to 45; its returned `terminated`, `truncated`, timeout and predicate
+condition values are all false. Original ActionReceipt, native diagnostics and
+StopAcknowledgement retain the same values and source hash. The confirmed
+`budget_exhausted` boundary is `024ce69d-59d6-4e32-b5a0-8c787f0210a3`, with one
+executed action, four physics steps and zero uncertain actions. Native PID 505187
+exits normally and the resource lease releases. These records validate actual
+SDK step diagnostics and device confirmation; no upper task or formal Verifier
+was created. Records remain under `.local/work/behavior-native-flags-20261003-02/`.
+
 The October 3 stationary `picking_up_trash` instance-0 probe validates all three
 256×256 RGB-D cameras with explicitly labeled complete-image region masks. Each
 mask has 65,536 valid depth pixels; median axial depths are 1.27918720 m for head,
