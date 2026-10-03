@@ -14,11 +14,13 @@ export function coreModelToolParameters(
     rotationAxes?: readonly string[];
     activeViewDirections?: readonly string[];
     simulatorInspectionCheckIds?: readonly string[];
+    executionTurnCompletion?: boolean;
   } = {},
 ): Record<string, unknown> {
   const properties = CORE_TOOL_PARAMETERS[logical];
   if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
   let selected: Record<string, unknown> = properties;
+  if (logical === 'execution.query' && options.executionTurnCompletion !== true) selected = {};
   if (logical === 'agent.report')
     selected = {
       ...properties,

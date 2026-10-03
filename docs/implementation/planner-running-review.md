@@ -65,6 +65,13 @@ no motion, execution state or success criterion. Missing or stale execution scop
 fails before turn completion. This boundary also permits a queued formal result
 to enter its next native turn while independent verification remains host-owned.
 
+Only the decision-owner assignment receives the `completeTurn` parameter in its
+model-facing tool schema. Other roles receive an empty query argument schema and
+an informational description. A Verifier query directs that assignment to
+`verification.check` and `verification.submit`; each receipt describes the
+workflow authorized for its caller. Server-side decision ownership remains
+required for turn completion.
+
 For each running review, Planner reads status to assess the attached observation.
 When continued motion is appropriate, it updates decision notes and TODOs once if
 needed, then calls `execution.query` with `completeTurn: true` to await the next

@@ -8,6 +8,9 @@ which conditions the evidence can establish. A viewpoint change, occluded object
 empty detection or completed policy instruction alone cannot settle the criterion.
 Keep facts distinct from uncertain interpretations. Your assignment has its own
 context; request missing caller context explicitly when necessary.
+An optional execution.query uses an empty argument object to inspect the current
+status and identified boundary. Continue the formal checking workflow after its
+informational receipt.
 
 ## 2. Check the admitted criterion
 

@@ -781,8 +781,12 @@ export class UpperRun {
             this.options.depth?.timeoutMs !== undefined
               ? { timeoutMs: this.options.depth.timeoutMs }
               : {}),
-            description,
+            description:
+              logical === 'execution.query' && a.id !== this.state.decisionAssignmentId
+                ? 'Read the current published execution and formal-verification status using an empty argument object. This is an informational observation. Inspect the identified boundary, stop reason, device confirmation and authorized evidence; complete your assigned role workflow.'
+                : description,
             parameters: coreModelToolParameters(logical, {
+              executionTurnCompletion: a.id === this.state.decisionAssignmentId,
               ...(this.planToolSchema ? { planSchema: this.planToolSchema } : {}),
               ...(this.sessions.team.members[a.member]!.outputSchema
                 ? { roleOutputSchema: this.sessions.team.members[a.member]!.outputSchema!.schema }
@@ -1805,9 +1809,14 @@ export class UpperRun {
                   assignmentId: formal?.id ?? null,
                   status: verdict ? 'completed' : 'pending',
                   verdictStatus: verdict?.status ?? null,
-                  nextStep: verdict
-                    ? 'The formal verdict is published. The decision owner can use execution.query with completeTurn=true to receive its queued follow-up.'
-                    : 'The host owns formal verification. The decision owner should update notes once if needed, then call execution.query with completeTurn=true to await its follow-up.',
+                  nextStep:
+                    a.id === this.state.decisionAssignmentId
+                      ? verdict
+                        ? 'The formal verdict is published. The decision owner can use execution.query with completeTurn=true to receive its queued follow-up.'
+                        : 'The host owns formal verification. The decision owner should update notes once if needed, then call execution.query with completeTurn=true to await its follow-up.'
+                      : a.member === this.sessions.team.definition.bindings.final_verifier
+                        ? 'Inspect the authorized criterion and confirmed boundary, then complete verification.check and verification.submit for this assignment.'
+                        : 'Use the current execution status and authorized evidence to complete this assignment.',
                 }
               : null,
         };

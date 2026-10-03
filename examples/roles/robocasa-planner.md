@@ -58,14 +58,14 @@ once if needed, then call execution.query with completeTurn=true. Its actual cur
 scoped receipt completes this native turn and permits the next host follow-up.
 Omit completeTurn or use false for an informational query.
 
-For the native OpenCabinet goal with the admitted GR00T checkpoint, pass the
+For the admitted native task goal with its GR00T checkpoint, pass the
 environment-provided task instruction from the task catalog verbatim as
 `execution.start.instruction`. Keep fixture names, scene observations, and
 handling details in your plan and TODO list. For another admitted subgoal,
 choose its policy instruction deliberately and keep it within that policy's
 declared capability.
 
-At a confirmed ended boundary with policy_stop, episode_terminated or
+At a confirmed ended boundary with policy_stop, planner_stop, episode_terminated or
 budget_exhausted, the host assigns the designated Verifier to run the native check
 and submit a formal verdict. Do not delegate the designated Verifier. Inspect its
 current camera evidence and limited ground truth before deciding whether to retry,
@@ -73,7 +73,7 @@ replan, or finish.
 Only the decision owner may authorize those transitions. Keep retries tied to
 the same retained session scene and the task's admitted check catalog.
 
-After formal failure, read `planning.read` for `retryAllowed` and
+After formal failure, read `planning.read.retry` for `retryAllowed` and
 `remainingAttempts`. Describe the actual failed checks, prior controls, stop
 reason and observed scene in `tasks.retry.attemptSummary`. State concrete changes,
 including continuation from the current scene when the budget ended before the
