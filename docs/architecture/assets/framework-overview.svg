@@ -66,7 +66,7 @@
   <text x="68" y="829" class="label">PHYSICAL RUNTIME / CLIENT–SERVER POLICY AND DEVICE BOUNDARIES</text>
   <rect x="68" y="846" width="842" height="61" rx="12" fill="#edf3ff" stroke="#b8cef0"/>
   <text x="88" y="872" class="heading">Execution worker</text>
-  <text x="88" y="896" class="small">Subgoal · Observation ticket · Budgets · Pause / stop acknowledgement</text>
+  <text x="88" y="896" class="small">Subgoal · Observation ticket · Budgets · Planner review / end · Device acknowledgement</text>
   <path d="M489 907V929" class="line"/>
   <rect x="68" y="935" width="262" height="76" rx="12" fill="#f4f8ff" stroke="#b8cef0"/>
   <text x="86" y="966" class="heading">Learned policy</text>
@@ -89,7 +89,7 @@
   <text x="984" y="867" class="body">Camera / RGB-D / state / events</text>
   <text x="984" y="899" class="small">Perception providers · Explicit image refs</text>
   <text x="984" y="928" class="small">Planner images · Worker-local video</text>
-  <text x="984" y="956" class="small">Session scene state updated from evidence</text>
+  <text x="984" y="956" class="small">Scoped task context and retained evidence</text>
   <path d="M934 1163H947V886H960" class="feedback"/>
   <path d="M1396 886H1420V260H720V238" class="feedback"/>
   <text x="980" y="777" class="small" style="fill:#2563eb">Planner observations + console state</text>

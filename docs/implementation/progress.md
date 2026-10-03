@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.70. Current checkpoint: **native Qwen/Pi0.5 task success and retained-scene retry; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop startup and cleanup; authoritative native terminal preflight**. Full v1 acceptance remains in progress.
+Spec: v1.71. Current checkpoint: **native Qwen/Pi0.5 task success and retained-scene retry; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop startup and cleanup; authoritative native terminal preflight; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
