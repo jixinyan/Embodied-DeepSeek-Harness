@@ -209,5 +209,7 @@ class Gr00tN1d6Behavior:
         lower = np.asarray([channel["minimum"] for channel in channels], dtype=np.float64)
         upper = np.asarray([channel["maximum"] for channel in channels], dtype=np.float64)
         if np.any(native < lower) or np.any(native > upper):
-            raise ValueError("GR00T returned actions outside the native BEHAVIOR controller range.")
+            row, channel = np.argwhere((native < lower) | (native > upper))[0]
+            raise ValueError(f"GR00T BEHAVIOR action {row} channel {channels[channel]['name']} "
+                             f"value {native[row, channel]} exceeds [{lower[channel]}, {upper[channel]}].")
         return native.astype(np.float64).tolist()

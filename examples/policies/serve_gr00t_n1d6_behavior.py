@@ -7,8 +7,10 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import signal
+import sys
 from threading import BoundedSemaphore
 from time import monotonic
+import traceback
 
 from physical_harness.policies.gr00t_n1d6_behavior import Gr00tN1d6Behavior
 from physical_harness.policies.provenance import checkpoint_identity
@@ -39,7 +41,19 @@ async def main() -> None:
         started = monotonic()
         received_at = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
         future = executor.submit(policy.infer, request)
-        future.add_done_callback(lambda _: admission.release())
+
+        def completed(result):
+            admission.release()
+            error = result.exception()
+            if error is not None:
+                print(json.dumps({"event": "policy_inference_failed", **identity,
+                      "request_id": request["request_id"], "execution_id": request["execution_id"],
+                      "task_scope": request["task_scope"], "generation": request["generation"],
+                      "observation_id": request["observation_id"], "error_type": type(error).__name__,
+                      "error": str(error)}), flush=True)
+                traceback.print_exception(error, file=sys.stderr)
+
+        future.add_done_callback(completed)
         actions = await asyncio.wrap_future(future)
         print(json.dumps({
             "event": "policy_inference_completed",
