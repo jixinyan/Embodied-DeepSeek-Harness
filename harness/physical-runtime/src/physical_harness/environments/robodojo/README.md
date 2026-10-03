@@ -72,6 +72,34 @@ locations. The service has no LitchiAgent or GPT-as-Policy imports. Upper roles
 and the execution policy remain native EDH DSH Sessions; each actual control is
 admitted by the worker's ActionGate before reaching this service.
 
+Immutable source `d98f2af` accepts independent native watchdog fencing on
+`general_pickup`, seed 0, with the identified ARX X5 Pi0.5 checkpoint
+`fbf1abbda5863ebe4193754a9db16a1637d9127f042052b828e2aaeee7cc5dc7`.
+One actual native inference returns its unchanged eight-action prefix. The owned
+SDK subprocess receives `SIGSTOP` while its original `episode_status` admission
+is pending; revoking the actual resource lease triggers the independent watchdog.
+ActionGate remains `pausing`, without device confirmation, until the SDK receives
+`SIGCONT` and its owner operation drains. The final original StopAcknowledgement
+confirms boundary `9b0f7f7e-1b1a-4c0d-bde4-7a91ba5221c8` with `backend_error`.
+Zero controls, uncertain actions or new physics steps occur. Actual native
+counter 844, simulation time 3.3760001603513956 seconds and the original NPZ
+observation digest remain unchanged. The source audit checks original request,
+raw model output, bridge/native logs, checkpoint inventory, imported policy
+sources, SDK counter provenance and the durable device acknowledgement.
+The native SDK, checker, owned policy and bridge processes exit; their listeners
+and resource lease are released. This accepts the physical stop boundary;
+no upper task or formal Verifier is created.
+
+The same independent stopped scene accepts calibrated measurements from all
+three registered cameras before learned inference. Each measurement uses an
+explicit complete-image region mask and contains 307,200 valid pixels. Axial
+medians are 0.6147001683712006, 0.3538808822631836 and 0.39017629623413086 metres
+for `cam_high`, `cam_left_wrist` and `cam_right_wrist`. Native robot state and
+camera bytes remain identical during capture and measurement. Recomputing all
+retained RGB, depth, mask and calibration arrays reproduces every metric field
+exactly. Complete original records and the successful audit are retained on both
+hosts under `.local/work/v1-robodojo-watchdog-20261003/`.
+
 `kinematics.py` uses `yourdfpy` to read the robot URDF. Native reset validates
 its FK against both measured EEF poses before permitting tools or actions.
 `geometry.py` uses the optical camera's actual intrinsics and USD world pose.

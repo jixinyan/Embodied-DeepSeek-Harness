@@ -218,3 +218,18 @@ reproduces all metric fields exactly. Each camera has 262,144 valid pixels; its
 axial median is 1.12113285, 1.01139337 or 0.48331404 metres in registered camera
 order. Robot state and camera image bytes remain unchanged throughout capture
 and measurement. This independent capture is retained in `metric-depth-512/`.
+
+An independent native `OpenCabinet` scene validates expired-observation admission
+using one actual identified GR00T inference. A transparent WebSocket transport
+forwards the unchanged eight-action response after 3.010270241 seconds; the
+original observation ticket expires after one second. ActionGate rejects that
+response before reserving or executing a control. Its confirmed `backend_error`
+boundary is `de8eb6ac-2e99-497c-8033-e1b88b7cd450`. Native simulation time remains
+0.5000000000000003 seconds, with identical robot state and camera bytes.
+The original 16-action model horizon, admitted response, request identity,
+checkpoint digest `ee3482f3234fd88e579ed4767553525e989bb6bc73a42083b30155f096041d42`
+and response-byte SHA-256 pass retained-source inspection. Both owned native and
+policy processes exit. This accepts the physical gate's stale-response boundary;
+no upper task or formal Verifier is created. Evidence is retained locally under
+`.local/work/robocasa-policy-stale-20261003/audit.json` and on the deployment host
+under `.local/work/v1-robocasa-20261003/fault-acceptance/stale-result.json`.

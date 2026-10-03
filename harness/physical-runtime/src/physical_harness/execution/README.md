@@ -12,6 +12,16 @@ finish before confirming a stopped boundary. Actual step completion and counters
 are recorded on that thread, so cancelling an asynchronous waiter does not erase
 physical effects. A new execution can bind only after the prior execution stops.
 
+Native providers recheck that stop predicate immediately before physical dispatch,
+including after an authoritative episode-status read. When
+`EDH_POLICY_REQUEST_RECORD_DIR` is configured, `NativeActionDevice.stop` retains
+the original acknowledgement under `<execution_id>/stop-<boundary_id>.json`.
+The record includes its acquisition time, executed/uncertain action totals,
+reported physics count and the most recent owner-produced observation/physics
+metadata. SDK counter provenance remains available through the provider's original
+native records. Recording changes neither the acknowledgement wire format nor
+the requirement to drain the actual device owner before confirming its boundary.
+
 An actual RoboCasa GPU check used explicit manual inputs through `ActionGate`: a
 confirmed pause, resume and budget stop executed two control steps; another job
 continued the same scene; a stop during a 16-action chunk halted after one step.
