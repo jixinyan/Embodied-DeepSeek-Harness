@@ -49,7 +49,7 @@ or automatically granted sensor evidence.
    action admission between policy inference and the simulator/device.
 4. Planner finishes its response while the job runs. A confirmed ordinary pause
    permits an explicit Planner resume within the remaining cumulative budget.
-5. `policy_stop`, `episode_terminated` or `budget_exhausted`, with confirmed device
+5. `policy_stop`, `planner_stop`, `episode_terminated` or `budget_exhausted`, with confirmed device
    stopping, creates one fresh independent Verifier. Running frames do not trigger it.
 6. Verifier checks and submits the admitted criterion. Its receipt and authorized
    stopped-boundary evidence reach Planner; the Verifier turn completes and retires.
@@ -70,6 +70,15 @@ Cancellation and backend errors retain their distinct outcomes and do not establ
 task success. The implementation is
 [UpperRun](../../apps/server/src/application.ts); actual recovery acceptance is
 recorded separately in [progress](progress.md).
+
+Native providers expose `execution.end` for Planner-requested terminal review.
+Planner supplies the exact active execution identity and a reason supported by its
+current observations. The host validates decision ownership and the current
+goal/attempt/recovery scope. The physical worker ends the job, drains policy work
+and publishes an actual confirmed boundary and stopped observation. That eligible
+boundary starts the fresh Verifier. Ordinary pause retains explicit resume within
+the remaining budget. An existing terminal outcome and its verification identity
+remain immutable. Actual native acceptance for this tool is tracked separately.
 
 Run `686c9767-746a-430e-ba81-900eef3fb09c` verifies this sequence with native
 Qwen, Pi0.5 and RoboTwin `adjust_bottle`: attempt one exhausts 64 controls and

@@ -12,7 +12,9 @@ requirement or deployment binding is unclear.
   provenance. Do not import the entire upstream repository or write a new loop.
 - Native Qwen/Pi0.5 RoboTwin task success and retained-scene retry pass with fresh
   formal Verifiers, actual action receipts, native videos and released resources.
-  Native Qwen/Pi0.5 RoboDojo task success passes; its clean workflow rerun is pending.
+  Native Qwen/Pi0.5 RoboDojo zero-tool-error retry and task success pass. Its same-
+  Session terminal task passes independent zero-action verification and releases
+  resources. Clean custom-role RoboTwin source/action/video acceptance also passes.
   RoboCasa and BEHAVIOR preserve unsuccessful task outcomes with actual controls.
   Native perception, active observation, transport and confirmed stop checks have
   separate evidence. Default deployment factories and maintenance bindings require
@@ -33,9 +35,12 @@ requirement or deployment binding is unclear.
 - Running frames and status may reach Planner and operator audit, but do not create
   or update a Verifier assignment.
 - A fresh Verifier starts only after an eligible `ended` execution
-  (`policy_stop`, `episode_terminated`, or `budget_exhausted`) with a confirmed
+  (`policy_stop`, `planner_stop`, `episode_terminated`, or `budget_exhausted`) with a confirmed
   device boundary. Budget expiry requires formal verification. Cancellation and
   backend failure remain failed or unknown; a stopped job is not success.
+- Native `execution.end` requests Planner-owned terminal review, followed by fresh
+  independent verification. It preserves existing terminal outcomes and ordinary
+  pause/resume semantics; actual native acceptance remains required.
 - Recovery SKILL publication requires original-goal formal success. Skills
   inform planning/verification, not low-level policy training or task criteria.
 - Tools include planning, files, perception and active observation as well as
