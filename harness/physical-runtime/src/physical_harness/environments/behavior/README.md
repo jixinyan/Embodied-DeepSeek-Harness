@@ -87,6 +87,25 @@ uses configurable initialization/close defaults of 600000/900000 ms. Its
 Planner/Verifier roles with recovery learning disabled. Model/GPU/checkpoint/source
 paths belong to deployment configuration.
 
+## GPU configuration
+
+The native process requires `OMNIGIBSON_GPU_ID` with the physical renderer GPU
+index and `CUDA_VISIBLE_DEVICES` with that GPU's complete `GPU-...` UUID.
+Admission reads the actual index, UUID, PCI bus and device name through
+`nvidia-smi --query-gpu=index,uuid,pci.bus_id,name` and requires the two selections
+to identify the same device. Numeric CUDA visibility lists are not admitted.
+Exactly one CUDA-visible device is required; PyTorch uses logical device 0.
+The provider calls the original public `og.launch(device="cuda:0")` API before
+environment construction. Isaac SimulationContext configures the physics device
+before its physics scene is created. OmniGibson retains its physical renderer
+index and original `multi_gpu=False` launch setting.
+
+Scene metadata retains the actual device identity, visibility, CUDA logical
+index, physics device and renderer selection. Deployment-specific GPU indices
+remain configurable. Native startup placement, calibrated capture and shutdown
+require an actual process/device audit for each selected environment; configured
+selection alone does not establish runtime placement.
+
 ## Active observation
 
 The provider declares `rotation_axes: [yaw, pitch]` after validating native R1Pro

@@ -18,6 +18,7 @@ from uuid import uuid4
 from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeRotation, NativeStep
 from physical_harness.environments.task_catalog import behavior_task_selection
 from physical_harness.environments.native_terminal_record import NativeTerminalRecorder
+from physical_harness.environments.behavior.gpu_device import admit_gpu_device
 from physical_harness.perception.metric_capture import MetricCapture
 from physical_harness.validation import ContractValidator
 
@@ -82,6 +83,12 @@ class BehaviorEnvironment:
         self._evaluation_horizon = None
         self._metric_capture = MetricCapture("behavior", "behavior.omnigibson.world")
         self._terminal_recorder = NativeTerminalRecorder("behavior")
+        self._gpu_device = admit_gpu_device()
+        import torch
+
+        if torch.cuda.device_count() != 1:
+            raise RuntimeError("BEHAVIOR requires exactly one CUDA-visible GPU.")
+        torch.cuda.set_device(0)
         import_module("omnigibson")
 
     @staticmethod
@@ -196,6 +203,7 @@ class BehaviorEnvironment:
                 "physics_timestep_s": 1 / 120,
                 "control_timestep_s": 1 / 30,
                 "evaluation_horizon": self._evaluation_horizon,
+                "gpu_device": deepcopy(self._gpu_device),
             },
         )
 
@@ -256,9 +264,8 @@ class BehaviorEnvironment:
         instance_id = configuration.get("instance_id", 0)
         if type(instance_id) is not int or not 0 <= instance_id < 10:
             raise ValueError("BEHAVIOR 2025 test instance ID must be between 0 and 9.")
-        gpu_id = os.environ.get("OMNIGIBSON_GPU_ID")
-        if gpu_id is None or not gpu_id.isdecimal() or os.environ.get("CUDA_VISIBLE_DEVICES"):
-            raise RuntimeError("BEHAVIOR requires an explicit physical OMNIGIBSON_GPU_ID and unremapped CUDA devices.")
+        if admit_gpu_device() != self._gpu_device:
+            raise RuntimeError("BEHAVIOR GPU configuration changed after native admission.")
         data_root = Path(os.environ["OMNIGIBSON_DATA_PATH"]).resolve(strict=True)
         scene_config_id = configuration.get("scene_config_id", 0)
         task_configuration, admitted_instance_path = behavior_task_selection(
@@ -274,7 +281,7 @@ class BehaviorEnvironment:
         from omnigibson.utils.bddl_utils import is_system_bddl_inst
         from omnigibson.utils.python_utils import recursively_convert_to_torch
 
-        torch.cuda.set_device(int(gpu_id))
+        torch.cuda.set_device(0)
         gm.HEADLESS = True
         for rule in (ToggleableMachineRule, MixingToolRule, CookingSystemRule):
             rule.ENABLED = False
@@ -291,6 +298,10 @@ class BehaviorEnvironment:
             self._evaluation_horizon = official_task_horizon(self._source_root, data_root, task_id)
             selected["task"]["termination_config"]["max_steps"] = self._evaluation_horizon["max_controls"]
         self._og = og
+        # 原生公开 launch 在创建 physics 场景前设置 CUDA 逻辑索引。
+        og.launch(device="cuda:0")
+        if og.sim.device != "cuda:0":
+            raise RuntimeError("BEHAVIOR native physics device differs from its admitted CUDA device.")
         env = og.Environment(configs=selected)
         self._env = env
         robot = env.robots[0]
