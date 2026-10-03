@@ -97,7 +97,7 @@ to identify the same device. Numeric CUDA visibility lists are not admitted.
 Exactly one CUDA-visible device is required; PyTorch uses logical device 0.
 The provider calls the original public `og.launch(device="cuda:0")` API before
 environment construction. Isaac SimulationContext configures the physics device
-before its physics scene is created. OmniGibson retains its physical renderer
+during stage initialization, before native physics advancement. OmniGibson retains its physical renderer
 index and original `multi_gpu=False` launch setting.
 
 Scene metadata retains the actual device identity, visibility, CUDA logical

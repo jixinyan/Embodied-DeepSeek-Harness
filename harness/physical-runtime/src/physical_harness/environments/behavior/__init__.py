@@ -298,7 +298,7 @@ class BehaviorEnvironment:
             self._evaluation_horizon = official_task_horizon(self._source_root, data_root, task_id)
             selected["task"]["termination_config"]["max_steps"] = self._evaluation_horizon["max_controls"]
         self._og = og
-        # 原生公开 launch 在创建 physics 场景前设置 CUDA 逻辑索引。
+        # 原生公开 launch 在初始化 simulation context 时设置 CUDA 逻辑索引。
         og.launch(device="cuda:0")
         if og.sim.device != "cuda:0":
             raise RuntimeError("BEHAVIOR native physics device differs from its admitted CUDA device.")
