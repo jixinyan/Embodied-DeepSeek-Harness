@@ -194,5 +194,27 @@ All six videos from these two executions decode successfully, with 1,050 and
 64 frames respectively in each of the three native camera streams. No camera-frame
 event is published into their upper running traces. The GR00T service and both
 validation consoles stop after release; shared Qwen and SAM remain allocated for
-other validation work. Full Planner task completion, successful native task
-termination and same-Session success-predicate lifecycle acceptance remain pending.
+other validation work. Successful native task termination and same-Session
+success-predicate lifecycle acceptance remain pending.
+
+Run `b9822c9c-9df6-4cff-8bbc-9248358b8b9d` uses stable RoboCasa 1.0.1
+`OpenCabinet`, native `CABINET_SINGLE_DOOR` fixture 20, seed 1, the checkpoint's
+declared layout/style pairs and native 512-pixel cameras resized to 256 with
+`cv2.INTER_AREA`. Each admitted attempt covers the native task's 1,050-control
+horizon. Qwen authorizes two retained-scene retries; three fresh Verifiers return
+the original `task_success=false` criterion, and Planner concludes failure.
+The complete source audit checks 3,431 ordered events, 3,159 immutable sensor
+samples, 3,150 action receipts, 396 identified GR00T inferences and 78,750 physics
+steps. All nine native camera files fully decode 1,050 frames with exact original
+timestamps. One rejected plan argument remains in the source record. Session
+`b241d04e-e1c4-4b6b-9b9a-4ee54b5d4744` releases resources and its native worker,
+console and policy processes exit. Evidence is retained under
+`.local/work/v1-robocasa-20261003/acceptance-1050/`.
+
+A separate stopped seed-1 scene with the same declared fixture/camera settings
+validates all three 512×512 calibrated RGB-D streams and complete-image region
+measurements. Recomputing the retained native PNG, depth and calibration arrays
+reproduces all metric fields exactly. Each camera has 262,144 valid pixels; its
+axial median is 1.12113285, 1.01139337 or 0.48331404 metres in registered camera
+order. Robot state and camera image bytes remain unchanged throughout capture
+and measurement. This independent capture is retained in `metric-depth-512/`.
