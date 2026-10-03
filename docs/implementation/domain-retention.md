@@ -3,8 +3,10 @@
 `DomainRetention` in `apps/server` validates an explicit set of journal records before
 calling `LocalStore.retire`. It is exported for trusted application assembly. Every
 stored namespace requires an owner that declares its references and retention rule.
-There is no automatic collection, complete built-in EDH ownership policy, HTTP record
-deletion route or console deletion control at this checkpoint.
+`workspaceRecordOwners` composes the built-in namespace inventory with an explicit
+deployment payload inspector. Configured HTTP and console operations archive request
+identities and retire selected closed-session history after reference inspection.
+See the [session-retention lifecycle](session-retention.md). Collection remains explicit.
 
 ## Owner and source configuration
 
@@ -40,12 +42,12 @@ without an actual stabilization mechanism is insufficient for a changing source.
 | Namespace | Declared dependencies |
 | --- | --- |
 | `user-session:` | Its open-request record, every published task, each task's session ownership, compact membership records and its published task catalog |
-| `session-open-request:` | The matching source session; always retained |
+| `session-open-request:` | The matching source session; retained until its identity is archived |
 | `session-task-member:` | Source session and task; published membership also references the task's session ownership |
 | `run-user-session:` | Source session, task and compact membership, with exact reverse ownership checks |
-| `session-task-request:` | Source session; admitted requests also retain task, ownership and compact membership; always retained |
+| `session-task-request:` | Source session; admitted requests also retain task, ownership and compact membership; retained until its identity is archived |
 | `session-task-catalog:` | The matching source session, with catalog identity, descriptor and content verification |
-| `request:` | The admitted legacy task when present; always retained |
+| `request:` | The admitted legacy task when present; retained until its identity is archived |
 
 Session inspection consumes the complete published membership inventory. Missing
 intermediate positions, duplicate positions, rewritten immutable entries and conflicting
@@ -62,10 +64,10 @@ legacy accepted format and the current two-write publication sequence.
 These owners describe framework-defined relationships. Deployments with custom record
 references inside configuration/catalog text must extend the corresponding owner or
 declare those references through an external source. Owner prefixes cannot overlap.
-Event, submission, plan, file, clarification and native-audit owners remain required
-for a complete application journal. This pack does not authorize deleting a session:
-the retained request record continues to require its replay source. Removing such
-history requires an explicit archived-identity lifecycle and corresponding reader support.
+Workspace composition supplies event, submission, plan, file, clarification and native-audit
+owners. Unarchived requests preserve their replay sources. Explicit immutable identity
+archives allow selected closed-session history to enter reference inspection while
+preserving identity reservation through reader admission and restart.
 
 ## Evidence and verification owners
 
@@ -172,8 +174,7 @@ final numeric event index.
 
 These owners declare typed framework references. Custom semantic references inside
 context, event detail, report results, free text or agent files require deployment-owned
-declarations. Event-body ownership and native session/audit ownership remain separate
-integration work.
+declarations. Workspace composition includes event-body and native audit ownership.
 
 ## Run, configuration and restart owners
 
@@ -245,8 +246,8 @@ references inside tool arguments/results, model content, custom message data or 
 text. Built-in inspection does not infer those references from arbitrary strings.
 The deployment owns extension completeness and version changes. Registered sensor-image
 metadata is retained when present; image byte ownership remains with the image service.
-These owners are composition APIs. A complete ownership policy and reviewed host/console
-deletion admission remain required.
+These owners compose with the application/native-audit inventory and idle HTTP/console
+admission described in [session retention](session-retention.md).
 
 ## Mandatory retained records
 
@@ -255,14 +256,16 @@ Both preview and deletion apply these checks:
 - Every stored user session must be closed with resources confirmed released.
 - Every SKILL must have complete, valid provenance. Its source record keys, including
   recovery event indexes and published events, are retained.
-- Records under `request:`, `session-open-request:` and `session-task-request:` are
-  retained to preserve accepted request identities.
+- Unarchived records under `request:`, `session-open-request:` and `session-task-request:`
+  protect source history. Archived identities are immutable retained roots; their
+  original requests can join an explicitly selected closed-session history graph.
 - Every configured external root must exist and remain outside the selected set.
 - Every unselected record's declared dependencies must remain outside the selected set.
 
-Request records still need owners to declare their own dependencies. Session state is
-only one admission check: application assembly must also exclude active native scopes,
-task admission and shutdown races. That host lifecycle integration remains pending.
+Request owners declare source history and validate their immutable archive when present.
+Configured HTTP operations reserve idle application admission and dispose retained terminal
+task scopes before inspecting or modifying records. Deployment external leases and
+payload reference declarations remain necessary for complete source ownership.
 
 ## Preview and deletion
 
@@ -326,8 +329,8 @@ immutable events, current-only and historical reports, exact recovery pages, cla
 lifecycle changes, versioned extensions, legacy inline composition, unpublished suffixes,
 compaction and reopen. They execute no model or physical provider.
 
-Application delivery still requires a complete EDH record-owner inventory, external
-ownership declarations, host idle admission and reviewed console selection. Session
-and task identity preservation must be defined before deleting their history. This
-controller provides the reference admission mechanism for that integration; the storage
-primitive remains restricted to trusted application owners.
+Actual copied histories verify complete owner composition, archived identity reservation,
+explicit closed-session retirement, restart reconciliation and production HTTP/Chrome DOM
+selection. Deployment external ownership and semantic payload declarations remain explicit
+configuration requirements. The [acceptance guide](session-retention.md#actual-retained-history-acceptance)
+records the tested histories and evidence boundaries.

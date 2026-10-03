@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { ContractValidator } from '@edh/contracts';
 import type { LocalStore, StoreRevision } from '@edh/storage';
 import { inspectSkillProvenance } from './skill-provenance.js';
+import { archivedRequestKey, RequestIdentityArchives } from './request-identity-archives.js';
 
 export interface DomainRecordOwner {
   id: string;
@@ -170,8 +171,12 @@ export class DomainRetention {
         for (const record of provenance.records) roots.add(record.key);
         skillCount++;
       }
+      const archives = new RequestIdentityArchives(this.store);
+      archives.validate();
+      for (const record of this.store.revisions('archived-request:')) roots.add(record.key);
       for (const prefix of ['request:', 'session-open-request:', 'session-task-request:'])
-        for (const record of this.store.revisions(prefix)) roots.add(record.key);
+        for (const record of this.store.revisions(prefix))
+          roots.add(archives.read(record.key) ? archivedRequestKey(record.key) : record.key);
       for (const key of roots) {
         if (!this.store.revision(key))
           throw new DomainRetentionConflict(`Retained reference is missing: ${key}`);

@@ -36,6 +36,18 @@ import {
 import { readWorkspaceSkills } from './skill-provenance.js';
 import { ImageRetention, type ImageRetentionPolicy } from './image-retention.js';
 import {
+  DomainRetention,
+  DomainRetentionConflict,
+  type DomainReferenceSource,
+} from './domain-retention.js';
+import {
+  workspaceRecordOwners,
+  type WorkspaceReferenceExtension,
+} from './workspace-record-owners.js';
+import { RequestIdentityArchives, RequestArchiveConflict } from './request-identity-archives.js';
+import { sessionRetirementSelection, sessionRetentionCandidates } from './session-retention.js';
+import { z } from 'zod';
+import {
   admitStorageCompaction,
   admitImageCacheCleanup,
   admitOriginalImageMaintenance,
@@ -70,6 +82,11 @@ export interface LocalServerOptions {
     | ((services: DeploymentServices) => ServerDeployment | Promise<ServerDeployment>);
   imageStorage?: Omit<LocalImageOptions, 'directory'>;
   imageRetention?: ImageRetentionPolicy;
+  domainRetention?: {
+    version: string;
+    references: WorkspaceReferenceExtension;
+    sources: readonly DomainReferenceSource[];
+  };
   mountImages?: (
     context: Context,
     directory: string,
@@ -251,6 +268,18 @@ async function startApplication(
       imageRetention
         ? { available: true, sourceIds: imageRetention.sourceIds }
         : { available: false, reason: 'Original-image retention ownership is not configured.' };
+    const requestArchives = new RequestIdentityArchives(store);
+    const domainRetention = options.domainRetention
+      ? new DomainRetention(store, validator, {
+          version: options.domainRetention.version,
+          sources: options.domainRetention.sources,
+          owners: workspaceRecordOwners(store, validator, options.domainRetention.references),
+        })
+      : undefined;
+    const recordRetirement = () =>
+      domainRetention
+        ? { available: true, sourceIds: domainRetention.sourceIds }
+        : { available: false, reason: 'Record retention ownership is not configured.' };
     const sourceCode = await sourceCodeAvailability(options.root);
     const publicConfiguration = {
       sourceCode,
@@ -269,6 +298,7 @@ async function startApplication(
         maintenance: Boolean(imageMaintenance),
         originalCollection: originalCollection(),
       },
+      recordRetirement: recordRetirement(),
       launchProfiles: deployment.metadata.launchProfiles,
       launchTeams: Object.fromEntries(
         [...launchTeams].map(([id, selected]) => [
@@ -325,6 +355,7 @@ async function startApplication(
         blockedBy: storageBlocker(),
         images,
         originalCollection: originalCollection(),
+        recordRetirement: recordRetirement(),
       };
     };
     const streams = new Map<ServerResponse, RunEventStream<RunState>>();
@@ -409,6 +440,16 @@ async function startApplication(
           return json(res, 200, publicConfiguration);
         if (method === 'GET' && url.pathname === '/api/storage')
           return json(res, 200, await storageView());
+        if (method === 'GET' && url.pathname === '/api/storage/retention') {
+          if ([...url.searchParams].length)
+            throw new HttpError(400, 'Retention reads accept no query parameters.');
+          return json(res, 200, {
+            statistics: store.statistics(),
+            blockedBy: storageBlocker(),
+            recordRetirement: recordRetirement(),
+            sessions: domainRetention ? sessionRetentionCandidates(store) : [],
+          });
+        }
         if (
           method === 'POST' &&
           [
@@ -416,15 +457,55 @@ async function startApplication(
             '/api/storage/clear-request-cache',
             '/api/storage/inspect-originals',
             '/api/storage/collect-originals',
+            '/api/storage/archive-requests',
+            '/api/storage/inspect-records',
+            '/api/storage/retire-records',
           ].includes(url.pathname)
         ) {
           const input = await body(req);
           const clearImages = url.pathname === '/api/storage/clear-request-cache';
           const inspectOriginals = url.pathname === '/api/storage/inspect-originals';
           const collectOriginals = url.pathname === '/api/storage/collect-originals';
+          const archiveRequests = url.pathname === '/api/storage/archive-requests';
+          const inspectRecords = url.pathname === '/api/storage/inspect-records';
+          const retireRecords = url.pathname === '/api/storage/retire-records';
           let imageRevision: string | undefined;
           let collectionToken: string | undefined;
-          if (inspectOriginals || collectOriginals) {
+          let sessionIds: string[] | undefined;
+          let recordToken: string | undefined;
+          let archiveSequence: number | undefined;
+          if (archiveRequests || inspectRecords || retireRecords) {
+            if (!domainRetention)
+              throw new HttpError(501, 'Record retention ownership is not configured.');
+            const selection = z
+              .array(z.string().regex(/^[A-Za-z0-9-]{1,128}$/))
+              .min(1)
+              .max(64)
+              .refine((ids) => new Set(ids).size === ids.length);
+            const parsed = (
+              retireRecords
+                ? z.object({ token: z.uuid() }).strict()
+                : archiveRequests
+                  ? z
+                      .object({
+                        sessionIds: selection,
+                        expectedSequence: z.number().int().nonnegative().safe(),
+                      })
+                      .strict()
+                  : z.object({ sessionIds: selection }).strict()
+            ).safeParse(input);
+            if (!parsed.success)
+              throw new HttpError(
+                400,
+                'Expected selected closed sessions or their inspected retirement token.',
+              );
+            const blockedBy = storageBlocker();
+            if (blockedBy) throw new HttpError(409, blockedBy);
+            if ('sessionIds' in parsed.data) sessionIds = parsed.data.sessionIds;
+            if ('token' in parsed.data) recordToken = parsed.data.token;
+            if ('expectedSequence' in parsed.data)
+              archiveSequence = z.number().parse(parsed.data.expectedSequence);
+          } else if (inspectOriginals || collectOriginals) {
             if (!imageRetention)
               throw new HttpError(501, 'Original-image retention ownership is not configured.');
             collectionToken = admitOriginalImageMaintenance(
@@ -449,6 +530,37 @@ async function startApplication(
               active = undefined;
             }
             shutdown.signal.throwIfAborted();
+            if (archiveRequests) {
+              const selection = sessionRetirementSelection(store, sessionIds!);
+              const result = requestArchives.archive(selection.requestKeys, archiveSequence!);
+              return json(res, 200, {
+                statistics: store.statistics(),
+                blockedBy: null,
+                recordRetirement: recordRetirement(),
+                sessions: sessionRetentionCandidates(store),
+                result: { ...result, operation: 'request_identity_archive' },
+              });
+            }
+            if (inspectRecords) {
+              const selection = sessionRetirementSelection(store, sessionIds!);
+              const preview = await domainRetention!.inspect(selection.keys, shutdown.signal);
+              return json(res, 200, {
+                statistics: store.statistics(),
+                blockedBy: null,
+                recordRetirement: { ...recordRetirement(), preview },
+                sessions: sessionRetentionCandidates(store),
+              });
+            }
+            if (retireRecords) {
+              const result = await domainRetention!.retire(recordToken!, shutdown.signal);
+              return json(res, 200, {
+                statistics: store.statistics(),
+                blockedBy: null,
+                recordRetirement: recordRetirement(),
+                sessions: sessionRetentionCandidates(store),
+                result: { ...result, operation: 'domain_record_retirement' },
+              });
+            }
             if (inspectOriginals) {
               const preview = await imageRetention!.inspect(shutdown.signal);
               return json(res, 200, {
@@ -492,7 +604,9 @@ async function startApplication(
             throw new HttpError(
               shutdown.signal.aborted
                 ? 503
-                : failure instanceof ImageMaintenanceConflict
+                : failure instanceof ImageMaintenanceConflict ||
+                    failure instanceof DomainRetentionConflict ||
+                    failure instanceof RequestArchiveConflict
                   ? 409
                   : 500,
               failure instanceof Error ? failure.message : String(failure),
@@ -704,6 +818,8 @@ async function startApplication(
           )
             throw new HttpError(400, 'Invalid scenario or requestId.');
           const requestKey = `request:${data.requestId}`;
+          if (requestArchives.read(requestKey))
+            throw new HttpError(409, 'Run request identity is archived. Use a new request ID.');
           const previous = store.get<{
             scenario: string;
             runId: string | null;

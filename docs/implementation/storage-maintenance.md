@@ -96,12 +96,13 @@ summaries in a SQLite transaction. If index publication fails, the store stops; 
 reconciles the index from the committed journal. Cross-file publication is recoverable
 through this sequence and is not a distributed transaction.
 
-There is no record-retirement HTTP route or console control. The configured
-[DomainRetention controller](domain-retention.md) checks declared record ownership,
-SKILL provenance, request identities and leased external references against a single-use
-preview before calling this primitive. Complete built-in ownership and host/console
-admission remain required. The primitive does not inspect arbitrary document relationships
-or retire image objects. Only authored acceptance journals are deleted by the tests.
+Configured HTTP and console controls expose [closed-session retention](session-retention.md).
+The [DomainRetention controller](domain-retention.md) checks declared record ownership,
+SKILL provenance, preserved request identities and leased external references against
+a single-use preview before calling this primitive. Application admission requires
+an idle workspace and released resources. The primitive does not inspect arbitrary
+document relationships or retire image objects. Actual-history acceptance deletes
+private copies and verifies the unchanged original source hashes.
 
 ## Console and HTTP
 
@@ -159,9 +160,10 @@ admission/storage functions. Full application maintenance while draining live mo
 and provider scopes remains unverified. No scripted model or physical backend is used
 by these acceptance checks.
 
-Application retention admission, run/session archival, application-wide original-image reference
-ownership, native context/audit lifetime, and automated retention scheduling remain
-separate upper-runtime work. Compaction alone does not impose a total disk quota.
+Configured closed-session retention archives request identities and validates native
+audit lifetimes through full namespace ownership before explicit retirement. Deployments
+declare application-wide image/payload ownership and external leases. Automated retention
+scheduling remains separate work. Compaction alone does not impose a total disk quota.
 
 Configured deployments expose original-object inspection and collection through idle
 admission. The controller combines journal references and declared source leases,

@@ -5,6 +5,7 @@ import type { DomainRecordOwner } from './domain-retention.js';
 import { readSessionTasks, SessionTaskHistory, sessionTaskKey } from './session-task-history.js';
 import { SessionTaskCatalogs } from './session-task-catalog.js';
 import { sessionRequestSchema, type UserSessionRecord } from './user-sessions.js';
+import { RequestIdentityArchives } from './request-identity-archives.js';
 
 const id = z.string().regex(/^[A-Za-z0-9-]{1,128}$/);
 const sessionIdentity = z.object({ id, requestId: id });
@@ -25,6 +26,7 @@ export function sessionRecordOwners(
 ): DomainRecordOwner[] {
   const history = new SessionTaskHistory(store);
   const catalogs = new SessionTaskCatalogs(store, validator);
+  const archives = new RequestIdentityArchives(store);
   const session = (sessionId: string) => {
     const row = store.get<UserSessionRecord>(`user-session:${id.parse(sessionId)}`);
     if (!row || sessionIdentity.parse(row.value).id !== sessionId)
@@ -88,7 +90,7 @@ export function sessionRecordOwners(
         throw new Error('Session request record identity or version conflicts.');
       if (session(request.sessionId).requestId !== request.requestId)
         throw new Error('Session request source has a conflicting request identity.');
-      return { references: [`user-session:${request.sessionId}`], retain: true };
+      return { references: [`user-session:${request.sessionId}`], retain: !archives.read(key) };
     }),
     owner('session-task-member:', ({ key }) => {
       const [sessionId, runId] = z
@@ -129,7 +131,7 @@ export function sessionRecordOwners(
         references: request.runId
           ? [...membership(sessionId, request.runId), `run-user-session:${request.runId}`]
           : [`user-session:${sessionId}`],
-        retain: true,
+        retain: !archives.read(key),
       };
     }),
     owner('session-task-catalog:', ({ key }) => {
@@ -142,7 +144,10 @@ export function sessionRecordOwners(
       const request = legacyRequest.parse(value);
       if (version > 2 || (request.runId === null && version !== 1))
         throw new Error('Run request publication version conflicts.');
-      return { references: request.runId ? [`run:${request.runId}`] : [], retain: true };
+      return {
+        references: request.runId ? [`run:${request.runId}`] : [],
+        retain: !archives.read(key),
+      };
     }),
   ];
 }

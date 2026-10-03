@@ -15,6 +15,7 @@ from typing import Callable, Mapping, Sequence
 from uuid import uuid4
 
 from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeRotation, NativeStep
+from physical_harness.environments.task_catalog import behavior_task_selection
 from physical_harness.validation import ContractValidator
 
 
@@ -73,6 +74,7 @@ class BehaviorEnvironment:
         self._episode_terminated = False
         self._last_control_duration_s = 0.0
         self._close_diagnostics: dict[str, object] | None = None
+        self._scene_config_id = 0
         import_module("omnigibson")
 
     @staticmethod
@@ -166,6 +168,7 @@ class BehaviorEnvironment:
         if abs(float(og.sim.get_physics_dt()) - 1 / 120) > 1e-9 or abs(float(og.sim.get_sim_step_dt()) - 1 / 30) > 1e-9:
             raise RuntimeError("BEHAVIOR physics or control timestep differs from the official evaluation profile.")
         NativeViewRotation(self)
+        task_title = self._task_id.replace("_", " ")
         return NativeEnvironmentDescription(
             provider="behavior",
             embodiment_id="behavior.r1pro",
@@ -175,12 +178,13 @@ class BehaviorEnvironment:
             supported_check_ids=("task_success",),
             active_view_directions=(),
             rotation_axes=("yaw", "pitch"),
-            task_instruction="Picking up trash.",
+            task_instruction=task_title[0].upper() + task_title[1:] + ".",
             scene_metadata={
                 "native_task_id": self._task_id,
                 "instance_id": self._instance_id,
                 "scene_model": self._scene_model,
                 "instance_filename": self._instance_filename,
+                "scene_config_id": self._scene_config_id,
                 "robot_model": "R1Pro",
                 "physics_timestep_s": 1 / 120,
                 "control_timestep_s": 1 / 30,
@@ -217,8 +221,8 @@ class BehaviorEnvironment:
         self._require_owner()
         if self._env is not None:
             raise RuntimeError("BEHAVIOR session is already initialized; task admission preserves its scene.")
-        if task_id != "picking_up_trash" or set(configuration) - {"instance_id"}:
-            raise ValueError("BEHAVIOR R1Pro adapter supports a 2025 picking_up_trash instance.")
+        if set(configuration) - {"instance_id", "scene_config_id"}:
+            raise ValueError("Unknown BEHAVIOR native scene configuration field.")
         instance_id = configuration.get("instance_id", 0)
         if type(instance_id) is not int or not 0 <= instance_id < 10:
             raise ValueError("BEHAVIOR 2025 test instance ID must be between 0 and 9.")
@@ -226,6 +230,10 @@ class BehaviorEnvironment:
         if gpu_id is None or not gpu_id.isdecimal() or os.environ.get("CUDA_VISIBLE_DEVICES"):
             raise RuntimeError("BEHAVIOR requires an explicit physical OMNIGIBSON_GPU_ID and unremapped CUDA devices.")
         data_root = Path(os.environ["OMNIGIBSON_DATA_PATH"]).resolve(strict=True)
+        scene_config_id = configuration.get("scene_config_id", 0)
+        task_configuration, admitted_instance_path = behavior_task_selection(
+            self._source_root, data_root, task_id, scene_config_id, instance_id,
+        )
         source = import_module("gr00t.eval.sim.BEHAVIOR.og_teleop_utils")
         if Path(source.__file__).resolve().parents[4] != self._source_root:
             raise RuntimeError("Imported GR00T BEHAVIOR configuration differs from the admitted source root.")
@@ -240,7 +248,6 @@ class BehaviorEnvironment:
         gm.HEADLESS = True
         for rule in (ToggleableMachineRule, MixingToolRule, CookingSystemRule):
             rule.ENABLED = False
-        task_configuration = source.load_available_tasks()[task_id][0]
         selected = source.generate_basic_environment_config(task_id, task_configuration)
         selected["robots"] = [source.generate_robot_config(task_id, task_configuration)]
         selected["robots"][0]["obs_modalities"] = ["proprio", "rgb"]
@@ -272,6 +279,8 @@ class BehaviorEnvironment:
             activity_instance_id=instance_id,
         )
         instance_path = data_root / "2025-challenge-hidden-instances" / task_id / f"{instance_filename}-tro_state.json"
+        if instance_path != admitted_instance_path:
+            raise RuntimeError("BEHAVIOR SDK instance identity differs from the admitted native task data.")
         with instance_path.open(encoding="utf-8") as stream:
             instance = recursively_convert_to_torch(json.load(stream))
         for name, state in instance.items():
@@ -294,6 +303,7 @@ class BehaviorEnvironment:
         self._instance_id = instance_id
         self._scene_model = scene_model
         self._instance_filename = instance_filename
+        self._scene_config_id = scene_config_id
         self._action_spec = self._native_action_spec()
         self._controlled_physics_steps = 0
         self._episode_terminated = False

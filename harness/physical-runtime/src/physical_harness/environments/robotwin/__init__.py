@@ -19,6 +19,7 @@ import sapien
 import yaml
 
 from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeStep
+from physical_harness.environments.task_catalog import robotwin_task_selection
 from physical_harness.validation import ContractValidator
 
 
@@ -72,6 +73,8 @@ class RoboTwinEnvironment:
         self._frame_sample_interval_steps = 10
         self._max_frames_per_action = 300
         self._ray_tracing_denoiser = "none"
+        self._task_config = "demo_clean"
+        self._task_instruction: str | None = None
 
     def _require_env(self):
         if self._env is None:
@@ -92,12 +95,21 @@ class RoboTwinEnvironment:
         for joint, name in ((env.robot.left_gripper[0][0], "fl_joint7"), (env.robot.right_gripper[0][0], "fr_joint7")):
             if joint.get_name() != name or not np.allclose(joint.get_limits(), [[0, 0.04765]], atol=1e-5):
                 raise RuntimeError(f"RoboTwin native gripper limits or order differ for {name}.")
-        with (self._source_root / "description" / "task_instruction" / "adjust_bottle.json").open(encoding="utf-8") as stream:
-            instruction = json.load(stream)["full_description"]
-        if not isinstance(instruction, str) or not instruction.strip():
-            raise RuntimeError("RoboTwin adjust_bottle task instruction is unavailable.")
-        if self._seed is None or type(env.model_id) not in (int, np.int64) or type(env.qpose_tag) not in (int, np.int64):
+        if self._seed is None or self._task_id is None or self._task_instruction is None:
             raise RuntimeError("RoboTwin scene parameters are unavailable.")
+        metadata = {
+            "native_task_id": self._task_id,
+            "task_config": self._task_config,
+            "seed": self._seed,
+            "scene_identifier": f"{self._task_id}:{self._task_config}:{self._seed}",
+            "physics_timestep_s": 1 / 250,
+            "ray_tracing_denoiser": self._ray_tracing_denoiser,
+        }
+        if self._task_id == "adjust_bottle":
+            if type(env.model_id) not in (int, np.int64) or type(env.qpose_tag) not in (int, np.int64):
+                raise RuntimeError("RoboTwin bottle scene parameters are unavailable.")
+            metadata.update({"bottle_model_id": int(env.model_id), "bottle_orientation_tag": int(env.qpose_tag),
+                             "scene_identifier": f"adjust_bottle:{self._seed}:{int(env.model_id)}:{int(env.qpose_tag)}"})
         return NativeEnvironmentDescription(
             provider="robotwin",
             embodiment_id="robotwin.aloha-agilex",
@@ -106,24 +118,15 @@ class RoboTwinEnvironment:
             state_channels=STATE_CHANNELS,
             supported_check_ids=("task_success",),
             active_view_directions=(),
-            task_instruction=instruction,
-            scene_metadata={
-                "native_task_id": "adjust_bottle",
-                "task_config": "demo_clean",
-                "seed": self._seed,
-                "bottle_model_id": int(env.model_id),
-                "bottle_orientation_tag": int(env.qpose_tag),
-                "scene_identifier": f"adjust_bottle:{self._seed}:{int(env.model_id)}:{int(env.qpose_tag)}",
-                "physics_timestep_s": 1 / 250,
-                "ray_tracing_denoiser": self._ray_tracing_denoiser,
-            },
+            task_instruction=self._task_instruction,
+            scene_metadata=metadata,
         )
 
     def _configuration(self, task_id: str, configuration: Mapping[str, object]) -> dict[str, object]:
-        if task_id != "adjust_bottle":
-            raise ValueError("This RoboTwin adapter supports the adjust_bottle native task.")
-        if set(configuration) - {"seed", "frame_sample_interval_steps", "max_frames_per_action", "ray_tracing_denoiser"}:
+        if set(configuration) - {"seed", "task_config", "frame_sample_interval_steps", "max_frames_per_action", "ray_tracing_denoiser"}:
             raise ValueError("Unknown RoboTwin scene configuration field.")
+        self._task_config = configuration.get("task_config", "demo_clean")
+        selected, self._task_instruction = robotwin_task_selection(self._source_root, task_id, self._task_config)
         denoiser = configuration.get("ray_tracing_denoiser", "none")
         if not isinstance(denoiser, str) or denoiser not in {"none", "oidn", "optix"}:
             raise ValueError("RoboTwin ray_tracing_denoiser must be none, oidn or optix.")
@@ -137,10 +140,6 @@ class RoboTwinEnvironment:
             raise ValueError("RoboTwin frame sampling interval and limit must be positive integers.")
         self._frame_sample_interval_steps = interval
         self._max_frames_per_action = frame_limit
-        with (self._source_root / "task_config" / "demo_clean.yml").open(encoding="utf-8") as stream:
-            selected = yaml.safe_load(stream)
-        if selected["embodiment"] != ["aloha-agilex"]:
-            raise RuntimeError("RoboTwin task config embodiment differs from the adapter mapping.")
         with (self._source_root / "task_config" / "_camera_config.yml").open(encoding="utf-8") as stream:
             camera_config = yaml.safe_load(stream)["Large_D435"]
         if camera_config["w"] != 640 or camera_config["h"] != 480:
@@ -161,7 +160,7 @@ class RoboTwinEnvironment:
         selected["save_data"] = False
         selected["eval_mode"] = True
         selected["task_name"] = task_id
-        selected["task_config"] = "demo_clean"
+        selected["task_config"] = self._task_config
         selected["head_camera_h"] = 480
         selected["head_camera_w"] = 640
         selected["left_robot_file"] = robot_path

@@ -32,8 +32,9 @@ uses `picking_up_trash` test instances from the 2025 challenge bundle.
 It sets those three native cameras to 256×256 and the head camera horizontal
 aperture to 40.0, then reads their RGB channels directly. Its controllers use base
 velocity, trunk and arm position, and smooth gripper commands with
-`action_normalize: false`. `BehaviorEnvironment` supports that task with an
-R1Pro robot. It validates the controller order and joint limits after native
+`action_normalize: false`. `BehaviorEnvironment` selects activities and scene
+configurations from the installed `available_tasks.yaml` and requires the chosen
+2025 native instance file with an R1Pro robot. It validates the controller order and joint limits after native
 reset, publishes the 21 GR00T state groups from the actual 258-value robot
 proprioception, and evaluates `task_success` through the native compiled task
 goal. The native `ActionSpec` has 23 channels at 30 Hz; base and gripper inputs
@@ -41,6 +42,15 @@ are normalized to `[-1, 1]`, while torso and arm commands are absolute joint
 positions in radians with measured joint limits. The GR00T processor converts
 its relative torso and arm predictions to absolute commands before this native
 action interface receives them.
+
+Scene configuration accepts `instance_id` (default 0, range 0–9) and
+`scene_config_id` (default 0, a key in the selected task's SDK configuration).
+The activity identity supplies its display instruction; the active compiled
+BDDL goal remains authoritative for `task_success`. The
+[native task selection guide](../../../../../../docs/implementation/native-task-selection.md)
+records 74 actual installed task/scene configurations and all ten prepared
+`picking_up_trash` instances. Additional activity assets and complete workflows
+require their own native validation.
 
 `BehaviorProcessEnvironment` keeps native simulator operations on an independent
 process's main thread. A standard bounded multiprocessing connection carries

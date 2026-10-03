@@ -348,6 +348,7 @@ export function runRecordOwners(
         }
         if (store.revision(`session-audit:${state.id}:${assignmentId}`))
           references.add(`session-audit:${state.id}:${assignmentId}`);
+        for (const file of store.revisions(`file:${assignmentId}:`)) references.add(file.key);
       }
       const sampleSource = (sample: SensorSample, visible: boolean) => {
         if (!isDeepStrictEqual(sample, evidence(state, sample.evidence.id, references, visible)))

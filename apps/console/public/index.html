@@ -136,6 +136,27 @@
         <p data-storage="collection-status" role="status">
           Inspect references to preview original-image cleanup.
         </p>
+        <h3>Closed session history</h3>
+        <p>
+          Select closed sessions, preserve their request identities, and inspect their references
+          before deleting history. Referenced experience sources remain protected. Original images
+          have their own cleanup operation.
+        </p>
+        <div id="retention-sessions"></div>
+        <div class="storage-actions">
+          <button id="archive-requests" class="button small" disabled>
+            Archive selected request identities
+          </button>
+          <button id="inspect-records" class="button small" disabled>
+            Inspect selected history
+          </button>
+          <button id="retire-records" class="button small" disabled>
+            Delete inspected history
+          </button>
+        </div>
+        <p data-storage="retirement-status" role="status">
+          Record retention ownership is not configured.
+        </p>
       </details>
       <section class="session-launcher" aria-label="User session launcher">
         <div class="launcher-heading">

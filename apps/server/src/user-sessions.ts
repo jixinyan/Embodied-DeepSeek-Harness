@@ -6,6 +6,7 @@ import type { EmbodiedBackend } from '@edh/execution';
 import type { TaskCatalogDefinition, TaskDefinition } from '@edh/tasks';
 import type { SessionTaskCatalogs, SessionCatalogDescriptor } from './session-task-catalog.js';
 import { UpperRun, terminal } from './application.js';
+import { RequestIdentityArchives } from './request-identity-archives.js';
 import type { SessionEnvironment } from './deployment.js';
 import {
   SessionTaskHistory,
@@ -67,6 +68,7 @@ export class UserSessions {
     private readonly store: LocalStore,
     private readonly catalogs?: SessionTaskCatalogs,
   ) {
+    new RequestIdentityArchives(store).validate();
     this.tasks = new SessionTaskHistory(store);
     for (const row of store.scan<UserSessionRecord>('user-session:')) {
       if (row.key !== `user-session:${requestIdentity.parse(row.value.id)}`)
@@ -90,7 +92,7 @@ export class UserSessions {
       const request = sessionRequestSchema.parse(row.value);
       if (row.version !== 1 || row.key !== sessionRequestKey(request.requestId))
         throw new Error('Session request record identity or version conflicts.');
-      this.requestSource(request.requestId);
+      if (!new RequestIdentityArchives(store).read(row.key)) this.requestSource(request.requestId);
     }
   }
   private retainRequest(record: UserSessionRecord): void {
@@ -124,6 +126,8 @@ export class UserSessions {
     return source;
   }
   replaySession(input: SessionOpenInput): UserSessionRecord | undefined {
+    if (new RequestIdentityArchives(this.store).read(sessionRequestKey(input.requestId)))
+      throw new SessionConflict('Session request identity is archived. Use a new request ID.');
     const prior = this.requestSource(input.requestId);
     if (!prior) return undefined;
     if (
@@ -217,6 +221,8 @@ export class UserSessions {
     });
   }
   replayTask(id: string, taskId: string, requestId: string, inputIdentity = taskId) {
+    if (new RequestIdentityArchives(this.store).read(`session-task-request:${id}:${requestId}`))
+      throw new SessionConflict('Task request identity is archived. Use a new request ID.');
     const record = this.get(id);
     const prior = this.store.get<{
       taskId: string;

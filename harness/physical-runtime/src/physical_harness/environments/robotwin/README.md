@@ -2,11 +2,12 @@
 
 `RoboTwinEnvironment` binds the pinned RoboTwin stable release
 `bf44be51cf5717a5595ce59447f2cf5263d2aa95` to the synchronous
-`NativeEnvironment` interface. The admitted native task is `adjust_bottle` with
-the `aloha-agilex` embodiment. `bind_task` preserves its current scene. A new
+`NativeEnvironment` interface. Native task selection reads the installed task
+module and its original instruction with the `aloha-agilex` embodiment.
+`adjust_bottle` retains actual model-driven success acceptance. `bind_task` preserves its current scene. A new
 session or an explicit native reset creates a new scene.
 
-The adapter reads `task_config/demo_clean.yml`, the Aloha-AgileX embodiment
+The adapter reads the selected `task_config` file (default `demo_clean`), the Aloha-AgileX embodiment
 configuration and the provider's `Large_D435` camera configuration. It requests
 three 640×480 RGB cameras: `head_camera`, `left_camera` and `right_camera`.
 `joint_action.vector` contains the provider's 14 drive targets in this order:
@@ -17,9 +18,16 @@ after reset. The gripper commands have the provider's normalized `[0, 1]`
 range. The provider's `set_gripper` maps those values to physical gripper
 positions. `task_success` calls the active native task's `check_success()`.
 The task instruction comes from the pinned provider file
-`description/task_instruction/adjust_bottle.json` `full_description` field.
-Scene metadata reports the reset seed, sampled bottle model and orientation,
-and the 250 Hz physics timestep after reset.
+`description/task_instruction/<native_task_id>.json` `full_description` field.
+Scene metadata reports the task/configuration identity, reset seed and 250 Hz
+physics timestep. `adjust_bottle` also reports its sampled bottle model and
+orientation. Configured tasks validate the same native joint/camera mapping
+after reset; every selected task uses its own native `check_success()`.
+
+The [native task selection guide](../../../../../../docs/implementation/native-task-selection.md)
+records the actual 50-task source admission check and the separate task acceptance
+requirements. The installed `demo_randomized` configuration also declares
+`aloha-agilex`; its randomized scenes require their own native evidence.
 
 Each `robotwin.qpos_target` command may run a variable number of 250 Hz physics
 steps, so its `ActionSpec.frequency_hz` is `null`. `NativeStep.raw_sim_steps`

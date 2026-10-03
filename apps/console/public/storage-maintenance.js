@@ -17,6 +17,49 @@ export function renderStorageMaintenance(container, report, busy = false) {
   const ready = inspection?.state === 'ready';
   const collection = report?.originalCollection;
   const preview = collection?.preview;
+  const retirement = report?.recordRetirement;
+  const selectedSessions = new Set(report?.selectedSessionIds ?? []);
+  const sessionList = container.querySelector('#retention-sessions');
+  sessionList.replaceChildren();
+  for (const session of report?.sessions ?? []) {
+    const label = document.createElement('label');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = session.sessionId;
+    checkbox.checked = selectedSessions.has(session.sessionId);
+    checkbox.disabled = busy || Boolean(report?.blockedBy);
+    label.append(
+      checkbox,
+      document.createTextNode(
+        ` ${session.profileId} · ${session.createdAt} · ${session.taskCount} tasks · ${session.recordCount} records`,
+      ),
+    );
+    sessionList.append(label, document.createElement('br'));
+  }
+  const selectedRows = (report?.sessions ?? []).filter((session) =>
+    selectedSessions.has(session.sessionId),
+  );
+  const selected = selectedRows.length > 0;
+  const unarchived = selectedRows.some((session) => session.unarchivedRequests > 0);
+  const retirementPreview = retirement?.preview;
+  text(
+    'retirement-status',
+    !retirement?.available
+      ? (retirement?.reason ?? 'Record retention ownership is not configured.')
+      : retirementPreview
+        ? `${retirementPreview.selected.length} selected records · ${retirementPreview.retainedRecords} retained records · ${retirementPreview.skillCount} verified SKILL sources. Delete inspected history removes the selected records.`
+        : report?.result?.operation === 'request_identity_archive'
+          ? `Preserved ${report.result.archivedRecords} request identities. Inspect selected history to preview deletion.`
+          : report?.result?.operation === 'domain_record_retirement'
+            ? `Deleted ${report.result.removedRecords} inspected records. Archived request identities remain reserved.`
+            : 'Select closed sessions and archive their request identities before inspection.',
+  );
+  container.querySelector('#archive-requests').disabled =
+    busy || !retirement?.available || Boolean(report?.blockedBy) || !selected || !unarchived;
+  container.querySelector('#inspect-records').disabled =
+    busy || !retirement?.available || Boolean(report?.blockedBy) || !selected || unarchived;
+  container.querySelector('#retire-records').disabled =
+    busy || !retirement?.available || Boolean(report?.blockedBy) || !retirementPreview;
   for (const [field, usage] of [
     ['image-retained', preview?.inspection.retainedObjects],
     ['image-unreferenced', preview?.inspection.unreferencedObjects],
@@ -62,7 +105,11 @@ export function renderStorageMaintenance(container, report, busy = false) {
               ? `Cleared ${report.result.removedFiles} cached images · reclaimed ${byteSize(report.result.reclaimedBytes)}.`
               : report.result.operation === 'original_image_collection'
                 ? `Deleted ${report.result.removedFiles} unreferenced originals · reclaimed ${byteSize(report.result.reclaimedBytes)}.`
-                : `Reclaimed ${byteSize(report.result.reclaimedBytes)}. All current records retained.`
+                : report.result.operation === 'request_identity_archive'
+                  ? `Preserved ${report.result.archivedRecords} request identities.`
+                  : report.result.operation === 'domain_record_retirement'
+                    ? `Deleted ${report.result.removedRecords} inspected records.`
+                    : `Reclaimed ${byteSize(report.result.reclaimedBytes)}. All current records retained.`
             : statistics
               ? 'Compaction requires an idle workspace and ends retained task scopes.'
               : 'Open to inspect storage.')),
@@ -86,11 +133,17 @@ export function bindStorageMaintenance(container, api, action) {
   let report;
   const update = async (operation) => {
     const collectionToken = report?.originalCollection?.preview?.token;
+    const retirementToken = report?.recordRetirement?.preview?.token;
+    const sessionIds = [...container.querySelectorAll('#retention-sessions input:checked')].map(
+      (input) => input.value,
+    );
     if (report)
       report = {
         ...report,
         result: undefined,
         originalCollection: { ...report.originalCollection, preview: undefined },
+        recordRetirement: { ...report.recordRetirement, preview: undefined },
+        selectedSessionIds: sessionIds,
       };
     renderStorageMaintenance(container, report, true);
     try {
@@ -105,8 +158,23 @@ export function bindStorageMaintenance(container, api, action) {
               ? await api('/api/storage/inspect-originals', {})
               : operation === 'collect-originals'
                 ? await api('/api/storage/collect-originals', { token: collectionToken })
-                : await api('/api/storage');
-      report = operation ? { ...report, ...response } : response;
+                : operation === 'archive-requests'
+                  ? await api('/api/storage/archive-requests', {
+                      sessionIds,
+                      expectedSequence: report.statistics.sequence,
+                    })
+                  : operation === 'inspect-records'
+                    ? await api('/api/storage/inspect-records', { sessionIds })
+                    : operation === 'retire-records'
+                      ? await api('/api/storage/retire-records', { token: retirementToken })
+                      : await api('/api/storage');
+      if (operation) report = { ...report, ...response };
+      else
+        report = {
+          ...response,
+          ...(await api('/api/storage/retention')),
+          selectedSessionIds: sessionIds,
+        };
     } finally {
       renderStorageMaintenance(container, report);
     }
@@ -121,4 +189,19 @@ export function bindStorageMaintenance(container, api, action) {
     action(() => update('inspect-originals'));
   container.querySelector('#collect-originals').onclick = () =>
     action(() => update('collect-originals'));
+  container.querySelector('#archive-requests').onclick = () =>
+    action(() => update('archive-requests'));
+  container.querySelector('#inspect-records').onclick = () =>
+    action(() => update('inspect-records'));
+  container.querySelector('#retire-records').onclick = () => action(() => update('retire-records'));
+  container.querySelector('#retention-sessions').onchange = () => {
+    report = {
+      ...report,
+      selectedSessionIds: [...container.querySelectorAll('#retention-sessions input:checked')].map(
+        (input) => input.value,
+      ),
+      recordRetirement: { ...report.recordRetirement, preview: undefined },
+    };
+    renderStorageMaintenance(container, report);
+  };
 }

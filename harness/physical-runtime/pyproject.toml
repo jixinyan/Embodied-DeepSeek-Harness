@@ -11,6 +11,7 @@ license = "AGPL-3.0-only"
 dependencies = ["jsonschema==4.25.1", "filelock==3.20.0"]
 
 [project.optional-dependencies]
+catalog = ["PyYAML"]
 policy = ["websockets==17.0.1"]
 recording = ["av==18.1.0", "Pillow"]
 robodojo = ["msgpack==1.1.1", "numpy", "Pillow", "psutil"]
