@@ -105,6 +105,35 @@ def release_owner_profiles(record_root: Path, owner_token: str) -> dict:
     return {"owner_token": owner_token, "record_root": record_root_argument, "profiles": profiles}
 
 
+def validate_owner_root(record_root: Path, owner_token: str) -> dict:
+    import psutil
+    import setproctitle
+
+    if re.fullmatch(r"[0-9a-f]{32}", owner_token) is None:
+        raise ValueError("NVIDIA profile owner token must contain 32 lowercase hexadecimal characters.")
+    if not record_root.is_absolute() or not record_root.is_dir():
+        raise ValueError("NVIDIA profile preflight requires an existing absolute record root.")
+    record_root_argument = str(record_root)
+    record_root = record_root.resolve(strict=True)
+    check_file = record_root / f".edh-profile-preflight-{uuid4().hex}.json"
+    content = (json.dumps({"owner_token": owner_token, "pid": psutil.Process().pid,
+                           "main_thread_title": setproctitle.getthreadtitle()}) + "\n").encode()
+    with check_file.open("xb") as output:
+        output.write(content)
+        output.flush()
+        os.fsync(output.fileno())
+    directory_fd = os.open(record_root, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(directory_fd)
+        if check_file.read_bytes() != content:
+            raise RuntimeError("NVIDIA profile preflight bytes changed before release.")
+        check_file.unlink()
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
+    return {"owner_token": owner_token, "record_root": record_root_argument, "record_root_writable": True}
+
+
 @contextmanager
 def owned_nvidia_profile():
     enabled = os.environ.get("EDH_NVIDIA_EGL_PROFILE", "0")
@@ -201,11 +230,14 @@ def owned_nvidia_profile():
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--release-owner", action="store_true", required=True)
+    operation = parser.add_mutually_exclusive_group(required=True)
+    operation.add_argument("--release-owner", action="store_true")
+    operation.add_argument("--validate-owner-root", action="store_true")
     parser.add_argument("--record-root", type=Path, required=True)
     parser.add_argument("--owner-token", required=True)
     arguments = parser.parse_args()
-    result = release_owner_profiles(arguments.record_root, arguments.owner_token)
+    handler = release_owner_profiles if arguments.release_owner else validate_owner_root
+    result = handler(arguments.record_root, arguments.owner_token)
     print(json.dumps(result, sort_keys=True))
 
 

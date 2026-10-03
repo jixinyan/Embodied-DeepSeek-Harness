@@ -115,6 +115,10 @@ python -m physical_harness.environments.nvidia_profile --release-owner \
   --record-root /absolute/record/root --owner-token TRANSPORT_TOKEN
 ```
 
+Before worker allocation, the same command with `--validate-owner-root` verifies
+the declared helper imports and actual exclusive write, synchronization and
+removal in that configured directory. Its receipt reports
+`record_root_writable: true`; it initializes no simulator or CUDA context.
 Cleanup selects only original records with that token and strict profile identity.
 It requires native PID, parent PID and process-group absence, then verifies the
 exact owned profile digest/content before removal. Its JSON receipt preserves
