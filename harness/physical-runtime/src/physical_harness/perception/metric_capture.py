@@ -33,6 +33,32 @@ class MetricCapture:
         self.observation = observation
         self.frames = captured
         self.simulation_time_s = float(simulation_time_s)
+        directory = os.environ.get("EDH_METRIC_CAPTURE_RECORD_DIR")
+        if directory is not None:
+            target = Path(directory).resolve(strict=True) / self.provider / observation.observation_id
+            target.mkdir(parents=True, exist_ok=False)
+            cameras = {}
+            for camera, frame in captured.items():
+                camera_directory = target / camera
+                camera_directory.mkdir()
+                image = observation.images[camera]
+                (camera_directory / "source.png").write_bytes(image)
+                arrays_path = camera_directory / "calibration.npz"
+                np.savez_compressed(arrays_path, axial_depth_m=frame["axial_depth_m"],
+                                    intrinsic_matrix=frame["intrinsic_matrix"],
+                                    camera_to_world=frame["camera_to_world"])
+                cameras[camera] = {"source_image_sha256": hashlib.sha256(image).hexdigest(),
+                                  "calibration_npz_sha256": hashlib.sha256(arrays_path.read_bytes()).hexdigest(),
+                                  "near_m": float(frame["near_m"]), "far_m": float(frame["far_m"])}
+            source_path = Path(__file__).resolve(strict=True)
+            record = {"schema_version": "edh.native_rgbd_capture.v1", "provider": self.provider,
+                      "observation_id": observation.observation_id, "observed_at": observation.observed_at,
+                      "simulation_time_s": self.simulation_time_s, "world_frame": self.world_frame,
+                      "source": f"{self.provider}-native-rgbd", "native_pid": os.getpid(),
+                      "recording_source": {"path": str(source_path),
+                                           "sha256": hashlib.sha256(source_path.read_bytes()).hexdigest()},
+                      "cameras": cameras}
+            (target / "capture.json").write_text(json.dumps(record, indent=2, allow_nan=False) + "\n")
 
     def measure(self, observation_id: str, camera: str, source_image_sha256: str,
                 mask_png: bytes) -> dict:
