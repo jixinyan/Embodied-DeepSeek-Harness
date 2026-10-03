@@ -115,6 +115,7 @@ def main():
         from utils.load_file import load_yaml
         from utils.pipeline_utils import process_config, process_randomization
         from src.eval_client import eval_env
+        from .dependency_provenance import record_native_dependencies
         from .session import CAMERA_ALIASES, RoboDojoSession, write_json
 
         status, architectures = nvrtc.nvrtcGetSupportedArchs()
@@ -161,6 +162,7 @@ def main():
         finally:
             eval_env.WsModelClient = original
         session = RoboDojoSession(env, args.output, args.task)
+        record_native_dependencies(args.output)
         write_json(args.output / "resolved_config.json", OmegaConf.to_container(cfg, resolve=True))
         loaded = {name: str(Path(module.__file__).resolve()) for name, module in sys.modules.items()
                   if getattr(module, "__file__", None)}
