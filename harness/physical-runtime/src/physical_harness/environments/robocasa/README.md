@@ -4,17 +4,34 @@
 PandaOmron's `HYBRID_MOBILE_BASE` controller. It validates the native 12-channel
 layout, normalized limits and 20 Hz control frequency after the actual scene reset.
 The last channel is `base_mode`. Session configuration selects a seed and split or
-explicit layout/style IDs, plus texture and camera randomization settings. Unknown
+explicit layout/style IDs, plus texture and camera randomization settings. Optional
+`fixture_type` names an actual RoboCasa `FixtureType`; `camera_resolution` admits
+256 or 512 pixels. With `split: null`, `obj_instance_split` selects the native
+`pretrain` or `target` object set. Unknown
 or conflicting fields fail. A later upper task must use the same native task ID;
 `bind_task` preserves the current scene.
 
-Three 256 × 256 RGB cameras and the five proprioception arrays used by the official
+Three native RGB cameras and the five proprioception arrays used by the official
 PandaOmron GR00T mapping are captured as native observations. The only registered
 formal check is RoboCasa's task success predicate under `task_success`. The adapter
 does not expose active camera movement. `step` calls one actual robosuite control
 step and reports the measured MuJoCo internal step count. A manually specified
 neutral control action passed one step with 25 internal steps in the isolated GPU
 environment. That check did not execute a learned policy or complete the task.
+
+The GR00T evaluation binding uses `OpenCabinet`,
+`fixture_type: "CABINET_SINGLE_DOOR"` (native enum 20),
+`camera_resolution: 512`, `split: null`, `obj_instance_split: "target"` and
+`layout_and_style_ids: [[1, 1], [2, 2], [4, 4], [6, 9], [7, 10]]`.
+The [checkpoint's RoboCasa evaluation wrapper](https://raw.githubusercontent.com/squarefk/robocasa/d89d481ce9c76da7f179466981676e268aa842e5/robocasa/utils/gym_utils/gymnasium_basic.py)
+defines those layout/style pairs and 512-pixel cameras; its
+[GR00T image processor](https://raw.githubusercontent.com/squarefk/robocasa/d89d481ce9c76da7f179466981676e268aa842e5/robocasa/utils/gym_utils/gymnasium_groot.py)
+uses OpenCV `INTER_AREA` to produce 256-pixel policy inputs. EDH applies that
+image transform inside the GR00T adapter. Native observations, original image
+digests and metric calibration retain their declared capture resolution.
+The original wrapper uses its fork's `OpenSingleDoor` task and object split `B`;
+this binding identifies the current RoboCasa 1.0.1 native task and object set
+explicitly. Task completion always reads the current native `task_success`.
 
 After each committed native control, `step` reports `episode_terminated` when
 RoboCasa's current `_check_success()` predicate or native `done` flag is true.

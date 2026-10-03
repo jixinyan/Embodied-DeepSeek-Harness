@@ -5,7 +5,6 @@ from io import BytesIO
 import json
 import os
 from pathlib import Path
-import subprocess
 
 import numpy as np
 from PIL import Image
@@ -15,13 +14,13 @@ from physical_harness.execution.native_device import NativeActionDevice
 from physical_harness.validation import ContractValidator
 
 
-async def check(output: Path, task_id: str, seed: int) -> dict:
+async def check(output: Path, task_id: str, configuration: dict) -> dict:
     root = Path(__file__).resolve().parents[1]
     validator = ContractValidator.from_path(root / "harness/contracts/schema/physical.schema.json")
     environment = RoboCasaEnvironment(validator)
     device = NativeActionDevice(environment)
     try:
-        await device.on_owner(environment.reset, task_id, {"seed": seed, "split": "pretrain"})
+        await device.on_owner(environment.reset, task_id, configuration)
         before = await device.on_owner(environment.observe)
         description = await device.on_owner(environment.describe)
         capture = await device.on_owner(environment.capture_metric_depth)
@@ -45,9 +44,10 @@ async def check(output: Path, task_id: str, seed: int) -> dict:
                 raise RuntimeError("Paired metric RGB differs from the native camera observation orientation.")
             rgb_path.write_bytes(sample["rgb_png"])
             np.save(depth_path, sample["axial_depth_m"], allow_pickle=False)
+            height, width = pixels.shape[:2]
             intrinsic = sample["intrinsic_matrix"]
             calibration_id = "robocasa-camera:" + hashlib.sha256(json.dumps({
-                "camera_name": camera, "width": 256, "height": 256,
+                "camera_name": camera, "width": width, "height": height,
                 "intrinsic_matrix": intrinsic.tolist(), "depth_kind": "axial",
                 "image_origin": "top_left",
             }, sort_keys=True, allow_nan=False).encode("utf-8")).hexdigest()
@@ -57,8 +57,8 @@ async def check(output: Path, task_id: str, seed: int) -> dict:
                 "observation_id": capture["observation_id"],
                 "observed_at": sample["observed_at"],
                 "simulation_time_s": capture["simulation_time_s"],
-                "width": 256,
-                "height": 256,
+                "width": width,
+                "height": height,
                 "image_origin": "top_left",
                 "depth_kind": "axial",
                 "depth_unit": "metre",
@@ -83,13 +83,29 @@ async def check(output: Path, task_id: str, seed: int) -> dict:
                 json.dumps(record, indent=2, allow_nan=False) + "\n", encoding="utf-8"
             )
             records[camera] = record
+            mask_path = output / f"{camera}-visible-region.png"
+            Image.fromarray(np.full((height, width), 255, dtype=np.uint8)).save(mask_path)
+            measurement = await device.on_owner(
+                environment.measure_object, before.observation_id, camera,
+                record["rgb_sha256"], mask_path.read_bytes(),
+            )
+            (output / f"{camera}-visible-region-measurement.json").write_text(
+                json.dumps({"region": "complete captured image", "measurement": measurement},
+                           indent=2, allow_nan=False) + "\n", encoding="utf-8"
+            )
+        following_measurement = await device.on_owner(environment.observe)
+        if before.state != following_measurement.state or any(
+            before.images[camera] != following_measurement.images[camera] for camera in CAMERA_NAMES
+        ):
+            raise RuntimeError("Read-only region measurement changed the native scene.")
+        provider_source = root / "harness/physical-runtime/src/physical_harness/environments/robocasa/__init__.py"
         report = {
             "schema_version": "edh.robocasa.metric_capture.v1",
             "provider": "robocasa",
             "task_id": task_id,
             "scene_metadata": description.scene_metadata,
-            "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip(),
-            "source_changes": subprocess.check_output(["git", "status", "--short"], cwd=root, text=True).strip(),
+            "provider_source_sha256": hashlib.sha256(provider_source.read_bytes()).hexdigest(),
+            "scene_configuration": configuration,
             "render_source": "robosuite.MjSim.render(depth=True)",
             "depth_conversion": "robosuite.utils.camera_utils.get_real_depth_map",
             "calibration_source": "robosuite.utils.camera_utils",
@@ -110,10 +126,13 @@ def main() -> None:
     parser.add_argument("--output-directory", type=Path, required=True)
     parser.add_argument("--task-id", default="OpenCabinet")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--scene-configuration", type=Path)
     args = parser.parse_args()
     if os.environ.get("MUJOCO_GL") != "egl":
         raise RuntimeError("Native metric depth acceptance requires MUJOCO_GL=egl.")
-    print(json.dumps(asyncio.run(check(args.output_directory, args.task_id, args.seed)), indent=2, allow_nan=False))
+    configuration = ({"seed": args.seed, "split": "pretrain"} if args.scene_configuration is None
+                     else json.loads(args.scene_configuration.read_text(encoding="utf-8")))
+    print(json.dumps(asyncio.run(check(args.output_directory, args.task_id, configuration)), indent=2, allow_nan=False))
 
 
 if __name__ == "__main__":

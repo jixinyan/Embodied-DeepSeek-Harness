@@ -76,6 +76,7 @@ class BehaviorEnvironment:
         self._last_control_duration_s = 0.0
         self._close_diagnostics: dict[str, object] | None = None
         self._scene_config_id = 0
+        self._evaluation_horizon = None
         self._metric_capture = MetricCapture("behavior", "behavior.omnigibson.world")
         import_module("omnigibson")
 
@@ -190,6 +191,7 @@ class BehaviorEnvironment:
                 "robot_model": "R1Pro",
                 "physics_timestep_s": 1 / 120,
                 "control_timestep_s": 1 / 30,
+                "evaluation_horizon": self._evaluation_horizon,
             },
         )
 
@@ -245,7 +247,7 @@ class BehaviorEnvironment:
         self._require_owner()
         if self._env is not None:
             raise RuntimeError("BEHAVIOR session is already initialized; task admission preserves its scene.")
-        if set(configuration) - {"instance_id", "scene_config_id"}:
+        if set(configuration) - {"instance_id", "scene_config_id", "evaluation_horizon"}:
             raise ValueError("Unknown BEHAVIOR native scene configuration field.")
         instance_id = configuration.get("instance_id", 0)
         if type(instance_id) is not int or not 0 <= instance_id < 10:
@@ -277,6 +279,13 @@ class BehaviorEnvironment:
         selected["robots"][0]["obs_modalities"] = ["proprio", "rgb", "depth_linear"]
         selected["robots"][0]["proprio_obs"] = list(PROPRIOCEPTION_NAMES)
         selected["task"]["include_obs"] = False
+        if "evaluation_horizon" in configuration:
+            if configuration["evaluation_horizon"] != "human_demo_2x":
+                raise ValueError("BEHAVIOR evaluation_horizon must be human_demo_2x.")
+            from .evaluation import official_task_horizon
+
+            self._evaluation_horizon = official_task_horizon(self._source_root, data_root, task_id)
+            selected["task"]["termination_config"]["max_steps"] = self._evaluation_horizon["max_controls"]
         self._og = og
         env = og.Environment(configs=selected)
         self._env = env

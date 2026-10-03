@@ -6,6 +6,7 @@ import math
 from typing import Any
 
 import numpy as np
+import cv2
 from PIL import Image
 from gr00t.data.embodiment_tags import EmbodimentTag
 from gr00t.policy.gr00t_policy import Gr00tPolicy
@@ -62,8 +63,9 @@ def _check_action_spec(spec: dict[str, Any]) -> None:
 
 
 def _decode_camera(value: dict[str, Any]) -> np.ndarray:
-    if value.get("mime_type") != "image/png" or value.get("width") != 256 or value.get("height") != 256:
-        raise ValueError("GR00T RoboCasa requires a 256x256 PNG camera frame.")
+    size = value.get("width")
+    if value.get("mime_type") != "image/png" or size not in (256, 512) or value.get("height") != size:
+        raise ValueError("GR00T RoboCasa requires a square 256 or 512 pixel PNG camera frame.")
     encoded = value.get("data_base64")
     if not isinstance(encoded, str) or len(encoded) > 4 * ((MAX_CAMERA_BYTES + 2) // 3):
         raise ValueError("Camera frame encoding exceeds its limit.")
@@ -71,9 +73,11 @@ def _decode_camera(value: dict[str, Any]) -> np.ndarray:
     if len(data) > MAX_CAMERA_BYTES:
         raise ValueError("Camera frame exceeds its byte limit.")
     with Image.open(BytesIO(data), formats=["PNG"]) as image:
-        if image.mode != "RGB" or image.size != (256, 256):
+        if image.mode != "RGB" or image.size != (size, size):
             raise ValueError("GR00T RoboCasa requires RGB camera pixels.")
         pixels = np.array(image, dtype=np.uint8, copy=True)
+    if size != 256:
+        pixels = cv2.resize(pixels, (256, 256), interpolation=cv2.INTER_AREA)
     return pixels[None, None, ...]
 
 

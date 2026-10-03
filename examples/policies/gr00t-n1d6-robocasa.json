@@ -19,7 +19,7 @@
   },
   "observation": {
     "schema_version": "edh.policy_observation.v1",
-    "image_format": "256x256 RGB uint8 PNG in RoboCasa PandaOmron camera orientation",
+    "image_format": "256x256 or 512x512 RGB uint8 PNG in RoboCasa PandaOmron camera orientation; 512x512 frames use OpenCV INTER_AREA resizing to 256x256 for GR00T",
     "cameras": {
       "robot0_agentview_left": "res256_image_side_0",
       "robot0_agentview_right": "res256_image_side_1",

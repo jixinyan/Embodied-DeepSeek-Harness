@@ -45,6 +45,17 @@ action interface receives them.
 
 Scene configuration accepts `instance_id` (default 0, range 0–9) and
 `scene_config_id` (default 0, a key in the selected task's SDK configuration).
+Optional `evaluation_horizon: "human_demo_2x"` applies the checkpoint's official
+evaluation timeout: twice the mean human control count for the selected activity.
+The provider reads the installed GR00T task index mapping with Python's AST parser
+and the actual `2025-challenge-task-instances/metadata/episodes.jsonl` with
+`jsonlines`. Scene metadata records both source hashes, the task index, episode
+count, mean and admitted native control horizon. Install the `behavior-evaluation`
+extra in the native interpreter. The upper goal budget must admit that complete
+horizon; the native termination and compiled task predicate retain their authority.
+For the installed `picking_up_trash` data, 200 episodes average 5,267.75 controls,
+giving a native horizon of 10,535 controls. The official rollout evaluates eight
+actions from each 32-action model prediction.
 The activity identity supplies its display instruction; the active compiled
 BDDL goal remains authoritative for `task_success`. The
 [native task selection guide](../../../../../../docs/implementation/native-task-selection.md)

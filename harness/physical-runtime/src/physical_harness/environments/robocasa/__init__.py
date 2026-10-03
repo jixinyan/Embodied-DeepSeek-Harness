@@ -14,6 +14,7 @@ from uuid import uuid4
 import numpy as np
 from PIL import Image
 from robocasa.utils.env_utils import create_env
+from robocasa.models.fixtures import FixtureType
 from robosuite import macros
 from robosuite.utils.camera_utils import (
     get_camera_extrinsic_matrix,
@@ -72,12 +73,14 @@ class RoboCasaEnvironment:
         self._task_id: str | None = None
         self._simulation_time_s = 0.0
         self._scene_parameters: dict[str, object] | None = None
+        self._camera_resolution = 256
 
     @staticmethod
     def _scene_configuration(configuration: Mapping[str, object]) -> dict[str, object]:
         allowed = {
             "seed", "split", "layout_ids", "style_ids", "layout_and_style_ids",
             "generative_textures", "randomize_cameras",
+            "fixture_type", "camera_resolution", "obj_instance_split",
         }
         if set(configuration) - allowed:
             raise ValueError("Unknown RoboCasa scene configuration field.")
@@ -93,6 +96,21 @@ class RoboCasaEnvironment:
         if "layout_and_style_ids" in configuration and any(key in configuration for key in ("layout_ids", "style_ids")):
             raise ValueError("RoboCasa scene pairs cannot be combined with layout/style lists.")
         selected: dict[str, object] = {"seed": seed, "split": split}
+        if "fixture_type" in configuration:
+            fixture_type = configuration["fixture_type"]
+            if not isinstance(fixture_type, str) or fixture_type not in FixtureType.__members__:
+                raise ValueError("RoboCasa fixture_type must name a native FixtureType.")
+            selected["fixture_type"] = fixture_type
+        if "camera_resolution" in configuration:
+            resolution = configuration["camera_resolution"]
+            if type(resolution) is not int or resolution not in (256, 512):
+                raise ValueError("RoboCasa camera_resolution must be 256 or 512 pixels.")
+            selected["camera_resolution"] = resolution
+        if "obj_instance_split" in configuration:
+            instance_split = configuration["obj_instance_split"]
+            if split is not None or instance_split not in (None, "pretrain", "target"):
+                raise ValueError("Explicit RoboCasa object split requires split=null and a native object split.")
+            selected["obj_instance_split"] = instance_split
         for key in ("layout_ids", "style_ids"):
             if key in configuration:
                 value = configuration[key]
@@ -174,7 +192,8 @@ class RoboCasaEnvironment:
         images: dict[str, bytes] = {}
         for camera in CAMERA_NAMES:
             pixels = raw[f"{camera}_image"]
-            if not isinstance(pixels, np.ndarray) or pixels.shape != (256, 256, 3) or pixels.dtype != np.uint8:
+            if (not isinstance(pixels, np.ndarray) or pixels.shape != (self._camera_resolution, self._camera_resolution, 3)
+                    or pixels.dtype != np.uint8):
                 raise RuntimeError(f"RoboCasa camera {camera} returned an invalid RGB frame.")
             if macros.IMAGE_CONVENTION == "opengl":
                 pixels = pixels[::-1]
@@ -199,17 +218,21 @@ class RoboCasaEnvironment:
         scene = self._scene_configuration(configuration)
         if self._env is not None:
             raise RuntimeError("RoboCasa session is already initialized; task admission preserves its scene.")
+        self._scene_parameters = deepcopy(scene)
+        self._camera_resolution = scene.pop("camera_resolution", 256)
+        fixture_type = scene.pop("fixture_type", None)
+        if fixture_type is not None:
+            scene["fixture_id"] = FixtureType[fixture_type]
         self._env = create_env(
             env_name=task_id,
             robots="PandaOmron",
             camera_names=list(CAMERA_NAMES),
-            camera_widths=256,
-            camera_heights=256,
+            camera_widths=self._camera_resolution,
+            camera_heights=self._camera_resolution,
             render_onscreen=False,
             **scene,
         )
         self._task_id = task_id
-        self._scene_parameters = scene
         self._simulation_time_s = 0.0
         raw = self._env.reset()
         self._check_native_contract()
@@ -235,15 +258,16 @@ class RoboCasaEnvironment:
         captures: dict[str, object] = {}
         for camera in camera_names:
             observed_at = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
-            rgb, normalized_depth = env.sim.render(camera_name=camera, width=256, height=256, depth=True)
-            if (rgb.shape != (256, 256, 3) or rgb.dtype != np.uint8
-                    or normalized_depth.shape != (256, 256)
+            resolution = self._camera_resolution
+            rgb, normalized_depth = env.sim.render(camera_name=camera, width=resolution, height=resolution, depth=True)
+            if (rgb.shape != (resolution, resolution, 3) or rgb.dtype != np.uint8
+                    or normalized_depth.shape != (resolution, resolution)
                     or not np.isfinite(normalized_depth).all()
                     or np.any(normalized_depth < 0) or np.any(normalized_depth > 1)):
                 raise RuntimeError("RoboCasa metric capture returned invalid RGB or normalized depth.")
             rgb = np.array(rgb[::-1], copy=True)
             depth = np.array(get_real_depth_map(env.sim, normalized_depth)[::-1], dtype=np.float32, copy=True)
-            intrinsic = get_camera_intrinsic_matrix(env.sim, camera, 256, 256)
+            intrinsic = get_camera_intrinsic_matrix(env.sim, camera, resolution, resolution)
             camera_to_world = get_camera_extrinsic_matrix(env.sim, camera)
             if (not np.isfinite(depth).all() or np.any(depth <= 0)
                     or intrinsic.shape != (3, 3) or not np.isfinite(intrinsic).all()
