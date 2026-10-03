@@ -47,9 +47,11 @@ from the example SKILL.
 
 ## DSH runtime baseline
 
-`pnpm test:runtime` runs keyless integration tests against the original DSH
-loop and upper application. It is included in `pnpm check`. HTTP acceptance starts
-a temporary local server; physical observations and model responses remain fixtures.
+`pnpm check` performs the source checks listed above. `pnpm test:runtime` separately
+runs keyless fixture tests against the selected DSH loop and upper application.
+These tests start a local HTTP server and do not establish real model, policy or
+simulation acceptance. The native release workflow uses actual installed services
+and preserved task records in [release validation](../implementation/release-validation.md).
 
 `pnpm check:provenance` verifies pinned source hashes and imports. `pnpm typecheck`
 first builds the three foundation libraries' declarations into ignored `.cache/`,
