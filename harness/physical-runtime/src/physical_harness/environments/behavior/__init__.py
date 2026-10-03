@@ -373,6 +373,8 @@ class BehaviorEnvironment:
             for value, channel in zip(action, channels)
         ):
             raise ValueError("BEHAVIOR R1Pro action violates its 23 native channel limits.")
+        if should_stop():
+            return NativeStep(self.observe(), 0, False, 0, self._episode_terminated)
         before = int(self._og.sim.current_time_step_index)
         raw, _reward, terminated, truncated, _info = env.step(
             {"robot_r1": torch.tensor(action, dtype=torch.float32)}, n_render_iterations=1

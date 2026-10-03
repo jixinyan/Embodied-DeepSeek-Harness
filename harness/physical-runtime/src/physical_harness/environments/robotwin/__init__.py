@@ -304,6 +304,8 @@ class RoboTwinEnvironment:
             recording_exhausted = len(frames) == self._max_frames_per_action
             return not recording_exhausted
 
+        if should_stop():
+            return NativeStep(self.observe(), 0, False, 0, bool(env.eval_success))
         raw_steps, completed = env.take_action(
             np.asarray(action, dtype=np.float64), should_stop=should_stop, on_physics_step=on_physics_step
         )

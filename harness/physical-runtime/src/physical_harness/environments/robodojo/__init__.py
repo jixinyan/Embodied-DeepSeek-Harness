@@ -495,6 +495,8 @@ class RoboDojoEnvironment:
             raise ValueError("RoboDojo action must contain 14 finite values.")
         if any(action[index] < 0 or action[index] > 1 for index in (6, 13)):
             raise ValueError("RoboDojo gripper targets must be in [0, 1].")
+        if should_stop():
+            return NativeStep(self.observe(), 0, False, 0, self._terminated or self._truncated)
         result = self._require_rpc().request(
             "chunk_step", episode_id=self._episode_id, step_id=self._step_id,
             actions=np.asarray([action], dtype=np.float32),

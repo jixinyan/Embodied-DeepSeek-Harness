@@ -333,6 +333,8 @@ class RoboCasaEnvironment:
             raise ValueError("RoboCasa action must contain 12 finite normalized values.")
         if abs(action[11]) != 1:
             raise ValueError("RoboCasa base_mode must be -1 or 1.")
+        if should_stop():
+            return NativeStep(self.observe(), 0, False, 0, self._native_done)
         before = float(env.sim.data.time)
         raw, _reward, done, _info = env.step(np.asarray(action, dtype=np.float64))
         self._native_done = bool(done)
