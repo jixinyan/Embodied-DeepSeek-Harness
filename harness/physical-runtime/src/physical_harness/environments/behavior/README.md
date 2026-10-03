@@ -390,3 +390,30 @@ with SHA-256
 `f9596278d4b50c622c2666f135221ed82c6ba63363037a10a46d37a66eafbdca`.
 Complete calibrated capture, native GT and confirmed normal close remain required
 for this device-selection configuration.
+
+The independent source-bound probe from
+`2a29af03ee2ac7f02c226fb50849f6afacd485e7` completes the full stationary admission
+with that GPU 4 UUID, renderer index and exclusive profile configuration. Its
+179 original NVIDIA XML snapshots reconstruct only GPU 4 `C` and `C+G` contexts.
+All three original USD camera relations and Fabric camera/RenderProduct prims
+are valid. Four native render updates produce valid 256×256 camera parameters
+while preserving physics counter 9 and simulation time 0.07500000391155481.
+
+Two original observations retain six RGB-D camera captures at simulation time
+0.3416666844859719. Their PNG bytes and every depth, intrinsic and camera-to-world
+array are identical; native physics counter 41, robot state and zero controlled
+physics steps remain unchanged. The three complete-image region measurements
+independently reconstruct 65,536 valid pixels per camera, with median axial depths
+1.27918720 m for head, 0.25709677 m for left wrist and 0.25578856 m for right wrist.
+Original native `task_success` and `episode_terminated` checks both return false.
+This admission creates zero Tasks, controls, policy clients, inferences,
+StopAcknowledgements or formal Verifiers.
+
+SDK PID 600578 returns a confirmed close acknowledgement and exits with code 0.
+Owner PID 600494, wrapper PID 600379 and owned process group 600379 are confirmed
+absent. Exact-byte profile cleanup is recorded after actual SDK exit. Complete
+source identities, original SDK log, full GPU XML, calibration readiness history,
+PNG/NPZ arrays, region masks, measurements, GT results and independent audit are
+preserved locally and remotely under
+`.local/work/behavior-gpu-placement-20261003-05/admission-records.tar.gz`, with
+SHA-256 `9b26d132f4c4479ca6f8810af8c4ea9c4f89ea472140b8c0a87d52b6e5d45883`.
