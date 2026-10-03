@@ -9,9 +9,12 @@ worker or assumes that a process exit proves a robot stopped.
 
 ## Build and open
 
-Prepare the checkout with `pnpm install`, then build the native application:
+Prepare the checkout and build the native application:
 
 ```sh
+pnpm install --frozen-lockfile
+pnpm typecheck
+pnpm check:structure
 pnpm build:desktop
 ```
 
@@ -32,12 +35,28 @@ loopback port. This example assumes the file lives in the checkout's `.local/`:
 {
   "version": 1,
   "repository": "..",
-  "deployment": "./deployment.ts",
-  "dataDirectory": "../.runs/workspace",
-  "environmentFile": "./model.env",
+  "deployment": "../examples/deployments/robotwin-live.mjs",
+  "dataDirectory": "./desktop-robotwin",
+  "environmentFile": "./robotwin.env",
   "port": 0
 }
 ```
+
+Create `.local/robotwin.env` with the existing native deployment and model
+configuration paths:
+
+```dotenv
+EDH_ROBOTWIN_CONFIG=/absolute/path/robotwin-deployment.json
+EDH_MODEL_CONFIG=/absolute/path/model.yaml
+```
+
+The native deployment JSON specifies the actual worker, scene, task catalog,
+checkpoint and policy endpoint. Model configuration specifies the existing model
+endpoint and adapter. Their credentials remain inside the service process. See
+[native deployment configuration](../../examples/deployments/README.md) for
+RoboTwin, RoboCasa, BEHAVIOR and RoboDojo factory paths and required variables.
+An existing closed workspace can be selected as `dataDirectory`; its immutable
+history is readable after startup.
 
 `environmentFile` is optional. Node loads its values only inside the owned service
 process. Existing environment values take precedence. Secrets are not copied into
@@ -50,14 +69,29 @@ the same registered model adapters, tools and provider factories documented in t
 [deployment guide](../../docs/implementation/deployments.md). It must not start a
 server itself. The launcher supplies root, data directory and port to `startServer`;
 the default application-owned image store remains available to the factory. Existing
-standalone example scripts start their own servers and do not implement this export.
+native example entry points default-export this factory and start a standalone
+server only when executed directly. Importing them does not allocate a model,
+policy gateway or simulator. Provider configuration supplies the selected Team,
+role root, task catalog and worker settings.
+Their `storageRetention` factory binds complete native record ownership and
+original-image retention to this owned workspace. The Console provides explicit
+history archiving, retention inspection and deletion admission through those bindings.
 
 Choose configuration validates paths without importing deployment code. Start service
 executes the selected module in a fresh process using the checkout's tsx loader and
 runtime aliases. Service readiness is published only after `startServer` returns its
 listening loopback URL. The console still owns compatible environment, embodiment,
-checkpoint, model and task selections. No environment or model inference starts merely
+execution mode, checkpoint, policy, model and task selections. No environment or model inference starts merely
 because the launcher window opens.
+
+Open the application, choose the JSON file and select **Start service**. Select
+**Open console**, choose the compatible configuration and check its component
+values. **New session** allocates that configuration's environment and discovers
+its native tasks. Task submission starts the selected model workflow. Keep
+**Start service**, **New session** and task submission as separate operator actions.
+Select **Stop service** to close the Console and drain the service, or quit the
+application to perform the same owned-service cleanup. A `stopped` state follows
+the server's successful close acknowledgement and successful child process exit.
 
 The launcher remembers only the last selected configuration path in Electron's user
 data directory. It never restarts a service or resumes a task automatically. Console
@@ -83,3 +117,13 @@ Set `EDH_DESKTOP_EXECUTABLE` to a packaged application's executable to exercise 
 same checks against that build. This test does not automate the native file chooser.
 
 Desktop UI and packaging checks are recorded in [progress](../../docs/implementation/progress.md).
+
+The packaged macOS application also passed a positive native configuration check:
+the actual saved RoboTwin deployment, configured Qwen model and Pi0.5 profile
+started its owned service and opened the unified Console. Every selected component
+matched the installed profile; native storage maintenance was available. Two
+cycles exercised **Stop service** and application quit. Both released the journal
+writer, exited the service child and closed its loopback listener. The renderers
+retained sandbox/context isolation with no Node access or JavaScript errors.
+This configuration/lifecycle check performed no model inference or environment
+allocation; physical task acceptance is recorded independently.

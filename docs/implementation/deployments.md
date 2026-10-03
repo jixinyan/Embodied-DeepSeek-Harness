@@ -31,20 +31,21 @@ Ctrl+C. See the [runnable example](../../examples/deployments/local-cpu.mjs).
 The executable contract is
 [ServerDeployment / TaskPreset](../../apps/server/src/deployment.ts).
 
-| Field | Meaning and example |
-| --- | --- |
-| `id`, `version`, `description` | Public deployment identity; increment `version` when executable adapter/factory behavior changes |
-| `source` | `test_fixture`, `simulation` or `hardware`; each created backend must report the same source |
-| `teamFile`, `roleRoot` | Team YAML and allowed role-file root; roles and result schemas are resolved during preflight |
-| `models`, `defaultModel` | Named aliases such as `brain: { provider: 'fixture', model: 'fixture' }`; roles select an alias |
-| `physicalProfile`, `physicalProviders` | Immutable stack configuration and installed adapter validators; see [physical profiles](physical-profiles.md) |
-| `contextManagement` | Optional native DSH compaction/measurement policy; automatic mode requires adapter-declared model capacity; see [context management](context-management.md) |
-| `sessionHistory` | Native event-body residency policy; defaults to 256 events and 8 MiB at audit checkpoints; see [history management](session-history.md) |
-| `adapters` | Original DSH `LlmAdapter` bindings, registered by provider name; keep credentials inside trusted adapter setup |
-| `modelConfigurationDigest` | Optional SHA-256 from `createConfiguredModels`; records endpoint/model/request configuration in immutable deployment identity without credential values |
-| `tasks` | Task IDs mapped to public labels/instructions, immutable final goals, optional allowed subgoal checks/predefined goals, and backend factories |
-| `additionalTools` | Logical tool IDs mapped to native DSH tool factories; roles opt in through their tool lists |
-| `providers` | Available tool-provider names for team preflight; declaring a name does not install or implement a provider |
+| Field                                  | Meaning and example                                                                                                                                                                                                                                       |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`, `version`, `description`         | Public deployment identity; increment `version` when executable adapter/factory behavior changes                                                                                                                                                          |
+| `source`                               | `test_fixture`, `simulation` or `hardware`; each created backend must report the same source                                                                                                                                                              |
+| `teamFile`, `roleRoot`                 | Team YAML and allowed role-file root; roles and result schemas are resolved during preflight                                                                                                                                                              |
+| `models`, `defaultModel`               | Named aliases such as `brain: { provider: 'fixture', model: 'fixture' }`; roles select an alias                                                                                                                                                           |
+| `physicalProfile`, `physicalProviders` | Immutable stack configuration and installed adapter validators; see [physical profiles](physical-profiles.md)                                                                                                                                             |
+| `contextManagement`                    | Optional native DSH compaction/measurement policy; automatic mode requires adapter-declared model capacity; see [context management](context-management.md)                                                                                               |
+| `sessionHistory`                       | Native event-body residency policy; defaults to 256 events and 8 MiB at audit checkpoints; see [history management](session-history.md)                                                                                                                   |
+| `storageRetention`                     | Factory receiving the opened store, validator and installed provider/tool bindings; supplies authoritative record owners and original-image retention. Native example factories use `nativeWorkspaceRetention`; see [maintenance](storage-maintenance.md) |
+| `adapters`                             | Original DSH `LlmAdapter` bindings, registered by provider name; keep credentials inside trusted adapter setup                                                                                                                                            |
+| `modelConfigurationDigest`             | Optional SHA-256 from `createConfiguredModels`; records endpoint/model/request configuration in immutable deployment identity without credential values                                                                                                   |
+| `tasks`                                | Task IDs mapped to public labels/instructions, immutable final goals, optional allowed subgoal checks/predefined goals, and backend factories                                                                                                             |
+| `additionalTools`                      | Logical tool IDs mapped to native DSH tool factories; roles opt in through their tool lists                                                                                                                                                               |
+| `providers`                            | Available tool-provider names for team preflight; declaring a name does not install or implement a provider                                                                                                                                               |
 
 Executable objects remain trusted local code. HTTP exposes selected metadata, team
 prompts and resolved bindings; do not put credentials in those public fields.
@@ -107,21 +108,43 @@ samples without images retain their available metadata. The synthetic cabinet
 illustration is shown only for fixture evidence without image references.
 A `simulation` or `hardware` declaration is not evidence that a provider is healthy.
 
-## Next integration steps
+## Native provider deployment
 
-1. Supply a live model through DSH's existing adapter interface and validate model
-   tool calls against this same application. No live model is configured by default.
-2. Implement the [EmbodiedBackend port](../../harness/agent-runtime/execution/README.md),
-   with asynchronous reads, cancellation, cached status and confirmed boundaries.
-3. Bind one simulator/policy/perception configuration and register its success checks.
-4. Run real provider acceptance before claiming a physical MVP. Standalone action
-   admission is implemented; resource arbitration, Python worker transport and actual
-   sensor-provider integration remain required.
+The [native factories](../../examples/deployments/README.md) compose RoboTwin,
+RoboCasa, BEHAVIOR and RoboDojo worker environments, configured DSH models,
+native task catalogs and policy endpoints. Native worker transport, sensor reads,
+resource arbitration, asynchronous execution, cancellation and confirmed control
+boundaries are implemented by their provider modules. Their configuration selects
+the Team, embodiment, execution mode and policy checkpoint. SAM 3.1 and YOLO26
+can be bound through the same factories when their actual endpoints are configured.
+
+Validate the selected native configuration through the actual factory and server:
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-deployment.mjs \
+  --provider robotwin --config /absolute/path/deployment.json \
+  --models /absolute/path/model.yaml --journal /absolute/path/closed-console
+```
+
+The optional journal argument preserves an existing closed workspace in a private
+copy. Startup checks configuration, compatible profiles and `/api/config` through
+the same default export used by Desktop. It allocates no native environment or
+model request. **New session** allocates the selected profile's environment and
+snapshots its actual task catalog; task submission starts the agent workflow.
+The [delivery record](v1-delivery.md) identifies each provider's actual task,
+perception, control and recovery acceptance.
+
+Native factories bind `nativeWorkspaceRetention` after the store opens. Its
+complete built-in owner composition covers submitted tasks, plans, clarification,
+files, native audits, image references and exported skills. Unsupported extensions
+require their own complete ownership inspector and source leases. History
+archiving and destructive retention require explicit operator admission; startup
+and goal completion preserve their original histories. See
+[storage maintenance](storage-maintenance.md) for inspection and admission APIs.
 
 [Deployment acceptance tests](../../tests/runtime/server-deployment.test.ts) exercise
 custom tasks/models, immutable metadata/history, preflight rejection, source mismatch
 and shutdown during allocation. They use CPU fixtures only.
-
 
 Shutdown failures do not skip later cleanup stages: the run, native sessions, host,
 HTTP listener and store are drained or attempted before an aggregate error is returned.
@@ -149,7 +172,9 @@ workspace and a current provider revision. See the [maintenance API](storage-mai
 
 ## Configured model and policy endpoints
 
-The [model/policy adapter guide](model-policy-adapters.md) now provides an
-OpenAI-compatible model deployment example and a standalone Python WebSocket policy
-roundtrip. The latter is not yet connected to ServerDeployment's EmbodiedBackend;
-worker event/status integration is the next implementation slice.
+The [model/policy adapter guide](model-policy-adapters.md) describes the configured
+model adapters, learned policy clients and action gate. Native deployment factories
+bind those clients to their provider environments and retain execution receipts,
+status, sensor evidence and terminal device boundaries in the application journal.
+Endpoint configuration and startup checks establish configuration readiness.
+Formal task results require actual execution and the applicable fresh Verifier.

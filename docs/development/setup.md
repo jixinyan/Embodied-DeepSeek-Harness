@@ -11,7 +11,7 @@ python3 -m venv .venv
 pnpm check
 ```
 
-Format edited source with `pnpm format`; verify it with `pnpm format:check`.
+Verify edited source with `pnpm format:check` and `pnpm format:desktop`.
 Generated contract types are formatted by the schema generator.
 
 Individual checks: `pnpm check:contracts`, `pnpm typecheck`,
@@ -20,7 +20,26 @@ After editing the schema: `pnpm generate:contracts`.
 
 Run `pnpm demo` for the local HTTP/SSE console at `http://127.0.0.1:4317`.
 The fixture requires no GPU, API key, policy checkpoint or simulator. TypeScript
-workspaces export private source; a distributable build/deployment remains future work.
+workspaces export private source. `pnpm build:desktop` packages the Electron launcher
+under `dist/desktop`; it starts a configured service from a selected checkout with
+its installed dependencies. See [desktop build and configuration](../../apps/desktop/README.md).
+
+For native execution, select one of the existing
+[provider deployment factories](../../examples/deployments/README.md), configure its
+actual worker and model endpoints, and check startup before creating an environment:
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-deployment.mjs \
+  --provider robotwin --config /absolute/path/deployment.json \
+  --models /absolute/path/model.yaml --journal /absolute/path/closed-console
+```
+
+The check uses the actual deployment loader, default factory, server and HTTP
+metadata endpoint. The optional closed journal is copied into `.local/checks`
+and remains unchanged. No environment is allocated and no inference runs. The
+same factory can be selected in the Desktop JSON configuration, with its endpoint
+settings supplied through the owned service's environment file. The native task
+workflow requires an allocated session and actual policy/model execution.
 
 Runtime data belongs in ignored `.runs/` and `.local/` locations. Tests use
 explicit synthetic fixtures. Do not initialize genuine experience libraries
@@ -28,7 +47,7 @@ from the example SKILL.
 
 ## DSH runtime baseline
 
-`pnpm test:runtime` runs 20 keyless integration tests against the original DSH
+`pnpm test:runtime` runs keyless integration tests against the original DSH
 loop and upper application. It is included in `pnpm check`. HTTP acceptance starts
 a temporary local server; physical observations and model responses remain fixtures.
 
