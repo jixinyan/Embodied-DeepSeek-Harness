@@ -4,8 +4,8 @@ Updated: 2026-10-03. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
 RoboDojo task success, real SAM/YOLO tool calls and source-bound RoboCasa RGB-D
 geometry are verified. Reusable native factories, complete retention bindings,
 packaged Desktop lifecycle and selected DSH recovery/JSON portability have production
-checks. Native terminal preflight is implemented; actual unchanged-terminal
-multi-task acceptance, clean model/provider workflows and release gates remain open.
+checks. Actual RoboDojo unchanged-terminal multi-task acceptance and clean
+retained-scene retry pass. Additional model/provider workflows and release gates remain open.
 The [current Agent loop](current-agent-loop.md) records prompt, memory and retry
 behavior; full v1 acceptance remains pending. Evolver work is paused and SceneState
 implementation is deferred under the current user instruction.
@@ -35,7 +35,7 @@ tracks the remaining work across that behavior.
 | V12 | Console and launcher                        | Unified trace-only console, compatible selectors, history and actual model/tool/TODO displays exist. Packaged Electron opens the console from saved native RoboTwin configuration; profile selection, Stop service and application-quit cleanup pass with released writer locks, exited owned children, closed listeners and zero browser errors. This lifecycle check allocates no simulator and performs no inference. Recorded native task videos retain separate acceptance.                                                           | Verify multi-task continuity, installed task execution/configuration switching across the supported matrix and signed distribution.                                                                                                                                   |
 | V13 | Persistence and maintenance                 | Complete built-in native ownership covers submission, plan, file, clarification, native audit and leased external sources. Default factories bind record/original-image retention. Actual four-session journals verify independent selection and preservation through restart. Production HTTP/browser checks retire 626 private records, retain two request identities and explicitly collect 180 private original images while source digests remain unchanged.                                                                          | Validate complete installed maintenance/task workflows across additional native configurations. Unknown extension formats require explicit complete inspection.                                                                                                       |
 | V14 | Hardware portability and release handoff    | The hardware integration interface exposes capabilities, connection identity, ActionSpec and confirmed stopping. Watchdog/resource checks use actual threads and processes. Environments remain isolated and configuration selects devices.                                                                                                                                                                                                                                                                                                | Publish reproducible setup, supported configuration matrix and release checks. Physical robot experiments follow simulation/interface acceptance, as agreed, and need a selected device.                                                                              |
-| V15 | RoboDojo / dual ARX X5                      | Actual Qwen/Pi0.5 run `02475b82` performs 59 controls and four identified learned inferences, native task success, independent formal success and released resources. Audit validates original requests/actions and all three native videos. The 18-file checkpoint and isolated 189-package policy environment are verified.                                                                                                                                                                                                              | Complete zero-tool-error retained-scene retry, actual physics-counter provenance, interruption and hybrid acceptance. This successful trace has one rejected plan argument; its legacy step counter does not establish native physics totals. Evolver remains paused. |
+| V15 | RoboDojo / dual ARX X5 | Actual Qwen/Pi0.5 run `897f215d` verifies failed 32-control execution followed by successful 26-control retained-scene retry, 580 native physics steps, four identified learned requests, two fresh Verifiers, eleven completed TODOs and zero tool errors. Six native camera videos and the composite MP4 pass complete source/decode checks. Same-Session run `ca43312e` verifies its unchanged ended episode with a fresh boundary/Verifier and zero new controls, physics steps or inferences; resources release. The 18-file checkpoint is verified. | Verify original build_tower stages, native interruption and remaining hybrid acceptance. Evolver remains paused. |
 
 ## Execution order
 
@@ -52,9 +52,10 @@ tracks the remaining work across that behavior.
 5. Preserve existing selective experience retrieval. Resume deferred SceneState and
    paused Evolver work only when the user includes them in the active scope; retain
    independent source/destination acceptance requirements for experience transfer.
-6. Validate unchanged-terminal multi-task continuity and complete native maintenance,
-   configuration switching and task scenarios as one installed application. Preserve
-   verified default retention, restart behavior and packaged launcher lifecycle.
+6. Preserve verified unchanged-terminal multi-task continuity and complete native
+   maintenance, configuration switching and task scenarios as one installed
+   application. Preserve verified default retention, restart behavior and packaged
+   launcher lifecycle.
 7. Review every acceptance row, publish the exact supported configuration matrix,
    update documentation/diagrams and tag v1 only when the agreed gates pass.
 
