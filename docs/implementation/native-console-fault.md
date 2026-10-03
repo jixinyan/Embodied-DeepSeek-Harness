@@ -100,6 +100,44 @@ in this experiment. Complete bundle SHA-256:
 Its journal SHA-256:
 `d8ca82c48c01e435169f0e17052fcdd5cd097817187c8c6b861ae59abfab560d`.
 
+## Actual owner-counter diagnostic
+
+Immutable source `7adaa4368db4ce2f594ecb95e86f794c071ad64d` ran genuine Qwen,
+RoboDojo build_tower and the original Pi0.5 checkpoint with its 50-action response
+and 1050-control budget. Task `6d293c7c-4eec-4678-86af-011abf569380` retained
+51 original events. Its current execution was
+`7c36aad0-59b1-41a2-b517-49ce30c89a8d`, build_tower attempt-1. After one
+confirmed learned control, the authenticated owned SDK PID 396699 received
+SIGSTOP at `2026-10-03T14:34:39.080003Z`.
+
+The original `native_background_fault_diagnostic` at
+`2026-10-03T14:34:48.902Z` records generation 1, pausing, two reserved actions,
+one executed action, backend_error, no device confirmation and no boundary ID.
+The atomic device snapshot records one executed action, one uncertain action,
+10 physics steps, stopped=true and closed=false. Two owner operations remain
+pending, with two retained cancelled operations and two pending cancelled
+operations. The last published execution remains its historical generation-0
+sample with one control and 10 physics steps.
+
+The original scoped TimeoutError produced run.failed at
+`2026-10-03T14:34:48.909Z`, retired the Planner and created zero formal Verifiers,
+verdicts or StopAcknowledgements. Session close returned HTTP 400 with unknown
+resources. The original SDK had a separate POSIX group and remained stopped with
+parent PID 1 after production worker exit. Authenticated operator SIGKILL of
+that SDK group confirmed PID absence at `2026-10-03T14:37:48.051403Z`.
+Console, policy, bridge, listeners and writer lock subsequently exited. Device
+and Session resource outcomes remain unknown.
+
+The complete original bundle is
+`.local/work/native-console-fault-20261003-03/diagnostic-complete.tar.gz`,
+24,426,619 bytes, SHA256
+`3547c12c2c9cd1e1e731ee0d124fd950e344738c4bc567713d6a70cb50612f12`.
+Its 769 source files match the original Git archive; journal SHA256 is
+`9771a3afadd34aa52c217f4b2ecc0e6fcb19f1ac549a7a8ceb04e36aa90da860`.
+The strict reader passes against the original closed journal with
+`--require-diagnostic` and verifies the original OpenPI bridge request,
+50-action inference, first control receipt and numerical owner snapshot.
+
 ## Executable background-fault audit
 
 Extract the original bundle into an owned directory, then run:
@@ -116,3 +154,18 @@ unknown state, capture PID/hash, process-group release records, listener/writer
 closure and unchanged journal bytes. It writes the precise counter availability
 and active-observation totals into its report. It performs no model inference,
 simulator launch, task replay or modification of the original records.
+
+## Owned native service lifetime
+
+An EDH-owned RoboDojo SDK process joins its parent worker's POSIX process group
+and session. The provider validates those identities immediately after spawning
+and records `native_owned_service` with the actual owner PID, service PID, creation
+time, group and session. NativeWorkerTransport owns a unique group and confirms
+group exit after its graceful, TERM and KILL deadlines. Ordinary provider close
+terminates only its direct SDK child. An externally supplied RPC service remains
+outside the worker's owned process lifetime.
+
+Forced process termination preserves the original task failure, unknown device
+boundary and unclean close error. It supplies no StopAcknowledgement or formal
+Verifier. Fresh real native fault and normal close acceptance are required for
+this owned RoboDojo process-group binding.

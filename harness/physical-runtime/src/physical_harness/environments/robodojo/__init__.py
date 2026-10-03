@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from io import BytesIO
 import math
 import json
+import os
 import socket
 import struct
 import subprocess
@@ -369,9 +370,19 @@ class RoboDojoEnvironment:
         self._service = subprocess.Popen(
             [sys.executable, "-m", "physical_harness.environments.robodojo.launch",
              "--configuration", str(service_path), "--output", str(output)],
-            stdout=sys.stderr, stderr=sys.stderr, start_new_session=True,
+            stdout=sys.stderr, stderr=sys.stderr,
         )
         process = psutil.Process(self._service.pid)
+        if os.name == "posix":
+            owner_group, owner_session = os.getpgrp(), os.getsid(0)
+            if os.getpgid(process.pid) != owner_group or os.getsid(process.pid) != owner_session:
+                raise RuntimeError("The owned RoboDojo service differs from its owner's process group.")
+            sys.stderr.write(json.dumps({
+                "event": "native_owned_service", "provider": "robodojo",
+                "owner_pid": os.getpid(), "service_pid": process.pid,
+                "service_created_at": process.create_time(), "owned_group": owner_group,
+                "owned_session": owner_session,
+            }) + "\n")
         deadline = time.monotonic() + timeout_s
         ready_path = output / "ready.json"
         while True:
