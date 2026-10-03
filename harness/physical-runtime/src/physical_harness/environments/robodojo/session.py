@@ -1,9 +1,11 @@
 import hashlib
 import inspect
 import json
+import pickle
 from datetime import datetime, timezone
 from pathlib import Path
 import time
+from threading import get_ident
 from uuid import uuid4
 
 import imageio.v2 as imageio
@@ -11,7 +13,7 @@ import numpy as np
 from PIL import Image
 from isaacsim.core.utils.stage import get_stage_units
 
-from . import CAMERA_NAMES
+from . import BUILD_TOWER_CHECK_IDS, CAMERA_NAMES
 from .geometry import array, ground_pixel, organized_cloud, pose, transform
 from .kinematics import DualKinematics
 from .motion import NumericalMotion
@@ -51,6 +53,7 @@ class RoboDojoSession:
         self.output.mkdir(parents=True, exist_ok=False)
         self.episode_id, self.step_id = None, 0
         self.status_audit_position = 0
+        self.check_audit_position, self.owner_thread_id = 0, get_ident()
         self.terminated = self.truncated = self.success = False
         self.poisoned, self.finished = True, False
         self.video_writer, self.video_frames = None, 0
@@ -67,7 +70,8 @@ class RoboDojoSession:
             "supports_dual_arm_absolute": True, "supports_get_depth": True,
             "supports_joint_control": True, "motion_planner": "numerical_ik",
             "control_version": "edh_grounded_direct_v1", "cameras": list(CAMERA_NAMES),
-            "gripper_semantics": "continuous_0_closed_1_open"}
+            "gripper_semantics": "continuous_0_closed_1_open",
+            "supported_check_ids": ["task_success", *BUILD_TOWER_CHECK_IDS] if task == "build_tower" else ["task_success"]}
         env._stream_vision = lambda *arguments, **keywords: None
 
     def _record_physics_provenance(self):
@@ -175,6 +179,8 @@ class RoboDojoSession:
         self.env.reset(seed=[seed])
         self._record_physics_provenance()
         write_json(self.output / "native_evaluation.json", register_native_evaluation(self.env))
+        if self.metadata["task"] == "build_tower":
+            self._record_tower_check_provenance()
         self.episode_id = uuid4().hex
         self.episode_dir = self.output / self.episode_id
         self.episode_dir.mkdir()
@@ -333,6 +339,105 @@ class RoboDojoSession:
         self.status_audit_position += 1
         return status
 
+    def _record_tower_check_provenance(self):
+        from task.RoboDojo.tasks.build_tower import BuildTowerCommon
+
+        if not isinstance(self.env, BuildTowerCommon) or self.env.num_envs != 1:
+            raise ValueError("Tower checks require the original single-environment native build_tower task.")
+        if (self.env._base_structure_checks.__func__ is not BuildTowerCommon._base_structure_checks
+                or self.env._middle_structure_checks.__func__ is not BuildTowerCommon._middle_structure_checks):
+            raise ValueError("Native tower stage builders differ from the original task implementation.")
+        rm = self.env.reward_manager
+        operations = {
+            "base": BuildTowerCommon._base_structure_checks,
+            "middle": BuildTowerCommon._middle_structure_checks,
+            "check_once": rm.check_once,
+            "is_axis_up": rm.func_parser.is_axis_up,
+            "is_A_up_B": rm.func_parser.is_A_up_B,
+            "is_A_in_B_support_circle": rm.func_parser.is_A_in_B_support_circle,
+        }
+        sources = {}
+        for name, function in operations.items():
+            path = Path(inspect.getsourcefile(function)).resolve(strict=True)
+            data = path.read_bytes()
+            sources[name] = {"path": str(path), "sha256": hashlib.sha256(data).hexdigest()}
+            (self.output / f"native-check-source-{name}.py").write_bytes(data)
+        write_json(self.output / "native-check-provenance.json", {
+            "schema_version": "edh.robodojo.tower_check_sources.v1",
+            "task": "build_tower", "check_ids": list(BUILD_TOWER_CHECK_IDS), "sources": sources,
+        })
+
+    def _tower_read_state(self):
+        simulator, rm = self.env.sim.sim, self.env.reward_manager
+        layout = rm.func_parser.layout_manager
+        poses = {}
+        for index in range(8):
+            label = f"block{index}"
+            name = layout.get_instance_name(label=label, env_idx=0)
+            if name is None:
+                raise ValueError(f"Native tower block is unavailable: {label}.")
+            position, quaternion = layout.get_instance_pose(inst_name=name, env_idx=0)
+            value = np.concatenate([array(position).reshape(-1), array(quaternion).reshape(-1)])
+            if value.shape != (7,) or not np.isfinite(value).all():
+                raise ValueError(f"Native tower block pose is invalid: {label}.")
+            poses[label] = {"instance_name": name, "pose": value.tolist()}
+        # 记录 RewardManager 的原生可变数据，检查过程必须保留全部内容。
+        reward_state = {key: value for key, value in vars(rm).items() if key not in {"env", "func_parser"}}
+        parser_state = {key: value for key, value in vars(rm.func_parser).items()
+                        if key not in {"env", "layout_manager", "robot_manager"}}
+        return {
+            "native_physics_step": int(simulator.current_time_step_index),
+            "simulation_time_s": float(simulator.current_time),
+            "native_control_counter": int(self.env.take_action_cnt[0]),
+            "native_end_flag": bool(self.env.end_flag[0]), "native_success_flag": bool(self.env.success[0]),
+            "object_poses": poses,
+            "reward_state_sha256": hashlib.sha256(pickle.dumps((reward_state, parser_state), protocol=5)).hexdigest(),
+        }
+
+    def tower_structure_checks(self, check_ids):
+        if (self.metadata["task"] != "build_tower" or get_ident() != self.owner_thread_id
+                or not isinstance(check_ids, list) or not check_ids or len(set(check_ids)) != len(check_ids)
+                or any(check_id not in BUILD_TOWER_CHECK_IDS for check_id in check_ids)):
+            raise ValueError("Native tower checks require declared IDs on the simulator owner thread.")
+        before = self._tower_read_state()
+        if before["native_control_counter"] != self.step_id:
+            raise RuntimeError("Native tower check control counter differs from the retained episode step.")
+        rm = self.env.reward_manager
+        builders = {"tower_base_structure": self.env._base_structure_checks,
+                    "tower_middle_structure": self.env._middle_structure_checks}
+        facts = []
+        for check_id in check_ids:
+            conditions = builders[check_id]()
+            if not conditions:
+                raise ValueError("Original native tower stage conditions must be nonempty.")
+            # 原生 TaskEnv 以 AND 检查每个顶层条件，嵌套条件由 check_once 处理。
+            values = [bool(rm.check_once(condition, 0)) for condition in conditions]
+            facts.append({"check_id": check_id, "value": all(values), "condition_values": values})
+        after = self._tower_read_state()
+        if before != after:
+            raise RuntimeError("Read-only native tower checks changed simulator or reward state.")
+        observation_path = self.episode_dir / "observations" / f"{self.step_id:06d}.npz"
+        audit_id = f"tower_check_{self.check_audit_position:06d}"
+        record = {
+            "schema_version": "edh.robodojo.tower_structure_checks.v1", "audit_id": audit_id,
+            "episode_id": self.episode_id, "step_id": self.step_id, "audit_position": self.check_audit_position,
+            "owner_thread_id": self.owner_thread_id, "monotonic_ns": time.monotonic_ns(),
+            "recorded_at": datetime.now(timezone.utc).isoformat(timespec="milliseconds"),
+            "checks": facts, "physical_steps": 0, "native_control_counter": before["native_control_counter"],
+            "native_physics_step_before": before["native_physics_step"],
+            "native_physics_step_after": after["native_physics_step"],
+            "simulation_time_before_s": before["simulation_time_s"], "simulation_time_after_s": after["simulation_time_s"],
+            "state_before": before, "state_after": after,
+            "observation_path": str(observation_path.relative_to(self.output)),
+            "observation_sha256": hashlib.sha256(observation_path.read_bytes()).hexdigest(),
+            "physics_provenance_sha256": hashlib.sha256((self.output / "physics-provenance.json").read_bytes()).hexdigest(),
+            "check_provenance_sha256": hashlib.sha256((self.output / "native-check-provenance.json").read_bytes()).hexdigest(),
+        }
+        with (self.episode_dir / f"{audit_id}.json").open("x") as output:
+            output.write(json.dumps(record, indent=2, allow_nan=False) + "\n")
+        self.check_audit_position += 1
+        return record
+
     def dispatch(self, operation, arguments):
         if operation == "metadata":
             return self.metadata
@@ -344,6 +449,8 @@ class RoboDojoSession:
             return self.obs
         if operation == "episode_status":
             return self.episode_status()
+        if operation == "tower_structure_checks":
+            return self.tower_structure_checks(**values)
         if operation == "begin_combination":
             write_json(self.output / "combination.json", values)
             return {"physical_steps": 0}

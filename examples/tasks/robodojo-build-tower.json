@@ -1,0 +1,36 @@
+{
+  "revision": "robodojo-build-tower-native-stages-726e9aab-v1",
+  "tasks": {
+    "build_tower": {
+      "label": "Build a tower",
+      "instruction": "Build a tower using the wooden blocks and wooden boards.",
+      "goal": {
+        "id": "build_tower",
+        "configuration": "RoboDojo build_tower / Dual ARX X5",
+        "successContract": {
+          "id": "native_task_success",
+          "version": "robodojo-726e9aab",
+          "all": [{ "check": "native_task_success", "args": [], "check_id": "task_success" }],
+          "source": {
+            "kind": "benchmark",
+            "reference": "RoboDojo build_tower / 726e9aabfaa642203722eb126f5eaf0f37f3e1ad"
+          }
+        },
+        "entities": {},
+        "capabilities": ["object_manipulation", "dual_arm_control"],
+        "taskSemantics": [
+          "Construct the base, middle and top structures using the original native tower geometry predicates."
+        ],
+        "budget": { "max_control_steps": 1050, "max_wall_time_s": 3600 }
+      },
+      "allowedSubgoalChecks": [
+        { "check": "native_tower_base_structure", "args": [], "check_id": "tower_base_structure" },
+        {
+          "check": "native_tower_middle_structure",
+          "args": [],
+          "check_id": "tower_middle_structure"
+        }
+      ]
+    }
+  }
+}

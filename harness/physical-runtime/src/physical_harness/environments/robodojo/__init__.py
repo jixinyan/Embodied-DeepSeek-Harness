@@ -33,6 +33,7 @@ from physical_harness.perception.metric_capture import MetricCapture
 
 
 CAMERA_NAMES = ("cam_high", "cam_left_wrist", "cam_right_wrist")
+BUILD_TOWER_CHECK_IDS = ("tower_base_structure", "tower_middle_structure")
 STATE_CHANNELS = ("states",)
 ACTION_CHANNELS = tuple(
     [f"left_joint_{index}" for index in range(6)]
@@ -319,6 +320,9 @@ class RoboDojoEnvironment:
 
     def describe(self) -> NativeEnvironmentDescription:
         metadata = self._require_metadata()
+        supported_checks = ("task_success", *BUILD_TOWER_CHECK_IDS) if self._task_id == "build_tower" else ("task_success",)
+        if metadata.get("supported_check_ids") != list(supported_checks):
+            raise RuntimeError("RoboDojo native check declarations differ from the selected task.")
         instruction = metadata.get("instruction")
         if not isinstance(instruction, str) or not instruction.strip() or len(instruction) > 4000:
             raise RuntimeError("RoboDojo metadata has no valid task instruction.")
@@ -345,7 +349,7 @@ class RoboDojoEnvironment:
             action_spec=action_spec,
             camera_names=CAMERA_NAMES,
             state_channels=STATE_CHANNELS,
-            supported_check_ids=("task_success",),
+            supported_check_ids=supported_checks,
             active_view_directions=(),
             task_instruction=instruction,
             scene_metadata={
@@ -539,9 +543,38 @@ class RoboDojoEnvironment:
         return self._terminated or self._truncated or status["finished"]
 
     def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]:
-        if not check_ids or any(check_id != "task_success" for check_id in check_ids):
+        supported = ("task_success", *BUILD_TOWER_CHECK_IDS) if self._task_id == "build_tower" else ("task_success",)
+        if not check_ids or len(set(check_ids)) != len(check_ids) or any(check_id not in supported for check_id in check_ids):
             raise ValueError("Unsupported RoboDojo check ID.")
-        return tuple(NativeCheck(check_id, self._success if self._terminated else False) for check_id in check_ids)
+        stage_ids = [check_id for check_id in check_ids if check_id in BUILD_TOWER_CHECK_IDS]
+        stages = {}
+        if stage_ids:
+            result = self._require_rpc().request("tower_structure_checks", episode_id=self._episode_id,
+                                                step_id=self._step_id, check_ids=stage_ids)
+            if (not isinstance(result, dict) or result.get("episode_id") != self._episode_id
+                    or result.get("schema_version") != "edh.robodojo.tower_structure_checks.v1"
+                    or type(result.get("step_id")) is not int or result["step_id"] != self._step_id
+                    or type(result.get("physical_steps")) is not int or result["physical_steps"] != 0
+                    or type(result.get("native_physics_step_before")) is not int
+                    or type(result.get("native_physics_step_after")) is not int
+                    or result.get("native_physics_step_before") != result.get("native_physics_step_after")
+                    or type(result.get("simulation_time_before_s")) not in (int, float)
+                    or not math.isfinite(result["simulation_time_before_s"])
+                    or result.get("simulation_time_before_s") != result.get("simulation_time_after_s")
+                    or type(result.get("native_control_counter")) is not int or result["native_control_counter"] != self._step_id
+                    or not isinstance(result.get("state_before"), dict)
+                    or result.get("state_before") != result.get("state_after")
+                    or not isinstance(result.get("checks"), list)
+                    or any(not isinstance(fact, dict) for fact in result["checks"])
+                    or [fact.get("check_id") for fact in result["checks"]] != stage_ids
+                    or any(type(fact.get("value")) is not bool for fact in result["checks"])
+                    or not isinstance(result.get("audit_id"), str) or not result["audit_id"]):
+                raise RuntimeError("RoboDojo native tower check receipt is invalid.")
+            stages = {fact["check_id"]: NativeCheck(fact["check_id"], fact["value"],
+                      f"Original native build_tower structure predicate; audit {result['audit_id']}.")
+                      for fact in result["checks"]}
+        return tuple(stages[check_id] if check_id in stages else
+                     NativeCheck(check_id, self._success if self._terminated else False) for check_id in check_ids)
 
     def turn_view(self, direction: str) -> NativeObservation:
         raise ValueError(f"RoboDojo active view direction is unsupported: {direction}")
