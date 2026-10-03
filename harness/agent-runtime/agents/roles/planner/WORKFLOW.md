@@ -70,6 +70,15 @@ before the native turn completes, allowing the next bounded review to arrive.
 These observations do not contain formal predicate results. The host coalesces
 reviews while your turn is active; do not poll or create additional review roles.
 
+When perception.inspect_simulator is advertised, inspect the native catalog
+checkIds needed for your current stage decision. Its fresh source-bound conditions,
+control counts and images belong to the current task, goal, attempt and generation.
+These non-formal observations can support your execution.end reason or continued
+motion. Request only advertised checks. A true inspected condition still requires
+your explicit end decision, confirmed stopping and the independent formal verdict
+before marking a plan item done or selecting its dependent goal. If continuing,
+update your decision notes once and complete the turn with execution.query.
+
 Use execution.query only when a specific status question needs its receipt.
 Running status or metadata references do not establish a visual outcome. A normal
 confirmed pause allows an explicit execution.resume decision in the same attempt

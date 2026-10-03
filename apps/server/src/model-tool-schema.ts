@@ -13,6 +13,7 @@ export function coreModelToolParameters(
     roleOutputSchema?: object;
     rotationAxes?: readonly string[];
     activeViewDirections?: readonly string[];
+    simulatorInspectionCheckIds?: readonly string[];
   } = {},
 ): Record<string, unknown> {
   const properties = CORE_TOOL_PARAMETERS[logical];
@@ -65,6 +66,18 @@ export function coreModelToolParameters(
         ...options.planSchema,
         description:
           'Use planning.read.planWrite.plan, a nested JSON object with schema_version, task_id, version, owner_agent_id, owner_assignment_id and items. Edit its items for your decisions. Preserve the supplied identities and criteria, and pair it with planWrite.expectedVersion. The value begins with an object brace; keep objects, arrays and numeric versions as their JSON types.',
+      },
+    };
+  }
+  if (logical === 'perception.inspect_simulator') {
+    if (!options.simulatorInspectionCheckIds?.length)
+      throw new Error('Simulator inspection catalog checks are unavailable.');
+    selected = {
+      checkIds: {
+        type: 'array',
+        items: { type: 'string', enum: [...options.simulatorInspectionCheckIds] },
+        description:
+          'Distinct advertised native conditions to inspect for the current execution decision.',
       },
     };
   }

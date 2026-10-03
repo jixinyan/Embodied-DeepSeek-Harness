@@ -51,6 +51,7 @@ const workerSchema = z
     policyUri: z.string().url().optional(),
     executionMode: z.enum(['policy', 'direct', 'hybrid']).optional(),
     policyMaxActionsPerInference: z.number().int().min(1).max(512).optional(),
+    enableSimulatorInspection: z.boolean().optional(),
     catalog: z.unknown(),
   })
   .passthrough();
@@ -177,6 +178,8 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
     );
     if (worker.provider !== provider)
       throw new Error('Native profile provider differs from deployment.');
+    if (worker.enableSimulatorInspection && provider !== 'robodojo')
+      throw new Error('Simulator inspection requires the implemented RoboDojo provider.');
     const catalog = parseTaskCatalog(worker.catalog, validator);
     if (
       Object.keys(catalog.tasks).length !== 1 ||

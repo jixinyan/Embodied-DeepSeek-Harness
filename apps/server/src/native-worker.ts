@@ -16,6 +16,8 @@ import {
   type BackendPolicyEvent,
   type BackendFault,
   type BackendCallOptions,
+  type BackendReviewOptions,
+  type BackendInspectionResult,
   type BackendObjectMeasurementInput,
   type BackendObjectMeasurement,
   type BackendRotationResult,
@@ -61,6 +63,7 @@ export interface NativeWorkerConfiguration {
   readonly policyMaxActionsPerInference?: number;
   readonly monitorEveryActions?: number;
   readonly publishRunningImages?: boolean;
+  readonly enableSimulatorInspection?: boolean;
   readonly recordSimulationFrames?: boolean;
   readonly simulationVideoDirectory?: string;
   readonly observationTtlS?: number;
@@ -85,6 +88,7 @@ interface WorkerDescription {
   task_instruction?: string | null;
   scene_metadata?: JsonObject | null;
   supports_object_measurement: boolean;
+  supports_simulator_inspection: boolean;
 }
 
 function metricNumber(value: unknown): number {
@@ -505,7 +509,7 @@ class NativeWorkerTransport {
       throw new Error('Native worker request exceeds the transport bound.');
     return new Promise((resolve, reject) => {
       const onAbort = () => {
-        if (operation === 'capture' || operation === 'check' || operation === 'measure_object') {
+        if (['capture', 'check', 'measure_object', 'inspect_simulator'].includes(operation)) {
           reject(new Error(`Native worker ${operation} request cancelled.`));
           options.signal?.removeEventListener('abort', onAbort);
           return;
@@ -564,6 +568,10 @@ class NativeWorkerTransport {
 
 class NativeTaskBackend implements EmbodiedBackend {
   readonly source = 'simulation';
+  readonly inspectSimulator?: (
+    checkIds: readonly string[],
+    options: BackendReviewOptions,
+  ) => Promise<BackendInspectionResult>;
   readonly measureObject?: (
     input: BackendObjectMeasurementInput,
     options?: BackendCallOptions,
@@ -595,6 +603,7 @@ class NativeTaskBackend implements EmbodiedBackend {
     readonly activeViewDirections: readonly ('left' | 'center' | 'right')[],
     readonly rotationAxes: readonly ('yaw' | 'pitch')[],
     supportsObjectMeasurement: boolean,
+    readonly simulatorInspectionCheckIds: readonly string[] | undefined,
     private readonly timeouts: Readonly<{
       observationTtlS: number;
       deviceTimeoutS: number;
@@ -603,6 +612,8 @@ class NativeTaskBackend implements EmbodiedBackend {
     readonly toolTimeoutMs: number,
     private readonly onClose: () => void,
   ) {
+    if (simulatorInspectionCheckIds)
+      this.inspectSimulator = (checkIds, options) => this.inspectNative(checkIds, options);
     if (supportsObjectMeasurement) {
       if (!['robocasa', 'robotwin', 'behavior', 'robodojo'].includes(this.provider))
         throw new Error('Native provider advertised unsupported object measurement.');
@@ -1131,6 +1142,94 @@ class NativeTaskBackend implements EmbodiedBackend {
     await this.transport.request('stop', { execution_id: this.status.execution_id });
   }
 
+  private async inspectNative(
+    checkIds: readonly string[],
+    options: BackendReviewOptions,
+  ): Promise<BackendInspectionResult> {
+    options.signal?.throwIfAborted();
+    const current = () => {
+      const status = this.status;
+      if (
+        this.closed ||
+        !status ||
+        status.execution_id !== options.executionId ||
+        status.control_generation !== options.controlGeneration ||
+        !isDeepStrictEqual(status.task_scope, options.taskScope)
+      )
+        throw new Error('Simulator inspection scope or generation changed.');
+      return status;
+    };
+    current();
+    if (
+      !this.simulatorInspectionCheckIds ||
+      !checkIds.length ||
+      checkIds.length > 32 ||
+      new Set(checkIds).size !== checkIds.length ||
+      checkIds.some((id) => !this.simulatorInspectionCheckIds!.includes(id))
+    )
+      throw new Error('Simulator inspection check is absent from the advertised catalog.');
+    const result = object(
+      await this.transport.request(
+        'inspect_simulator',
+        {
+          run_task_id: this.runId,
+          execution_id: options.executionId,
+          control_generation: options.controlGeneration,
+          task_scope: options.taskScope,
+          check_ids: [...checkIds],
+        },
+        { signal: options.signal },
+      ),
+    );
+    options.signal?.throwIfAborted();
+    const status = current();
+    if (
+      result.run_task_id !== this.runId ||
+      result.execution_id !== options.executionId ||
+      result.control_generation !== options.controlGeneration ||
+      !isDeepStrictEqual(result.task_scope, options.taskScope) ||
+      result.source !== 'robodojo-native-conditions' ||
+      !Number.isSafeInteger(result.control_steps) ||
+      Number(result.control_steps) < 0 ||
+      !Number.isSafeInteger(result.raw_sim_steps) ||
+      Number(result.raw_sim_steps) < 0 ||
+      !Array.isArray(result.facts) ||
+      result.facts.length !== checkIds.length
+    )
+      throw new Error('Native simulator inspection receipt is invalid.');
+    const sample = await this.sample(result.observation as WorkerObservation, status);
+    options.signal?.throwIfAborted();
+    current();
+    sample.visualization = {
+      ...sample.visualization,
+      inspectionSource: 'robodojo-native-conditions',
+      inspectionControlGeneration: options.controlGeneration,
+      inspectionControlSteps: Number(result.control_steps),
+      inspectionRawSimSteps: Number(result.raw_sim_steps),
+    };
+    const facts = result.facts.map((item, index) => {
+      const fact = object(item);
+      if (fact.check_id !== checkIds[index])
+        throw new Error('Native simulator inspection returned a different check.');
+      return this.validator.parse('CheckResult', {
+        check_id: fact.check_id,
+        value: fact.value,
+        evidence_refs: [sample.evidence.id],
+        ...(fact.reason == null ? {} : { reason: string(fact.reason) }),
+      }) as CheckResult;
+    });
+    return {
+      source: 'robodojo-native-conditions',
+      executionId: options.executionId,
+      controlGeneration: options.controlGeneration,
+      taskScope: structuredClone(options.taskScope),
+      controlSteps: Number(result.control_steps),
+      rawSimSteps: Number(result.raw_sim_steps),
+      sample,
+      facts,
+    };
+  }
+
   async check(
     checkIds: readonly string[],
     options?: { executionId: string; boundaryId: string; signal?: AbortSignal },
@@ -1199,6 +1298,13 @@ export async function createNativeWorkerEnvironment(
   validator: ContractValidator,
 ): Promise<SessionEnvironment> {
   parseTaskCatalog(configuration.catalog, validator);
+  if (
+    configuration.enableSimulatorInspection !== undefined &&
+    typeof configuration.enableSimulatorInspection !== 'boolean'
+  )
+    throw new Error('Native simulator inspection flag must be a boolean.');
+  if (configuration.enableSimulatorInspection && configuration.provider !== 'robodojo')
+    throw new Error('Native simulator inspection requires RoboDojo.');
   if (Object.keys(configuration.catalog.tasks).length !== 1)
     throw new Error('Native session must bind exactly one catalog task.');
   const timeouts = {
@@ -1240,6 +1346,7 @@ export async function createNativeWorkerEnvironment(
         policy_max_actions_per_inference: policyMaxActionsPerInference,
         monitor_every_actions: configuration.monitorEveryActions ?? 1,
         publish_running_images: configuration.publishRunningImages ?? false,
+        enable_simulator_inspection: configuration.enableSimulatorInspection ?? false,
         record_simulation_frames: configuration.recordSimulationFrames ?? false,
         ...(configuration.simulationVideoDirectory
           ? { simulation_video_directory: configuration.simulationVideoDirectory }
@@ -1254,6 +1361,11 @@ export async function createNativeWorkerEnvironment(
       description.execution_mode !== (configuration.executionMode ?? 'policy')
     )
       throw new Error('Native worker initialized a different provider or task.');
+    if (
+      description.supports_simulator_inspection !==
+      (configuration.enableSimulatorInspection ?? false)
+    )
+      throw new Error('Native worker simulator inspection admission differs from configuration.');
     if (
       typeof description.supports_object_measurement !== 'boolean' ||
       !description.supports_object_measurement
@@ -1365,6 +1477,23 @@ export async function createNativeWorkerEnvironment(
           activeViewDirections,
           rotationAxes,
           description.supports_object_measurement,
+          configuration.enableSimulatorInspection
+            ? Object.freeze([
+                ...new Set(
+                  [
+                    ...('all' in resolvedCatalog.tasks[taskId]!.goal.successContract
+                      ? resolvedCatalog.tasks[taskId]!.goal.successContract.all
+                      : resolvedCatalog.tasks[taskId]!.goal.successContract.any),
+                    ...(resolvedCatalog.tasks[taskId]!.predefinedGoals ?? []).flatMap((goal) =>
+                      'all' in goal.successContract
+                        ? goal.successContract.all
+                        : goal.successContract.any,
+                    ),
+                    ...(resolvedCatalog.tasks[taskId]!.allowedSubgoalChecks ?? []),
+                  ].map((check) => check.check_id),
+                ),
+              ])
+            : undefined,
           timeouts,
           toolTimeoutMs,
           () => {

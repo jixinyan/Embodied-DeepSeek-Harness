@@ -120,7 +120,8 @@ Actual Tower run `949ece77-1d89-475a-a258-ff4a297f7c9f` uses immutable source
 running reviews for execution `e6aa1117-18ca-4b4c-bb46-47d574b74438`, goal
 `tower_base`, attempt `attempt-2`, generation zero. Start result 46 precedes
 completed turn 47. Each of 15 explicit scoped query results commits before the
-next completed-turn event; the first result 169 completes turn 170 in 24 ms,
+next completed-turn event; the first tool receipt 168 and native result 169 precede
+completion 170, 24 ms after the tool receipt,
 and its next review arrives at event 204 with 66 controls and three images.
 No additional model step enters those completed turns.
 
@@ -132,7 +133,7 @@ consumes that feedback in turn 18, publishes plan version two with the base stil
 active and retains the dependent middle and final goals. Its same-episode retry
 starts execution `15f1685b-307d-4f9c-b897-796712beb1a0`, attempt three, recovery
 `a0d938f7-9f87-4442-8120-e314d7a64b12`; original start result 1591 precedes completed
-turn 1592 in 41 ms. The public reader passes all three required flags for this
+turn 1592, 41 ms after tool receipt 1590. The public reader passes all three required flags for this
 prefix. These records establish observation delivery, completed-turn handoff,
 independent failed feedback and retained-scene retry. They preserve the running
 task outcome and supply no passed stage or final-task result.

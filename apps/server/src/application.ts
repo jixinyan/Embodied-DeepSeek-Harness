@@ -682,7 +682,10 @@ export class UpperRun {
             (logical !== 'observation.rotate' ||
               Boolean(this.options.backend.rotationAxes?.length)) &&
             (logical !== 'perception.measure_object' ||
-              Boolean(this.options.backend.measureObject)),
+              Boolean(this.options.backend.measureObject)) &&
+            (logical !== 'perception.inspect_simulator' ||
+              (this.options.backend.source === 'simulation' &&
+                Boolean(this.options.backend.inspectSimulator))),
         ),
         allowed_actions: [],
         budget: structuredClone(this.goal.budget),
@@ -758,6 +761,7 @@ export class UpperRun {
             ...([
               'perception.capture',
               'perception.measure_object',
+              'perception.inspect_simulator',
               'observation.turn_view',
               'observation.rotate',
               'execution.start',
@@ -789,6 +793,9 @@ export class UpperRun {
               ...(this.options.backend.activeViewDirections
                 ? { activeViewDirections: this.options.backend.activeViewDirections }
                 : {}),
+              ...(this.options.backend.simulatorInspectionCheckIds
+                ? { simulatorInspectionCheckIds: this.options.backend.simulatorInspectionCheckIds }
+                : {}),
             }),
             output: {
               schema: { type: 'object', additionalProperties: true },
@@ -800,13 +807,19 @@ export class UpperRun {
                   'evidence.read',
                 ].includes(logical)
                   ? this.permit(a, [(value as unknown as SensorSample).evidence.id])
-                  : logical === 'perception.segment_objects'
-                    ? this.permit(a, [(value as { overlayEvidenceId: string }).overlayEvidenceId])
-                    : logical === 'perception.estimate_depth'
+                  : logical === 'perception.inspect_simulator'
+                    ? this.permit(a, [
+                        (value as unknown as { sample: SensorSample }).sample.evidence.id,
+                      ])
+                    : logical === 'perception.segment_objects'
                       ? this.permit(a, [(value as { overlayEvidenceId: string }).overlayEvidenceId])
-                      : logical === 'verification.check' && this.checks.get(a.id)?.sample
-                        ? this.permit(a, [this.checks.get(a.id)!.sample.evidence.id])
-                        : [];
+                      : logical === 'perception.estimate_depth'
+                        ? this.permit(a, [
+                            (value as { overlayEvidenceId: string }).overlayEvidenceId,
+                          ])
+                        : logical === 'verification.check' && this.checks.get(a.id)?.sample
+                          ? this.permit(a, [this.checks.get(a.id)!.sample.evidence.id])
+                          : [];
                 return [
                   { type: 'text' as const, text: JSON.stringify(value) },
                   ...sensorImages(samples).map((attachment) => ({
@@ -1298,6 +1311,71 @@ export class UpperRun {
         signal.throwIfAborted();
         if (this.closed || terminal(this.state.state)) throw new Error('Run ended during capture.');
         return this.observe(a, sample);
+      }
+      case 'perception.inspect_simulator': {
+        this.owner(a);
+        const inspect = this.options.backend.inspectSimulator;
+        const request = this.currentRequest();
+        const execution = this.options.backend.query();
+        if (
+          this.options.backend.source !== 'simulation' ||
+          !inspect ||
+          !request ||
+          !execution ||
+          execution.control_generation === undefined ||
+          execution.task_scope.task_id !== this.state.id ||
+          execution.task_scope.goal_id !== this.goal.id ||
+          execution.task_scope.attempt_id !== request.attempt_id ||
+          execution.task_scope.recovery_id !== request.recovery_id ||
+          request.owner_assignment_id !== a.id ||
+          request.decision_owner_id !== a.sessionId
+        )
+          throw new Error(
+            'Simulator inspection requires the current decision-owned native execution.',
+          );
+        const checkIds = args.checkIds as string[];
+        const result = await inspect.call(this.options.backend, checkIds, {
+          executionId: execution.execution_id,
+          controlGeneration: execution.control_generation,
+          taskScope: structuredClone(execution.task_scope),
+          signal,
+        });
+        signal.throwIfAborted();
+        const current = this.options.backend.query();
+        if (
+          this.closed ||
+          terminal(this.state.state) ||
+          !current ||
+          current.execution_id !== execution.execution_id ||
+          current.control_generation !== execution.control_generation ||
+          !isDeepStrictEqual(current.task_scope, execution.task_scope) ||
+          result.executionId !== execution.execution_id ||
+          result.controlGeneration !== execution.control_generation ||
+          !isDeepStrictEqual(result.taskScope, execution.task_scope) ||
+          !isDeepStrictEqual(result.sample.evidence.task_scope, execution.task_scope) ||
+          result.source !== 'robodojo-native-conditions' ||
+          !Number.isSafeInteger(result.controlSteps) ||
+          result.controlSteps < 0 ||
+          !Number.isSafeInteger(result.rawSimSteps) ||
+          result.rawSimSteps < 0 ||
+          result.facts.length !== checkIds.length ||
+          result.facts.some((fact, index) => fact.check_id !== checkIds[index])
+        )
+          throw new Error('Simulator inspection execution changed before evidence admission.');
+        for (const fact of result.facts) this.options.validator.parse('CheckResult', fact);
+        const sample = this.observe(a, result.sample);
+        this.event('perception.simulator-inspected', {
+          assignmentId: a.id,
+          executionId: result.executionId,
+          controlGeneration: result.controlGeneration,
+          taskScope: result.taskScope,
+          source: result.source,
+          controlSteps: result.controlSteps,
+          rawSimSteps: result.rawSimSteps,
+          facts: result.facts,
+          evidence: sample.evidence,
+        });
+        return { ...result, sample, formal: false };
       }
       case 'perception.segment_objects': {
         const segmentation = this.options.segmentation;

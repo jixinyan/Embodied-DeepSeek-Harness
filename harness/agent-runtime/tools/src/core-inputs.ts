@@ -101,6 +101,11 @@ export const CORE_TOOL_PARAMETERS: Record<string, Record<string, unknown>> = {
     evidenceRefs,
   },
   'perception.capture': {},
+  'perception.inspect_simulator': {
+    checkIds: list(
+      'One to 32 distinct check IDs advertised for this native simulator task. Read current native conditions for your execution decision; formal verification remains independent.',
+    ),
+  },
   'perception.segment_objects': {
     evidenceId,
     attachmentId,
@@ -264,6 +269,8 @@ export const CORE_TOOL_DESCRIPTIONS: Readonly<Record<string, string>> = {
     'Formal Verifier only: run the admitted criterion checks at this assignment exact confirmed end boundary. Returns facts and boundaryId, and supplies the check observation images to this model. Each fact has check_id, value (true/false/null), evidence_refs and a reason for null. The host retains facts and evidence for verification.submit; do not replace arguments, move the device or interpret incomplete evidence as success.',
   'perception.measure_object':
     'Measure one SAM-grounded visible object region using same-frame native simulator RGB-D and camera calibration. Supply its original authorized evidenceId/attachmentId and matching maskEvidenceId/maskAttachmentId. Available only for an explicitly enabled native provider while confirmed stopped. Returns meter-valued axial depth and camera range, source hashes, camera/world frames and the mean of visible valid surface points. The surface centroid is not the full object geometric center. This read-only measurement does not verify task success.',
+  'perception.inspect_simulator':
+    'Decision owner only: inspect advertised native simulator conditions for the current admitted execution and generation. Supply checkIds from the advertised catalog. Returns source-bound facts, actual control/physics counts, fresh images and exact task/goal/attempt identity. These non-formal facts inform your own execution.end decision and do not submit a verdict, complete a goal or stop motion. The tool is available only when explicitly enabled for a supported simulator.',
   'perception.estimate_depth':
     'Estimate depth for one SAM-grounded object in an authorized source image. Supply the original evidenceId and attachmentId plus its matching SAM maskEvidenceId and maskAttachmentId. Returns meter-valued camera axial depth statistics, valid-pixel coverage, model provenance and an overlay. Camera range requires deployment-provided intrinsics. Monocular estimates have unverified accuracy for the source camera and cannot establish verified geometry or task success.',
   'tasks.retry':

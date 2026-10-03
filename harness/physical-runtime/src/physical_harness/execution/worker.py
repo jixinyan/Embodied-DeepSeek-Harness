@@ -316,6 +316,9 @@ class NativeWorkerSession:
         self._transport_write_timeout_s = float(transport_write_timeout_s)
         self._provider = arguments["provider"]
         provider = arguments["provider"]
+        self._simulator_inspection = arguments.get("enable_simulator_inspection", False)
+        if type(self._simulator_inspection) is not bool or (self._simulator_inspection and provider != "robodojo"):
+            raise ValueError("Simulator inspection requires an explicitly enabled RoboDojo provider.")
         self._native_task_id = arguments["native_task_id"]
         self._policy_uri = arguments["policy_uri"]
         self._policy_id = arguments["policy_id"]
@@ -396,6 +399,7 @@ class NativeWorkerSession:
             "policy_id": self._policy_id,
             "execution_mode": self._execution_mode.value,
             "supports_object_measurement": callable(getattr(self._environment, "measure_object", None)),
+            "supports_simulator_inspection": self._simulator_inspection,
         }
 
     async def start(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -886,6 +890,48 @@ class NativeWorkerSession:
                     "task_scope": gate_scope(self._request),
                     "observation": self._observation_wire(observation)}
 
+    async def inspect_simulator(self, arguments: dict[str, Any]) -> dict[str, Any]:
+        async with self._control_lock:
+            if not self._simulator_inspection:
+                raise ValueError("Simulator inspection is unavailable.")
+            ids = arguments["check_ids"]
+            if (not isinstance(ids, list) or not 1 <= len(ids) <= 32
+                    or any(not isinstance(value, str) or value not in self._description.supported_check_ids for value in ids)
+                    or len(set(ids)) != len(ids)):
+                raise ValueError("Simulator inspection requires distinct advertised native check IDs.")
+            gate = self._require_gate()
+            device = self._require_device()
+            generation = arguments["control_generation"]
+            if type(generation) is not int or generation < 0:
+                raise ValueError("Simulator inspection requires an admitted control generation.")
+
+            def current() -> None:
+                snapshot = gate.snapshot()
+                if (not self._host_connected or not self._lease_active or self._run_task_id != arguments["run_task_id"]
+                        or self._request is None or arguments["task_scope"] != gate_scope(self._request)
+                        or snapshot["execution_id"] != arguments["execution_id"]
+                        or snapshot["generation"] != generation
+                        or snapshot["state"] not in ("running", "paused", "ended")
+                        or (snapshot["state"] != "running" and not snapshot["device_confirmed"])):
+                    raise RuntimeError("Simulator inspection execution scope or generation changed.")
+
+            def inspect() -> tuple:
+                current()
+                facts = self._environment.check(ids)
+                observation = self._environment.observe()
+                if [item.check_id for item in facts] != ids:
+                    raise RuntimeError("Simulator inspection facts differ from the advertised checks.")
+                return facts, observation, device.executed_actions, device.raw_sim_steps
+
+            current()
+            facts, observation, controls, physics = await device.on_owner(inspect)
+            current()
+            return {"run_task_id": self._run_task_id, "execution_id": arguments["execution_id"],
+                    "control_generation": generation, "task_scope": gate_scope(self._request),
+                    "control_steps": controls, "raw_sim_steps": physics,
+                    "source": "robodojo-native-conditions", "observation": self._observation_wire(observation),
+                    "facts": [vars(item) for item in facts]}
+
     async def measure_object(self, arguments: dict[str, Any]) -> dict[str, Any]:
         async with self._control_lock:
             if not callable(getattr(self._environment, "measure_object", None)):
@@ -1113,6 +1159,7 @@ async def serve() -> None:
         "turn_view": session.turn_view,
         "rotate_view": session.rotate_view,
         "check": session.check,
+        "inspect_simulator": session.inspect_simulator,
         "close_task": lambda _args: session.close_task(),
         "close": lambda _args: session.close(),
     }

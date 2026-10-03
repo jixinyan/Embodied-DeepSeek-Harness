@@ -67,6 +67,10 @@
       "status": "upper_with_optional_provider"
     },
     {
+      "id": "perception.inspect_simulator",
+      "status": "upper_with_optional_native_provider"
+    },
+    {
       "id": "perception.measure_object",
       "status": "upper_with_optional_native_provider"
     },

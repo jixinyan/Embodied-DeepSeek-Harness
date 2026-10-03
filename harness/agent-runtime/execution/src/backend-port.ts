@@ -77,6 +77,14 @@ export interface BackendCheckResult {
   sample: SensorSample;
   facts: CheckResult[];
 }
+export interface BackendInspectionResult extends BackendCheckResult {
+  source: 'robodojo-native-conditions';
+  executionId: string;
+  controlGeneration: number;
+  taskScope: TaskScope;
+  controlSteps: number;
+  rawSimSteps: number;
+}
 export interface BackendRotationMotion {
   requested_yaw_deg: number;
   requested_pitch_deg: number;
@@ -153,6 +161,11 @@ export interface EmbodiedBackend {
   query(): ExecutionStatus | undefined;
   capture(options?: BackendCallOptions): SensorSample | Promise<SensorSample>;
   captureReview?(options: BackendReviewOptions): Promise<SensorSample | undefined>;
+  readonly simulatorInspectionCheckIds?: readonly string[] | undefined;
+  inspectSimulator?(
+    checkIds: readonly string[],
+    options: BackendReviewOptions,
+  ): Promise<BackendInspectionResult>;
   measureObject?(
     input: BackendObjectMeasurementInput,
     options?: BackendCallOptions,

@@ -14,6 +14,7 @@ tools:
   - context.respond
   - evidence.read
   - perception.capture
+  - perception.inspect_simulator
   - observation.turn_view
   - observation.rotate
   - execution.start

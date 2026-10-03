@@ -47,3 +47,10 @@ Session releases verified published bodies through an identity-bound archive rea
 surface and projection folds retain absolute sequences and read individual archived
 events. The model loop, tool dispatcher and fold rules remain native. All three patches
 record original and local hashes. See [semantics and checks](../implementation/session-history.md).
+
+Optional simulator inspection uses EDH's existing native DSH tool registration,
+input schemas, serialized physical provider calls and attachment delivery. The
+provider returns scoped native conditions as ordinary observations; EDH retains
+the original independent stopped-boundary verification path. This binding adds
+no imported Session, dispatcher or model-loop patch. See the
+[inspection interface](../implementation/simulator-inspection.md).

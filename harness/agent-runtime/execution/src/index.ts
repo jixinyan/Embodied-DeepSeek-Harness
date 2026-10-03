@@ -37,6 +37,7 @@ export type {
   BackendReviewOptions,
   BackendCheckOptions,
   BackendCheckResult,
+  BackendInspectionResult,
   BackendObjectMeasurementInput,
   BackendObjectMeasurement,
   BackendRotationMotion,

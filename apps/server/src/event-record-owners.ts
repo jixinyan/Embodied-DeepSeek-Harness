@@ -293,6 +293,51 @@ export class RunEventReferences {
               for (const ref of this.validator.parse('CheckResult', fact).evidence_refs)
                 evidence(ref);
           break;
+        case 'perception.simulator-inspected': {
+          const actor = assignment(detail.assignmentId);
+          const inspectionScope = this.validator.parse('TaskScope', detail.taskScope);
+          scope(inspectionScope);
+          const status = state.executions.find(
+            (row) => row.execution_id === id.parse(detail.executionId),
+          );
+          const generation = count.parse(detail.controlGeneration);
+          const request = state.requests.find(
+            (row) =>
+              row.goal_id === inspectionScope.goal_id &&
+              row.attempt_id === inspectionScope.attempt_id &&
+              row.recovery_id === inspectionScope.recovery_id,
+          );
+          const ref = this.validator.parse('EvidenceRef', detail.evidence);
+          if (
+            !status ||
+            status.control_generation === undefined ||
+            generation > status.control_generation ||
+            !isDeepStrictEqual(status.task_scope, inspectionScope) ||
+            !isDeepStrictEqual(ref.task_scope, inspectionScope) ||
+            ref.visibility !== 'agent' ||
+            actor.id !== state.decisionAssignmentId ||
+            !request ||
+            request.owner_assignment_id !== actor.id ||
+            request.decision_owner_id !== actor.sessionId ||
+            detail.source !== 'robodojo-native-conditions'
+          )
+            throw new Error('Simulator inspection event has conflicting execution or ownership.');
+          count.parse(detail.controlSteps);
+          count.parse(detail.rawSimSteps);
+          observation(ref);
+          const inspected = evidence(ref.id);
+          if (
+            inspected.visualization.inspectionSource !== detail.source ||
+            inspected.visualization.inspectionControlGeneration !== generation ||
+            inspected.visualization.inspectionControlSteps !== detail.controlSteps ||
+            inspected.visualization.inspectionRawSimSteps !== detail.rawSimSteps
+          )
+            throw new Error('Simulator inspection counters conflict with the admitted sample.');
+          for (const fact of z.array(z.unknown()).min(1).max(32).parse(detail.facts))
+            for (const reference of this.validator.parse('CheckResult', fact).evidence_refs)
+              evidence(reference);
+          break;
+        }
         case 'perception.generated': {
           assignment(detail.assignmentId);
           const resultId = id.parse(detail.resultId);
