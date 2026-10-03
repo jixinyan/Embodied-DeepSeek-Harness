@@ -84,3 +84,68 @@ Evidence: `.local/work/native-workspace-20261003/`. This accepts configuration,
 Team projection, selection and shutdown without allocating a simulator or invoking
 a model. Native task execution and switching allocated environments retain their
 own source-bound acceptance requirements.
+
+## Allocated profile switching acceptance
+
+The production Console on 2026-10-03 allocates two native profiles in sequence
+from the immutable `b8351f322f427a37e2a812b9e637bceb3448f08e` archive. Both use
+GPU 1 and the configured `brain` binding to `Qwen/Qwen3.8-27B` on the existing
+local vLLM endpoint. Each profile retains its own Team, role source digest,
+embodiment, policy and checkpoint. The selected Session configuration and actual
+Planner run agree on those bindings.
+
+| Profile                              | Team            | Native Session                         | Actual cameras                   |
+| ------------------------------------ | --------------- | -------------------------------------- | -------------------------------- |
+| `behavior.behavior-picking-up-trash` | `behavior-live` | `852b25b2-4414-4b86-82b2-619cb2702db2` | Three 256×256 R1Pro cameras      |
+| `casa.robocasa-single-door-gr00t`    | `robocasa-live` | `915d6a9f-a7f4-42e9-a8b8-7d1b52979425` | Three 512×512 PandaOmron cameras |
+
+Production API admission resets each actual SDK environment and retains its
+environment-owned catalog. The original BEHAVIOR hidden instance 0 and RoboCasa
+seed-0 single-door configuration, native `task_success` criteria and configured
+budgets pass direct comparisons with the original provider files. In each task,
+Qwen completes one `perception.capture` and one `user.ask` for motion approval.
+All six original PNGs are read through the evidence API and match their content
+hashes. Both inspection tasks are cancelled when their Sessions close. There are
+zero execution jobs, formal Verifiers, learned policy inferences and tool errors.
+This accepts allocation, configured Team/model selection, native camera capture
+and switching; native task success remains governed by its separate acceptance.
+
+BEHAVIOR retains six original RGB-D camera records from reset and Planner capture.
+Their depth, intrinsic matrices, camera poses and source PNGs pass independent
+geometry recomputation with explicitly labeled complete-image regions. Each
+camera has 65,536 valid pixels; both observations retain native time
+`0.3416666844859719`. Median axial depths are `1.2791872024536133` m,
+`0.2570967674255371` m and `0.25578856468200684` m for head, left wrist and right
+wrist respectively. The SDK camera-parameter annotators are initialized during
+sensor configuration, using their required four render updates before the native
+instance reset.
+
+Both Session closes confirm `resources: released` before the next allocation.
+The actual BEHAVIOR SDK process, both workers, checker, process observer and
+Console processes exit. The loopback listener and writer lock are absent after
+server shutdown. Original provider configuration hashes remain unchanged.
+
+Evidence: `.local/work/native-workspace-allocated-20261003-02/`, including the
+original configurations, immutable source revision, Session catalogs, complete
+run histories, camera bytes, calibrated arrays, criteria audit and process/release
+checks. The retained bundle `acceptance-records.tar.gz` has SHA-256
+`fdbd565598db73ffe20b1ed7aace7b3accef6a434962fe42a328fadfa6869680`.
+
+## Original calibrated capture records
+
+Set `EDH_METRIC_CAPTURE_RECORD_DIR` to an existing owned directory to retain
+original calibrated observations. BEHAVIOR, RoboTwin and RoboDojo record their
+native RGB-D observation replacement. RoboCasa records its existing
+`capture_metric_depth` result, including measurements that invoke that method.
+The configured path contains provider and observation directories, `capture.json`
+and each camera's `source.png` and `calibration.npz`. Metadata retains native time,
+process identity, world frame, recording source hash and the PNG/array hashes.
+The operator owns this optional record directory.
+
+An independent actual RoboCasa probe from
+`ebdd089` verifies all three native 512×512 camera records against the original
+SDK pixels and arrays, then recomputes geometry for complete-image regions. Robot
+state and camera bytes remain unchanged, with zero policy clients or controls.
+The native process exits normally with status 0. Evidence:
+`.local/work/robocasa-capture-trace-20261003/native-capture-records.tar.gz`, SHA-256
+`9aaa76c8222c1ee0348f3d993f9445a5b3ea1e40dbe7e71bfc325b5874b54512`.
