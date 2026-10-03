@@ -6,6 +6,23 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## 2026-10-03 native v1 integration
 
+### Native RoboCasa task success
+
+Qwen/GR00T `CloseDrawer` run `043520a2` completes the original native criterion
+after 382 controls and 48 identified inferences. Five running reviews precede its
+confirmed episode end and fresh independent Verifier. Planner consumes the passed
+verdict, commits plan version 2, completes seven TODOs and finishes the task.
+All 598 events have zero tool errors; both roles retire, their terminal receipts
+precede completed native turns and normal Session close releases resources.
+
+The 765-file frozen source, all original learned/action records, 390 sensor samples,
+three 382-frame native videos, timestamp mapping and owned-process cleanup pass
+production checks. The 81.250-second composite includes all three views and 15
+original model-analysis events; full decoding and every text boundary pass.
+This first-attempt success has no recovery chain. Other Casa task bindings and
+ended-scene multi-task behavior have their own acceptance. Exact sources, native
+physics reporting limits and records: [native Casa success](robocasa-native-success.md).
+
 ### Planner observation turns and native fault ownership
 
 `execution.query` accepts optional `completeTurn: true` for the decision owner and

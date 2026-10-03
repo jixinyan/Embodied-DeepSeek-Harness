@@ -6,6 +6,14 @@ Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal
 
 Project: Embodied DeepSeek Harness (EDH).
 
+Native Qwen/GR00T RoboCasa `CloseDrawer` run `043520a2` completes the original
+task through 382 controls, 48 identified inferences and a fresh independent
+Verifier. All 598 events have zero tool errors; Planner completes its plan and
+seven TODOs, both roles retire and normal Session close releases resources.
+The source-bound three-camera Agent-trace MP4 fully decodes 975 frames over
+81.250 seconds. Exact configuration, source identities and evidence boundaries
+are recorded in [native Casa success](implementation/robocasa-native-success.md).
+
 This specification records confirmed requirements and implementation boundaries.
 Items marked “v1 default” are initial implementation choices that may evolve through
 configuration or a documented decision. Model checkpoints, compute and robot models

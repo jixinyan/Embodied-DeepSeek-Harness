@@ -21,6 +21,18 @@ The native v1 integration recordings are retained under
 | `robodojo-qwen-pi05-clean-retry-success.mp4` | Failed first attempt, retained-scene retry, independent formal success, completed TODOs and released resources; zero tool errors | Qwen3.8-27B / Pi0.5 | 126.250 s | `897f215d-119f-4880-9030-1d9edeb9fabb` |
 | `robotwin-qwen-pi05-clean-team-retry-success.mp4` | Independent SceneAnalyst, explicit report acknowledgement, failed first attempt, retained-scene retry and formal success; zero tool errors and released resources | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 276.000 s | `a5d9132e-f4fb-438e-8c71-e81394cffd39` |
 | `desktop-qwen-pi05-team-retry-success.mp4` | Actual packaged Desktop submission, independent SceneAnalyst, formal failure, Planner retry and formal success; completed TODOs, zero tool errors and confirmed Session/service cleanup | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 167.000 s | `bd3e1606-3430-47f1-ae0d-df234052ec9e` |
+| `robocasa-qwen-gr00t-close-drawer-success.mp4` | Original CloseDrawer task success, independent formal verification, completed plan/TODOs and released resources; zero tool errors | Qwen3.8-27B / GR00T | 81.250 s | `043520a2-1e9a-4b18-af1b-821a84a7ba7a` |
+
+The native RoboCasa composite is retained in
+`.local/work/v1-robocasa-close-drawer-20261003-01/`. Its 598 original events
+include 15 model-analysis outputs, 382 controls, 48 identified GR00T requests,
+five bounded Planner reviews, the confirmed native ending and a fresh passed
+Verifier. Planner completes plan version 2 and all seven TODOs. Each of the
+three original videos retains 382 frames; all 975 composite frames fully decode
+with checked text bounds and source hashes. MP4 SHA-256:
+`38a579ea60fcc4ed1c96b97837aa04d2fd13aefaaaf88aae3f68573e9ee66d88`.
+Exact sources and physics reporting limits are recorded in
+[native Casa success](robocasa-native-success.md).
 
 The packaged Desktop composite is retained in
 `.local/work/native-desktop-frozen-twin-20261003/`. Its 724 original events include

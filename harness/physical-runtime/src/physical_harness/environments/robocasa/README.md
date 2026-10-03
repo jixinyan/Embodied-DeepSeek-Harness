@@ -40,7 +40,8 @@ the terminal boundary. This matches the official GR00T evaluation wrapper's
 `terminate_on_success` setting. The independent Verifier still evaluates
 `task_success` after the confirmed end. The adapter stores no success latch;
 task binding preserves the scene and subsequent checks read its current state.
-The successful-predicate branch remains awaiting a real successful policy task.
+Qwen/GR00T `CloseDrawer` run `043520a2` verifies this successful-predicate branch
+with a confirmed device boundary and fresh independent formal success.
 
 `capture_metric_depth` is an explicit read-only native-owner operation. Each
 camera obtains RGB and normalized depth from one MuJoCo `render(depth=True)`
@@ -194,8 +195,8 @@ All six videos from these two executions decode successfully, with 1,050 and
 64 frames respectively in each of the three native camera streams. No camera-frame
 event is published into their upper running traces. The GR00T service and both
 validation consoles stop after release; shared Qwen and SAM remain allocated for
-other validation work. Successful native task termination and same-Session
-success-predicate lifecycle acceptance remain pending.
+other validation work. Native CloseDrawer task termination now has separate
+successful acceptance; same-Session success-predicate lifecycle remains pending.
 
 Run `b9822c9c-9df6-4cff-8bbc-9248358b8b9d` uses stable RoboCasa 1.0.1
 `OpenCabinet`, native `CABINET_SINGLE_DOOR` fixture 20, seed 1, the checkpoint's
@@ -233,3 +234,15 @@ policy processes exit. This accepts the physical gate's stale-response boundary;
 no upper task or formal Verifier is created. Evidence is retained locally under
 `.local/work/robocasa-policy-stale-20261003/audit.json` and on the deployment host
 under `.local/work/v1-robocasa-20261003/fault-acceptance/stale-result.json`.
+
+Native `CloseDrawer` run `043520a2` uses frozen source `9b32f37`, original seed-zero
+layout/style selection and the environment's `Close the right drawer.` instruction.
+Its 382 actual controls and 48 identified GR00T inferences reach a confirmed native
+episode end. A fresh independent Qwen Verifier returns original `task_success=true`;
+Planner completes the plan, seven TODOs and task. The 598-event journal has zero
+tool errors, retired roles and normally released resources. Original source/action,
+sensor, three-camera video and process checks pass. The synchronized 81.250-second
+MP4 retains 15 actual model-analysis events and passes complete decoding and text
+bounds. [Native success details](../../../../../../docs/implementation/robocasa-native-success.md)
+record exact revisions and the reported-physics evidence limit. Other task and
+recovery bindings retain their individual acceptance requirements.
