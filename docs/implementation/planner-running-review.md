@@ -138,5 +138,14 @@ prefix. These records establish observation delivery, completed-turn handoff,
 independent failed feedback and retained-scene retry. They preserve the running
 task outcome and supply no passed stage or final-task result.
 
+The closed original history passes the same strict reader with 28 running reviews
+and 31 completed decision turns: three starts, two Planner ends and 26 explicit
+queries. The two original Planner stop boundaries contain 563 and 123 controls;
+the last attempt ends at the original native episode horizon with 364 additional
+controls. All three independent base verdicts fail. The task remains failed with
+1,050 native controls, 23 learned inferences and 10,500 physics steps, and its
+Session closes with released resources. The final audit preserves actual failure,
+durable feedback consumption and two retained-scene retries.
+
 Multi-goal task completion requires its own retained native goal and verification
 records.
