@@ -423,21 +423,26 @@ export class UpperRun {
       });
     if (options.backend.subscribeFaults)
       this.unsubscribeFaults = options.backend.subscribeFaults((fault) => {
-        const request = this.currentRequest();
-        const execution = this.state.executions.find(
-          (candidate) => candidate.execution_id === fault.executionId,
-        );
-        if (
-          this.closed ||
-          !request ||
-          fault.taskScope.task_id !== this.state.id ||
-          fault.taskScope.goal_id !== request.goal_id ||
-          fault.taskScope.attempt_id !== request.attempt_id ||
-          fault.taskScope.recovery_id !== request.recovery_id ||
-          (execution && !isDeepStrictEqual(execution.task_scope, fault.taskScope))
-        )
-          throw new Error('Native backend fault differs from its admitted task scope.');
-        this.spawn(this.fail(new Error(`Native backend ${fault.type}: ${fault.message}`)));
+        try {
+          const request = this.currentRequest();
+          const execution = this.state.executions.find(
+            (candidate) => candidate.execution_id === fault.executionId,
+          );
+          if (
+            this.closed ||
+            !request ||
+            fault.taskScope.task_id !== this.state.id ||
+            fault.taskScope.goal_id !== request.goal_id ||
+            fault.taskScope.attempt_id !== request.attempt_id ||
+            fault.taskScope.recovery_id !== request.recovery_id ||
+            (execution && !isDeepStrictEqual(execution.task_scope, fault.taskScope))
+          )
+            throw new Error('Native backend fault differs from its admitted task scope.');
+          this.spawn(this.fail(new Error(`Native backend ${fault.type}: ${fault.message}`)));
+        } catch (error) {
+          this.spawn(this.fail(error));
+          throw error;
+        }
       });
   }
   snapshot(): RunState {
