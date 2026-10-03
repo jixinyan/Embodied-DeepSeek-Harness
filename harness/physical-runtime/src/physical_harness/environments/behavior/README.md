@@ -105,6 +105,21 @@ associated with the configured UUID. Existing NVIDIA profile files remain intact
 The original XML inventory, profile bytes/hash, process identity and normal
 profile release are retained. Forced process termination can leave that unique
 profile file; its recorded name and hash identify the owned file for cleanup.
+Managed transports supply `EDH_NVIDIA_PROFILE_OWNER_TOKEN` with a unique
+32-character lowercase hexadecimal token. Admission retains the actual native
+and parent PID/creation time, process group and session. After owned processes
+exit, the configured helper command can run:
+
+```sh
+python -m physical_harness.environments.nvidia_profile --release-owner \
+  --record-root /absolute/record/root --owner-token TRANSPORT_TOKEN
+```
+
+Cleanup selects only original records with that token and strict profile identity.
+It requires native PID, parent PID and process-group absence, then verifies the
+exact owned profile digest/content before removal. Its JSON receipt preserves
+the original absolute record-root argument. It does not confirm an SDK close or
+create a device boundary.
 The [NVIDIA driver documentation](https://download.nvidia.com/XFree86/Linux-x86_64/580.105.08/README/profiles.html)
 defines this setting and process matching. The official
 [Container Toolkit hook](https://github.com/NVIDIA/nvidia-container-toolkit/blob/v1.20.1/cmd/nvidia-cdi-hook/update-application-profile/update-application-profile.go)

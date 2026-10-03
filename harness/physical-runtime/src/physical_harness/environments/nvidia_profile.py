@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import argparse
 from contextlib import contextmanager
 from hashlib import sha256
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -18,7 +20,8 @@ DRIVER_REFERENCE = "https://download.nvidia.com/XFree86/Linux-x86_64/580.105.08/
 TOOLKIT_REFERENCE = "https://github.com/NVIDIA/nvidia-container-toolkit/blob/v1.20.1/cmd/nvidia-cdi-hook/update-application-profile/update-application-profile.go"
 
 
-def release_profile_after_exit(record_directory: Path, expected_pid: int, expected_create_time: float) -> dict:
+def release_profile_after_exit(record_directory: Path, expected_pid: int, expected_create_time: float,
+                               expected_owner_token: str | None = None) -> dict:
     import psutil
 
     metadata = json.loads((record_directory / "admission.json").read_text())
@@ -28,6 +31,8 @@ def release_profile_after_exit(record_directory: Path, expected_pid: int, expect
         raise RuntimeError("NVIDIA profile record directory differs from its exclusive process identity.")
     if metadata["pid"] != expected_pid or metadata["process_create_time"] != expected_create_time:
         raise RuntimeError("NVIDIA profile release differs from its recorded native process identity.")
+    if metadata.get("owner_token") != expected_owner_token:
+        raise RuntimeError("NVIDIA profile release differs from its transport ownership token.")
     if psutil.pid_exists(expected_pid):
         raise RuntimeError("NVIDIA profile release requires confirmed native process absence.")
     profile_file = Path(metadata["profile_file"])
@@ -52,6 +57,54 @@ def release_profile_after_exit(record_directory: Path, expected_pid: int, expect
     return result
 
 
+def release_owner_profiles(record_root: Path, owner_token: str) -> dict:
+    import psutil
+
+    if re.fullmatch(r"[0-9a-f]{32}", owner_token) is None:
+        raise ValueError("NVIDIA profile owner token must contain 32 lowercase hexadecimal characters.")
+    if not record_root.is_absolute() or not record_root.is_dir():
+        raise ValueError("NVIDIA profile cleanup requires an existing absolute record root.")
+    record_root_argument = str(record_root)
+    record_root = record_root.resolve(strict=True)
+    profiles = []
+    for directory in sorted(record_root.iterdir()):
+        if re.fullmatch(r"edh-[0-9a-f]{11}", directory.name) is None:
+            continue
+        if directory.is_symlink() or not directory.is_dir():
+            raise RuntimeError("NVIDIA profile admission records require an exclusive regular directory.")
+        admission_file = directory / "admission.json"
+        if admission_file.stat().st_size > 65536:
+            raise RuntimeError("NVIDIA profile admission record exceeds its byte limit.")
+        metadata = json.loads(admission_file.read_text())
+        if metadata.get("owner_token") != owner_token:
+            continue
+        if metadata["commname"] != directory.name:
+            raise RuntimeError("NVIDIA profile cleanup identity differs from its admission directory.")
+        for key in ("pid", "owner_pid", "owned_group_id", "native_session_id"):
+            if type(metadata[key]) is not int or metadata[key] <= 0:
+                raise RuntimeError("NVIDIA profile cleanup has an invalid original process identity.")
+        for key in ("process_create_time", "owner_create_time"):
+            if type(metadata[key]) not in (int, float) or not math.isfinite(metadata[key]) or metadata[key] <= 0:
+                raise RuntimeError("NVIDIA profile cleanup has an invalid original process creation time.")
+        if psutil.pid_exists(metadata["pid"]) or psutil.pid_exists(metadata["owner_pid"]):
+            raise RuntimeError("NVIDIA profile cleanup requires native and owner process absence.")
+        try:
+            os.killpg(metadata["owned_group_id"], 0)
+        except ProcessLookupError:
+            pass
+        else:
+            raise RuntimeError("NVIDIA profile cleanup requires original owned process-group absence.")
+        released = release_profile_after_exit(directory, metadata["pid"], metadata["process_create_time"], owner_token)
+        profiles.append({
+            "commname": metadata["commname"], "pid": metadata["pid"],
+            "process_create_time": metadata["process_create_time"], "owner_pid": metadata["owner_pid"],
+            "owner_create_time": metadata["owner_create_time"], "profile_sha256": metadata["profile_sha256"],
+            "native_process_absent": True, "owner_process_absent": True, "owned_group_absent": True,
+            "profile_removed": released["profile_removed"],
+        })
+    return {"owner_token": owner_token, "record_root": record_root_argument, "profiles": profiles}
+
+
 @contextmanager
 def owned_nvidia_profile():
     enabled = os.environ.get("EDH_NVIDIA_EGL_PROFILE", "0")
@@ -65,6 +118,9 @@ def owned_nvidia_profile():
     from setproctitle import getthreadtitle, setthreadtitle
     import psutil
 
+    owner_token = os.environ.get("EDH_NVIDIA_PROFILE_OWNER_TOKEN")
+    if owner_token is not None and re.fullmatch(r"[0-9a-f]{32}", owner_token) is None:
+        raise ValueError("NVIDIA profile owner token must contain 32 lowercase hexadecimal characters.")
     selected_uuid = os.environ["CUDA_VISIBLE_DEVICES"]
     if not selected_uuid.startswith("GPU-") or "," in selected_uuid:
         raise ValueError("NVIDIA application profiles require one complete CUDA-visible GPU UUID.")
@@ -96,8 +152,14 @@ def owned_nvidia_profile():
     record_directory.mkdir()
     (record_directory / "inventory.xml").write_bytes(inventory)
     previous_title = getthreadtitle()
+    process = psutil.Process()
+    owner = process.parent()
+    if owner is None:
+        raise RuntimeError("NVIDIA profile admission requires its actual native parent process.")
     metadata = {
-        "pid": os.getpid(), "process_create_time": psutil.Process().create_time(),
+        "pid": os.getpid(), "process_create_time": process.create_time(),
+        "owner_token": owner_token, "owner_pid": owner.pid, "owner_create_time": owner.create_time(),
+        "owned_group_id": os.getpgrp(), "native_session_id": os.getsid(0),
         "commname": identity, "previous_main_thread_title": previous_title,
         "gpu_uuid": selected_uuid, "device_minor": minor, "device_node": str(device_node),
         "egl_device_mask": 1 << minor, "profile_file": str(profile_file), "profile": profile,
@@ -135,3 +197,17 @@ def owned_nvidia_profile():
             "pid": os.getpid(), "commname": identity, "profile_sha256": metadata["profile_sha256"],
             "profile_removed": not profile_file.exists(), "released_monotonic_ns": monotonic_ns(),
         }, sort_keys=True, indent=2) + "\n")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--release-owner", action="store_true", required=True)
+    parser.add_argument("--record-root", type=Path, required=True)
+    parser.add_argument("--owner-token", required=True)
+    arguments = parser.parse_args()
+    result = release_owner_profiles(arguments.record_root, arguments.owner_token)
+    print(json.dumps(result, sort_keys=True))
+
+
+if __name__ == "__main__":
+    main()
