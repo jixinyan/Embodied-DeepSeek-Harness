@@ -12,13 +12,26 @@ attempt identity. TODO status includes the reporting member and completed count.
 
 The native v1 integration recordings are retained under
 `.local/work/v1-20261003/`, `.local/work/v1-robotwin-20261003/` and
-`.local/work/v1-robodojo-20261003-05/`.
+`.local/work/v1-robodojo-20261003-05/` and `.local/work/v1-robotwin-20261003-clean/`.
 
 | Recording                                 | Actual task result                                                                                                                                | Model and policy                   | Duration  | Source                                 |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | --------- | -------------------------------------- |
 | `robodojo-qwen-pi05-success-reviewed.mp4` | Native task success, independent formal success and released resources; one recorded plan-parameter error                                         | Qwen3.8-27B / Pi0.5                | 80.167 s  | `02475b82-b6b6-457f-8cf8-3199ef265bc6` |
 | `robotwin-qwen-pi05-retry-success.mp4`    | Independent SceneAnalyst, failed first attempt, accepted Planner retry, formal success and released resources; two recorded plan-parameter errors | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 340.167 s | `66ff9b47-9e2d-4514-904c-cd61c869b44c` |
 | `robodojo-qwen-pi05-clean-retry-success.mp4` | Failed first attempt, retained-scene retry, independent formal success, completed TODOs and released resources; zero tool errors | Qwen3.8-27B / Pi0.5 | 126.250 s | `897f215d-119f-4880-9030-1d9edeb9fabb` |
+| `robotwin-qwen-pi05-clean-team-retry-success.mp4` | Independent SceneAnalyst, explicit report acknowledgement, failed first attempt, retained-scene retry and formal success; zero tool errors and released resources | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 276.000 s | `a5d9132e-f4fb-438e-8c71-e81394cffd39` |
+
+The clean RoboTwin Team composite contains 773 original events, 26 model analysis
+events, 113 actual controls, eight identified learned inferences and 10,494 native
+physics steps. It retains 409 rollout frames and one initial observation per camera.
+The independent SceneAnalyst reports through the selected schema and Planner
+acknowledges that receipt. Attempt one completes 64 controls with a failed formal
+verdict; its retained-scene retry completes 49 controls with a passed formal verdict.
+All twelve owner TODOs complete, four assignments retire and resources release.
+Original learned inputs/actions, three typed plan writes and all six native videos
+pass source checks. The composite's 3,312 frames fully decode and pass text bounds.
+MP4 SHA-256:
+`112e9a6e736d499d3e43f80204df54e95a43a14dce5a122fe8a915771ef06eb8`.
 
 The clean RoboDojo composite includes 304 original events, 21 model analysis events,
 58 controls, four identified learned requests and 580 actual physics steps.

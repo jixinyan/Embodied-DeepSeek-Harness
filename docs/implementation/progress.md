@@ -115,6 +115,19 @@ service and UI lifecycle separately from physical task acceptance.
 
 ### Native custom-role RoboTwin task
 
+Clean run `a5d9132e-f4fb-438e-8c71-e81394cffd39` uses immutable source
+`871b29b`, strict Qwen tools, native RoboTwin and the identified Pi0.5 checkpoint.
+Planner, SceneAnalyst and two fresh Verifiers have four independent contexts.
+The original 773-event audit verifies explicit report/acknowledgement, 64-control
+failed execution and 49-control successful retained-scene retry, eight learned
+inferences and 10,494 physics steps. All twelve owner TODOs complete, all assignments
+retire and Session `c55621de` releases resources. Tool errors and post-terminal
+model steps are zero. Production-reader validation covers 528 sensor samples,
+409 native frame groups, all six camera videos and three typed plan writes.
+The original 742-file source inventory matches the immutable snapshot. Evidence:
+`.local/work/v1-robotwin-20261003-clean/audit.json`. The synchronized 276-second
+MP4 includes 26 model analysis events and passes complete decoding/source checks.
+
 Run `66ff9b47-9e2d-4514-904c-cd61c869b44c` uses native Qwen/Pi0.5 with
 independent Planner, SceneAnalyst and two fresh Verifiers. Its saved outcome is
 `succeeded`: attempt one ends after 64 controls with failed formal verification;
@@ -182,7 +195,7 @@ Verified source checkpoints:
   configuration, production Team/catalog and server startup checks pass.
 - `ec9ae85`: consistent structured planning workflows in provider role prompts.
 
-The remaining native gates include zero-tool-error custom-role RoboTwin planning,
+The remaining native gates include additional explicit-context role workflows,
 original build_tower stage progression, calibrated metrics across providers,
 native fault handling and the complete installed configuration matrix. Evolver
 remains paused; SceneState remains deferred.
