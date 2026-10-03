@@ -6,6 +6,14 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## 2026-10-03 native v1 integration
 
+### Current deployment GPU allocation
+
+EDH work on `jd_B300` is restricted to physical GPUs 2–4. Qwen remains on GPU 2;
+new learned-policy services select GPU 3 and native simulators select GPU 4.
+CUDA and graphics-renderer selections are checked separately. Completed records
+retain their original device identities. GPU selection belongs to deployment
+configuration and does not constrain the framework's portability.
+
 ### Native RoboCasa task success
 
 Qwen/GR00T `CloseDrawer` run `043520a2` completes the original native criterion
