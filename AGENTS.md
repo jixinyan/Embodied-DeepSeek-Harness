@@ -45,8 +45,10 @@ requirement or deployment binding is unclear.
 
 ## Public language
 
-- All repository-facing content must be in English: documentation, example role
-  prompts, configuration descriptions, diagrams/SVG text, comments and commit messages.
+- Documentation, example role prompts, configuration descriptions, diagrams/SVG
+  text, user-facing messages and commit messages must be in English.
+- Code comments use Chinese with English technical terms. Identifiers retain
+  their English names.
 - Internal conversation with the user may be in Chinese. Do not copy untranslated
   discussion notes into the repository. Translate diagrams and inspect their layout.
 

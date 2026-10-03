@@ -32,7 +32,7 @@ for await (const file of files('.')) {
     await access(path.join(path.dirname(file), 'README.md'));
     await access(path.join(path.dirname(file), p.main ?? 'src/index.ts'));
   }
-  if (/\.(?:md|svg|ya?ml|json|ts|mjs|py)$/.test(file)) {
+  if (/\.(?:md|svg|ya?ml|json)$/.test(file)) {
     const publicText = await readFile(file, 'utf8');
     assert(!/\p{Script=Han}/u.test(publicText), `Public content must be English: ${file}`);
   }
