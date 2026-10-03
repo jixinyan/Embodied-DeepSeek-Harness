@@ -126,6 +126,17 @@ def conventional_policy_sources(run, request_directory, service_log, policy_mani
                 require(action == [min(1, max(0, value)) if index in (6, 13) else value
                                    for index, value in enumerate(predicted)],
                         "RoboTwin gripper conversion changed its original model arm targets.")
+        if manifest["id"] == "gr00t-n1d6-behavior-r1pro" and "model_actions" in record:
+            raw = record["model_actions"]
+            require(record.get("native_action_conversion") == "omnigibson-r1pro-controller-clipping-v1" and
+                    len(raw) == 32 and len(actions) == min(request["max_actions"], 32),
+                    "BEHAVIOR model horizon or controller conversion differs from its native binding.")
+            for predicted, action in zip(raw[:len(actions)], actions, strict=True):
+                require(len(predicted) == 23 and all(type(value) in (int, float) and math.isfinite(value)
+                        for value in predicted), "BEHAVIOR original model action dimensions or values differ.")
+                require(action == [min(channel["maximum"], max(channel["minimum"], value))
+                                   for value, channel in zip(predicted, channels, strict=True)],
+                        "BEHAVIOR action differs from the original native controller limits.")
         requests[request_id] = request
     provenance = {"checkpointRevision": pinned["checkpoint_revision"], "checkpointPath": checkpoint_path,
                   "policyImplementationSource": implementation_source,
@@ -349,7 +360,7 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
                             if status["task_scope"] == assignment["brief"]["task_scope"]]
                 require(matching and matching[-1]["state"] == "ended" and
                         matching[-1]["device_confirmed"] and matching[-1]["stop_reason"] in
-                        {"policy_stop", "episode_terminated", "budget_exhausted"},
+                        {"policy_stop", "planner_stop", "episode_terminated", "budget_exhausted"},
                         "A Verifier was created during an unfinished execution.")
             assignments[assignment["id"]] = {**assignment, "createdSequence": sequence}
             sessions.add(assignment["sessionId"])
@@ -366,7 +377,7 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
         elif kind == "verification.requested":
             status = executions[detail["executionId"]]
             require(status["state"] == "ended" and status["device_confirmed"] and
-                    status["stop_reason"] in {"policy_stop", "episode_terminated", "budget_exhausted"},
+                    status["stop_reason"] in {"policy_stop", "planner_stop", "episode_terminated", "budget_exhausted"},
                     "Formal verification began without an eligible confirmed end boundary.")
             require(status["boundary_event_id"] == detail["boundaryId"], "Verification boundary changed.")
             assignment = assignments[detail["assignmentId"]]

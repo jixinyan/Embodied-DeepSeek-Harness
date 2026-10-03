@@ -40,7 +40,7 @@ async def main() -> None:
             raise RuntimeError("BEHAVIOR GR00T inference is already in progress.")
         started = monotonic()
         received_at = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
-        future = executor.submit(policy.infer, request)
+        future = executor.submit(policy.infer_with_record, request)
 
         def completed(result):
             admission.release()
@@ -54,7 +54,7 @@ async def main() -> None:
                 traceback.print_exception(error, file=sys.stderr)
 
         future.add_done_callback(completed)
-        actions = await asyncio.wrap_future(future)
+        actions, model_actions = await asyncio.wrap_future(future)
         print(json.dumps({
             "event": "policy_inference_completed",
             **identity,
@@ -68,6 +68,8 @@ async def main() -> None:
             "duration_s": monotonic() - started,
             "action_count": len(actions),
             "actions": actions,
+            "model_actions": model_actions,
+            "native_action_conversion": "omnigibson-r1pro-controller-clipping-v1",
         }), flush=True)
         return actions
 

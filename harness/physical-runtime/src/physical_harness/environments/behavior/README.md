@@ -133,3 +133,22 @@ required goal and conclude unsuccessful tasks through `tasks.abandon`.
 
 Original `picking_up_trash` success, a complete upper run without tool errors and
 additional task/scene/checkpoint combinations remain separate acceptance gates.
+
+Actual Qwen/GR00T run `c2f2a9e0-7322-4c1c-baba-9e2f52fbbe7c` admits the
+official 10,535-control human-demo horizon and executes 1,088 controls with 4,352
+physics steps. Its 137th request ends with a policy inference error and a confirmed
+`backend_error` boundary. No formal Verifier is admitted for that backend boundary.
+The Session closes with released resources and both native processes exit. Its
+original final task criterion remains unsettled. The exact failed input is retained;
+a separate real-checkpoint inference on that input reproduces an arm target beyond
+the native controller range. That inference establishes a current source diagnosis;
+the unsuccessful historical inference has no retained model output.
+
+The GR00T action converter applies the original OmniGibson R1Pro controller limits
+to normalized base/gripper commands and absolute arm/trunk targets before ActionGate
+admission. The official configuration uses absolute `JointController` position targets,
+and its `_update_goal` clips each target to the actual joint limits. Service inference
+records retain all 32 original model actions, the converted admitted prefix and its
+conversion identity. The recorded-run auditor verifies every admitted value against
+that precise clipping operation. Nonfinite outputs and incompatible controller mappings
+fail at their source. Native task success still uses the compiled BDDL criterion.

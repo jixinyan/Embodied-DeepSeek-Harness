@@ -179,6 +179,9 @@ class Gr00tN1d6Behavior:
             raise ValueError("Checkpoint has an incompatible BEHAVIOR instruction key.")
 
     def infer(self, request: dict[str, Any]) -> list[list[float]]:
+        return self.infer_with_record(request)[0]
+
+    def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
         _check_action_spec(request["action_spec"])
         observation = request["observation"]
         if observation.get("schema_version") != "edh.policy_observation.v1":
@@ -202,14 +205,12 @@ class Gr00tN1d6Behavior:
         if any(value.shape[0] != horizon for value in groups.values()):
             raise ValueError("GR00T returned inconsistent BEHAVIOR action horizons.")
         count = min(request["max_actions"], horizon)
-        native = np.concatenate([groups[key][:count] for key in ACTION_GROUPS], axis=1)
-        if native.shape != (count, 23) or not np.isfinite(native).all():
+        model_actions = np.concatenate([groups[key] for key in ACTION_GROUPS], axis=1)
+        if model_actions.shape != (horizon, 23) or not np.isfinite(model_actions).all():
             raise ValueError("GR00T returned invalid native BEHAVIOR actions.")
         channels = request["action_spec"]["channels"]
         lower = np.asarray([channel["minimum"] for channel in channels], dtype=np.float64)
         upper = np.asarray([channel["maximum"] for channel in channels], dtype=np.float64)
-        if np.any(native < lower) or np.any(native > upper):
-            row, channel = np.argwhere((native < lower) | (native > upper))[0]
-            raise ValueError(f"GR00T BEHAVIOR action {row} channel {channels[channel]['name']} "
-                             f"value {native[row, channel]} exceeds [{lower[channel]}, {upper[channel]}].")
-        return native.astype(np.float64).tolist()
+        # OmniGibson 对 normalized command 和 absolute joint target 应用原生 controller 范围。
+        native = np.clip(model_actions[:count], lower, upper)
+        return native.astype(np.float64).tolist(), model_actions.astype(np.float64).tolist()
