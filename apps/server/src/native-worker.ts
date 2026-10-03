@@ -445,6 +445,7 @@ class NativeWorkerTransport {
     if (message.event === 'fault') {
       if (!this.faultAdmission) throw new Error('Native worker fault has no admitted task port.');
       const publication = this.faultAdmission(message.data);
+      process.stderr.write(`Native worker fault: ${JSON.stringify(message.data)}\n`);
       this.disconnect(
         new Error(`Native worker ${publication.type}: ${publication.message}`),
         publication,
