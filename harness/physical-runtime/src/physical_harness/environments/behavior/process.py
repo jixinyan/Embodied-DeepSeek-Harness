@@ -245,7 +245,7 @@ def _native_state(environment, scene_id: str) -> dict:
     }
 
 
-def _serve(connection_fd: int) -> None:
+def _serve_native(connection_fd: int) -> None:
     from physical_harness.environments.behavior import BehaviorEnvironment
 
     faulthandler.enable()
@@ -300,6 +300,13 @@ def _serve(connection_fd: int) -> None:
         finally:
             signal.signal(signal.SIGUSR2, previous_handler)
             connection.close()
+
+
+def _serve(connection_fd: int) -> None:
+    from physical_harness.environments.nvidia_profile import owned_nvidia_profile
+
+    with owned_nvidia_profile():
+        _serve_native(connection_fd)
 
 
 def main() -> None:

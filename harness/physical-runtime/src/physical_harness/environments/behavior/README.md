@@ -95,8 +95,28 @@ Admission reads the actual index, UUID, PCI bus and device name through
 `nvidia-smi --query-gpu=index,uuid,pci.bus_id,name` and requires the two selections
 to identify the same device. Numeric CUDA visibility lists are not admitted.
 Exactly one CUDA-visible device is required; PyTorch uses logical device 0.
+Optional `EDH_NVIDIA_EGL_PROFILE=1` creates an exclusive NVIDIA application
+profile before native CUDA/Kit initialization. Install `setproctitle==1.3.7`
+through the `behavior-evaluation` extra and provide an existing
+`EDH_NVIDIA_PROFILE_RECORD_DIR`. The helper changes only the main thread's
+`commname`; the original command line remains available. Its profile matches
+that unique name and sets `EGLVisibleDGPUDevices` using the actual device minor
+associated with the configured UUID. Existing NVIDIA profile files remain intact.
+The original XML inventory, profile bytes/hash, process identity and normal
+profile release are retained. Forced process termination can leave that unique
+profile file; its recorded name and hash identify the owned file for cleanup.
+The [NVIDIA driver documentation](https://download.nvidia.com/XFree86/Linux-x86_64/580.105.08/README/profiles.html)
+defines this setting and process matching. The official
+[Container Toolkit hook](https://github.com/NVIDIA/nvidia-container-toolkit/blob/v1.20.1/cmd/nvidia-cdi-hook/update-application-profile/update-application-profile.go)
+uses the same setting for EGL/Vulkan device visibility.
+
+`EDH_NVIDIA_RENDERER_GPU_INDEX` explicitly selects the renderer enumeration
+index when graphics-device visibility is filtered. Its value and selection
+source are recorded alongside the physical UUID. Full native graphics and
+compute inspection must verify the actual renderer mapping before task
+submission. Source configuration alone does not establish device placement.
 The EDH bootstrap uses the public `SimulationApp` launch configuration with
-`active_gpu` set to the physical renderer index, `physics_gpu: 0`,
+`active_gpu` set to the admitted renderer index, `physics_gpu: 0`,
 `multi_gpu: false` and `max_gpu_count: 1` before application initialization.
 It then calls the original public `og.launch(device="cuda:0")` API before
 environment construction. Isaac SimulationContext configures the physics device
