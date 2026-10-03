@@ -5,6 +5,7 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
+import re
 import stat
 from subprocess import run
 from threading import current_thread, main_thread
@@ -21,6 +22,10 @@ def release_profile_after_exit(record_directory: Path, expected_pid: int, expect
     import psutil
 
     metadata = json.loads((record_directory / "admission.json").read_text())
+    if type(metadata["commname"]) is not str or re.fullmatch(r"edh-[0-9a-f]{11}", metadata["commname"]) is None:
+        raise RuntimeError("NVIDIA release metadata has an invalid owned process profile name.")
+    if record_directory.name != metadata["commname"]:
+        raise RuntimeError("NVIDIA profile record directory differs from its exclusive process identity.")
     if metadata["pid"] != expected_pid or metadata["process_create_time"] != expected_create_time:
         raise RuntimeError("NVIDIA profile release differs from its recorded native process identity.")
     if psutil.pid_exists(expected_pid):
@@ -100,6 +105,15 @@ def owned_nvidia_profile():
         "admitted_monotonic_ns": monotonic_ns(), "driver_reference": DRIVER_REFERENCE,
         "toolkit_reference": TOOLKIT_REFERENCE,
     }
+    with (record_directory / "admission.json").open("x") as output:
+        output.write(json.dumps(metadata, sort_keys=True, indent=2) + "\n")
+        output.flush()
+        os.fsync(output.fileno())
+    directory_fd = os.open(record_directory, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
     with profile_file.open("xb") as output:
         output.write(content)
         output.flush()
@@ -111,7 +125,6 @@ def owned_nvidia_profile():
             raise RuntimeError("Native main-thread commname differs from its exclusive NVIDIA profile.")
         os.environ["__GL_APPLICATION_PROFILE"] = "1"
         os.environ["__GL_APPLICATION_PROFILE_LOG"] = "1"
-        (record_directory / "admission.json").write_text(json.dumps(metadata, sort_keys=True, indent=2) + "\n")
         yield metadata
     finally:
         if profile_file.read_bytes() != content:
