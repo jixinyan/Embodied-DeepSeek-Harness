@@ -16,6 +16,18 @@ import { modelToolContractSchema } from '../apps/server/src/model-tool-schema.ts
 const validator = new ContractValidator(
   JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
 );
+const inventory = JSON.parse(
+  await readFile('harness/agent-runtime/tools/definitions/planned-tools.json', 'utf8'),
+);
+assert.equal(new Set(inventory.tools.map((tool) => tool.id)).size, inventory.tools.length);
+assert.deepEqual(
+  inventory.tools
+    .filter((tool) => tool.status !== 'not_implemented')
+    .map((tool) => tool.id)
+    .sort(),
+  [...CORE_TOOLS].sort(),
+  'Implemented inventory must match the production tool definitions.',
+);
 const configuration = await readModelConfiguration('examples/models/qwen38-vllm.yaml');
 const loader = new FileTeamLoader({
   validator,
