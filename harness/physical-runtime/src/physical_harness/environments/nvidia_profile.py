@@ -216,6 +216,7 @@ def owned_nvidia_profile():
             raise RuntimeError("Native main-thread commname differs from its exclusive NVIDIA profile.")
         os.environ["__GL_APPLICATION_PROFILE"] = "1"
         os.environ["__GL_APPLICATION_PROFILE_LOG"] = "1"
+        os.environ["EDH_NVIDIA_PROFILE_ADMISSION_FILE"] = str(record_directory / "admission.json")
         yield metadata
     finally:
         if profile_file.read_bytes() != content:
