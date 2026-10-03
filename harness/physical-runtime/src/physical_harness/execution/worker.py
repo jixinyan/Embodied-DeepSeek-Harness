@@ -138,12 +138,29 @@ class NativeWorkerSession:
         self._motion_lease: ResourceLease | None = None
         self._watchdog: ExecutionWatchdog | None = None
         self._watchdog_stop: asyncio.Task[None] | None = None
+        self._background_fault: Exception | None = None
 
     def revoke_lease(self) -> None:
         self._lease_active = False
         self._host_connected = False
         if self._device is not None and self._device.execution_id is not None:
             self._device.fence_execution(self._device.execution_id)
+
+    async def _guard_background(self, operation: Awaitable[None]) -> None:
+        try:
+            await operation
+        except Exception as error:
+            if self._background_fault is None:
+                self._background_fault = error
+                self.revoke_lease()
+                traceback.print_exception(error, file=sys.stderr)
+                await self._emit({"event": "fault", "data": {
+                    "execution_id": self._require_gate().snapshot()["execution_id"],
+                    "task_scope": gate_scope(self._request),
+                    "type": type(error).__name__,
+                    "message": str(error)[:1000] or type(error).__name__,
+                }})
+            raise
 
     def _execution_lease_valid(self) -> bool:
         return (self._host_connected and self._lease_active
@@ -465,7 +482,7 @@ class NativeWorkerSession:
 
             def expired(reason: str) -> None:
                 def schedule_stop() -> None:
-                    self._watchdog_stop = asyncio.create_task(self._watchdog_expired(gate, reason))
+                    self._watchdog_stop = asyncio.create_task(self._guard_background(self._watchdog_expired(gate, reason)))
                     self._watchdog_stop.add_done_callback(lambda task: None if task.cancelled() else task.exception())
                 loop.call_soon_threadsafe(schedule_stop)
 
@@ -487,7 +504,7 @@ class NativeWorkerSession:
             if not self._host_connected or not self._lease_active:
                 raise RuntimeError("Native task lease ended during capture.")
             publication = await self._publish(observation)
-            self._pump = asyncio.create_task(self._run_policy())
+            self._pump = asyncio.create_task(self._guard_background(self._run_policy()))
             return publication
 
     async def _run_policy(self) -> None:
@@ -755,7 +772,7 @@ class NativeWorkerSession:
             self._policy.event_handler = self._policy_event
             observation = await self._require_device().on_owner(self._environment.observe)
             publication = await self._publish(observation)
-            self._pump = asyncio.create_task(self._run_policy())
+            self._pump = asyncio.create_task(self._guard_background(self._run_policy()))
             return publication
 
     def _check_boundary(self, arguments: dict[str, Any], *, require_state_version: bool = False) -> None:

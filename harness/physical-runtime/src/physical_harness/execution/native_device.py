@@ -31,16 +31,20 @@ class NativeActionDevice:
         self._executed_actions = 0
         self._uncertain_actions = 0
         self._last_step: NativeStep | None = None
+        self._owner_operations: set[asyncio.Future] = set()
+        self._cancelled_operations: set[asyncio.Future] = set()
 
     async def on_owner(self, action: Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
         if self._closed:
             raise RuntimeError("Native simulation owner is closed.")
         operation = asyncio.get_running_loop().run_in_executor(self._executor, partial(action, *args, **kwargs))
+        self._owner_operations.add(operation)
+        operation.add_done_callback(self._owner_operations.discard)
         try:
             return await asyncio.shield(operation)
         except asyncio.CancelledError:
-            # 等待所属线程结束操作，之后才能释放物理资源。
-            await asyncio.shield(operation)
+            # 调用方按原有期限退出；所属线程的操作仍由设备负责确认和关闭。
+            self._cancelled_operations.add(operation)
             raise
 
     @property
@@ -105,6 +109,14 @@ class NativeActionDevice:
                 raise RuntimeError("Native action generation is no longer admitted.")
         if len(segment["actions"]) != 1:
             raise ValueError("Native simulation device commits one control action per segment.")
+        uncertain = False
+
+        def mark_uncertain() -> None:
+            nonlocal uncertain
+            with self._lock:
+                if not uncertain:
+                    self._uncertain_actions += 1
+                    uncertain = True
 
         def execute() -> NativeStep:
             if self._should_stop(execution_id, generation):
@@ -115,27 +127,22 @@ class NativeActionDevice:
                     lambda: self._should_stop(execution_id, generation),
                 )
             except BaseException:
-                with self._lock:
-                    self._uncertain_actions += 1
+                mark_uncertain()
                 raise
             if step.executed_actions not in (0, 1) or step.raw_sim_steps < 0:
-                with self._lock:
-                    self._uncertain_actions += 1
+                mark_uncertain()
                 raise RuntimeError("Native simulator returned an invalid action receipt.")
             if step.executed_actions == 0 and (step.action_completed or step.raw_sim_steps != 0):
-                with self._lock:
-                    self._uncertain_actions += 1
+                mark_uncertain()
                 raise RuntimeError("Native simulator reported motion without an admitted action.")
             if step.interruption_reason is not None and step.interruption_reason != "recording_capacity_exhausted":
-                with self._lock:
-                    self._uncertain_actions += 1
+                mark_uncertain()
                 raise RuntimeError("Native simulator returned an unsupported interruption reason.")
             if step.executed_actions == 1 and not step.action_completed and not (
                 self._should_stop(execution_id, generation)
                 or step.interruption_reason == "recording_capacity_exhausted"
             ):
-                with self._lock:
-                    self._uncertain_actions += 1
+                mark_uncertain()
                 raise RuntimeError("Native action stopped early without a matching stop request.")
             with self._lock:
                 self._last_step = step
@@ -143,7 +150,12 @@ class NativeActionDevice:
                 self._raw_sim_steps += step.raw_sim_steps
             return step
 
-        step = await self.on_owner(execute)
+        try:
+            step = await self.on_owner(execute)
+        except BaseException:
+            mark_uncertain()
+            self.fence_execution(execution_id)
+            raise
         return {
             "schema_version": "physical.action_receipt.v1",
             "execution_id": segment["execution_id"],
@@ -209,9 +221,20 @@ class NativeActionDevice:
             if self._closed:
                 return
             self._stopped = True
+        errors: list[BaseException] = []
         try:
             await self.on_owner(self.environment.close)
+        except BaseException as error:
+            errors.append(error)
         finally:
             with self._lock:
                 self._closed = True
             await asyncio.to_thread(self._executor.shutdown, True)
+            for operation in self._cancelled_operations:
+                try:
+                    operation.result()
+                except BaseException as error:
+                    errors.append(error)
+            self._cancelled_operations.clear()
+        if errors:
+            raise BaseExceptionGroup("Native owner close failed.", errors)
