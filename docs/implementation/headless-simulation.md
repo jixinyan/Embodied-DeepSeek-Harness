@@ -52,6 +52,18 @@ requires the worker-local video journal, matching executed segments, decoded fra
 counts and native MP4 timestamps. It fully decodes every camera video with FFmpeg.
 Success acceptance still requires independent formal verification and Planner finish.
 
+A retained RoboDojo episode can end before a subsequent execution issues any
+controls. With `--robodojo-episode-root`, the audit admits its original empty video
+journal only when the same task contains a prior actual terminal action receipt,
+the fresh native terminal query occurs during the new execution, and the retained
+episode, physics counter, simulator time, NPZ hash and formal-check camera identities
+remain unchanged. The new execution must have zero controls, inference calls and
+physics steps, a new confirmed `episode_terminated` boundary and independent formal
+verification. The report records these executions separately under
+`retainedTerminalExecutions`. Every execution that issued controls retains complete
+learned-action and decoded-video checks. This admission preserves the current
+native success value; an exhausted unsuccessful episode remains unsuccessful.
+
 For an actual completed run, transfer the worker's execution directories and retain
 the policy log, requests and native sensor samples. Export and render with:
 

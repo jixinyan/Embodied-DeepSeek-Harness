@@ -1,5 +1,5 @@
 import argparse
-from datetime import datetime
+from datetime import datetime, timedelta
 from hashlib import sha256
 import json
 import math
@@ -14,7 +14,137 @@ def require(condition, message):
         raise ValueError(message)
 
 
-def audit_native_videos(run, directory):
+def audit_retained_terminal_executions(run, events, samples, request_directory, episode_root, schema_path):
+    selected = [status for status in run["executions"] if status["control_steps"] == 0]
+    if not selected:
+        return []
+    require(all(value is not None for value in (samples, request_directory, episode_root, schema_path)),
+            "Zero-control terminal admission requires original native samples, requests and episode sources.")
+    from physical_harness.environments.robodojo.audit import audit_native_physics
+    validator = ContractValidator.from_path(schema_path)
+    sample_by_sequence = {sample["sequence"]: sample for sample in samples}
+    require(len(sample_by_sequence) == len(samples), "Native sample identities are duplicated.")
+    zero_ids = {status["execution_id"] for status in selected}
+    for path in request_directory.rglob("*.json"):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        identity = record.get("execution_id", record.get("segment", {}).get("execution_id"))
+        require(identity not in zero_ids, "An already-ended execution issued a policy request or native action.")
+    reports = []
+    previous = None
+    retained_native = None
+    retained_images = None
+    for status in run["executions"]:
+        validator.parse("ExecutionStatus", status)
+        if status["control_steps"] and status["stop_reason"] != "episode_terminated":
+            previous, retained_native, retained_images = status, None, None
+            continue
+        updates = [event for event in events if event["type"] == "execution.updated"
+                   and event["detail"]["execution"]["execution_id"] == status["execution_id"]]
+        require(updates and updates[-1]["detail"]["execution"] == status,
+                "Execution export differs from its final original event.")
+        final_sample = sample_by_sequence[updates[-1]["detail"]["sensorSequence"]]
+        validator.parse("EvidenceRef", final_sample["evidence"])
+        require(final_sample["source"] == run["source"] and
+                final_sample["evidence"]["task_scope"] == status["task_scope"] and
+                final_sample["evidence"]["id"] in status["observation_refs"] and
+                final_sample["visualization"]["provider"] == "robodojo" and final_sample["images"],
+                "Retained terminal admission requires identified original native boundary cameras.")
+        images = {image["name"]: image for image in final_sample["images"]}
+        require(len(images) == len(final_sample["images"]) == 3,
+                "Retained RoboDojo boundary requires all three distinct native cameras.")
+        if status["control_steps"]:
+            metadata = final_sample["visualization"]
+            receipt_path = request_directory / status["execution_id"] / metadata["policyRequestId"] / (
+                metadata["segmentId"] + ".json")
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            validator.parse("ActionSegment", receipt["segment"])
+            validator.parse("ActionReceipt", receipt["receipt"])
+            require(receipt["schema_version"] == "edh.native_policy_receipt.v1" and
+                    receipt["segment"]["execution_id"] == status["execution_id"] and
+                    receipt["segment"]["task_scope"] == status["task_scope"] and
+                    receipt["control_index"] == status["control_steps"] and
+                    receipt["uncertain_actions"] == 0 and receipt["native_step"]["episode_terminated"] is True and
+                    status["state"] == "ended" and status["device_confirmed"] and
+                    status["stop_reason"] == "episode_terminated",
+                    "Zero-control admission requires a prior actual native terminal action receipt.")
+            retained_native = receipt["native_step"]["native_physics"]
+            native_source = audit_native_physics(episode_root, retained_native, receipt["segment"]["actions"][0],
+                                               receipt["native_step"]["raw_sim_steps"])
+            retained_images = images
+            previous = status
+            continue
+        require(previous is not None and retained_native is not None and status["state"] == "ended" and
+                status["device_confirmed"] is True and status["stop_reason"] == "episode_terminated" and
+                status["policy_calls"] == status["raw_sim_steps"] == 0 and status["state_version"] == 1 and
+                len(updates) == 1 and status["boundary_event_id"] != previous["boundary_event_id"] and
+                status["clock_id"] == previous["clock_id"] and status["task_scope"] != previous["task_scope"] and
+                images == retained_images,
+                "Already-ended execution must publish a fresh zero-action boundary over unchanged native cameras.")
+        candidates = [path for path in episode_root.rglob(retained_native["episode_id"]) if path.is_dir()]
+        require(len(candidates) == 1, "Retained terminal native episode source is ambiguous.")
+        episode = candidates[0]
+        summary_path, reset_path = episode.parent / "summary.json", episode.parent / "reset.json"
+        summary, reset = (json.loads(path.read_text(encoding="utf-8")) for path in (summary_path, reset_path))
+        require(summary["episode_id"] == reset["episode_id"] == retained_native["episode_id"] and
+                reset["step_id"] == 0 and summary["step_id"] == retained_native["step_id"] and
+                summary["complete"] is True and summary["valid_for_success_rate"] is True and
+                (summary["terminated"] is True or summary["truncated"] is True) and
+                sum(item["control_steps"] for item in run["executions"]) == summary["step_id"],
+                "Closed retained episode contains a reset or additional unidentified controls.")
+        require([path.name for path in sorted(episode.glob("action_*.json"))] ==
+                [f"action_{index:06d}.json" for index in range(summary["step_id"])],
+                "Retained native action history contains a missing or additional control.")
+        statuses = []
+        last_monotonic = -1
+        for position, path in enumerate(sorted(episode.glob("episode_status_*.json"))):
+            record = json.loads(path.read_text(encoding="utf-8"))
+            require(path.name == f"episode_status_{position:06d}.json" and
+                    record["schema_version"] == "edh.robodojo.episode_status.v1" and
+                    record["audit_position"] == position and record["episode_id"] == retained_native["episode_id"] and
+                    type(record["monotonic_ns"]) is int and record["monotonic_ns"] > last_monotonic and
+                    record["physical_steps"] == 0 and
+                    record["native_physics_step_before"] == record["native_physics_step_after"] and
+                    record["simulation_time_before_s"] == record["simulation_time_after_s"],
+                    "Original native terminal status history changed identity, counters or time.")
+            last_monotonic = record["monotonic_ns"]
+            instant = datetime.fromisoformat(record["recorded_at"].replace("Z", "+00:00"))
+            end_time = datetime.fromisoformat(status["recorded_at"].replace("Z", "+00:00"))
+            if not end_time - timedelta(seconds=status["elapsed_wall_time_s"]) <= instant <= end_time:
+                continue
+            observation = episode / "observations" / f"{summary['step_id']:06d}.npz"
+            require(record["step_id"] == record["native_control_counter"] == summary["step_id"] and
+                    record["native_end_flag"] is True and
+                    (record["terminated"] is True or record["truncated"] is True) and
+                    record["truncated"] == (record["native_control_counter"] >= record["native_step_limit"]) and
+                    all(record[key] == summary[key] for key in ("terminated", "truncated", "success")) and
+                    record["native_success_flag"] == summary["native_success"] and
+                    record["native_physics_step_after"] == retained_native["native_physics_step_after"] and
+                    record["simulation_time_after_s"] == retained_native["simulation_time_s"] and
+                    record["physics_count_source"] == retained_native["physics_count_source"] and
+                    record["physics_timestep_s"] == retained_native["physics_timestep_s"] and
+                    record["observation_sha256"] == sha256(observation.read_bytes()).hexdigest() and
+                    (episode.parent / record["observation_path"]).resolve() == observation.resolve() and
+                    record["physics_provenance_sha256"] == native_source["physicsProvenanceSha256"],
+                    "Fresh terminal preflight differs from the retained actual native episode.")
+            statuses.append({"path": str(path), "sha256": sha256(path.read_bytes()).hexdigest()})
+        require(statuses, "Zero-control boundary has no fresh native terminal preflight record.")
+        checks = [event["detail"] for event in events if event["type"] == "verification.checked" and
+                  event["detail"]["evidence"]["task_scope"] == status["task_scope"]]
+        require(len(checks) == 1, "Already-ended execution requires one fresh independent formal native check.")
+        checked_sample = next(sample for sample in samples if sample["evidence"]["id"] == checks[0]["evidence"]["id"])
+        require({image["name"]: image for image in checked_sample["images"]} == retained_images,
+                "Fresh formal check changed the retained native terminal observation.")
+        reports.append({"executionId": status["execution_id"], "boundaryId": status["boundary_event_id"],
+                        "actualControls": 0, "policyCalls": 0, "nativePhysicsSteps": 0,
+                        "nativeSource": native_source, "nativeStatusRecords": statuses,
+                        "summarySha256": sha256(summary_path.read_bytes()).hexdigest(),
+                        "resetSha256": sha256(reset_path.read_bytes()).hexdigest(),
+                        "currentNativeSuccess": summary["native_success"], "retainedCameraIdentity": True})
+        previous = status
+    return reports
+
+
+def audit_native_videos(run, directory, retained_terminal_ids):
     frames = {}
     videos = []
     for status in run["executions"]:
@@ -22,6 +152,12 @@ def audit_native_videos(run, directory):
         recording = directory / execution_id
         manifest = json.loads((recording / "manifest.json").read_text(encoding="utf-8"))
         journal = [json.loads(line) for line in (recording / "frames.jsonl").read_text(encoding="utf-8").splitlines()]
+        if execution_id in retained_terminal_ids:
+            require(not journal and manifest == {"frames": 0, "cameras": [], "timeline": "native simulation time",
+                    "origin_simulation_time_s": None, "last_simulation_time_s": -1.0} and
+                    not list(recording.glob("*.mp4")),
+                    "Authentic zero-control terminal execution must retain its original empty video journal.")
+            continue
         require(journal and len(journal) == manifest["frames"] and manifest["cameras"] and
                 manifest["timeline"] == "native simulation time", "Native video manifest lacks its complete frame journal.")
         origin = journal[0]["simulation_time_s"]
@@ -520,7 +656,10 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
             require(result["status"] == "passed", "Task completion requires formal success.")
     require(len(requests) == len(verdicts), "An admitted formal verification has no verdict.")
     learned = None
-    native_frames, videos = audit_native_videos(run, simulation_videos) if simulation_videos else (None, [])
+    retained_terminals = (audit_retained_terminal_executions(
+        run, events, samples, request_directory, robodojo_episode_root, schema_path) if simulation_videos else [])
+    native_frames, videos = audit_native_videos(run, simulation_videos, {
+        item["executionId"] for item in retained_terminals}) if simulation_videos else (None, [])
     if run["state"] == "succeeded":
         require(any(event["type"] == "run.succeeded" for event in events), "No successful task event exists.")
         require(controls > 0 and (frames > 0 or native_frames), "Success requires real controls and native frames.")
@@ -546,6 +685,7 @@ def audit(run, events, *, samples=None, request_directory=None, service_log=None
             "runningPlannerReviews": running_review_count, "terminalReviewRequests": len(terminal_reviews),
             "workerRecordedFrames": sum(len(group) for group in native_frames.values()) if native_frames else 0,
             "workerVideos": videos,
+            "retainedTerminalExecutions": retained_terminals,
             "recoveryChains": len(recoveries), "observedInvariants": "passed",
             "unobservedRecovery": not bool(recoveries), "learnedPolicy": learned}
 
