@@ -166,6 +166,10 @@ class BehaviorProcessEnvironment:
     def observe(self) -> NativeObservation:
         return self._rpc("observe")
 
+    def measure_object(self, observation_id: str, camera: str, source_image_sha256: str,
+                       mask_png: bytes) -> dict[str, object]:
+        return self._rpc("measure_object", observation_id, camera, source_image_sha256, mask_png)
+
     def step(
         self,
         action: Sequence[float],
@@ -271,7 +275,7 @@ def _serve(connection_fd: int) -> None:
                     result = environment.rotate_view(args[0], args[1], cancellation.is_set)
                 elif operation == "native_state":
                     result = _native_state(environment, scene_id)
-                elif operation in ("reset", "bind_task", "observe", "describe", "check", "turn_view", "close"):
+                elif operation in ("reset", "bind_task", "observe", "describe", "check", "turn_view", "measure_object", "close"):
                     result = getattr(environment, operation)(*args)
                 else:
                     raise ValueError(f"Unsupported BEHAVIOR native operation: {operation}")

@@ -20,6 +20,7 @@ import yaml
 
 from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeStep
 from physical_harness.environments.task_catalog import robotwin_task_selection
+from physical_harness.perception.metric_capture import MetricCapture
 from physical_harness.validation import ContractValidator
 
 
@@ -75,6 +76,7 @@ class RoboTwinEnvironment:
         self._ray_tracing_denoiser = "none"
         self._task_config = "demo_clean"
         self._task_instruction: str | None = None
+        self._metric_capture = MetricCapture("robotwin", "robotwin.sapien.world")
 
     def _require_env(self):
         if self._env is None:
@@ -154,6 +156,7 @@ class RoboTwinEnvironment:
         selected["camera"] = dict(selected["camera"])
         selected["camera"]["head_camera_type"] = "Large_D435"
         selected["camera"]["wrist_camera_type"] = "Large_D435"
+        selected["data_type"] = dict(selected["data_type"], depth=True)
         selected["render_freq"] = 0
         selected["collect_data"] = False
         selected["eval_video_log"] = False
@@ -191,7 +194,27 @@ class RoboTwinEnvironment:
         if not isinstance(vector, np.ndarray) or vector.shape != (14,) or not np.isfinite(vector).all():
             raise RuntimeError("RoboTwin joint_action.vector is not a finite 14-value array.")
         state = {"joint_action.vector": tuple(float(value) for value in vector)}
-        return NativeObservation(str(uuid4()), observed_at, observed_monotonic, images, state)
+        observation = NativeObservation(str(uuid4()), observed_at, observed_monotonic, images, state)
+        native_cameras = dict(zip(self._require_env().cameras.static_camera_name,
+                                  self._require_env().cameras.static_camera_list))
+        native_cameras.update(left_camera=self._env.cameras.left_camera, right_camera=self._env.cameras.right_camera)
+        frames = {}
+        for camera in CAMERA_NAMES:
+            frame = camera_data[camera]
+            frames[camera] = {
+                "axial_depth_m": np.asarray(frame["depth"] / 1000.0, dtype=np.float32),
+                "intrinsic_matrix": frame["intrinsic_cv"],
+                "camera_to_world": np.linalg.inv(np.vstack((frame["extrinsic_cv"], [0, 0, 0, 1]))),
+                "near_m": float(native_cameras[camera].near),
+                "far_m": float(native_cameras[camera].far),
+            }
+        self._metric_capture.replace(observation, self._controlled_physics_steps / 250, frames)
+        return observation
+
+    def measure_object(self, observation_id: str, camera: str, source_image_sha256: str,
+                       mask_png: bytes) -> dict[str, object]:
+        self._require_env()
+        return self._metric_capture.measure(observation_id, camera, source_image_sha256, mask_png)
 
     def reset(self, task_id: str, configuration: Mapping[str, object]) -> NativeObservation:
         if self._env is not None:

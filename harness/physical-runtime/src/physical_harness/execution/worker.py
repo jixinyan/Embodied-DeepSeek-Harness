@@ -80,6 +80,7 @@ def record_policy_control(segment: dict[str, Any], receipt: dict[str, Any], devi
                 "episode_terminated": step.episode_terminated,
                 "interruption_reason": step.interruption_reason,
                 "observation_id": step.observation.observation_id,
+                "native_physics": step.native_physics,
             },
         }, output, allow_nan=False, separators=(",", ":"))
         output.write("\n")
@@ -348,7 +349,7 @@ class NativeWorkerSession:
             "clock_id": self._clock_id,
             "policy_id": self._policy_id,
             "execution_mode": self._execution_mode.value,
-            "supports_object_measurement": self._provider == "robocasa",
+            "supports_object_measurement": callable(getattr(self._environment, "measure_object", None)),
         }
 
     async def start(self, arguments: dict[str, Any]) -> dict[str, Any]:
@@ -781,7 +782,7 @@ class NativeWorkerSession:
         observation = await self._require_device().on_owner(self._environment.observe)
         if run_task_id != self._run_task_id or not self._host_connected:
             raise RuntimeError("Native task identity changed during capture.")
-        if self._provider == "robocasa":
+        if callable(getattr(self._environment, "measure_object", None)):
             self._measurement_observation = observation
             device = self._require_device()
             self._measurement_control_counts = (device.executed_actions, device.raw_sim_steps)
@@ -789,7 +790,7 @@ class NativeWorkerSession:
 
     async def measure_object(self, arguments: dict[str, Any]) -> dict[str, Any]:
         async with self._control_lock:
-            if self._provider != "robocasa":
+            if not callable(getattr(self._environment, "measure_object", None)):
                 raise ValueError("Native provider does not support object measurement.")
             run_task_id = self._run_task_id
             if run_task_id is None or arguments["run_task_id"] != run_task_id or not self._host_connected:

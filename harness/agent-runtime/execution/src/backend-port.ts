@@ -86,8 +86,12 @@ export interface BackendObjectMeasurementInput {
   maskPngBase64: string;
 }
 export interface BackendObjectMeasurement {
-  provider: 'robocasa';
-  source: 'robocasa-native-rgbd';
+  provider: 'robocasa' | 'robotwin' | 'behavior' | 'robodojo';
+  source:
+    | 'robocasa-native-rgbd'
+    | 'robotwin-native-rgbd'
+    | 'behavior-native-rgbd'
+    | 'robodojo-native-rgbd';
   measurementKind: 'simulator_metric_depth';
   unit: 'meter';
   distanceFrame: 'camera_axial_depth';

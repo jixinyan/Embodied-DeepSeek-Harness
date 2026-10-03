@@ -6,6 +6,7 @@ from uuid import uuid4
 import imageio.v2 as imageio
 import numpy as np
 from PIL import Image
+from isaacsim.core.utils.stage import get_stage_units
 
 from . import CAMERA_NAMES
 from .geometry import array, ground_pixel, organized_cloud, pose, transform
@@ -43,6 +44,8 @@ def register_native_evaluation(env):
 
 class RoboDojoSession:
     def __init__(self, env, output, task):
+        if get_stage_units() != 1.0:
+            raise ValueError("RoboDojo metric measurements require a meter-based native stage.")
         self.env, self.output = env, Path(output)
         self.output.mkdir(parents=True, exist_ok=False)
         self.episode_id, self.step_id = None, 0
@@ -55,6 +58,8 @@ class RoboDojoSession:
             "task": task, "instruction": task, "simulator": "RoboDojo",
             "service": "EDH", "robot_adapter": "dual_arx_x5",
             "control_dt": 1 / env.obs_manager.collect_freq,
+            "physics_timestep_s": float(env.sim.sim.get_physics_dt()),
+            "physics_count_source": "isaac_simulation_context.current_time_step_index",
             "max_episode_steps": int(env.step_lim), "action_dim": 14, "action_horizon": 150,
             "frame": "environment_origin", "eef_link": "link6", "no_rollback": True,
             "supports_fk_preview": True, "supports_grounding": True,
@@ -90,6 +95,17 @@ class RoboDojoSession:
             depths[camera] = depth.copy()
         self.depths = depths
         native_names = self.env.camera_manager.camera_names[0]
+        metric_frames = {}
+        for name, native_name in names.items():
+            sensor = self.env.camera_manager.cameras[0][native_names.index(native_name)]
+            position, quaternion = sensor.get_world_pose(camera_axes="usd")
+            near, far = sensor.get_clipping_range()
+            metric_frames[name] = {
+                "axial_depth_m": np.asarray(depths[name], dtype=np.float32),
+                "intrinsic_matrix": array(sensor.get_intrinsics_matrix()),
+                "camera_to_world": transform(position, quaternion) @ np.diag([1.0, -1.0, -1.0, 1.0]),
+                "near_m": float(near), "far_m": float(far),
+            }
         camera = self.env.camera_manager.cameras[0][native_names.index(names["cam_high"])]
         position, quaternion = camera.get_world_pose(camera_axes="usd")
         self.head_cloud = organized_cloud(depths["cam_high"], camera.get_intrinsics_matrix(),
@@ -106,12 +122,17 @@ class RoboDojoSession:
         self.obs = {**images, "states": states, "eef_positions": poses[:, :3],
                     "eef_quaternions_wxyz": poses[:, 3:], "eef_base_poses": np.asarray(base_poses),
                     "instruction": raw["instruction"],
+                    "metric_frames": metric_frames,
+                    "simulation_time_s": float(self.env.sim.sim.current_time),
                     "remaining_steps": max(0, self.metadata["max_episode_steps"] - self.step_id)}
         if record:
             directory = self.episode_dir / "observations"
             directory.mkdir(exist_ok=True)
-            np.savez_compressed(directory / f"{self.step_id:06d}.npz", **self.obs,
-                                **{f"{key}_depth": value for key, value in depths.items()})
+            np.savez_compressed(directory / f"{self.step_id:06d}.npz",
+                                **{key: value for key, value in self.obs.items() if key != "metric_frames"},
+                                **{f"{key}_depth": value for key, value in depths.items()},
+                                **{f"{camera}_{key}": frame[key] for camera, frame in metric_frames.items()
+                                   for key in ("intrinsic_matrix", "camera_to_world", "near_m", "far_m")})
             if self.video_writer is None:
                 self.video_writer = imageio.get_writer(
                     str(self.output / "sensors.mp4"), fps=1 / self.metadata["control_dt"],
@@ -200,7 +221,12 @@ class RoboDojoSession:
                        for key, value in ((f"{arm}_arm_joint_state", action[offset:offset + 6]),
                                           (f"{arm}_ee_joint_state", action[offset + 6:offset + 7]))}
             before = int(self.env.take_action_cnt[0])
+            physics_before = int(self.env.sim.sim.current_time_step_index)
             self.env.take_action(command)
+            physics_after = int(self.env.sim.sim.current_time_step_index)
+            raw_sim_steps = physics_after - physics_before
+            if raw_sim_steps <= 0:
+                raise RuntimeError("An admitted native action must advance the actual physics counter.")
             if int(self.env.take_action_cnt[0]) != before + 1:
                 raise RuntimeError("The native simulator must execute exactly one admitted action.")
             self.step_id += 1
@@ -213,6 +239,11 @@ class RoboDojoSession:
                    "obs": {"states": observation["states"]}, "step_id": self.step_id,
                    "terminated": self.terminated, "truncated": self.truncated, "success": self.success,
                    "source": self.source, "control_epoch": self.control_epoch}
+            row.update(raw_sim_steps=raw_sim_steps, native_physics_step_before=physics_before,
+                       native_physics_step_after=physics_after,
+                       simulation_time_s=float(self.env.sim.sim.current_time),
+                       physics_timestep_s=self.metadata["physics_timestep_s"])
+            row.update(episode_id=self.episode_id, physics_count_source=self.metadata["physics_count_source"])
             write_json(self.episode_dir / f"action_{self.step_id - 1:06d}.json",
                        {**row, "executed_action": action.tolist(), "obs": {"states": observation["states"].tolist()}})
             rows.append(row)

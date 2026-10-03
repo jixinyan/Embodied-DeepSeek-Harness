@@ -105,20 +105,30 @@ function metricMatrix(value: unknown, size: number): number[][] {
 function objectMeasurement(
   value: unknown,
   input: BackendObjectMeasurementInput,
+  provider: string,
 ): BackendObjectMeasurement {
   const result = object(value);
   const intrinsics = object(result.intrinsics);
+  const worldFrames = {
+    robocasa: 'robocasa.mujoco.world',
+    robotwin: 'robotwin.sapien.world',
+    behavior: 'behavior.omnigibson.world',
+    robodojo: 'robodojo.isaac.world',
+  } as const;
+  if (!(provider in worldFrames)) throw new Error('Native metric provider is unsupported.');
+  const metricProvider = provider as BackendObjectMeasurement['provider'];
+  const source = `${metricProvider}-native-rgbd` as BackendObjectMeasurement['source'];
   if (
-    result.provider !== 'robocasa' ||
-    result.source !== 'robocasa-native-rgbd' ||
+    result.provider !== metricProvider ||
+    result.source !== source ||
     result.measurement_kind !== 'simulator_metric_depth' ||
     result.unit !== 'meter' ||
     result.distance_frame !== 'camera_axial_depth' ||
     result.centroid_kind !== 'mean_of_visible_valid_surface_points' ||
     result.observation_id !== input.observationId ||
     result.camera !== input.camera ||
-    result.camera_frame !== `robocasa.${input.camera}.optical` ||
-    result.world_frame !== 'robocasa.mujoco.world' ||
+    result.camera_frame !== `${metricProvider}.${input.camera}.optical` ||
+    result.world_frame !== worldFrames[metricProvider] ||
     result.source_image_sha256 !== input.sourceImageSha256 ||
     result.mask_png_sha256 !==
       createHash('sha256').update(Buffer.from(input.maskPngBase64, 'base64')).digest('hex') ||
@@ -126,8 +136,8 @@ function objectMeasurement(
   )
     throw new Error('Native object measurement source or coordinate identity is invalid.');
   const measurement: BackendObjectMeasurement = {
-    provider: 'robocasa',
-    source: 'robocasa-native-rgbd',
+    provider: metricProvider,
+    source,
     measurementKind: 'simulator_metric_depth',
     unit: 'meter',
     distanceFrame: 'camera_axial_depth',
@@ -507,7 +517,7 @@ class NativeTaskBackend implements EmbodiedBackend {
     private readonly onClose: () => void,
   ) {
     if (supportsObjectMeasurement) {
-      if (this.provider !== 'robocasa')
+      if (!['robocasa', 'robotwin', 'behavior', 'robodojo'].includes(this.provider))
         throw new Error('Native provider advertised unsupported object measurement.');
       this.measureObject = async (input, options) => {
         options?.signal?.throwIfAborted();
@@ -537,7 +547,7 @@ class NativeTaskBackend implements EmbodiedBackend {
         options?.signal?.throwIfAborted();
         if (this.closed || result.run_task_id !== this.runId)
           throw new Error('Native object measurement belongs to another session task.');
-        return objectMeasurement(result.measurement, input);
+        return objectMeasurement(result.measurement, input, this.provider);
       };
     }
     this.transport.setListener((publication) => this.publish(publication));
@@ -1036,7 +1046,7 @@ export async function createNativeWorkerEnvironment(
       throw new Error('Native worker initialized a different provider or task.');
     if (
       typeof description.supports_object_measurement !== 'boolean' ||
-      description.supports_object_measurement !== (configuration.provider === 'robocasa')
+      !description.supports_object_measurement
     )
       throw new Error('Native worker object measurement capability is invalid.');
     if (

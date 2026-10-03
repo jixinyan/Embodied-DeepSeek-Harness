@@ -29,6 +29,7 @@ from physical_harness.environments import (
     NativeStep,
 )
 from physical_harness.validation import ContractValidator
+from physical_harness.perception.metric_capture import MetricCapture
 
 
 CAMERA_NAMES = ("cam_high", "cam_left_wrist", "cam_right_wrist")
@@ -185,6 +186,7 @@ class RoboDojoEnvironment:
         self._prepared: dict[str, Any] | None = None
         self._current_state: list[float] | None = None
         self._observation_steps: OrderedDict[str, int] = OrderedDict()
+        self._metric_capture = MetricCapture("robodojo", "robodojo.isaac.world")
 
     def _require_rpc(self) -> _RoboDojoRpc:
         if self._rpc is None:
@@ -242,10 +244,19 @@ class RoboDojoEnvironment:
             } if "eef_positions" in raw and "eef_quaternions_wxyz" in raw else None,
             "remaining_steps": raw.get("remaining_steps"),
         }
-        return NativeObservation(
+        observation = NativeObservation(
             identity, self._timestamp(), time.monotonic(), images,
             {"states": tuple(float(value) for value in states)},
         )
+        self._metric_capture.replace(observation, raw["simulation_time_s"], raw["metric_frames"])
+        return observation
+
+    def measure_object(self, observation_id: str, camera: str, source_image_sha256: str,
+                       mask_png: bytes) -> dict[str, object]:
+        self._require_rpc()
+        if self._observation_steps.get(observation_id) != self._step_id:
+            raise ValueError("Metric measurement requires the current native episode step.")
+        return self._metric_capture.measure(observation_id, camera, source_image_sha256, mask_png)
 
     def policy_context(self, observation_id: str) -> dict[str, Any]:
         if self._observation_steps.get(observation_id) != self._step_id or self._policy_context is None:
@@ -489,19 +500,32 @@ class RoboDojoEnvironment:
         if receipt.get("step_id") != self._step_id + 1:
             raise RuntimeError("RoboDojo step identity is not contiguous.")
         self._step_id = int(receipt["step_id"])
+        raw_sim_steps = receipt.get("raw_sim_steps")
+        if (type(raw_sim_steps) is not int or raw_sim_steps <= 0
+                or type(receipt.get("native_physics_step_after")) is not int
+                or type(receipt.get("native_physics_step_before")) is not int
+                or receipt.get("native_physics_step_after") - receipt.get("native_physics_step_before") != raw_sim_steps):
+            raise RuntimeError("RoboDojo native physics counters are invalid.")
+        native_physics = {key: receipt[key] for key in (
+            "episode_id", "step_id", "physics_count_source", "native_physics_step_before",
+            "native_physics_step_after", "simulation_time_s", "physics_timestep_s",
+        )}
+        if native_physics["episode_id"] != self._episode_id:
+            raise RuntimeError("RoboDojo native physics belongs to another episode.")
         self._success = bool(receipt.get("success", False))
         self._terminated = bool(receipt.get("terminated", False))
         self._truncated = bool(receipt.get("truncated", False))
-        metadata = self._require_metadata()
-        self._simulation_time_s = self._step_id * float(metadata["control_dt"])
+        self._simulation_time_s = float(receipt["simulation_time_s"])
         observation = self._observation()
-        frame = NativeFrame(observation.observation_id, observation.observed_at, observation.images, 1, self._simulation_time_s)
+        frame = NativeFrame(observation.observation_id, observation.observed_at, observation.images, raw_sim_steps, self._simulation_time_s)
         if on_live_frame is not None and not on_live_frame(frame):
             return NativeStep(
-                observation, 1, True, 1, self._terminated or self._truncated,
+                observation, 1, True, raw_sim_steps, self._terminated or self._truncated,
                 (frame,), "recording_capacity_exhausted",
+                native_physics,
             )
-        return NativeStep(observation, 1, True, 1, self._terminated or self._truncated, (frame,))
+        return NativeStep(observation, 1, True, raw_sim_steps, self._terminated or self._truncated,
+                          (frame,), native_physics=native_physics)
 
     def check(self, check_ids: Sequence[str]) -> Sequence[NativeCheck]:
         if not check_ids or any(check_id != "task_success" for check_id in check_ids):

@@ -16,6 +16,7 @@ from uuid import uuid4
 
 from physical_harness.environments import NativeCheck, NativeEnvironmentDescription, NativeFrame, NativeObservation, NativeRotation, NativeStep
 from physical_harness.environments.task_catalog import behavior_task_selection
+from physical_harness.perception.metric_capture import MetricCapture
 from physical_harness.validation import ContractValidator
 
 
@@ -75,6 +76,7 @@ class BehaviorEnvironment:
         self._last_control_duration_s = 0.0
         self._close_diagnostics: dict[str, object] | None = None
         self._scene_config_id = 0
+        self._metric_capture = MetricCapture("behavior", "behavior.omnigibson.world")
         import_module("omnigibson")
 
     @staticmethod
@@ -194,6 +196,7 @@ class BehaviorEnvironment:
     def _observation(self, raw: Mapping[str, object]) -> NativeObservation:
         import numpy as np
         from PIL import Image
+        from omnigibson.utils import transform_utils as T
 
         observed_monotonic = time.monotonic()
         observed_at = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
@@ -215,7 +218,28 @@ class BehaviorEnvironment:
             f"state.{name}": tuple(float(value) for value in proprio[start:end])
             for name, (start, end) in STATE_SLICES.items()
         }
-        return NativeObservation(str(uuid4()), observed_at, observed_monotonic, images, state)
+        observation = NativeObservation(str(uuid4()), observed_at, observed_monotonic, images, state)
+        frames = {}
+        for camera, sensor_name in CAMERA_SENSORS.items():
+            sensor = self._require_env().robots[0].sensors[sensor_name]
+            depth = native[sensor_name]["depth_linear"].cpu().numpy()
+            if depth.shape == (256, 256, 1):
+                depth = depth[..., 0]
+            usd_pose = T.pose2mat(sensor.get_position_orientation(frame="world")).cpu().numpy()
+            near, far = sensor.clipping_range.tolist()
+            frames[camera] = {
+                "axial_depth_m": np.asarray(depth, dtype=np.float32),
+                "intrinsic_matrix": sensor.intrinsic_matrix.cpu().numpy(),
+                "camera_to_world": usd_pose @ np.diag([1.0, -1.0, -1.0, 1.0]),
+                "near_m": float(near), "far_m": float(far),
+            }
+        self._metric_capture.replace(observation, float(self._og.sim.current_time), frames)
+        return observation
+
+    def measure_object(self, observation_id: str, camera: str, source_image_sha256: str,
+                       mask_png: bytes) -> dict[str, object]:
+        self._require_env()
+        return self._metric_capture.measure(observation_id, camera, source_image_sha256, mask_png)
 
     def reset(self, task_id: str, configuration: Mapping[str, object]) -> NativeObservation:
         self._require_owner()
@@ -250,7 +274,7 @@ class BehaviorEnvironment:
             rule.ENABLED = False
         selected = source.generate_basic_environment_config(task_id, task_configuration)
         selected["robots"] = [source.generate_robot_config(task_id, task_configuration)]
-        selected["robots"][0]["obs_modalities"] = ["proprio", "rgb"]
+        selected["robots"][0]["obs_modalities"] = ["proprio", "rgb", "depth_linear"]
         selected["robots"][0]["proprio_obs"] = list(PROPRIOCEPTION_NAMES)
         selected["task"]["include_obs"] = False
         self._og = og

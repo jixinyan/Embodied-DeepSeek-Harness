@@ -61,6 +61,7 @@ class NativeStep:
     episode_terminated: bool
     native_frames: tuple[NativeFrame, ...] = ()
     interruption_reason: str | None = None
+    native_physics: Mapping[str, object] | None = None
 
 
 @dataclass(frozen=True)
