@@ -8,13 +8,23 @@ const { values } = parseArgs({
   options: {
     directory: { type: 'string' },
     output: { type: 'string' },
+    'acceptance-directory': { type: 'string', default: 'acceptance' },
     'require-diagnostic': { type: 'boolean', default: false },
     'require-query-reviews': { type: 'boolean', default: false },
   },
 });
 assert(values.directory && values.output, 'Supply --directory and --output.');
 const root = resolve(values.directory);
-const json = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
+const acceptanceDirectory = resolve(root, values['acceptance-directory']);
+const json = async (path) =>
+  JSON.parse(
+    await readFile(
+      path.startsWith('acceptance/')
+        ? resolve(acceptanceDirectory, path.slice('acceptance/'.length))
+        : resolve(root, path),
+      'utf8',
+    ),
+  );
 const run = await json('acceptance/final-run.json');
 const events = await json('acceptance/final-events.json');
 const fault = await json('acceptance/original-fault.json');

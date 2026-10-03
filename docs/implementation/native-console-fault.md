@@ -154,6 +154,8 @@ unknown state, capture PID/hash, process-group release records, listener/writer
 closure and unchanged journal bytes. It writes the precise counter availability
 and active-observation totals into its report. It performs no model inference,
 simulator launch, task replay or modification of the original records.
+`--acceptance-directory` selects an independently retained acceptance directory
+within the original evidence root; its default is `acceptance`.
 
 ## Owned native service lifetime
 
@@ -165,7 +167,20 @@ group exit after its graceful, TERM and KILL deadlines. Ordinary provider close
 terminates only its direct SDK child. An externally supplied RPC service remains
 outside the worker's owned process lifetime.
 
+Two zero-control native Sessions under frozen `6bcb8cb` confirm normal closure.
+Session `8884e42a` initializes and resets SDK PID `458460` within worker PID
+`458375`'s group/session. Session `1e3bb7ff` independently initializes and resets
+SDK PID `511656` within worker PID `511562`'s group/session. Both production close
+responses are HTTP 200 with closed/released state, and all four original PIDs exit.
+Neither Session submits a Task or performs policy inference. Their original
+records are retained in `native-console-fault-20261003-04`.
+
+Full NVIDIA admission for PID `511656` records GPU 4 compute/graphics allocations
+and a separate 7 MiB graphics allocation on GPU 0. The configured GPU restriction
+rejects Task submission and the Session closes normally. Fresh fault acceptance
+requires successful complete compute/graphics admission.
+
 Forced process termination preserves the original task failure, unknown device
 boundary and unclean close error. It supplies no StopAcknowledgement or formal
-Verifier. Fresh real native fault and normal close acceptance are required for
-this owned RoboDojo process-group binding.
+Verifier. Fresh real native fault acceptance remains required for this owned
+RoboDojo process-group binding.
