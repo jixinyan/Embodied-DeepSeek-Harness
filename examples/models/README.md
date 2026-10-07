@@ -38,7 +38,12 @@ export EDH_MODEL_FLASHINFER_SAMPLER=0
 bash examples/models/serve-qwen38.sh
 ```
 
-The launcher selects `qwen3_xml` tool parsing and `qwen3` reasoning parsing,
+The launcher loads [qwen-bounded-tools.py](qwen-bounded-tools.py), which inherits
+vLLM's native `qwen3_xml` parser and bounds consecutive parameter whitespace
+through XGrammar's `max_whitespace_cnt`. The default is 16; deployments may set
+`EDH_QWEN_MAX_WHITESPACE` to an integer from 1 to 1024. Complete tool schemas,
+native XML parsing and reasoning remain unchanged. The selected parser name is
+`edh_qwen3_xml`, with `qwen3` reasoning parsing,
 131,072 context tokens, BF16 and a configurable `FLASH_ATTN` attention backend.
 `EDH_MODEL_IPC_DIRECTORY` must be an absolute private directory whose path uses
 at most 60 bytes. The launcher checks this before loading weights; vLLM appends
@@ -61,6 +66,9 @@ Planner and Verifier receive image attachments through authorized tools even whe
 the console displays only Agent trace. Headless videos remain on the worker host;
 see [headless recording](../../docs/implementation/headless-simulation.md).
 Task acceptance is recorded separately in [progress](../../docs/implementation/progress.md).
+The [Qwen tool-generation guide](../../docs/implementation/qwen-tool-generation.md)
+records actual full-context model and nested-plan checks with vLLM 0.30.0 and
+XGrammar 0.2.7, including reproducible read-only diagnostics.
 
 ## Camera and tool checks
 

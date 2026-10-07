@@ -80,6 +80,11 @@ Native Anthropic/Gemini protocols require their respective adapters.
 The Qwen example enables `strictTools` with `toolChoice: auto`. vLLM 0.30.0's
 official `qwen3_xml` parser activates native structural-tag decoding for strict
 tools; its default `VLLM_ENFORCE_STRICT_TOOL_CALLING=true` must remain enabled.
+The EDH Qwen launcher selects `edh_qwen3_xml`, a subclass of that native parser
+that sets XGrammar's parameter `max_whitespace_cnt` to 16 by default.
+`EDH_QWEN_MAX_WHITESPACE` accepts integers from 1 to 1024. Native schema contents,
+tool selection, parsing and reasoning handling remain unchanged. See the
+[actual generation checks](qwen-tool-generation.md) for source and acceptance.
 The native DSH serializer preserves each tool's complete parameter schema.
 PlanDocument remains an object throughout model transport and production validation.
 Schema constraints govern argument syntax; EDH validates identities, versions,
@@ -88,12 +93,17 @@ admitted criteria and execution authority when the actual tool executes.
 existing terminal tools. `auto` also permits their waiting text responses.
 
 `scripts/check-recorded-plan-model.mjs` accepts actual recorded `events`,
-`configuration`, `models`, `profile`, `member` and a new `output` directory through
-named arguments. It sends the selected recorded role's complete production tool
+`configuration`, `models`, `profile`, `member`, `native-request` and a new `output`
+directory through named arguments. `native-request` is the retained native request
+snapshot containing `header.system`, `header.tools` and `header.config`.
+The checker validates the selected role's allowed tool names and model binding
+against that snapshot. It sends the recorded role's complete production tool
 schemas and actual `planning.read` receipt to the configured model, then checks
 both native API output and DSH streaming translation with strict `auto` and
 `required` requests. It retains exact native responses, token IDs and streamed
-blocks. This check exercises model transport without executing physical tools.
+blocks. Both responses must preserve the receipt's exact `planWrite`, including
+identities, versions, plan items and criteria. This check exercises model transport
+without executing physical tools.
 
 ## Credentials, images and configuration identity
 

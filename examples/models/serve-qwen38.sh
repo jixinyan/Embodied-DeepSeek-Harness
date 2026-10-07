@@ -18,6 +18,8 @@ export VLLM_RPC_BASE_PATH="$EDH_MODEL_IPC_DIRECTORY"
 export VLLM_CACHE_ROOT="$EDH_MODEL_WORK/cache"
 export CUDA_VISIBLE_DEVICES="$EDH_MODEL_GPU"
 export VLLM_USE_FLASHINFER_SAMPLER="${EDH_MODEL_FLASHINFER_SAMPLER:-0}"
+export EDH_QWEN_MAX_WHITESPACE="${EDH_QWEN_MAX_WHITESPACE:-16}"
+model_configuration_directory=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
 exec "$EDH_VLLM_ENV/bin/vllm" serve "$EDH_QWEN_CHECKPOINT" \
   --host 127.0.0.1 --port "${EDH_MODEL_PORT:-18080}" \
@@ -28,5 +30,7 @@ exec "$EDH_VLLM_ENV/bin/vllm" serve "$EDH_QWEN_CHECKPOINT" \
   --gpu-memory-utilization "${EDH_MODEL_MEMORY_FRACTION:-0.4}" \
   --attention-backend "${EDH_MODEL_ATTENTION:-FLASH_ATTN}" \
   --limit-mm-per-prompt '{"image":12,"video":0}' \
-  --enable-auto-tool-choice --tool-call-parser qwen3_xml \
+  --enable-auto-tool-choice \
+  --tool-parser-plugin "$model_configuration_directory/qwen-bounded-tools.py" \
+  --tool-call-parser edh_qwen3_xml \
   --reasoning-parser qwen3

@@ -1,6 +1,6 @@
 # v1 delivery and acceptance
 
-Updated: 2026-10-06. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
+Updated: 2026-10-07. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
 RoboDojo task success, real SAM/YOLO tool calls and source-bound RoboCasa RGB-D
 geometry are verified. Reusable native factories, complete retention bindings,
 packaged Desktop lifecycle and selected DSH recovery/JSON portability have production
@@ -47,7 +47,9 @@ RoboDojo retained-scene recovery, original task success, all role/TODO completio
 and resource release. The native bridge consumes an already-used identified
 OpenPI service. Genuine admission/deadline failures preserve original errors and
 trace history; a conflicting invocation preserves the existing Session.
-The final model step's excessive generation time remains open. See the
+The unchanged 38,069-token Planner context has real HTTP and DSH streaming
+acceptance with bounded native parameter whitespace and 47–59 output tokens.
+See [Qwen tool generation](qwen-tool-generation.md) for exact boundaries and the
 [single-GPU acceptance](single-gpu-native-acceptance.md) for sources and limits.
 
 ### Source-bound integration checkpoints
@@ -77,8 +79,8 @@ individual acceptance requirements.
 ### Remaining execution
 
 1. Complete additional explicit evidence workflows and multi-goal acceptance.
-   Investigate the source-bound full-context Qwen generation cost while preserving
-   native tool completion and the accepted custom-role planning workflow. Preserve
+   Preserve bounded native Qwen parameter whitespace, native tool completion and
+   the accepted custom-role planning workflow. Preserve
    identified OpenPI reconnect behavior, ActionGate and independent post-execution
    verification; record simulator video locally and inspect trace through the console.
 2. Preserve verified DSH recovery, JSON portability and exact selected-source hashes;

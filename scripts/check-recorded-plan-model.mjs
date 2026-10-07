@@ -3,15 +3,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
-import * as Todo from '@deepseek-ai/dsh-tool-todo';
-import { ContractValidator } from '@edh/contracts';
 import { readModelConfiguration, OpenAICompatibleAdapter } from '@edh/models';
-import { CORE_TOOL_DESCRIPTIONS, validateJsonSchemaValue } from '@edh/tools';
-import {
-  coreModelToolParameters,
-  modelToolContractSchema,
-} from '../apps/server/src/model-tool-schema.ts';
-import { createDshHost } from '../apps/server/src/runtime.ts';
+import { validateJsonSchemaValue } from '@edh/tools';
 
 const { values } = parseArgs({
   options: {
@@ -20,6 +13,7 @@ const { values } = parseArgs({
     models: { type: 'string' },
     profile: { type: 'string' },
     member: { type: 'string' },
+    'native-request': { type: 'string' },
     output: { type: 'string' },
   },
 });
@@ -29,6 +23,7 @@ assert(
     values.models &&
     values.profile &&
     values.member &&
+    values['native-request'] &&
     values.output,
 );
 const output = resolve(values.output);
@@ -37,36 +32,16 @@ const events = JSON.parse(await readFile(values.events, 'utf8'));
 const configuration = JSON.parse(await readFile(values.configuration, 'utf8'));
 const role = configuration.launchTeams[values.profile].roles[values.member];
 assert(role.definition.tools.includes('planning.update'));
+const native = JSON.parse(await readFile(values['native-request'], 'utf8'));
 const receipt = events.find(
   (event) => event.type === 'tool.completed' && event.detail.tool === 'planning.read',
 ).detail.result;
 assert(receipt.planWrite);
-const validator = new ContractValidator(
-  JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
-);
-const planSchema = await modelToolContractSchema(validator, 'PlanDocument');
-const tools = role.definition.tools
-  .filter((logical) => logical !== 'todo_write')
-  .map((logical) => ({
-    name: logical.replaceAll('.', '__'),
-    description: CORE_TOOL_DESCRIPTIONS[logical],
-    parameters: coreModelToolParameters(logical, {
-      planSchema,
-      ...(role.outputSchema ? { roleOutputSchema: role.outputSchema.schema } : {}),
-    }),
-  }));
-assert(tools.every((tool) => tool.description));
-if (role.definition.tools.includes('todo_write')) {
-  const host = await createDshHost([]);
-  try {
-    await host.plugin(Todo, { allowParallelInProgress: true });
-    const todo = host.tools.schemas().find((tool) => tool.name === 'todo_write');
-    assert(todo);
-    tools.push(todo);
-  } finally {
-    await host.fiber.dispose();
-  }
-}
+const tools = structuredClone(native.header.tools);
+assert(tools.length && tools.every((tool) => tool.description && tool.parameters));
+const allowed = new Set(role.definition.tools.map((logical) => logical.replaceAll('.', '__')));
+assert(tools.every((tool) => allowed.has(tool.name)));
+assert(native.header.system);
 const parameters = tools.find((tool) => tool.name === 'planning__update').parameters;
 assert.deepEqual(validateJsonSchemaValue(parameters, receipt.planWrite, 'arguments'), []);
 const modelConfiguration = await readModelConfiguration(values.models);
@@ -74,13 +49,15 @@ const binding = modelConfiguration.models[role.model];
 assert(binding);
 const endpoint = modelConfiguration.endpoints[binding.endpoint];
 assert.equal(endpoint.protocol, 'chat_completions');
+assert.equal(native.header.config.provider, binding.endpoint);
+assert.equal(native.header.config.model, binding.model);
 const credential =
   endpoint.authentication.type === 'environment'
     ? process.env[endpoint.authentication.variable]
     : undefined;
 if (endpoint.authentication.type === 'environment')
   assert(credential && !/[\u0000-\u0020\u007f]/.test(credential));
-const question = `The following is an actual planning.read receipt from recorded task ${receipt.taskId}. Return exactly one planning__update call using its planWrite. Preserve every admitted identity, version, item and criterion. This diagnostic captures model output without executing any tool.\n${JSON.stringify(receipt)}`;
+const question = `The following is an actual planning.read receipt from recorded task ${receipt.taskId}. This is a read-only transport diagnostic: return exactly one planning__update call whose entire arguments object equals the receipt's planWrite. Copy every field and value unchanged, including item status, identities, versions, descriptions, dependencies and criteria. Keep each item's original status; no task or execution is being started or advanced by this diagnostic. The captured tool call will not be executed.\n${JSON.stringify(receipt)}`;
 const results = [];
 for (const toolChoice of ['auto', 'required']) {
   const options = {
@@ -101,7 +78,7 @@ for (const toolChoice of ['auto', 'required']) {
     ...endpoint.extraBody,
     model: binding.model,
     messages: [
-      { role: endpoint.systemRole, content: role.instructions },
+      { role: endpoint.systemRole, content: native.header.system },
       { role: 'user', content: question },
     ],
     tools: tools.map((tool) => ({ type: 'function', function: { ...tool, strict: true } })),
@@ -132,13 +109,14 @@ for (const toolChoice of ['auto', 'required']) {
   const argumentsValue = JSON.parse(calls[0].function.arguments);
   assert.equal(typeof argumentsValue.plan, 'object');
   assert.deepEqual(validateJsonSchemaValue(parameters, argumentsValue, 'arguments'), []);
+  assert.deepEqual(argumentsValue, receipt.planWrite);
   const adapter = new OpenAICompatibleAdapter(options);
   const chunks = [];
   try {
     for await (const chunk of adapter.stream({
       provider: binding.endpoint,
       model: binding.model,
-      system: role.instructions,
+      system: native.header.system,
       messages: [
         createUserMessage({
           source: { kind: 'user' },
@@ -163,6 +141,7 @@ for (const toolChoice of ['auto', 'required']) {
   assert.equal(blocks[0].block.name, 'planning__update');
   const parsed = JSON.parse(blocks[0].block.arguments);
   assert.deepEqual(validateJsonSchemaValue(parameters, parsed, 'arguments'), []);
+  assert.deepEqual(parsed, receipt.planWrite);
   assert.equal(chunks.findLast((chunk) => chunk.type === 'finish').reason.kind, 'tool-calls');
   const reasoning = chunks
     .filter((chunk) => chunk.type === 'reasoning-delta')
@@ -173,6 +152,7 @@ for (const toolChoice of ['auto', 'required']) {
     tools: tools.length,
     strict: true,
     objectPlan: true,
+    exactPlanWrite: true,
     validationIssues: 0,
     reasoningCharacters: reasoning,
   });

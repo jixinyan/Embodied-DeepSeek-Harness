@@ -1,8 +1,29 @@
 # Implementation progress
 
-Spec: v1.73. Current checkpoint: **native Qwen/Pi0.5 task success and retained-scene retry; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.74. Current checkpoint: **native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-07 Qwen full-context tool generation
+
+The EDH Qwen launcher inherits vLLM's native XML parser and configures XGrammar
+to admit at most 16 consecutive whitespace characters in tool parameter formats.
+The configured range is 1–1024. All 26 recorded native parameter schemas retain
+their original contents and compile with the actual checkpoint tokenizer.
+
+On the actual final Planner context from run `551fa79d`, both HTTP calls and the
+native DSH stream retain 38,069 input tokens, nine real image attachments and
+the original 8,192-token output budget. They return valid empty-argument
+`tasks__finish` calls in 54, 47 and 59 output tokens respectively. The DSH stream
+finishes in 9.699 seconds with returned reasoning retained. Raw native tokens,
+grammar hashes and complete model responses remain preserved.
+
+Actual recorded `planning.read` validation uses the role's complete native tool
+header and checks nested `planning.update` arguments through HTTP and DSH
+streaming, with strict `auto` and `required` tool selection. All four responses
+preserve the receipt's exact `planWrite`. These are read-only model diagnostics
+with zero physical controls. Only GPU 2 is used. Sources,
+commands and acceptance limits: [Qwen tool generation](qwen-tool-generation.md).
 
 ## 2026-10-06 single-GPU native integration
 
@@ -21,8 +42,9 @@ inferences with request/instruction/state/image identity checks. The task bridge
 then admits the already-used native service at counter 4. Qwen IPC path validation
 and the recorded admission/deadline/conflict checks pass; owned services exit
 after zero active Sessions or model requests. Compute and graphics contexts use
-only physical GPU 2. The final model step's excessive output-token use remains a
-separate efficiency investigation. Exact sources and acceptance boundaries:
+only physical GPU 2. Full-context model generation has its separate accepted
+grammar setting in [Qwen tool generation](qwen-tool-generation.md).
+Exact sources and acceptance boundaries:
 [single-GPU native acceptance](single-gpu-native-acceptance.md).
 
 ## 2026-10-03 native v1 integration

@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.73 · 2026-10-03
+Version: v1.74 · 2026-10-07
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. RoboCasa and BEHAVIOR preserve their observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -108,6 +108,12 @@ the required checks and the current provider matrix.
 The [DSH release adaptation guide](implementation/dsh-release-adaptation.md) records
 reviewed upstream changes, absorbed mechanisms and compatibility requirements for
 the existing model providers, role lifecycle and persisted history.
+The Qwen deployment inherits native vLLM tool parsing and configures XGrammar's
+parameter whitespace bound. Complete tool schemas, native DSH streaming and
+reasoning remain preserved. The actual 38,069-token Planner context has model
+acceptance with 47–59 completion tokens; the
+[generation guide](implementation/qwen-tool-generation.md) records exact source,
+configuration, nested-plan validation and read-only acceptance boundaries.
 
 GPU-host access is now available for simulation integration. The active delivery
 priority is a real environment-to-console workflow, retaining DSH role orchestration,

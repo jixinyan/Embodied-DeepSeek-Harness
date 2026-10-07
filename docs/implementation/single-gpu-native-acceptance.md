@@ -150,8 +150,10 @@ returning a short reasoning block and one valid empty-argument completion call.
 It consumes about 208 seconds. The task still has zero tool errors and completes
 its native terminal workflow. A separate short-context native model diagnostic
 returns the completion call in 64 tokens and approximately 0.924 seconds.
-Full-context generation/transport investigation remains required; these records
-do not establish the cause of the long step.
+The unchanged full context now has separate actual model acceptance with bounded
+native parameter whitespace: 38,069 input tokens and valid completion calls in
+47–59 output tokens. Source-bound raw generations, native grammar checks and DSH
+streaming results are documented in [Qwen tool generation](qwen-tool-generation.md).
 
 This configuration verifies connection reuse, task recovery and resource
 ownership on one GPU. Original `build_tower` stages, BEHAVIOR task success,
