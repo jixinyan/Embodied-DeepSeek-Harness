@@ -44,6 +44,32 @@ success check to fail while retaining evidence and cleanup. An already-ended
 episode's second task needs the separate
 [zero-action terminal audit](session-task-catalogs.md).
 
+The driver retains `session-request.json` before admission. An admission failure
+can leave an error Session; cleanup reads its actual request identity and closes
+only the Session created by that invocation. Each admitted task also retains its
+complete `before-close-run.json` and `before-close-events.json`, including when
+its acceptance deadline expires. Normal `run.json` and `events.json` capture the
+terminal history after close. The original failure still exits unsuccessfully;
+capture or release errors accompany it through an `AggregateError`.
+
+The recorded failure reader checks real deadline/admission records and the
+unsuccessful process exit:
+
+```sh
+node scripts/check-live-acceptance-cleanup.mjs \
+  --directory .local/work/<failed-acceptance-directory> \
+  --mode task-deadline \
+  --error-log .local/work/<original-driver-log> \
+  --exit-code .local/work/<original-driver-exit-code> \
+  --output .local/work/<cleanup-audit>.json
+```
+
+`admission-failure` checks a genuine recording-directory preflight failure with
+zero admitted tasks. `task-deadline` checks an active native task's original event
+prefix, cancellation, retired roles and confirmed resource release. These checks
+establish failure capture and cleanup; native task success retains its separate
+full workflow audit.
+
 Audit original native action receipts, sensor samples, learned request/response
 files, source/checkpoint hashes and camera journals using
 [recorded run verification](../../scripts/REPLAY.md). Check independent formal

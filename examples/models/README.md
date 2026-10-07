@@ -40,6 +40,9 @@ bash examples/models/serve-qwen38.sh
 
 The launcher selects `qwen3_xml` tool parsing and `qwen3` reasoning parsing,
 131,072 context tokens, BF16 and a configurable `FLASH_ATTN` attention backend.
+`EDH_MODEL_IPC_DIRECTORY` must be an absolute private directory whose path uses
+at most 60 bytes. The launcher checks this before loading weights; vLLM appends
+generated socket identifiers within the operating system's Unix-socket path limit.
 Its sampler defaults to the native implementation; `EDH_MODEL_FLASHINFER_SAMPLER`
 selects FlashInfer sampling when the deployment supports it.
 The model file supplies `enable_thinking` and `preserve_thinking` through vLLM's
@@ -47,7 +50,7 @@ The model file supplies `enable_thinking` and `preserve_thinking` through vLLM's
 use `strictTools: true` to activate vLLM's native schema-constrained tool arguments
 with its default strict-tool enforcement enabled. Tool selection remains `auto`.
 The optional `toolChoice: required` setting requires a tool call for each response.
-refer to the stable `brain` alias. Pi0.5 is a separate policy service and receives
+Roles refer to the stable `brain` alias. Pi0.5 is a separate policy service and receives
 the admitted native subgoal instruction, actual camera group and joint state.
 The model file uses separate HTTP connections for streamed requests and native DSH
 request-image encoding with a 128 KiB target per image. Source evidence remains

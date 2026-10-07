@@ -50,7 +50,7 @@ async function api(path, body) {
   return result;
 }
 
-async function capture(directory, runId) {
+async function capture(directory, runId, prefix = '') {
   const run = await api(`/api/runs/${runId}?events=none`);
   const events = [];
   while (events.length < run.eventCount) {
@@ -64,8 +64,8 @@ async function capture(directory, runId) {
       events.push(event);
     }
   }
-  await writeFile(resolve(directory, 'run.json'), JSON.stringify(run, null, 2));
-  await writeFile(resolve(directory, 'events.json'), JSON.stringify(events, null, 2));
+  await writeFile(resolve(directory, `${prefix}run.json`), JSON.stringify(run, null, 2));
+  await writeFile(resolve(directory, `${prefix}events.json`), JSON.stringify(events, null, 2));
   return { run, events };
 }
 
@@ -82,15 +82,20 @@ const fields = [
   'policy',
   'defaultModel',
 ];
-const session = await api('/api/sessions', {
+const openRequest = {
   profileId: values.profile,
   requestId: randomUUID(),
   catalogRevision: config.deploymentDigest,
   selection: Object.fromEntries(fields.map((field) => [field, profile[field]])),
-});
-await save('session.json', session);
+};
+await save('session-request.json', openRequest);
+let session;
 const accepted = [];
+const admitted = [];
+let failure;
 try {
+  session = await api('/api/sessions', openRequest);
+  await save('session.json', session);
   const catalog = await api(`/api/sessions/${session.id}/tasks`);
   await save('catalog.json', catalog);
   for (const [index, scenario] of values.task.entries()) {
@@ -121,6 +126,7 @@ try {
       catalogRevision: catalog.descriptor.digest,
       instruction: catalog.tasks[scenario].instruction,
     });
+    admitted.push({ directory, runId: submission.runId, scenario });
     await writeFile(resolve(directory, 'submission.json'), JSON.stringify(submission, null, 2));
     const deadline = Date.now() + timeoutMs;
     let previous;
@@ -165,17 +171,78 @@ try {
     assert.equal(errors.length, 0, JSON.stringify(errors));
     assert(run.verdicts.length && run.verdicts.at(-1).status === 'passed');
   }
+} catch (error) {
+  failure = error;
 } finally {
-  const closed = await api(`/api/sessions/${session.id}/close`, {});
-  await save('closed.json', closed);
-  assert.equal(closed.resources, 'released');
-  for (const [index, result] of accepted.entries()) {
-    const { run, events } = await capture(resolve(output, `task-${index + 1}`), result.runId);
-    result.outcome = run.state;
-    result.eventCount = events.length;
-    result.toolErrors = events.filter((event) => event.type === 'tool.failed').length;
-    result.formalVerdicts = run.verdicts.map((verdict) => verdict.status);
+  const cleanupErrors = [];
+  if (!session) {
+    try {
+      const listing = await api('/api/sessions');
+      if (listing.activeId) {
+        const candidate = await api(`/api/sessions/${listing.activeId}`);
+        if (candidate.requestId === openRequest.requestId) {
+          assert.equal(candidate.profileId, openRequest.profileId);
+          assert.equal(candidate.deploymentDigest, openRequest.catalogRevision);
+          session = candidate;
+          await save('session.json', session);
+        }
+      }
+    } catch (error) {
+      cleanupErrors.push(error);
+    }
   }
-  await save('results.json', accepted);
+  for (const task of admitted) {
+    try {
+      await capture(task.directory, task.runId, 'before-close-');
+    } catch (error) {
+      cleanupErrors.push(error);
+    }
+  }
+  try {
+    if (session) {
+      const closed = await api(`/api/sessions/${session.id}/close`, {});
+      await save('closed.json', closed);
+      assert.equal(closed.resources, 'released');
+    }
+  } catch (error) {
+    cleanupErrors.push(error);
+  }
+  for (const task of admitted) {
+    try {
+      const { run, events } = await capture(task.directory, task.runId);
+      const result = accepted.find((item) => item.runId === task.runId);
+      const current = {
+        scenario: task.scenario,
+        runId: task.runId,
+        outcome: run.state,
+        eventCount: events.length,
+        toolErrors: events.filter((event) => event.type === 'tool.failed').length,
+        formalVerdicts: run.verdicts.map((verdict) => verdict.status),
+      };
+      if (result) Object.assign(result, current);
+      else accepted.push(current);
+    } catch (error) {
+      cleanupErrors.push(error);
+    }
+  }
+  try {
+    await save('results.json', accepted);
+  } catch (error) {
+    cleanupErrors.push(error);
+  }
+  if (cleanupErrors.length) {
+    throw new AggregateError(
+      [...(failure === undefined ? [] : [failure]), ...cleanupErrors],
+      'Live acceptance or its source capture and resource release failed.',
+    );
+  }
+}
+if (failure !== undefined) throw failure;
+assert(session);
+assert.equal(accepted.length, values.task.length);
+for (const result of accepted) {
+  assert.equal(result.outcome, 'succeeded', JSON.stringify(result));
+  assert.equal(result.toolErrors, 0, JSON.stringify(result));
+  assert.equal(result.formalVerdicts.at(-1), 'passed', JSON.stringify(result));
 }
 console.log(JSON.stringify({ sessionId: session.id, tasks: accepted, resources: 'released' }));

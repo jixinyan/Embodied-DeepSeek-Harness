@@ -88,10 +88,11 @@ requirement or deployment binding is unclear.
 
 ## Adapter integration checkpoint
 
-On `jd_B300`, current EDH work may use only physical GPUs 2–4. Configure model,
-policy, CUDA and renderer selection explicitly, confirm actual process placement,
-and preserve unrelated workloads. Device selection remains deployment-specific;
-framework code must support other GPUs through configuration.
+On `jd_B300`, current EDH work may use at most one physical GPU, selected from
+GPUs 2–4. Co-locate model, policy, CUDA and graphics rendering on that selected
+device, confirm actual process placement and preserve unrelated workloads.
+Device selection remains deployment-specific; framework code must support
+other GPUs through configuration.
 
 Read `docs/implementation/model-policy-adapters.md` for executable endpoint and
 action-gate components. Native worker transport has partial real acceptance;

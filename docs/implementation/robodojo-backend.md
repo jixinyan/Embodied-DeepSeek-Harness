@@ -71,6 +71,41 @@ The successful pickup contains no recovery or SKILL publication. Hybrid checkpoi
 inference and recovery acceptance remain required. The replay/MP4 command and
 source-integrity checks are documented in [recorded replay](../../scripts/REPLAY.md).
 
+## Learned-policy service identity
+
+The owned native OpenPI entry point and JSON bridge support
+`edh.openpi.request_identity.v1`. Each inference carries the canonical EDH request
+UUID and returns that UUID alongside the SHA-256 of its exact instruction, native
+float32 state and three camera inputs. Checkpoint identity and imported policy
+source hashes remain fixed across the connection. Global inference indices must
+increase; other clients may consume intervening indices.
+
+A bridge may connect to an already-used native service. A replacement connection
+admits its current counter and uses a new request identity for each explicit
+inference. Cancellation still discards the connection and an uncertain inference
+is never replayed. All returned controls retain canonical ActionSpec validation
+and pass through ActionGate. Original records without this protocol retain their
+fresh-service and contiguous-index audit requirements.
+
+The real inference-only check consumes an original recorded simulator RGB/state
+request without issuing device controls:
+
+```sh
+PYTHONPATH=harness/physical-runtime/src <policy-environment>/bin/python \
+  scripts/check-openpi-reconnection.py \
+  --request <original-native-policy-request.json> \
+  --schema harness/contracts/schema/physical.schema.json \
+  --native-policy-uri ws://127.0.0.1:<native-policy-port> \
+  --checkpoint-sha256 <verified-checkpoint-sha256> \
+  --output-directory .local/work/<new-inference-check-directory>
+```
+
+It opens a second client after one actual inference, returns to the first client,
+then replaces the connection. Every output is checked against the original
+instruction, state, decoded RGB bytes and native action transformation. The input
+file must remain unchanged. This check verifies checkpoint inference and client
+identity; physical task acceptance uses the production rollout audit.
+
 ## Distributed Astra deployment
 
 `examples/deployments/robodojo-live.mjs` accepts a deployment JSON path through
