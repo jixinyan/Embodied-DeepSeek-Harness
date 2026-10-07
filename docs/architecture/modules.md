@@ -9,8 +9,11 @@ connect through the same canonical ActionChunk and ActionGate.
 Actual Qwen/Pi0.5 RoboTwin tasks verify failed attempts, explicit Planner retry,
 independent formal success and resource release. Actual Qwen/Pi0.5 RoboDojo
 execution verifies native task success after 59 controls and four learned
-inferences. RoboCasa and BEHAVIOR retain truthful unsuccessful task evidence,
-plus separate native perception/active-observation checks. Reusable native
+inferences. Its single-GPU run `551fa79d` additionally verifies retained-scene
+retry, 61 controls and four identified inferences. Qwen/GR00T RoboCasa CloseDrawer
+has native first-attempt success and separately accepted retained-scene recovery.
+BEHAVIOR retains its observed unsuccessful task evidence, plus separate native
+perception/active-observation checks. Reusable native
 deployment factories validate configured Teams and task catalogs before allocation.
 The independent device watchdog, process resource leases and hardware interface
 have production checks; further native safety and complete release acceptance

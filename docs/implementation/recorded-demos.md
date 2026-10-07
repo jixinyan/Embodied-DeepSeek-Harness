@@ -12,10 +12,12 @@ attempt identity. TODO status includes the reporting member and completed count.
 
 The native v1 integration recordings are retained under
 `.local/work/v1-20261003/`, `.local/work/v1-robotwin-20261003/` and
-`.local/work/v1-robodojo-20261003-05/` and `.local/work/v1-robotwin-20261003-clean/`.
+`.local/work/v1-robodojo-20261003-05/`, `.local/work/v1-robotwin-20261003-clean/`
+and `.local/work/v1-20261006-single-gpu/`.
 
 | Recording                                 | Actual task result                                                                                                                                | Model and policy                   | Duration  | Source                                 |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | --------- | -------------------------------------- |
+| `robodojo-single-gpu-retry-success.mp4` | Failed first attempt, Planner-authorized retained-scene retry, fresh formal success, completed TODOs, zero tool errors and released Session/services; all compute and graphics on one physical GPU | Qwen3.8-27B / Pi0.5 | 97.667 s | `551fa79d-ac67-43e3-a12b-63a13a0200a8` |
 | `robodojo-qwen-pi05-success-reviewed.mp4` | Native task success, independent formal success and released resources; one recorded plan-parameter error                                         | Qwen3.8-27B / Pi0.5                | 80.167 s  | `02475b82-b6b6-457f-8cf8-3199ef265bc6` |
 | `robotwin-qwen-pi05-retry-success.mp4`    | Independent SceneAnalyst, failed first attempt, accepted Planner retry, formal success and released resources; two recorded plan-parameter errors | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 340.167 s | `66ff9b47-9e2d-4514-904c-cd61c869b44c` |
 | `robodojo-qwen-pi05-clean-retry-success.mp4` | Failed first attempt, retained-scene retry, independent formal success, completed TODOs and released resources; zero tool errors | Qwen3.8-27B / Pi0.5 | 126.250 s | `897f215d-119f-4880-9030-1d9edeb9fabb` |
@@ -23,6 +25,16 @@ The native v1 integration recordings are retained under
 | `desktop-qwen-pi05-team-retry-success.mp4` | Actual packaged Desktop submission, independent SceneAnalyst, formal failure, Planner retry and formal success; completed TODOs, zero tool errors and confirmed Session/service cleanup | Qwen3.8-27B / SceneAnalyst / Pi0.5 | 167.000 s | `bd3e1606-3430-47f1-ae0d-df234052ec9e` |
 | `robocasa-qwen-gr00t-close-drawer-success.mp4` | Original CloseDrawer task success, independent formal verification, completed plan/TODOs and released resources; zero tool errors | Qwen3.8-27B / GR00T | 81.250 s | `043520a2-1e9a-4b18-af1b-821a84a7ba7a` |
 | `robocasa-qwen-gr00t-retry-success.mp4` | Planner-ended failed assessment, retained-scene retry, fresh formal success, thirteen completed TODOs, zero tool errors and released resources | Qwen3.8-27B / GR00T | 108.167 s | `7e3f76b6-48e2-40eb-b218-49ba404362bc` |
+
+The single-GPU RoboDojo composite retains 308 original events, 19 actual model
+analysis events, 61 controls, four identified learned requests and 610 native
+physics steps. Three camera views retain 61 rollout frames and an initial
+observation each. Its 1,172 encoded frames fully decode with checked source
+hashes, tool-failure counts and text bounds. MP4 SHA-256:
+`1c7c7fa8c72fcd86ac5c765f930c203ae8186571ef6f96819020f02b939cebc2`.
+The [single-GPU acceptance record](single-gpu-native-acceptance.md) identifies
+the unchanged task criterion, independent Verifiers, actual reconnect checks,
+failure cleanup and remaining full-context generation investigation.
 
 The native RoboCasa composite is retained in
 `.local/work/v1-robocasa-close-drawer-20261003-01/`. Its 598 original events

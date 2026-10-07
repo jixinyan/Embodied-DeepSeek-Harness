@@ -4,15 +4,37 @@ Spec: v1.73. Current checkpoint: **native Qwen/Pi0.5 task success and retained-s
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
+## 2026-10-06 single-GPU native integration
+
+Actual Qwen/Pi0.5 RoboDojo run `551fa79d` completes a failed 32-control attempt,
+Planner-authorized retained-scene retry and successful 29-control continuation.
+Its 308 events, 61 original actions, four identified learned requests, 610 native
+physics steps and six camera videos pass the production audit with zero tool
+errors. Both formal Verifiers use independent contexts, all ten TODOs complete,
+terminal receipts precede native turn completion and Session resources release.
+The source-bound MP4 contains Agent output, plan/TODO state and all three native
+camera views; its 1,172 frames fully decode, with zero recorded tool errors and
+checked text bounds.
+
+OpenPI connection reuse and interleaved clients have four actual checkpoint
+inferences with request/instruction/state/image identity checks. The task bridge
+then admits the already-used native service at counter 4. Qwen IPC path validation
+and the recorded admission/deadline/conflict checks pass; owned services exit
+after zero active Sessions or model requests. Compute and graphics contexts use
+only physical GPU 2. The final model step's excessive output-token use remains a
+separate efficiency investigation. Exact sources and acceptance boundaries:
+[single-GPU native acceptance](single-gpu-native-acceptance.md).
+
 ## 2026-10-03 native v1 integration
 
 ### Current deployment GPU allocation
 
-EDH work on `jd_B300` is restricted to physical GPUs 2–4. Qwen remains on GPU 2;
-new learned-policy services select GPU 3 and native simulators select GPU 4.
-CUDA and graphics-renderer selections are checked separately. Completed records
-retain their original device identities. GPU selection belongs to deployment
-configuration and does not constrain the framework's portability.
+Current EDH work on `jd_B300` uses at most one physical GPU selected from GPUs
+2–4. The 2026-10-06 integration selects GPU 2 for Qwen, native OpenPI and the
+simulator. CUDA and graphics-renderer selections are checked separately against
+the same physical UUID. Completed records retain their original device identities.
+GPU selection belongs to deployment configuration and does not constrain the
+framework's portability.
 
 ### Native RoboCasa task success
 

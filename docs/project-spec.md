@@ -34,6 +34,16 @@ are SVG assets; include their directory when handing over this document.
 
 ### 0.1 Current work and next action
 
+Current native validation uses at most one physical GPU selected from the
+authorized deployment range. Single-GPU Qwen/Pi0.5 RoboDojo run `551fa79d`
+verifies a failed attempt, Planner-authorized retained-scene retry, original task
+success, completed plan/TODOs, zero tool errors and confirmed Session release.
+The owned OpenPI bridge also accepts an already-used identified native service
+with explicit request/instruction/state/camera identity. Real startup/deadline
+failure checks retain original errors and cleanup records. Exact sources and
+remaining efficiency/release gates are documented in
+[single-GPU acceptance](implementation/single-gpu-native-acceptance.md).
+
 The current priority is complete native model/policy workflows, multi-task continuity
 and reproducible release configuration. Live Teams set `learning_enabled: false`;
 SceneState development is deferred. The [current Agent loop](implementation/current-agent-loop.md)

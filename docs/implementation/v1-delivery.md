@@ -1,6 +1,6 @@
 # v1 delivery and acceptance
 
-Updated: 2026-10-03. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
+Updated: 2026-10-06. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
 RoboDojo task success, real SAM/YOLO tool calls and source-bound RoboCasa RGB-D
 geometry are verified. Reusable native factories, complete retention bindings,
 packaged Desktop lifecycle and selected DSH recovery/JSON portability have production
@@ -42,6 +42,14 @@ actual native task submission, source-bound audits and product/safety evidence.
 
 ## Execution order
 
+Actual single-GPU run `551fa79d` independently revalidates clean Qwen/Pi0.5
+RoboDojo retained-scene recovery, original task success, all role/TODO completion
+and resource release. The native bridge consumes an already-used identified
+OpenPI service. Genuine admission/deadline failures preserve original errors and
+trace history; a conflicting invocation preserves the existing Session.
+The final model step's excessive generation time remains open. See the
+[single-GPU acceptance](single-gpu-native-acceptance.md) for sources and limits.
+
 ### Source-bound integration checkpoints
 
 Actual Qwen Tower run `949ece77` verifies an explicitly completed observation turn:
@@ -68,14 +76,16 @@ individual acceptance requirements.
 
 ### Remaining execution
 
-1. Complete zero-tool-error local Qwen custom-role planning, additional explicit
-   evidence workflows and multi-goal acceptance. Continue RoboDojo learned-policy
-   dependency/inference validation. Preserve ActionGate and independent post-execution
+1. Complete additional explicit evidence workflows and multi-goal acceptance.
+   Investigate the source-bound full-context Qwen generation cost while preserving
+   native tool completion and the accepted custom-role planning workflow. Preserve
+   identified OpenPI reconnect behavior, ActionGate and independent post-execution
    verification; record simulator video locally and inspect trace through the console.
 2. Preserve verified DSH recovery, JSON portability and exact selected-source hashes;
    validate additional model routes against their actual supported protocols.
-3. Complete clean custom-role RoboTwin and BEHAVIOR policy workflows, including
-   shutdown. Continue real RoboCasa successful-task and recovery acceptance.
+3. Obtain original BEHAVIOR task success and RoboDojo build_tower completion.
+   Verify additional compatible task/checkpoint configurations for RoboTwin and
+   RoboCasa, including their original terminal records and shutdown boundaries.
 4. Finish the watchdog/resource boundary and native perception/active-observation
    providers. Apply the same capability/configuration rules to every supported body.
 5. Preserve existing selective experience retrieval. Resume deferred SceneState and
