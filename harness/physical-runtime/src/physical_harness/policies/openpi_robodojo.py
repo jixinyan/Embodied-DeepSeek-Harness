@@ -15,7 +15,7 @@ class OpenPiRoboDojoPolicy:
             raise ValueError("A checkpoint digest and positive bounded inference timeout are required.")
         self._timeout_s = timeout_s
         self._checkpoint_sha256 = checkpoint_sha256
-        self._index = 0
+        self._index = -1
         self._packer = msgpack_numpy.Packer()
         self._connection = connect(uri, proxy=None, compression=None, max_size=32 * 1024 * 1024,
                                    open_timeout=30, close_timeout=1, ping_timeout=None)
@@ -25,9 +25,11 @@ class OpenPiRoboDojoPolicy:
                     self.metadata.get("config") != "pi05_base_aloha_full_sim_arx-x5_seed_0" or
                     self.metadata.get("backend") != "OpenPI/JAX" or
                     self.metadata.get("action_horizon") != 50 or self.metadata.get("action_dim") != 14 or
-                    self.metadata.get("inferences") != 0 or
+                    self.metadata.get("request_identity_version") != "edh.openpi.request_identity.v1" or
+                    type(self.metadata.get("inferences")) is not int or self.metadata["inferences"] < 0 or
                     self.metadata.get("gripper_semantics") != "continuous_0_closed_1_open"):
-                raise ValueError("RoboDojo requires a fresh identified ARX X5 OpenPI service.")
+                raise ValueError("RoboDojo requires an identified ARX X5 OpenPI service with request-bound inference.")
+            self._index = self.metadata["inferences"] - 1
         except BaseException:
             self.close()
             raise
@@ -55,14 +57,17 @@ class OpenPiRoboDojoPolicy:
             images[name] = np.transpose(pixels, (2, 0, 1))
             camera_sha256[name] = hashlib.sha256(images[name].tobytes()).hexdigest()
         try:
-            self._connection.send(self._packer.pack({"state": state, "prompt": instruction, "images": images}))
+            self._connection.send(self._packer.pack({"state": state, "prompt": instruction, "images": images,
+                                                     "edh_request_id": request["request_id"]}))
             response = self._connection.recv(timeout=self._timeout_s)
             if not isinstance(response, bytes):
                 raise ValueError("OpenPI returned a nonbinary policy result.")
             predicted = msgpack_numpy.unpackb(response)
             identity = predicted["policy_identity"]
-            if (identity["checkpoint_sha256"] != self._checkpoint_sha256 or
-                    identity["inference_index"] != self._index or
+            if (any(identity.get(name) != value for name, value in self.metadata.items() if name != "inferences") or
+                    identity.get("source_request_id") != request["request_id"] or
+                    identity.get("instruction_sha256") != hashlib.sha256(instruction.encode("utf-8")).hexdigest() or
+                    type(identity.get("inference_index")) is not int or identity["inference_index"] <= self._index or
                     identity["state_sha256"] != hashlib.sha256(state.tobytes()).hexdigest() or
                     identity["camera_sha256"] != camera_sha256):
                 raise ValueError("OpenPI policy identity or inference sequence differs from the admitted service.")
@@ -74,7 +79,7 @@ class OpenPiRoboDojoPolicy:
             raise
         actions = raw.copy()
         actions[:, [6, 13]] = np.clip(actions[:, [6, 13]], 0, 1)
-        self._index += 1
+        self._index = identity["inference_index"]
         return actions[:request["max_actions"]].tolist(), {
             **identity, "native_instruction": instruction,
             "raw_actions": raw.tolist(), "actions": actions.tolist(),

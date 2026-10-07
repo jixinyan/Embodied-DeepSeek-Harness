@@ -6,6 +6,12 @@ set -euo pipefail
 : "${EDH_MODEL_WORK:?Set an ignored runtime working directory}"
 : "${EDH_MODEL_IPC_DIRECTORY:?Set a short ignored directory for local process sockets}"
 
+ipc_path_bytes=$(LC_ALL=C printf '%s' "$EDH_MODEL_IPC_DIRECTORY" | wc -c)
+if [[ "$EDH_MODEL_IPC_DIRECTORY" != /* || "$ipc_path_bytes" -gt 60 ]]; then
+  printf '%s\n' 'EDH_MODEL_IPC_DIRECTORY must be an absolute path of at most 60 bytes for vLLM Unix sockets.' >&2
+  exit 1
+fi
+
 mkdir -p "$EDH_MODEL_IPC_DIRECTORY" "$EDH_MODEL_WORK/cache"
 export TMPDIR="$EDH_MODEL_IPC_DIRECTORY"
 export VLLM_RPC_BASE_PATH="$EDH_MODEL_IPC_DIRECTORY"

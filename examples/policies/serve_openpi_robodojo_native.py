@@ -3,6 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 import time
+from uuid import UUID
 
 import jax
 import numpy as np
@@ -23,11 +24,19 @@ class IdentifiedPolicy(BasePolicy):
 
     def infer(self, observation):
         started = time.monotonic()
-        output = self.policy.infer(observation)
+        request_id = observation["edh_request_id"]
+        if not isinstance(request_id, str) or str(UUID(request_id)) != request_id:
+            raise ValueError("OpenPI inference requires a canonical EDH request UUID.")
+        model_observation = {name: value for name, value in observation.items() if name != "edh_request_id"}
+        prompt = model_observation["prompt"]
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise ValueError("OpenPI inference requires its original nonempty instruction.")
+        output = self.policy.infer(model_observation)
         actions = np.asarray(output["actions"], dtype=np.float32)
         if actions.shape != (50, 14) or not np.isfinite(actions).all():
             raise ValueError("ARX X5 OpenPI inference must return a finite 50 by 14 action horizon.")
-        identity = {**self.identity, "inference_index": self.index,
+        identity = {**self.identity, "inference_index": self.index, "source_request_id": request_id,
+                    "instruction_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
                     "elapsed_s": time.monotonic() - started,
                     "state_sha256": hashlib.sha256(np.asarray(observation["state"], dtype=np.float32).tobytes()).hexdigest(),
                     "camera_sha256": {name: hashlib.sha256(np.asarray(image).tobytes()).hexdigest()
@@ -66,7 +75,8 @@ def main():
     source_digest = hashlib.sha256(
         json.dumps(source_hashes, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
-    identity = {"checkpoint_sha256": verified["checkpoint_sha256"], "config": name,
+    identity = {"request_identity_version": "edh.openpi.request_identity.v1",
+                "checkpoint_sha256": verified["checkpoint_sha256"], "config": name,
                 "backend": "OpenPI/JAX", "checkpoint_revision": verified["revision"],
                 "checkpoint_path": str(checkpoint),
                 "policy_source_directory": str(source_directory),

@@ -71,6 +71,10 @@ def service_sources(verification_path: Path, bridge_log: Path, native_log: Path)
             "OpenPI acceptance requires one identified native startup and one JSON bridge startup.")
     verify_identity(native_start[0], identity)
     source = native_start[0]
+    if "request_identity_version" in source:
+        require(source["request_identity_version"] == "edh.openpi.request_identity.v1",
+                "Native OpenPI request identity version is unsupported.")
+        identity["request_identity_version"] = source["request_identity_version"]
     source_fields = ("checkpoint_path", "policy_source_directory", "policy_source_files_sha256", "policy_source_sha256")
     if any(name in source for name in source_fields):
         require(all(name in source for name in source_fields), "Native policy source identity is incomplete.")
@@ -88,9 +92,15 @@ def service_sources(verification_path: Path, bridge_log: Path, native_log: Path)
             "Imported OpenPI source file inventory differs from its aggregate SHA256.")
         identity.update({name: source[name] for name in source_fields})
     verify_identity(bridge_start[0]["metadata"], identity)
+    initial_index = bridge_start[0]["metadata"]["inferences"]
     require(bridge_start[0]["checkpoint_sha256"] == identity["checkpoint_sha256"] and
-            bridge_start[0]["metadata"]["inferences"] == 0,
-            "OpenPI bridge did not admit a fresh matching native service.")
+            type(initial_index) is int and initial_index >= 0,
+            "OpenPI bridge did not admit a matching identified native service.")
+    if "request_identity_version" in identity:
+        require(bridge_start[0]["metadata"].get("request_identity_version") == identity["request_identity_version"],
+                "OpenPI bridge request identity protocol differs from its native service.")
+    else:
+        require(initial_index == 0, "Legacy OpenPI records require a fresh native service.")
     native_inferences = {}
     for item in native:
         if item.get("event") != "native_policy_inference":
@@ -101,22 +111,33 @@ def service_sources(verification_path: Path, bridge_log: Path, native_log: Path)
         native_inferences[index] = item
     bridge_inferences = []
     seen_requests = set()
+    previous_index = initial_index - 1
     for item in bridge:
         if item.get("event") != "policy_inference_completed":
             continue
         verify_identity(item, identity)
         index = item["inference_index"]
-        require(type(index) is int and index == len(bridge_inferences) and index in native_inferences,
+        require(type(index) is int and index > previous_index and index in native_inferences,
                 "JSON bridge inference sequence differs from the actual native inference sequence.")
+        if "request_identity_version" not in identity:
+            require(index == len(bridge_inferences), "Legacy OpenPI bridge inference sequence is incomplete.")
         require(item["request_id"] not in seen_requests, "OpenPI bridge inference request is duplicated.")
         source = native_inferences[index]
         require(all(source[name] == item[name] for name in ("state_sha256", "camera_sha256", "elapsed_s")),
                 "JSON bridge input hashes or elapsed time differ from the actual native inference record.")
+        if "request_identity_version" in identity:
+            require(source.get("request_identity_version") == item.get("request_identity_version") ==
+                    identity["request_identity_version"] and
+                    source.get("source_request_id") == item.get("source_request_id") == item["request_id"] and
+                    source.get("instruction_sha256") == item.get("instruction_sha256") ==
+                    sha256(item["native_instruction"].encode("utf-8")).hexdigest(),
+                    "OpenPI inference request or instruction differs from its actual native input.")
         require(type(item["elapsed_s"]) in (int, float) and np.isfinite(item["elapsed_s"]) and item["elapsed_s"] >= 0,
                 "OpenPI native inference elapsed time is invalid.")
         verify_actions(item)
         seen_requests.add(item["request_id"])
         bridge_inferences.append(item)
+        previous_index = index
     require(bridge_inferences, "OpenPI logs contain no identified completed inference.")
     return identity, verification, bridge_inferences
 
@@ -147,6 +168,11 @@ def verify_request_inputs(request: dict, record: dict) -> None:
             "OpenPI inference state hash differs from the actual admitted float32 state.")
     require(record["native_instruction"] == observation["control_context"]["instruction"],
             "OpenPI inference differs from its original native instruction.")
+    if "request_identity_version" in record:
+        require(record["request_identity_version"] == "edh.openpi.request_identity.v1" and
+                record["source_request_id"] == request["request_id"] and
+                record["instruction_sha256"] == sha256(record["native_instruction"].encode("utf-8")).hexdigest(),
+                "OpenPI inference does not preserve its exact request and instruction identity.")
     require(set(observation["cameras"]) == set(record["camera_sha256"]) == set(CAMERAS),
             "OpenPI inference cameras differ from the admitted three-camera input.")
     for name in CAMERAS:
