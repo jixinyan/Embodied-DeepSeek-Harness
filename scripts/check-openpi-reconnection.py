@@ -24,7 +24,9 @@ def main():
     original = json.loads(original_bytes)
     validator = ContractValidator.from_path(args.schema)
     validator.parse("PolicyRequest", original)
-    if original["observation"].get("environment") != "robodojo":
+    if (original["observation"].get("schema_version") != "edh.policy_observation.v1" or
+            original["observation"].get("embodiment_id") != "robodojo.dual-arx-x5" or
+            original["action_spec"]["control_mode"] != "robodojo.qpos_target"):
         raise ValueError("The probe requires an original native RoboDojo policy observation.")
     args.output_directory.mkdir(parents=True, exist_ok=False)
     records = []
