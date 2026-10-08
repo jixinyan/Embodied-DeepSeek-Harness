@@ -19,14 +19,18 @@ tracks the remaining work across that behavior.
 
 The [CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign) executes
 26 source/production components from actual configuration and original records.
-macOS passes 222 admission/process/wire/resource cases, six visual-context cases,
-twelve original context reads and four-provider readiness. Frozen `0000db5` passes
-the same twenty-six components and three signal cases on isolated Linux. Six original inputs, six
-original configurations, nineteen diagnostic hashes and 202 component source-hash
-comparisons match; every report and the downloaded archive retain their verified
+Clean `d8b3aee` passes 252 admission/process/wire/resource cases per platform on
+macOS and isolated Linux, six visual-context cases, twelve original context reads
+and four-provider readiness. Six original inputs, six original configurations,
+nineteen diagnostic hashes and 216 component source-hash comparisons match;
+every report and the downloaded archive retain their verified
 digests. Owned resources release and the canonical remote checkout remains
 unchanged. Current-code loaded models, simulator actions and complete task
-workflows retain their native gates.
+workflows retain their native gates. The actual four-provider checkpoint binding
+diagnostic accepts matching original digests, rejects different digests and
+retains unchanged reference files. Fifty-six receipt-identified processes/groups
+have independent actual OS absence checks. Custom loaded-model effectiveness
+retains the selected deployment's native acceptance requirement.
 
 Native configuration and provider/workspace assembly have production owners in
 `apps/server/src`; example entries retain their startup interfaces. Exact source,

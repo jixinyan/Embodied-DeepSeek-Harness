@@ -17,9 +17,28 @@ Forty-two actual macOS example/module startup cases pass, including malformed
 selected digests before SDK imports. The source-bound startup report includes
 the provenance and native inventory readers. Evidence:
 `.local/work/v1-checkpoint-binding-startup-20261008-final/acceptance.json`.
-The new original-checkpoint diagnostic requires real reference artifacts for all
-four providers. It supplies no fine-tuned-model result or learned action. See
-[checkpoint bindings](checkpoint-bindings.md) for the supported inputs and limits.
+Clean `d8b3aee` passes all twenty-six CPU components on macOS and isolated Linux:
+252 admission/process/wire/resource cases per platform, six visual-context cases,
+twelve original context reads and four-provider readiness. Independent comparison
+verifies six original inputs, six configuration sources, nineteen diagnostic
+hashes, 216 component source comparisons and fifty-two process receipts. Actual
+OS checks confirm absence of fifty-six receipt-identified groups/children.
+
+All four original checkpoint bindings pass on Linux. GR00T/LeRobot identities
+match their original reference manifests; different selected digests are rejected.
+The actual eighteen-file RoboDojo checkpoint remains unchanged, including all
+12,440,992,402 bytes. Four native entry cases verify selected identity, original
+report-directory errors and digest rejection before SDK imports. The canonical
+server checkout preserves its status and isolated source remains clean.
+
+Reports and independent source/process summaries are under
+`.local/work/v1-cpu-checkpoint-binding-macos-20261008/` and
+`.local/work/v1-cpu-checkpoint-binding-linux-20261008/`. The downloaded archive
+matches server SHA-256
+`99f347ee0491b314fe9e69480f293fa62a6c81088e0e6c83aad8580d467bb1b7`.
+GPU/model/environment allocation and controls remain zero. These checks supply
+original-file and preallocation evidence; custom-model effectiveness and native
+task acceptance retain their own gates. See [checkpoint bindings](checkpoint-bindings.md).
 
 ## 2026-10-08 native OpenPI preallocation
 

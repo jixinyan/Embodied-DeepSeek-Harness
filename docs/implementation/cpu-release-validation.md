@@ -18,25 +18,26 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
-Clean `653a3ea` passes all twenty-six components on macOS and isolated Linux:
-244 admission/process/wire/resource cases per platform, six visual-context cases,
+Clean `d8b3aee` passes all twenty-six components on macOS and isolated Linux:
+252 admission/process/wire/resource cases per platform, six visual-context cases,
 twelve original native context reads and four-provider readiness. Independent
 comparison verifies six original inputs, six original configuration sources,
-nineteen diagnostic hashes, 214 component source comparisons and fifty-two
+nineteen diagnostic hashes, 216 component source comparisons and fifty-two
 component process receipts. Original journals/configuration data remain unchanged,
 the canonical server checkout preserves its status and the isolated source stays
-clean. Actual OS checks independently confirm absence of fifty-four original
+clean. Actual OS checks independently confirm absence of fifty-six original
 diagnostic process groups and checkpoint-admission children. GPU/model/environment
 allocation and controls remain zero.
 
-The Linux source also verifies the actual eighteen-file RoboDojo checkpoint
-and reaches original report-directory errors from both native entry forms before
-SDK imports. All 12,440,992,402 checkpoint bytes retain their original verified
-identity. Reports and independent source/process summaries:
-`.local/work/v1-cpu-openpi-preallocation-macos-20261008/` and
-`.local/work/v1-cpu-openpi-preallocation-linux-20261008/`.
+The Linux source also validates selected digests against all four original
+checkpoints and rejects mismatched digests. Both native OpenPI entry forms retain
+their actual report-directory errors before SDK imports. All eighteen original
+RoboDojo files and 12,440,992,402 checkpoint bytes retain their verified identity.
+Reports and independent source/process summaries:
+`.local/work/v1-cpu-checkpoint-binding-macos-20261008/` and
+`.local/work/v1-cpu-checkpoint-binding-linux-20261008/`.
 The downloaded evidence matches server SHA-256
-`1368371e5aca372320834aaa9b6f4e270887d8fa2cb48fe47b90a683cd94e7f7`.
+`99f347ee0491b314fe9e69480f293fa62a6c81088e0e6c83aad8580d467bb1b7`.
 Loaded native service/device/task acceptance remains outside these CPU checks.
 
 The complete macOS campaign and all twenty-six process receipts pass under

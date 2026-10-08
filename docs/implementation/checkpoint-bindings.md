@@ -91,3 +91,15 @@ CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
 These checks use original reference artifacts. They supply no fine-tuned-model
 result, inference, simulator allocation or physical action. Preserve the output's
 source hashes, original file identities, actual errors and child exits.
+
+Clean `d8b3aee` passes this actual-file diagnostic on isolated Linux: three original
+GR00T/LeRobot bindings, complete eighteen-file RoboDojo verification and four
+native producer entry cases. All original identities/files remain unchanged.
+Its full macOS/Linux CPU campaigns each pass twenty-six components and 252
+admission/process/wire/resource cases. Independent comparison verifies 216
+component source hashes, all fifty-two process receipts and fifty-six actual OS
+absence checks. Evidence and the independently verified summaries are under
+`.local/work/v1-cpu-checkpoint-binding-macos-20261008/` and
+`.local/work/v1-cpu-checkpoint-binding-linux-20261008/`. See the
+[CPU guide](cpu-release-validation.md#consolidated-cpu-campaign) for scope and
+the verified archive identity.

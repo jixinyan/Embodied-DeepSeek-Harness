@@ -18,8 +18,9 @@ Models, policy inference and simulator tasks remain stopped during CPU work.
 Native GR00T/LeRobot and OpenPI services admit an explicitly selected checkpoint
 SHA256 before SDK imports. Compatible custom artifacts retain their own identity
 and mandatory adapter checks. Forty-two actual macOS example/module CLI cases
-pass, including malformed selected digests. Actual original-file binding checks
-and loaded custom-checkpoint acceptance have separate scopes; see
+pass, including malformed selected digests. The actual original-file diagnostic
+passes for all four providers on Linux. Loaded custom-checkpoint acceptance
+retains its native requirements; see
 [checkpoint configuration](checkpoint-bindings.md).
 
 Native OpenPI port, complete checkpoint inventory and verification-report checks
@@ -27,14 +28,15 @@ precede SDK imports. Thirty-four actual example/module startup cases and full
 source checks pass on macOS without model or GPU allocation. Original action and
 request identity behavior remains unchanged; loaded service/task gates remain open.
 
-Clean `653a3ea` completes all twenty-six CPU components on macOS and isolated
-Linux, with 244 admission/process/wire/resource cases per platform, six visual
+Clean `d8b3aee` completes all twenty-six CPU components on macOS and isolated
+Linux, with 252 admission/process/wire/resource cases per platform, six visual
 cases, twelve original context reads and four-provider readiness. Independent
-comparison verifies 214 component source hashes, original inputs/configurations,
-all fifty-two process receipts and the downloaded archive digest. Fifty-four
+comparison verifies 216 component source hashes, original inputs/configurations,
+all fifty-two process receipts and the downloaded archive digest. Fifty-six
 actual OS absence checks confirm diagnostic group/child release. The original
-RoboDojo checkpoint passes complete eighteen-file verification and two actual
-report-path failures before SDK imports. Canonical server changes and checkpoint
+RoboDojo checkpoint passes complete eighteen-file verification and four actual
+selected-identity/report-path cases before SDK imports. GR00T/LeRobot reference
+identities match and reject different selected digests. Canonical server changes and checkpoint
 bytes remain unchanged; GPU/model/environment allocation stays zero.
 
 Native provider and workspace assembly now belong to `apps/server/src`.

@@ -23,9 +23,14 @@ Native policy service startup, model identity and inference audit belong to
 `physical_harness/policies/services`. Five example entries import those same
 production functions. Direct module and example entries pass twenty-four actual
 CPU startup cases; original logic, repository root, schema/manifest data and
-function identity have separate checks. The same startup/owner/module and full
-source checks pass on isolated Linux, with thirty-two verified source/input
-comparisons and unchanged canonical checkout status. Model SDKs load only in selected startup;
+function identity have separate checks. Current `d8b3aee` passes forty-two startup
+cases within all twenty-six CPU components on both platforms, with 252
+admission/process/wire/resource cases per platform. Independent comparison
+verifies 216 component source hashes, original inputs/configuration and fifty-two
+process receipts; fifty-six actual OS checks confirm process/group release.
+Actual original checkpoints for all four providers pass selected identity checks
+on Linux. The canonical checkout status and original checkpoint files remain
+unchanged. Model SDKs load only in selected startup;
 loaded inference and physical workflows retain native acceptance requirements.
 
 The CPU campaign retains each diagnostic's process-group ownership until actual
