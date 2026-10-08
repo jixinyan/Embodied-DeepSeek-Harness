@@ -1,5 +1,6 @@
 {
   "schemaVersion": "edh.cpu_release.v1",
+  "packageManagerCommand": ["pnpm"],
   "python": "/absolute/path/isolated-environment/bin/python",
   "workspace": "/absolute/path/native-workspace.json",
   "workerConfiguration": "/absolute/path/original-native-worker-deployment.json",

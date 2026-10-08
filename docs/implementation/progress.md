@@ -32,7 +32,7 @@ environment identity and all child diagnostics run with CUDA invisible.
 The macOS campaign passes 85 process/wire/resource cases, six native visual-context
 cases, twelve original context reads, all project checks and actual four-provider
 readiness. No model, policy result, simulator or control is supplied.
-Evidence: `.local/work/v1-cpu-release-campaign-20261008-01/acceptance.json`.
+Evidence: `.local/work/v1-cpu-release-campaign-20261008-final/acceptance.json`.
 See [campaign command and inputs](cpu-release-validation.md#consolidated-cpu-campaign).
 
 ## 2026-10-08 managed service startup ownership

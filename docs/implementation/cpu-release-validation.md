@@ -22,6 +22,11 @@ with actual original inputs. Paths resolve relative to that configuration. The
 Python executable preserves its virtual-environment symlink and requires the base
 package plus `policy`, `diagnostics`, `recording` and `robodojo` extras. Node/pnpm
 use the project's installed dependencies. The process/group checks require POSIX.
+`packageManagerCommand` is an explicit argument array: `["pnpm"]` uses PATH;
+`["/absolute/node", "/absolute/pnpm.mjs"]` selects an isolated installation.
+Arguments execute directly without shell interpolation. File inputs and Python
+paths resolve against the configuration directory; command arguments retain
+their declared values.
 
 ```sh
 pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/run-cpu-release-campaign.mjs \
@@ -43,7 +48,7 @@ On 2026-10-08, the current macOS source passes all sixteen components, including
 85 process/wire/resource cases, six native visual-context cases, twelve original
 native context reads and four-provider readiness. All original inputs retain their
 hashes. There are no model calls, policy results, simulator allocations or controls.
-Evidence: `.local/work/v1-cpu-release-campaign-20261008-01/acceptance.json`.
+Evidence: `.local/work/v1-cpu-release-campaign-20261008-final/acceptance.json`.
 Loaded-model/device behavior and original task completion retain the
 [native campaign](native-release-campaign.md) requirements.
 

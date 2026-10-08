@@ -23,6 +23,7 @@ const configurationPath = resolve(values.config);
 const configuration = z
   .object({
     schemaVersion: z.literal('edh.cpu_release.v1'),
+    packageManagerCommand: z.array(z.string().min(1)).min(1).max(16),
     python: z.string().min(1),
     workspace: z.string().min(1),
     workerConfiguration: z.string().min(1),
@@ -68,7 +69,10 @@ const environment = {
   PYTHONDONTWRITEBYTECODE: '1',
   TSX_TSCONFIG_PATH: resolve(root, 'tsconfig.runtime.json'),
 };
-const jobs = [{ id: 'source', executable: 'pnpm', args: ['check'] }];
+const [packageManager, ...packageManagerArguments] = configuration.packageManagerCommand;
+const jobs = [
+  { id: 'source', executable: packageManager, args: [...packageManagerArguments, 'check'] },
+];
 const add = (id, script, args) =>
   jobs.push({
     id,
