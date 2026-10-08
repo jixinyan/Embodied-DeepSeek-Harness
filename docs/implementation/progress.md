@@ -14,19 +14,33 @@ identity. OpenPI audits accept the configured complete inventory and its saved
 ARX X5 normalization. Original request, action, source and formal-verdict checks
 retain their existing requirements.
 
-Sixteen original-record checks and twenty actual configuration/factory/HTTP checks
-pass on macOS for all four providers. They preserve actual task outcomes and
-original artifacts, reject inconsistent selections and release Console/writer
-resources. Complete project checks pass with 128 pinned DSH files and 25 bindings.
-Evidence: `.local/work/v1-checkpoint-audit-20261008-final/` and
-`.local/work/v1-checkpoint-profiles-20261008-final/`. GPU/model/environment
-allocation and controls remain zero. See [checkpoint bindings](checkpoint-bindings.md).
+Clean `6877ce3` passes all twenty-eight CPU components on macOS and isolated Linux,
+including sixteen original-record checks and twenty actual configuration/factory/HTTP
+checks for all four providers. Each platform passes 290 admission/process/wire/resource
+cases, six visual-context cases, twelve original context reads and four-provider
+readiness. Complete project checks retain 128 pinned DSH files and 25 bindings.
+The optional `checkpointAuditConfiguration` runs both checkpoint diagnostics
+through existing sequential process ownership.
 
-The CPU campaign accepts optional `checkpointAuditConfiguration` to run both
-new diagnostics under its existing sequential process ownership. Next CPU action:
-verify the configured twenty-eight-component campaign on isolated Linux and macOS
-and recheck original checkpoint files. Loaded custom-checkpoint effectiveness and
-complete native workflows retain their GPU acceptance requirements.
+Independent verification matches 318 component source/input hash comparisons,
+twenty-one diagnostic hashes and all fifty-six process receipts. Eighty-six
+transferred original artifact files retain their verified bytes. Actual Linux
+checkpoint checks accept the complete recorded identity for three GR00T/LeRobot
+artifacts and verify all eighteen RoboDojo files, totaling 12,440,992,402 bytes.
+Four native entry checks preserve pre-SDK admission; normalization and original
+checkpoint files remain unchanged. Sixty-one independent actual OS checks confirm
+absence of fifty-six diagnostic groups, four native admission children and the
+execution script. The canonical server status remains unchanged and the frozen
+source remains clean. Original task outcomes are preserved.
+
+Evidence and independently verified summaries:
+`.local/work/v1-cpu-checkpoint-audit-macos-20261008-final/` and
+`.local/work/v1-cpu-checkpoint-audit-linux-20261008/`. The downloaded archive matches
+server SHA-256 `7988e4d3e0877de503f4d1f1b65778bb6fdc7005de43d72a57bca9eb3d315eed`.
+GPU/model/environment allocation and controls remain zero. Loaded custom-checkpoint
+effectiveness and complete native workflows retain their GPU acceptance requirements.
+See [checkpoint bindings](checkpoint-bindings.md) and the
+[CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign).
 
 ## 2026-10-08 OpenPI normalization admission
 

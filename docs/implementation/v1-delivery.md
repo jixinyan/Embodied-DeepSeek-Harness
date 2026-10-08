@@ -18,18 +18,18 @@ The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
 The [CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign) executes
-26 source/production components from actual configuration and original records.
-Clean `43ad63c` passes 254 admission/process/wire/resource cases per platform on
+28 configured source/production components from actual configuration and original records.
+Clean `6877ce3` passes 290 admission/process/wire/resource cases per platform on
 macOS and isolated Linux, six visual-context cases, twelve original context reads
-and four-provider readiness. Six original inputs, six original configurations,
-nineteen diagnostic hashes and 216 component source-hash comparisons match;
+and four-provider readiness. Twenty-one diagnostic hashes and 318 component
+source/input hash comparisons match;
 every report and the downloaded archive retain their verified
 digests. Owned resources release and the canonical remote checkout remains
 unchanged. Current-code loaded models, simulator actions and complete task
 workflows retain their native gates. The actual four-provider checkpoint binding
 diagnostic accepts matching original digests, rejects different digests and
-retains unchanged reference files. Fifty-six receipt-identified processes/groups
-have independent actual OS absence checks. Custom loaded-model effectiveness
+retains unchanged reference files. Fifty-six component process receipts verify,
+and sixty-one actual OS checks confirm diagnostic/child/script absence. Custom loaded-model effectiveness
 retains the selected deployment's native acceptance requirement. The native
 producer admits saved fourteen-channel normalization before SDK imports, and the
 JSON bridge admits digest syntax before listener/client allocation. Eight
@@ -37,10 +37,11 @@ original-file/declared invalid-input normalization checks match across platforms
 three diagnostic/source hashes and six SDK source hashes verify. Actual original
 checkpoint and normalization files remain unchanged. Configured checkpoint
 profile/admission and rollout identity have sixteen original-record and twenty
-actual four-provider configuration/factory/HTTP checks on macOS. The optional
-twenty-eight-component campaign adds those checks to shared process ownership.
-Current-source Linux checks and loaded custom-checkpoint acceptance retain their
-stated verification requirements; see [checkpoint bindings](checkpoint-bindings.md).
+actual four-provider configuration/factory/HTTP checks on both platforms. The
+optional twenty-eight-component campaign includes those checks through shared
+process ownership. All eighty-six transferred original artifacts and original
+checkpoint files remain unchanged. Loaded custom-checkpoint acceptance retains
+its native verification requirements; see [checkpoint bindings](checkpoint-bindings.md).
 
 Native configuration and provider/workspace assembly have production owners in
 `apps/server/src`; example entries retain their startup interfaces. Exact source,

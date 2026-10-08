@@ -153,9 +153,17 @@ passes sixteen checks using original reference runs, requests and native inferen
 logs. The [profile diagnostic](../../scripts/check-checkpoint-profiles-offline.mjs)
 passes twenty actual factory/configuration/HTTP checks across all four providers.
 Malformed and inconsistent selections are rejected, original files remain unchanged,
-and the Console listener/writer resources release. macOS reports:
-`.local/work/v1-checkpoint-audit-20261008-final/` and
-`.local/work/v1-checkpoint-profiles-20261008-final/`.
+and the Console listener/writer resources release. Clean `6877ce3` includes both
+diagnostics in matching macOS/Linux campaigns of twenty-eight components and 290
+admission/process/wire/resource cases per platform. Independent verification
+matches 318 component source/input hashes, twenty-one diagnostic hashes and
+fifty-six process receipts. Sixty-one actual OS checks confirm owned process
+release. All eighty-six transferred original artifact files and all four original
+checkpoints remain unchanged. Linux verifies the full recorded identities for the
+three GR00T/LeRobot checkpoints and the eighteen-file RoboDojo checkpoint, including
+its saved normalization. Reports and independent summaries:
+`.local/work/v1-cpu-checkpoint-audit-macos-20261008-final/` and
+`.local/work/v1-cpu-checkpoint-audit-linux-20261008/`.
 These results establish configured reference selection and rejection boundaries.
 Custom-checkpoint inference and complete physical workflows require their native
 acceptance with actual selected artifacts.

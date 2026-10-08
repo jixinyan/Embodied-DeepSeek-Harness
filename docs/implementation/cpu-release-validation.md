@@ -18,31 +18,33 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
-Clean `43ad63c` passes all twenty-six components on macOS and isolated Linux:
-254 admission/process/wire/resource cases per platform, six visual-context cases,
-twelve original native context reads and four-provider readiness. Independent
-comparison verifies six original inputs, six original configuration sources,
-nineteen diagnostic hashes, 216 component source comparisons and fifty-two
-component process receipts. Original journals/configuration data remain unchanged,
+Clean `6877ce3` passes all twenty-eight configured components on macOS and isolated
+Linux: 290 admission/process/wire/resource cases per platform, six visual-context
+cases, twelve original native context reads and four-provider readiness. The
+optional `checkpointAuditConfiguration` includes sixteen original-record identity
+checks and twenty actual four-provider configuration/factory/HTTP checks.
+Independent comparison verifies twenty-one diagnostic hashes, 318 component
+source/input hash comparisons and fifty-six component process receipts. All
+eighty-six transferred original artifact files retain their verified bytes.
+Original journals/configuration data remain unchanged,
 the canonical server checkout preserves its status and the isolated source stays
-clean. Actual OS checks independently confirm absence of fifty-six original
-diagnostic process groups and checkpoint-admission children. GPU/model/environment
+clean. Sixty-one actual OS checks independently confirm absence of fifty-six
+diagnostic process groups, four checkpoint-admission children and the execution
+script. GPU/model/environment
 allocation and controls remain zero.
 
-The Linux source also validates selected digests against all four original
-checkpoints and rejects mismatched digests. Both native OpenPI entry forms retain
+The Linux source also validates selected digests and complete recorded identities
+against all four original checkpoints and rejects mismatched digests. Both native OpenPI entry forms retain
 their actual report-directory errors before SDK imports. All eighteen original
 RoboDojo files and 12,440,992,402 checkpoint bytes retain their verified identity.
 Eight original-file/declared invalid-input normalization cases and three source
 hashes match across platforms; six installed SDK source hashes match their recorded
 provenance. The actual native normalization identity matches its complete inventory.
-Runner/archive processes and the runner group have independent actual OS absence
-checks in addition to the fifty-six component/child checks.
 Reports and independent source/process summaries:
-`.local/work/v1-cpu-openpi-normalization-macos-20261008/` and
-`.local/work/v1-cpu-openpi-normalization-linux-20261008/`.
+`.local/work/v1-cpu-checkpoint-audit-macos-20261008-final/` and
+`.local/work/v1-cpu-checkpoint-audit-linux-20261008/`.
 The downloaded evidence matches server SHA-256
-`7f9d9844c82ccd34345e99bd4a14b4873cbd01a912e575cd05a1c12007a94647`.
+`7988e4d3e0877de503f4d1f1b65778bb6fdc7005de43d72a57bca9eb3d315eed`.
 Loaded native service/device/task acceptance remains outside these CPU checks.
 
 The complete macOS campaign and all twenty-six process receipts pass under

@@ -18,11 +18,16 @@ Models, policy inference and simulator tasks remain stopped during CPU work.
 Native profile admission retains `checkpointSha256` in immutable Console/Session/run
 metadata. GR00T/LeRobot telemetry retains complete checkpoint files, and rollout
 audits check the configured identity; OpenPI checks the selected complete inventory
-and saved normalization. Sixteen original-record and twenty actual four-provider
-configuration/factory/HTTP checks pass on macOS. The CPU campaign optionally runs
-both diagnostics through `checkpointAuditConfiguration`. Next CPU action: complete
-the configured twenty-eight-component campaigns on macOS and isolated Linux,
-verify source/input/process identities and recheck actual checkpoint files.
+and saved normalization. Clean `6877ce3` completes all twenty-eight CPU components
+on macOS and isolated Linux, including sixteen original-record and twenty actual
+four-provider configuration/factory/HTTP checks. Each platform passes 290
+admission/process/wire/resource cases. Independent verification matches 318
+component source/input hashes and fifty-six process receipts; sixty-one actual
+OS checks confirm owned process release. All four original checkpoints, transferred
+original inputs and canonical server status remain unchanged. The CPU campaign
+optionally includes both diagnostics through `checkpointAuditConfiguration`.
+Loaded custom-checkpoint effectiveness and complete native workflows retain their
+native acceptance requirements.
 
 Native OpenPI validates ARX X5 saved normalization structure, fourteen finite
 entries per statistic, nonnegative standard deviations, ordered quantiles and
@@ -300,9 +305,10 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 and released ownership. No model or simulator result is supplied by a diagnostic.
 See [CPU release validation](cpu-release-validation.md).
 
-**Verified checkpoint:** macOS and frozen `f3e373c` on isolated Linux pass all
-twenty-six components, with matched original inputs/configurations, executable
-digests and released resources. Four actual profiles also prepare eight native
+**Verified checkpoint:** macOS and frozen `6877ce3` on isolated Linux pass all
+twenty-eight configured components, with 290 admission/process/wire/resource
+cases per platform, matched original input/source identities and independently
+confirmed resource release. Four actual profiles also prepare eight native
 task submissions. Loaded-model/device behavior and complete task workflows retain
 Steps 13–14's native acceptance requirements.
 

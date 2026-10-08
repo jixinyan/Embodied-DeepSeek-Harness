@@ -11,8 +11,13 @@ through immutable deployment, Console, Session and run metadata. GR00T/LeRobot
 startup/inference telemetry contains the complete checkpoint file mapping;
 recorded rollout audits verify the selected digest and preserved file/source
 identity. OpenPI audits admit a complete configured ARX X5 inventory and saved
-normalization. Sixteen original-record checks and twenty four-provider
-configuration/factory/HTTP checks pass on macOS with no GPU allocation.
+normalization. Clean `6877ce3` passes the twenty-eight-component CPU campaign on
+macOS and isolated Linux, including sixteen original-record checks and twenty
+four-provider configuration/factory/HTTP checks. Each platform passes 290
+admission/process/wire/resource cases. Independent verification matches 318
+component source/input hashes and all fifty-six process receipts; sixty-one actual
+OS checks confirm owned process release. All four original checkpoints and the
+canonical server checkout remain unchanged, with no GPU allocation.
 Loaded custom-checkpoint compatibility and physical task acceptance retain their
 native gates. See [checkpoint bindings](implementation/checkpoint-bindings.md).
 
