@@ -123,6 +123,19 @@ listener and writer resources. No Worker, model or task starts. Commands and
 evidence are in
 [CPU campaign cancellation](cpu-release-validation.md#native-campaign-cancellation).
 
+Clean `d3336fc` passes all twenty-eight configured CPU components on macOS and
+isolated Linux, with 327 admission/process/wire/resource cases per platform.
+Both hosts additionally prepare the same four native cases and eight planned
+task submissions from their current-source production readiness. Manifest,
+selected profile IDs, provider/task identities and admitted prerequisite checks
+match. Independent comparison verifies the prepared plan bytes, unchanged source
+and canonical server status. Fifty-seven actual OS checks confirm the fifty-six
+diagnostic groups and Linux execution script are absent. Models, environments,
+GPU jobs and controls remain zero. Evidence and independent summaries:
+`.local/work/v1-cpu-policy-mode-macos-20261008/` and
+`.local/work/v1-cpu-policy-mode-linux-20261008/`. The prepared matrix retains its
+actual native execution and independent source/task audit requirements.
+
 The campaign's accepted output establishes production HTTP workflow checks.
 Original simulator source, checkpoint, policy requests/responses, ActionGate
 receipts, calibrated observations, video decoding and process placement require

@@ -18,15 +18,26 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
-Policy execution-mode admission uses four explicitly invalid selectors in original
-request derivatives and the actual authenticated production WebSocket server.
-Each selector closes with code 1011 before the inference callback. The diagnostic
-also verifies seven non-finite/duplicate JSON inputs, exclusive original request
-recording, original telemetry and genuine unavailable-upstream failure. All original
-files preserve their hashes; connections/listeners release and no model or
-environment executes. Local evidence:
-`.local/work/v1-policy-mode-admission-20261008-after/`. Complete source checks pass.
-The consolidated campaign includes these cases through `policy-transport`.
+Clean `d3336fc` passes all twenty-eight configured components on macOS and isolated
+Linux: 327 admission/process/wire/resource cases per platform, six visual-context
+cases, twelve original context reads and four-provider readiness. Policy transport
+includes four explicitly invalid execution-mode selectors and seven non-finite/
+duplicate JSON inputs through the actual authenticated production WebSocket server.
+Each invalid selector closes with code 1011 before its inference callback. Original
+request recording, telemetry and genuine unavailable-upstream failure also pass.
+
+Independent comparison verifies 327 component source/input hashes, twenty-one
+diagnostic hashes and fifty-six process receipts. Fifty-seven actual OS checks
+confirm diagnostic group/script absence; the Linux execution script exits zero.
+Original files/outcomes remain unchanged, the canonical server preserves its exact
+status and isolated source stays clean. Both platforms prepare four native cases
+and eight planned task submissions through the production campaign, preserving
+profile, task and prerequisite bindings. No GPU, model, environment or controls
+execute. Current-source CPU preparation is complete; loaded native behavior and
+task/configuration requirements retain their own acceptance gates. Evidence and
+independent summaries: `.local/work/v1-cpu-policy-mode-macos-20261008/` and
+`.local/work/v1-cpu-policy-mode-linux-20261008/`. The downloaded archive matches
+server SHA-256 `4d6b9207b22b2654b01777bdf56569ccb3cb2613812e51325b99e7a3cd4485dd`.
 
 Clean `416a38a` passes all twenty-eight configured components on macOS and isolated
 Linux, with 323 admission/process/wire/resource cases per platform, six

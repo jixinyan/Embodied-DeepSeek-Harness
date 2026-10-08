@@ -11,6 +11,13 @@ selected checkpoint identity before inference admission. Explicit unsupported,
 null, boolean and numeric mode selectors fail without invoking a model. An omitted
 selector retains the learned-policy default. Original request/action scopes,
 response normalization, service ownership and ActionGate continue to apply.
+Clean `d3336fc` passes all twenty-eight CPU components and 327 admission/process/
+wire/resource cases per platform on macOS and isolated Linux. Independent comparison
+verifies 327 component source/input hashes, fifty-six process receipts and fifty-seven
+actual OS release checks. Both platforms prepare the same four native cases and
+eight planned submissions without models, environments or controls. Current-source
+CPU preparation is complete; loaded-model/device and native-task behavior retain
+their GPU acceptance requirements.
 
 Selected checkpoint identity reaches the execution boundary. Learned profiles bind
 `checkpointSha256` to Worker initialization and ActionGate tickets; requests,

@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.106 · 2026-10-08
+Version: v1.107 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -17,9 +17,13 @@ Models, policy inference and simulator tasks remain stopped during CPU work.
 
 Policy execution mode is validated before inference admission. Four actual
 WebSocket rejection cases and all original transport/recording checks pass on
-macOS without models, environments or controls. Next CPU action: run the
-current-source campaign on macOS and isolated Linux, preserving original inputs
-and confirming actual process release.
+macOS and isolated Linux from clean `d3336fc`. All twenty-eight CPU components
+pass 327 admission/process/wire/resource cases per platform. Independent comparison
+verifies 327 component source/input hashes, fifty-six process receipts and fifty-seven
+actual OS release checks. Original inputs and canonical server status remain unchanged.
+Both platforms prepare the same four native cases with eight planned submissions,
+with no GPU, model, environment or control allocation. Current-source CPU preparation
+is complete; Steps 13–14 retain the native acceptance requirements.
 
 Selected checkpoint identity reaches learned-policy requests and ActionGate
 admission. Services check their verified artifact before inference and identify
@@ -323,11 +327,11 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 and released ownership. No model or simulator result is supplied by a diagnostic.
 See [CPU release validation](cpu-release-validation.md).
 
-**Verified checkpoint:** macOS and frozen `416a38a` on isolated Linux pass all
-twenty-eight configured components, with 323 admission/process/wire/resource
+**Verified checkpoint:** macOS and frozen `d3336fc` on isolated Linux pass all
+twenty-eight configured components, with 327 admission/process/wire/resource
 cases per platform, matched original input/source identities and independently
-confirmed resource release. Four actual profiles also prepare eight native
-task submissions. Loaded-model/device behavior and complete task workflows retain
+confirmed resource release. Both platforms prepare four actual profiles and eight
+native task submissions. Loaded-model/device behavior and complete task workflows retain
 Steps 13–14's native acceptance requirements.
 
 ## Step 12 — Maintain Console, launcher and retained user Sessions

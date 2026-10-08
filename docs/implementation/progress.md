@@ -1,20 +1,36 @@
 # Implementation progress
 
+Spec: v1.107. Current checkpoint: **cross-platform CPU preparation, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+The [capability map](features.md) records implementation and acceptance boundaries.
+
 ## 2026-10-08 policy execution-mode admission
 
 The policy server validates execution mode before inference. Four declared invalid
 selectors in original-request derivatives—unsupported string, null, boolean and
 number—fail through the actual authenticated WebSocket endpoint before its inference
 callback. Seven non-finite/duplicate JSON checks, original request recording,
-telemetry inspection and actual unavailable-upstream failure also pass. Connections
-and listeners release; original sources remain unchanged. No model, environment or
-GPU starts. Complete source checks pass, including 128 pinned DSH files and 25
-bindings. Evidence: `.local/work/v1-policy-mode-admission-20261008-after/`.
-The current-source macOS/Linux campaign is the next CPU verification.
+telemetry inspection and actual unavailable-upstream failure also pass.
 
-Spec: v1.106. Current checkpoint: **checkpoint-bound action admission, source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
-This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
-remains in Git. [Capability map](features.md) separates working code from targets.
+Clean `d3336fc` passes all twenty-eight components on macOS and isolated Linux,
+with 327 admission/process/wire/resource cases per platform, six visual-context
+cases, twelve original context reads and four-provider readiness. Independent
+comparison verifies 327 component source/input hashes, twenty-one diagnostic hashes
+and fifty-six process receipts. Fifty-seven actual OS checks confirm diagnostic
+group/script absence; the Linux execution script exits with status zero. Original
+files and task outcomes remain unchanged, the canonical server preserves its exact
+status and isolated source stays clean. Complete source checks retain 128 pinned
+DSH files, 25 bindings, 65 Python files and 27 base imports.
+
+Both platforms prepare the same four native cases and eight planned task submissions
+through production readiness and campaign preparation. Selected profiles, original
+task identities and admitted prerequisite checks match. No task, model or environment
+executes; GPU jobs and controls remain zero. Evidence and independent summaries:
+`.local/work/v1-cpu-policy-mode-macos-20261008/` and
+`.local/work/v1-cpu-policy-mode-linux-20261008/`. The downloaded archive matches
+server SHA-256 `4d6b9207b22b2654b01777bdf56569ccb3cb2613812e51325b99e7a3cd4485dd`.
+Current-source CPU preparation is complete. Loaded model/device cancellation,
+native multi-goal recovery, original BEHAVIOR success, RoboDojo Tower completion
+and the complete installed configuration matrix retain their GPU acceptance gates.
 
 ## 2026-10-08 checkpoint-bound action admission
 
