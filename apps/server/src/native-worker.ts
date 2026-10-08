@@ -30,6 +30,7 @@ import {
 import { parseTaskCatalog, type TaskCatalogDefinition, type TaskDefinition } from '@edh/tasks';
 import type { DeploymentServices, SessionEnvironment } from './deployment.js';
 import { waitFor } from './managed-services.js';
+import { validateNativeWorkerConfiguration } from './native-worker-configuration.js';
 import {
   NativeProfileCleanup,
   type NativeProfileCleanupConfiguration,
@@ -287,13 +288,6 @@ class NativeWorkerTransport {
       !this.profileCleanup
     )
       throw new Error('Native worker NVIDIA profiles require a trusted cleanup binding.');
-    for (const timeout of [configuration.initializeTimeoutMs, configuration.closeTimeoutMs]) {
-      if (
-        timeout !== undefined &&
-        (!Number.isSafeInteger(timeout) || timeout <= 0 || timeout > 1800000)
-      )
-        throw new Error('Native worker lifecycle timeout is invalid.');
-    }
     this.child = spawn(configuration.command[0], configuration.command.slice(1), {
       cwd: configuration.cwd,
       env: { ...process.env, ...configuration.env, ...this.profileCleanup?.workerEnvironment },
@@ -1329,40 +1323,15 @@ export async function createNativeWorkerEnvironment(
   services: DeploymentServices,
   validator: ContractValidator,
 ): Promise<SessionEnvironment> {
-  parseTaskCatalog(configuration.catalog, validator);
-  if (
-    configuration.enableSimulatorInspection !== undefined &&
-    typeof configuration.enableSimulatorInspection !== 'boolean'
-  )
-    throw new Error('Native simulator inspection flag must be a boolean.');
-  if (configuration.enableSimulatorInspection && configuration.provider !== 'robodojo')
-    throw new Error('Native simulator inspection requires RoboDojo.');
-  if (Object.keys(configuration.catalog.tasks).length !== 1)
-    throw new Error('Native session must bind exactly one catalog task.');
+  validateNativeWorkerConfiguration(configuration, validator);
   const timeouts = {
     observationTtlS: configuration.observationTtlS ?? 30,
     deviceTimeoutS: configuration.deviceTimeoutS ?? 30,
     policyTimeoutS: configuration.policyTimeoutS ?? 30,
   };
-  if (Object.values(timeouts).some((value) => !Number.isFinite(value) || value <= 0 || value > 300))
-    throw new Error('Native policy and device timeouts must be positive and at most 300 seconds.');
   const toolTimeoutMs = configuration.toolTimeoutMs ?? 120_000;
-  if (!Number.isSafeInteger(toolTimeoutMs) || toolTimeoutMs <= 60_000 || toolTimeoutMs > 1_800_000)
-    throw new Error('Native tool timeout must exceed 60000 ms and be at most 1800000 ms.');
   const transportWriteTimeoutS = configuration.transportWriteTimeoutS ?? 30;
-  if (
-    !Number.isFinite(transportWriteTimeoutS) ||
-    transportWriteTimeoutS <= 0 ||
-    transportWriteTimeoutS > 60
-  )
-    throw new Error('Native transport write timeout must be positive and at most 60 seconds.');
   const policyMaxActionsPerInference = configuration.policyMaxActionsPerInference ?? 512;
-  if (
-    !Number.isSafeInteger(policyMaxActionsPerInference) ||
-    policyMaxActionsPerInference < 1 ||
-    policyMaxActionsPerInference > 512
-  )
-    throw new Error('Native policy action limit must contain 1 to 512 control commands.');
   const profileCleanup = configuration.profileCleanup
     ? new NativeProfileCleanup(configuration.profileCleanup)
     : undefined;

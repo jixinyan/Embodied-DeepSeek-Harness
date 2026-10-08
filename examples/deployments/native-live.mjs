@@ -22,10 +22,11 @@ import {
   managedServiceConfigurations,
   nativeWorkspaceRetention,
   nativePlannerReview,
+  nativeWorkerConfigurationSchema,
+  nativePolicyEndpointSchema,
   plannerReviewSchema,
   startServer,
 } from '../../apps/server/src/index.ts';
-import { nativeProfileCleanupSchema } from '../../apps/server/src/native-profile-cleanup.ts';
 
 export const nativeDeploymentRoot = fileURLToPath(new URL('../../', import.meta.url));
 const nonblank = z.string().trim().min(1);
@@ -39,24 +40,6 @@ const profileSchema = z
     environment: nonblank.optional(),
   })
   .strict();
-const workerSchema = z
-  .object({
-    command: z.array(nonblank).min(1),
-    cwd: nonblank,
-    env: z.record(z.string(), z.string()),
-    provider: z.enum(['robotwin', 'behavior', 'robocasa', 'robodojo']),
-    nativeTaskId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$/),
-    sceneConfiguration: z.record(z.string(), z.unknown()),
-    schemaPath: nonblank,
-    policyId: nonblank,
-    policyUri: z.string().url().optional(),
-    executionMode: z.enum(['policy', 'direct', 'hybrid']).optional(),
-    policyMaxActionsPerInference: z.number().int().min(1).max(512).optional(),
-    enableSimulatorInspection: z.boolean().optional(),
-    profileCleanup: nativeProfileCleanupSchema.optional(),
-    catalog: z.unknown(),
-  })
-  .passthrough();
 const defaults = {
   robotwin: {
     variable: 'EDH_ROBOTWIN_CONFIG',
@@ -173,7 +156,7 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
     throw new Error('Native deployment requires at least one profile.');
   const profiles = {};
   for (const [entryId, entry] of Object.entries(entries)) {
-    const worker = workerSchema.parse(
+    const worker = nativeWorkerConfigurationSchema.parse(
       provider === 'behavior'
         ? { initializeTimeoutMs: 600_000, closeTimeoutMs: 900_000, ...entry.worker }
         : entry.worker,
@@ -238,6 +221,8 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
         throw new Error('RoboDojo GPT policy requires the selected GPT-6 Astra binding.');
       if (mode === 'hybrid' && !entry.lowerPolicyUri)
         throw new Error('Hybrid requires an identified learned-policy endpoint.');
+      if (mode === 'hybrid') nativePolicyEndpointSchema.parse(entry.lowerPolicyUri);
+      if (entry.workerPolicyUri) nativePolicyEndpointSchema.parse(entry.workerPolicyUri);
       if (
         (worker.sceneConfiguration.control_mode ?? '0-shot') !== '0-shot' &&
         !entry.demonstration?.textFile
@@ -280,6 +265,16 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
     }).inspect(teamFile);
     if (team.definition.entrypoint !== team.definition.bindings.decision_owner)
       throw new Error('Native Team entrypoint must be its decision owner.');
+    if (modelConfiguration) {
+      for (const member of [
+        team.definition.bindings.decision_owner,
+        team.definition.bindings.final_verifier,
+      ]) {
+        const binding = modelConfiguration.models[team.members[member].model];
+        if (!binding.inputModalities.includes('image'))
+          throw new Error(`Native visual role requires an image-capable model: ${member}`);
+      }
+    }
   }
   const boundServices = new Set(Object.values(profiles).flatMap((profile) => profile.serviceIds));
   for (const id of Object.keys(managedServices))
@@ -549,7 +544,7 @@ export function createNativeDeploymentFactory(settings) {
     );
     return {
       id: `${settings.provider}-live`,
-      version: `${settings.selected.version}-factory-v4`,
+      version: `${settings.selected.version}-factory-v5`,
       source: 'simulation',
       description: `Native ${settings.selected.title} with independent DSH role Sessions`,
       teamFile: settings.teamFile,

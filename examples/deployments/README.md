@@ -32,6 +32,19 @@ must contain exactly that task. Task definitions and native success checks pass
 the production validators; provider initialization checks the actual installed
 task and embodiment before execution.
 
+The shared `nativeWorkerConfigurationSchema` validates all worker fields at
+configuration loading and again before environment allocation. Policy endpoints
+use `ws:` or `wss:` without embedded credentials or fragments. Action limits,
+monitor cadence, transport/device/policy deadlines, lifecycle timeouts, recording
+flags and output directories have explicit bounds. RoboTwin and BEHAVIOR require
+their installed `sourceRoot`; RoboCasa and RoboDojo use their existing SDK/backend
+bindings. Unknown worker fields fail validation. Decision-owner and final-Verifier
+models must advertise image input when using a configured model catalog.
+
+Check all actual provider files and their Console projections together using the
+[offline workspace readiness command](../../docs/implementation/native-workspace.md#offline-readiness).
+It opens no environment and starts no model or policy service.
+
 Optional top-level `teamFile` and `roleRoot` select a production `FileTeamLoader`
 Team. Relative paths resolve against the repository root. Team validation includes
 actual model aliases, role files, tools, provider constraints, and the decision

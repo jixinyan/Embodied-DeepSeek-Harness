@@ -1,8 +1,30 @@
 # Implementation progress
 
-Spec: v1.74. Current checkpoint: **native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.75. Current checkpoint: **complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-07 native configuration readiness
+
+One complete worker schema now validates the deployment loader and native
+environment allocation. It covers WebSocket endpoints, action/monitor limits,
+transport/device/policy/lifecycle deadlines, recording flags and provider-specific
+source requirements. Configured decision-owner and final-Verifier model bindings
+require image input. The native factory identity is `factory-v5`.
+
+The actual four-provider workspace passes production HTTP configuration, Team,
+profile/checkpoint/mode/model and service projection checks. There are zero active
+Sessions, simulator allocations, model inferences or owned service processes.
+Shutdown releases the writer lock and listener; all original configuration hashes
+remain unchanged. Evidence: `.local/work/v1-offline-readiness-20261007-03/`.
+This checkpoint establishes configuration readiness; current-code native task,
+multi-goal, safety and complete release acceptance remain pending.
+
+The shared Planner workflow specifies admitted prerequisite checks, exact source
+and criterion identities, dependency ordering, and a committed passed-verdict
+plan update before selecting the dependent goal. Evolver remains paused and
+SceneState remains deferred. GPU experiments are held until the consolidated
+implementation and validation preparation is ready.
 
 ## 2026-10-07 Qwen full-context tool generation
 

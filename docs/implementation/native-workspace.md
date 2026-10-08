@@ -69,6 +69,32 @@ contexts. Restart never resumes physical actions automatically.
 Actual startup, selector, task switching and confirmed cleanup require retained
 production records. Source checks alone establish no model or simulator outcome.
 
+## Offline readiness
+
+Validate the actual workspace before allocating environments or acquiring model
+and policy service leases:
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-workspace-readiness.mjs \
+  --config /absolute/path/native-workspace.json \
+  --output .local/work/<new-readiness-directory>
+```
+
+The checker starts the production Console on an automatically selected loopback
+port with an empty private journal. It checks every configured profile's Team,
+model, checkpoint, policy mode, environment-owned task catalog and service
+projection. It requires no active Session and zero owned service processes or
+leases. Shutdown must release the journal writer and close the listener. Original
+workspace, model and provider files retain their hashes. The output preserves
+those hashes, the deployment digest and the full profile matrix.
+
+The 2026-10-07 check passes for four current profiles: RoboDojo `build_tower`
+with Pi0.5, RoboTwin `adjust_bottle` with Pi0.5 and SceneAnalyst, RoboCasa
+`CloseDrawer` with GR00T, and BEHAVIOR `picking_up_trash` with R1Pro/GR00T.
+Evidence: `.local/work/v1-offline-readiness-20261007-03/`. It performs zero
+environment allocations, model inferences and simulator controls. Native task
+and multi-goal success require their own original source records.
+
 ## Configuration and Console acceptance
 
 The 2026-10-03 production startup reads four original native configuration files,

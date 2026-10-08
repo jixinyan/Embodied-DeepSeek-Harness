@@ -41,6 +41,11 @@ non-abandoned status. Compose prerequisite goals only from admitted checks, with
 their exact arguments and source. A single native task check can use a one-item
 plan; TODOs still describe its operational work. Done items require their own
 latest passed verdict ID in last_verdict_ref. Preserve already completed work.
+Use planning.read.allowedSubgoalChecks for prerequisite check definitions and
+planning.read.subgoalSource for their success_contract.source. Copy those values
+exactly. Give each prerequisite its own goal_id and criterion identity/version;
+connect later items through dependencies. The final task row retains finalGoalId
+and its original success_contract, with prerequisite goal IDs as dependencies.
 
 ## 3. Select a ready goal and start one job
 
@@ -102,7 +107,10 @@ policy output, control count and completed TODOs do not establish physical succe
 
 Inspect the current goal/attempt/boundary identities, check facts and authorized
 stopped-boundary images in the Verifier follow-up. A passed prerequisite permits
-the next admitted goal; it does not complete the original task. For a failed goal,
+the next admitted goal; it does not complete the original task. After prerequisite
+success, refresh planning.read, set that row to done with its latest passed
+verdict_id as last_verdict_ref, commit the complete plan and await its receipt
+before selecting the dependent goal. For a failed goal,
 read planning.read.retry and diagnose only evidence-supported causes. Distinguish
 budget-limited progress from no progress, wrong target, missing prerequisite or an
 unresolved visual condition. Repeated failure requires fresh observation/grounding
