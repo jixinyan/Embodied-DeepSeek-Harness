@@ -26,6 +26,15 @@ no inference, environment allocation or controls. Commands and source-bound
 evidence: [CPU owner validation](cpu-release-validation.md#policy-inference-ownership).
 Current-code loaded-model cancellation and physical task acceptance remain open.
 
+Committed `870806e` source passes those nine cases and full project checks on
+Linux with isolated Python 3.12.14 and frozen Node dependencies. The source hashes
+match the local helper, diagnostic, transport and service entry points. Five
+original errors retain their classifications and three full scopes. Both clients,
+listener and owner threads close; the canonical remote checkout stays unchanged.
+The retained archive has SHA-256
+`bef0237d5ad37ea56fdefe5edd17093467f0d54f8264ac1764ded1abb44f89cf`.
+No GPU/model/simulator work is started during this CPU phase.
+
 Frozen `6031766` source also passes all sixteen Worker subprocess cases and
 production original-plan admission on Linux in its isolated CPU environment.
 Both original histories preserve four execution requests and six accepted plans;

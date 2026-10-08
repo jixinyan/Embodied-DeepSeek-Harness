@@ -18,6 +18,13 @@ role/tool workflows, selected DSH provenance, TypeScript, local documentation li
 Python compilation/base imports and SVG XML. GitHub Source checks executes this
 same command. Its report contains no model inference or simulator task result.
 
+The [CPU validation guide](cpu-release-validation.md) adds production
+host/worker pipes, independent assignment schemas, original goal/plan admission,
+policy transport/thread ownership, managed services and retained-record checks.
+These checks use actual files, processes and connections with CUDA invisible.
+Their acceptance boundaries remain separate from current-code model, simulator
+and native task evidence.
+
 ## Native task acceptance
 
 The [consolidated native campaign](native-release-campaign.md) connects actual

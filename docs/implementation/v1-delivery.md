@@ -37,6 +37,14 @@ Model-visible parameter generation belongs to the tools module, with detached
 assignment schemas. CPU inspection verifies 344 original Planner/Verifier tool
 headers and recorded plan writes through the same production parameter builder.
 
+All four policy service entry points share one inference-thread owner, preserving
+operation and audit completion through caller cancellation and server deadlines.
+Nine actual file/pipe/WebSocket CPU cases and complete source checks pass on both
+macOS and isolated Linux, with source hashes, original failure scopes and released
+threads/listeners. Current-code loaded-model cancellation and complete physical
+workflow remain native release requirements. See
+[policy ownership checks](cpu-release-validation.md#policy-inference-ownership).
+
 ## Acceptance register
 
 | ID  | Capability                                  | Confirmed current state                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Remaining implementation and acceptance                                                                                                                                                                                                                               |

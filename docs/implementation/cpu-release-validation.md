@@ -131,6 +131,17 @@ cancellation and physical task acceptance require the subsequent native campaign
 Full source checks compile 59 physical-runtime files and all seven policy service
 and diagnostic entry points; 20 base modules import without loading model SDKs.
 
+The same nine cases and full project checks pass on Linux from committed
+`870806e` source in isolated Python 3.12.14 and Node 24.21.0/pnpm 11.19.0
+environments. Helper, diagnostic, transport and service-entry source hashes match
+the local source. Five original failures preserve the same classifications and
+three full scopes; both clients, listener and owner threads close. The canonical
+server checkout's before/after status is identical. CUDA remains invisible,
+with no model, simulator or control allocation. Retained output is
+`.local/work/v1-cpu-source-20261008/linux-policy-owner/`; its downloaded
+`cpu-owner-evidence.tar.gz` has SHA-256
+`bef0237d5ad37ea56fdefe5edd17093467f0d54f8264ac1764ded1abb44f89cf`.
+
 ## Worker process transport
 
 The worker remains runnable through `python -m physical_harness.execution.worker`.
