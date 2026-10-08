@@ -1,8 +1,27 @@
 # Implementation progress
 
-Spec: v1.90. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.91. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 policy service startup
+
+Four EDH JSON services bind their port before checkpoint/upstream initialization
+and optional SDK imports. Connection admission starts after the selected policy
+is ready. Startup failure and normal shutdown close the Server's owned resources;
+inference drain and OpenPI upstream closure retain their own lifecycle owners.
+All five policy CLI entries provide argument help before optional model imports.
+The native OpenPI producer retains its upstream service/loading behavior.
+
+Twelve actual macOS CLI cases pass, covering five help commands, four occupied
+ports and three absent checkpoints. Existing listeners remain operational; failed
+startup ports become reusable and all owned child processes exit. Production
+listener checks verify delayed admission, explicit startup, original request
+forwarding with its actual network failure, context-managed failure cleanup and
+port reuse. Current-source inference-owner, client-close and wire checks retain
+their own evidence. These CPU checks allocate no model, GPU, environment or action.
+Loaded service startup and complete physical tasks retain their native gates.
+See [startup validation](cpu-release-validation.md#policy-service-startup).
 
 ## 2026-10-08 finite policy JSON admission
 

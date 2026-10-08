@@ -18,7 +18,8 @@ from .client import JsonPolicyCodec, validate_response
 async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[float]] | dict[str, Any]]],
                        validator: ContractValidator, *, host: str = "127.0.0.1", port: int = 0,
                        api_key: str | None = None, timeout_s: float = 30,
-                       max_bytes: int = 32 * 1024 * 1024, ssl: Any = None) -> Any:
+                       max_bytes: int = 32 * 1024 * 1024, ssl: Any = None,
+                       start_serving: bool = True) -> Any:
     """Return a websockets Server; caller closes it and awaits wait_closed during shutdown."""
     from websockets.asyncio.server import serve
     from websockets.exceptions import ConnectionClosed
@@ -26,6 +27,8 @@ async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[flo
         raise ValueError("Policy transport bounds must be positive.")
     if api_key is not None and not api_key:
         raise ValueError("Configured policy key must not be empty.")
+    if type(start_serving) is not bool:
+        raise ValueError("Policy connection admission must be a boolean.")
     codec = JsonPolicyCodec()
 
     def authenticate(connection: Any, request: Any) -> Any:
@@ -81,4 +84,5 @@ async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[flo
                 return
 
     return await serve(handler, host, port, process_request=authenticate, ssl=ssl,
-                       compression=None, max_size=max_bytes, max_queue=4, close_timeout=1)
+                       compression=None, max_size=max_bytes, max_queue=4, close_timeout=1,
+                       start_serving=start_serving)

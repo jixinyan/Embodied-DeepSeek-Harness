@@ -13,6 +13,29 @@ closes invalid requests with code 1011 and its generic public error; original
 failure details stay in the service log. Encoding also requires finite JSON.
 See [wire admission validation](../../../../../docs/implementation/cpu-release-validation.md#policy-transport).
 
+## Service startup
+
+The four EDH JSON service entries parse arguments, bind their configured port,
+validate the checkpoint or upstream identity, load the selected policy and then
+accept connections. Their direct optional SDK imports follow port binding. An
+occupied port fails before model loading and leaves its existing listener intact.
+
+`serve_policy(..., start_serving=False)` returns a bound WebSocket Server without
+accepting connections. The service calls `server.start_serving()` after policy
+initialization. The default remains `start_serving=True` for callers whose
+inference callback is already ready. The Server's asynchronous context manager
+owns listener and connection closure during startup failure and normal shutdown;
+the inference owner drains afterward. The OpenPI JSON bridge additionally closes
+its upstream connection. Ready metadata reports the actual bound port.
+
+All five JSON/native policy CLI entries support `--help` before optional model
+SDK imports. The native OpenPI producer retains the upstream service and its
+original model-loading sequence. Its CPU check covers argument help only.
+The [startup diagnostic](../../../../../scripts/check-policy-startup-offline.py)
+exercises twelve actual CLI processes, delayed connection admission, original
+request forwarding to an unavailable endpoint and port release. It supplies no
+model result or action. See [startup validation](../../../../../docs/implementation/cpu-release-validation.md#policy-service-startup).
+
 ## Inference ownership
 
 [`client.py`](client.py) owns one connection-close operation and one client

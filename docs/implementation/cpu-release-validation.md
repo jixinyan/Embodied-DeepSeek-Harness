@@ -557,6 +557,48 @@ The actual upstream connection times out, both clients discard their connections
 the authenticated server rejects unauthorized admission and its listener closes.
 Evidence: `.local/work/v1-policy-transport-offline-20261007-02/acceptance.json`.
 
+## Policy service startup
+
+The four EDH JSON service entries bind their configured port before checkpoint
+or upstream initialization and before importing their optional model SDKs.
+They use `serve_policy(..., start_serving=False)` and the actual WebSocket Server's
+asynchronous context manager. `server.start_serving()` opens connection admission
+after the selected policy is ready. Startup failure closes the bound listener;
+normal shutdown closes connections/listeners and drains the inference owner.
+The OpenPI JSON bridge also closes its actual upstream connection. Ready metadata
+reports the actual bound port, including a deployment-selected ephemeral port.
+The default `start_serving=True` remains available for ready inference callbacks.
+
+```sh
+CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-policy-startup-offline.py \
+  --request /absolute/path/original-robodojo-policy-request.json \
+  --python .venv/bin/python \
+  --output .local/work/<new-policy-startup-check>
+```
+
+Install the base package and `policy` extra in the isolated Python environment.
+Twelve actual subprocess cases cover five CLI help commands, four occupied ports
+and three missing-checkpoint failures. Existing listeners retain actual connection
+acceptance after each candidate exits; failed-startup ports become reusable.
+Help completes without optional SDK imports, including the native OpenPI producer.
+That producer retains its original upstream service/model-loading sequence; this
+CPU check makes no native producer startup claim beyond argument help.
+
+Actual production listener checks cover bound-but-unstarted admission, explicit
+`start_serving`, context-managed source-file failure and an occupied listener.
+The started Server forwards the exact original PolicyRequest to an unavailable
+endpoint. Its actual network error remains in the log and its generic public
+error reaches the client. All connections close and ports become reusable.
+macOS observes TimeoutError for both unstarted handshake and upstream access.
+No model inference result or action is supplied. Evidence:
+`.local/work/v1-policy-startup-20261008-final/acceptance.json`.
+The report records ten executable/schema source hashes and the original request
+SHA-256 `147d6c1fc75af0589138d1bdd60746a7a45a2876a79e1a78d91cc9df9ccff57d`.
+Current-source inference-owner, connection-close and policy-wire checks retain
+separate reports. GPU/model/environment allocation and controls remain zero.
+Loaded checkpoint initialization, native producer service readiness and complete
+task execution require the consolidated native campaign.
+
 ## Policy client connection ownership
 
 [`WebSocketPolicyClient`](../../harness/physical-runtime/src/physical_harness/policies/client.py)

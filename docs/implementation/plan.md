@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.90 · 2026-10-08
+Version: v1.91 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -138,7 +138,10 @@ Prerequisite success requires its own verdict and completed plan row. See
    connection closure is pending or failed.
 6. Reject duplicate fields and non-finite numeric values during standard policy
    JSON decoding before inference, event handling or policy-tool delivery.
-7. Drain owned requests, threads, processes and listeners during shutdown.
+7. Bind JSON service ports before optional SDK/model initialization and start
+   connection admission only after the selected policy is ready. Own bound
+   listener cleanup through startup failure and normal shutdown.
+8. Drain owned requests, threads, processes and listeners during shutdown.
 
 **Gate:** Actual original errors remain observable. Unknown device state remains unknown;
 transport loss cannot replay motion or create a confirmed stop. CPU and loaded-SDK

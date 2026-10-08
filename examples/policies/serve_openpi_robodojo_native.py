@@ -5,46 +5,7 @@ from pathlib import Path
 import time
 from uuid import UUID
 
-import jax
-import numpy as np
-from openpi.policies import policy_config
-from openpi.serving.websocket_policy_server import WebsocketPolicyServer
-from openpi.training import config
-from openpi_client.base_policy import BasePolicy
-
 from physical_harness.policies.openpi_checkpoint import verify_checkpoint
-
-
-class IdentifiedPolicy(BasePolicy):
-    def __init__(self, policy, identity):
-        self.policy = policy
-        self.identity = identity
-        self.index = 0
-        self.metadata = {**identity, "inferences": 0}
-
-    def infer(self, observation):
-        started = time.monotonic()
-        request_id = observation["edh_request_id"]
-        if not isinstance(request_id, str) or str(UUID(request_id)) != request_id:
-            raise ValueError("OpenPI inference requires a canonical EDH request UUID.")
-        model_observation = {name: value for name, value in observation.items() if name != "edh_request_id"}
-        prompt = model_observation["prompt"]
-        if not isinstance(prompt, str) or not prompt.strip():
-            raise ValueError("OpenPI inference requires its original nonempty instruction.")
-        output = self.policy.infer(model_observation)
-        actions = np.asarray(output["actions"], dtype=np.float32)
-        if actions.shape != (50, 14) or not np.isfinite(actions).all():
-            raise ValueError("ARX X5 OpenPI inference must return a finite 50 by 14 action horizon.")
-        identity = {**self.identity, "inference_index": self.index, "source_request_id": request_id,
-                    "instruction_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
-                    "elapsed_s": time.monotonic() - started,
-                    "state_sha256": hashlib.sha256(np.asarray(observation["state"], dtype=np.float32).tobytes()).hexdigest(),
-                    "camera_sha256": {name: hashlib.sha256(np.asarray(image).tobytes()).hexdigest()
-                                      for name, image in observation["images"].items()}}
-        self.index += 1
-        self.metadata["inferences"] = self.index
-        print(json.dumps({"event": "native_policy_inference", **identity}, allow_nan=False), flush=True)
-        return {**output, "policy_identity": identity}
 
 
 def main():
@@ -54,6 +15,44 @@ def main():
     parser.add_argument("--verification-output", required=True, type=Path)
     parser.add_argument("--port", type=int, default=18830)
     args = parser.parse_args()
+    import jax
+    import numpy as np
+    from openpi.policies import policy_config
+    from openpi.serving.websocket_policy_server import WebsocketPolicyServer
+    from openpi.training import config
+    from openpi_client.base_policy import BasePolicy
+
+    class IdentifiedPolicy(BasePolicy):
+        def __init__(self, policy, identity):
+            self.policy = policy
+            self.identity = identity
+            self.index = 0
+            self.metadata = {**identity, "inferences": 0}
+
+        def infer(self, observation):
+            started = time.monotonic()
+            request_id = observation["edh_request_id"]
+            if not isinstance(request_id, str) or str(UUID(request_id)) != request_id:
+                raise ValueError("OpenPI inference requires a canonical EDH request UUID.")
+            model_observation = {name: value for name, value in observation.items() if name != "edh_request_id"}
+            prompt = model_observation["prompt"]
+            if not isinstance(prompt, str) or not prompt.strip():
+                raise ValueError("OpenPI inference requires its original nonempty instruction.")
+            output = self.policy.infer(model_observation)
+            actions = np.asarray(output["actions"], dtype=np.float32)
+            if actions.shape != (50, 14) or not np.isfinite(actions).all():
+                raise ValueError("ARX X5 OpenPI inference must return a finite 50 by 14 action horizon.")
+            identity = {**self.identity, "inference_index": self.index, "source_request_id": request_id,
+                        "instruction_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
+                        "elapsed_s": time.monotonic() - started,
+                        "state_sha256": hashlib.sha256(np.asarray(observation["state"], dtype=np.float32).tobytes()).hexdigest(),
+                        "camera_sha256": {name: hashlib.sha256(np.asarray(image).tobytes()).hexdigest()
+                                          for name, image in observation["images"].items()}}
+            self.index += 1
+            self.metadata["inferences"] = self.index
+            print(json.dumps({"event": "native_policy_inference", **identity}, allow_nan=False), flush=True)
+            return {**output, "policy_identity": identity}
+
     checkpoint = args.checkpoint.resolve(strict=True)
     verified = verify_checkpoint(checkpoint, args.inventory)
     if verified["revision"] != "35efbc7dedfdbeeb6e95fb749bd885d73d483e41" or len(verified["files"]) != 18:

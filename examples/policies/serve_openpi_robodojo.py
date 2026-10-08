@@ -5,7 +5,6 @@ from pathlib import Path
 import signal
 
 from physical_harness.policies.inference import ThreadedInference, recorded_inference
-from physical_harness.policies.openpi_robodojo import OpenPiRoboDojoPolicy
 from physical_harness.policies.server import serve_policy
 from physical_harness.validation import ContractValidator
 
@@ -21,7 +20,7 @@ async def main():
         args.audit_directory.mkdir(parents=True, exist_ok=False)
     root = Path(__file__).resolve().parents[2]
     validator = ContractValidator.from_path(root / "harness/contracts/schema/physical.schema.json")
-    policy = OpenPiRoboDojoPolicy(args.native_policy_uri, args.checkpoint_sha256)
+    policy = None
     owner = ThreadedInference("edh-openpi-robodojo")
 
     def infer_recorded(request):
@@ -45,20 +44,25 @@ async def main():
         return await owner.run(recorded_inference, infer_recorded, request,
                                {"checkpoint_sha256": args.checkpoint_sha256})
 
-    server = await serve_policy(infer, validator, port=args.port, timeout_s=300)
-    print(json.dumps({"service": "openpi-robodojo-json", "port": args.port,
-                      "checkpoint_sha256": args.checkpoint_sha256, "metadata": policy.metadata}), flush=True)
-    stop = asyncio.Event()
-    loop = asyncio.get_running_loop()
-    for item in (signal.SIGINT, signal.SIGTERM):
-        loop.add_signal_handler(item, stop.set)
     try:
-        await stop.wait()
+        async with await serve_policy(infer, validator, port=args.port, timeout_s=300,
+                                      start_serving=False) as server:
+            from physical_harness.policies.openpi_robodojo import OpenPiRoboDojoPolicy
+            policy = OpenPiRoboDojoPolicy(args.native_policy_uri, args.checkpoint_sha256)
+            await server.start_serving()
+            print(json.dumps({"service": "openpi-robodojo-json", "port": server.sockets[0].getsockname()[1],
+                              "checkpoint_sha256": args.checkpoint_sha256, "metadata": policy.metadata}), flush=True)
+            stop = asyncio.Event()
+            loop = asyncio.get_running_loop()
+            for item in (signal.SIGINT, signal.SIGTERM):
+                loop.add_signal_handler(item, stop.set)
+            await stop.wait()
     finally:
-        server.close()
-        await server.wait_closed()
-        await owner.close()
-        policy.close()
+        try:
+            await owner.close()
+        finally:
+            if policy is not None:
+                policy.close()
 
 
 if __name__ == "__main__":

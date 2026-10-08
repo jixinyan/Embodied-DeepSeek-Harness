@@ -57,6 +57,16 @@ see [Console process checks](cpu-release-validation.md#native-console-process-ow
 
 ## Acceptance register
 
+Four JSON policy services bind before optional SDK/model initialization and admit
+connections only after policy readiness. All five JSON/native CLI help commands,
+four actual occupied-port failures and three actual missing-checkpoint failures
+pass on macOS. Production delayed-admission, context-managed failure release,
+original-request forwarding and port reuse checks pass without model results or
+actions. The native OpenPI producer retains its original upstream service/loading
+sequence; its CPU entry check covers help only. Complete loaded-service startup
+and task behavior remain native gates. See
+[policy startup](cpu-release-validation.md#policy-service-startup).
+
 Seven malformed numeric/duplicate policy messages pass actual decoder and
 authenticated server rejection before inference admission, with generic failures,
 closed connections and retained exact wire hashes. Original finite request and
