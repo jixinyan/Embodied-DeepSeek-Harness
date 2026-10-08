@@ -80,7 +80,7 @@ host. Authorized observation tools continue to supply images to models. See
 | `harness/contracts` | Authoritative wire schema and generated declarations | Runtime semantic authorization | physical.schema.json; Step 01 |
 | `harness/physical-runtime/src/physical_harness/execution` | Actual action progression, budget and device job handling | Upper-level retry decision | ExecutionWorker; Step 06 |
 | `harness/physical-runtime/src/physical_harness/policies` | Subgoal-to-action policy adapter plus direct/hybrid GPT gateway normalization | Agent orchestration | SubgoalPolicy; Step 13 |
-| `harness/physical-runtime/src/physical_harness/environments` | Simulator observation/action/task mapping, including external RoboDojo RPC | Environment-specific host protocol implementation | EnvironmentAdapter; Step 13/15 |
+| `harness/physical-runtime/src/physical_harness/environments` | Native simulator observation/action/task mapping for BEHAVIOR, RoboCasa, RoboTwin and RoboDojo | Environment-specific host protocol implementation | EnvironmentAdapter; Step 13/15 |
 | `harness/physical-runtime/src/physical_harness/embodiments` | Capabilities, units, frames and action/observation specifications | Simulator lifecycle | EmbodimentAdapter; Step 06/13 |
 | `harness/physical-runtime/src/physical_harness/backends` | Device connection, commands and confirmed state | Agent-mediated emergency response | DeviceBackend; Step 06/16 |
 | `harness/physical-runtime/src/physical_harness/perception` | Optional model/provider execution | Host role permissions | PerceptionProvider; Step 07/13 |
@@ -169,9 +169,9 @@ The catalog reads requested records without accumulating
 historical sample bodies. It stores image references; the deployment attachment provider
 must supply and validate image bytes. The server owns its native attachment context,
 injects `DeploymentServices.images` into deployment/environment/task factories, and
-disposes it after consumers stop. Console image reads require persisted run ownership,
-associated image references and agent-visible evidence. The browser image component
-uses this scoped route for latest and agent-seen frames. See the
+disposes it after consumers stop. Scoped image reads require persisted run ownership,
+associated image references and agent-visible evidence. The Console presents
+metadata and Agent trace; headless video remains on the simulator host. See the
 [perception guide](../../harness/agent-runtime/perception/README.md) and
 [image-service boundary](../implementation/image-storage.md).
 

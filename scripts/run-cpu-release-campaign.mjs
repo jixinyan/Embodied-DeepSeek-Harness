@@ -87,6 +87,14 @@ const add = (id, script, args) =>
   });
 add('worker-transport', 'check-worker-transport-offline.mjs', ['--python', python]);
 add('worker-client', 'check-worker-client-offline.mjs', ['--python', python, '--config', worker]);
+add('scene-configuration', 'check-native-scene-configuration.mjs', ['--config', workspace]);
+for (const [id, options] of [
+  ['worker-host', []],
+  ['worker-host-mutation', ['--mutate-caller']],
+  ['worker-host-observer', ['--startup-file-error']],
+  ['worker-host-async-observer', ['--startup-file-error', '--async-startup']],
+])
+  add(id, 'check-worker-host-offline.mjs', ['--python', python, '--config', worker, ...options]);
 add('device-owner', 'check-native-device-owner-offline.py', []);
 add('session-owner', 'check-native-session-owner-offline.py', []);
 add('action-gate', 'check-action-gate-owner-offline.py', ['--request', request]);
@@ -109,6 +117,14 @@ add('policy-startup', 'check-policy-startup-offline.py', [
 ]);
 add('perception-startup', 'check-perception-startup-offline.py', ['--python', python]);
 add('service-startup', 'check-service-startup-owner-offline.mjs', ['--workspace', workspace]);
+add('console-startup', 'check-native-startup-offline.mjs', ['--config', workspace]);
+for (const provider of ['behavior', 'robocasa', 'robodojo', 'robotwin'])
+  add(`console-startup-${provider}`, 'check-native-startup-offline.mjs', [
+    '--config',
+    workspace,
+    '--provider',
+    provider,
+  ]);
 const journalArgs = journals.flatMap((directory) => ['--data-directory', directory]);
 add('context', 'check-recorded-context.mjs', journalArgs);
 add('visual-context', 'check-recorded-visual-context.mjs', journalArgs);
@@ -116,7 +132,11 @@ add('readiness', 'check-native-workspace-readiness.mjs', ['--config', workspace]
 const implementation = [
   'scripts/run-cpu-release-campaign.mjs',
   ...jobs.slice(1).map((job) => job.args.find((arg) => arg.startsWith('scripts/'))),
-].map((path) => ({ path, sha256: digest(resolve(root, path)) }));
+];
+const implementationHashes = [...new Set(implementation)].map((path) => ({
+  path,
+  sha256: digest(resolve(root, path)),
+}));
 const completed = [];
 for (const job of jobs) {
   console.log(JSON.stringify({ component: job.id, state: 'running' }));
@@ -139,7 +159,7 @@ for (const job of jobs) {
       `CPU component ${job.id} exited (code=${result.status}, signal=${result.signal}); inspect its retained stdout/stderr.`,
     );
   for (const source of sources) assert.equal(digest(source.path), source.sha256);
-  for (const source of implementation)
+  for (const source of implementationHashes)
     assert.equal(digest(resolve(root, source.path)), source.sha256);
   const report =
     job.id === 'source'
@@ -161,7 +181,7 @@ for (const job of jobs) {
 const report = {
   schemaVersion: 'edh.cpu_release_acceptance.v1',
   sources,
-  implementation,
+  implementation: implementationHashes,
   completed,
   cudaVisibleDevices: '',
   originalInputsUnchanged: true,

@@ -76,6 +76,8 @@ implementations load in their separately configured service processes.
 | Execute the configured CPU diagnostic campaign | [run-cpu-release-campaign.mjs](../../scripts/run-cpu-release-campaign.mjs) |
 | Verify image-group retention and budget rejection through the native loop | [check-recorded-visual-context.mjs](../../scripts/check-recorded-visual-context.mjs) |
 | Validate configured native scenes and policy endpoints before allocation | [check-native-scene-configuration.mjs](../../scripts/check-native-scene-configuration.mjs) |
+| Verify native CLI startup and signal-driven process release for every provider | [check-native-startup-offline.mjs](../../scripts/check-native-startup-offline.mjs) |
+| Verify real Worker initialization, detached configuration and startup observer failures | [check-worker-host-offline.mjs](../../scripts/check-worker-host-offline.mjs) |
 | Verify native owner-thread drain, cancellation and concurrent closure without an SDK allocation | [check-native-device-owner-offline.py](../../scripts/check-native-device-owner-offline.py) |
 | Verify shared Session/device/recording finalization and original file errors | [check-native-session-owner-offline.py](../../scripts/check-native-session-owner-offline.py) |
 | Verify retained ActionGate stops and original operation/stop errors | [check-action-gate-owner-offline.py](../../scripts/check-action-gate-owner-offline.py) |

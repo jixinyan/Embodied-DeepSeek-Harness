@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.94 · 2026-10-08
+Version: v1.95 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -202,7 +202,8 @@ See [memory](../../harness/agent-runtime/memory/README.md).
    including all TypeScript diagnostic entries and configured endpoint admission.
    The [consolidated CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign)
    runs source checks, real process/transport owners, original contexts and readiness
-   from one explicit original-input configuration.
+   from one explicit original-input configuration, including all four native CLI
+   entries, initialization observers and configured scene/endpoint admission.
 2. Exercise actual worker processes, original request recording, WebSocket transport,
    inference-thread ownership, scoped failure records and cleanup.
 3. Inspect original native model schemas, plans, role histories and context projections.

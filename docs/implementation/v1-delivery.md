@@ -17,6 +17,14 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+The [CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign) executes
+26 source/production components from actual configuration and original records.
+macOS passes 222 admission/process/wire/resource cases, six visual-context cases,
+twelve original context reads and four-provider readiness. Frozen `917a4ff` has
+matched isolated-Linux evidence for the sixteen-component campaign, including
+six original configurations and complete owned-resource release. Current-code
+loaded models, simulator actions and complete task workflows retain their native gates.
+
 The [release validation guide](release-validation.md) defines source checks,
 actual native task submission, source-bound audits and product/safety evidence.
 The [consolidated native campaign](native-release-campaign.md) now prepares the

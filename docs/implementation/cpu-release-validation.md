@@ -10,7 +10,7 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 ## Consolidated CPU campaign
 
 [run-cpu-release-campaign.mjs](../../scripts/run-cpu-release-campaign.mjs) executes
-sixteen existing source/production diagnostics sequentially and fails on the first
+twenty-six existing source/production diagnostics sequentially and fails on the first
 unsuccessful component. Each component retains stdout, stderr and its original
 report; `completed.json` retains completed components even after a later failure.
 The final `acceptance.json` records original-input hashes, diagnostic source hashes
@@ -34,8 +34,9 @@ pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/run-cpu-release-campaign.
   --output .local/work/<new-cpu-campaign>
 ```
 
-The required workspace contains actual model/provider/Team configuration. The
-worker configuration is an original native deployment; the canonical policy
+The required workspace contains actual model/provider/Team configuration for all
+four providers. The worker configuration is an original RoboTwin or BEHAVIOR
+deployment for the unallocated source/observer checks; the canonical policy
 request uses RoboDojo dual ARX X5 scope. Policy transport takes its own original
 request and policy audit journal. Each original Agent journal must contain at
 least one completed native assignment with three image-bearing surface groups,
@@ -44,11 +45,30 @@ to satisfy an input requirement. Original journals are copied before writable
 readers inspect them. All child commands receive CUDA invisibility and CPU-only
 diagnostics; readiness allocates no provider and registers no successful response.
 
-On 2026-10-08, the current macOS source passes all sixteen components, including
-85 process/wire/resource cases, six native visual-context cases, twelve original
-native context reads and four-provider readiness. All original inputs retain their
-hashes. There are no model calls, policy results, simulator allocations or controls.
-Evidence: `.local/work/v1-cpu-release-campaign-20261008-final/acceptance.json`.
+The command covers source checks; Worker transport/client and initialization;
+configured scene/endpoint admission; device, Session, ActionGate, rollout and
+inference ownership; policy/perception service admission; shared service startup;
+unified and provider-specific CLI signals; original native context/visual reads;
+and actual four-provider Console readiness. Repeated diagnostic entries share one
+source digest while retaining each invocation's independent report and logs.
+
+On 2026-10-08, the macOS source passes all twenty-six components: 222 configured
+admission/process/wire/resource cases, six native visual-context cases, twelve
+original native context reads and four-provider readiness. The admission/resource
+count includes 108 configuration rejections, four Worker initialization cases and
+25 Console CLI signal cases. Original inputs retain their hashes. There are no
+model calls, policy results, simulator allocations or controls. Evidence:
+`.local/work/v1-cpu-release-matrix-20261008/acceptance.json`.
+
+Frozen `917a4ff` independently passes the sixteen-component campaign on isolated
+Linux: 85 process/wire/resource cases, six visual cases, twelve original context
+reads and four configured profiles. Six original input hashes, six original
+configuration hashes, sixteen diagnostic hashes and 78 component source hashes
+match macOS. Reports verify original histories, scoped resource release and an
+unchanged canonical server checkout. The archive SHA-256 is
+`3b91dee110fed0339fecec062005392b9b6315703396e48e309d700fc9dd8d32`.
+Local reports and the independent summary are under
+`.local/work/v1-cpu-release-campaign-20261008/linux/`.
 Loaded-model/device behavior and original task completion retain the
 [native campaign](native-release-campaign.md) requirements.
 

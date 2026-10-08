@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.94 · 2026-10-08
+Version: v1.95 · 2026-10-08
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -163,6 +163,10 @@ and GPU-provider source/protocol/lifecycle checks. Current-code native model/pol
 workflows, multi-task continuity and reproducible release configuration retain the
 consolidated campaign's acceptance gates. The maintained
 [implementation plan](implementation/plan.md) records each owner and remaining requirement.
+One configured CPU campaign validates shared ownership, original contexts,
+preallocation and every supported provider's Console CLI. It retains individual
+logs and source-bound reports; its command and exact macOS/Linux acceptance are
+documented in [CPU validation](implementation/cpu-release-validation.md#consolidated-cpu-campaign).
 Live Teams set `learning_enabled: false`;
 SceneState development is deferred. The [current Agent loop](implementation/current-agent-loop.md)
 records actual system prompt sources, context assembly, memory and retry behavior.
@@ -415,7 +419,8 @@ criterion separately from editable user instructions. The environment remains
 allocated between sequential runs. Native terminal preflight obtains the provider's
 current ended state before creating a policy client; an ended episode publishes a
 fresh confirmed boundary and observation with zero new controls or policy requests.
-Actual repeated-task acceptance on an unchanged terminal environment remains open.
+RoboDojo and RoboTwin have actual same-Session, unchanged-terminal acceptance.
+Additional providers retain their original terminal-source acceptance requirements.
 Changing to a task that requires another native scene needs a new User Session.
 Live clarification/pause/resume acceptance remains provider-specific.
 
@@ -551,6 +556,11 @@ The upper layer initially focuses on embodied tasks, run analysis and experience
 management while retaining general tool extensibility. A general coding assistant,
 online training, direct SKILL injection into VLA, time-to-go prediction heads and
 arbitrary hot-swapping are not v1 acceptance requirements.
+
+The active implementation scope keeps Evolver paused and SceneState deferred.
+Existing SKILL storage, explicit retrieval and recovery provenance remain available.
+Their future execution/transfer requirements remain in the
+[v1 register](implementation/v1-delivery.md).
 
 ## 3. Overall architecture
 
@@ -841,7 +851,7 @@ come from the task, not an extra universal preference such as releasing the grip
 | Data               | States/content                                                                                       |
 | ------------------ | ---------------------------------------------------------------------------------------------------- |
 | ExecutionStatus    | accepted / running / pausing / paused / ended; counts, device state, observation references          |
-| StopReason         | policy_stop / budget_exhausted / user_stop / backend_error / episode_terminated                      |
+| StopReason         | policy_stop / planner_stop / budget_exhausted / user_stop / backend_error / episode_terminated       |
 | VerificationResult | pending / running / passed / failed / unknown; checks, evidence, observation time, criterion version |
 | PlannerDecision    | resume / retry / replan / finish / abandon; cited feedback and new goals                             |
 
@@ -860,7 +870,7 @@ backend errors retain failed or unknown execution outcomes; neither implies succ
    acknowledgement. `pause_requested` must not be displayed as `paused`. An ordinary
    confirmed pause permits Planner-authorized resume within the remaining budget;
    it does not create a formal verification round.
-4. On `policy_stop`, `episode_terminated` or `budget_exhausted`, stop issuing actions,
+4. On `policy_stop`, `planner_stop`, `episode_terminated` or `budget_exhausted`, stop issuing actions,
    record an `ended` state and confirmed device boundary, then create one fresh formal
    verifier assignment. Budget expiry requires that verification even without a
    model tool request. External cancellation and backend errors retain their own
@@ -889,7 +899,7 @@ control and connection-failure handling continue without waiting for a model rou
 ### 7.1 Assignment timing and evidence
 
 The admission gate accepts `ended` executions whose stop reason is `policy_stop`,
-`episode_terminated` or `budget_exhausted`, with matching task, execution and confirmed
+`planner_stop`, `episode_terminated` or `budget_exhausted`, with matching task, execution and confirmed
 boundary identities. A `paused` execution may be resumed by Planner within its
 remaining budget. User cancellation, backend failure and uncertain device state
 retain explicit failed or unknown outcomes. They never become task success through
@@ -1187,10 +1197,10 @@ verification evidence. Device connection alone does not establish a usable subgo
 
 ### 9.4 Complete tool catalog
 
-The dotted names below describe the intended logical API, not existing native DSH
-names. Each selected tool gets its own model-facing schema and a recorded logical-ID
-to wire-name mapping. Do not reduce the entire interface to an opaque
-`call_any_tool(name, string)`.
+The dotted names below identify EDH logical capabilities. Each selected tool has
+its own model-facing schema and recorded logical-ID to native DSH wire-name mapping.
+The [tools module](../harness/agent-runtime/tools/README.md) owns parameter preparation;
+DSH owns registration, validation and dispatch.
 
 | Toolset            | Minimum capability                                                           | Default consumer                        | Source/adaptation                                      |
 | ------------------ | ---------------------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------ |
@@ -1207,9 +1217,10 @@ to wire-name mapping. Do not reduce the entire interface to an opaque
 
 Examples of logical tool IDs are `perception.capture`, `perception.segment_objects`,
 `observation.turn_view`, `execution.start`, `skills.search` and `skills.load`.
-The skeleton's [planned inventory](../harness/agent-runtime/tools/definitions/planned-tools.json)
-records its current draft spellings. Section 9 defines required capabilities;
-Step 01/02 must reconcile aliases and final tool schemas before exposing callable APIs.
+The [logical inventory](../harness/agent-runtime/tools/definitions/planned-tools.json)
+records implemented and planned entries. Source checks require its implemented IDs
+to match the 36 core tools exactly. Assignment-specific schemas retain role outputs,
+device capabilities, bounds and actual argument sources.
 
 Expose perception tools only when a provider is available. Missing depth/segmentation
 must not appear usable and then return fake data. Users can add SAM3-like segmentation,
@@ -1241,8 +1252,9 @@ lists but cannot modify Planner's authoritative plan.
 The target PlanDocument includes task ID, version, owner assignment and items with
 goal ID, description, dependencies, state, success-contract reference and optional
 last-verification reference. Updates check expected versions. Completion requires a
-matching passed verdict; writing a todo cannot complete an unexecuted goal. The current
-skeleton schema is a draft subset and is not the full implementation acceptance contract.
+matching passed verdict. TaskGoals validates configured and Planner-created bindings
+before publication; TaskPlans enforces ownership, dependencies, versions and
+immutable executed criteria. See [goal admission](../harness/agent-runtime/tasks/README.md#goal-binding-admission).
 
 Files are private by default. Cross-role handoff uses immutable artifact references or
 explicit read-only mounts of specific versions, not a mutually writable scratchpad.
@@ -1279,11 +1291,11 @@ explicit binding. Without depth, calibration or a reliable estimate, do not inve
 metric distances. Provider confidence is not necessarily calibrated and is not GT.
 Masks, overlays and RGBD retain source-frame and processing provenance.
 
-Legacy SAM adapters are migration references. Recheck old API patches and dependency
-workarounds against the selected actual provider; do not treat them as current install
-instructions. Heavy providers run optionally/in separate processes and are not imported
-when unused. Pin the actual code/checkpoint during integration and run contract checks;
-this specification does not choose a SAM version.
+SAM3.1 runs as a separately configured, source/checkpoint-identified service.
+YOLO26 depth runs in its own service and preserves prediction/calibration metadata.
+Native RGB-D measurements retain sensor, calibration, units and coordinate identity.
+Providers load their dependencies only when selected. Commands and original model,
+mask and geometry evidence are in the [perception guide](../harness/agent-runtime/perception/README.md).
 
 ### 9.7 Active observation is a scheduled physical capability
 
@@ -1348,8 +1360,11 @@ unknown, and records call/agent/assignment identity, tool version, input/output 
 effects, actual resources and errors. Errors include invalid_input, unsupported,
 observation_stale, provider_unavailable, resource_busy, timeout and execution_state_unknown.
 Read-only inference may return an error; uncertain physical timeouts require state
-reconciliation before any further motion. The current result schema checks structural status rules, but operation tracking and
-selected-tool payload validation still require F1–F3 work before runtime acceptance.
+reconciliation before any further motion. DSH tool receipts identify their native
+call and assignment. Execution jobs retain their own task, attempt, budget,
+generation and confirmed device-boundary identity. Source checks and original
+request readers validate their fields; loaded provider behavior retains native
+acceptance in the [release guide](implementation/release-validation.md).
 
 Declared concurrency is only a preliminary filter. A SAM session may need serial
 provider access; active observation may need device resources. Actual resolved resources
@@ -1446,7 +1461,8 @@ a builder, changing fixed Python role enums or writing a model loop.
 
 Existing registered tools need only configuration. A new model/device service still
 requires a provider; natural-language role descriptions do not implement missing tools.
-The [examples](../examples/README.md) are loader fixtures, not a working loader.
+The [examples](../examples/README.md) provide role and Team definitions consumed
+by the implemented [Team loader](../harness/agent-runtime/teams/README.md).
 
 ### 11.2 Custom role example
 
@@ -1475,9 +1491,9 @@ supply allowed motion and budgets in the brief; no new agent implementation is n
 
 Every role can report insufficient context through the framework's report protocol;
 normal handoff does not require an additional custom tool. Explicit communication
-tools are convenient entry points, not access to every member's files. The earlier
-`needs_context` wording maps to the implemented `insufficient_context` status; a later
-versioned report can complete the assignment after explicit context arrives.
+tools use assignment authority and private workspaces. An `insufficient_context`
+report retains the assignment for an explicit caller response. A later versioned
+report can complete that assignment after its own context receives the response.
 
 Output uses the AgentReport.v1 envelope. A stricter role may declare
 `output_schema: ./schemas/scene-assessment.json`; the loader validates a role-local
@@ -1566,10 +1582,10 @@ not a currently registered runtime check.
 | Responsibility bindings | decision_owner, final_verifier; recovery_evolver when learning is enabled               | One decision owner per task, one final verifier per goal, appropriate tool capabilities                                         |
 | AgentReport             | Assignment/scope identity, status, summary, structured result where needed and evidence | Completed/failed/insufficient-context/cancelled semantics; empty evidence allowed, fabricated references forbidden              |
 
-The target Role/Team ID pattern is `[a-z][a-z0-9_-]{0,63}`. Tool lists are deduplicated.
+The Role/Team ID pattern is `[a-z][a-z0-9_-]{0,63}`. Tool lists are deduplicated.
 Reject unknown fields outside documented extensions. Resolve relative files from the
-owning role/team file; reserve `builtin:` for built-in references. Bootstrap schemas
-capture only part of this target validation and are not loader acceptance evidence.
+owning role/team file; reserve `builtin:` for built-in references. The loader validates
+referenced schemas, role paths, providers and responsibilities before freezing the Team.
 
 Definitions are shared read-only; sessions and workspaces are private. Snapshot resolved
 team, role and tool versions at run start. File edits affect future runs, not silently
@@ -1624,12 +1640,13 @@ perception, observation, verification, memory, storage and contracts. The curren
 [module map](architecture/modules.md) is the source of actual code paths.
 
 DSH supplies implementations to absorb; do not rewrite its loop. Validate source and
-runtime dependencies before migration, preserve licenses and record original/destination
-paths. Bootstrap fixes provenance and interfaces but copies no DSH runtime. Historical
-full-fork/physical-plugin layouts are superseded by the EDH-owned structure.
+runtime dependencies, preserve licenses and record original/destination paths.
+The provenance checker verifies 128 selected files and 25 module bindings.
+Every selected implementation remains in its responsibility's module.
 
 The wire schema has one source. TypeScript is generated; executable Python boundary
-validation is Step 01. Do not maintain incompatible manual DTO definitions.
+validation uses that same source. Production owners enforce authorization and
+state transitions at their domain boundaries.
 
 ### 12.2 Legacy EAF migration map
 
@@ -1760,24 +1777,27 @@ are superseded by the confirmed decisions here.
 
 ### 15.2 Current status
 
-Delivered: selective original DSH runtime, native tools/TODOs, immutable teams,
-independent role sessions, explicit context/evidence, versioned plans/files,
-formal verification and recovery, failure-aware SKILLs, durable domain records and
-a runnable HTTP/SSE debugging console. These run with scripted model/backend
-fixtures, including sequential multi-goal recovery. OpenAI-compatible model transport,
-WebSocket policy transport and standalone action admission have local acceptance.
-Live VLM deployment and independent DSH image/tool rounds pass. Native RoboCasa
-reset, manual control, ActionGate pause/resume and budget exhaustion also pass.
-The native worker carries real GR00T actions and camera evidence. A console-driven
-Planner run executes 1,050 controls and receives a formally accepted native failed
-verdict; its event/camera replay preserves that outcome and a subsequent model
-transport failure. RoboTwin native task reset passes. BEHAVIOR native reset returns
-R1Pro observations and GT with clean shutdown. Concurrent physical
-goals, nested independent recovery chains, successful
-learned-policy tasks and remaining simulation/perception/hardware integration
-remain pending. SKILL source inspection, paged audits and explicit journal/image-cache
-maintenance are implemented; domain retention and full upper acceptance remain open.
-See [progress](implementation/progress.md) for acceptance and the next steps.
+Delivered: selected DSH runtime, native tools/TODOs, immutable Teams,
+independent role Sessions, explicit context/evidence, versioned plans/private files,
+post-execution verification, Planner recovery, selective SKILL reads, durable domain
+records, complete built-in retention, HTTP/SSE Console and packaged Desktop launcher.
+Cloud OpenAI-compatible and local vLLM configuration use native DSH model transport.
+Policy client/server modes pass all proposed actions through ActionGate.
+
+Actual Qwen/Pi0.5 RoboTwin and RoboDojo tasks have retained-scene retry, fresh
+formal success, source-bound actions/video and released resources. RoboCasa has
+actual Qwen/GR00T CloseDrawer success and retained-scene recovery. BEHAVIOR
+preserves its observed unsuccessful learned-policy outcome. Native SAM/YOLO,
+source-bound RGB-D and R1Pro active observation have separate acceptance.
+The CPU campaign verifies source, preallocation, process/thread/connection
+ownership and original histories with models and simulators unallocated.
+
+Current-code loaded-provider faults, multi-goal completion, Tower, original BEHAVIOR
+success and the full installed configuration matrix retain their native gates.
+Evolver is paused, SceneState is deferred and real hardware follows its selected
+deployment. Concurrent physical goals and nested independent recovery chains are
+outside the current implementation. Exact evidence and remaining requirements are
+in [progress](implementation/progress.md) and the [v1 register](implementation/v1-delivery.md).
 
 ## 16. Work packages, source entry points and first CPU scenario
 
@@ -1860,7 +1880,7 @@ timestamps and provider source revisions:
 2. During `running` and an ordinary confirmed `paused` state, inspect the role
    assignments and evidence grants: no Verifier exists or receives running frames.
    Planner may resume the same job within its admitted budget.
-3. When the policy stops with `policy_stop`, `episode_terminated`, or
+3. When execution ends with `policy_stop`, `planner_stop`, `episode_terminated`, or
    `budget_exhausted`, confirm the native device boundary and final execution report.
    Start a fresh Verifier with the criterion, budget and authorized before/after
    evidence. Record each limited GT result and its source.
@@ -1875,11 +1895,13 @@ timestamps and provider source revisions:
 ### 16.4 Build, checks and handoff report
 
 Current commands are in [development setup](development/setup.md):
-`pnpm install --frozen-lockfile` and `pnpm check`. Skeleton checks are not runtime
-acceptance. Add actual behavior-test commands as implementation lands; do not present
-upstream test paths as tests already passed here. Base Python interfaces import without
-GPU packages; actual providers get isolated dependencies later. Report changes, actual
-checks, skipped items/reasons and next steps.
+`pnpm install --frozen-lockfile` and `pnpm check`. The
+[CPU campaign](implementation/cpu-release-validation.md#consolidated-cpu-campaign)
+executes actual configured production diagnostics and original-record readers.
+The [native campaign](implementation/native-release-campaign.md) owns loaded-model,
+simulator and complete task acceptance. Base Python interfaces import independently
+of optional GPU SDKs; each provider uses its configured isolated dependencies.
+Reports retain source identity, original inputs, observed results and acceptance limits.
 
 ### 16.5 Change log
 
