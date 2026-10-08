@@ -107,6 +107,14 @@ complete pinned checkpoint and writes its verification report before optional
 SDK imports. JAX device selection, trained-policy loading and the upstream
 service follow these filesystem checks. Thirty-four example/module CLI cases
 pass on macOS with no model or GPU allocation.
+Clean `653a3ea` also passes the complete twenty-six-component CPU campaign on
+macOS and isolated Linux, including 244 admission/process/wire/resource cases,
+six visual cases, twelve original context reads and four-provider readiness.
+Independent comparison verifies 214 component source hashes and fifty-two
+process receipts; fifty-four actual OS absence checks confirm process release.
+The actual eighteen-file RoboDojo checkpoint retains its identity through two
+report-path failure checks before SDK imports. Loaded service/device/task gates
+remain independent of this CPU acceptance.
 Actual CPU process and network checks validate these stated startup boundaries;
 loaded model startup retains native acceptance requirements.
 Managed service startup has shared process ownership across its active leases.

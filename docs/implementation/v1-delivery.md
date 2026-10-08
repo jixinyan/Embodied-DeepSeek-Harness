@@ -98,6 +98,17 @@ and full project checks pass on macOS without model or GPU allocation. No
 verification report is published after parameter or missing-file rejection;
 loaded producer readiness and physical workflows retain their native gates.
 
+Clean `653a3ea` passes all twenty-six CPU components on macOS and isolated Linux:
+244 admission/process/wire/resource cases per platform, six visual-context cases,
+twelve original context reads and four-provider readiness. Independent comparison
+verifies 214 component source hashes, six original inputs/configuration sources,
+fifty-two process receipts and the downloaded archive digest. Fifty-four actual
+OS checks confirm diagnostic group/child absence. The original RoboDojo checkpoint
+passes complete eighteen-file verification and two report-path errors before SDK
+imports, with unchanged bytes. Canonical server status remains unchanged and
+GPU/model/environment allocation stays zero. These checks preserve the register's
+remaining loaded-model/device/task requirements.
+
 Five native policy services have production startup/audit owners under
 `physical_harness/policies/services`; example scripts import their same functions.
 Twenty-four actual macOS example/module startup cases, nine inference-owner cases

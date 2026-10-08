@@ -20,6 +20,16 @@ precede SDK imports. Thirty-four actual example/module startup cases and full
 source checks pass on macOS without model or GPU allocation. Original action and
 request identity behavior remains unchanged; loaded service/task gates remain open.
 
+Clean `653a3ea` completes all twenty-six CPU components on macOS and isolated
+Linux, with 244 admission/process/wire/resource cases per platform, six visual
+cases, twelve original context reads and four-provider readiness. Independent
+comparison verifies 214 component source hashes, original inputs/configurations,
+all fifty-two process receipts and the downloaded archive digest. Fifty-four
+actual OS absence checks confirm diagnostic group/child release. The original
+RoboDojo checkpoint passes complete eighteen-file verification and two actual
+report-path failures before SDK imports. Canonical server changes and checkpoint
+bytes remain unchanged; GPU/model/environment allocation stays zero.
+
 Native provider and workspace assembly now belong to `apps/server/src`.
 Original module exports and four-provider profile data pass direct checks;
 all twenty-six CPU components pass on macOS and frozen `0000db5` on isolated

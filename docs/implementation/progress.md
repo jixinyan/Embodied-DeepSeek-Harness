@@ -21,6 +21,24 @@ release connections and permit port reuse. Evidence:
 No GPU, SDK model, environment or action executes. Loaded policy readiness and
 physical task workflows retain their native release requirements.
 
+Clean `653a3ea` passes all twenty-six configured CPU components on macOS and
+isolated Linux: 244 admission/process/wire/resource cases per platform, six native
+visual-context cases, twelve original context reads and four-provider readiness.
+Independent comparison verifies six original inputs, six original configuration
+sources, nineteen diagnostic hashes, 214 component source comparisons and all
+fifty-two process receipts. Original logs and platform-specific network errors
+remain available. The canonical server checkout retains its exact status and the
+isolated source remains clean.
+
+The actual original eighteen-file RoboDojo checkpoint passes complete verification;
+its 12,440,992,402 bytes remain unchanged. Both production entry forms reach a
+named verification-report directory error before SDK imports. Fifty-four
+receipt-identified process groups/children have independent actual OS absence
+checks. No GPU, model, environment or control allocates. Reports and independent
+summaries: `.local/work/v1-cpu-openpi-preallocation-macos-20261008/` and
+`.local/work/v1-cpu-openpi-preallocation-linux-20261008/`. The downloaded archive
+matches server SHA-256. Loaded provider/task gates remain separate.
+
 ## 2026-10-08 production policy service ownership
 
 Five native policy startup/audit implementations belong to

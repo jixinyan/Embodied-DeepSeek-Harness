@@ -18,6 +18,27 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
+Clean `653a3ea` passes all twenty-six components on macOS and isolated Linux:
+244 admission/process/wire/resource cases per platform, six visual-context cases,
+twelve original native context reads and four-provider readiness. Independent
+comparison verifies six original inputs, six original configuration sources,
+nineteen diagnostic hashes, 214 component source comparisons and fifty-two
+component process receipts. Original journals/configuration data remain unchanged,
+the canonical server checkout preserves its status and the isolated source stays
+clean. Actual OS checks independently confirm absence of fifty-four original
+diagnostic process groups and checkpoint-admission children. GPU/model/environment
+allocation and controls remain zero.
+
+The Linux source also verifies the actual eighteen-file RoboDojo checkpoint
+and reaches original report-directory errors from both native entry forms before
+SDK imports. All 12,440,992,402 checkpoint bytes retain their original verified
+identity. Reports and independent source/process summaries:
+`.local/work/v1-cpu-openpi-preallocation-macos-20261008/` and
+`.local/work/v1-cpu-openpi-preallocation-linux-20261008/`.
+The downloaded evidence matches server SHA-256
+`1368371e5aca372320834aaa9b6f4e270887d8fa2cb48fe47b90a683cd94e7f7`.
+Loaded native service/device/task acceptance remains outside these CPU checks.
+
 The complete macOS campaign and all twenty-six process receipts pass under
 `.local/work/v1-cpu-campaign-owner-20261008/`. Three actual signal cases pass
 under `.local/work/v1-cpu-campaign-shutdown-20261008/`, with complete source checks,
@@ -782,6 +803,19 @@ request/network failure, listener closure and zero-model/device scope retain the
 own assertions. Sixteen executable/schema hashes and the original request digest
 identify this check. Evidence:
 `.local/work/v1-openpi-preallocation-startup-20261008/acceptance.json`.
+
+The clean `653a3ea` consolidated campaign repeats all thirty-four startup cases
+on macOS and isolated Linux alongside the other twenty-five CPU components.
+Source hashes, actual admission/exit states, listener closure and original input
+digests match. On Linux, both native entry forms additionally verify the actual
+original eighteen-file checkpoint and fail at a real directory selected as the
+verification-output file. The unchanged checkpoint digest is
+`fbf1abbda5863ebe4193754a9db16a1637d9127f042052b828e2aaeee7cc5dc7`.
+Those two cases preserve `IsADirectoryError` before SDK imports and their actual
+child processes exit. Evidence:
+`.local/work/v1-cpu-openpi-preallocation-linux-20261008/linux/checkpoint-preallocation/acceptance.json`.
+This confirms filesystem admission and report failure; no loaded policy result,
+service readiness or physical control is supplied.
 
 Actual production listener checks cover bound-but-unstarted admission, explicit
 `start_serving`, context-managed source-file failure and an occupied listener.

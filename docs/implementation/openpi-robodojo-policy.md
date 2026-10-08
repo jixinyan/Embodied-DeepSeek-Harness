@@ -52,6 +52,14 @@ continuous gripper semantics and the imported OpenPI Python source inventory.
 Each inference identifies its sequence and SHA256 of the actual input
 state and all three camera arrays.
 
+The clean `653a3ea` CPU campaign checks both native entry forms on macOS and
+isolated Linux without SDK/model allocation. Linux additionally verifies all
+eighteen actual original checkpoint files and their aggregate identity before
+both entries reach a named report-directory error. All checkpoint bytes remain
+unchanged and the original child processes release. This filesystem acceptance
+supplies no learned action or service-readiness result. Commands and scope:
+[policy startup checks](cpu-release-validation.md#policy-service-startup).
+
 Start [the EDH JSON bridge](../../examples/policies/serve_openpi_robodojo.py)
 with `--native-policy-uri`, `--checkpoint-sha256` and `--port`. It accepts a
 fresh native service, decodes the three PNG cameras and validates 14 finite state
