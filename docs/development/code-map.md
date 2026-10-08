@@ -38,6 +38,7 @@ All Python provider code belongs under
 | --- | --- |
 | Validate native deployment before allocation | [apps/server/src/native-worker-configuration.ts](../../apps/server/src/native-worker-configuration.ts) |
 | Connect the application to a native worker | [apps/server/src/native-worker.ts](../../apps/server/src/native-worker.ts) |
+| Change host-side worker pipes, request completion and process release | [apps/server/src/native-worker-transport.ts](../../apps/server/src/native-worker-transport.ts) |
 | Manage worker Sessions and execution operations | [execution/worker.py](../../harness/physical-runtime/src/physical_harness/execution/worker.py) |
 | Change worker process communication | [execution/worker_transport.py](../../harness/physical-runtime/src/physical_harness/execution/worker_transport.py) |
 | Save original policy requests and actual controls | [execution/policy_records.py](../../harness/physical-runtime/src/physical_harness/execution/policy_records.py) |

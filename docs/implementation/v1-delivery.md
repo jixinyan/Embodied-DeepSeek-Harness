@@ -30,6 +30,9 @@ source-directory admission and initialization cleanup. Session, transport and
 recording implementations have explicit file owners; see the
 [source map](../development/code-map.md) and
 [CPU validation](cpu-release-validation.md#worker-process-transport).
+The host transport additionally has actual production-client cancellation,
+deadline, child-termination and spawn-failure checks. These checks preserve
+unknown device state and retain actual-environment stopping requirements.
 
 ## Acceptance register
 

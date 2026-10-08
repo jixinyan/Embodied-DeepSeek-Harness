@@ -1,10 +1,21 @@
 # Implementation progress
 
-Spec: v1.77. Current checkpoint: **separate native Session/transport/recording modules; actual CPU worker pipes and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.78. Current checkpoint: **separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## 2026-10-08 native worker organization and CPU process checks
+
+Host communication belongs to `apps/server/src/native-worker-transport.ts`; native
+Session/task/image assembly remains in `native-worker.ts`. Response validation
+precedes pending-request retirement and retains Python's original error text.
+Input-pipe errors are observed by the same transport owner. Five actual CPU client
+cases verify concurrent operation errors, cancelled-read response draining,
+request expiry, child SIGTERM and executable ENOENT. All requests complete, repeated
+close calls share their completion and every owned child/process group is absent.
+Faults preserve unknown device state and reject clean-close acceptance. Source-bound
+checks and entry points are in [CPU validation](cpu-release-validation.md) and the
+[code map](../development/code-map.md).
 
 `execution/worker.py` owns NativeWorkerSession and the process entry point;
 `worker_transport.py` owns bounded UTF-8 JSON host requests, fd-3 publications,

@@ -1,14 +1,21 @@
 # Server application
 
-Run `pnpm demo` from the repository root. The local HTTP/SSE server composes DSH,
-team configuration, UpperRun, a local domain store and an explicitly synthetic backend.
+The local HTTP/SSE server composes configured native DSH models, Teams, UpperRun,
+the domain store and retained environment factories. Use the
+[native workspace](../../docs/implementation/native-workspace.md) to select compatible
+simulators, embodiments, checkpoints and model services through one Console.
 
 - [runtime.ts](src/runtime.ts): original DSH services and cooperative timeout policy.
 - [application.ts](src/application.ts): role tools, task/verification/recovery coordination.
-- [native-worker.ts](src/native-worker.ts): retained native simulator process,
-  task-scoped backend ports, bounded transport requests, camera attachment storage,
-  control-step frame events, and confirmed process release. The session keeps one native scene across tasks;
+- [native-worker.ts](src/native-worker.ts): retained native environment assembly,
+  task-scoped backend ports, camera attachment storage and control-step frame events.
+  The Session keeps one native scene across tasks;
   each task receives a separate run ID before its backend and UpperRun are created.
+- [native-worker-transport.ts](src/native-worker-transport.ts): host request/response
+  pipes, original worker errors, read cancellation, communication deadlines and
+  confirmed owned-process release. Complete response validation precedes request
+  retirement; malformed publications fail every pending request. Error messages
+  retain Python's original text, including an empty string.
 - [evidence-images.ts](src/evidence-images.ts): image integrity checks for agent
   evidence and event-bound operator replay frames. Replay URLs use the immutable
   run event sequence and preserve debug-only frame visibility.
@@ -34,15 +41,14 @@ team configuration, UpperRun, a local domain store and an explicitly synthetic b
 - [event-record-owners.ts](src/event-record-owners.ts): event/message source references,
   historical payload validation and versioned deployment extensions.
 - [run-event-stream.ts](src/run-event-stream.ts): bounded event batches, current projections and connection backpressure.
-- [fixture-model.ts](src/fixture-model.ts) / [fixture-backend.ts](src/fixture-backend.ts): keyless test dependencies.
 
 See [extension and lifecycle guide](../../docs/implementation/upper-runtime.md).
 Use `startServer` with explicit `ServerDeployment` bindings for tasks, native DSH
-models, tools and backend factories. `startDemoServer` supplies the CPU configuration.
-See the [deployment guide](../../docs/implementation/deployments.md) and runnable example.
+models, tools and backend factories. See the
+[deployment guide](../../docs/implementation/deployments.md) and runnable example.
 The native worker requires an explicit simulator, task catalog, policy service,
-scene configuration, and isolated runtime command. The default demo remains synthetic.
-The RoboCasa process checks store actual camera frames and native checks under
-`.local/work/native-worker-remote` and `.local/work/native-worker-gr00t-03`.
-The latter records six confirmed learned-policy commands and a native
-`task_success=false` result for that execution.
+scene configuration and isolated runtime command. Source-bound CPU communication
+and process checks are documented in
+[CPU release validation](../../docs/implementation/cpu-release-validation.md).
+Actual model inference, simulator actions and task completion use the
+[native campaign](../../docs/implementation/native-release-campaign.md).

@@ -83,6 +83,28 @@ rejection and transport checks in
 Active native SDK interruption and physical stopping retain their separate
 actual-environment acceptance requirements.
 
+The host connection implementation is
+`apps/server/src/native-worker-transport.ts`. It owns worker pipes, pending requests,
+publication delivery and confirmed process-group release. The Session/task/image
+implementation remains in `native-worker.ts`. Complete response validation precedes
+request retirement, with Python error text preserved and input-pipe errors observed.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-worker-client-offline.mjs \
+  --config /absolute/path/original-deployment.json \
+  --python /absolute/path/isolated/python \
+  --output .local/work/<new-worker-client-check>
+```
+
+Five actual production-client cases cover 20 concurrent original operation errors,
+bounded request admission, read cancellation followed by the original response,
+a real request deadline, actual child SIGTERM and an absent executable's ENOENT.
+Every pending request completes, repeated close calls share one Promise and each
+owned child/process group is absent at completion. Faulted cases preserve unknown
+device state and reject clean-close acceptance. These checks allocate no environment
+and perform no inference or controls. Local evidence:
+`.local/work/v1-worker-client-cpu-20261008-final/acceptance.json`.
+
 The same 13 process cases and both TypeScript host checks also pass on `jd_B300`
 with Python 3.12.14, Node 24.21.0 and pnpm 11.19.0. The frozen `feb8cc9` source
 is installed in its own CPU Python environment and its own frozen-lockfile Node
