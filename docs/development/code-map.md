@@ -75,6 +75,7 @@ implementations load in their separately configured service processes.
 | Configure and start the desktop launcher | [apps/desktop](../../apps/desktop/README.md) |
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |
 | Execute the configured CPU diagnostic campaign | [run-cpu-release-campaign.mjs](../../scripts/run-cpu-release-campaign.mjs) |
+| Verify signal-driven CPU campaign closure and actual diagnostic process-group release | [check-cpu-campaign-shutdown.mjs](../../scripts/check-cpu-campaign-shutdown.mjs) |
 | Verify image-group retention and budget rejection through the native loop | [check-recorded-visual-context.mjs](../../scripts/check-recorded-visual-context.mjs) |
 | Validate configured native scenes and policy endpoints before allocation | [check-native-scene-configuration.mjs](../../scripts/check-native-scene-configuration.mjs) |
 | Verify native CLI startup and signal-driven process release for every provider | [check-native-startup-offline.mjs](../../scripts/check-native-startup-offline.mjs) |

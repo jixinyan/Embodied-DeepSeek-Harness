@@ -9,6 +9,27 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 ## Consolidated CPU campaign
 
+Each diagnostic runs asynchronously in its own POSIX process group. A normally
+completed component publishes `<component>.process.json` with the actual PID,
+exit status and confirmed group release; the campaign records its digest.
+SIGINT/SIGTERM request campaign closure. The current diagnostic completes its
+own checks and cleanup before the next component is rejected. Repeated signals
+preserve that ownership. Interrupted campaigns exit with failure, retain
+`completed.json` and `interruption.json`, and publish no final `acceptance.json`.
+Process-group release after child exit has a ten-second confirmation deadline.
+
+The complete macOS campaign and all twenty-six process receipts pass under
+`.local/work/v1-cpu-campaign-owner-20261008/`. Three actual signal cases pass
+under `.local/work/v1-cpu-campaign-shutdown-20261008/`, with complete source checks,
+released groups, no subsequent Worker diagnostic and no final acceptance report.
+Run the separate shutdown check with the same actual campaign configuration:
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-cpu-campaign-shutdown.mjs \
+  --config /absolute/path/cpu-release.json \
+  --output .local/work/<new-cpu-shutdown-check>
+```
+
 The production native deployment and workspace factories are owned by
 `apps/server/src/native-deployment.mjs` and `native-workspace.mjs`. After this
 source relocation, all twenty-six macOS CPU components pass under

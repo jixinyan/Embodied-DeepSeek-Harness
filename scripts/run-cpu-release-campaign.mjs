@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   accessSync,
@@ -12,6 +12,7 @@ import {
 } from 'node:fs';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
+import { setTimeout as delay } from 'node:timers/promises';
 import { z } from 'zod';
 
 const { values } = parseArgs({
@@ -19,6 +20,7 @@ const { values } = parseArgs({
 });
 assert(values.config && values.output, 'Supply --config and a new --output directory.');
 const root = resolve(import.meta.dirname, '..');
+assert.notEqual(process.platform, 'win32', 'CPU process-group diagnostics require POSIX.');
 const configurationPath = resolve(values.config);
 const configuration = z
   .object({
@@ -138,58 +140,131 @@ const implementationHashes = [...new Set(implementation)].map((path) => ({
   sha256: digest(resolve(root, path)),
 }));
 const completed = [];
-for (const job of jobs) {
-  console.log(JSON.stringify({ component: job.id, state: 'running' }));
-  const stdout = openSync(resolve(output, `${job.id}.stdout.txt`), 'wx', 0o600);
-  const stderr = openSync(resolve(output, `${job.id}.stderr.txt`), 'wx', 0o600);
-  let result;
-  try {
-    result = spawnSync(job.executable, job.args, {
-      cwd: root,
-      env: environment,
-      stdio: ['ignore', stdout, stderr],
-    });
-  } finally {
-    closeSync(stdout);
-    closeSync(stderr);
+const interruption = new AbortController();
+const receivedSignals = [];
+const onSignal = (signal) => {
+  receivedSignals.push(signal);
+  if (!interruption.signal.aborted) {
+    interruption.abort(new Error(`CPU campaign interrupted by ${signal}.`));
+    console.log(JSON.stringify({ state: 'closing', signal, activeDiagnosticWillDrain: true }));
   }
-  if (result.error) throw result.error;
-  if (result.status !== 0)
-    throw new Error(
-      `CPU component ${job.id} exited (code=${result.status}, signal=${result.signal}); inspect its retained stdout/stderr.`,
-    );
-  for (const source of sources) assert.equal(digest(source.path), source.sha256);
-  for (const source of implementationHashes)
-    assert.equal(digest(resolve(root, source.path)), source.sha256);
-  const report =
-    job.id === 'source'
-      ? null
-      : resolve(output, job.id, job.id === 'readiness' ? 'readiness.json' : 'acceptance.json');
-  if (report) JSON.parse(readFileSync(report, 'utf8'));
-  completed.push({
-    id: job.id,
-    exitCode: result.status,
-    signal: result.signal,
-    report,
-    reportSha256: report ? digest(report) : null,
-  });
-  writeFileSync(resolve(output, 'completed.json'), JSON.stringify(completed, null, 2) + '\n', {
+};
+process.on('SIGINT', onSignal);
+process.on('SIGTERM', onSignal);
+try {
+  for (const job of jobs) {
+    interruption.signal.throwIfAborted();
+    console.log(JSON.stringify({ component: job.id, state: 'running' }));
+    const stdout = openSync(resolve(output, `${job.id}.stdout.txt`), 'wx', 0o600);
+    let stderr;
+    let result;
+    const processReceipt = resolve(output, `${job.id}.process.json`);
+    try {
+      stderr = openSync(resolve(output, `${job.id}.stderr.txt`), 'wx', 0o600);
+      const child = spawn(job.executable, job.args, {
+        cwd: root,
+        env: environment,
+        stdio: ['ignore', stdout, stderr],
+        detached: true,
+      });
+      let spawnError;
+      result = await new Promise((accept) => {
+        child.once('error', (error) => {
+          spawnError = error;
+        });
+        child.once('close', (status, signal) => {
+          accept({ status, signal, error: spawnError });
+        });
+      });
+      const deadline = AbortSignal.timeout(10_000);
+      let processGroupReleased = child.pid === undefined;
+      while (!processGroupReleased) {
+        try {
+          process.kill(-child.pid, 0);
+        } catch (error) {
+          if (error.code !== 'ESRCH') throw error;
+          processGroupReleased = true;
+        }
+        if (!processGroupReleased) await delay(50, undefined, { signal: deadline });
+      }
+      writeFileSync(
+        processReceipt,
+        JSON.stringify(
+          {
+            pid: child.pid ?? null,
+            exitCode: result.status,
+            signal: result.signal,
+            processGroupReleased,
+          },
+          null,
+          2,
+        ) + '\n',
+        { flag: 'wx', mode: 0o600 },
+      );
+    } finally {
+      closeSync(stdout);
+      if (stderr !== undefined) closeSync(stderr);
+    }
+    if (result.error) throw result.error;
+    if (result.status !== 0)
+      throw new Error(
+        `CPU component ${job.id} exited (code=${result.status}, signal=${result.signal}); inspect its retained stdout/stderr.`,
+      );
+    for (const source of sources) assert.equal(digest(source.path), source.sha256);
+    for (const source of implementationHashes)
+      assert.equal(digest(resolve(root, source.path)), source.sha256);
+    const report =
+      job.id === 'source'
+        ? null
+        : resolve(output, job.id, job.id === 'readiness' ? 'readiness.json' : 'acceptance.json');
+    if (report) JSON.parse(readFileSync(report, 'utf8'));
+    completed.push({
+      id: job.id,
+      exitCode: result.status,
+      signal: result.signal,
+      report,
+      reportSha256: report ? digest(report) : null,
+      processReceipt,
+      processSha256: digest(processReceipt),
+    });
+    writeFileSync(resolve(output, 'completed.json'), JSON.stringify(completed, null, 2) + '\n', {
+      mode: 0o600,
+    });
+    console.log(JSON.stringify({ component: job.id, state: 'passed' }));
+  }
+  interruption.signal.throwIfAborted();
+  const report = {
+    schemaVersion: 'edh.cpu_release_acceptance.v1',
+    sources,
+    implementation: implementationHashes,
+    completed,
+    cudaVisibleDevices: '',
+    originalInputsUnchanged: true,
+    ownedProcessGroupsReleased: true,
+    scope:
+      'Source checks, actual CPU process/thread/socket boundaries, original journal inspection and configured readiness. Loaded-model and physical-task acceptance use the native campaign.',
+  };
+  writeFileSync(resolve(output, 'acceptance.json'), JSON.stringify(report, null, 2) + '\n', {
+    flag: 'wx',
     mode: 0o600,
   });
-  console.log(JSON.stringify({ component: job.id, state: 'passed' }));
+  console.log(JSON.stringify({ output, components: completed.length, state: 'passed' }));
+} finally {
+  process.off('SIGINT', onSignal);
+  process.off('SIGTERM', onSignal);
+  if (receivedSignals.length)
+    writeFileSync(
+      resolve(output, 'interruption.json'),
+      JSON.stringify(
+        {
+          signals: receivedSignals,
+          completed: completed.map((component) => component.id),
+          finalAcceptancePublished: false,
+          scope: 'The current CPU diagnostic drains before interrupted campaign admission stops.',
+        },
+        null,
+        2,
+      ) + '\n',
+      { flag: 'wx', mode: 0o600 },
+    );
 }
-const report = {
-  schemaVersion: 'edh.cpu_release_acceptance.v1',
-  sources,
-  implementation: implementationHashes,
-  completed,
-  cudaVisibleDevices: '',
-  originalInputsUnchanged: true,
-  scope:
-    'Source checks, actual CPU process/thread/socket boundaries, original journal inspection and configured readiness. Loaded-model and physical-task acceptance use the native campaign.',
-};
-writeFileSync(resolve(output, 'acceptance.json'), JSON.stringify(report, null, 2) + '\n', {
-  flag: 'wx',
-  mode: 0o600,
-});
-console.log(JSON.stringify({ output, components: completed.length, state: 'passed' }));

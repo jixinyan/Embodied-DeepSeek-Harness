@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.97 · 2026-10-08
+Version: v1.98 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -19,6 +19,12 @@ Native provider and workspace assembly now belong to `apps/server/src`.
 Original module exports and four-provider profile data pass direct checks;
 all twenty-six macOS CPU components pass. Frozen Linux validation follows the
 committed refactor. Example entries retain their public startup paths.
+
+CPU campaign process ownership passes twenty-six actual diagnostic completions
+and three signal-driven shutdown cases on macOS. Each interrupted run finishes
+its active source check, releases the process group and stops further admission.
+Final acceptance requires an uninterrupted complete campaign. Loaded native
+workflow requirements remain independent of these CPU results.
 
 The consolidated native campaign must independently validate loaded-model and
 device behavior, original task success and complete installed workflows. On

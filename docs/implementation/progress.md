@@ -1,8 +1,27 @@
 # Implementation progress
 
-Spec: v1.97. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.98. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 CPU campaign process ownership
+
+The CPU campaign asynchronously awaits each actual diagnostic in its own POSIX
+process group. SIGINT/SIGTERM request closure; the current diagnostic finishes
+its checks and cleanup before further component admission stops. Repeated
+signals preserve that drain. An interrupted campaign exits unsuccessfully,
+retains completed results and publishes an interruption record. Every normally
+completed component records its actual PID, exit status and confirmed process-group
+release, with a digest in the campaign report.
+
+All twenty-six macOS components pass with 222 admission/process/wire/resource
+cases, six visual cases, twelve original context reads and four-provider
+readiness. Independent receipt checks verify all twenty-six process digests and
+released groups. Three actual signal cases run complete configured source checks,
+confirm absent process groups and prevent the next component and final acceptance
+publication. Evidence: `.local/work/v1-cpu-campaign-owner-20261008/` and
+`.local/work/v1-cpu-campaign-shutdown-20261008/`. GPU, model and simulator allocation
+remain zero. Loaded native workflows retain their own acceptance requirements.
 
 ## 2026-10-08 production deployment ownership
 

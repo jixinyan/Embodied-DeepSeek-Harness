@@ -28,6 +28,15 @@ digests. Owned resources release and the canonical remote checkout remains
 unchanged. Current-code loaded models, simulator actions and complete task
 workflows retain their native gates.
 
+Native configuration and provider/workspace assembly have production owners in
+`apps/server/src`; example entries retain their startup interfaces. Exact source,
+export and four-profile checks pass. The CPU campaign additionally owns each
+diagnostic's POSIX process group and awaits confirmed release. All twenty-six
+components and their process receipts pass on macOS. Three signal cases finish
+their active source check and stop subsequent admission with no final acceptance
+report. Commands and retained evidence are in the
+[CPU guide](cpu-release-validation.md#consolidated-cpu-campaign).
+
 The [release validation guide](release-validation.md) defines source checks,
 actual native task submission, source-bound audits and product/safety evidence.
 The [consolidated native campaign](native-release-campaign.md) now prepares the
