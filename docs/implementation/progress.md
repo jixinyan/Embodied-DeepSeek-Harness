@@ -16,6 +16,11 @@ close calls share their completion and every owned child/process group is absent
 Faults preserve unknown device state and reject clean-close acceptance. Source-bound
 checks and entry points are in [CPU validation](cpu-release-validation.md) and the
 [code map](../development/code-map.md).
+The same production-client and host checks pass on Linux from frozen `5a4a605`
+source with isolated Python/Node dependencies. Full project checks pass and the
+server checkout's original status is unchanged. Exact source hashes, process
+outcomes, check output and dependency versions are retained in the
+[CPU evidence archive](cpu-release-validation.md#worker-process-transport).
 
 `execution/worker.py` owns NativeWorkerSession and the process entry point;
 `worker_transport.py` owns bounded UTF-8 JSON host requests, fd-3 publications,

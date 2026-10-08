@@ -105,6 +105,16 @@ device state and reject clean-close acceptance. These checks allocate no environ
 and perform no inference or controls. Local evidence:
 `.local/work/v1-worker-client-cpu-20261008-final/acceptance.json`.
 
+The same five client cases and both provider host checks also pass on Linux from
+frozen `5a4a605` source, using the isolated Python 3.12.14 environment and a newly
+installed frozen-lockfile Node 24.21.0/pnpm 11.19.0 workspace. Full `pnpm check`
+passes with 58 Python compilations, 19 base imports and 857 documentation links.
+The original server checkout's before/after status is identical. CUDA remains
+invisible and no environment, inference or controls are allocated. The archive
+under `.local/work/v1-cpu-host-20261008/` retains source-bound client/host reports,
+full check output and installed Python versions. Its SHA-256 is
+`6762e806aaee23b92eedbd0ebddf6c7db5af41a73efc12074f6c4743f3708bb3`.
+
 The same 13 process cases and both TypeScript host checks also pass on `jd_B300`
 with Python 3.12.14, Node 24.21.0 and pnpm 11.19.0. The frozen `feb8cc9` source
 is installed in its own CPU Python environment and its own frozen-lockfile Node

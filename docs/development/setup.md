@@ -19,10 +19,8 @@ Individual checks: `pnpm check:contracts`, `pnpm typecheck`,
 `pnpm check:structure`, `pnpm check:python`.
 After editing the schema: `pnpm generate:contracts`.
 
-Run `pnpm demo` for the local HTTP/SSE console at `http://127.0.0.1:4317`.
-The fixture requires no GPU, API key, policy checkpoint or simulator. TypeScript
-workspaces export private source. `pnpm build:desktop` packages the Electron launcher
-under `dist/desktop`; it starts a configured service from a selected checkout with
+TypeScript workspaces export private source. `pnpm build:desktop` packages the
+Electron launcher under `dist/desktop`; it starts a configured service from a selected checkout with
 its installed dependencies. See [desktop build and configuration](../../apps/desktop/README.md).
 
 For native execution, select one of the existing
@@ -41,6 +39,30 @@ and remains unchanged. No environment is allocated and no inference runs. The
 same factory can be selected in the Desktop JSON configuration, with its endpoint
 settings supplied through the owned service's environment file. The native task
 workflow requires an allocated session and actual policy/model execution.
+
+Use the [native workspace](../implementation/native-workspace.md) to expose
+multiple configured providers in one Console. Its readiness check opens the
+production application, checks compatible profiles and closes the writer/listener
+without creating a Session or starting managed model/policy services:
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-workspace-readiness.mjs \
+  --config /absolute/path/native-workspace.json \
+  --output .local/work/<new-readiness-directory>
+```
+
+For task submission, start the configured native Console:
+
+```sh
+EDH_NATIVE_WORKSPACE_CONFIG=/absolute/path/native-workspace.json \
+pnpm exec tsx --tsconfig tsconfig.runtime.json examples/deployments/native-workspace.mjs
+```
+
+Select its compatible environment, embodiment, checkpoint, execution mode, model
+and Team before creating a Session. Native factories acquire configured service
+leases at Session admission. Keep data and checkpoint installation in their
+configured directories. Communication and original-record checks that require
+no model or simulator are in [CPU release validation](../implementation/cpu-release-validation.md).
 
 Runtime data belongs in ignored `.runs/` and `.local/` locations. Tests use
 explicit synthetic fixtures. Do not initialize genuine experience libraries
