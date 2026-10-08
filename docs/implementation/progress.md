@@ -1,8 +1,37 @@
 # Implementation progress
 
-Spec: v1.100. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.101. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 production policy service ownership
+
+Five native policy startup/audit implementations belong to
+`physical_harness/policies/services`. Existing example scripts import the same
+production `main` functions, and direct Python module entries accept the same
+arguments. Source comparison verifies preserved service logic with declared
+import/root changes, original schema/manifest bytes and exact function identity.
+Shared policy transport, inference owners and model adapters retain their owners.
+
+Twenty-four actual macOS startup cases cover example/module help, occupied ports
+and named checkpoint failures before SDK loading. Actual production listener and
+nine inference-owner cases also pass. Full source checks compile 65 Python files
+and import 27 base modules without model SDKs. All 128 selected DSH files and
+25 bindings remain exact. Evidence:
+`.local/work/v1-policy-service-ownership-20261008/source-relocation.json`,
+`.local/work/v1-policy-service-startup-20261008/acceptance.json` and
+`.local/work/v1-policy-service-inference-owner-20261008/acceptance.json`.
+No model, native environment, control or GPU executes. Loaded policy/device/task
+acceptance retains its native release requirement.
+
+Clean `441b17e` passes the same twenty-four startup cases, nine inference-owner
+cases, five original-source/module checks and full project checks on isolated
+Linux. Independent comparison verifies thirty-two source/input hashes and
+matching admission, exit, listener and owner-closure results. Original network
+errors remain platform-specific. The canonical server checkout retains its
+exact status and the isolated source remains clean. The downloaded archive
+matches its server SHA-256; evidence and independent summary:
+`.local/work/v1-policy-service-ownership-linux-20261008/`.
 
 ## 2026-10-08 native campaign cancellation ownership
 

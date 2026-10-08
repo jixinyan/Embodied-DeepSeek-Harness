@@ -717,6 +717,37 @@ Evidence: `.local/work/v1-policy-transport-offline-20261007-02/acceptance.json`.
 
 ## Policy service startup
 
+Production startup and audit implementations belong to
+[`physical_harness/policies/services`](../../harness/physical-runtime/src/physical_harness/policies/services/README.md).
+Five example scripts import the corresponding production `main` functions;
+the same services also run through `python -m physical_harness.policies.services.<module>`.
+Direct source comparison verifies preserved service logic with declared import/
+repository-root changes. Example and module functions have identical identities,
+root resolution is unchanged, and original schema/manifest bytes remain exact.
+Base import checks include all six service-package modules without SDK imports.
+
+All twenty-four actual macOS startup cases and nine inference-owner cases pass
+after this migration. Both entry forms preserve help, occupied-port rejection
+before model loading, the named missing-checkpoint error, original listener
+ownership and reusable bound ports. Actual listener checks retain their original
+request and network error. Original-source/module verification covers all five
+services. Evidence: `.local/work/v1-policy-service-ownership-20261008/`,
+`.local/work/v1-policy-service-startup-20261008/` and
+`.local/work/v1-policy-service-inference-owner-20261008/`. No model SDK, model result,
+environment or GPU is supplied. Loaded startup/inference and device/task behavior
+retain their native release requirements.
+
+Clean `441b17e` passes the same twenty-four startup cases, nine inference-owner
+cases, original-source/module comparison and full project checks on isolated
+Linux using Python 3.12.14, Node 24.21.0 and the complete frozen lock. Independent
+comparison verifies thirty-two source/input hashes and matching CLI admission,
+exit, listener and thread-closure results. Every platform preserves its actual
+network errors. Original source/schema/manifest data and five function identities
+match. The canonical server checkout retains its exact status and the isolated
+source remains clean. Evidence and independent summary:
+`.local/work/v1-policy-service-ownership-linux-20261008/`; archive SHA-256:
+`3a4a292da43576b4b855cbd7d01d8219aea70fab76c3ebef9bef4a1442a5849d`.
+
 The four EDH JSON service entries bind their configured port before checkpoint
 or upstream initialization and before importing their optional model SDKs.
 They use `serve_policy(..., start_serving=False)` and the actual WebSocket Server's
@@ -735,8 +766,8 @@ CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-policy-startup-offline.py
 ```
 
 Install the base package and `policy` extra in the isolated Python environment.
-Twelve actual subprocess cases cover five CLI help commands, four occupied ports
-and three missing-checkpoint failures. Existing listeners retain actual connection
+Twenty-four actual subprocess cases cover ten example/module help commands,
+eight occupied ports and six missing-checkpoint failures. Existing listeners retain actual connection
 acceptance after each candidate exits; failed-startup ports become reusable.
 Help completes without optional SDK imports, including the native OpenPI producer.
 That producer retains its original upstream service/model-loading sequence; this

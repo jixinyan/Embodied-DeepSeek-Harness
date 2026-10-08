@@ -12,6 +12,7 @@ the optional `robodojo` extra supplies the external RoboDojo RPC client.
 | [execution/action_gate.py](src/physical_harness/execution/action_gate.py) | Action admission, generation, budgets and confirmed boundaries |
 | [execution/native_device.py](src/physical_harness/execution/native_device.py) | Simulator owner thread, physical command receipts and stopping |
 | [policies/](src/physical_harness/policies/README.md) | Policy client/server, mode normalization and checkpoint adapters |
+| [policies/services/](src/physical_harness/policies/services/README.md) | Provider-specific model startup, inference records and runnable service entries |
 | [environments/](src/physical_harness/environments/README.md) | Simulator observation, action, task and SDK lifecycle adapters |
 | [perception/](src/physical_harness/perception/README.md) | Model-based perception and calibrated RGB-D geometry |
 | [backends/](src/physical_harness/backends/README.md) | Device capabilities, connections and confirmed hardware stopping |

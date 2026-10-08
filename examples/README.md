@@ -28,3 +28,8 @@ install providers or start robots. See
   callback, action gate and synthetic device; no model or simulator required.
 
 See [configuration and limits](../docs/implementation/model-policy-adapters.md).
+
+Native policy service examples import their production `main` functions from
+[`physical_harness.policies.services`](../harness/physical-runtime/src/physical_harness/policies/services/README.md).
+The module guide identifies each checkpoint adapter, runnable module and example
+entry. Deployment configuration owns the selected environment, endpoint and GPU.

@@ -15,6 +15,13 @@ See [wire admission validation](../../../../../docs/implementation/cpu-release-v
 
 ## Service startup
 
+Production argument/model startup, audit records and service lifecycle belong to
+the modules in [services](services/README.md). Each existing example entry imports
+the same `main` function. `python -m physical_harness.policies.services.<module>`
+provides the corresponding direct entry with the same arguments. Repository-root
+resolution, original service logic and manifest/schema bytes have independent
+source/module checks.
+
 The four EDH JSON service entries parse arguments, bind their configured port,
 validate the checkpoint or upstream identity, load the selected policy and then
 accept connections. Their direct optional SDK imports follow port binding. An
@@ -32,7 +39,8 @@ All five JSON/native policy CLI entries support `--help` before optional model
 SDK imports. The native OpenPI producer retains the upstream service and its
 original model-loading sequence. Its CPU check covers argument help only.
 The [startup diagnostic](../../../../../scripts/check-policy-startup-offline.py)
-exercises twelve actual CLI processes, delayed connection admission, original
+exercises twenty-four actual CLI processes across the example and module entries,
+delayed connection admission, original
 request forwarding to an unavailable endpoint and port release. It supplies no
 model result or action. See [startup validation](../../../../../docs/implementation/cpu-release-validation.md#policy-service-startup).
 

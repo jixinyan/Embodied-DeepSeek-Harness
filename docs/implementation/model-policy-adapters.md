@@ -1,11 +1,14 @@
 # Model endpoints, policy transport and action admission
 
-Status: 2026-09-30. The upper model adapter, policy transport and action gate have
-passed actual service checks. RoboCasa has completed a learned-policy control rollout
-through the native worker and console; its recorded task-success check was false.
-The other simulator providers and hardware retain their separate acceptance status in
-[actual provider acceptance](live-integration.md). Profile selection and
-compatibility preflight are documented in [physical stack profiles](physical-profiles.md).
+Status: 2026-10-08. Upper model adapters, policy transport and ActionGate have
+actual service checks. Recorded native Qwen workflows verify task success and
+retained-scene recovery with learned policies on RoboTwin, RoboDojo and RoboCasa.
+BEHAVIOR retains its observed unsuccessful task outcome and separate native
+perception/active-observation evidence. Production policy service startup and
+owner checks pass on macOS and isolated Linux. Current-code loaded policy/device
+workflows and the complete configuration matrix retain their gates in
+[v1 acceptance](v1-delivery.md). Profile selection and compatibility preflight
+are documented in [physical profiles](physical-profiles.md).
 
 ![Model and policy boundaries](../architecture/assets/model-policy-adapters.svg)
 
@@ -137,6 +140,12 @@ distinguishes bad requests, authentication, rate limits and internal failures; t
 adapter preserves those distinctions rather than applying compaction to all errors.
 
 ## Lower policy: an independent inference server
+
+Native policy startup, checkpoint identity, inference records and shutdown are
+implemented in [policy service modules](../../harness/physical-runtime/src/physical_harness/policies/services/README.md).
+Existing example entries import the same production functions; direct Python
+module entries accept the same arguments. Shared inference ownership and
+WebSocket transport remain in the policy runtime.
 
 Install the optional transport dependency:
 

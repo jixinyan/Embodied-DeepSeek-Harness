@@ -98,6 +98,10 @@ Application assembly connects the runtime services through explicit interfaces.
 `apps/server/src/native-deployment.mjs` owns native configuration and provider
 assembly; `native-workspace.mjs` composes those providers into one application.
 `examples/deployments` contains runnable entry points that call these modules.
+Native policy startup, model identity and inference audit belong to
+`physical_harness/policies/services`; existing example scripts import their
+production `main` functions. The policy server and inference owner remain shared
+modules in `policies`, and provider SDK loading stays inside selected startup.
 `contracts` must not import agents, apps or Python.
 Communication uses storage for persistence; agents receive authorized evidence
 through memory/tools, not direct unrestricted storage handles. Python optional

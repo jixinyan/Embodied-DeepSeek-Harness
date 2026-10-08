@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.100 · 2026-10-08
+Version: v1.101 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -19,6 +19,17 @@ Native provider and workspace assembly now belong to `apps/server/src`.
 Original module exports and four-provider profile data pass direct checks;
 all twenty-six CPU components pass on macOS and frozen `0000db5` on isolated
 Linux. Example entries retain their public startup paths.
+
+Policy startup, model identity and audit implementations belong to
+`physical_harness/policies/services`. The five example and direct module entries
+share production functions. Twenty-four macOS CLI startup cases, nine actual
+inference-owner cases, source/module comparison and full source checks pass.
+Loaded model and device behavior retain their native requirements.
+
+Clean `441b17e` passes the same policy startup/owner/module and full project checks
+on isolated Linux. Thirty-two source/input comparisons and the downloaded archive
+digest verify; both isolated source and canonical server checkout preserve their
+original status.
 
 CPU campaign process ownership passes twenty-six actual diagnostic completions
 and three signal-driven shutdown cases on both platforms. Each interrupted run finishes

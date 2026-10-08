@@ -92,6 +92,20 @@ see [Console process checks](cpu-release-validation.md#native-console-process-ow
 
 ## Acceptance register
 
+Five native policy services have production startup/audit owners under
+`physical_harness/policies/services`; example scripts import their same functions.
+Twenty-four actual macOS example/module startup cases, nine inference-owner cases
+and full source checks pass without model SDK or device allocation. Source/module
+comparison confirms original service logic, repository root and schema/manifest
+bytes. Current-code loaded policy/device workflows retain independent native
+gates. See [policy service startup](cpu-release-validation.md#policy-service-startup).
+
+Clean `441b17e` passes the same policy startup/owner/module and full project checks
+on isolated Linux. Independent comparison verifies thirty-two source/input
+hashes, matching admission/resource outcomes and the downloaded archive digest.
+The canonical server checkout retains its exact status; no GPU/model/device
+workload runs.
+
 Six native DSH loop cases use two original RoboTwin journals to verify complete
 image-group retention, fresh observation admission and over-budget failure before
 surface changes. Original audit/input bytes remain available; twelve independent
