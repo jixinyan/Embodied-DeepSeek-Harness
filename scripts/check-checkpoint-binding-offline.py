@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import sys
 
-from physical_harness.policies.openpi_checkpoint import verify_checkpoint
+from physical_harness.policies.openpi_checkpoint import verify_arx_x5_normalization, verify_checkpoint
 from physical_harness.policies.provenance import checkpoint_identity
 
 
@@ -53,6 +53,11 @@ async def inspect(args):
     if (verified["checkpoint_sha256"] != expected or len(verified["files"]) != 18
             or verified["revision"] != "35efbc7dedfdbeeb6e95fb749bd885d73d483e41"):
         raise AssertionError("The original RoboDojo checkpoint identity differs.")
+    normalization = verify_arx_x5_normalization(native)
+    normalization_record = next(item for item in verified["files"] if item["path"] == normalization["path"])
+    if (normalization_record["sha256"] != normalization["sha256"]
+            or normalization_record["bytes"] != normalization["bytes"]):
+        raise AssertionError("Original ARX X5 normalization differs from its verified inventory.")
     target = output / "verification-target"
     target.mkdir()
     cases = []
@@ -85,12 +90,13 @@ async def inspect(args):
             cases.append({"entry": entry, "mode": mode, "pid": process.pid, "exitCode": process.returncode,
                           "originalError": expected_error.decode(), "ownedProcessExited": True,
                           "modelLoaded": False})
-    if verify_checkpoint(native, inventory) != verified or inventory.read_bytes() != original_inventory:
+    if (verify_checkpoint(native, inventory) != verified or inventory.read_bytes() != original_inventory
+            or verify_arx_x5_normalization(native) != normalization):
         raise AssertionError("The original native checkpoint or inventory changed during inspection.")
     if any(name.split(".")[0] in {"jax", "torch", "gr00t", "lerobot", "openpi", "transformers"} for name in sys.modules):
         raise AssertionError("Checkpoint binding inspection imported a model SDK.")
     report = {"sources": {str(path.relative_to(root)): sha256(path.read_bytes()).hexdigest() for path in sources},
-              "checkpointSelections": records, "nativeCheckpoint": verified,
+              "checkpointSelections": records, "nativeCheckpoint": verified, "nativeNormalization": normalization,
               "nativeInventorySha256": sha256(original_inventory).hexdigest(), "nativeCases": cases,
               "originalFilesUnchanged": True, "modelSdkImported": False,
               "gpuJobs": 0, "modelLoads": 0, "modelCalls": 0, "environmentAllocations": 0, "controls": 0,

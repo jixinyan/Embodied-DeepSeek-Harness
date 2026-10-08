@@ -5,7 +5,7 @@ from pathlib import Path
 import time
 from uuid import UUID
 
-from physical_harness.policies.openpi_checkpoint import verify_checkpoint
+from physical_harness.policies.openpi_checkpoint import verify_arx_x5_normalization, verify_checkpoint
 from physical_harness.policies.provenance import validate_checkpoint_sha256
 
 
@@ -30,6 +30,12 @@ def main():
     if args.checkpoint_sha256 is None and (
             verified["revision"] != "35efbc7dedfdbeeb6e95fb749bd885d73d483e41" or len(verified["files"]) != 18):
         raise ValueError("The default RoboDojo inference checkpoint requires the pinned 18-file revision.")
+    normalization = verify_arx_x5_normalization(checkpoint)
+    normalization_record = next(item for item in verified["files"] if item["path"] == normalization["path"])
+    if (normalization["sha256"] != normalization_record["sha256"]
+            or normalization["bytes"] != normalization_record["bytes"]):
+        raise ValueError("ARX X5 normalization differs from the verified checkpoint inventory.")
+    verified["normalization"] = normalization
     args.verification_output.parent.mkdir(parents=True, exist_ok=True)
     args.verification_output.write_text(json.dumps(verified, indent=2) + "\n", encoding="utf-8")
     import jax

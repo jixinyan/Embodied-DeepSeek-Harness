@@ -43,7 +43,8 @@ with an explicitly selected GPU, `XLA_PYTHON_CLIENT_PREALLOCATE=false`,
 `XLA_FLAGS=--xla_gpu_enable_triton_gemm=false` for the selected B300 deployment,
 using the installed cuBLAS GEMM compiler path. It requires
 one visible JAX GPU. The native entry admits a fixed `--port` in `1..65535`,
-verifies the pinned 18-file checkpoint and publishes its verification report
+verifies the pinned 18-file checkpoint, validates its fourteen-channel state/action
+normalization and publishes its verification report
 before importing JAX or OpenPI. Filesystem errors terminate startup at their
 source. JAX device selection then precedes loading
 `pi05_base_aloha_full_sim_arx-x5_seed_0`. Its welcome metadata identifies the
@@ -57,6 +58,12 @@ ARX X5 checkpoint inventory. The computed file digest must equal the selected
 digest before SDK imports. The default retains the recorded eighteen-file artifact.
 Pass the same selected digest to the JSON bridge. See
 [checkpoint bindings](checkpoint-bindings.md) for identity and compatibility rules.
+Both producer and JSON bridge admit digest syntax before optional SDK imports.
+The producer's saved normalization has finite mean/std/q01/q99 statistics,
+nonnegative standard deviations and ordered quantiles. Its file hash and byte
+count match the complete inventory; its identity accompanies the verification
+report. [Normalization provenance](../provenance/openpi-normalization.md) records
+the selected SDK's configuration and loader behavior.
 
 The clean `653a3ea` CPU campaign checks both native entry forms on macOS and
 isolated Linux without SDK/model allocation. Linux additionally verifies all

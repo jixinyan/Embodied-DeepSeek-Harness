@@ -1,8 +1,29 @@
 # Implementation progress
 
-Spec: v1.103. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.104. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 OpenPI normalization admission
+
+The native OpenPI producer checks its saved ARX X5 normalization before SDK
+imports. Required state/actions groups each contain fourteen finite
+mean/std/q01/q99 entries, nonnegative standard deviations and ordered quantiles.
+The file identity and bytes match the complete checkpoint inventory and accompany
+the verification report. The JSON bridge admits its selected digest syntax before
+opening a listener or importing its client SDK. Existing model transforms,
+request/image identity, action dimensions and ActionGate retain their owners.
+
+Forty-four actual macOS example/module startup cases and full project checks pass.
+Eight original-file and declared invalid-derivative normalization checks pass
+without SDK imports, models or environments. The original 3,407-byte artifact
+matches its complete inventory's SHA256 and remains unchanged. Evidence:
+`.local/work/v1-openpi-normalization-startup-macos-20261008/` and
+`.local/work/v1-openpi-normalization-macos-20261008-final/`. The diagnostic provides
+normalization/preallocation evidence; loaded policy effectiveness and native
+task success retain their native acceptance requirements. See
+[checkpoint bindings](checkpoint-bindings.md) and
+[normalization provenance](../provenance/openpi-normalization.md).
 
 ## 2026-10-08 configured checkpoint identity
 

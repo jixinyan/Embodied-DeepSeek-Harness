@@ -788,9 +788,9 @@ CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-policy-startup-offline.py
 ```
 
 Install the base package and `policy` extra in the isolated Python environment.
-Forty-two actual subprocess cases cover ten example/module help commands,
+Forty-four actual subprocess cases cover ten example/module help commands,
 eight occupied ports, eight missing-checkpoint failures, two native missing-inventory
-failures, six native invalid-port rejections and eight malformed selected-digest
+failures, six native invalid-port rejections and ten malformed selected-digest
 rejections. Existing listeners retain actual connection
 acceptance after each candidate exits; failed-startup ports become reusable.
 Help completes without optional SDK imports, including the native OpenPI producer.
@@ -800,14 +800,41 @@ diagnostic checks named missing-file errors and exit status 2 for invalid ports,
 with no verification report after rejection. Loaded producer readiness and model
 inference retain their native requirements.
 
-All forty-two entry cases pass on macOS with the selected-digest startup path.
+All forty-four entry cases pass on macOS with the selected-digest startup path.
 The report records eighteen executable/schema hashes, including the original
 checkpoint provenance and native inventory readers. Named admission outcomes
 precede SDK imports and rejected native startup publishes no verification report.
-Evidence: `.local/work/v1-checkpoint-binding-startup-20261008-final/acceptance.json`.
+Evidence: `.local/work/v1-openpi-normalization-startup-macos-20261008/acceptance.json`.
 The [checkpoint binding diagnostic](checkpoint-bindings.md#cpu-validation) uses
 actual original artifacts to check computed identity and mismatched-digest
 rejection; loaded custom-checkpoint and physical task acceptance remain native gates.
+
+The native producer additionally validates its saved ARX X5 state/actions
+normalization before optional SDK imports and verification-report publication.
+The required fourteen-entry mean/std/q01/q99 arrays contain finite numbers,
+nonnegative standard deviations and ordered quantiles. Normalization bytes/hash
+match the complete checkpoint inventory. Its recorded identity accompanies the
+verification report. The JSON bridge validates its selected digest syntax before
+listener/client allocation. See [normalization provenance](../provenance/openpi-normalization.md).
+
+```sh
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
+  .venv/bin/python scripts/check-openpi-normalization-offline.py \
+  --checkpoint /path/to/original/arx-x5-checkpoint \
+  --expected-sha256 "$EDH_NORMALIZATION_SHA256" \
+  --output .local/work/<new-normalization-check>
+```
+
+Eight actual file-admission checks pass on macOS. The accepted original 3,407-byte
+file matches SHA256
+`ad7dea3e3d2bcdb348945fe03422ab1adccd03baf67318b1a1d153dfe8694db5` from
+the complete original checkpoint inventory. Explicitly declared invalid copies
+exercise missing groups/quantiles, incorrect dimensions, boolean/nonfinite
+values, negative standard deviations and reversed quantiles; an actual missing
+directory exercises file admission. Original input bytes remain unchanged.
+Evidence: `.local/work/v1-openpi-normalization-macos-20261008-final/acceptance.json`.
+No model SDK, environment or action allocates. These file checks provide no
+complete-checkpoint, loaded-policy or physical-task acceptance.
 
 All thirty-four cases and full project checks pass on macOS. The actual original
 request/network failure, listener closure and zero-model/device scope retain their

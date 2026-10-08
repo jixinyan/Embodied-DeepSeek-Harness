@@ -47,7 +47,7 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
                                                               "--tokenizer", str(output / "absent-tokenizer")]),
         ("openpi-robodojo-json", "serve_openpi_robodojo.py", "physical_harness.policies.services.openpi_robodojo",
          ["--native-policy-uri", "ws://127.0.0.1:1",
-                                                           "--checkpoint-sha256", "invalid-checkpoint-digest"]),
+          "--checkpoint-sha256", "fbf1abbda5863ebe4193754a9db16a1637d9127f042052b828e2aaeee7cc5dc7"]),
     )
     cases = []
     with socket.create_server(("127.0.0.1", 0)) as listener:
@@ -75,7 +75,7 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
                                   "originalListenerPreserved": True, "modelLoaded": False})
     with socket.create_server(("127.0.0.1", port)):
         pass
-    for name, filename, module_name, arguments in entries[:3]:
+    for name, filename, module_name, arguments in entries:
         for entry, module in (("example", None), ("module", module_name)):
             pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable, filename,
                 arguments + ["--checkpoint-sha256", "invalid"], f"{name}.{entry}", "invalid-checkpoint-digest", module)
@@ -84,6 +84,8 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
                 raise AssertionError(f"Policy checkpoint digest syntax did not fail during argument admission: {name}/{entry}")
             cases.append({"service": name, "entry": entry, "mode": "invalid-checkpoint-digest", "pid": pid,
                           "exitCode": exit_code, "ownedProcessExited": True, "modelLoaded": False})
+            if name == "openpi-robodojo-json":
+                continue
             with socket.create_server(("127.0.0.1", 0)) as candidate:
                 selected_port = candidate.getsockname()[1]
             pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable, filename,

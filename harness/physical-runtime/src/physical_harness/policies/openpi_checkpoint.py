@@ -1,6 +1,55 @@
 import hashlib
 import json
+import math
 from pathlib import Path
+
+from jsonschema import Draft202012Validator
+
+
+_STATISTIC_FIELDS = ("mean", "std", "q01", "q99")
+_ARX_X5_STATISTICS = Draft202012Validator({
+    "type": "object",
+    "required": ["norm_stats"],
+    "properties": {
+        "norm_stats": {
+            "type": "object",
+            "required": ["state", "actions"],
+            "properties": {
+                group: {
+                    "type": "object",
+                    "required": list(_STATISTIC_FIELDS),
+                    "properties": {
+                        field: {
+                            "type": "array", "minItems": 14, "maxItems": 14,
+                            "items": {"type": "number", **({"minimum": 0} if field == "std" else {})},
+                        }
+                        for field in _STATISTIC_FIELDS
+                    },
+                }
+                for group in ("state", "actions")
+            },
+        },
+    },
+})
+
+
+def verify_arx_x5_normalization(directory: Path) -> dict:
+    root = directory.resolve(strict=True)
+    path = (root / "assets/arx_x5_sim/norm_stats.json").resolve(strict=True)
+    if not path.is_relative_to(root):
+        raise ValueError("ARX X5 normalization must belong to its checkpoint directory.")
+    data = path.read_bytes()
+    document = json.loads(data)
+    _ARX_X5_STATISTICS.validate(document)
+    for group in ("state", "actions"):
+        statistics = document["norm_stats"][group]
+        if not all(math.isfinite(value) for field in _STATISTIC_FIELDS for value in statistics[field]):
+            raise ValueError("ARX X5 normalization requires finite statistics.")
+        if any(low > high for low, high in zip(statistics["q01"], statistics["q99"], strict=True)):
+            raise ValueError("ARX X5 normalization quantiles must be ordered.")
+    return {"asset_id": "arx_x5_sim", "path": path.relative_to(root).as_posix(),
+            "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest(),
+            "dimensions": {"state": 14, "actions": 14}, "use_quantiles": True}
 
 
 def verify_checkpoint(directory: Path, inventory_path: Path) -> dict:

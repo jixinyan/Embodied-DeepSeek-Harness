@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.103 · 2026-10-08
+Version: v1.104 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,13 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+Native OpenPI validates ARX X5 saved normalization structure, fourteen finite
+entries per statistic, nonnegative standard deviations, ordered quantiles and
+inventory file identity before SDK imports. The JSON bridge admits digest syntax
+before listener/client allocation. Forty-four actual startup cases, eight
+original-file/declared invalid-input normalization checks and full project checks
+pass on macOS. Loaded model and simulator behavior retain their native gates.
 
 Native GR00T/LeRobot and OpenPI services admit an explicitly selected checkpoint
 SHA256 before SDK imports. Compatible custom artifacts retain their own identity

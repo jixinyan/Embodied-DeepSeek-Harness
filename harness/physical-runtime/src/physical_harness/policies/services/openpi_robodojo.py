@@ -5,6 +5,7 @@ from pathlib import Path
 import signal
 
 from physical_harness.policies.inference import ThreadedInference, recorded_inference
+from physical_harness.policies.provenance import validate_checkpoint_sha256
 from physical_harness.policies.server import serve_policy
 from physical_harness.validation import ContractValidator
 from . import REPOSITORY_ROOT
@@ -13,7 +14,7 @@ from . import REPOSITORY_ROOT
 async def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--native-policy-uri", required=True)
-    parser.add_argument("--checkpoint-sha256", required=True)
+    parser.add_argument("--checkpoint-sha256", required=True, type=validate_checkpoint_sha256)
     parser.add_argument("--port", type=int, default=18831)
     parser.add_argument("--audit-directory", type=Path)
     args = parser.parse_args()

@@ -38,8 +38,18 @@ another complete inventory for the same `pi05_base_aloha_full_sim_arx-x5_seed_0`
 model configuration. The service preserves the supplied inventory revision and
 the actual file digest in its verification report and welcome metadata.
 
-The JSON OpenPI bridge's `--checkpoint-sha256` must equal the native producer's
-selected digest. It validates that identity and the original request/instruction/
+Native OpenPI also checks `assets/arx_x5_sim/norm_stats.json` before importing its
+SDK. JSON Schema validates the required state/actions groups and their fourteen
+mean/std/q01/q99 entries. Values must be finite, standard deviations nonnegative
+and quantiles ordered. The normalization file's byte count and SHA256 must match
+the complete verified checkpoint inventory. Its source identity, dimensions and
+quantile mode accompany the verification report. Saved SDK normalization and
+model/action transforms continue through the trained-policy loader. See
+[normalization provenance](../provenance/openpi-normalization.md).
+
+The JSON OpenPI bridge admits its required `--checkpoint-sha256` syntax before
+opening its listener or importing the client SDK. That value must equal the
+native producer's selected digest. It validates that identity and the original request/instruction/
 state/camera hashes on every inference. All resulting action proposals continue
 through ActionGate.
 
