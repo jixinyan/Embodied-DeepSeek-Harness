@@ -1,12 +1,11 @@
-import base64
 import hashlib
-from io import BytesIO
 import re
 
 import numpy as np
-from PIL import Image
 from openpi_client import msgpack_numpy
 from websockets.sync.client import connect
+
+from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
 class OpenPiRoboDojoPolicy:
@@ -35,13 +34,11 @@ class OpenPiRoboDojoPolicy:
             raise
 
     def infer(self, request: dict) -> tuple[list[list[float]], dict]:
-        observation = request["observation"]
+        observation = read_policy_observation(request, "robodojo.dual-arx-x5")
         if (request["action_spec"]["embodiment_id"] != "robodojo.dual-arx-x5" or
                 request["action_spec"]["control_mode"] != "robodojo.qpos_target"):
             raise ValueError("The OpenPI RoboDojo service requires dual ARX X5 absolute qpos actions.")
-        state = np.asarray(observation["proprioception"]["states"], dtype=np.float32)
-        if state.shape != (14,) or not np.isfinite(state).all():
-            raise ValueError("RoboDojo proprioception must contain 14 finite values.")
+        state = decode_state(observation["proprioception"]["states"], 14)
         instruction = observation["control_context"]["instruction"]
         if not isinstance(instruction, str) or not instruction.strip():
             raise ValueError("The original native instruction is required for learned inference.")
@@ -49,11 +46,7 @@ class OpenPiRoboDojoPolicy:
         camera_sha256 = {}
         for name in ("cam_high", "cam_left_wrist", "cam_right_wrist"):
             camera = observation["cameras"][name]
-            encoded = base64.b64decode(camera["data_base64"], validate=True)
-            with Image.open(BytesIO(encoded)) as image:
-                if image.format != "PNG" or image.size != (camera["width"], camera["height"]):
-                    raise ValueError("Camera bytes differ from their declared PNG dimensions.")
-                pixels = np.asarray(image.convert("RGB"), dtype=np.uint8)
+            pixels = decode_camera(camera, expected_sizes=((camera["width"], camera["height"]),))
             images[name] = np.transpose(pixels, (2, 0, 1))
             camera_sha256[name] = hashlib.sha256(images[name].tobytes()).hexdigest()
         try:

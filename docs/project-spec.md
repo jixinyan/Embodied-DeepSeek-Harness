@@ -1,10 +1,20 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.107 · 2026-10-08
+Version: v1.108 · 2026-10-08
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
+
+All four learned-policy adapters use the shared model-independent observation
+input owner. Before model calls, source observation and embodiment identities,
+RGB PNG format/dimensions/byte bounds and finite float32 state representation
+must pass admission. Native camera/state mappings, tensor batch transforms,
+checkpoint normalization and action conversion stay with the selected adapter.
+Sixty CPU checks on four original requests verify twelve cameras, twenty-eight
+state groups and declared invalid derivatives without SDK imports or model calls.
+RoboDojo prepared tensors match their actual native inference hashes. Current-source
+macOS/Linux campaign verification remains required for this implementation.
 
 The policy server validates the request schema, ActionSpec, execution mode and
 selected checkpoint identity before inference admission. Explicit unsupported,

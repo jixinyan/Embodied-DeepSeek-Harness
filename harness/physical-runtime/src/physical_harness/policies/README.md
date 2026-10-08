@@ -12,6 +12,15 @@ their connection with an admission failure and allocate no inference operation.
 An omitted selector retains the learned `policy` default. Response normalization,
 scoped validation and ActionGate admission keep their existing boundaries.
 
+[`observation_inputs.py`](observation_inputs.py) owns model-independent input
+admission for all four learned adapters. It binds observation/source/embodiment
+identity, decodes bounded RGB PNGs and validates state dimensions and finite
+float32 representation before array conversion. RoboCasa uses the same OpenCV
+`INTER_AREA` resize to 256×256. Provider adapters keep their camera/state mappings,
+batch dimensions, Torch transforms, checkpoint processors and action conversion.
+Install `edh-physical-harness[policy-inputs]` for standalone CPU input inspection;
+the selected model SDK still belongs to its configured service environment.
+
 The JSON codec uses Python's standard decoder with explicit duplicate-field and
 finite-number checks. Nested NaN/Infinity constants and numeric overflow fail
 before a decoded request, event or tool message reaches its consumer. The server

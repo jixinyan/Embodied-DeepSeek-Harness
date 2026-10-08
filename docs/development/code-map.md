@@ -55,6 +55,7 @@ All Python provider code belongs under
 | Compose an inference client with ActionGate and preserve rollout failures | [execution/policy_rollout.py](../../harness/physical-runtime/src/physical_harness/execution/policy_rollout.py) |
 | Confirm simulator execution and stopping | [execution/native_device.py](../../harness/physical-runtime/src/physical_harness/execution/native_device.py) |
 | Add a WebSocket policy protocol or checkpoint | [policies](../../harness/physical-runtime/src/physical_harness/policies/README.md) |
+| Validate observation identity, RGB PNGs and float32 states before model calls | [policies/observation_inputs.py](../../harness/physical-runtime/src/physical_harness/policies/observation_inputs.py) |
 | Own inference threads, cancellation and operation records | [policies/inference.py](../../harness/physical-runtime/src/physical_harness/policies/inference.py) |
 | Start a configured native policy, record model identity and admit service connections | [policies/services](../../harness/physical-runtime/src/physical_harness/policies/services/README.md) |
 | Validate selected GR00T/LeRobot file identity | [policies/provenance.py](../../harness/physical-runtime/src/physical_harness/policies/provenance.py) |
@@ -92,6 +93,7 @@ implementations load in their separately configured service processes.
 | Verify real rollout connection/owner failures and scoped background faults | [check-rollout-failure-offline.py](../../scripts/check-rollout-failure-offline.py) |
 | Verify actual policy connection drain and concurrent/cancelled close callers | [check-policy-client-owner-offline.py](../../scripts/check-policy-client-owner-offline.py) |
 | Verify policy CLI admission, bound-listener readiness and startup release | [check-policy-startup-offline.py](../../scripts/check-policy-startup-offline.py) |
+| Check four-provider input preparation on original observations without model SDKs | [check-policy-inputs-offline.py](../../scripts/check-policy-inputs-offline.py) |
 | Check selected digests against actual original checkpoints for all four providers | [check-checkpoint-binding-offline.py](../../scripts/check-checkpoint-binding-offline.py) |
 | Check original saved ARX X5 normalization and explicitly invalid derivative inputs | [check-openpi-normalization-offline.py](../../scripts/check-openpi-normalization-offline.py) |
 | Verify selected checkpoint identity through original records, wire/Gate admission and actual WebSocket rejection | [check-checkpoint-audit-offline.py](../../scripts/check-checkpoint-audit-offline.py) |

@@ -102,6 +102,9 @@ Native policy startup, model identity and inference audit belong to
 `physical_harness/policies/services`; existing example scripts import their
 production `main` functions. The policy server and inference owner remain shared
 modules in `policies`, and provider SDK loading stays inside selected startup.
+`policies/observation_inputs.py` owns model-independent identity, RGB PNG and
+float32 state admission. Native adapters retain their own modality mappings,
+SDK preprocessing and action conversion.
 `contracts` must not import agents, apps or Python.
 Communication uses storage for persistence; agents receive authorized evidence
 through memory/tools, not direct unrestricted storage handles. Python optional

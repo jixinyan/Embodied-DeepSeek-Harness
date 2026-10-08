@@ -18,6 +18,34 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
+## Policy observation input preparation
+
+The shared [`observation_inputs.py`](../../harness/physical-runtime/src/physical_harness/policies/observation_inputs.py)
+binds source observation/embodiment identity, bounded RGB PNGs and finite float32
+states before model calls. Install the `policy-inputs` extra for CPU decoding;
+RoboCasa resizing uses the actual OpenCV INTER_AREA implementation. Adapter-specific
+batch shapes, Torch operations, native mappings and checkpoint processors retain
+their original service owners.
+
+```sh
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
+  .venv/bin/python scripts/check-policy-inputs-offline.py \
+  --configuration /absolute/path/original-checkpoint-audit-inputs.json \
+  --output .local/work/<new-policy-input-check>
+```
+
+Sixty checks pass on four original policy requests: twelve camera frames and
+twenty-eight state groups. Original RoboDojo tensor hashes match the actual native
+inference records. Declared invalid derivatives cover identity, image metadata/
+encoding, dimensions, booleans, nonfinite values and float32 overflow. All original
+file hashes remain unchanged; no model SDK or inference, simulator or GPU executes.
+Local evidence: `.local/work/v1-policy-inputs-macos-20261008/`. The consolidated
+campaign includes this diagnostic when `checkpointAuditConfiguration` is supplied,
+for twenty-nine configured components. Loaded SDK/model/device/task requirements
+retain their independent acceptance gates.
+
+## Prior verified CPU checkpoints
+
 Clean `d3336fc` passes all twenty-eight configured components on macOS and isolated
 Linux: 327 admission/process/wire/resource cases per platform, six visual-context
 cases, twelve original context reads and four-provider readiness. Policy transport

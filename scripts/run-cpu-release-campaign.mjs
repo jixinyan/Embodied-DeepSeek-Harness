@@ -137,6 +137,7 @@ add('context', 'check-recorded-context.mjs', journalArgs);
 add('visual-context', 'check-recorded-visual-context.mjs', journalArgs);
 add('readiness', 'check-native-workspace-readiness.mjs', ['--config', workspace]);
 if (checkpointAudit) {
+  add('policy-inputs', 'check-policy-inputs-offline.py', ['--configuration', checkpointAudit]);
   add('checkpoint-audit', 'check-checkpoint-audit-offline.py', [
     '--configuration',
     checkpointAudit,

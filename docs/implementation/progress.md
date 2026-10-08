@@ -1,7 +1,25 @@
 # Implementation progress
 
-Spec: v1.107. Current checkpoint: **cross-platform CPU preparation, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.108. Current checkpoint: **shared policy observation admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 The [capability map](features.md) records implementation and acceptance boundaries.
+
+## 2026-10-08 shared policy observation inputs
+
+`policies/observation_inputs.py` owns model-independent observation/source/body
+identity, bounded RGB PNG decoding and finite float32 state admission for all four
+learned-policy adapters. RoboCasa uses its existing OpenCV INTER_AREA resize;
+native modality mappings, tensor transforms, checkpoint processing and action
+conversion retain their adapter owners. Selected service dependencies remain
+isolated; the `policy-inputs` extra supports standalone CPU inspection.
+
+Sixty macOS checks inspect four original requests, twelve cameras and twenty-eight
+state groups. Prepared RoboDojo pixels/state match actual native inference hashes.
+Declared invalid identity, image metadata/encoding, dimension, boolean, nonfinite
+and overflowing float32 inputs fail before model calls. Original files remain
+unchanged; no model SDK, environment or GPU starts. Full source checks pass with
+66 Python files, 27 base imports, 45 diagnostics and unchanged 128-file/25-binding
+DSH provenance. Evidence: `.local/work/v1-policy-inputs-macos-20261008/`.
+The current-source twenty-nine-component macOS/Linux campaign is the next CPU check.
 
 ## 2026-10-08 policy execution-mode admission
 

@@ -1,20 +1,17 @@
 from __future__ import annotations
 
-import base64
 from hashlib import sha256
-from io import BytesIO
 import json
-import math
 from pathlib import Path
 from typing import Any
 
-import numpy as np
-from PIL import Image
 from safetensors.torch import load_file
 import torch
 from lerobot.configs import PreTrainedConfig
 from lerobot.policies import make_pre_post_processors
 from lerobot.policies.pi05 import PI05Policy
+
+from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
 CAMERAS = {
@@ -26,7 +23,6 @@ CHANNELS = tuple(
     [f"fl_joint{index}" for index in range(1, 8)]
     + [f"fr_joint{index}" for index in range(1, 8)]
 )
-MAX_CAMERA_BYTES = 1024 * 1024
 TOKENIZER_HASHES = {
     "added_tokens.json": "7d0bad90030d638a4bf89a82e91206e25f1fbe0012f14bca21666a64b643bc49",
     "config.json": "e00c72cdff16296bf1229c3267b99f5247d8c740cae84336866338d64fa7918f",
@@ -65,27 +61,12 @@ def _check_action_spec(spec: dict[str, Any]) -> None:
 
 
 def _decode_camera(value: dict[str, Any]) -> torch.Tensor:
-    if value.get("mime_type") != "image/png" or value.get("width") != 640 or value.get("height") != 480:
-        raise ValueError("LeRobot RoboTwin requires a 640x480 PNG camera frame.")
-    encoded = value.get("data_base64")
-    if not isinstance(encoded, str) or len(encoded) > 4 * ((MAX_CAMERA_BYTES + 2) // 3):
-        raise ValueError("RoboTwin camera encoding exceeds its limit.")
-    data = base64.b64decode(encoded, validate=True)
-    if len(data) > MAX_CAMERA_BYTES:
-        raise ValueError("RoboTwin camera frame exceeds its byte limit.")
-    with Image.open(BytesIO(data), formats=["PNG"]) as image:
-        if image.mode != "RGB" or image.size != (640, 480):
-            raise ValueError("LeRobot RoboTwin requires RGB camera pixels.")
-        pixels = np.array(image, dtype=np.uint8, copy=True)
+    pixels = decode_camera(value, expected_sizes=((640, 480),))
     return torch.from_numpy(pixels).permute(2, 0, 1).contiguous().to(torch.float32) / 255
 
 
 def _decode_state(value: Any) -> torch.Tensor:
-    if not isinstance(value, list) or len(value) != len(CHANNELS):
-        raise ValueError("RoboTwin joint_action.vector must contain fourteen values.")
-    if any(type(item) not in (int, float) or not math.isfinite(item) for item in value):
-        raise ValueError("RoboTwin joint_action.vector must contain finite numbers.")
-    return torch.tensor(value, dtype=torch.float32)
+    return torch.from_numpy(decode_state(value, len(CHANNELS)))
 
 
 def native_action_record(selected: torch.Tensor) -> tuple[list[list[float]], list[list[float]]]:
@@ -177,13 +158,7 @@ class LeRobotPi05RoboTwin:
 
     def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
         _check_action_spec(request["action_spec"])
-        observation = request["observation"]
-        if observation.get("schema_version") != "edh.policy_observation.v1":
-            raise ValueError("Unsupported policy observation version.")
-        if observation.get("source_observation_id") != request["observation_id"]:
-            raise ValueError("Policy observation identity does not match the request.")
-        if observation.get("embodiment_id") != "robotwin.aloha-agilex":
-            raise ValueError("Policy observation has an incompatible embodiment.")
+        observation = read_policy_observation(request, "robotwin.aloha-agilex")
         cameras = observation["cameras"]
         states = observation["proprioception"]
         if set(cameras) != set(CAMERAS) or set(states) != {"joint_action.vector"}:

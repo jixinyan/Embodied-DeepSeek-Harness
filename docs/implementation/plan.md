@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.107 · 2026-10-08
+Version: v1.108 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,14 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+Shared policy input admission validates source/body identity, bounded RGB PNGs
+and finite float32 states for all four learned adapters before model calls.
+Sixty original-request/declared invalid-input checks and complete source checks
+pass on macOS. The configured CPU campaign includes `policy-inputs` when
+`checkpointAuditConfiguration` is supplied and has twenty-nine components.
+Next CPU action: verify current-source macOS/Linux campaigns and original input/
+process preservation. Loaded-model and native task behavior retain their GPU gates.
 
 Policy execution mode is validated before inference admission. Four actual
 WebSocket rejection cases and all original transport/recording checks pass on

@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import base64
-from io import BytesIO
-import math
 from typing import Any
 
 import numpy as np
-import cv2
-from PIL import Image
 from gr00t.data.embodiment_tags import EmbodimentTag
 from gr00t.policy.gr00t_policy import Gr00tPolicy
+
+from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
 CAMERAS = {
@@ -35,7 +32,6 @@ ACTION_SIZES = {
     "base_motion": 4,
     "control_mode": 1,
 }
-MAX_CAMERA_BYTES = 1024 * 1024
 
 
 def _check_action_spec(spec: dict[str, Any]) -> None:
@@ -63,30 +59,12 @@ def _check_action_spec(spec: dict[str, Any]) -> None:
 
 
 def _decode_camera(value: dict[str, Any]) -> np.ndarray:
-    size = value.get("width")
-    if value.get("mime_type") != "image/png" or size not in (256, 512) or value.get("height") != size:
-        raise ValueError("GR00T RoboCasa requires a square 256 or 512 pixel PNG camera frame.")
-    encoded = value.get("data_base64")
-    if not isinstance(encoded, str) or len(encoded) > 4 * ((MAX_CAMERA_BYTES + 2) // 3):
-        raise ValueError("Camera frame encoding exceeds its limit.")
-    data = base64.b64decode(encoded, validate=True)
-    if len(data) > MAX_CAMERA_BYTES:
-        raise ValueError("Camera frame exceeds its byte limit.")
-    with Image.open(BytesIO(data), formats=["PNG"]) as image:
-        if image.mode != "RGB" or image.size != (size, size):
-            raise ValueError("GR00T RoboCasa requires RGB camera pixels.")
-        pixels = np.array(image, dtype=np.uint8, copy=True)
-    if size != 256:
-        pixels = cv2.resize(pixels, (256, 256), interpolation=cv2.INTER_AREA)
+    pixels = decode_camera(value, expected_sizes=((256, 256), (512, 512)), resize_to=(256, 256))
     return pixels[None, None, ...]
 
 
 def _decode_state(value: Any, size: int) -> np.ndarray:
-    if not isinstance(value, list) or len(value) != size:
-        raise ValueError("RoboCasa proprioception has an invalid dimension.")
-    if any(type(item) not in (int, float) or not math.isfinite(item) for item in value):
-        raise ValueError("RoboCasa proprioception must contain finite numbers.")
-    return np.asarray(value, dtype=np.float32)[None, None, :]
+    return decode_state(value, size)[None, None, :]
 
 
 def _action_group(action: dict[str, Any], key: str) -> np.ndarray:
@@ -123,13 +101,7 @@ class Gr00tN1d6RoboCasa:
 
     def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
         _check_action_spec(request["action_spec"])
-        observation = request["observation"]
-        if observation.get("schema_version") != "edh.policy_observation.v1":
-            raise ValueError("Unsupported policy observation version.")
-        if observation.get("source_observation_id") != request["observation_id"]:
-            raise ValueError("Policy observation identity does not match the request.")
-        if observation.get("embodiment_id") != "robocasa.pandaomron":
-            raise ValueError("Policy observation has an incompatible embodiment.")
+        observation = read_policy_observation(request, "robocasa.pandaomron")
         cameras = observation["cameras"]
         states = observation["proprioception"]
         if set(cameras) != set(CAMERAS) or set(states) != set(STATES):
