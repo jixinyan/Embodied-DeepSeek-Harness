@@ -77,6 +77,13 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
         pass
     for name, filename, module_name, arguments in entries[:3]:
         for entry, module in (("example", None), ("module", module_name)):
+            pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable, filename,
+                arguments + ["--checkpoint-sha256", "invalid"], f"{name}.{entry}", "invalid-checkpoint-digest", module)
+            if (exit_code != 2 or b"--checkpoint-sha256" not in stderr
+                    or b"ModuleNotFoundError" in stderr or b"Traceback" in stderr or stdout):
+                raise AssertionError(f"Policy checkpoint digest syntax did not fail during argument admission: {name}/{entry}")
+            cases.append({"service": name, "entry": entry, "mode": "invalid-checkpoint-digest", "pid": pid,
+                          "exitCode": exit_code, "ownedProcessExited": True, "modelLoaded": False})
             with socket.create_server(("127.0.0.1", 0)) as candidate:
                 selected_port = candidate.getsockname()[1]
             pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable, filename,
@@ -99,6 +106,15 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
         arguments = ["--checkpoint", str(output / "absent-checkpoint"),
                      "--inventory", str(output / "absent-inventory"),
                      "--verification-output", str(output / "verification.json")]
+        pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable,
+            "serve_openpi_robodojo_native.py", arguments + ["--checkpoint-sha256", "invalid"],
+            f"openpi-robodojo-native.{entry}", "invalid-checkpoint-digest", module)
+        if (exit_code != 2 or b"--checkpoint-sha256" not in stderr
+                or b"ModuleNotFoundError" in stderr or b"Traceback" in stderr or stdout):
+            raise AssertionError(f"Native OpenPI checkpoint digest syntax did not fail during argument admission: {entry}")
+        cases.append({"service": "openpi-robodojo-native", "entry": entry,
+                      "mode": "invalid-checkpoint-digest", "pid": pid, "exitCode": exit_code,
+                      "ownedProcessExited": True, "modelLoaded": False})
         for selected_port in (-1, 0, 65536):
             mode = f"invalid-port-{selected_port}"
             pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable,
@@ -232,6 +248,8 @@ async def inspect(args) -> None:
     sources = [Path(__file__), root / "harness/physical-runtime/src/physical_harness/policies/server.py",
                root / "harness/physical-runtime/src/physical_harness/policies/client.py",
                root / "harness/physical-runtime/src/physical_harness/policies/inference.py",
+               root / "harness/physical-runtime/src/physical_harness/policies/provenance.py",
+               root / "harness/physical-runtime/src/physical_harness/policies/openpi_checkpoint.py",
                root / "harness/contracts/schema/physical.schema.json",
                *(root / "examples/policies" / filename for filename in (
                    "serve_gr00t_n1d6_robocasa.py", "serve_gr00t_n1d6_behavior.py",

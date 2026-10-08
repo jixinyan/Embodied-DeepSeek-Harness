@@ -6,6 +6,12 @@ scripts import their `main` function. Both entries use the same implementation;
 installed deployment configuration selects the Python environment, endpoint,
 checkpoint and GPU.
 
+GR00T/LeRobot and the native OpenPI producer accept `--checkpoint-sha256` to
+require the selected artifact's computed identity before model SDK imports.
+Compatible custom checkpoints retain their own identity and the adapter's
+mandatory modality/action checks. See
+[checkpoint bindings](../../../../../../docs/implementation/checkpoint-bindings.md).
+
 | Service | Production module | Example entry |
 | --- | --- | --- |
 | GR00T / RoboCasa | [gr00t_n1d6_robocasa.py](gr00t_n1d6_robocasa.py) | [serve_gr00t_n1d6_robocasa.py](../../../../../../examples/policies/serve_gr00t_n1d6_robocasa.py) |
@@ -19,7 +25,7 @@ accepts the same checkpoint/tokenizer/device/port arguments as its example entry
 Every module supports `--help` before optional model SDK imports. The four EDH
 JSON servers bind their port before model initialization and open connection
 admission only after readiness. The native producer uses the upstream OpenPI
-server. It admits a fixed port in `1..65535`, verifies the complete pinned
+server. It admits a fixed port in `1..65535`, verifies the complete selected
 checkpoint and writes its verification report before importing the model SDKs.
 JAX device selection, trained-policy loading and upstream service startup follow
 these filesystem checks.

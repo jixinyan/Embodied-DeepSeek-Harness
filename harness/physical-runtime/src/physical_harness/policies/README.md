@@ -40,10 +40,15 @@ SDK imports. The native OpenPI producer retains the upstream service and its
 model protocol. It validates its fixed port, checkpoint inventory and verification
 report path before SDK imports. JAX device selection and model loading follow.
 The [startup diagnostic](../../../../../scripts/check-policy-startup-offline.py)
-exercises thirty-four actual CLI processes across the example and module entries,
+exercises forty-two actual CLI processes across the example and module entries,
 delayed connection admission, original
 request forwarding to an unavailable endpoint and port release. It supplies no
 model result or action. See [startup validation](../../../../../docs/implementation/cpu-release-validation.md#policy-service-startup).
+
+GR00T/LeRobot and native OpenPI services support an explicit selected
+`--checkpoint-sha256`, validated before SDK imports. Compatible custom checkpoints
+retain actual file identity and mandatory provider-specific compatibility checks.
+See [checkpoint selection and CPU checks](../../../../../docs/implementation/checkpoint-bindings.md).
 
 ## Inference ownership
 

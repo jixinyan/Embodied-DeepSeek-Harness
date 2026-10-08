@@ -8,7 +8,7 @@ import signal
 from time import monotonic
 
 from physical_harness.policies.inference import ThreadedInference, recorded_inference
-from physical_harness.policies.provenance import checkpoint_identity
+from physical_harness.policies.provenance import checkpoint_identity, validate_checkpoint_sha256
 from physical_harness.policies.server import serve_policy
 from physical_harness.validation import ContractValidator
 from . import REPOSITORY_ROOT
@@ -17,6 +17,7 @@ from . import REPOSITORY_ROOT
 async def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", required=True)
+    parser.add_argument("--checkpoint-sha256", type=validate_checkpoint_sha256)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8007)
@@ -54,9 +55,10 @@ async def main() -> None:
     try:
         async with await serve_policy(infer, validator, host=args.host, port=args.port,
                                       timeout_s=args.timeout_s, start_serving=False) as server:
-            identity = checkpoint_identity(args.checkpoint, root / "examples/policies/gr00t-n1d6-behavior.json")
-            if identity["checkpoint_revision"] is None:
-                raise ValueError("BEHAVIOR GR00T checkpoint differs from the pinned revision.")
+            identity = checkpoint_identity(args.checkpoint, root / "examples/policies/gr00t-n1d6-behavior.json",
+                                           expected_sha256=args.checkpoint_sha256)
+            if identity["checkpoint_revision"] is None and args.checkpoint_sha256 is None:
+                raise ValueError("A custom BEHAVIOR GR00T checkpoint requires its configured SHA256 identity.")
             from physical_harness.policies.gr00t_n1d6_behavior import Gr00tN1d6Behavior
             policy = Gr00tN1d6Behavior(args.checkpoint, device=args.device)
             await server.start_serving()

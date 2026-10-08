@@ -52,6 +52,12 @@ continuous gripper semantics and the imported OpenPI Python source inventory.
 Each inference identifies its sequence and SHA256 of the actual input
 state and all three camera arrays.
 
+The producer also accepts `--checkpoint-sha256` for another complete compatible
+ARX X5 checkpoint inventory. The computed file digest must equal the selected
+digest before SDK imports. The default retains the recorded eighteen-file artifact.
+Pass the same selected digest to the JSON bridge. See
+[checkpoint bindings](checkpoint-bindings.md) for identity and compatibility rules.
+
 The clean `653a3ea` CPU campaign checks both native entry forms on macOS and
 isolated Linux without SDK/model allocation. Linux additionally verifies all
 eighteen actual original checkpoint files and their aggregate identity before

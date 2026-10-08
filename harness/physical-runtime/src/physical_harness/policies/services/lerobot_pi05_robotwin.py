@@ -8,7 +8,7 @@ import signal
 from time import monotonic
 
 from physical_harness.policies.inference import ThreadedInference, recorded_inference
-from physical_harness.policies.provenance import checkpoint_identity
+from physical_harness.policies.provenance import checkpoint_identity, validate_checkpoint_sha256
 from physical_harness.policies.server import serve_policy
 from physical_harness.validation import ContractValidator
 from . import REPOSITORY_ROOT
@@ -17,6 +17,7 @@ from . import REPOSITORY_ROOT
 async def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", required=True)
+    parser.add_argument("--checkpoint-sha256", type=validate_checkpoint_sha256)
     parser.add_argument("--tokenizer", required=True)
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--host", default="127.0.0.1")
@@ -55,7 +56,8 @@ async def main() -> None:
     try:
         async with await serve_policy(infer, validator, host=args.host, port=args.port,
                                       timeout_s=args.timeout_s, start_serving=False) as server:
-            identity = checkpoint_identity(args.checkpoint, root / "examples/policies/lerobot-pi05-robotwin.json")
+            identity = checkpoint_identity(args.checkpoint, root / "examples/policies/lerobot-pi05-robotwin.json",
+                                           expected_sha256=args.checkpoint_sha256)
             from physical_harness.policies.lerobot_pi05_robotwin import LeRobotPi05RoboTwin
             policy = LeRobotPi05RoboTwin(args.checkpoint, args.tokenizer, device=args.device,
                                        compile_model=args.compile_model)

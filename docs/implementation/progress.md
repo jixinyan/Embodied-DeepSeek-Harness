@@ -1,8 +1,25 @@
 # Implementation progress
 
-Spec: v1.102. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.103. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 configured checkpoint identity
+
+GR00T/LeRobot and native OpenPI startup admit a selected `--checkpoint-sha256`
+before optional SDK imports. BEHAVIOR permits a compatible custom checkpoint
+with its explicit digest; native OpenPI permits another complete ARX X5 inventory
+with its selected digest. Original defaults remain available. Each adapter's
+modality, normalization and action checks retain their own native initialization
+and inference boundaries. Custom artifacts preserve their actual file identity.
+
+Forty-two actual macOS example/module startup cases pass, including malformed
+selected digests before SDK imports. The source-bound startup report includes
+the provenance and native inventory readers. Evidence:
+`.local/work/v1-checkpoint-binding-startup-20261008-final/acceptance.json`.
+The new original-checkpoint diagnostic requires real reference artifacts for all
+four providers. It supplies no fine-tuned-model result or learned action. See
+[checkpoint bindings](checkpoint-bindings.md) for the supported inputs and limits.
 
 ## 2026-10-08 native OpenPI preallocation
 

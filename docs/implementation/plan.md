@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.102 · 2026-10-08
+Version: v1.103 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,13 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+Native GR00T/LeRobot and OpenPI services admit an explicitly selected checkpoint
+SHA256 before SDK imports. Compatible custom artifacts retain their own identity
+and mandatory adapter checks. Forty-two actual macOS example/module CLI cases
+pass, including malformed selected digests. Actual original-file binding checks
+and loaded custom-checkpoint acceptance have separate scopes; see
+[checkpoint configuration](checkpoint-bindings.md).
 
 Native OpenPI port, complete checkpoint inventory and verification-report checks
 precede SDK imports. Thirty-four actual example/module startup cases and full

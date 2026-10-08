@@ -787,9 +787,10 @@ CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-policy-startup-offline.py
 ```
 
 Install the base package and `policy` extra in the isolated Python environment.
-Thirty-four actual subprocess cases cover ten example/module help commands,
+Forty-two actual subprocess cases cover ten example/module help commands,
 eight occupied ports, eight missing-checkpoint failures, two native missing-inventory
-failures and six native invalid-port rejections. Existing listeners retain actual connection
+failures, six native invalid-port rejections and eight malformed selected-digest
+rejections. Existing listeners retain actual connection
 acceptance after each candidate exits; failed-startup ports become reusable.
 Help completes without optional SDK imports, including the native OpenPI producer.
 The native producer validates its fixed port in `1..65535`, verifies the complete
@@ -797,6 +798,15 @@ pinned checkpoint and writes the verification report before SDK imports. The
 diagnostic checks named missing-file errors and exit status 2 for invalid ports,
 with no verification report after rejection. Loaded producer readiness and model
 inference retain their native requirements.
+
+All forty-two entry cases pass on macOS with the selected-digest startup path.
+The report records eighteen executable/schema hashes, including the original
+checkpoint provenance and native inventory readers. Named admission outcomes
+precede SDK imports and rejected native startup publishes no verification report.
+Evidence: `.local/work/v1-checkpoint-binding-startup-20261008-final/acceptance.json`.
+The [checkpoint binding diagnostic](checkpoint-bindings.md#cpu-validation) uses
+actual original artifacts to check computed identity and mismatched-digest
+rejection; loaded custom-checkpoint and physical task acceptance remain native gates.
 
 All thirty-four cases and full project checks pass on macOS. The actual original
 request/network failure, listener closure and zero-model/device scope retain their

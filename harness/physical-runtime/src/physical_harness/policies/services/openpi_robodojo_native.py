@@ -6,11 +6,13 @@ import time
 from uuid import UUID
 
 from physical_harness.policies.openpi_checkpoint import verify_checkpoint
+from physical_harness.policies.provenance import validate_checkpoint_sha256
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", required=True, type=Path)
+    parser.add_argument("--checkpoint-sha256", type=validate_checkpoint_sha256)
     parser.add_argument("--inventory", required=True, type=Path)
     parser.add_argument("--verification-output", required=True, type=Path)
     parser.add_argument("--port", type=int, default=18830)
@@ -19,8 +21,15 @@ def main():
         parser.error("--port must be between 1 and 65535.")
     checkpoint = args.checkpoint.resolve(strict=True)
     verified = verify_checkpoint(checkpoint, args.inventory)
-    if verified["revision"] != "35efbc7dedfdbeeb6e95fb749bd885d73d483e41" or len(verified["files"]) != 18:
-        raise ValueError("The selected RoboDojo inference checkpoint requires the pinned 18-file revision.")
+    expected_sha256 = (
+        "fbf1abbda5863ebe4193754a9db16a1637d9127f042052b828e2aaeee7cc5dc7"
+        if args.checkpoint_sha256 is None else args.checkpoint_sha256
+    )
+    if verified["checkpoint_sha256"] != expected_sha256:
+        raise ValueError("Checkpoint SHA256 differs from the configured identity.")
+    if args.checkpoint_sha256 is None and (
+            verified["revision"] != "35efbc7dedfdbeeb6e95fb749bd885d73d483e41" or len(verified["files"]) != 18):
+        raise ValueError("The default RoboDojo inference checkpoint requires the pinned 18-file revision.")
     args.verification_output.parent.mkdir(parents=True, exist_ok=True)
     args.verification_output.write_text(json.dumps(verified, indent=2) + "\n", encoding="utf-8")
     import jax
