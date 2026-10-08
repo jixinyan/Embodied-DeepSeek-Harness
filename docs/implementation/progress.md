@@ -1,10 +1,15 @@
 # Implementation progress
 
-Spec: v1.92. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.93. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## 2026-10-08 managed service startup ownership
+
+Managed service release waits for its leader and complete owned process group.
+Graceful shutdown uses the configured deadline. Forced termination preserves
+the original deadline error and any release error; unconfirmed process ownership
+remains visible. PID ownership clears after confirmed group release.
 
 Three actual CPU cases validate the configured four-provider Console through the
 production ManagedServices owner. Operator cancellation during startup and global
@@ -17,6 +22,12 @@ reusable listener ports. Configuration/source hashes remain unchanged and no
 model, policy, GPU or environment is allocated. Loaded model service cancellation
 retains its native requirement. Commands and evidence:
 [service startup checks](cpu-release-validation.md#managed-service-startup-ownership).
+
+SAM3.1 and YOLO26 standalone CLIs admit help, required fields and port/checkpoint
+paths before optional SDK imports. Their normal source/checkpoint verification,
+model loading and request behavior remain unchanged. Eight actual CLI subprocess
+cases pass without SDK/model allocation. The standalone SAM license boundary
+remains MIT. See [perception argument checks](cpu-release-validation.md#perception-service-arguments).
 
 ## 2026-10-08 policy service startup
 

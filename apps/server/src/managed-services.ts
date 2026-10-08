@@ -298,27 +298,66 @@ export class ManagedServices implements ManagedServiceLifecycle {
     entry.controller?.abort(new Error(`Managed service ${entry.id} is stopping.`));
     entry.stop = (async () => {
       const child = entry.child;
-      if (child?.pid && child.exitCode === null && child.signalCode === null) {
-        if (process.platform === 'win32') child.kill('SIGTERM');
-        else process.kill(-child.pid, 'SIGTERM');
+      const alive = (): boolean => {
+        if (child?.pid === undefined) return false;
+        if (process.platform === 'win32')
+          return child.exitCode === null && child.signalCode === null;
         try {
-          await waitFor(entry.exit!, AbortSignal.timeout(entry.configuration.shutdownTimeoutMs));
+          process.kill(-child.pid, 0);
+          return true;
         } catch (error) {
-          if (child.exitCode === null && child.signalCode === null) {
-            if (process.platform === 'win32') child.kill('SIGKILL');
-            else process.kill(-child.pid, 'SIGKILL');
-            await entry.exit;
-          }
-          this.fail(entry, error);
-          throw new Error(`Managed service ${entry.id} exceeded its graceful shutdown deadline.`, {
-            cause: error,
-          });
+          if ((error as NodeJS.ErrnoException).code === 'ESRCH') return false;
+          if ((error as NodeJS.ErrnoException).code === 'EPERM') return true;
+          throw error;
         }
+      };
+      const signal = (name: NodeJS.Signals): void => {
+        if (!alive()) return;
+        if (process.platform === 'win32') child!.kill(name);
+        else {
+          try {
+            process.kill(-child!.pid!, name);
+          } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== 'ESRCH') throw error;
+          }
+        }
+      };
+      const released = async (): Promise<void> => {
+        const deadline = AbortSignal.timeout(entry.configuration.shutdownTimeoutMs);
+        await waitFor(entry.exit ?? Promise.resolve(), deadline);
+        while (alive()) await delay(50, undefined, { signal: deadline });
+      };
+      if (child?.exitCode === null && child.signalCode === null) signal('SIGTERM');
+      try {
+        await released();
+      } catch (error) {
+        let releaseError: unknown;
+        try {
+          signal('SIGKILL');
+          await released();
+        } catch (failure) {
+          releaseError = failure;
+        }
+        const failure =
+          releaseError === undefined
+            ? new Error(`Managed service ${entry.id} exceeded its graceful shutdown deadline.`, {
+                cause: error,
+              })
+            : new AggregateError(
+                [error, releaseError],
+                `Managed service ${entry.id} shutdown and process release failed.`,
+              );
+        this.fail(entry, failure);
+        if (!alive()) delete entry.child;
+        throw failure;
       }
       delete entry.child;
       entry.state = entry.error ? 'failed' : 'stopped';
       entry.stoppedAt ??= new Date().toISOString();
-    })();
+    })().catch((error) => {
+      this.fail(entry, error);
+      throw error;
+    });
     return entry.stop;
   }
   async acquire(ids: readonly string[], signal: AbortSignal): Promise<ManagedServiceLease> {

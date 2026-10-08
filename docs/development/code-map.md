@@ -81,6 +81,7 @@ implementations load in their separately configured service processes.
 | Verify actual policy connection drain and concurrent/cancelled close callers | [check-policy-client-owner-offline.py](../../scripts/check-policy-client-owner-offline.py) |
 | Verify policy CLI admission, bound-listener readiness and startup release | [check-policy-startup-offline.py](../../scripts/check-policy-startup-offline.py) |
 | Verify configured service startup cancellation and shared admissions | [check-service-startup-owner-offline.mjs](../../scripts/check-service-startup-owner-offline.mjs) |
+| Verify standalone SAM/YOLO argument admission before SDK imports | [check-perception-startup-offline.py](../../scripts/check-perception-startup-offline.py) |
 | Exercise native RoboCasa worker or SAM-backed measurement | [check-robocasa-worker.ts](../../scripts/check-robocasa-worker.ts) and [check-robocasa-object-measurement.ts](../../scripts/check-robocasa-object-measurement.ts) |
 | Submit and audit actual native tasks | [native release campaign](../implementation/native-release-campaign.md) |
 

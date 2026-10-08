@@ -8,6 +8,27 @@ import subprocess
 from pathlib import Path
 from threading import Lock
 
+
+def parse_service_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--checkpoint", type=Path, required=True)
+    parser.add_argument("--checkpoint-sha256", required=True)
+    parser.add_argument("--source-revision", required=True)
+    parser.add_argument("--port", type=int, required=True)
+    parser.add_argument("--device", required=True)
+    args = parser.parse_args()
+    if not 1 <= args.port <= 65535 or not args.checkpoint.is_file():
+        raise ValueError("Checkpoint and listening port must be valid.")
+    if args.device != "cpu" and not (
+        args.device.startswith("cuda:") and args.device[5:].isdigit()
+    ):
+        raise ValueError("Device must be cpu or an explicit CUDA device.")
+    return args
+
+
+if __name__ == "__main__":
+    service_arguments = parse_service_arguments()
+
 import numpy as np
 import ultralytics
 import uvicorn
@@ -164,20 +185,7 @@ def depth_once(model, request: DepthRequest, provenance: dict, device: str):
     }
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--checkpoint", type=Path, required=True)
-    parser.add_argument("--checkpoint-sha256", required=True)
-    parser.add_argument("--source-revision", required=True)
-    parser.add_argument("--port", type=int, required=True)
-    parser.add_argument("--device", required=True)
-    args = parser.parse_args()
-    if not 1 <= args.port <= 65535 or not args.checkpoint.is_file():
-        raise ValueError("Checkpoint and listening port must be valid.")
-    if args.device != "cpu" and not (
-        args.device.startswith("cuda:") and args.device[5:].isdigit()
-    ):
-        raise ValueError("Device must be cpu or an explicit CUDA device.")
+def main(args):
     source_root = Path(ultralytics.__file__).resolve().parent.parent
     revision = subprocess.run(
         ["git", "-C", str(source_root), "rev-parse", "HEAD"],
@@ -215,4 +223,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(service_arguments)

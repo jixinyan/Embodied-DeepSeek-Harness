@@ -855,6 +855,13 @@ The production ManagedServices owner starts the actual configured four-provider
 Console as its foreground service. Three cases exercise operator cancellation
 during startup, global close during startup and cancellation of one of two
 simultaneous startup admissions.
+Shutdown waits for both the leader's exit and complete owned process-group absence
+under the configured graceful deadline. Forced termination also has a bounded
+drain and retains the original graceful/release errors. Confirmed group release
+clears PID ownership; an uncertain boundary retains it.
+An EPERM group probe retains ownership and waits within the same bound; it does
+not establish absence. Only ESRCH confirms that no group remains. These meanings
+follow the [Apple kill(2) reference](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/kill.2.html).
 
 ```sh
 CUDA_VISIBLE_DEVICES='' pnpm exec tsx --tsconfig tsconfig.runtime.json \
@@ -875,9 +882,35 @@ readiness response before release.
 Each case requires the original cancellation outcome, absent owned process group,
 zero final leases/PIDs, released writer lock and successful listener-port reuse.
 Configuration and executable source hashes remain unchanged. macOS evidence:
-`.local/work/v1-service-startup-owner-20261008-02/acceptance.json`.
+`.local/work/v1-service-group-owner-20261008-release/acceptance.json`.
 These actual process/HTTP cases make no Session, model, policy, simulator or GPU
 allocation. Loaded model-service startup interruption remains a native gate.
+The same current source also passes shared lease release, actual service restart,
+unexpected process exit and server closure with an active lease in
+`.local/work/v1-service-group-lifecycle-20261008-release/` and
+`.local/work/v1-service-group-close-held-20261008-release/`.
+
+## Perception service arguments
+
+Standalone SAM3.1 and YOLO26 service CLIs handle argument help, required fields and
+port/checkpoint paths before importing their optional model/HTTP SDKs. Valid service
+startup imports its required libraries directly and retains original source and
+checkpoint verification, model initialization and request schemas. The independently
+runnable SAM service retains its MIT notice and imports no EDH runtime or YOLO.
+
+```sh
+CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-perception-startup-offline.py \
+  --python .venv/bin/python --output .local/work/<new-perception-startup-check>
+```
+
+Eight actual subprocess cases cover help, missing required arguments, invalid
+ports and absent checkpoints for both services. Each process exits with its
+original argparse/field error before SDK admission. No model, checkpoint, SDK,
+perception result, environment, GPU or control is supplied by the diagnostic.
+Source hashes and complete original stdout/stderr remain in
+`.local/work/v1-perception-startup-20261008/acceptance.json`.
+Loaded model startup, source/weight validation and segmentation/depth results
+retain their native acceptance requirements.
 
 ## Native admission and interrupted driver
 

@@ -35,7 +35,9 @@ simulators, embodiments, checkpoints and model services through one Console.
 - [managed-services.ts](src/managed-services.ts): configured model/policy process
   startup, readiness, shared leases and owned shutdown. Cancelling one startup
   admission preserves the process for another admission. Last-lease release and
-  global closure drain owned process groups. Actual CPU Console checks cover
+  global closure wait for the leader and the complete owned process group.
+  Graceful shutdown and forced release remain bounded, with original errors
+  retained. PID ownership is cleared only after confirmed release. Actual CPU Console checks cover
   these [startup boundaries](../../docs/implementation/cpu-release-validation.md#managed-service-startup-ownership);
   loaded model service behavior keeps its native acceptance requirements.
 - [user-sessions.ts](src/user-sessions.ts): retained environment lifetime, task admission

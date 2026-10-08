@@ -11,6 +11,25 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import Lock
 
+
+def parse_service_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--checkpoint", type=Path, required=True)
+    parser.add_argument("--checkpoint-sha256", required=True)
+    parser.add_argument("--source-revision", required=True)
+    parser.add_argument("--work-root", type=Path, required=True)
+    parser.add_argument("--port", type=int, required=True)
+    args = parser.parse_args()
+    if not 1 <= args.port <= 65535:
+        raise ValueError("Invalid listening port.")
+    if not args.checkpoint.is_file() or not args.work_root.is_dir():
+        raise ValueError("Checkpoint and work directory must already exist.")
+    return args
+
+
+if __name__ == "__main__":
+    service_arguments = parse_service_arguments()
+
 import numpy as np
 import torch
 import uvicorn
@@ -197,18 +216,7 @@ def segment_once(predictor, request: SegmentRequest, work_root: Path, provenance
     }
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--checkpoint", type=Path, required=True)
-    parser.add_argument("--checkpoint-sha256", required=True)
-    parser.add_argument("--source-revision", required=True)
-    parser.add_argument("--work-root", type=Path, required=True)
-    parser.add_argument("--port", type=int, required=True)
-    args = parser.parse_args()
-    if not 1 <= args.port <= 65535:
-        raise ValueError("Invalid listening port.")
-    if not args.checkpoint.is_file() or not args.work_root.is_dir():
-        raise ValueError("Checkpoint and work directory must already exist.")
+def main(args):
     source_root = Path(sam3.__file__).resolve().parent.parent
     source_revision = subprocess.run(
         ["git", "-C", str(source_root), "rev-parse", "HEAD"],
@@ -250,4 +258,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(service_arguments)

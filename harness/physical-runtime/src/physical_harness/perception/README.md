@@ -7,6 +7,14 @@ environment. They remain optional modules; the base package imports the
 `PerceptionProvider` interface without GPU, simulator or model dependencies.
 Wire schema is owned by `harness/contracts/schema/physical.schema.json`.
 
+Both standalone service CLIs handle `--help`, required arguments and declared
+port/checkpoint paths before optional SDK imports. Normal service startup imports
+the required libraries directly and performs its original source/checkpoint
+verification. The SAM service remains independently runnable with its MIT notice.
+Eight actual CLI process checks cover these preallocation boundaries without
+loading SDKs or models. See [perception startup validation](../../../../../docs/implementation/cpu-release-validation.md#perception-service-arguments).
+Loaded model startup and segmentation/depth outcomes keep their native gates.
+
 `metric_geometry.summarize_metric_region` computes a mask region from paired
 native float32 axial depth and PNG RGB. It checks source-image identity, source
 dimensions, binary PNG mask, intrinsic calibration, a rigid camera transform,

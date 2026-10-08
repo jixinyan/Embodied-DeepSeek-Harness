@@ -64,6 +64,11 @@ confirms process-group absence, zero leases/PIDs, released writer locks and reus
 ports. These cases allocate no model, policy, environment or GPU. Loaded service
 behavior keeps its native gate. See
 [service startup ownership](cpu-release-validation.md#managed-service-startup-ownership).
+Managed shutdown waits for complete process-group release through bounded graceful
+and forced drain, preserving original failures and uncertain ownership.
+Eight standalone SAM/YOLO CLI argument checks pass before SDK/model imports.
+The normal perception service and its original license boundaries remain intact;
+see [perception arguments](cpu-release-validation.md#perception-service-arguments).
 
 Four JSON policy services bind before optional SDK/model initialization and admit
 connections only after policy readiness. All five JSON/native CLI help commands,

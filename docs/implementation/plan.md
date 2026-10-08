@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.92 · 2026-10-08
+Version: v1.93 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -142,6 +142,8 @@ Prerequisite success requires its own verdict and completed plan row. See
    connection admission only after the selected policy is ready. Own bound
    listener cleanup through startup failure and normal shutdown.
 8. Drain owned requests, threads, processes and listeners during shutdown.
+   Managed services wait for their complete process group before clearing PID
+   ownership. Preserve original graceful-deadline and forced-release failures.
 
 **Gate:** Actual original errors remain observable. Unknown device state remains unknown;
 transport loss cannot replay motion or create a confirmed stop. CPU and loaded-SDK
