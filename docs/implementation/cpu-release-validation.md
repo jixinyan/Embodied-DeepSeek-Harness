@@ -18,8 +18,8 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
-Clean `d8b3aee` passes all twenty-six components on macOS and isolated Linux:
-252 admission/process/wire/resource cases per platform, six visual-context cases,
+Clean `43ad63c` passes all twenty-six components on macOS and isolated Linux:
+254 admission/process/wire/resource cases per platform, six visual-context cases,
 twelve original native context reads and four-provider readiness. Independent
 comparison verifies six original inputs, six original configuration sources,
 nineteen diagnostic hashes, 216 component source comparisons and fifty-two
@@ -33,11 +33,16 @@ The Linux source also validates selected digests against all four original
 checkpoints and rejects mismatched digests. Both native OpenPI entry forms retain
 their actual report-directory errors before SDK imports. All eighteen original
 RoboDojo files and 12,440,992,402 checkpoint bytes retain their verified identity.
+Eight original-file/declared invalid-input normalization cases and three source
+hashes match across platforms; six installed SDK source hashes match their recorded
+provenance. The actual native normalization identity matches its complete inventory.
+Runner/archive processes and the runner group have independent actual OS absence
+checks in addition to the fifty-six component/child checks.
 Reports and independent source/process summaries:
-`.local/work/v1-cpu-checkpoint-binding-macos-20261008/` and
-`.local/work/v1-cpu-checkpoint-binding-linux-20261008/`.
+`.local/work/v1-cpu-openpi-normalization-macos-20261008/` and
+`.local/work/v1-cpu-openpi-normalization-linux-20261008/`.
 The downloaded evidence matches server SHA-256
-`99f347ee0491b314fe9e69480f293fa62a6c81088e0e6c83aad8580d467bb1b7`.
+`7f9d9844c82ccd34345e99bd4a14b4873cbd01a912e575cd05a1c12007a94647`.
 Loaded native service/device/task acceptance remains outside these CPU checks.
 
 The complete macOS campaign and all twenty-six process receipts pass under
@@ -800,11 +805,12 @@ diagnostic checks named missing-file errors and exit status 2 for invalid ports,
 with no verification report after rejection. Loaded producer readiness and model
 inference retain their native requirements.
 
-All forty-four entry cases pass on macOS with the selected-digest startup path.
+All forty-four entry cases pass on macOS and isolated Linux from clean `43ad63c`.
 The report records eighteen executable/schema hashes, including the original
 checkpoint provenance and native inventory readers. Named admission outcomes
 precede SDK imports and rejected native startup publishes no verification report.
-Evidence: `.local/work/v1-openpi-normalization-startup-macos-20261008/acceptance.json`.
+Evidence: `policy-startup/acceptance.json` under the two current campaign directories
+listed above.
 The [checkpoint binding diagnostic](checkpoint-bindings.md#cpu-validation) uses
 actual original artifacts to check computed identity and mismatched-digest
 rejection; loaded custom-checkpoint and physical task acceptance remain native gates.
@@ -825,7 +831,7 @@ CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
   --output .local/work/<new-normalization-check>
 ```
 
-Eight actual file-admission checks pass on macOS. The accepted original 3,407-byte
+Eight actual file-admission checks pass on macOS and isolated Linux. The accepted original 3,407-byte
 file matches SHA256
 `ad7dea3e3d2bcdb348945fe03422ab1adccd03baf67318b1a1d153dfe8694db5` from
 the complete original checkpoint inventory. Explicitly declared invalid copies
@@ -833,6 +839,9 @@ exercise missing groups/quantiles, incorrect dimensions, boolean/nonfinite
 values, negative standard deviations and reversed quantiles; an actual missing
 directory exercises file admission. Original input bytes remain unchanged.
 Evidence: `.local/work/v1-openpi-normalization-macos-20261008-final/acceptance.json`.
+Linux's report is `linux/normalization/acceptance.json` under
+`.local/work/v1-cpu-openpi-normalization-linux-20261008/`; its original identity,
+declared invalid-copy hashes and source hashes match macOS.
 No model SDK, environment or action allocates. These file checks provide no
 complete-checkpoint, loaded-policy or physical-task acceptance.
 

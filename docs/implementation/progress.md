@@ -25,6 +25,31 @@ task success retain their native acceptance requirements. See
 [checkpoint bindings](checkpoint-bindings.md) and
 [normalization provenance](../provenance/openpi-normalization.md).
 
+Clean `43ad63c` passes all twenty-six CPU components on macOS and isolated Linux,
+including forty-four policy startup cases and 254 admission/process/wire/resource
+cases per platform. Six visual-context cases, twelve original context reads and
+four-provider readiness pass. Independent comparison verifies six original input
+hashes, six configuration hashes, nineteen diagnostic hashes, 216 component source
+comparisons and fifty-two process receipts. The eight normalization results and
+three source hashes match across platforms; six installed SDK source hashes match
+their recorded provenance.
+
+Linux additionally passes all four original checkpoint bindings and four native
+entry identity/report-path cases. Original normalization and all eighteen native
+RoboDojo checkpoint files remain unchanged. Fifty-six independent actual OS checks
+confirm receipt-identified group/child absence; the runner/archive processes and
+runner group also release. The canonical server status remains unchanged and the
+isolated source remains clean. Evidence and independent summaries:
+`.local/work/v1-cpu-openpi-normalization-macos-20261008/` and
+`.local/work/v1-cpu-openpi-normalization-linux-20261008/`. The downloaded archive
+matches server SHA-256
+`7f9d9844c82ccd34345e99bd4a14b4873cbd01a912e575cd05a1c12007a94647`.
+GPU/model/environment allocation and controls remain zero.
+
+Next CPU work: carry configured custom-checkpoint identity through native rollout
+audit and profile admission. Loaded model compatibility and native task acceptance
+retain their separate release requirements.
+
 ## 2026-10-08 configured checkpoint identity
 
 GR00T/LeRobot and native OpenPI startup admit a selected `--checkpoint-sha256`

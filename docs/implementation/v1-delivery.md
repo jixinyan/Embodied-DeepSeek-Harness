@@ -19,7 +19,7 @@ tracks the remaining work across that behavior.
 
 The [CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign) executes
 26 source/production components from actual configuration and original records.
-Clean `d8b3aee` passes 252 admission/process/wire/resource cases per platform on
+Clean `43ad63c` passes 254 admission/process/wire/resource cases per platform on
 macOS and isolated Linux, six visual-context cases, twelve original context reads
 and four-provider readiness. Six original inputs, six original configurations,
 nineteen diagnostic hashes and 216 component source-hash comparisons match;
@@ -30,7 +30,13 @@ workflows retain their native gates. The actual four-provider checkpoint binding
 diagnostic accepts matching original digests, rejects different digests and
 retains unchanged reference files. Fifty-six receipt-identified processes/groups
 have independent actual OS absence checks. Custom loaded-model effectiveness
-retains the selected deployment's native acceptance requirement.
+retains the selected deployment's native acceptance requirement. The native
+producer admits saved fourteen-channel normalization before SDK imports, and the
+JSON bridge admits digest syntax before listener/client allocation. Eight
+original-file/declared invalid-input normalization checks match across platforms;
+three diagnostic/source hashes and six SDK source hashes verify. Actual original
+checkpoint and normalization files remain unchanged. Configured custom-checkpoint
+rollout audit/profile acceptance remains a CPU implementation requirement.
 
 Native configuration and provider/workspace assembly have production owners in
 `apps/server/src`; example entries retain their startup interfaces. Exact source,

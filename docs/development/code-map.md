@@ -56,6 +56,8 @@ All Python provider code belongs under
 | Add a WebSocket policy protocol or checkpoint | [policies](../../harness/physical-runtime/src/physical_harness/policies/README.md) |
 | Own inference threads, cancellation and operation records | [policies/inference.py](../../harness/physical-runtime/src/physical_harness/policies/inference.py) |
 | Start a configured native policy, record model identity and admit service connections | [policies/services](../../harness/physical-runtime/src/physical_harness/policies/services/README.md) |
+| Validate selected GR00T/LeRobot file identity | [policies/provenance.py](../../harness/physical-runtime/src/physical_harness/policies/provenance.py) |
+| Verify complete native OpenPI inventory and saved ARX X5 normalization before model imports | [policies/openpi_checkpoint.py](../../harness/physical-runtime/src/physical_harness/policies/openpi_checkpoint.py) |
 | Add an environment | [environments](../../harness/physical-runtime/src/physical_harness/environments/README.md); each provider has one named subdirectory |
 | Adapt physical hardware | [backends](../../harness/physical-runtime/src/physical_harness/backends/README.md) and [embodiments](../../harness/physical-runtime/src/physical_harness/embodiments/README.md) |
 | Compute source-bound RGB-D measurements | [perception/metric_geometry.py](../../harness/physical-runtime/src/physical_harness/perception/metric_geometry.py) |
@@ -89,6 +91,8 @@ implementations load in their separately configured service processes.
 | Verify real rollout connection/owner failures and scoped background faults | [check-rollout-failure-offline.py](../../scripts/check-rollout-failure-offline.py) |
 | Verify actual policy connection drain and concurrent/cancelled close callers | [check-policy-client-owner-offline.py](../../scripts/check-policy-client-owner-offline.py) |
 | Verify policy CLI admission, bound-listener readiness and startup release | [check-policy-startup-offline.py](../../scripts/check-policy-startup-offline.py) |
+| Check selected digests against actual original checkpoints for all four providers | [check-checkpoint-binding-offline.py](../../scripts/check-checkpoint-binding-offline.py) |
+| Check original saved ARX X5 normalization and explicitly invalid derivative inputs | [check-openpi-normalization-offline.py](../../scripts/check-openpi-normalization-offline.py) |
 | Verify configured service startup cancellation and shared admissions | [check-service-startup-owner-offline.mjs](../../scripts/check-service-startup-owner-offline.mjs) |
 | Verify standalone SAM/YOLO argument admission before SDK imports | [check-perception-startup-offline.py](../../scripts/check-perception-startup-offline.py) |
 | Exercise native RoboCasa worker or SAM-backed measurement | [check-robocasa-worker.ts](../../scripts/check-robocasa-worker.ts) and [check-robocasa-object-measurement.ts](../../scripts/check-robocasa-object-measurement.ts) |

@@ -113,3 +113,13 @@ absence checks. Evidence and the independently verified summaries are under
 `.local/work/v1-cpu-checkpoint-binding-linux-20261008/`. See the
 [CPU guide](cpu-release-validation.md#consolidated-cpu-campaign) for scope and
 the verified archive identity.
+
+Clean `43ad63c` repeats all four original bindings after adding native normalization
+admission. Full macOS/Linux campaigns each pass twenty-six components and 254
+admission/process/wire/resource cases. The eight normalization results and three
+source hashes match across platforms; six SDK source hashes match their recorded
+provenance. All original files remain unchanged. Current reports and independent
+summaries are under `.local/work/v1-cpu-openpi-normalization-macos-20261008/` and
+`.local/work/v1-cpu-openpi-normalization-linux-20261008/`.
+Configured custom-checkpoint rollout audit/profile acceptance remains required
+before its loaded-policy release gate.

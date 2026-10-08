@@ -20,7 +20,14 @@ entries per statistic, nonnegative standard deviations, ordered quantiles and
 inventory file identity before SDK imports. The JSON bridge admits digest syntax
 before listener/client allocation. Forty-four actual startup cases, eight
 original-file/declared invalid-input normalization checks and full project checks
-pass on macOS. Loaded model and simulator behavior retain their native gates.
+pass on macOS and isolated Linux from clean `43ad63c`. Both platforms complete all
+twenty-six CPU components and 254 admission/process/wire/resource cases, with
+matching original inputs/configuration, 216 component source comparisons, all
+fifty-two process receipts and eight normalization results. Fifty-six independent
+OS checks confirm component/child release; the runner/archive also release.
+Original four-provider checkpoints and canonical server status remain unchanged.
+Loaded model and simulator behavior retain their native gates. Next CPU work is
+configured custom-checkpoint identity through rollout audit and profile admission.
 
 Native GR00T/LeRobot and OpenPI services admit an explicitly selected checkpoint
 SHA256 before SDK imports. Compatible custom artifacts retain their own identity

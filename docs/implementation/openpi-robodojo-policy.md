@@ -65,6 +65,18 @@ count match the complete inventory; its identity accompanies the verification
 report. [Normalization provenance](../provenance/openpi-normalization.md) records
 the selected SDK's configuration and loader behavior.
 
+Clean `43ad63c` passes forty-four policy startup cases within all twenty-six CPU
+components on macOS and isolated Linux. Eight original-file/declared invalid-input
+normalization checks match across platforms, alongside their three source hashes
+and six installed SDK source hashes. Linux's complete original checkpoint checks
+verify the normalization identity within the unchanged eighteen-file inventory.
+The native entry forms retain actual pre-SDK identity/report-path outcomes.
+Evidence: `.local/work/v1-cpu-openpi-normalization-macos-20261008/` and
+`.local/work/v1-cpu-openpi-normalization-linux-20261008/`. See the
+[CPU guide](cpu-release-validation.md#consolidated-cpu-campaign) for the complete
+source/process comparison and archive identity. Loaded-policy/task gates remain
+independent requirements.
+
 The clean `653a3ea` CPU campaign checks both native entry forms on macOS and
 isolated Linux without SDK/model allocation. Linux additionally verifies all
 eighteen actual original checkpoint files and their aggregate identity before

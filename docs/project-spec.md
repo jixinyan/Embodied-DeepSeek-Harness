@@ -14,8 +14,11 @@ define the CLI, identity calculation and CPU/native acceptance boundaries.
 Native OpenPI also validates fourteen-channel finite ARX X5 saved normalization
 against its complete inventory before model SDK imports. Its JSON bridge admits
 digest syntax before listener/client allocation. Forty-four actual startup cases
-and eight original-file/declared invalid-input normalization checks pass on macOS,
-with complete source checks and unchanged original data.
+and eight original-file/declared invalid-input normalization checks pass on macOS
+and isolated Linux. Clean `43ad63c` completes all twenty-six CPU components with
+254 admission/process/wire/resource cases per platform, source/input comparisons
+and independently confirmed process release. Original checkpoint/normalization
+data and canonical server status remain unchanged.
 
 Production native deployment and multi-provider workspace assembly belong to
 `apps/server/src/native-deployment.mjs` and `native-workspace.mjs`. Runnable
