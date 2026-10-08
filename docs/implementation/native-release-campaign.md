@@ -62,13 +62,13 @@ service processes or leases before another case starts.
 
 The terminal workflow audit requires:
 
-- Original simulation identity, complete ordered events and zero tool errors.
+- Original simulation identity, complete ordered events and zero host/native DSH tool errors.
 - A completed original final goal and the requested number of completed goals.
-- Independent retired role Sessions and one fresh Verifier per accepted verdict.
+- Independent retired role Sessions and one fresh Verifier created after each confirmed execution end.
 - Eligible confirmed execution ends with matching scope, criterion and boundary.
 - Passed prerequisite verdicts and committed completed plan rows before dependent execution.
 - Planner-owned retry decisions, original failed verdicts, explicit changes and matching recovery execution.
-- Requested native tools and the actual `tasks.finish` receipt.
+- Completed Planner TODOs, requested native tools and the actual owner-authorized `tasks.finish` receipt.
 
 `requireRecovery: true` makes a failed-then-recovered execution mandatory for a
 selected task. It does not inject failures or change the original criterion.

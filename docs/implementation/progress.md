@@ -16,7 +16,7 @@ The production Console rejects a modified checkout before allocating a Session.
 The shared workflow reader passes four original task histories across three
 Sessions: `551fa79d`, `a5d9132e`, `897f215d` and `ca43312e`. It checks independent
 retired contexts, Planner-owned recovery, confirmed formal boundaries, completed
-plans, requested tools and released Session resources. The original failed
+plans/TODOs, host/native tool results, requested tools and released Session resources. The original failed
 BEHAVIOR outcome remains ineligible for task-success acceptance. These checks
 perform no model inference or physical controls. Full current-code campaign,
 multi-goal execution, interrupt cleanup and original source/action/video acceptance

@@ -51,6 +51,16 @@ export function auditNativeCampaignTask(run, events, expectation) {
   assert.equal(events.length, run.eventCount);
   for (const [index, event] of events.entries()) assert.equal(event.sequence, index + 1);
   assert(!events.some((event) => event.type === 'tool.failed'));
+  const nativeResults = events.filter((event) => event.type === 'dsh.tool-result');
+  assert(nativeResults.length > 0);
+  for (const event of nativeResults) {
+    assert(!event.detail.data.error);
+    assert(
+      !event.detail.data.message.content.some(
+        (block) => block.type === 'tool-result' && block.isError,
+      ),
+    );
+  }
   assert(run.plan);
   assert.equal(run.plan.task_id, run.id);
   assert(run.plan.items.every((item) => item.status === 'done' || item.status === 'abandoned'));
@@ -121,7 +131,18 @@ export function auditNativeCampaignTask(run, events, expectation) {
         event.type === 'verification.completed' &&
         event.detail.result.verdict_id === verdict.verdict_id,
     );
-    assert(boundary && completed && boundary.sequence < completed.sequence);
+    const created = events.find(
+      (event) => event.type === 'agent.created' && event.detail.assignment.id === verifier.id,
+    );
+    assert(
+      boundary &&
+        created &&
+        completed &&
+        boundary.sequence < created.sequence &&
+        created.sequence < completed.sequence,
+    );
+    assert.deepEqual(created.detail.assignment.brief.task_scope, verdict.task_scope);
+    assert.deepEqual(created.detail.assignment.brief.success_contract, request.success_contract);
   }
   assert.equal(
     new Set(run.verdicts.map((item) => item.verifier_assignment_id)).size,
@@ -177,6 +198,17 @@ export function auditNativeCampaignTask(run, events, expectation) {
     events.filter((event) => event.type === 'tool.completed').map((event) => event.detail.tool),
   );
   assert(tools.has('tasks.finish'));
+  const finished = events.find(
+    (event) => event.type === 'tool.completed' && event.detail.tool === 'tasks.finish',
+  );
+  assert.equal(finished.detail.assignmentId, decisionOwner.id);
+  const todos = events.findLast(
+    (event) =>
+      event.type === 'agent.todos' &&
+      event.detail.assignmentId === decisionOwner.id &&
+      event.sequence < finished.sequence,
+  );
+  assert(todos && todos.detail.todos.every((todo) => todo.status === 'completed'));
   for (const tool of expectation.requiredTools)
     assert(tools.has(tool), `Required tool was not completed: ${tool}`);
   const recovery = events.filter((event) => event.type === 'retry.accepted');
@@ -219,6 +251,8 @@ export function auditNativeCampaignTask(run, events, expectation) {
     recoveryRequests: recovery.length,
     formalVerdicts: run.verdicts.length,
     independentAssignments: assignments.length,
+    completedTodos: todos.detail.todos.length,
+    nativeToolResults: nativeResults.length,
     scope:
       'Actual terminal HTTP task history and authority checks; original simulator/policy/video source audit remains required.',
   };
