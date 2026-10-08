@@ -20,6 +20,9 @@ production Console readiness check with no environment or model allocation.
 The schema also owns the public Worker configuration type. Scene parameters
 contain finite JSON data, and initialization uses a detached, recursively frozen
 configuration/catalog snapshot before preparing or creating a Worker process.
+The transport establishes process ownership before invoking the optional startup
+observer, awaits its completion before initialization and confirms process release
+before propagating an observer error.
 Planner prerequisite goals use only admitted native checks and commit their own
 passed-verdict plan update before a dependent goal starts. Source and readiness
 checks have separate acceptance from physical tasks; see

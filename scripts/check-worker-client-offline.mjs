@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -27,6 +27,7 @@ assert(original && original.profileCleanup === undefined);
 const sourcePaths = [
   configurationPath,
   resolve(root, 'apps/server/src/native-worker.ts'),
+  resolve(root, 'apps/server/src/native-worker-configuration.ts'),
   resolve(root, 'apps/server/src/native-worker-transport.ts'),
   resolve(root, 'harness/physical-runtime/src/physical_harness/execution/worker.py'),
   resolve(root, 'harness/physical-runtime/src/physical_harness/execution/worker_transport.py'),
@@ -42,10 +43,21 @@ const sources = await Promise.all(
 );
 const cases = [];
 
-async function inspect(name, action, command) {
-  let processId;
-  let forcedTermination = false;
-  const transport = new NativeWorkerTransport({
+function requireProcessAbsent(processId) {
+  assert(Number.isSafeInteger(processId) && processId > 0);
+  assert.throws(
+    () => process.kill(processId, 0),
+    (error) => error.code === 'ESRCH',
+  );
+  if (process.platform !== 'win32')
+    assert.throws(
+      () => process.kill(-processId, 0),
+      (error) => error.code === 'ESRCH',
+    );
+}
+
+function workerConfiguration(onProcessStarted, command) {
+  return {
     ...original,
     command: command ?? [
       resolve(values.python ?? resolve(root, '.venv/bin/python')),
@@ -61,11 +73,20 @@ async function inspect(name, action, command) {
     },
     transportFd: 3,
     closeTimeoutMs: 10000,
-    onProcessStarted(pid) {
+    onProcessStarted,
+  };
+}
+
+async function inspect(name, action, command, onProcessStarted) {
+  let processId;
+  let forcedTermination = false;
+  const transport = await NativeWorkerTransport.create(
+    workerConfiguration(async (pid) => {
       assert.equal(processId, undefined);
       processId = pid;
-    },
-  });
+      await onProcessStarted?.(pid);
+    }, command),
+  );
   const watchdog = setTimeout(() => {
     forcedTermination = true;
     if (processId !== undefined) process.kill(processId, 'SIGKILL');
@@ -88,15 +109,7 @@ async function inspect(name, action, command) {
   }
   assert.equal(forcedTermination, false);
   if (processId !== undefined) {
-    assert.throws(
-      () => process.kill(processId, 0),
-      (error) => error.code === 'ESRCH',
-    );
-    if (process.platform !== 'win32')
-      assert.throws(
-        () => process.kill(-processId, 0),
-        (error) => error.code === 'ESRCH',
-      );
+    requireProcessAbsent(processId);
   }
   assert.equal(Boolean(closeError), record.expectCloseError);
   if (closeError) assert(closeError instanceof AggregateError);
@@ -111,6 +124,21 @@ async function inspect(name, action, command) {
     forcedTermination,
   });
 }
+
+const startupRecord = resolve(output, 'startup-record.json');
+await inspect(
+  'async-startup-record',
+  async (transport, processId) => {
+    assert.deepEqual(JSON.parse(await readFile(startupRecord, 'utf8')), { pid: processId() });
+    const receipt = await transport.request('close');
+    assert.deepEqual(receipt, { closed: true });
+    return { startupRecordPublished: true, receipt, expectCloseError: false };
+  },
+  undefined,
+  async (pid) => {
+    await writeFile(startupRecord, `${JSON.stringify({ pid })}\n`, { flag: 'wx' });
+  },
+);
 
 await inspect('operation-errors-and-batch', async (transport) => {
   const errors = await Promise.allSettled(
@@ -189,6 +217,43 @@ await inspect(
   },
   [missingExecutable, '-m', 'physical_harness.execution.worker'],
 );
+
+for (const asynchronous of [false, true]) {
+  const name = asynchronous ? 'async-startup-file-error' : 'startup-file-error';
+  const missingRecord = resolve(output, `${name}.json`);
+  assert.equal(existsSync(missingRecord), false);
+  let processId;
+  let observedError;
+  const started = performance.now();
+  await assert.rejects(
+    NativeWorkerTransport.create(
+      workerConfiguration((pid) => {
+        assert.equal(processId, undefined);
+        processId = pid;
+        if (asynchronous) return readFile(missingRecord).then(() => {});
+        readFileSync(missingRecord);
+      }),
+    ),
+    (error) => {
+      assert.equal(error.code, 'ENOENT');
+      assert.equal(error.path, missingRecord);
+      observedError = { code: error.code, message: error.message };
+      requireProcessAbsent(processId);
+      return true;
+    },
+  );
+  cases.push({
+    name,
+    processId,
+    elapsedMs: performance.now() - started,
+    observedError,
+    childProcessAbsent: true,
+    processGroupAbsent: process.platform !== 'win32',
+    forcedTermination: false,
+    releaseCompletedBeforeRejection: true,
+    initializeRequested: false,
+  });
+}
 
 for (const source of sources)
   assert.equal(

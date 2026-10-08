@@ -939,7 +939,7 @@ export async function createNativeWorkerEnvironment(
     ? new NativeProfileCleanup(configuration.profileCleanup)
     : undefined;
   await profileCleanup?.prepare();
-  const transport = new NativeWorkerTransport(configuration, profileCleanup);
+  const transport = await NativeWorkerTransport.create(configuration, profileCleanup);
   try {
     const description = object(
       await transport.request('initialize', {

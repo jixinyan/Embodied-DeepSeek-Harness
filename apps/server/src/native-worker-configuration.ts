@@ -27,7 +27,7 @@ export const nativeWorkerConfigurationSchema = z
     command: z.tuple([nonblank]).rest(nonblank).readonly(),
     transportFd: z.union([z.literal(1), z.literal(3)]).optional(),
     onProcessStarted: z
-      .custom<(pid: number) => void>((value) => typeof value === 'function')
+      .custom<(pid: number) => void | Promise<void>>((value) => typeof value === 'function')
       .optional(),
     cwd: nonblank,
     env: z.record(z.string(), z.string()).readonly(),

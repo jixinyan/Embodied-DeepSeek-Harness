@@ -89,6 +89,38 @@ release. Both BEHAVIOR and RoboTwin pass with CUDA invisible in
 `.local/work/v1-worker-host-caller-<provider>-20261008-current/acceptance.json`.
 This checks initialization ownership without allocating a native simulator.
 
+Frozen `f365135` passes the same scene/admission and caller-mutation checks,
+four-provider readiness and full project checks on isolated Linux. Every original
+scene, rejection and implementation/provider hash matches its macOS report; only
+the private workspace's path references change. The canonical server checkout's
+before/after status is identical. Reports and verified summary are under
+`.local/work/v1-cpu-source-20261008/linux-scene-owner/`; the archive SHA-256 is
+`880ce01308396e7691ee5733539d318df468e1e8849f4d04681cc5f308e1c01b`.
+
+## Native Worker startup observer ownership
+
+The transport's asynchronous `NativeWorkerTransport.create` establishes pipes,
+listeners and process ownership before calling the configured host observer.
+Initialization waits for synchronous or asynchronous observer completion. Observer
+failure closes the actual Worker and confirms process-group release before the
+original error returns. Cleanup failure retains both errors.
+
+The [client diagnostic](../../scripts/check-worker-client-offline.mjs) exercises
+eight actual CPU process cases: the existing communication/cancellation/deadline
+cases, successful asynchronous startup-file publication and synchronous/asynchronous
+startup reads of an absent file. The latter preserve actual ENOENT errors and
+require the owned process/group to be absent when creation rejects. No initialize
+request, SDK allocation, inference or controls execute in the observer cases.
+Evidence: `.local/work/v1-worker-startup-observer-20261008-final/acceptance.json`.
+
+The [host diagnostic](../../scripts/check-worker-host-offline.mjs) accepts
+`--startup-file-error` and optional `--async-startup` to exercise the same file
+failure through the production environment factory and configuration schema.
+Both paths preserve the original error and release their actual process/group,
+image context and empty policy-record directory. The local reports are under
+`.local/work/v1-worker-startup-host-sync-20261008/` and
+`.local/work/v1-worker-startup-host-async-20261008/`.
+
 ## Native context and scope ownership
 
 Selected DSH `token-meter` source belongs to `harness/agent-runtime/memory`,

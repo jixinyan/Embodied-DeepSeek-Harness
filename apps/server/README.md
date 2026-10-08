@@ -20,6 +20,9 @@ simulators, embodiments, checkpoints and model services through one Console.
   confirmed owned-process release. Complete response validation precedes request
   retirement; malformed publications fail every pending request. Error messages
   retain Python's original text, including an empty string.
+  Asynchronous `NativeWorkerTransport.create` installs transport ownership before
+  awaiting the optional startup observer. Observer failure completes confirmed
+  process release before rejecting; initialization starts only after observer completion.
 - [evidence-images.ts](src/evidence-images.ts): image integrity checks for agent
   evidence and event-bound operator replay frames. Replay URLs use the immutable
   run event sequence and preserve debug-only frame visibility.

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -16,9 +16,12 @@ const { values } = parseArgs({
     python: { type: 'string' },
     output: { type: 'string' },
     'mutate-caller': { type: 'boolean', default: false },
+    'startup-file-error': { type: 'boolean', default: false },
+    'async-startup': { type: 'boolean', default: false },
   },
 });
 assert(values.config && values.output);
+assert(!values['async-startup'] || values['startup-file-error']);
 const root = resolve(import.meta.dirname, '..');
 const output = resolve(values.output);
 const childPath = relative(resolve(root, '.local/work'), output);
@@ -38,6 +41,8 @@ const records = resolve(output, 'policy-records');
 await mkdir(records);
 const missingSource = resolve(output, 'uninstalled-source');
 assert.equal(existsSync(missingSource), false);
+const missingRecord = resolve(output, 'uncreated-startup-record.json');
+assert.equal(existsSync(missingRecord), false);
 const sources = await Promise.all(
   [
     configurationPath,
@@ -74,6 +79,7 @@ try {
       PYTHONPATH: resolve(root, 'harness/physical-runtime/src'),
       PYTHONDONTWRITEBYTECODE: '1',
       CUDA_VISIBLE_DEVICES: '',
+      EDH_NVIDIA_EGL_PROFILE: '0',
       EDH_POLICY_REQUEST_RECORD_DIR: records,
     },
     transportFd: 3,
@@ -84,6 +90,10 @@ try {
     onProcessStarted(pid) {
       assert.equal(processId, undefined);
       processId = pid;
+      if (values['startup-file-error']) {
+        if (values['async-startup']) return readFile(missingRecord).then(() => {});
+        readFileSync(missingRecord);
+      }
     },
   };
   const environment = createNativeWorkerEnvironment(
@@ -101,8 +111,13 @@ try {
   await assert.rejects(environment, (error) => {
     assert(error instanceof Error);
     assert(!(error instanceof AggregateError));
-    assert.match(error.message, /Native worker FileNotFoundError/);
-    assert(error.message.includes(missingSource));
+    if (values['startup-file-error']) {
+      assert.equal(error.code, 'ENOENT');
+      assert.equal(error.path, missingRecord);
+    } else {
+      assert.match(error.message, /Native worker FileNotFoundError/);
+      assert(error.message.includes(missingSource));
+    }
     errorMessage = error.message;
     return true;
   });
@@ -111,6 +126,11 @@ try {
     () => process.kill(processId, 0),
     (error) => error.code === 'ESRCH',
   );
+  if (process.platform !== 'win32')
+    assert.throws(
+      () => process.kill(-processId, 0),
+      (error) => error.code === 'ESRCH',
+    );
   resourceReleaseConfirmed = true;
   assert.deepEqual(await readdir(records), []);
   assert.equal(existsSync(missingSource), false);
@@ -140,6 +160,9 @@ await writeFile(
       imageContextDisposed: true,
       recordingProbeRemoved: true,
       callerMutationChecked: values['mutate-caller'],
+      startupFileErrorChecked: values['startup-file-error'],
+      asynchronousStartupObserver: values['async-startup'],
+      processGroupAbsent: process.platform !== 'win32',
       sources,
       sourceHashesUnchanged: true,
       environmentAllocationPerformed: false,

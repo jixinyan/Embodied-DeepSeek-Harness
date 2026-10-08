@@ -6,6 +6,15 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## 2026-10-08 native context directory ownership
 
+Native Worker creation installs process/pipe ownership before its optional host
+startup observer. Initialization awaits observer completion. Actual synchronous
+and asynchronous ENOENT errors preserve their original identity after confirmed
+process/group release. Eight production-client CPU cases also verify successful
+asynchronous file publication and existing cancellation/deadline/spawn handling.
+The environment factory's schema, image context and recording ownership pass
+both observer-error paths. No simulator, model or controls execute in these checks.
+See [startup observer validation](cpu-release-validation.md#native-worker-startup-observer-ownership).
+
 Native scene parameters use recursive finite-JSON validation. The schema owns
 `NativeWorkerConfiguration`; the existing export remains available from
 `native-worker.ts`. Environment admission returns one detached, recursively frozen

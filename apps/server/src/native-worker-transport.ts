@@ -7,7 +7,7 @@ import { z } from 'zod';
 import type { ExecutionStatus, TaskScope } from '@edh/contracts';
 import type { BackendFault } from '@edh/execution';
 import { waitFor } from './managed-services.js';
-import type { NativeWorkerConfiguration } from './native-worker.js';
+import type { NativeWorkerConfiguration } from './native-worker-configuration.js';
 import type { NativeProfileCleanup } from './native-profile-cleanup.js';
 
 type JsonObject = Record<string, unknown>;
@@ -83,7 +83,29 @@ export class NativeWorkerTransport {
   private readonly exited: Promise<void>;
   private termination: Promise<void> | undefined;
   private closing: Promise<void> | undefined;
-  constructor(
+  static async create(
+    configuration: NativeWorkerConfiguration,
+    profileCleanup?: NativeProfileCleanup,
+  ): Promise<NativeWorkerTransport> {
+    const transport = new NativeWorkerTransport(configuration, profileCleanup);
+    try {
+      if (transport.child.pid !== undefined)
+        await configuration.onProcessStarted?.(transport.child.pid);
+      return transport;
+    } catch (error) {
+      try {
+        await transport.close();
+      } catch (releaseError) {
+        throw new AggregateError(
+          [error, releaseError],
+          'Native worker startup observer and process release failed.',
+        );
+      }
+      throw error;
+    }
+  }
+
+  private constructor(
     private readonly configuration: NativeWorkerConfiguration,
     private readonly profileCleanup?: NativeProfileCleanup,
   ) {
@@ -104,7 +126,6 @@ export class NativeWorkerTransport {
         if (this.child.pid === undefined) resolve();
       });
     });
-    if (this.child.pid !== undefined) configuration.onProcessStarted?.(this.child.pid);
     const channel = this.child.stdio[configuration.transportFd ?? 3] as Readable;
     if (!this.child.stdin || !channel)
       throw new Error('Native worker transport pipes are unavailable.');
