@@ -16,14 +16,28 @@ the selected lower-policy identity and validate its complete request scope.
 Direct model profiles use their selected model binding. Profile/Worker conflicts
 fail configuration admission before allocation.
 
-Thirty-three original-record/wire/Gate/actual-WebSocket checks and thirty-six
-four-provider configuration/factory/HTTP checks pass on macOS. Original request
-and action values, files and task outcomes remain unchanged. Actual transport
-checks return original admission/upstream failures without actions. Device owner,
-resource lease, listener and connections release; no model SDK, simulator or GPU
-starts. All twenty-eight CPU campaign components and full source checks pass.
-Evidence: `.local/work/v1-cpu-checkpoint-wire-macos-20261008/`.
-Current-source isolated Linux campaign verification is the next CPU check.
+Clean `416a38a` passes all twenty-eight components on macOS and isolated Linux:
+323 admission/process/wire/resource cases per platform, including thirty-three
+original-record/wire/Gate/actual-WebSocket and thirty-six four-provider
+configuration/factory/HTTP checks. Six visual-context cases, twelve original
+context reads and four-provider readiness pass. Independent comparison verifies
+326 component source/input hashes, twenty-one diagnostic hashes and fifty-six
+process receipts. Fifty-seven actual OS checks confirm diagnostic group/script
+absence. The Linux execution script exits with status zero.
+
+Original request/action values, all eighty-six transferred artifact files and
+task outcomes remain unchanged. Actual transport checks return original
+admission/upstream failures without actions. Device owner, resource lease,
+listeners, connections and diagnostic process groups release. Canonical server
+status remains unchanged and isolated source stays clean. GPU jobs, model calls,
+environment allocations and controls remain zero. Full source checks retain
+128 pinned DSH files, 25 bindings, 65 Python files and 27 base imports.
+Evidence and independent summaries:
+`.local/work/v1-cpu-checkpoint-wire-macos-20261008-final/` and
+`.local/work/v1-cpu-checkpoint-wire-linux-20261008/`. The downloaded archive matches
+server SHA-256 `73abd103ac04dbd341a09083f59fdeb4f019a3340a09507df7742de06d4c98d8`.
+Loaded checkpoint compatibility, complete native cancellation, multi-goal tasks,
+BEHAVIOR success and RoboDojo Tower completion retain their native release gates.
 
 ## 2026-10-08 configured checkpoint rollout identity
 

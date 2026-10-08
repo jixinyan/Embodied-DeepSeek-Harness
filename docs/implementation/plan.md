@@ -18,11 +18,14 @@ Models, policy inference and simulator tasks remain stopped during CPU work.
 Selected checkpoint identity reaches learned-policy requests and ActionGate
 admission. Services check their verified artifact before inference and identify
 responses. Hybrid lower-policy proposals validate selected identity and complete
-request scope. Thirty-three original-record/wire/Gate/WebSocket checks and
-thirty-six four-provider configuration/factory/HTTP checks pass within all
-twenty-eight macOS CPU components. Next CPU action: verify the current-source
-campaign on isolated Linux, including original record preservation and actual
-process release.
+request scope. Clean `416a38a` passes all twenty-eight CPU components on macOS and
+isolated Linux, with 323 admission/process/wire/resource cases per platform.
+Thirty-three original-record/wire/Gate/WebSocket and thirty-six four-provider
+configuration/factory/HTTP checks are included. Independent verification matches
+326 component source/input hashes and all fifty-six process receipts; fifty-seven
+actual OS checks confirm owned process release. Original records and canonical
+server status remain unchanged. Native loaded-model/device/task requirements
+remain in Steps 13–14; Evolver is paused and SceneState is deferred.
 
 Native profile admission retains `checkpointSha256` in immutable Console/Session/run
 metadata. GR00T/LeRobot telemetry retains complete checkpoint files, and rollout
@@ -314,8 +317,8 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 and released ownership. No model or simulator result is supplied by a diagnostic.
 See [CPU release validation](cpu-release-validation.md).
 
-**Verified checkpoint:** macOS and frozen `6877ce3` on isolated Linux pass all
-twenty-eight configured components, with 290 admission/process/wire/resource
+**Verified checkpoint:** macOS and frozen `416a38a` on isolated Linux pass all
+twenty-eight configured components, with 323 admission/process/wire/resource
 cases per platform, matched original input/source identities and independently
 confirmed resource release. Four actual profiles also prepare eight native
 task submissions. Loaded-model/device behavior and complete task workflows retain

@@ -18,6 +18,27 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
+Clean `416a38a` passes all twenty-eight configured components on macOS and isolated
+Linux, with 323 admission/process/wire/resource cases per platform, six
+visual-context cases, twelve original context reads and four-provider readiness.
+Checkpoint checks include thirty-three original-record/wire/Gate/actual-WebSocket
+cases and thirty-six configuration/factory/HTTP cases. Declared selection metadata
+preserves original action values; unidentified/inconsistent service responses
+fail before dispatch. Native policy entries obtain identity from their verified
+artifact, and hybrid proposal clients validate the lower-policy request scope.
+
+Independent comparison verifies 326 component source/input hashes, twenty-one
+diagnostic hashes and fifty-six process receipts. Fifty-seven actual OS checks
+confirm diagnostic group and execution-script absence. The Linux script exits
+with status zero. All eighty-six transferred artifact files remain unchanged,
+the canonical server preserves its exact status and the isolated source stays
+clean. GPU jobs, model calls, environment allocations and controls remain zero.
+Evidence and independent summaries:
+`.local/work/v1-cpu-checkpoint-wire-macos-20261008-final/` and
+`.local/work/v1-cpu-checkpoint-wire-linux-20261008/`. The downloaded archive matches
+server SHA-256 `73abd103ac04dbd341a09083f59fdeb4f019a3340a09507df7742de06d4c98d8`.
+Loaded native model/device/task requirements retain their own release gates.
+
 Clean `6877ce3` passes all twenty-eight configured components on macOS and isolated
 Linux: 290 admission/process/wire/resource cases per platform, six visual-context
 cases, twelve original native context reads and four-provider readiness. The

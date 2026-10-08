@@ -50,6 +50,7 @@ All Python provider code belongs under
 | Save original policy requests and actual controls | [execution/policy_records.py](../../harness/physical-runtime/src/physical_harness/execution/policy_records.py) |
 | Own policy WebSocket requests and shared connection/client shutdown | [policies/client.py](../../harness/physical-runtime/src/physical_harness/policies/client.py) |
 | Bind a policy listener and control connection admission | [policies/server.py](../../harness/physical-runtime/src/physical_harness/policies/server.py) |
+| Bind selected checkpoint identity before inference and action dispatch | [checkpoint bindings](../implementation/checkpoint-bindings.md): native configuration, Worker, policy server/client and ActionGate |
 | Admit actions and enforce execution budgets | [execution/action_gate.py](../../harness/physical-runtime/src/physical_harness/execution/action_gate.py) |
 | Compose an inference client with ActionGate and preserve rollout failures | [execution/policy_rollout.py](../../harness/physical-runtime/src/physical_harness/execution/policy_rollout.py) |
 | Confirm simulator execution and stopping | [execution/native_device.py](../../harness/physical-runtime/src/physical_harness/execution/native_device.py) |
@@ -93,7 +94,7 @@ implementations load in their separately configured service processes.
 | Verify policy CLI admission, bound-listener readiness and startup release | [check-policy-startup-offline.py](../../scripts/check-policy-startup-offline.py) |
 | Check selected digests against actual original checkpoints for all four providers | [check-checkpoint-binding-offline.py](../../scripts/check-checkpoint-binding-offline.py) |
 | Check original saved ARX X5 normalization and explicitly invalid derivative inputs | [check-openpi-normalization-offline.py](../../scripts/check-openpi-normalization-offline.py) |
-| Verify selected checkpoint identity against original requests and inference records | [check-checkpoint-audit-offline.py](../../scripts/check-checkpoint-audit-offline.py) |
+| Verify selected checkpoint identity through original records, wire/Gate admission and actual WebSocket rejection | [check-checkpoint-audit-offline.py](../../scripts/check-checkpoint-audit-offline.py) |
 | Verify four-provider checkpoint profile admission and Console metadata | [check-checkpoint-profiles-offline.mjs](../../scripts/check-checkpoint-profiles-offline.mjs) |
 | Verify configured service startup cancellation and shared admissions | [check-service-startup-owner-offline.mjs](../../scripts/check-service-startup-owner-offline.mjs) |
 | Verify standalone SAM/YOLO argument admission before SDK imports | [check-perception-startup-offline.py](../../scripts/check-perception-startup-offline.py) |

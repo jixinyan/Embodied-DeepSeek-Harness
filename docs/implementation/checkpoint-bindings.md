@@ -197,6 +197,11 @@ acceptance with actual selected artifacts.
 
 Current runtime-admission checks pass thirty-three original-record/wire/Gate and
 actual WebSocket cases plus thirty-six configuration/factory/HTTP cases within
-all twenty-eight macOS CPU components. They use original reference identities
-and declared invalid derivatives, perform no model inference or controls, and
-preserve source files. Evidence: `.local/work/v1-cpu-checkpoint-wire-macos-20261008/`.
+all twenty-eight macOS/Linux CPU components from clean `416a38a`. Each platform
+passes 323 admission/process/wire/resource cases. Independent comparison verifies
+326 component source/input hashes and fifty-six process receipts; fifty-seven
+actual OS checks confirm release. They use original reference identities and
+declared invalid derivatives, perform no model inference or controls, and preserve
+source files and canonical server status. Evidence and independent summaries:
+`.local/work/v1-cpu-checkpoint-wire-macos-20261008-final/` and
+`.local/work/v1-cpu-checkpoint-wire-linux-20261008/`.

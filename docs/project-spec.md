@@ -14,7 +14,11 @@ require the selected identity before dispatch. Hybrid profiles bind the selected
 identity to lower-policy proposal requests and validate their complete scope before
 model review. Direct model profiles use their model binding. CPU checks preserve
 original action values and exercise actual rejection/connection/resource boundaries;
-loaded-policy and native task acceptance remain required.
+clean `416a38a` passes all twenty-eight components and 323 admission/process/wire/resource
+cases per platform on macOS and isolated Linux. Independent comparison verifies
+326 component source/input hashes, fifty-six process receipts and fifty-seven
+actual OS release checks. Original files and canonical server status remain
+unchanged. Loaded-policy and native task acceptance remain required.
 
 Native launch profiles admit optional `checkpointSha256` and retain that identity
 through immutable deployment, Console, Session and run metadata. GR00T/LeRobot

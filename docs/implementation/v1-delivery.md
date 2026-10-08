@@ -17,6 +17,17 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Current checkpoint-bound action admission passes all twenty-eight CPU components
+from clean `416a38a` on macOS and isolated Linux, with 323 admission/process/wire/resource
+cases per platform. This includes thirty-three original-record/wire/Gate/WebSocket
+and thirty-six profile/configuration/factory/HTTP cases. Independent comparison
+verifies 326 component source/input hashes and all fifty-six process receipts;
+fifty-seven actual OS checks confirm owned process release. Original artifacts,
+task outcomes and canonical server status remain unchanged. GPU/model/environment
+allocation and controls remain zero. Loaded checkpoint compatibility, complete
+native faults/cancellation, multi-goal workflows, original BEHAVIOR success and
+RoboDojo Tower completion retain their release gates.
+
 The [CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign) executes
 28 configured source/production components from actual configuration and original records.
 Clean `6877ce3` passes 290 admission/process/wire/resource cases per platform on
