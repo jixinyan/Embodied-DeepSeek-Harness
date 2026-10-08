@@ -1,8 +1,24 @@
 # Implementation progress
 
-Spec: v1.75. Current checkpoint: **complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.76. Current checkpoint: **policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-07 CPU transport and service ownership
+
+The Python policy client checks telemetry identities, one native context and
+increasing sequences before publishing events. Tool requests require unique
+nonblank call identities, current request scope and object arguments/results.
+Inference failure preserves any connection-cleanup failure. Private server
+diagnostics retain source frames and request identity; public errors remain generic.
+
+Original telemetry inspection accepts 95 events across three requests. Actual
+WebSocket bearer admission, upstream connection timeout, error propagation,
+connection discard and listener shutdown pass. The actual four-provider Console
+also passes shared foreground-process leases, last-lease shutdown, restart,
+unexpected exit and server closure with a held lease. Source files retain their
+original hashes. See [CPU release validation](cpu-release-validation.md).
+No model, policy inference or simulator task is started by these checks.
 
 ## 2026-10-07 native configuration readiness
 

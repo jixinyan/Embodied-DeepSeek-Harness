@@ -169,6 +169,22 @@ in-flight inference. An invalid response cannot bypass ActionSpec dimensions,
 channel bounds or requested action count. The server returns a generic failure
 rather than model paths, request bytes or credentials.
 
+Direct/hybrid telemetry must retain the current request, execution, task scope,
+generation and observation identities before a consumer receives it. One inference
+keeps one native policy Session identity and strictly increasing event sequences.
+The client enforces the existing two-MiB event bound. Policy tool requests require
+object arguments, nonblank operation/call identities and a unique call ID within
+the inference; at most 64 tools are admitted. Tool results must be objects.
+Connection cleanup preserves its own failure together with the inference error.
+
+The server's private diagnostic identifies the request, exception class and source
+frames. Its public failure remains `policy_inference_failed`. The
+[CPU transport check](../../scripts/check-policy-transport-offline.py) validates
+original request/telemetry records, bearer admission and an actual unavailable
+upstream endpoint. It verifies discarded connections, listener shutdown and
+unchanged source hashes. The optional `diagnostics` extra supplies the JSON Lines
+reader. See [CPU release validation](cpu-release-validation.md).
+
 The optional transport uses the [websockets asyncio client/server API](https://websockets.readthedocs.io/en/stable/reference/asyncio/client.html).
 The base contracts package imports without loading this dependency.
 

@@ -1,4 +1,3 @@
-"""Optional EDH WebSocket server wrapper for a deployment-owned inference callback."""
 from __future__ import annotations
 
 import asyncio
@@ -7,6 +6,8 @@ from http import HTTPStatus
 import json
 import math
 import secrets
+import sys
+import traceback
 from typing import Any, Awaitable, Callable
 
 from physical_harness.validation import ContractValidator
@@ -34,10 +35,12 @@ async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[flo
 
     async def handler(connection: Any) -> None:
         async for message in connection:
+            request_id: str | None = None
             try:
                 request = codec.decode(message, {})
                 validator.parse("PolicyRequest", request)
                 validator.parse("ActionSpec", request["action_spec"])
+                request_id = request["request_id"]
                 async with asyncio.timeout(timeout_s):
                     result = await infer(copy.deepcopy(request))
                 mode = ExecutionMode.parse(
@@ -45,8 +48,7 @@ async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[flo
                     if isinstance(request.get("observation"), dict) else ExecutionMode.POLICY.value
                 )
                 if isinstance(result, dict):
-                    # Validate the mode envelope before sending it unchanged to
-                    # the client, which performs the same normalization locally.
+                    # 服务端和客户端分别检查 execution mode 的响应内容。
                     response = copy.deepcopy(result)
                     validate_response(validator, request, normalize_mode_response(response, request, mode))
                 else:
@@ -60,8 +62,17 @@ async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[flo
                 await connection.send(encoded)
             except ConnectionClosed:
                 return
-            except Exception:
-                # Do not send exception strings that may contain model paths, keys or request bytes.
+            except Exception as error:
+                print(json.dumps({
+                    "event": "policy_inference_failed",
+                    "request_id": request_id,
+                    "error_type": f"{type(error).__module__}.{type(error).__qualname__}",
+                    "traceback": [
+                        {"file": frame.filename, "line": frame.lineno, "function": frame.name}
+                        for frame in traceback.extract_tb(error.__traceback__)
+                    ],
+                }), file=sys.stderr, flush=True)
+                # 客户端只接收公开错误标识，详细错误保存在服务端日志。
                 try:
                     await connection.send(json.dumps({"error": "policy_inference_failed"}))
                     await connection.close(code=1011, reason="Policy request failed")

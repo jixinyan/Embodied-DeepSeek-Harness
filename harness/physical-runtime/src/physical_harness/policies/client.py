@@ -1,4 +1,3 @@
-"""Bounded policy WebSocket requests with replaceable wire encoding; no device control."""
 from __future__ import annotations
 
 import asyncio
@@ -10,7 +9,7 @@ from collections.abc import Awaitable, Callable
 from urllib.parse import urlsplit
 
 from physical_harness.execution.modes import ExecutionMode, normalize_mode_response
-from physical_harness.validation import ContractValidator
+from physical_harness.validation import ContractValidator, is_wire_timestamp
 
 
 class PolicyProtocolError(ValueError):
@@ -62,6 +61,49 @@ def validate_response(validator: ContractValidator, request: dict[str, Any], res
     return response
 
 
+def validate_policy_event(validator: ContractValidator, request: dict[str, Any], event: Any,
+                          *, session_id: str | None = None, sequence: int = 0) -> dict[str, Any]:
+    fields = {"requestId", "executionId", "taskScope", "generation", "observationId",
+              "sessionId", "sequence", "at", "type", "data"}
+    if not isinstance(event, dict) or set(event) != fields:
+        raise PolicyProtocolError("Invalid policy telemetry envelope.")
+    for field in ("requestId", "executionId", "observationId", "sessionId"):
+        if not isinstance(event[field], str) or not 1 <= len(event[field]) <= 128:
+            raise PolicyProtocolError(f"Invalid policy telemetry {field}.")
+    validator.parse("TaskScope", event["taskScope"])
+    for field, source in (("requestId", "request_id"), ("executionId", "execution_id"),
+                          ("taskScope", "task_scope"), ("generation", "generation"),
+                          ("observationId", "observation_id")):
+        if event[field] != request[source]:
+            raise PolicyProtocolError(f"Policy telemetry has a mismatched {field}.")
+    if (type(event["generation"]) is not int or not 0 <= event["generation"] <= 2**53 - 1 or
+            type(event["sequence"]) is not int or not sequence < event["sequence"] <= 2**53 - 1):
+        raise PolicyProtocolError("Policy telemetry generation or sequence is invalid.")
+    if session_id is not None and event["sessionId"] != session_id:
+        raise PolicyProtocolError("Policy telemetry changed its inference context.")
+    if (not isinstance(event["at"], str) or not is_wire_timestamp(event["at"]) or
+            not isinstance(event["type"], str) or
+            event["type"] not in {"plan", "status", "stream", "decision", "failure", "turn/start",
+                                  "turn/end", "step/start", "step/end", "assistant/message",
+                                  "tool/call", "tool/result", "request/context"} or
+            not isinstance(event["data"], dict)):
+        raise PolicyProtocolError("Invalid policy telemetry metadata.")
+    if len(json.dumps(event, allow_nan=False, ensure_ascii=False, separators=(",", ":")).encode("utf-8")) > 2 * 1024 * 1024:
+        raise PolicyProtocolError("Policy telemetry exceeds its publication bound.")
+    return event
+
+
+def validate_tool_request(request: dict[str, Any], response: dict[str, Any], seen: set[str]) -> None:
+    if (set(response) != {"type", "id", "request_id", "operation", "arguments"} or
+            response["type"] != "policy_tool" or response["request_id"] != request["request_id"] or
+            not isinstance(response["id"], str) or not 1 <= len(response["id"]) <= 128 or
+            not response["id"].strip() or response["id"] in seen or
+            not isinstance(response["operation"], str) or not 1 <= len(response["operation"]) <= 128 or
+            not response["operation"].strip() or not isinstance(response["arguments"], dict)):
+        raise PolicyProtocolError("Unexpected, duplicate or stale policy tool request.")
+    seen.add(response["id"])
+
+
 class WebSocketPolicyClient:
     """One in-flight inference per connection. Failures discard the connection; no implicit replay."""
     def __init__(self, uri: str, validator: ContractValidator, *, codec: PolicyCodec | None = None,
@@ -106,7 +148,7 @@ class WebSocketPolicyClient:
         try:
             async with asyncio.timeout(self._timeout):
                 if self._connection is None:
-                    # Optional dependency: importing the CPU contracts doesn't load a socket provider.
+                    # 按需导入 WebSocket provider，基础模块保持独立。
                     from websockets.asyncio.client import connect
                     self._connection = await connect(
                         self._uri, proxy=None, compression=None,
@@ -117,25 +159,32 @@ class WebSocketPolicyClient:
                 if self._closed:
                     raise RuntimeError("Policy client closed while connecting.")
                 await self._connection.send(encoded)
-                tool_calls = 0
+                tool_ids: set[str] = set()
+                event_session: str | None = None
+                event_sequence = 0
                 for _ in range(10000):
                     message = await self._connection.recv()
                     response = self._codec.decode(message, copy.deepcopy(bound))
                     if response.get("type") == "policy_event":
                         if self._execution_mode is ExecutionMode.POLICY or self.event_handler is None:
                             raise PolicyProtocolError("Policy telemetry has no admitted execution mode or consumer.")
-                        await self.event_handler(copy.deepcopy(bound), response["data"])
+                        if set(response) != {"type", "data"}:
+                            raise PolicyProtocolError("Invalid policy telemetry message.")
+                        event = validate_policy_event(self._validator, bound, response["data"],
+                                                      session_id=event_session, sequence=event_sequence)
+                        event_session, event_sequence = event["sessionId"], event["sequence"]
+                        await self.event_handler(copy.deepcopy(bound), copy.deepcopy(event))
                         continue
                     if response.get("type") != "policy_tool":
                         break
-                    tool_calls += 1
-                    if tool_calls > 64:
+                    if len(tool_ids) >= 64:
                         raise PolicyProtocolError("Policy tool request budget exhausted.")
-                    if (self._execution_mode is ExecutionMode.POLICY or self.tool_handler is None or
-                            response.get("request_id") != bound["request_id"] or
-                            not isinstance(response.get("id"), str)):
+                    if self._execution_mode is ExecutionMode.POLICY or self.tool_handler is None:
                         raise PolicyProtocolError("Unexpected or stale policy tool request.")
+                    validate_tool_request(bound, response, tool_ids)
                     result = await self.tool_handler(copy.deepcopy(bound), response)
+                    if not isinstance(result, dict):
+                        raise PolicyProtocolError("Policy tool result must be an object.")
                     await self._connection.send(json.dumps({"type": "policy_tool_result",
                         "id": response["id"], "request_id": bound["request_id"], "result": result}, allow_nan=False))
                 else:
@@ -144,12 +193,12 @@ class WebSocketPolicyClient:
                 self.motion = copy.deepcopy(response.get("motion"))
                 self.last_response = copy.deepcopy(response)
                 return copy.deepcopy(validate_response(self._validator, bound, normalized))
-        except BaseException:
-            # Closing after cancellation/timeout prevents a late response becoming the next result.
+        except BaseException as error:
+            # 取消或超时后关闭连接，保留请求错误及资源清理错误。
             try:
                 await self._disconnect()
-            except Exception:
-                pass
+            except Exception as cleanup:
+                raise BaseExceptionGroup("Policy inference and connection cleanup failed.", [error, cleanup]) from None
             raise
         finally:
             self._active = None

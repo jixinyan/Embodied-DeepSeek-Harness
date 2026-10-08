@@ -137,6 +137,7 @@ console.log(
       ? { serverClosedWithActiveLease: 'passed' }
       : { gracefulRelease: 'passed', restart: 'passed', unexpectedExit: 'passed' }),
     serverCleanup: 'passed',
-    scope: 'Actual configured model/policy process lifecycle; no physical task execution.',
+    scope:
+      'Actual configured foreground service process lifecycle; no model inference or physical task execution.',
   }),
 );
