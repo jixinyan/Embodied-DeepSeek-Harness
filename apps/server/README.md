@@ -32,6 +32,12 @@ simulators, embodiments, checkpoints and model services through one Console.
 - [console-process.ts](src/console-process.ts): native CLI initialization, signal
   handling and shared server/proxy shutdown. Initialization-time requests remain
   owned until startup completes; repeated signals share one resource release.
+- [managed-services.ts](src/managed-services.ts): configured model/policy process
+  startup, readiness, shared leases and owned shutdown. Cancelling one startup
+  admission preserves the process for another admission. Last-lease release and
+  global closure drain owned process groups. Actual CPU Console checks cover
+  these [startup boundaries](../../docs/implementation/cpu-release-validation.md#managed-service-startup-ownership);
+  loaded model service behavior keeps its native acceptance requirements.
 - [user-sessions.ts](src/user-sessions.ts): retained environment lifetime, task admission
   and durable session-open request identity; [publication and checks](../../docs/implementation/user-sessions.md#session-open-request-identity).
 - [session-task-history.ts](src/session-task-history.ts): compact session history,

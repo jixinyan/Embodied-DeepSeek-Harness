@@ -849,6 +849,36 @@ Console as the configured foreground service. Evidence:
 `.local/work/v1-cpu-service-lifecycle-20261007/` and
 `.local/work/v1-cpu-service-close-held-20261007/`.
 
+## Managed service startup ownership
+
+The production ManagedServices owner starts the actual configured four-provider
+Console as its foreground service. Three cases exercise operator cancellation
+during startup, global close during startup and cancellation of one of two
+simultaneous startup admissions.
+
+```sh
+CUDA_VISIBLE_DEVICES='' pnpm exec tsx --tsconfig tsconfig.runtime.json \
+  scripts/check-service-startup-owner-offline.mjs \
+  --workspace /absolute/path/original-workspace.json \
+  --output .local/work/<new-service-startup-owner-check>
+```
+
+The diagnostic requires POSIX process groups. It preserves the actual model and
+provider bindings, selects a new private writer directory and unused Console
+port, and starts the production workspace CLI. It observes original writer
+creation before the OS suspends the owned process. Cancellation/closure stays
+with its actual process owner; resuming allows the installed signal handler to
+complete closure. Two startup admissions share one PID. Cancelling the first
+retains the second's lease, and that second admission receives the actual Console
+readiness response before release.
+
+Each case requires the original cancellation outcome, absent owned process group,
+zero final leases/PIDs, released writer lock and successful listener-port reuse.
+Configuration and executable source hashes remain unchanged. macOS evidence:
+`.local/work/v1-service-startup-owner-20261008-02/acceptance.json`.
+These actual process/HTTP cases make no Session, model, policy, simulator or GPU
+allocation. Loaded model-service startup interruption remains a native gate.
+
 ## Native admission and interrupted driver
 
 The [admission diagnostic](../../scripts/check-native-admission-offline.mjs)

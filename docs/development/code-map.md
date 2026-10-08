@@ -13,6 +13,7 @@ production path from Session selection to native commands and formal verificatio
 | Bind one provider, Team and launch profile | [examples/deployments/native-live.mjs](../../examples/deployments/native-live.mjs) |
 | Start the HTTP/SSE application | [apps/server/src/http-server.ts](../../apps/server/src/http-server.ts) |
 | Own native CLI startup, signals and resource release | [apps/server/src/console-process.ts](../../apps/server/src/console-process.ts) |
+| Own shared model/policy service startup, readiness and leases | [apps/server/src/managed-services.ts](../../apps/server/src/managed-services.ts) |
 | Manage retained user Sessions and task admission | [apps/server/src/user-sessions.ts](../../apps/server/src/user-sessions.ts) |
 | Connect domain tools, Planner decisions and independent roles | [apps/server/src/application.ts](../../apps/server/src/application.ts) |
 | Manage native DSH role contexts | [agents/src/runtime.ts](../../harness/agent-runtime/agents/src/runtime.ts) |
@@ -79,6 +80,7 @@ implementations load in their separately configured service processes.
 | Verify real rollout connection/owner failures and scoped background faults | [check-rollout-failure-offline.py](../../scripts/check-rollout-failure-offline.py) |
 | Verify actual policy connection drain and concurrent/cancelled close callers | [check-policy-client-owner-offline.py](../../scripts/check-policy-client-owner-offline.py) |
 | Verify policy CLI admission, bound-listener readiness and startup release | [check-policy-startup-offline.py](../../scripts/check-policy-startup-offline.py) |
+| Verify configured service startup cancellation and shared admissions | [check-service-startup-owner-offline.mjs](../../scripts/check-service-startup-owner-offline.mjs) |
 | Exercise native RoboCasa worker or SAM-backed measurement | [check-robocasa-worker.ts](../../scripts/check-robocasa-worker.ts) and [check-robocasa-object-measurement.ts](../../scripts/check-robocasa-object-measurement.ts) |
 | Submit and audit actual native tasks | [native release campaign](../implementation/native-release-campaign.md) |
 

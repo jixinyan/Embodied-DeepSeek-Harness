@@ -1,8 +1,22 @@
 # Implementation progress
 
-Spec: v1.91. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.92. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 managed service startup ownership
+
+Three actual CPU cases validate the configured four-provider Console through the
+production ManagedServices owner. Operator cancellation during startup and global
+close drain their exact owned process group. Two simultaneous startup admissions
+share one process; cancelling one preserves the other, which obtains the actual
+HTTP-ready Console and later releases it. The OS suspends/resumes these owned
+processes after their writer initialization. Each case preserves cancelled
+admission and confirms zero remaining leases/PIDs, released writer locks and
+reusable listener ports. Configuration/source hashes remain unchanged and no
+model, policy, GPU or environment is allocated. Loaded model service cancellation
+retains its native requirement. Commands and evidence:
+[service startup checks](cpu-release-validation.md#managed-service-startup-ownership).
 
 ## 2026-10-08 policy service startup
 

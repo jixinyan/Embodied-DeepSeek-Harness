@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.91 · 2026-10-08
+Version: v1.92 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -202,7 +202,8 @@ See [memory](../../harness/agent-runtime/memory/README.md).
    inference-thread ownership, scoped failure records and cleanup.
 3. Inspect original native model schemas, plans, role histories and context projections.
 4. Verify actual Console readiness, initialization/running signal ownership and
-   foreground-service admission/shutdown.
+   foreground-service admission/shutdown. Exercise startup cancellation, global
+   closure and independent shared service admissions with real owned processes.
 5. Run the affected checks from committed source in isolated Linux dependencies.
 6. Prepare the configured native campaign without allocating a model or environment.
 

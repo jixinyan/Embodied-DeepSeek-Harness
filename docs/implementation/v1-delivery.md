@@ -57,6 +57,14 @@ see [Console process checks](cpu-release-validation.md#native-console-process-ow
 
 ## Acceptance register
 
+Three actual configured Console service cases pass startup cancellation, global
+close and cancellation of one of two shared startup admissions. The remaining
+admission reaches actual HTTP readiness using the same process. Every final close
+confirms process-group absence, zero leases/PIDs, released writer locks and reusable
+ports. These cases allocate no model, policy, environment or GPU. Loaded service
+behavior keeps its native gate. See
+[service startup ownership](cpu-release-validation.md#managed-service-startup-ownership).
+
 Four JSON policy services bind before optional SDK/model initialization and admit
 connections only after policy readiness. All five JSON/native CLI help commands,
 four actual occupied-port failures and three actual missing-checkpoint failures

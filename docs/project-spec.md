@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.91 · 2026-10-08
+Version: v1.92 · 2026-10-08
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -72,6 +72,11 @@ five JSON/native policy CLIs provide argument help before optional SDK imports.
 The native OpenPI producer retains its original upstream service/loading sequence.
 Actual CPU process and network checks validate these stated startup boundaries;
 loaded model startup retains native acceptance requirements.
+Managed service startup has shared process ownership across its active leases.
+Cancelling one admission retains a process needed by another admission. Last-lease
+cancellation and global closure drain the owned process group, release readiness
+ports and clear writer ownership. Actual configured Console processes verify these
+rules on CPU; loaded model-service behavior retains its native requirements.
 Planner prerequisite goals use only admitted native checks and commit their own
 passed-verdict plan update before a dependent goal starts. Source and readiness
 checks have separate acceptance from physical tasks; see
