@@ -33,6 +33,7 @@ const configuration = z
     transportRequest: z.string().min(1),
     policyTelemetry: z.string().min(1),
     journalDirectories: z.array(z.string().min(1)).min(1).max(8),
+    checkpointAuditConfiguration: z.string().min(1).optional(),
   })
   .strict()
   .parse(JSON.parse(readFileSync(configurationPath, 'utf8')));
@@ -50,6 +51,9 @@ const request = path(configuration.policyRequest);
 const transportRequest = path(configuration.transportRequest);
 const telemetry = path(configuration.policyTelemetry);
 const journals = configuration.journalDirectories.map(path);
+const checkpointAudit = configuration.checkpointAuditConfiguration
+  ? path(configuration.checkpointAuditConfiguration)
+  : undefined;
 const digest = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
 const inputs = [
   configurationPath,
@@ -59,6 +63,7 @@ const inputs = [
   transportRequest,
   telemetry,
   ...journals.map((directory) => resolve(directory, 'records.jsonl')),
+  ...(checkpointAudit ? [checkpointAudit] : []),
 ];
 const sources = [...new Set(inputs)].map((path) => ({ path, sha256: digest(path) }));
 mkdirSync(output, { recursive: false, mode: 0o700 });
@@ -131,6 +136,18 @@ const journalArgs = journals.flatMap((directory) => ['--data-directory', directo
 add('context', 'check-recorded-context.mjs', journalArgs);
 add('visual-context', 'check-recorded-visual-context.mjs', journalArgs);
 add('readiness', 'check-native-workspace-readiness.mjs', ['--config', workspace]);
+if (checkpointAudit) {
+  add('checkpoint-audit', 'check-checkpoint-audit-offline.py', [
+    '--configuration',
+    checkpointAudit,
+  ]);
+  add('checkpoint-profiles', 'check-checkpoint-profiles-offline.mjs', [
+    '--workspace',
+    workspace,
+    '--identities',
+    resolve(output, 'checkpoint-audit/acceptance.json'),
+  ]);
+}
 const implementation = [
   'scripts/run-cpu-release-campaign.mjs',
   ...jobs.slice(1).map((job) => job.args.find((arg) => arg.startsWith('scripts/'))),

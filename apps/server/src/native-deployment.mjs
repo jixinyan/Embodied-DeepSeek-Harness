@@ -189,6 +189,11 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
         ? (environment.EDH_POLICY_CHECKPOINT_LABEL ?? entry.checkpoint)
         : entry.checkpoint,
     );
+    const checkpointSha256 = z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional()
+      .parse(entry.checkpointSha256);
     const plannerModel = nonblank.parse(entry.plannerModel ?? defaultModel);
     if (!modelAliases.includes(plannerModel))
       throw new Error('Unknown native Planner model binding.');
@@ -234,6 +239,7 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
       worker,
       entry,
       checkpoint,
+      checkpointSha256,
       plannerModel,
       mode,
       serviceIds,
@@ -476,6 +482,9 @@ export function createNativeDeploymentFactory(settings) {
           executionMode: profile.mode,
           policy: profile.worker.policyId,
           checkpoint: profile.checkpoint,
+          ...(profile.checkpointSha256 === undefined
+            ? {}
+            : { checkpointSha256: profile.checkpointSha256 }),
           defaultModel: profile.plannerModel,
           tasks: [],
           taskSource: 'environment',

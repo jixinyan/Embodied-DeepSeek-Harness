@@ -10,6 +10,7 @@ from PIL import Image
 
 from physical_harness.validation import ContractValidator
 from physical_harness.policies.client import validate_response
+from physical_harness.policies.provenance import validate_checkpoint_sha256
 
 
 CHECKPOINT_REVISION = "35efbc7dedfdbeeb6e95fb749bd885d73d483e41"
@@ -30,24 +31,41 @@ def json_records(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.startswith("{")]
 
 
-def checkpoint_identity(path: Path) -> tuple[dict, dict]:
+def checkpoint_identity(path: Path, *, expected_sha256: str | None = None) -> tuple[dict, dict]:
+    expected = validate_checkpoint_sha256(expected_sha256) if expected_sha256 is not None else CHECKPOINT_SHA256
     verification = json.loads(path.read_text(encoding="utf-8"))
     files = verification["files"]
-    require(verification["revision"] == CHECKPOINT_REVISION and len(files) == 18,
-            "RoboDojo OpenPI requires the pinned verified 18-file checkpoint revision.")
+    require(isinstance(verification["revision"], str) and verification["revision"].strip() and files,
+            "RoboDojo OpenPI requires an identified complete checkpoint inventory.")
+    if expected == CHECKPOINT_SHA256:
+        require(verification["revision"] == CHECKPOINT_REVISION and len(files) == 18,
+                "RoboDojo OpenPI requires the pinned verified 18-file checkpoint revision.")
     require(files == sorted(files, key=lambda item: item["path"]) and
             len({item["path"] for item in files}) == len(files), "Checkpoint inventory paths are unordered or duplicated.")
     for item in files:
         name = Path(item["path"])
-        require(not name.is_absolute() and ".." not in name.parts and
+        require(name.parts and not name.is_absolute() and ".." not in name.parts and
+                name.as_posix() == item["path"] and
                 (item["path"] == "_CHECKPOINT_METADATA" or name.parts[0] in {"params", "assets"}) and
                 type(item["bytes"]) is int and item["bytes"] > 0 and
                 re.fullmatch(r"[a-f0-9]{64}", item["sha256"]), "Checkpoint inventory entry is invalid.")
     digest = sha256(json.dumps(files, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-    require(digest == verification["checkpoint_sha256"] == CHECKPOINT_SHA256 and
+    require(digest == verification["checkpoint_sha256"] == expected and
             sum(item["bytes"] for item in files) == verification["bytes"],
             "Checkpoint inventory aggregate SHA256 or byte total differs from verification.")
-    identity = {"checkpoint_sha256": digest, "checkpoint_revision": CHECKPOINT_REVISION,
+    if expected != CHECKPOINT_SHA256:
+        paths = {item["path"] for item in files}
+        require("_CHECKPOINT_METADATA" in paths and "assets/arx_x5_sim/norm_stats.json" in paths and
+                any(name.startswith("params/") for name in paths),
+                "Selected OpenPI checkpoint lacks model parameters or ARX X5 normalization.")
+        normalization = verification["normalization"]
+        saved = next(item for item in files if item["path"] == "assets/arx_x5_sim/norm_stats.json")
+        require(normalization["asset_id"] == "arx_x5_sim" and
+                all(normalization[key] == saved[key] for key in ("path", "bytes", "sha256")) and
+                normalization["dimensions"] == {"state": 14, "actions": 14} and
+                normalization["use_quantiles"] is True,
+                "Selected OpenPI normalization differs from its complete checkpoint inventory.")
+    identity = {"checkpoint_sha256": digest, "checkpoint_revision": verification["revision"],
                 "config": "pi05_base_aloha_full_sim_arx-x5_seed_0", "backend": "OpenPI/JAX",
                 "action_horizon": 50, "action_dim": 14, "gripper_semantics": "continuous_0_closed_1_open"}
     return identity, verification
@@ -61,8 +79,9 @@ def verify_identity(record: dict, identity: dict) -> None:
             require(record.get(name) == identity[name], "Imported policy sources or checkpoint path changed.")
 
 
-def service_sources(verification_path: Path, bridge_log: Path, native_log: Path) -> tuple[dict, dict, list[dict]]:
-    identity, verification = checkpoint_identity(verification_path)
+def service_sources(verification_path: Path, bridge_log: Path, native_log: Path,
+                    *, expected_sha256: str | None = None) -> tuple[dict, dict, list[dict]]:
+    identity, verification = checkpoint_identity(verification_path, expected_sha256=expected_sha256)
     bridge = json_records(bridge_log)
     native = json_records(native_log)
     bridge_start = [item for item in bridge if item.get("service") == "openpi-robodojo-json"]
@@ -189,13 +208,16 @@ def verify_request_inputs(request: dict, record: dict) -> None:
 def task_sources(run: dict, request_directory: Path, bridge_directory: Path, bridge_log: Path,
                  native_log: Path, verification_path: Path, validator: ContractValidator,
                  policy_id: str) -> tuple[dict, dict, dict]:
-    identity, verification, records = service_sources(verification_path, bridge_log, native_log)
+    profile = run["configuration"]["launchProfile"]
+    selected = profile.get("checkpointSha256")
+    identity, verification, records = service_sources(verification_path, bridge_log, native_log,
+                                                      expected_sha256=selected)
     require(run["source"] == "simulation", "The selected RoboDojo OpenPI rollout profile requires an actual simulation source.")
     require(isinstance(policy_id, str) and policy_id.strip() and
             run["configuration"]["launchProfile"]["policy"] == policy_id,
             "The admitted run policy differs from the selected OpenPI RoboDojo profile.")
-    require(run["configuration"]["launchProfile"]["checkpoint"] ==
-            f"RoboDojo-sim-arx_x5-joint-0/59999@{identity['checkpoint_sha256'][:16]}",
+    require((isinstance(profile["checkpoint"], str) and profile["checkpoint"].strip()) if selected is not None else
+            profile["checkpoint"] == f"RoboDojo-sim-arx_x5-joint-0/59999@{identity['checkpoint_sha256'][:16]}",
             "The admitted checkpoint selection differs from the actual identified OpenPI checkpoint.")
     inferences, requests = {}, {}
     for record in records:
@@ -242,13 +264,17 @@ def task_sources(run: dict, request_directory: Path, bridge_directory: Path, bri
                   "checkpointVerificationSha256": sha256(verification_path.read_bytes()).hexdigest(),
                   "policyServiceLogSha256": sha256(bridge_log.read_bytes()).hexdigest(),
                   "nativePolicyServiceLogSha256": sha256(native_log.read_bytes()).hexdigest(),
-                  "inventoryProfile": "robodojo-openpi-18-file"}
+                  "selectedCheckpointLabel": profile["checkpoint"],
+                  "inventoryProfile": "robodojo-openpi-18-file" if identity["checkpoint_sha256"] == CHECKPOINT_SHA256
+                  else "robodojo-openpi-selected-inventory"}
     return inferences, requests, provenance
 
 
 def retained_sources(verification_path: Path, bridge_log: Path, native_log: Path,
-                     reports: tuple[Path, ...], validator: ContractValidator) -> dict:
-    identity, verification, records = service_sources(verification_path, bridge_log, native_log)
+                     reports: tuple[Path, ...], validator: ContractValidator,
+                     *, expected_sha256: str | None = None) -> dict:
+    identity, verification, records = service_sources(verification_path, bridge_log, native_log,
+                                                      expected_sha256=expected_sha256)
     requests = {item["request_id"]: item for item in records}
     inspected = set()
     for path in reports:

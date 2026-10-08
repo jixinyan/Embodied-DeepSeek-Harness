@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 
 from physical_harness.policies.openpi_checkpoint import verify_arx_x5_normalization, verify_checkpoint
-from physical_harness.policies.provenance import checkpoint_identity
+from physical_harness.policies.provenance import checkpoint_identity, recorded_checkpoint_identity
 
 
 async def inspect(args):
@@ -31,6 +31,9 @@ async def inspect(args):
         expected = sha256(json.dumps(known["checkpoint_files_sha256"], sort_keys=True,
                                     separators=(",", ":")).encode("utf-8")).hexdigest()
         selected = checkpoint_identity(str(checkpoint), manifest, expected_sha256=expected)
+        recorded = recorded_checkpoint_identity(selected, json.loads(original_manifest), expected_sha256=expected)
+        if any(recorded[key] != selected[key] for key in recorded):
+            raise AssertionError("Actual checkpoint files differ from the recorded identity reader.")
         if selected["checkpoint_digest"] != expected or selected["checkpoint_revision"] != known["checkpoint_revision"]:
             raise AssertionError("The original checkpoint differs from the selected manifest identity.")
         try:
@@ -43,6 +46,7 @@ async def inspect(args):
         if checkpoint_identity(str(checkpoint), manifest) != selected or manifest.read_bytes() != original_manifest:
             raise AssertionError("The original checkpoint or manifest changed during inspection.")
         records.append({"provider": provider, "identity": selected, "selectedDigestAccepted": True,
+                        "completeRecordedIdentityAccepted": True,
                         "differentDigestRejected": True, "originalFilesUnchanged": True})
         sources.append(manifest)
     native = args.robodojo_checkpoint.resolve(strict=True)

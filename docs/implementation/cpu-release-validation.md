@@ -89,6 +89,15 @@ report; `completed.json` retains completed components even after a later failure
 The final `acceptance.json` records original-input hashes, diagnostic source hashes
 and every original report digest. Source and input hashes are rechecked after
 each component. Output requires a new directory beneath ignored `.local/work`.
+Optional `checkpointAuditConfiguration` supplies actual original runs, policy
+requests/logs and OpenPI retained/task sources for
+[checkpoint record inspection](../../scripts/check-checkpoint-audit-offline.py).
+Its identified reference digests feed the existing native factories and HTTP
+[checkpoint profile checks](../../scripts/check-checkpoint-profiles-offline.mjs).
+Selecting that configuration executes twenty-eight components under the same
+process-group ownership, failure and interruption rules. These extra checks use
+original evidence and explicitly declared diagnostic selection metadata, allocate
+no models or simulators and preserve loaded custom-checkpoint acceptance gates.
 
 Use the [configuration example](../../examples/deployments/cpu-release.example.json)
 with actual original inputs. Paths resolve relative to that configuration. The

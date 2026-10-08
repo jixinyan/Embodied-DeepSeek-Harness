@@ -1,8 +1,32 @@
 # Implementation progress
 
-Spec: v1.104. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.105. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 configured checkpoint rollout identity
+
+Native profiles admit and publish `checkpointSha256` with their readable label.
+The same selected identity persists in immutable deployment/Session/run metadata.
+GR00T/LeRobot startup and inference records include all checkpoint file hashes;
+recorded audits require the selected aggregate digest and complete custom-artifact
+identity. OpenPI audits accept the configured complete inventory and its saved
+ARX X5 normalization. Original request, action, source and formal-verdict checks
+retain their existing requirements.
+
+Sixteen original-record checks and twenty actual configuration/factory/HTTP checks
+pass on macOS for all four providers. They preserve actual task outcomes and
+original artifacts, reject inconsistent selections and release Console/writer
+resources. Complete project checks pass with 128 pinned DSH files and 25 bindings.
+Evidence: `.local/work/v1-checkpoint-audit-20261008-final/` and
+`.local/work/v1-checkpoint-profiles-20261008-final/`. GPU/model/environment
+allocation and controls remain zero. See [checkpoint bindings](checkpoint-bindings.md).
+
+The CPU campaign accepts optional `checkpointAuditConfiguration` to run both
+new diagnostics under its existing sequential process ownership. Next CPU action:
+verify the configured twenty-eight-component campaign on isolated Linux and macOS
+and recheck original checkpoint files. Loaded custom-checkpoint effectiveness and
+complete native workflows retain their GPU acceptance requirements.
 
 ## 2026-10-08 OpenPI normalization admission
 
@@ -46,9 +70,8 @@ matches server SHA-256
 `7f9d9844c82ccd34345e99bd4a14b4873cbd01a912e575cd05a1c12007a94647`.
 GPU/model/environment allocation and controls remain zero.
 
-Next CPU work: carry configured custom-checkpoint identity through native rollout
-audit and profile admission. Loaded model compatibility and native task acceptance
-retain their separate release requirements.
+Configured rollout audit/profile identity is described above. Loaded model
+compatibility and native task acceptance retain their separate release requirements.
 
 ## 2026-10-08 configured checkpoint identity
 

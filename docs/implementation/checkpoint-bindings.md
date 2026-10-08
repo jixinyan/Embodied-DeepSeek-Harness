@@ -5,6 +5,10 @@ Native policy startup accepts the checkpoint directory and an optional
 its model SDK. Deployment configuration owns these command arguments; the
 Console's checkpoint label describes the same selected artifact. A new compatible
 checkpoint is a new configured profile with its own directory, identity and label.
+Each native profile accepts `checkpointSha256` alongside the readable `checkpoint`
+label. Admission requires 64 lowercase hexadecimal characters before environment
+allocation. The prepared deployment, Console API, Session and run configuration
+retain that selected identity in immutable profile metadata.
 
 ## Service selection
 
@@ -22,6 +26,9 @@ model/processor/statistics configuration files, then hashes the canonical sorted
 path-to-SHA256 mapping. A known upstream revision is returned only when that
 complete mapping equals the service's reference manifest. Other artifacts retain
 their own digest and `checkpoint_revision: null`.
+Startup and every inference record include `checkpoint_files_sha256`, covering
+configuration files as well as weights. The recorded identity reader verifies
+that complete mapping, its aggregate digest, weight subset and reference revision.
 
 BEHAVIOR's default requires its known checkpoint revision. Supplying the selected
 digest admits another checkpoint for the existing R1Pro adapter. RoboCasa and
@@ -121,5 +128,34 @@ source hashes match across platforms; six SDK source hashes match their recorded
 provenance. All original files remain unchanged. Current reports and independent
 summaries are under `.local/work/v1-cpu-openpi-normalization-macos-20261008/` and
 `.local/work/v1-cpu-openpi-normalization-linux-20261008/`.
-Configured custom-checkpoint rollout audit/profile acceptance remains required
-before its loaded-policy release gate.
+## Recorded rollout identity
+
+The run's `launchProfile.checkpointSha256` selects the actual checkpoint in
+`audit-recorded-run.py`. GR00T/LeRobot custom selections require complete recorded
+file mappings, matching weight identities and `checkpoint_revision: null` unless
+the complete artifact equals its reference manifest. Every identified inference
+must preserve startup identity. Records from a reference service without a complete
+mapping retain verification against its original pinned manifest.
+
+OpenPI custom selections require their complete selected inventory, declared
+revision, parameter files and inventory-bound fourteen-channel ARX X5 normalization.
+Native startup, bridge welcome and each inference must match that selected identity.
+The explicit digest identifies a readable checkpoint label without prescribing a
+reference checkpoint name. Profiles without an explicit digest preserve the original
+reference inventory and label requirements. `audit-openpi-robodojo.py` accepts the
+same optional `--checkpoint-sha256` for retained inference inspection.
+
+Both audit paths preserve original request/action/source and formal-verification
+checks. An explicit selection does not grant action authority or prove a new task.
+
+The [recorded checkpoint diagnostic](../../scripts/check-checkpoint-audit-offline.py)
+passes sixteen checks using original reference runs, requests and native inference
+logs. The [profile diagnostic](../../scripts/check-checkpoint-profiles-offline.mjs)
+passes twenty actual factory/configuration/HTTP checks across all four providers.
+Malformed and inconsistent selections are rejected, original files remain unchanged,
+and the Console listener/writer resources release. macOS reports:
+`.local/work/v1-checkpoint-audit-20261008-final/` and
+`.local/work/v1-checkpoint-profiles-20261008-final/`.
+These results establish configured reference selection and rejection boundaries.
+Custom-checkpoint inference and complete physical workflows require their native
+acceptance with actual selected artifacts.

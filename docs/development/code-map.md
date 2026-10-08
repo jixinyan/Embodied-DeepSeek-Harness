@@ -93,6 +93,8 @@ implementations load in their separately configured service processes.
 | Verify policy CLI admission, bound-listener readiness and startup release | [check-policy-startup-offline.py](../../scripts/check-policy-startup-offline.py) |
 | Check selected digests against actual original checkpoints for all four providers | [check-checkpoint-binding-offline.py](../../scripts/check-checkpoint-binding-offline.py) |
 | Check original saved ARX X5 normalization and explicitly invalid derivative inputs | [check-openpi-normalization-offline.py](../../scripts/check-openpi-normalization-offline.py) |
+| Verify selected checkpoint identity against original requests and inference records | [check-checkpoint-audit-offline.py](../../scripts/check-checkpoint-audit-offline.py) |
+| Verify four-provider checkpoint profile admission and Console metadata | [check-checkpoint-profiles-offline.mjs](../../scripts/check-checkpoint-profiles-offline.mjs) |
 | Verify configured service startup cancellation and shared admissions | [check-service-startup-owner-offline.mjs](../../scripts/check-service-startup-owner-offline.mjs) |
 | Verify standalone SAM/YOLO argument admission before SDK imports | [check-perception-startup-offline.py](../../scripts/check-perception-startup-offline.py) |
 | Exercise native RoboCasa worker or SAM-backed measurement | [check-robocasa-worker.ts](../../scripts/check-robocasa-worker.ts) and [check-robocasa-object-measurement.ts](../../scripts/check-robocasa-object-measurement.ts) |

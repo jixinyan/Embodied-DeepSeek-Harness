@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.104 · 2026-10-08
+Version: v1.105 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -15,6 +15,15 @@ resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
 
+Native profile admission retains `checkpointSha256` in immutable Console/Session/run
+metadata. GR00T/LeRobot telemetry retains complete checkpoint files, and rollout
+audits check the configured identity; OpenPI checks the selected complete inventory
+and saved normalization. Sixteen original-record and twenty actual four-provider
+configuration/factory/HTTP checks pass on macOS. The CPU campaign optionally runs
+both diagnostics through `checkpointAuditConfiguration`. Next CPU action: complete
+the configured twenty-eight-component campaigns on macOS and isolated Linux,
+verify source/input/process identities and recheck actual checkpoint files.
+
 Native OpenPI validates ARX X5 saved normalization structure, fourteen finite
 entries per statistic, nonnegative standard deviations, ordered quantiles and
 inventory file identity before SDK imports. The JSON bridge admits digest syntax
@@ -26,8 +35,7 @@ matching original inputs/configuration, 216 component source comparisons, all
 fifty-two process receipts and eight normalization results. Fifty-six independent
 OS checks confirm component/child release; the runner/archive also release.
 Original four-provider checkpoints and canonical server status remain unchanged.
-Loaded model and simulator behavior retain their native gates. Next CPU work is
-configured custom-checkpoint identity through rollout audit and profile admission.
+Loaded model and simulator behavior retain their native gates.
 
 Native GR00T/LeRobot and OpenPI services admit an explicitly selected checkpoint
 SHA256 before SDK imports. Compatible custom artifacts retain their own identity

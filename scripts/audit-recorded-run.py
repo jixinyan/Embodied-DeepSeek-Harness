@@ -402,18 +402,16 @@ def conventional_policy_sources(run, request_directory, service_log, policy_mani
     provider = embodiment_id.split(".", 1)[0]
     require(provider in {"robotwin", "robocasa", "behavior"},
             "The pinned learned manifest has no admitted native provider.")
-    hashes = pinned["checkpoint_files_sha256"]
-    digest = sha256(json.dumps(hashes, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-    weights = {name: value for name, value in hashes.items() if name.endswith((".safetensors", ".bin"))}
-    require(weights and run["configuration"]["launchProfile"]["policy"] == manifest["id"],
+    from physical_harness.policies.provenance import recorded_checkpoint_identity
+    profile = run["configuration"]["launchProfile"]
+    require(profile["policy"] == manifest["id"],
             "The admitted policy differs from its pinned checkpoint manifest.")
     records = [json.loads(line) for line in service_log.read_text(encoding="utf-8").splitlines()
                if line.startswith("{")]
-    startups = [record for record in records if record.get("service") == manifest["id"]
-                and record.get("checkpoint_digest") == digest
-                and record.get("checkpoint_revision") == pinned["checkpoint_revision"]
-                and record.get("checkpoint_weight_sha256") == weights]
-    require(len(startups) == 1, "The learned service lacks one matching pinned checkpoint startup.")
+    startups = [record for record in records if record.get("service") == manifest["id"]]
+    require(len(startups) == 1, "The learned service requires one identified checkpoint startup.")
+    identity = recorded_checkpoint_identity(startups[0], manifest, expected_sha256=profile.get("checkpointSha256"))
+    digest, weights = identity["checkpoint_digest"], identity["checkpoint_weight_sha256"]
     checkpoint_path = startups[0]["checkpoint"]
     require(isinstance(checkpoint_path, str) and Path(checkpoint_path).is_absolute(),
             "The learned checkpoint has no identified actual service path.")
@@ -425,9 +423,8 @@ def conventional_policy_sources(run, request_directory, service_log, policy_mani
         if record.get("event") != "policy_inference_completed" or record.get("task_scope", {}).get("task_id") != run["id"]:
             continue
         require(record["request_id"] not in inferences, "A learned inference request was recorded twice.")
-        require(record.get("checkpoint_digest") == digest and
-                record.get("checkpoint_revision") == pinned["checkpoint_revision"] and
-                record.get("checkpoint_weight_sha256") == weights and record.get("checkpoint") == checkpoint_path,
+        require(recorded_checkpoint_identity(record, manifest, expected_sha256=digest) == identity and
+                record.get("checkpoint") == checkpoint_path,
                 "Learned checkpoint identity changed during the actual task.")
         inferences[record["request_id"]] = record
     require(inferences, "The policy service has no identified inference for this task.")
@@ -474,9 +471,11 @@ def conventional_policy_sources(run, request_directory, service_log, policy_mani
                                    for value, channel in zip(predicted, channels, strict=True)],
                         "BEHAVIOR action differs from the original native controller limits.")
         requests[request_id] = request
-    provenance = {"checkpointRevision": pinned["checkpoint_revision"], "checkpointPath": checkpoint_path,
+    provenance = {"checkpointRevision": identity["checkpoint_revision"], "checkpointPath": checkpoint_path,
                   "policyImplementationSource": implementation_source,
                   "checkpointDigest": digest, "checkpointWeightSha256": weights,
+                  "checkpointFileSha256": identity["checkpoint_files_sha256"],
+                  "selectedCheckpointLabel": profile["checkpoint"],
                   "policyServiceLogSha256": sha256(service_log.read_bytes()).hexdigest()}
     return provider, inferences, requests, provenance
 

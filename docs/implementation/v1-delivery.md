@@ -35,8 +35,12 @@ producer admits saved fourteen-channel normalization before SDK imports, and the
 JSON bridge admits digest syntax before listener/client allocation. Eight
 original-file/declared invalid-input normalization checks match across platforms;
 three diagnostic/source hashes and six SDK source hashes verify. Actual original
-checkpoint and normalization files remain unchanged. Configured custom-checkpoint
-rollout audit/profile acceptance remains a CPU implementation requirement.
+checkpoint and normalization files remain unchanged. Configured checkpoint
+profile/admission and rollout identity have sixteen original-record and twenty
+actual four-provider configuration/factory/HTTP checks on macOS. The optional
+twenty-eight-component campaign adds those checks to shared process ownership.
+Current-source Linux checks and loaded custom-checkpoint acceptance retain their
+stated verification requirements; see [checkpoint bindings](checkpoint-bindings.md).
 
 Native configuration and provider/workspace assembly have production owners in
 `apps/server/src`; example entries retain their startup interfaces. Exact source,

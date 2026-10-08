@@ -46,6 +46,9 @@ const matrix = settings.deployments.flatMap(({ id, settings }) =>
     provider: settings.provider,
     nativeTaskId: profile.worker.nativeTaskId,
     checkpoint: profile.checkpoint,
+    ...(profile.checkpointSha256 === undefined
+      ? {}
+      : { checkpointSha256: profile.checkpointSha256 }),
     policyId: profile.worker.policyId,
     executionMode: profile.mode,
     plannerModel: profile.plannerModel,
@@ -84,6 +87,7 @@ try {
     assert.equal(profile.taskSource, 'environment');
     assert.deepEqual(profile.tasks, []);
     assert.equal(profile.checkpoint, item.checkpoint);
+    assert.equal(profile.checkpointSha256, item.checkpointSha256);
     assert.equal(profile.policy, item.policyId);
     assert.equal(profile.executionMode, item.executionMode);
     assert.equal(profile.defaultModel, item.plannerModel);

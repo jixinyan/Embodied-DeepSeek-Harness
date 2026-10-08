@@ -57,6 +57,7 @@ export interface LaunchProfile {
   readonly policy: string;
   readonly executionMode?: 'policy' | 'direct' | 'hybrid';
   readonly checkpoint: string;
+  readonly checkpointSha256?: string;
   /** Default for roles without an explicit model binding. */
   readonly defaultModel: string;
   readonly tasks: readonly string[];
@@ -233,6 +234,9 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
         profile.policy,
         profile.checkpoint,
       ].some((value) => typeof value !== 'string' || !value.trim()) ||
+      (profile.checkpointSha256 !== undefined &&
+        (typeof profile.checkpointSha256 !== 'string' ||
+          !/^[a-f0-9]{64}$/.test(profile.checkpointSha256))) ||
       !Object.hasOwn(models, profile.defaultModel) ||
       (profile.executionMode !== undefined &&
         !['policy', 'direct', 'hybrid'].includes(profile.executionMode)) ||
@@ -262,6 +266,9 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
         policy: profile.policy,
         executionMode: profile.executionMode ?? 'policy',
         checkpoint: profile.checkpoint,
+        ...(profile.checkpointSha256 === undefined
+          ? {}
+          : { checkpointSha256: profile.checkpointSha256 }),
         defaultModel: profile.defaultModel,
         tasks: [...profile.tasks],
         taskSource: profile.taskSource ?? 'deployment',
