@@ -125,16 +125,18 @@ include compaction and usage events; these estimates are not billed token usage.
 
 ## Acceptance and practical limits
 
-CPU tests exercise manual and automatic pressure reduction, continued native tool calls,
-role isolation, original audit retention, dynamic authoritative context restoration,
-rejected empty/oversized/truncated summaries, cancellation and subsequent maintenance.
-Server acceptance exercises policy identity, missing-capacity preflight and a completed
-fixture task with context measurement. Real localhost HTTP acceptance also exercises
-compaction followed by a successful request, repeated overflow and a non-shrinking
-summary, preserving the once-executed tool and original audit. These tests do not
-assess real summary quality. Visual tests cover forty complete observation batches,
-native image tools, isolated roles, surface/meter replay, explicit oversize failures,
-automatic compaction, twenty real localhost HTTP requests and upper console events.
+Original RoboDojo/RoboTwin journals verify native token measurement, provider-usage
+projections and registration-scope isolation without replaying physical tools.
+Two original RoboTwin journals separately verify six native visual pre-step cases:
+whole-group retention, fresh image admission and explicit over-budget rejection.
+All original events and attachment references remain available. The sibling
+context remains unchanged, original event restoration reproduces the same surface
+and token measurements, and every Agent/Session releases. The model-free host
+preserves its actual missing-route error after valid image admission. It provides
+no model response, summary or task outcome. Exact commands, source hashes and
+limits are in [CPU validation](cpu-release-validation.md#native-visual-context-admission).
+Model-driven summarization, its factual quality and successful route-specific
+image transport require actual-model acceptance.
 
 - Automatic summarization failures preserve the original surface and follow DSH's
   warning/continue policy. Thresholds are proactive heuristics, not a hard token ceiling.

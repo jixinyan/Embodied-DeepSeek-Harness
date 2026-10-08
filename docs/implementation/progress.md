@@ -1,8 +1,23 @@
 # Implementation progress
 
-Spec: v1.93. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.94. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 native visual-context admission
+
+Two original RoboTwin journals supply 226 recorded events and complete three-view
+image groups. Six production DSH loop cases verify text-only continuation, fresh
+observation admission and explicit over-budget rejection. With a six-image budget,
+earlier complete groups become explicit reference markers while original audit
+events and incoming messages remain intact. A three-image batch with a two-image
+budget fails before changing the model-visible surface. Twelve independent native
+contexts verify sibling isolation and complete Agent/Session release. Restored
+surfaces and native token measurements match their actual generated event logs.
+No model route is registered; valid pre-step cases preserve the actual missing-route
+error. Original tools are never replayed and no model, policy, simulator or GPU
+executes. Sources, events and scope:
+[visual-context validation](cpu-release-validation.md#native-visual-context-admission).
 
 ## 2026-10-08 managed service startup ownership
 

@@ -425,6 +425,40 @@ The downloaded check/source/ownership summary is under
 `cpu-context-summary.tar.gz` has SHA-256
 `ddbe38fd5eb67286d20ab60fe975cba13ac60bd760db9305487322745fc1045c`.
 
+## Native visual-context admission
+
+[check-recorded-visual-context.mjs](../../scripts/check-recorded-visual-context.mjs)
+reads private copies of original native journals through LocalStore and
+SessionAudits. A production DSH host mounts its native loop, token meter and EDH
+visual-history policy with automatic summaries disabled and no registered model.
+Each case creates two independently scoped Agents with the same original history.
+Only one Agent receives an exact original text or three-image message as follow-up.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-visual-context.mjs \
+  --data-directory /absolute/path/original-native-journal \
+  --data-directory /absolute/path/another-original-native-journal \
+  --output .local/work/<new-visual-context-check>
+```
+
+Two original RoboTwin journals supply 226 events, nine/twelve retained original
+image blocks and actual text/image messages. Six cases verify text-only
+continuation, fresh observation and an over-budget fresh batch through native
+pre-step admission. A six-image budget retains complete groups and reserves all
+three incoming views. Each omitted group records its exact original attachment
+IDs and source/replacement sequences. Original audit events and admitted incoming
+messages remain unchanged. Restoring actual generated events reproduces the
+surface and token measurements; each measurement identifies its own log revision.
+A three-image batch under a two-image budget fails before surface changes.
+
+The native driver retains its actual missing-provider/model error after otherwise
+valid pre-step admission. No successful response is supplied. Every sibling context
+remains unchanged, all twelve Agent/Session contexts release, source journal hashes
+remain unchanged and original tools are never replayed. Source-bound event files
+and reports are under `.local/work/v1-visual-context-20261008-final/`.
+GPU/model/policy/environment allocations are zero. Model-driven summaries,
+adapter image resolution and fresh tool-image delivery retain their native gates.
+
 ## Configured native startup
 
 ```sh

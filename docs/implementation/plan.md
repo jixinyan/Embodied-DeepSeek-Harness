@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.93 · 2026-10-08
+Version: v1.94 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -203,6 +203,8 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 2. Exercise actual worker processes, original request recording, WebSocket transport,
    inference-thread ownership, scoped failure records and cleanup.
 3. Inspect original native model schemas, plans, role histories and context projections.
+   Exercise native visual-history pre-step admission with original image groups,
+   retaining full audits, independent contexts and explicit over-budget failures.
 4. Verify actual Console readiness, initialization/running signal ownership and
    foreground-service admission/shutdown. Exercise startup cancellation, global
    closure and independent shared service admissions with real owned processes.

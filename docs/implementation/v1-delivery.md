@@ -57,6 +57,14 @@ see [Console process checks](cpu-release-validation.md#native-console-process-ow
 
 ## Acceptance register
 
+Six native DSH loop cases use two original RoboTwin journals to verify complete
+image-group retention, fresh observation admission and over-budget failure before
+surface changes. Original audit/input bytes remain available; twelve independent
+contexts release, sibling context remains unchanged and restored token measurements
+match. No model route is configured and no original tool is replayed. Model-driven
+compaction and image transport retain their actual-model requirements; see
+[visual-context admission](cpu-release-validation.md#native-visual-context-admission).
+
 Three actual configured Console service cases pass startup cancellation, global
 close and cancellation of one of two shared startup admissions. The remaining
 admission reaches actual HTTP readiness using the same process. Every final close
