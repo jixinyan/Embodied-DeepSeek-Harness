@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.98 · 2026-10-08
+Version: v1.99 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -17,14 +17,17 @@ Models, policy inference and simulator tasks remain stopped during CPU work.
 
 Native provider and workspace assembly now belong to `apps/server/src`.
 Original module exports and four-provider profile data pass direct checks;
-all twenty-six macOS CPU components pass. Frozen Linux validation follows the
-committed refactor. Example entries retain their public startup paths.
+all twenty-six CPU components pass on macOS and frozen `0000db5` on isolated
+Linux. Example entries retain their public startup paths.
 
 CPU campaign process ownership passes twenty-six actual diagnostic completions
-and three signal-driven shutdown cases on macOS. Each interrupted run finishes
+and three signal-driven shutdown cases on both platforms. Each interrupted run finishes
 its active source check, releases the process group and stops further admission.
 Final acceptance requires an uninterrupted complete campaign. Loaded native
 workflow requirements remain independent of these CPU results.
+Independent report/source comparison verifies 202 component source hashes,
+all twenty-six process receipts, original data/configuration hashes and the
+downloaded evidence digest. The canonical remote checkout remains unchanged.
 
 The consolidated native campaign must independently validate loaded-model and
 device behavior, original task success and complete installed workflows. On

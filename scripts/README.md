@@ -8,6 +8,21 @@
 Repository checks validate source structure and declared interfaces. They do not
 establish model, simulator, policy, recovery or hardware acceptance.
 
+## CPU validation
+
+`run-cpu-release-campaign.mjs` executes twenty-six configured production/source
+checks using original requests and journals. Each diagnostic owns a POSIX process
+group and retains stdout, stderr, its report and actual process-release receipt.
+SIGINT/SIGTERM finish the active diagnostic and stop subsequent admission.
+`check-cpu-campaign-shutdown.mjs` verifies this behavior with actual configured
+source checks and three signal cases. Inputs, commands and evidence scopes are
+in the [CPU release guide](../docs/implementation/cpu-release-validation.md).
+
+Native provider and workspace assembly live in
+[`apps/server/src`](../apps/server/README.md). Runnable example entries select
+those production factories. The [source map](../docs/development/code-map.md)
+identifies transport, role, tool, execution, policy and environment owners.
+
 ## Actual task acceptance
 
 `run-live-acceptance.mjs` connects to an already configured EDH console service.

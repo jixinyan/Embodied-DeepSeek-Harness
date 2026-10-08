@@ -30,6 +30,22 @@ pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-cpu-campaign-shutdo
   --output .local/work/<new-cpu-shutdown-check>
 ```
 
+Frozen `0000db5` passes all twenty-six components and three signal cases on
+isolated Linux using Python 3.12.14, Node 24.21.0 and pnpm 11.19.0. Its frozen
+lock passes all 305 supply-chain entries. Independent comparison with macOS
+verifies six original input hashes, six original configuration hashes, nineteen
+diagnostic hashes and 202 component source-hash comparisons. Every component's
+process receipt and original report matches its digest. Signal-case source
+hashes, exit outcomes and release receipts agree across platforms; the next
+component and final acceptance remain absent. The canonical server checkout
+retains its exact status and owned campaign processes terminate.
+The downloaded evidence archive matches server SHA-256
+`3651b500b1be0a40bafb55a2f791584ae8d66e6ce9317fab4982668eec52675f`.
+Reports and the independently verified summaries are under
+`.local/work/v1-cpu-campaign-owner-linux-20261008/linux/`, in `cpu-release/` and
+`cpu-shutdown/`. GPU/model/environment allocation remains zero. Native loaded
+workflows retain their separate campaign requirements.
+
 The production native deployment and workspace factories are owned by
 `apps/server/src/native-deployment.mjs` and `native-workspace.mjs`. After this
 source relocation, all twenty-six macOS CPU components pass under

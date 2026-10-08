@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.98. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.99. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -23,6 +23,16 @@ publication. Evidence: `.local/work/v1-cpu-campaign-owner-20261008/` and
 `.local/work/v1-cpu-campaign-shutdown-20261008/`. GPU, model and simulator allocation
 remain zero. Loaded native workflows retain their own acceptance requirements.
 
+Frozen `0000db5` passes the same twenty-six components and three signal cases on
+isolated Linux. Independent comparison verifies six original input hashes, six
+original configuration hashes, nineteen diagnostic hashes and 202 component
+source-hash comparisons. All twenty-six process receipts and every original
+report digest verify. Signal-case diagnostics, exit states and release receipts
+agree across platforms. The canonical server checkout remains unchanged and
+the owned campaign processes terminate. The evidence archive matches the server's
+SHA-256. Reports and independent summaries are under
+`.local/work/v1-cpu-campaign-owner-linux-20261008/linux/`.
+
 ## 2026-10-08 production deployment ownership
 
 Native provider configuration and factory assembly belong to
@@ -40,7 +50,8 @@ source after the declared import/root and CLI-function changes. All 128 selected
 DSH files and 25 bindings remain unchanged. Evidence:
 `.local/work/v1-native-deployment-ownership-20261008/acceptance.json` and
 `source-relocation.json`. No model, environment, policy result or GPU executes.
-Frozen Linux validation and loaded native workflows retain their independent gates.
+Frozen `0000db5` includes this production ownership and passes the matching
+Linux campaign. Loaded native workflows retain their independent gates.
 
 ## 2026-10-08 native visual-context admission
 

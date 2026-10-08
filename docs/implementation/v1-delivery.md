@@ -20,9 +20,9 @@ tracks the remaining work across that behavior.
 The [CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign) executes
 26 source/production components from actual configuration and original records.
 macOS passes 222 admission/process/wire/resource cases, six visual-context cases,
-twelve original context reads and four-provider readiness. Frozen `f3e373c` passes
-the same twenty-six components on isolated Linux. Six original inputs, six
-original configurations, nineteen diagnostic hashes and 188 component source-hash
+twelve original context reads and four-provider readiness. Frozen `0000db5` passes
+the same twenty-six components and three signal cases on isolated Linux. Six original inputs, six
+original configurations, nineteen diagnostic hashes and 202 component source-hash
 comparisons match; every report and the downloaded archive retain their verified
 digests. Owned resources release and the canonical remote checkout remains
 unchanged. Current-code loaded models, simulator actions and complete task
@@ -32,7 +32,7 @@ Native configuration and provider/workspace assembly have production owners in
 `apps/server/src`; example entries retain their startup interfaces. Exact source,
 export and four-profile checks pass. The CPU campaign additionally owns each
 diagnostic's POSIX process group and awaits confirmed release. All twenty-six
-components and their process receipts pass on macOS. Three signal cases finish
+components and their process receipts pass on both platforms. Three signal cases finish
 their active source check and stop subsequent admission with no final acceptance
 report. Commands and retained evidence are in the
 [CPU guide](cpu-release-validation.md#consolidated-cpu-campaign).
