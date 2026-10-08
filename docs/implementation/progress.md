@@ -49,6 +49,18 @@ with its original error. Both candidate process groups close; the port-conflict
 writer and the original Console's final resources release independently.
 See [Console process validation](cpu-release-validation.md#native-console-process-ownership).
 
+Frozen `f52fc28` also passes full checks and all twenty-five CLI cases on isolated
+Linux. Together, macOS and Linux verify fifty initialization/ready/signal cases.
+Implementation, model and provider configuration hashes match across hosts.
+Transferred original inputs and the canonical server checkout remain unchanged.
+The source-bound Linux report is
+`.local/work/v1-cpu-source-20261008/linux-startup/verified-summary.json`;
+the full archive SHA-256 is
+`126e561418fc228d596a8c64e5c24edde06caf97e8842ef023cd7685d07a9b13`.
+Current-code model/device/task acceptance remains in the consolidated native
+campaign. This CPU phase creates no Sessions, performs no inference and starts
+no simulators or GPU jobs.
+
 Frozen `4391298` passes full source checks and the same context/recovery readers
 on isolated Linux. All nine assignments, 392 events, 60 original calls and 24
 prefix reads match local source hashes and measurement/projection values.

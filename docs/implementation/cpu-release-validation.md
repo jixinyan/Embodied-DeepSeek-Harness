@@ -44,6 +44,17 @@ releases its own writer; closing the original Console releases its writer and
 listener. Original configuration bytes remain unchanged. Evidence:
 `.local/work/v1-native-startup-owner-20261008-current/conflicts/acceptance.json`.
 
+Frozen `f52fc28` passes full project checks and all twenty-five entry cases on
+isolated Linux with Node 24.21.0, pnpm 11.19.0 and the Python 3.12.14 CPU environment.
+Each implementation/model/provider configuration hash matches its macOS source.
+All six original configuration sources retain their bytes; only the
+diagnostic workspace's path references identify the isolated source and private
+output locations. The canonical server checkout's before/after status is identical.
+No model, policy, environment or GPU work executes. Retained reports and the
+verified summary are under `.local/work/v1-cpu-source-20261008/linux-startup/`.
+The complete evidence archive SHA-256 is
+`126e561418fc228d596a8c64e5c24edde06caf97e8842ef023cd7685d07a9b13`.
+
 ## Native context and scope ownership
 
 Selected DSH `token-meter` source belongs to `harness/agent-runtime/memory`,

@@ -49,7 +49,10 @@ Native workspace and single-provider entries share Console process ownership.
 Twenty-five actual CPU CLI cases verify initialization-time and ready-time
 SIGINT/SIGTERM, repeated requests, zero-exit cleanup and released writers,
 listeners and owned Node processes. Missing workspace configuration fails before
-allocation with its required field. No Session, model or environment executes;
+allocation with its required field. All twenty-five cases and full source checks
+also pass on isolated Linux from frozen `f52fc28`, with matching original
+implementation/configuration hashes and unchanged canonical checkout status.
+No Session, model or environment executes;
 see [Console process checks](cpu-release-validation.md#native-console-process-ownership).
 
 ## Acceptance register
