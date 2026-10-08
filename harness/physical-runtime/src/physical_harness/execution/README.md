@@ -44,6 +44,11 @@ close waiter leaves that operation running; the executor drains before its close
 state is published. New operations fail once closure starts. Queued execution
 binding, stop and resume barriers recheck closure before publishing their result.
 Original late-operation failures remain available to every close caller.
+Worker Session close owns task stop/drain through one shared operation. Disconnect
+joins that operation when it exists. Device and video finalization also share an
+operation, and both finalizers execute while preserving every original error.
+Policy stop, producer drain and confirmed motion-resource release remain explicit
+requirements; uncertain motion retains its existing resource authority.
 Background policy or watchdog failure reaches the upper task through a scoped
 native fault, preserving the last recorded physical state and independent formal
 verification rules. Native transport closure confirms the owned process group

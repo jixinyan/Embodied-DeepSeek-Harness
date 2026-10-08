@@ -1,10 +1,19 @@
 # Implementation progress
 
-Spec: v1.84. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.85. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## 2026-10-08 native device owner lifecycle
+
+Worker Session close shares task stop/drain and resource finalization with its
+callers and communication termination. Device and video finalizers both execute;
+their original errors propagate, and uncertain motion retains resource authority.
+Four actual CPU resource cases pass, including cancellation/concurrent callers,
+late file errors, failed manifest publication and both original errors together.
+Every owner thread and recording journal closes. These checks allocate no SDK,
+camera frame, model or control. Real client/host paths and full project checks
+retain separate validation. See [Session resource closure](cpu-release-validation.md#native-session-resource-closure).
 
 Native device closure uses one shared task for environment finalization, thread
 drain and original late-operation errors. Cancellation preserves this task;
@@ -20,6 +29,9 @@ there are zero unobserved errors, controls, model calls or environment allocatio
 All Python diagnostic entries now participate in syntax checks without starting
 their optional providers. See [device owner validation](cpu-release-validation.md#native-device-owner-lifecycle).
 Loaded SDK cancellation and device shutdown retain the consolidated native gates.
+The same six device-owner cases and full project checks also pass in isolated
+Linux with identical source hashes and complete result payloads. Canonical remote
+checkout status remains unchanged. See the source-bound Linux evidence in the guide.
 
 ## 2026-10-08 native context directory ownership
 

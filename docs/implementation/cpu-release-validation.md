@@ -33,6 +33,43 @@ errors, GPU jobs or environment allocations. macOS Python 3.14 evidence is
 `.local/work/v1-native-device-owner-20261008-final/acceptance.json`.
 Loaded SDK lifecycle and device confirmation retain their separate native gates.
 
+Frozen `3f2a7ee` passes the same six cases and full project checks under isolated
+Linux Python 3.12.14. All four source hashes and complete result payloads match
+macOS exactly. Canonical checkout status remains unchanged; GPU jobs remain zero.
+Reports and verified summary are under
+`.local/work/v1-cpu-source-20261008/linux-native-device/`; the archive SHA-256 is
+`db37d77993a66fd1c6c2faaf01eee55bd5336077e91b687235c3b31e6d3af538`.
+
+## Native Session resource closure
+
+[worker.py](../../harness/physical-runtime/src/physical_harness/execution/worker.py)
+owns a shared explicit Session-close operation. Cancellation of a caller leaves
+task stop/drain and resource finalization owned by that operation. Communication
+termination joins an existing Session close; otherwise it drains policy/stop/pump
+work and checks motion-resource release before finalization. Device and recording
+finalizers share a separate operation. Both execute, and every original failure
+propagates. An uncertain motion boundary retains its resource authority.
+
+The CPU check requires the package's `robodojo` and `recording` extras:
+
+```sh
+CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-native-session-owner-offline.py \
+  --output .local/work/<new-native-session-owner-check>
+```
+
+Four cases exercise the actual Worker, unallocated RoboDojo device, OS pipes and
+empty recording journals: normal release, actual late FileNotFoundError, actual
+IsADirectoryError during manifest publication and both original errors together.
+Cancelled/concurrent close and disconnect callers retain shared result identity.
+Every device thread and recording journal closes; failed manifest publication
+remains failed. There are zero camera frames, model calls, controls or environment
+allocations. This validates resource finalization without simulating an execution
+or publishing device evidence. macOS evidence:
+`.local/work/v1-native-session-owner-20261008-final/acceptance.json`.
+The nine real client-process cases and the original RoboTwin missing-source host
+path also pass against the current Worker. Native SDK/pump/device-boundary
+integration still requires the consolidated loaded-provider campaign.
+
 ## Native Console process ownership
 
 Workspace and single-provider CLI entries share

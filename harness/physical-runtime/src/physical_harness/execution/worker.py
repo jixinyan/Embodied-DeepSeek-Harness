@@ -92,6 +92,8 @@ class NativeWorkerSession:
         self._watchdog: ExecutionWatchdog | None = None
         self._watchdog_stop: asyncio.Task[None] | None = None
         self._background_fault: Exception | None = None
+        self._native_closing: asyncio.Task[None] | None = None
+        self._session_closing: asyncio.Task[dict[str, Any]] | None = None
 
     def revoke_lease(self) -> None:
         self._lease_active = False
@@ -1018,25 +1020,92 @@ class NativeWorkerSession:
         return {"closed": True, "execution_id": self._gate.snapshot()["execution_id"]}
 
     async def close(self) -> dict[str, Any]:
-        if self._device is None:
-            return {"closed": True}
-        await self.close_task()
-        await self._device.close()
+        if self._session_closing is None:
+            self._session_closing = asyncio.create_task(self._close_session())
+            self._session_closing.add_done_callback(self._observe_close)
+        await asyncio.wait({self._session_closing})
+        return self._session_closing.result()
+
+    async def _close_session(self) -> dict[str, Any]:
+        errors: list[BaseException] = []
+        try:
+            await self.close_task()
+        except BaseException as error:
+            errors.append(error)
+        try:
+            await self._close_native_resources()
+        except BaseException as error:
+            errors.append(error)
+        self._raise_close_errors(errors)
         return {"closed": True}
 
     async def transport_disconnected(self) -> None:
         self.revoke_lease()
+        if self._session_closing is not None:
+            await asyncio.wait({self._session_closing})
+            self._session_closing.result()
+            return
+        errors: list[BaseException] = []
         if self._gate is not None and self._gate.snapshot()["state"] != "ended":
             stopping = asyncio.create_task(self._gate.pause("user_stop", terminal=True))
-            if self._policy is not None:
-                await self._policy.close()
-            await stopping
+            try:
+                if self._policy is not None:
+                    await self._policy.close()
+            except BaseException as error:
+                errors.append(error)
+            try:
+                await stopping
+            except BaseException as error:
+                errors.append(error)
+        if self._pump is not None:
+            try:
+                await self._pump
+            except BaseException as error:
+                errors.append(error)
         if self._gate is not None:
-            self._release_execution_resources()
+            try:
+                self._release_execution_resources()
+            except BaseException as error:
+                errors.append(error)
+        try:
+            await self._close_native_resources()
+        except BaseException as error:
+            errors.append(error)
+        self._raise_close_errors(errors)
+
+    @staticmethod
+    def _raise_close_errors(errors: list[BaseException]) -> None:
+        if len(errors) == 1:
+            raise errors[0]
+        if errors:
+            raise BaseExceptionGroup("Native Session shutdown failed.", errors)
+
+    async def _close_native_resources(self) -> None:
+        if self._native_closing is None:
+            self._native_closing = asyncio.create_task(self._release_native_resources())
+            self._native_closing.add_done_callback(self._observe_close)
+        # Session 关闭与管道终止共同等待设备和视频资源的所属操作。
+        await asyncio.wait({self._native_closing})
+        self._native_closing.result()
+
+    @staticmethod
+    def _observe_close(operation: asyncio.Future) -> None:
+        if not operation.cancelled():
+            operation.exception()
+
+    async def _release_native_resources(self) -> None:
+        errors: list[BaseException] = []
         if self._device is not None:
-            await self._device.close()
+            try:
+                await self._device.close()
+            except BaseException as error:
+                errors.append(error)
         if self._video_recorder is not None:
-            await asyncio.to_thread(self._video_recorder.close)
+            try:
+                await asyncio.to_thread(self._video_recorder.close)
+            except BaseException as error:
+                errors.append(error)
+        self._raise_close_errors(errors)
 
 
 def gate_scope(request: dict[str, Any] | None) -> dict[str, str]:
