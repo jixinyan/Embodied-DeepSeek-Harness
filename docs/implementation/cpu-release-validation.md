@@ -70,6 +70,15 @@ The nine real client-process cases and the original RoboTwin missing-source host
 path also pass against the current Worker. Native SDK/pump/device-boundary
 integration still requires the consolidated loaded-provider campaign.
 
+Frozen `8486afd` passes full project checks, four Session resource cases, six
+device-owner cases, nine actual client processes and the missing-source host
+path under isolated Linux Python 3.12.14. The complete Session/device reports
+match macOS exactly; all sixteen client/host source hashes match their originals.
+The canonical remote checkout retains its before/after status. No GPU, model,
+policy or native environment starts. Verified reports are under
+`.local/work/v1-cpu-source-20261008/linux-native-session/`; the archive SHA-256 is
+`79cc8868d9d618ef941aacf5ecf57d97060dc598d7ebd4b0d97a38fececac53b`.
+
 ## Native Console process ownership
 
 Workspace and single-provider CLI entries share

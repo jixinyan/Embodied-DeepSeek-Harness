@@ -14,6 +14,10 @@ late file errors, failed manifest publication and both original errors together.
 Every owner thread and recording journal closes. These checks allocate no SDK,
 camera frame, model or control. Real client/host paths and full project checks
 retain separate validation. See [Session resource closure](cpu-release-validation.md#native-session-resource-closure).
+Frozen `8486afd` passes the same four resource cases, six device cases, nine
+client processes, missing-source host path and full project checks in isolated
+Linux. Complete resource/device reports and sixteen client/host source hashes
+match macOS. Canonical checkout status remains unchanged; GPU jobs remain zero.
 
 Native device closure uses one shared task for environment finalization, thread
 drain and original late-operation errors. Cancellation preserves this task;

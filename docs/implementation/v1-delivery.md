@@ -57,6 +57,16 @@ see [Console process checks](cpu-release-validation.md#native-console-process-ow
 
 ## Acceptance register
 
+Native device and Session shutdown share their actual drain/finalization
+operations. Cancelled and concurrent callers preserve original results; queued
+execution boundaries recheck closure. Device and recording finalizers both
+execute while original failures remain observable. Six device cases, four
+Session resource cases, nine client processes, the missing-source host path
+and complete project checks pass on macOS and isolated Linux with matched
+source hashes and unchanged original configuration. SDK/device/policy shutdown
+under loaded providers retains its native gate. See
+[resource validation](cpu-release-validation.md#native-session-resource-closure).
+
 | ID  | Capability                                  | Confirmed current state                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Remaining implementation and acceptance                                                                                                                                                                                                                               |
 | --- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | V01 | DSH agent runtime and replaceable models    | Native Qwen/Pi0.5 run `686c9767-746a-430e-ba81-900eef3fb09c` verifies a failed attempt, retained-scene retry, fresh formal success, six completed TODOs, zero tool errors and released resources. Actual Qwen failed-step recovery preserves completed results, unknown/not-started outcomes and original errors. Five native journals verify 149 interrupted prefixes without physical replay. Actual Node/JavaScriptCore JSON portability passes; exact selected-source provenance is retained.                                          | Verify multi-goal behavior and additional custom-role workflows. Current task testing uses local Qwen and learned policies.                                                                                                                                           |
