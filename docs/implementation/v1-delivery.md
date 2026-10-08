@@ -61,7 +61,9 @@ Policy WebSocket closure and full client shutdown have shared owners. Four actua
 CPU connection cases preserve concurrent/cancelled waiters and caller-local
 cleanup through normal connection closure and owned-server exit. Current-source
 inference-owner, rollout/Worker and original telemetry checks pass with zero
-model, environment or action allocation. Loaded-policy/device cancellation
+model, environment or action allocation. Frozen `d720790` passes all sixteen
+affected cases and full checks in isolated Linux, with twenty-eight matching
+input/source hashes and unchanged canonical checkout status. Loaded-policy/device cancellation
 remains a native acceptance gate. See
 [connection ownership](cpu-release-validation.md#policy-client-connection-ownership).
 

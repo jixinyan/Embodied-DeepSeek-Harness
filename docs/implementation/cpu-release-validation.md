@@ -566,6 +566,16 @@ transport with 95 original telemetry events in
 `.local/work/v1-policy-client-transport-20261008/`.
 Loaded-policy cancellation and physical stopping retain native acceptance gates.
 
+Frozen `d720790` passes these four client cases, nine inference-owner cases,
+three rollout/Worker cases, 95 original telemetry events and full project checks
+under isolated Linux Python 3.12.14. Twenty-eight original/source hash comparisons
+match macOS. Actual OS-specific TCP failures retain ConnectionRefusedError on
+Linux and TimeoutError on macOS; all other compared ownership/release fields match.
+The canonical server checkout remains unchanged. Evidence and verified summary:
+`.local/work/v1-cpu-policy-client-20261008/linux/`; archive SHA-256:
+`84dd96926afda9433806d1ed9b63fecf5e3b33d2651d013962e76b32c3255f29`.
+No GPU, model, native environment, control or stop acknowledgement is allocated.
+
 ## Policy inference ownership
 
 All four native policy service entry points use production `ThreadedInference`

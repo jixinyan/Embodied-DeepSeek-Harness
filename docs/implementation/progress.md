@@ -17,6 +17,11 @@ client also passes nine inference-owner cases, three rollout/Worker failure
 cases and 95 original telemetry-event checks. These checks allocate no GPU,
 model, native environment, control or stop acknowledgement.
 See [connection validation](cpu-release-validation.md#policy-client-connection-ownership).
+Frozen `d720790` also passes the same sixteen affected cases, original telemetry
+checks and full project checks on isolated Linux. Twenty-eight input/source hash
+comparisons match macOS; normal close codes, caller drain and process release
+agree. Actual TCP failure types remain platform-specific. The canonical server
+checkout retains its exact status and GPU usage remains zero.
 
 ## 2026-10-08 ActionGate stop ownership
 
