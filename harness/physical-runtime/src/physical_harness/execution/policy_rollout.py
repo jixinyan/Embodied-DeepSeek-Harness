@@ -1,4 +1,3 @@
-"""Compose bounded inference and action admission without granting policy device authority."""
 import asyncio
 from typing import Any
 from physical_harness.execution.action_gate import ActionGate
@@ -19,19 +18,24 @@ class PolicyRollout:
             async with asyncio.timeout(self.gate.ticket_remaining_time()):
                 chunk = await self.policy.infer(request)
                 return await self.gate.execute(chunk)
-        except BaseException:
+        except BaseException as error:
             if self.gate.snapshot()["state"] == "running":
-                try:
-                    await self.gate.pause(self.gate.failure_reason(), terminal=True)
-                except Exception:
-                    pass
+                await self.gate.stop_after_failure(error)
             raise
         finally:
             self._active = False
 
     async def close(self) -> None:
-        """Close admission first; still release transport when device stop fails."""
+        errors: list[BaseException] = []
         try:
             await self.gate.pause("user_stop", terminal=True)
-        finally:
+        except BaseException as error:
+            errors.append(error)
+        try:
             await self.policy.close()
+        except BaseException as error:
+            errors.append(error)
+        if len(errors) == 1:
+            raise errors[0]
+        if errors:
+            raise BaseExceptionGroup("Policy rollout shutdown failed.", errors)

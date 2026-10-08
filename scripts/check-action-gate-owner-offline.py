@@ -60,7 +60,7 @@ async def inspect_case(request, validator, directory: Path, source: Path, case: 
         if case == "original_error_and_closed_owner":
             await device.close()
             try:
-                await gate._raise_after_stop(original)
+                await gate.stop_after_failure(original)
             except BaseExceptionGroup as error:
                 errors.append(error)
             else:
@@ -81,7 +81,7 @@ async def inspect_case(request, validator, directory: Path, source: Path, case: 
             tasks.append(reading)
             if not await asyncio.to_thread(started.wait, 5):
                 raise TimeoutError("ActionGate CPU owner did not start its pipe operation.")
-            stopping = asyncio.create_task(gate._raise_after_stop(original) if original else
+            stopping = asyncio.create_task(gate.stop_after_failure(original) if original else
                                            gate.pause("user_stop", terminal=True))
             tasks.append(stopping)
             async with asyncio.timeout(5):
@@ -125,6 +125,13 @@ async def inspect_case(request, validator, directory: Path, source: Path, case: 
             stop_error = group.exceptions[1]
             if str(original) not in group.message or type(stop_error).__name__ not in group.message:
                 raise AssertionError("ActionGate receipt text omitted original failure details.")
+            try:
+                await gate.stop_after_failure(group)
+            except BaseExceptionGroup as repeated_group:
+                if repeated_group is not group:
+                    raise AssertionError("Repeated failure handling duplicated the original stop error.")
+            else:
+                raise AssertionError("Repeated failure handling omitted the original error pair.")
         else:
             stop_error = errors[0]
             if any(error is not stop_error for error in errors):
@@ -139,6 +146,13 @@ async def inspect_case(request, validator, directory: Path, source: Path, case: 
                 raise AssertionError("Repeated stop caller changed original stop failure identity.")
         else:
             raise AssertionError("Repeated ActionGate stop hid the original failure.")
+        try:
+            await gate.stop_after_failure(stop_error)
+        except BaseException as repeated:
+            if repeated is not stop_error:
+                raise AssertionError("Repeated stop-error handling duplicated the original exception.")
+        else:
+            raise AssertionError("Repeated stop-error handling omitted the original exception.")
         result = {
             "case": case,
             "originalError": type(original).__name__ if original else None,

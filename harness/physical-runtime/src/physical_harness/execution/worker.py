@@ -538,19 +538,17 @@ class NativeWorkerSession:
                         await self._publish(
                             await self._require_device().on_owner(self._environment.observe), self._last_control
                         )
-        except asyncio.CancelledError:
+        except asyncio.CancelledError as error:
             if gate.snapshot()["state"] == "running":
-                await gate.pause(gate.failure_reason(), terminal=True)
+                await gate.stop_after_failure(error)
             if gate.snapshot()["state"] in ("paused", "ended") and gate.snapshot()["stop_reason"] not in ("planner_pause", "user_stop"):
                 await self._publish(await self._require_device().on_owner(self._environment.observe), self._last_control)
         except Exception as error:
             traceback.print_exception(error, file=sys.stderr)
             self._failure_detail = f"{type(error).__name__}: {error}"[:1000]
             snapshot = gate.snapshot()
-            if snapshot["state"] == "running":
-                await gate.pause(gate.failure_reason(), terminal=True)
-            elif snapshot["state"] == "pausing":
-                await gate.pause(snapshot["stop_reason"], terminal=True)
+            if snapshot["state"] in ("running", "pausing"):
+                await gate.stop_after_failure(error)
             if gate.snapshot()["state"] in ("paused", "ended"):
                 await self._publish(await self._require_device().on_owner(self._environment.observe), self._last_control)
         finally:

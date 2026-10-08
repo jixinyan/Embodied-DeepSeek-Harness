@@ -5,7 +5,7 @@ import copy
 from datetime import datetime, timedelta, timezone
 import math
 import time
-from typing import Any, Awaitable, Callable, NoReturn, Protocol
+from typing import Any, Awaitable, Callable, Protocol
 from uuid import uuid4
 
 from physical_harness.validation import ContractValidator
@@ -153,7 +153,7 @@ class ActionGate:
         except BaseException as error:
             self._error = str(error) or type(error).__name__
             if self._state == "running":
-                await self._raise_after_stop(error)
+                await self.stop_after_failure(error)
             raise
         finally:
             self._busy = False
@@ -197,13 +197,17 @@ class ActionGate:
         await asyncio.wait({self._stop_task})
         self._stop_task.result()
 
-    async def _raise_after_stop(self, original: BaseException) -> NoReturn:
+    async def stop_after_failure(self, original: BaseException) -> None:
         try:
-            await self.pause(self.failure_reason(), terminal=True)
+            reason = self._reason if self._state == "pausing" else self.failure_reason()
+            await self.pause(reason, terminal=True)
         except BaseException as stopping:
+            if original is stopping or isinstance(original, BaseExceptionGroup) and original.subgroup(
+                lambda error: error is stopping
+            ) is not None:
+                raise original
             self._error = f"{type(original).__name__}: {original}; {type(stopping).__name__}: {stopping}"
             raise BaseExceptionGroup(f"Action failure and device stop failed: {self._error}", [original, stopping]) from None
-        raise original
 
     def confirm_stop(self, acknowledgement: dict[str, Any]) -> None:
         """Accept a delayed matching acknowledgement; duplicate confirmation is idempotent."""
@@ -237,6 +241,6 @@ class ActionGate:
             self._state, self._reason = "running", None
         except BaseException as error:
             if self._state == "resuming" and self._generation == generation:
-                await self._raise_after_stop(error)
+                await self.stop_after_failure(error)
             raise
         return self.snapshot()

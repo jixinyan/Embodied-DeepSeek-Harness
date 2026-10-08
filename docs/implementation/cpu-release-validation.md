@@ -30,9 +30,55 @@ with a stop deadline error. Every boundary remains unconfirmed; diagnostic
 leases release only after owner drain. The original input retains its SHA-256.
 There are zero inference tickets, returned actions, stop acknowledgements,
 model calls, native environment allocations and unobserved loop errors.
-Evidence: `.local/work/v1-action-gate-owner-20261008-final/acceptance.json`.
+Evidence: `.local/work/v1-shared-failure-action-20261008-final-02/acceptance.json`.
 These checks validate stop ownership and production failure aggregation;
 loaded dispatch/resume/device confirmation remain native campaign gates.
+
+Frozen `8fbd934` passes four ActionGate and four Session resource cases, ten
+actual client/host processes and full project checks under isolated Linux
+Python 3.12.14. All source hashes and complete ActionGate/Session reports match
+their macOS originals; nested receipt text retains each original cause.
+The canonical checkout status remains unchanged and GPU jobs remain zero.
+Evidence: `.local/work/v1-cpu-source-20261008/linux-action-error/`; archive SHA-256
+`4a7245bf6dba5e3b6b1bfd76c8728c354473561489f3e2d6af458d1d387a9e64`.
+This identifies the verified source revision; shared failure handling
+has its additional checks below.
+
+## Shared rollout failure handling
+
+`ActionGate.stop_after_failure` owns failure-time stopping for actual action,
+resume, PolicyRollout and Worker paths. It preserves both original exceptions
+when stopping fails, retains an already active stop reason and propagates an
+existing error group when it already contains that same stop exception.
+PolicyRollout shutdown attempts device stopping and policy closure, then
+propagates their original single or grouped errors.
+
+```sh
+CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-rollout-failure-offline.py \
+  --request /absolute/path/original-robodojo-policy-request.json \
+  --output .local/work/<new-rollout-failure-check>
+```
+
+Three actual CPU cases use the original RoboDojo scope/ActionSpec, production
+PolicyRollout/WebSocketPolicyClient/Worker, an unallocated production device,
+OS resource leases and actual source-file/pipe operations. The policy cases
+connect to a bound, non-listening local TCP port. The original connection
+failure comes from the actual client and accompanies closed-owner or stop-deadline
+failure. Operating systems may report ConnectionRefusedError or the client's
+actual TimeoutError; the report retains its observed type and traceback.
+The Worker case executes its original closed-owner path and publishes one scoped
+background fault with both errors. Every boundary remains unconfirmed and motion
+authority remains retained until diagnostic owner drain. All diagnostic threads,
+sockets and leases release. The cases perform two actual connection attempts and
+issue two admitted inference tickets; there are zero model/policy-server calls,
+environment allocations, actions and stop acknowledgements.
+macOS evidence: `.local/work/v1-rollout-failure-20261008-03/acceptance.json`.
+The four ActionGate cases additionally verify repeated error-group identity.
+Current resource/client/host reports are under
+`.local/work/v1-shared-failure-session-20261008-final/`,
+`.local/work/v1-shared-failure-client-20261008-final/` and
+`.local/work/v1-shared-failure-host-20261008-final/`.
+Loaded model, simulator observation/control and SDK stopping remain native gates.
 
 ## Native device owner lifecycle
 
@@ -76,9 +122,9 @@ original nested failure remains visible in the message. Single failures retain
 their original text. The actual resource diagnostic also validates these
 production receipts, JSON round trips and each original error type/message.
 Current macOS receipt evidence:
-`.local/work/v1-error-receipt-session-20261008-final-03/acceptance.json`.
+`.local/work/v1-shared-failure-session-20261008-final/acceptance.json`.
 Nine actual client-process cases retain their original scoped errors and release
-outcomes in `.local/work/v1-error-receipt-client-20261008/acceptance.json`.
+outcomes in `.local/work/v1-shared-failure-client-20261008-final/acceptance.json`.
 
 [worker.py](../../harness/physical-runtime/src/physical_harness/execution/worker.py)
 owns a shared explicit Session-close operation. Cancellation of a caller leaves

@@ -57,6 +57,14 @@ see [Console process checks](cpu-release-validation.md#native-console-process-ow
 
 ## Acceptance register
 
+ActionGate, PolicyRollout and Worker share failure-time stopping with original
+operation/stop errors, retained stop reasons and repeated error-group identity.
+Three actual CPU rollout/Worker cases verify unavailable TCP endpoints, closed
+owners, stop deadlines and a scoped background fault; four stop-owner cases and
+current Session/client/host paths pass. Unknown boundaries retain authority and
+loaded model/device behavior remains a native gate. See
+[rollout validation](cpu-release-validation.md#shared-rollout-failure-handling).
+
 Native device and Session shutdown share their actual drain/finalization
 operations. Cancelled and concurrent callers preserve original results; queued
 execution boundaries recheck closure. Device and recording finalizers both

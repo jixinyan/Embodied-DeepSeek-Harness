@@ -32,8 +32,12 @@ resource ownership and budgets before bounded device dispatch. `PolicyRollout` c
 an inference port with that gate. Pause invalidates old chunks; stopped confirmation
 is separate from closed admission. Actual devices must fence old commands themselves.
 Gate stop waits retain the shared stop task through caller cancellation. Every
-caller observes the same original result. An action or resume failure followed
-by a stop failure propagates both original exceptions and their receipt details.
+caller observes the same original result. `stop_after_failure` preserves action,
+resume, rollout inference and Worker operation failures with their stop failures.
+Repeated handling retains an existing error pair and its original stop cause.
+PolicyRollout shutdown attempts both device stopping and policy closure, preserving
+all original failures. The [rollout diagnostic](../../../../../scripts/check-rollout-failure-offline.py)
+uses actual TCP/owner failures and OS pipes with no policy response or device acknowledgement.
 Unknown boundaries retain motion ownership. The
 [CPU stop diagnostic](../../../../../scripts/check-action-gate-owner-offline.py)
 uses original scope/specification data, actual files, pipes and locks with zero

@@ -1,10 +1,18 @@
 # Implementation progress
 
-Spec: v1.87. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.88. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## 2026-10-08 ActionGate stop ownership
+
+Shared failure-time stopping serves ActionGate, PolicyRollout and Worker paths,
+preserves the existing stop reason and retains an existing error group containing
+that exact stop exception. PolicyRollout shutdown attempts both device and policy
+closure and propagates original single/grouped errors. Three actual CPU cases
+verify policy connection failures with closed-owner/deadline stop failures and
+the Worker's scoped background fault. Resource/client/host checks pass against
+the same current source. See [rollout checks](cpu-release-validation.md#shared-rollout-failure-handling).
 
 Native grouped operation errors retain every original cause through the standard
 Python traceback formatter, with local-variable capture disabled. Actual resource
