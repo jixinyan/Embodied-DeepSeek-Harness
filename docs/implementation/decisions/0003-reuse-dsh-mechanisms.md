@@ -12,12 +12,13 @@ cancellation. Assemble and test these mechanisms; do not count that work as inve
 new agent capabilities. Select additional upstream plugins when needed, with provenance,
 instead of replacing their general-purpose behavior without a demonstrated gap.
 
-`@edh/tools` now exposes the exact DSH `defineTool` function and native tool types.
-There is no EDH wrapper around that authoring function. Ordinary tools can return any
-DSH-supported JSON value, including a number, without a physical call/result envelope.
-`PhysicalToolCatalog` and `PhysicalToolProvider` are future provider metadata/transport
-ports, not a second model-facing registry or dispatcher. The prior generic
-`ToolRegistry`/`ToolExecutor` placeholders were removed to make this ownership explicit.
+`@edh/tools` exposes the exact DSH `defineTool` function and native tool types.
+Ordinary tools can return DSH-supported JSON values, including numbers.
+`core-inputs.ts` owns EDH logical IDs, argument fields and input limits;
+`model-schema.ts` supplies detached assignment parameters and canonical schema
+projection. Application tool bodies enforce role authority and connect their
+scoped domain services to the native DSH dispatcher. Physical provider calls
+add task/job identity, resource/budget rules, evidence and confirmed device state.
 
 The F1 validator is named `PhysicalBoundaryValidator`, with files `physical-boundary.ts`
 and `physical_boundary.py`. Keep it for EDH domain messages, physical/provider wire
@@ -43,19 +44,19 @@ maintaining unrelated model-facing schema definitions.
 A JavaScript Promise or AbortSignal is not evidence that a robot stopped. A successful
 native tool call is not a verified goal. These are the reasons for embodied additions.
 
-## Actual integration boundary
+## Integration boundary
 
-The current host mounts seven original DSH services and scripted model adapters in
-acceptance tests. No live model provider, console, simulator or robot is running. DSH
-contains a `timeoutMs` tool declaration, but its enforcement requires the upstream
-`dsh-tool-call-timeout-policy` plugin, which is not mounted in the current host. Disk
-persistence interfaces are absorbed but no disk backend is mounted. Do not label either
-capability as working merely because its interface or metadata exists.
+`createDshHost` mounts original LLM, Session, projection, system-prompt, tool,
+tool-call timeout, Agent and Agent-loop services. Configured cloud/local adapters
+register with that host. TeamSessions creates independent role contexts with
+explicit briefs, native TODOs, scoped tools, follow-ups and cooperative cancellation.
+Optional native context management retains its explicit deployment policy.
 
-Nine runtime tests now include direct API identity, scalar tool output through the
-original loop, and native input/output rejection without `PhysicalBoundaryValidator`.
-The existing 230 shared wire/lifecycle/boundary cases remain separate, synthetic contract
-evidence. They do not establish physical execution or full Team-level integration.
+LocalStore persists domain records, native audits and scoped evidence through the
+application's lifecycle owners. Native factory checks and original recorded-task
+readers verify their declared configuration/storage boundaries. Actual task
+acceptance retains model, policy, simulator, confirmed stopping and source evidence
+requirements in the [v1 register](../v1-delivery.md).
 
 ## Consequence for delivery
 

@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "14.2.1",
     "@edh/agents": "workspace:*",
     "@edh/teams": "workspace:*",
     "@edh/execution": "workspace:*",

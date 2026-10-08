@@ -5,8 +5,11 @@ import { resolve } from 'node:path';
 import { ContractValidator } from '@edh/contracts';
 import { TaskPlans } from '@edh/planning';
 import { LocalStore } from '@edh/storage';
-import { CORE_TOOL_PARAMETERS, validateJsonSchemaValue } from '@edh/tools';
-import { modelToolContractSchema } from '../apps/server/src/model-tool-schema.ts';
+import {
+  coreModelToolParameters,
+  modelToolContractSchema,
+  validateJsonSchemaValue,
+} from '@edh/tools';
 
 assert(process.argv[2], 'Supply a recorded replay directory containing source events and run.');
 const sourceDirectory = resolve(process.argv[2], 'source');
@@ -16,15 +19,9 @@ const run = JSON.parse(await readFile(resolve(sourceDirectory, 'run.json'), 'utf
 const validator = new ContractValidator(
   JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
 );
-const parameters = {
-  type: 'object',
-  properties: {
-    ...CORE_TOOL_PARAMETERS['planning.update'],
-    plan: await modelToolContractSchema(validator, 'PlanDocument'),
-  },
-  required: ['plan', 'expectedVersion'],
-  additionalProperties: false,
-};
+const parameters = coreModelToolParameters('planning.update', {
+  planSchema: await modelToolContractSchema(validator, 'PlanDocument'),
+});
 const firstRead = events.find(
   (event) => event.type === 'tool.completed' && event.detail.tool === 'planning.read',
 ).detail.result;

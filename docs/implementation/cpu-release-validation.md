@@ -7,6 +7,45 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Model-visible tool schemas
+
+`harness/agent-runtime/tools/src/model-schema.ts` owns production parameter
+generation and canonical domain projection. The server, role-workflow checker
+and original plan reader use its public exports. Each assignment's parameters
+are detached from canonical core fields and caller-supplied plan/role schemas.
+Native DSH continues to register, dispatch and validate these tools.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json --test tests/runtime/model-tool-schema.test.ts
+
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-tool-schemas.mjs \
+  --requests /absolute/path/original-model-requests \
+  --descriptions /absolute/path/original-tool-source.json \
+  --output .local/work/<new-tool-schema-check>
+
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-plan-writes.mjs \
+  /absolute/path/original-replay-directory
+```
+
+Three CPU checks cover required canonical nested plan fields, isolated mutable
+parameter results and decision-owner-only execution.query turn completion.
+The recorded-request reader checks native DSH schema validity, original tool
+descriptions, separate Planner/Verifier authority and exact canonical plan structure.
+It also verifies independent parameter edits against each original planning header.
+Original request, description and schema sources retain their hashes; implementation
+hashes identify the production module and reader. No model call or physical effects
+are replayed. The plan reader uses this same production parameter builder before
+checking original calls, formal verdicts and versioned writes.
+
+On 2026-10-08, 16 original Qwen requests pass with 344 checked schemas: twelve
+Planner requests and four Verifier requests, including twelve canonical planning
+headers. Evidence: `.local/work/v1-tool-schemas-cpu-20261008-final/acceptance.json`.
+Original task histories `ef8f9d03`, `686c9767` and `7dfb663e` preserve ten accepted
+object-valued plan writes, eight rejected string-valued writes and thirteen
+read-only templates. Their new private journals are under `.local/checks/recorded-plans-*`.
+These checks establish CPU schema/record behavior. Current-code model-driven
+multi-goal and simulator completion require their actual native acceptance.
+
 ## Policy transport
 
 Install the `policy` and `diagnostics` extras in the isolated Python environment.

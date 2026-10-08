@@ -1,8 +1,27 @@
 # Implementation progress
 
-Spec: v1.78. Current checkpoint: **separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.79. Current checkpoint: **tools-owned detached model schemas and actual recorded request/plan checks; separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 tool ownership and scoped parameters
+
+`harness/agent-runtime/tools/src/model-schema.ts` prepares model-visible parameters
+and canonical schema projection alongside the logical core definitions. Application
+assembly, role checks and original plan readers consume its public exports. The
+reference-parser dependency belongs to that module. Each parameter result is a
+detached object, including supplied plan/role schemas and device arrays. Native
+DSH retains tool registration, dispatch, cancellation and validation.
+
+Three CPU schema checks pass: required canonical plan fields, caller/canonical
+parameter isolation and decision-owner-only query turn authority. The source-bound
+reader validates 344 original tool schemas from 12 Planner and four Verifier requests,
+including twelve unchanged canonical plan headers and independent generated
+parameters. All original request/description/schema hashes remain unchanged.
+Three actual task histories preserve ten accepted object-valued plan writes,
+eight rejected original string-valued writes and thirteen read-only plan templates.
+These checks perform no model inference, simulator allocation or physical controls.
+Exact commands and artifacts: [CPU tool validation](cpu-release-validation.md#model-visible-tool-schemas).
 
 ## 2026-10-08 native worker organization and CPU process checks
 

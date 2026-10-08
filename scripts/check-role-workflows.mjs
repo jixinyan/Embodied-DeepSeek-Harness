@@ -10,8 +10,8 @@ import {
   CORE_TOOL_OPTIONAL_PARAMETERS,
   CORE_TOOL_DESCRIPTIONS,
   assertObjectJsonSchema,
+  modelToolContractSchema,
 } from '@edh/tools';
-import { modelToolContractSchema } from '../apps/server/src/model-tool-schema.ts';
 
 const validator = new ContractValidator(
   JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),

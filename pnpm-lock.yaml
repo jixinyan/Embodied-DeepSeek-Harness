@@ -70,9 +70,6 @@ importers:
 
   apps/server:
     dependencies:
-      '@apidevtools/json-schema-ref-parser':
-        specifier: 14.2.1
-        version: 14.2.1(@types/json-schema@7.0.15)
       '@edh/agents':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/agents
@@ -358,6 +355,9 @@ importers:
 
   harness/agent-runtime/tools:
     dependencies:
+      '@apidevtools/json-schema-ref-parser':
+        specifier: 14.2.1
+        version: 14.2.1(@types/json-schema@7.0.15)
       '@edh/agents':
         specifier: workspace:*
         version: link:../agents

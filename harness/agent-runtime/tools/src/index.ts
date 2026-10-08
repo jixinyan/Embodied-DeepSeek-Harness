@@ -1,4 +1,4 @@
-// Native tools execute through DSH. EDH adds only physical/provider metadata.
+// DSH 负责工具执行，EDH 提供具身参数和模型可见 Schema。
 export {
   defineTool,
   assertObjectJsonSchema,
@@ -16,18 +16,6 @@ export type {
   ToolDefinition as PhysicalToolDefinition,
   ToolResult as PhysicalToolResult,
 } from '@edh/contracts';
-import type { ToolCall, ToolDefinition, ToolResult } from '@edh/contracts';
-
-/** Future provider metadata lookup; not another model-facing tool registry. */
-export interface PhysicalToolCatalog {
-  describe(toolId: string): Promise<ToolDefinition>;
-  listForAssignment(assignmentId: string): Promise<readonly ToolDefinition[]>;
-}
-
-/** Future wire/provider port called from a DSH tool body, not a second dispatcher. */
-export interface PhysicalToolProvider {
-  invoke(call: ToolCall, signal: AbortSignal): Promise<ToolResult>;
-}
 
 export {
   CORE_TOOLS,
@@ -36,3 +24,4 @@ export {
   CORE_TOOL_DESCRIPTIONS,
   assertCoreInputLimits,
 } from './core-inputs.js';
+export { coreModelToolParameters, modelToolContractSchema } from './model-schema.js';

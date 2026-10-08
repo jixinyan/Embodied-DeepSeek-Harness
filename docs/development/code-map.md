@@ -19,6 +19,7 @@ production path from Session selection to native commands and formal verificatio
 | Load composable Teams | [teams/src/loader.ts](../../harness/agent-runtime/teams/src/loader.ts) |
 | Configure cloud/local upper models | [models/src/configuration.ts](../../harness/agent-runtime/models/src/configuration.ts) |
 | Maintain plans and TODO tools | [planning](../../harness/agent-runtime/planning/README.md) and [tools](../../harness/agent-runtime/tools/README.md) |
+| Generate assignment-specific model-visible tool parameters | [tools/src/model-schema.ts](../../harness/agent-runtime/tools/src/model-schema.ts) |
 | Deliver explicit context and reports | [communication](../../harness/agent-runtime/communication/README.md) |
 | Enforce goals, retries and task completion | [tasks](../../harness/agent-runtime/tasks/README.md) |
 | Admit formal verification after device confirmation | [verification/src/boundaries.ts](../../harness/agent-runtime/verification/src/boundaries.ts) and [contexts.ts](../../harness/agent-runtime/verification/src/contexts.ts) |

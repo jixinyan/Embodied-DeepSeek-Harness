@@ -1,6 +1,5 @@
 import { isDeepStrictEqual } from 'node:util';
 import { parse as parsePath } from 'node:path';
-import { coreModelToolParameters, modelToolContractSchema } from './model-tool-schema.js';
 import { admitSensorSample, sensorImages, SensorSamples } from '@edh/perception';
 import type { SegmentationEngine, DepthEngine, DepthCameraIntrinsics } from '@edh/perception';
 import { createHash, randomUUID } from 'node:crypto';
@@ -58,6 +57,8 @@ export type { GoalBinding } from '@edh/tasks';
 
 export { CORE_TOOLS } from '@edh/tools';
 import {
+  coreModelToolParameters,
+  modelToolContractSchema,
   CORE_TOOL_PARAMETERS,
   CORE_TOOL_DESCRIPTIONS,
   assertObjectJsonSchema,

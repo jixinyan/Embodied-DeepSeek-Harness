@@ -3,13 +3,22 @@
 Native tool authoring, registration, dispatch and input/output validation come from
 DSH. `@edh/tools` re-exports the exact native `defineTool` function and tool types.
 Register the result in the DSH agent scope; no additional EDH generic executor exists.
-The host/runtime tests exercise this path, including scalar results and invalid input/output.
+Application tool bodies connect the native DSH call to scoped task, execution,
+perception, communication and memory services. Physical worker calls carry job
+identity, evidence, resources, budgets and device acknowledgement. The exported
+`PhysicalToolCall`, `PhysicalToolDefinition` and `PhysicalToolResult` aliases
+describe the physical wire format.
 
-EDH's `PhysicalToolCatalog` and `PhysicalToolProvider` are unimplemented provider
-metadata/transport interfaces below a future DSH tool body. The `PhysicalToolCall`,
-`PhysicalToolDefinition` and `PhysicalToolResult` aliases describe that domain wire
-boundary. Ordinary native tools do not need these envelopes. A physical adapter adds
-job identity, evidence, resources, budgets and device acknowledgement.
+| File | Responsibility |
+| --- | --- |
+| [core-inputs.ts](src/core-inputs.ts) | Logical tool IDs, argument fields, descriptions and domain input limits |
+| [model-schema.ts](src/model-schema.ts) | Model-facing parameters, role/device-specific fields and canonical domain schema projection |
+| [index.ts](src/index.ts) | Native DSH authoring/validation exports and EDH parameter generation |
+
+`coreModelToolParameters` returns independent parameters for each assignment.
+Its plan, role-output and device arrays are detached from canonical definitions
+and caller inputs. The existing native DSH registration, execution and validation
+remain the consumers. The application owns role authority and tool body effects.
 
 See [reuse decision](../../../docs/implementation/decisions/0003-reuse-dsh-mechanisms.md),
 [native runtime integration](../../../docs/implementation/dsh-integration.md) and
@@ -22,7 +31,7 @@ native supported subset. EDH separately enforces input-size and version limits.
 Core descriptions identify argument sources, returned fields and admission conditions.
 The canonical plan projection retains domain bounds as model-visible annotations.
 `pnpm check:role-workflows` checks actual configured roles and authored schemas across
-six live Teams. See [workflow and schema composition](../../../docs/implementation/prompt-workflow.md).
+ten live Teams. See [workflow and schema composition](../../../docs/implementation/prompt-workflow.md).
 
 `user.ask` lets the decision owner request missing user information at a confirmed
 stopped execution boundary. It stores a question and signals native turn conclusion;

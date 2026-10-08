@@ -33,6 +33,9 @@ recording implementations have explicit file owners; see the
 The host transport additionally has actual production-client cancellation,
 deadline, child-termination and spawn-failure checks. These checks preserve
 unknown device state and retain actual-environment stopping requirements.
+Model-visible parameter generation belongs to the tools module, with detached
+assignment schemas. CPU inspection verifies 344 original Planner/Verifier tool
+headers and recorded plan writes through the same production parameter builder.
 
 ## Acceptance register
 

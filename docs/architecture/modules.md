@@ -66,7 +66,7 @@ host. Authorized observation tools continue to supply images to models. See
 | `harness/agent-runtime/foundation` | Plugin context, schemas and selected runtime support | Another agent loop or physical policy | Pinned source and compiler boundaries; Step 00 |
 | `harness/agent-runtime/teams` | Team/member definitions and immutable role/provider bindings | Hard-coded role enum | TeamLoader; Step 02 |
 | `harness/agent-runtime/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelRegistry; Step 00 |
-| `harness/agent-runtime/tools` | Logical tools, role exposure, provider selection and invocation boundary | Every concrete perception/robot implementation | Native DSH tools + PhysicalToolCatalog/PhysicalToolProvider; Step 02/07 |
+| `harness/agent-runtime/tools` | Logical IDs, model-visible parameters, role/device schema selection and input limits | Every concrete perception/robot implementation | Native DSH tools, core-inputs.ts and model-schema.ts; Step 02/07 |
 | `harness/agent-runtime/communication` | Explicit briefs, scoped messages, delivery and subscriptions | Shared conversation memory | TeamRouter; Step 04 |
 | `harness/agent-runtime/planning` | Persistent PlanDocument and progress projection | Authoritative success | PlanStore; Step 05 |
 | `harness/agent-runtime/files` | Private assignment files and controlled search | Shared unrestricted filesystem | AgentFiles; Step 05 |

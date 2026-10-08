@@ -46,10 +46,14 @@ experience generation; SKILL metadata and selected sections remain available on 
 
 [Core definitions](../../harness/agent-runtime/tools/src/core-inputs.ts) supply
 typed arguments, enums, per-parameter descriptions and tool descriptions. Every
-implemented core tool requires a description. The application wraps parameters
-with an object root, explicit required fields and additionalProperties=false.
-Optional fields are team.query.beforeReportId, team.query.includeBodies and
-skills.load.sections. Native todo_write retains its upstream whole-list schema.
+implemented core tool requires a description. The
+[model schema module](../../harness/agent-runtime/tools/src/model-schema.ts) supplies
+an object root, explicit required fields and additionalProperties=false. Every
+assignment receives detached parameters, including caller-supplied plan/role
+schemas and device arrays. Optional fields are execution.query.completeTurn,
+team.query.beforeReportId, team.query.includeBodies and skills.load.sections.
+Only the decision owner receives execution.query.completeTurn; other roles retain
+an empty query schema. Native todo_write retains its upstream whole-list schema.
 
 planning.update.plan uses the dereferenced canonical PlanDocument schema.
 agent.report.result uses the configured role output schema or a JSON object, plus
@@ -74,7 +78,7 @@ instruction, inspected evidence IDs and limitations. Its report does not change 
 original criterion or grant formal verification authority.
 
 DSH supports type, properties, required, items, additionalProperties, enum, const,
-oneOf and annotations. The [domain projection](../../apps/server/src/model-tool-schema.ts)
+oneOf and annotations. The [domain projection](../../harness/agent-runtime/tools/src/model-schema.ts)
 preserves supported structure and exposes numeric/string/array bounds in descriptions.
 Full domain validation enforces the original canonical schema before effects.
 The workflow documents the conditional done/last_verdict_ref requirement.

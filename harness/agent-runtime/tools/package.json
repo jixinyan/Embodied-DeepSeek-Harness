@@ -11,6 +11,7 @@
     }
   },
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "14.2.1",
     "@edh/contracts": "workspace:*",
     "@edh/foundation": "workspace:*",
     "zod": "4.4.3",

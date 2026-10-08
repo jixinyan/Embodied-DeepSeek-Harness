@@ -1,10 +1,7 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 import type { ContractName, ContractValidator } from '@edh/contracts';
-import {
-  assertObjectJsonSchema,
-  CORE_TOOL_PARAMETERS,
-  CORE_TOOL_OPTIONAL_PARAMETERS,
-} from '@edh/tools';
+import { assertObjectJsonSchema } from '@deepseek-ai/dsh-tools';
+import { CORE_TOOL_PARAMETERS, CORE_TOOL_OPTIONAL_PARAMETERS } from './core-inputs.js';
 
 export function coreModelToolParameters(
   logical: string,
@@ -83,14 +80,14 @@ export function coreModelToolParameters(
       },
     };
   }
-  return {
+  return structuredClone({
     type: 'object',
     properties: selected,
     required: Object.keys(properties).filter(
       (key) => !CORE_TOOL_OPTIONAL_PARAMETERS[logical]?.includes(key),
     ),
     additionalProperties: false,
-  };
+  });
 }
 
 function record(value: unknown): Record<string, unknown> {
