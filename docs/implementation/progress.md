@@ -38,6 +38,17 @@ The actual command verifies four profiles with zero Sessions/services, then
 SIGTERM releases its writer, listener and both owned Node processes with exit
 status zero. Missing configuration fails before allocation with the exact field.
 
+Native workspace and single-provider CLI entries use one Console process owner
+for initialization, SIGINT/SIGTERM and server/proxy release. Twenty-five actual
+configured CLI cases cover the workspace and all four provider entries, checking
+initialization-time, ready-time and repeated signals. Each exits
+with status zero and releases its writer, listener and both Node processes without
+admitting a Session, model call or environment. Sources retain their hashes.
+Actual writer/port conflicts preserve the running Console and reject the candidate
+with its original error. Both candidate process groups close; the port-conflict
+writer and the original Console's final resources release independently.
+See [Console process validation](cpu-release-validation.md#native-console-process-ownership).
+
 Frozen `4391298` passes full source checks and the same context/recovery readers
 on isolated Linux. All nine assignments, 392 events, 60 original calls and 24
 prefix reads match local source hashes and measurement/projection values.

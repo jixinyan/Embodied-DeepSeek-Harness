@@ -5,6 +5,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici';
 import { z } from 'zod';
 import { startServer } from '../../apps/server/src/index.ts';
+import { runConsoleProcess } from '../../apps/server/src/console-process.ts';
 import {
   createNativeDeploymentFactory,
   isNativeDeploymentEntry,
@@ -150,33 +151,18 @@ export default async function createDeployment(services) {
 }
 
 if (isNativeDeploymentEntry(import.meta.url)) {
-  const settings = await readNativeWorkspaceConfiguration();
   const dispatcher = new EnvHttpProxyAgent();
   setGlobalDispatcher(dispatcher);
-  let server;
-  try {
-    server = await startServer({
-      root: nativeDeploymentRoot,
-      dataDirectory: settings.dataDirectory,
-      port: settings.port,
-      deployment: createNativeWorkspaceFactory(settings),
-    });
-  } catch (error) {
-    await dispatcher.close();
-    throw error;
-  }
-  process.stdout.write(`${server.url}\n`);
-  for (const signal of ['SIGINT', 'SIGTERM'])
-    process.once(signal, () => {
-      void server
-        .close()
-        .then(() => dispatcher.close())
-        .then(
-          () => process.exit(0),
-          (error) => {
-            console.error(error);
-            process.exit(1);
-          },
-        );
-    });
+  await runConsoleProcess({
+    start: async () => {
+      const settings = await readNativeWorkspaceConfiguration();
+      return startServer({
+        root: nativeDeploymentRoot,
+        dataDirectory: settings.dataDirectory,
+        port: settings.port,
+        deployment: createNativeWorkspaceFactory(settings),
+      });
+    },
+    dispose: () => dispatcher.close(),
+  });
 }

@@ -45,6 +45,13 @@ threads/listeners. Current-code loaded-model cancellation and complete physical
 workflow remain native release requirements. See
 [policy ownership checks](cpu-release-validation.md#policy-inference-ownership).
 
+Native workspace and single-provider entries share Console process ownership.
+Twenty-five actual CPU CLI cases verify initialization-time and ready-time
+SIGINT/SIGTERM, repeated requests, zero-exit cleanup and released writers,
+listeners and owned Node processes. Missing workspace configuration fails before
+allocation with its required field. No Session, model or environment executes;
+see [Console process checks](cpu-release-validation.md#native-console-process-ownership).
+
 ## Acceptance register
 
 | ID  | Capability                                  | Confirmed current state                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | Remaining implementation and acceptance                                                                                                                                                                                                                               |

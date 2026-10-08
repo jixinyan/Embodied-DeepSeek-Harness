@@ -192,7 +192,8 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 2. Exercise actual worker processes, original request recording, WebSocket transport,
    inference-thread ownership, scoped failure records and cleanup.
 3. Inspect original native model schemas, plans, role histories and context projections.
-4. Verify actual Console readiness and owned foreground-service admission/shutdown.
+4. Verify actual Console readiness, initialization/running signal ownership and
+   foreground-service admission/shutdown.
 5. Run the affected checks from committed source in isolated Linux dependencies.
 6. Prepare the configured native campaign without allocating a model or environment.
 

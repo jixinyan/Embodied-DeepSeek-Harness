@@ -15,6 +15,7 @@ import { serveGptPolicy, requestPolicyProposal } from '@edh/execution';
 import { FileTeamLoader } from '@edh/teams';
 import { CORE_TOOLS } from '@edh/tools';
 import { parseTaskCatalog } from '@edh/tasks';
+import { runConsoleProcess } from '../../apps/server/src/console-process.ts';
 import {
   createDshHost,
   createNativeWorkerEnvironment,
@@ -588,31 +589,14 @@ export function isNativeDeploymentEntry(moduleUrl) {
 export async function runNativeDeployment(settings) {
   const dispatcher = new EnvHttpProxyAgent();
   setGlobalDispatcher(dispatcher);
-  let server;
-  try {
-    server = await startServer({
-      root: nativeDeploymentRoot,
-      dataDirectory: settings.dataDirectory,
-      port: settings.port,
-      deployment: createNativeDeploymentFactory(settings),
-    });
-  } catch (error) {
-    await dispatcher.close();
-    throw error;
-  }
-  process.stdout.write(`${server.url}\n`);
-  for (const signal of ['SIGINT', 'SIGTERM'])
-    process.once(signal, () => {
-      void server
-        .close()
-        .then(() => dispatcher.close())
-        .then(
-          () => process.exit(0),
-          (error) => {
-            console.error(error);
-            process.exit(1);
-          },
-        );
-    });
-  return server;
+  return runConsoleProcess({
+    start: () =>
+      startServer({
+        root: nativeDeploymentRoot,
+        dataDirectory: settings.dataDirectory,
+        port: settings.port,
+        deployment: createNativeDeploymentFactory(settings),
+      }),
+    dispose: () => dispatcher.close(),
+  });
 }

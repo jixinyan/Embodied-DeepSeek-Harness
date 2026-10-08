@@ -12,6 +12,7 @@ production path from Session selection to native commands and formal verificatio
 | Compose configured native providers | [examples/deployments/native-workspace.mjs](../../examples/deployments/native-workspace.mjs) |
 | Bind one provider, Team and launch profile | [examples/deployments/native-live.mjs](../../examples/deployments/native-live.mjs) |
 | Start the HTTP/SSE application | [apps/server/src/http-server.ts](../../apps/server/src/http-server.ts) |
+| Own native CLI startup, signals and resource release | [apps/server/src/console-process.ts](../../apps/server/src/console-process.ts) |
 | Manage retained user Sessions and task admission | [apps/server/src/user-sessions.ts](../../apps/server/src/user-sessions.ts) |
 | Connect domain tools, Planner decisions and independent roles | [apps/server/src/application.ts](../../apps/server/src/application.ts) |
 | Manage native DSH role contexts | [agents/src/runtime.ts](../../harness/agent-runtime/agents/src/runtime.ts) |

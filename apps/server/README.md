@@ -20,6 +20,9 @@ simulators, embodiments, checkpoints and model services through one Console.
   evidence and event-bound operator replay frames. Replay URLs use the immutable
   run event sequence and preserve debug-only frame visibility.
 - [http-server.ts](src/http-server.ts): admission, history, control endpoints and SSE subscriptions.
+- [console-process.ts](src/console-process.ts): native CLI initialization, signal
+  handling and shared server/proxy shutdown. Initialization-time requests remain
+  owned until startup completes; repeated signals share one resource release.
 - [user-sessions.ts](src/user-sessions.ts): retained environment lifetime, task admission
   and durable session-open request identity; [publication and checks](../../docs/implementation/user-sessions.md#session-open-request-identity).
 - [session-task-history.ts](src/session-task-history.ts): compact session history,

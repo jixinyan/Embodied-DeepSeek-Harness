@@ -7,6 +7,43 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Native Console process ownership
+
+Workspace and single-provider CLI entries share
+[console-process.ts](../../apps/server/src/console-process.ts). The workspace
+installs signal handlers before asynchronous configuration; both CLI forms
+install them before server initialization.
+SIGINT/SIGTERM requests during initialization are retained until resource ownership
+is established. Server shutdown and proxy disposal share one operation, including
+repeated requests; startup errors retain their original cause after cleanup.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-startup-offline.mjs \
+  --config /absolute/path/original-native-workspace.json \
+  --output .local/work/<new-native-startup-check>
+```
+
+The diagnostic starts the actual configured native CLI with CUDA invisible.
+Three initialization cases send SIGTERM, SIGINT and repeated signals at the
+production journal's actual writer-lock creation, before URL readiness. Two
+running cases inspect actual HTTP configuration before single/repeated signals.
+All five require exit status zero, released writer locks/listeners and absence
+of both owned Node processes. Original configuration and implementation hashes
+remain unchanged. No model call, policy call, Session or environment is admitted.
+The workspace output is
+`.local/work/v1-native-startup-owner-20261008-current/acceptance.json`.
+Repeat with `--provider robodojo`, `robotwin`, `robocasa` or `behavior` and a new
+output directory to exercise its actual standalone entry. All twenty provider
+cases also pass. Their source-bound outputs are
+`.local/work/v1-native-startup-<provider>-20261008-final/acceptance.json`.
+
+Two additional actual CLI invocations encounter the running Console's occupied
+writer or port. Both fail with exit status one, preserve the existing owner and
+HTTP service, and leave no candidate process group. The port-conflict invocation
+releases its own writer; closing the original Console releases its writer and
+listener. Original configuration bytes remain unchanged. Evidence:
+`.local/work/v1-native-startup-owner-20261008-current/conflicts/acceptance.json`.
+
 ## Native context and scope ownership
 
 Selected DSH `token-meter` source belongs to `harness/agent-runtime/memory`,
