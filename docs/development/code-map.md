@@ -1,0 +1,70 @@
+# Source entry points
+
+Use the component directory for implementation and its adjacent README for the
+public responsibility. The [module architecture](../architecture/modules.md)
+defines dependency and authority boundaries. The files below identify the
+production path from Session selection to native commands and formal verification.
+
+## Application and agent runtime
+
+| Change | Entry point |
+| --- | --- |
+| Compose configured native providers | [examples/deployments/native-workspace.mjs](../../examples/deployments/native-workspace.mjs) |
+| Bind one provider, Team and launch profile | [examples/deployments/native-live.mjs](../../examples/deployments/native-live.mjs) |
+| Start the HTTP/SSE application | [apps/server/src/http-server.ts](../../apps/server/src/http-server.ts) |
+| Manage retained user Sessions and task admission | [apps/server/src/user-sessions.ts](../../apps/server/src/user-sessions.ts) |
+| Connect domain tools, Planner decisions and independent roles | [apps/server/src/application.ts](../../apps/server/src/application.ts) |
+| Manage native DSH role contexts | [agents/src/runtime.ts](../../harness/agent-runtime/agents/src/runtime.ts) |
+| Change the absorbed DSH agent loop | [agents/src/dsh/loop/index.ts](../../harness/agent-runtime/agents/src/dsh/loop/index.ts); preserve [source provenance](../provenance/README.md) |
+| Load composable Teams | [teams/src/loader.ts](../../harness/agent-runtime/teams/src/loader.ts) |
+| Configure cloud/local upper models | [models/src/configuration.ts](../../harness/agent-runtime/models/src/configuration.ts) |
+| Maintain plans and TODO tools | [planning](../../harness/agent-runtime/planning/README.md) and [tools](../../harness/agent-runtime/tools/README.md) |
+| Deliver explicit context and reports | [communication](../../harness/agent-runtime/communication/README.md) |
+| Enforce goals, retries and task completion | [tasks](../../harness/agent-runtime/tasks/README.md) |
+| Admit formal verification after device confirmation | [verification/src/boundaries.ts](../../harness/agent-runtime/verification/src/boundaries.ts) and [contexts.ts](../../harness/agent-runtime/verification/src/contexts.ts) |
+| Retrieve source-linked SKILL sections | [memory/src/library.ts](../../harness/agent-runtime/memory/src/library.ts) and [skill-sections.ts](../../harness/agent-runtime/memory/src/skill-sections.ts) |
+
+Prompts, tools and schemas resolve through the selected Team. The
+[current Agent loop](../implementation/current-agent-loop.md) records their actual
+sources and context assembly. Evolver remains paused and SceneState remains
+deferred under the active work scope.
+
+## Physical runtime
+
+All Python provider code belongs under
+`harness/physical-runtime/src/physical_harness/`.
+
+| Change | Entry point |
+| --- | --- |
+| Validate native deployment before allocation | [apps/server/src/native-worker-configuration.ts](../../apps/server/src/native-worker-configuration.ts) |
+| Connect the application to a native worker | [apps/server/src/native-worker.ts](../../apps/server/src/native-worker.ts) |
+| Manage worker Sessions and execution operations | [execution/worker.py](../../harness/physical-runtime/src/physical_harness/execution/worker.py) |
+| Change worker process communication | [execution/worker_transport.py](../../harness/physical-runtime/src/physical_harness/execution/worker_transport.py) |
+| Save original policy requests and actual controls | [execution/policy_records.py](../../harness/physical-runtime/src/physical_harness/execution/policy_records.py) |
+| Admit actions and enforce execution budgets | [execution/action_gate.py](../../harness/physical-runtime/src/physical_harness/execution/action_gate.py) |
+| Confirm simulator execution and stopping | [execution/native_device.py](../../harness/physical-runtime/src/physical_harness/execution/native_device.py) |
+| Add a WebSocket policy protocol or checkpoint | [policies](../../harness/physical-runtime/src/physical_harness/policies/README.md) |
+| Add an environment | [environments](../../harness/physical-runtime/src/physical_harness/environments/README.md); each provider has one named subdirectory |
+| Adapt physical hardware | [backends](../../harness/physical-runtime/src/physical_harness/backends/README.md) and [embodiments](../../harness/physical-runtime/src/physical_harness/embodiments/README.md) |
+| Compute source-bound RGB-D measurements | [perception/metric_geometry.py](../../harness/physical-runtime/src/physical_harness/perception/metric_geometry.py) |
+| Extend cross-language wire schemas | [physical.schema.json](../../harness/contracts/schema/physical.schema.json); regenerate TypeScript declarations with `pnpm generate:contracts` |
+
+The runnable worker entry remains `python -m physical_harness.execution.worker`.
+Provider SDKs load when their configured environment initializes. Policy model
+implementations load in their separately configured service processes.
+
+## Console and checks
+
+| Change | Entry point |
+| --- | --- |
+| Assemble the unified Console | [apps/console/public/app.js](../../apps/console/public/app.js) |
+| Select compatible Session components | [launch-selection.js](../../apps/console/public/launch-selection.js) and [launch-controls.js](../../apps/console/public/launch-controls.js) |
+| Inspect role communication and Agent trace | [coordination.js](../../apps/console/public/coordination.js) and [session-audit.js](../../apps/console/public/session-audit.js) |
+| Read actual run updates | [run-update.js](../../apps/console/public/run-update.js) |
+| Configure and start the desktop launcher | [apps/desktop](../../apps/desktop/README.md) |
+| Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |
+| Submit and audit actual native tasks | [native release campaign](../implementation/native-release-campaign.md) |
+
+Runtime output belongs under ignored `.local/` or `.runs/`. Provider data and
+checkpoint paths belong to deployment configuration. Source, evidence and installed
+dependency ownership remain explicit across hosts.

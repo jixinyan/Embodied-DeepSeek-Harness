@@ -11,7 +11,7 @@ from uuid import uuid4
 from physical_harness.execution.action_gate import ActionGate
 from physical_harness.execution.native_device import NativeActionDevice
 from physical_harness.execution.policy_observation import encode_policy_observation
-from physical_harness.execution.worker import record_policy_request
+from physical_harness.execution.policy_records import record_policy_request
 from physical_harness.policies.client import WebSocketPolicyClient
 from physical_harness.validation import ContractValidator
 

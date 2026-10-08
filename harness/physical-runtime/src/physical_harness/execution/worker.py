@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import base64
 from datetime import datetime, timezone
-import faulthandler
 import hashlib
 import json
 import math
@@ -19,6 +18,10 @@ from physical_harness.environments import NativeEnvironment, NativeFrame, Native
 from physical_harness.execution.action_gate import ActionGate
 from physical_harness.execution.modes import ExecutionMode
 from physical_harness.execution.native_device import NativeActionDevice
+from physical_harness.execution.policy_records import (
+    record_policy_control, record_policy_request, validate_recording_directories,
+)
+from physical_harness.execution.worker_transport import serve as serve_transport
 from physical_harness.execution.resources import ResourceArbiter, ResourceBusy, ResourceLease
 from physical_harness.execution.watchdog import ExecutionWatchdog
 from physical_harness.execution.policy_observation import encode_policy_observation
@@ -34,74 +37,6 @@ def require_object(value: Any) -> dict[str, Any]:
     if type(value) is not dict:
         raise ValueError("Expected a JSON object.")
     return value
-
-
-def validate_recording_directories() -> None:
-    for name in ("EDH_POLICY_REQUEST_RECORD_DIR", "EDH_METRIC_CAPTURE_RECORD_DIR"):
-        configured = os.environ.get(name)
-        if configured is None:
-            continue
-        path = Path(configured)
-        if not path.is_absolute():
-            raise ValueError(f"{name} must name an absolute existing recording directory.")
-        directory = path.resolve(strict=True)
-        if not directory.is_dir():
-            raise ValueError(f"{name} must name a recording directory.")
-        probe = directory / f".edh-recording-check-{uuid4()}"
-        with probe.open("xb") as output:
-            output.flush()
-            os.fsync(output.fileno())
-        probe.unlink()
-
-
-def record_policy_request(ticket: dict[str, Any], directory: Path) -> None:
-    request_id = ticket["request_id"]
-    if not isinstance(request_id, str) or not request_id.isascii() or not all(
-        character in "0123456789abcdef-" for character in request_id
-    ):
-        raise ValueError("Policy request identity is invalid for local recording.")
-    target = directory / f"{request_id}.json"
-    descriptor = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(descriptor, "w", encoding="utf-8") as output:
-        json.dump(ticket, output, allow_nan=False, separators=(",", ":"))
-        output.write("\n")
-
-
-def record_policy_control(segment: dict[str, Any], receipt: dict[str, Any], device: NativeActionDevice,
-                          directory: Path) -> None:
-    for key in ("execution_id", "request_id", "segment_id"):
-        value = segment[key]
-        if not isinstance(value, str) or not value or not value.isascii() or not all(
-            character.isalnum() or character in "-_.:" for character in value
-        ) or value in (".", ".."):
-            raise ValueError("Native policy control identity is invalid for local recording.")
-    step = device.last_step
-    if step is None:
-        raise RuntimeError("Native policy control recording has no actual step.")
-    target_directory = directory / segment["execution_id"] / segment["request_id"]
-    target_directory.mkdir(parents=True, exist_ok=True)
-    target = target_directory / f"{segment['segment_id']}.json"
-    descriptor = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(descriptor, "w", encoding="utf-8") as output:
-        json.dump({
-            "schema_version": "edh.native_policy_receipt.v1",
-            "recorded_at": wire_time(),
-            "control_index": device.executed_actions,
-            "segment": segment,
-            "receipt": receipt,
-            "raw_sim_steps": device.raw_sim_steps,
-            "uncertain_actions": device.uncertain_actions,
-            "native_step": {
-                "executed_actions": step.executed_actions,
-                "action_completed": step.action_completed,
-                "raw_sim_steps": step.raw_sim_steps,
-                "episode_terminated": step.episode_terminated,
-                "interruption_reason": step.interruption_reason,
-                "observation_id": step.observation.observation_id,
-                "native_physics": step.native_physics,
-            },
-        }, output, allow_nan=False, separators=(",", ":"))
-        output.write("\n")
 
 
 class NativeWorkerSession:
@@ -359,13 +294,17 @@ class NativeWorkerSession:
             from physical_harness.environments.robocasa import RoboCasaEnvironment
             environment = RoboCasaEnvironment(self._validator)
         elif provider == "robotwin":
-            from physical_harness.environments.robotwin import RoboTwinEnvironment
             source_root = Path(arguments["source_root"]).resolve(strict=True)
+            if not source_root.is_dir():
+                raise ValueError("RoboTwin source_root must name an installed source directory.")
+            from physical_harness.environments.robotwin import RoboTwinEnvironment
             os.chdir(source_root)
             environment = RoboTwinEnvironment(source_root, self._validator)
         elif provider == "behavior":
-            from physical_harness.environments.behavior.process import BehaviorProcessEnvironment
             source_root = Path(arguments["source_root"]).resolve(strict=True)
+            if not source_root.is_dir():
+                raise ValueError("BEHAVIOR source_root must name an installed source directory.")
+            from physical_harness.environments.behavior.process import BehaviorProcessEnvironment
             environment = BehaviorProcessEnvironment(source_root, self._validator)
         elif provider == "robodojo":
             if "source_root" in arguments:
@@ -1110,91 +1049,7 @@ def gate_scope(request: dict[str, Any] | None) -> dict[str, str]:
 
 
 async def serve() -> None:
-    loop = asyncio.get_running_loop()
-    trace_after = os.environ.get("EDH_WORKER_TRACE_AFTER_S")
-    if trace_after is not None:
-        interval = float(trace_after)
-        if not math.isfinite(interval) or not 1 <= interval <= 300:
-            raise ValueError("Worker diagnostic interval must be 1 to 300 seconds.")
-        faulthandler.dump_traceback_later(interval, repeat=True, file=sys.stderr)
-
-        def dump_tasks() -> None:
-            for task in asyncio.all_tasks(loop):
-                print(f"Worker coroutine {task.get_name()}: {task!r}", file=sys.stderr)
-                task.print_stack(limit=8, file=sys.stderr)
-            loop.call_later(interval, dump_tasks)
-
-        loop.call_later(interval, dump_tasks)
-    transport, protocol = await loop.connect_write_pipe(
-        asyncio.streams.FlowControlMixin, os.fdopen(3, "wb", buffering=0)
-    )
-    writer = asyncio.StreamWriter(transport, protocol, None, loop)
-    output_lock = asyncio.Lock()
-
-    async def emit(message: dict[str, Any]) -> None:
-        serialized = json.dumps(message, allow_nan=False, separators=(",", ":"))
-        if len(serialized) > 32 * 1024 * 1024:
-            raise ValueError("Native worker message exceeds the transport bound.")
-        try:
-            async with asyncio.timeout(session.transport_write_timeout_s):
-                async with output_lock:
-                    writer.write((serialized + "\n").encode("utf-8"))
-                    await writer.drain()
-        except BaseException:
-            session.revoke_lease()
-            raise
-
-    session = NativeWorkerSession(emit)
-    handlers = {
-        "initialize": session.initialize,
-        "open_task": session.open_task,
-        "start": session.start,
-        "pause": session.pause,
-        "stop": lambda args: session.pause(args, terminal=True),
-        "end": lambda args: session.pause(args, terminal=True, review=True),
-        "resume": session.resume,
-        "capture": session.capture,
-        "capture_review": session.capture_review,
-        "measure_object": session.measure_object,
-        "turn_view": session.turn_view,
-        "rotate_view": session.rotate_view,
-        "check": session.check,
-        "inspect_simulator": session.inspect_simulator,
-        "close_task": lambda _args: session.close_task(),
-        "close": lambda _args: session.close(),
-    }
-    active: set[asyncio.Task[None]] = set()
-
-    async def handle(message: dict[str, Any]) -> None:
-        request_id = message["id"]
-        try:
-            operation = message["op"]
-            if operation not in handlers:
-                raise ValueError("Unknown native worker operation.")
-            result = await handlers[operation](require_object(message.get("args", {})))
-        except Exception as error:
-            await emit({"id": request_id, "error": {"type": type(error).__name__, "message": str(error)}})
-        else:
-            await emit({"id": request_id, "result": result})
-
-    def read_request_line() -> str:
-        line = sys.stdin.readline()
-        if not line:
-            session.revoke_lease()
-        return line
-
-    while line := await asyncio.to_thread(read_request_line):
-        if len(line) > 32 * 1024 * 1024:
-            raise ValueError("Native worker request exceeds the transport bound.")
-        message = require_object(json.loads(line))
-        task = asyncio.create_task(handle(message))
-        active.add(task)
-        task.add_done_callback(active.discard)
-    await session.transport_disconnected()
-    for task in active:
-        task.cancel()
-    if active:
-        await asyncio.gather(*active, return_exceptions=True)
+    await serve_transport(NativeWorkerSession)
 
 
 if __name__ == "__main__":

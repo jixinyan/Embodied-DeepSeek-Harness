@@ -15,6 +15,7 @@
 <p align="center">
   <a href="docs/project-spec.md">Project specification</a> ·
   <a href="docs/architecture/modules.md">Module guide</a> ·
+  <a href="docs/development/code-map.md">Code map</a> ·
   <a href="docs/implementation/robodojo-backend.md">RoboDojo integration</a> ·
   <a href="docs/implementation/progress.md">Development records</a>
 </p>

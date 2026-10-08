@@ -10,6 +10,7 @@
 8. [Shared contracts](implementation/contracts.md): cross-language validation and lifecycle gates.
 9. [Typed boundaries](implementation/boundaries.md): F1 message/tool/operation APIs and migration.
 10. [DSH provenance](provenance/README.md): pinned source and absorption boundaries.
+11. [Source entry points](development/code-map.md): exact files for each runtime and application responsibility.
 
 [Current capability map](implementation/features.md) distinguishes verified DSH reuse,
 standalone physical helpers and unimplemented product features.

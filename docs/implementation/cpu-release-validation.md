@@ -24,11 +24,62 @@ EDH policy server forwards the actual request to an unavailable local endpoint;
 the observed connection failure must reach the client as a generic inference
 error. Authentication, discarded connections and listener shutdown are checked.
 No action result is supplied by the diagnostic.
+The production recorder also saves the exact original request, checks private
+POSIX file permissions and rejects an actual second write without changing the
+stored content. Recorder source and original record hashes remain unchanged.
 
 On 2026-10-07, 95 original telemetry events across three policy requests pass.
 The actual upstream connection times out, both clients discard their connections,
 the authenticated server rejects unauthorized admission and its listener closes.
 Evidence: `.local/work/v1-policy-transport-offline-20261007-02/acceptance.json`.
+
+## Worker process transport
+
+The worker remains runnable through `python -m physical_harness.execution.worker`.
+`execution/worker.py` owns NativeWorkerSession operations,
+`execution/worker_transport.py` owns the host connection and request tasks, and
+`execution/policy_records.py` owns original policy request/control recording.
+BEHAVIOR and RoboTwin source directories are checked before importing their
+optional SDK providers. [Source entry points](../development/code-map.md) identify
+these files alongside the upper runtime and Console.
+
+```sh
+node scripts/check-worker-transport-offline.mjs \
+  --python /absolute/path/isolated/python \
+  --output .local/work/<new-worker-transport-check>
+
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-worker-host-offline.mjs \
+  --config /absolute/path/original-deployment.json \
+  --python /absolute/path/isolated/python \
+  --output .local/work/<new-worker-host-check>
+```
+
+The first check starts actual EDH worker subprocesses with CUDA invisible. It
+verifies 24 scoped responses, 20 batched close requests, task-identity rejection,
+unknown-operation and invalid-argument errors, enabled diagnostics, the exact
+32-MiB input boundary, oversized input, invalid UTF-8/JSON/constants, malformed
+envelopes, duplicate active identities and a disconnected response channel.
+Failure cases retain an open input pipe until the worker exits independently.
+Every child reaches process close without forced termination or an unobserved
+Task/Future exception. Source hashes and original stderr remain preserved.
+
+The host check reads an original configured BEHAVIOR or RoboTwin deployment and
+uses the production TypeScript environment factory and native transport. Its CPU
+binding selects an actually absent SDK source directory. Initialization returns
+the original FileNotFoundError; the existing close protocol confirms shutdown,
+the worker process is absent, the recording probe is removed and the native image
+context closes. No simulator or model is allocated. The original configuration,
+wire schema and implementation sources retain their hashes.
+
+On 2026-10-08, all 13 process cases pass, together with both provider host checks.
+Evidence: `.local/work/v1-worker-transport-cpu-20261008-final/`,
+`.local/work/v1-worker-host-behavior-cpu-20261008-final/` and
+`.local/work/v1-worker-host-robotwin-cpu-20261008-final/`.
+The original policy request also passes exclusive recording, duplicate-write
+rejection and transport checks in
+`.local/work/v1-policy-recording-cpu-20261008-final/`.
+Active native SDK interruption and physical stopping retain their separate
+actual-environment acceptance requirements.
 
 ## Managed foreground service
 

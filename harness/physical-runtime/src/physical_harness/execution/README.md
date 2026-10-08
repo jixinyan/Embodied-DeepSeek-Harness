@@ -1,5 +1,28 @@
 # Execution
 
+| File | Responsibility |
+| --- | --- |
+| [worker.py](worker.py) | NativeWorkerSession: task and execution operations; process entry point |
+| [worker_transport.py](worker_transport.py) | Host JSON requests on stdin, responses/events on fd 3, pipe shutdown and request tasks |
+| [policy_records.py](policy_records.py) | Recording-directory checks, original inference requests and native control records |
+| [action_gate.py](action_gate.py) | Sole policy-to-device admission boundary |
+| [native_device.py](native_device.py) | Simulator owner thread, action counters, generation fencing and stop acknowledgement |
+| [policy_observation.py](policy_observation.py) | Named camera/proprioception serialization for actual policy requests |
+| [modes.py](modes.py) | Learned, direct and hybrid response normalization |
+| [resources.py](resources.py) | Explicit shared-device resource leases |
+| [watchdog.py](watchdog.py) | Independent lease/deadline monitoring |
+| [video.py](video.py) | Worker-local native frame recording |
+
+The process entry remains `python -m physical_harness.execution.worker`.
+Its transport accepts UTF-8 JSON messages of at most 32 MiB, with nonblank
+request identities and explicit operations. Duplicate active identities terminate
+admission. Python's stream reader bounds input before JSON decoding; TaskGroup owns
+request failures and cancellation. EOF, malformed input and failed publication
+revoke the lease before Session cleanup and pipe closure. Expected operation errors
+return their scoped error receipt. The CPU transport and actual host/worker
+initialization checks are in the
+[validation guide](../../../../../docs/implementation/cpu-release-validation.md#worker-process-transport).
+
 `ActionGate` validates generation, task identity, ActionSpec, observation freshness,
 resource ownership and budgets before bounded device dispatch. `PolicyRollout` composes
 an inference port with that gate. Pause invalidates old chunks; stopped confirmation

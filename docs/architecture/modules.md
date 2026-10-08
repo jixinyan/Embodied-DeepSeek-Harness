@@ -89,6 +89,10 @@ host. Authorized observation tools continue to supply images to models. See
 ## Direction of dependencies
 
 Source interfaces depend on `contracts`; application assembly composes the modules.
+The [source entry points](../development/code-map.md) identify concrete files for
+each responsibility. Native Session operations live in `execution/worker.py`,
+process communication in `execution/worker_transport.py` and original policy
+records in `execution/policy_records.py` inside the physical runtime.
 Native runtime mechanisms remain DSH-owned; see [reuse decision](../implementation/decisions/0003-reuse-dsh-mechanisms.md).
 Application assembly connects the runtime services through explicit interfaces.
 `contracts` must not import agents, apps or Python.

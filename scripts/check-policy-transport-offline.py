@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import secrets
 import socket
+import os
 
 import jsonlines
 from websockets.asyncio.client import connect
@@ -12,6 +13,7 @@ from websockets.exceptions import InvalidStatus
 
 from physical_harness.policies.client import JsonPolicyCodec, PolicyProtocolError, WebSocketPolicyClient, validate_policy_event
 from physical_harness.policies.server import serve_policy
+from physical_harness.execution.policy_records import record_policy_request
 from physical_harness.validation import ContractValidator
 
 
@@ -42,12 +44,28 @@ async def run(args: argparse.Namespace) -> None:
     output = args.output.resolve()
     assert output.is_relative_to(root / ".local" / "work")
     output.mkdir(parents=True, exist_ok=False)
-    sources = [args.request.resolve(), args.telemetry.resolve(), args.schema.resolve()]
+    sources = [args.request.resolve(), args.telemetry.resolve(), args.schema.resolve(),
+               root / "harness/physical-runtime/src/physical_harness/execution/policy_records.py"]
     hashes = {str(path): sha256(path.read_bytes()).hexdigest() for path in sources}
     validator = ContractValidator.from_path(args.schema)
     request = json.loads(args.request.read_text(encoding="utf-8"))
     validator.parse("PolicyRequest", request)
     assert JsonPolicyCodec().decode(JsonPolicyCodec().encode(request), request) == request
+    record_directory = output / "requests"
+    record_directory.mkdir()
+    record_policy_request(request, record_directory)
+    record_path = record_directory / f"{request['request_id']}.json"
+    recorded_hash = sha256(record_path.read_bytes()).hexdigest()
+    assert json.loads(record_path.read_text(encoding="utf-8")) == request
+    if os.name == "posix":
+        assert record_path.stat().st_mode & 0o777 == 0o600
+    try:
+        record_policy_request(request, record_directory)
+    except FileExistsError:
+        pass
+    else:
+        raise AssertionError("The original recorded policy request was overwritten.")
+    assert sha256(record_path.read_bytes()).hexdigest() == recorded_hash
     telemetry = read_telemetry(args.telemetry, validator)
     key = secrets.token_urlsafe(32)
     closed_port = socket.socket()
@@ -99,6 +117,8 @@ async def run(args: argparse.Namespace) -> None:
         "sources": hashes,
         "request_id": request["request_id"],
         "original_request_codec": "passed",
+        "original_request_recording": {"sha256": recorded_hash, "exact_content": True,
+                                       "duplicate_write_rejected": True, "unchanged_after_rejection": True},
         "original_telemetry": telemetry,
         "bearer_admission": "passed",
         "actual_upstream_connection_failure": upstream_failure,

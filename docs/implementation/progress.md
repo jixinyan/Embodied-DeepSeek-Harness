@@ -1,8 +1,36 @@
 # Implementation progress
 
-Spec: v1.76. Current checkpoint: **policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.77. Current checkpoint: **separate native Session/transport/recording modules; actual CPU worker pipes and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 native worker organization and CPU process checks
+
+`execution/worker.py` owns NativeWorkerSession and the process entry point;
+`worker_transport.py` owns bounded UTF-8 JSON host requests, fd-3 publications,
+request-task exceptions and pipe shutdown; `policy_records.py` owns original
+policy request/control persistence. The worker entry and wire responses remain
+stable. BEHAVIOR and RoboTwin initialization checks the installed source directory
+before importing its optional SDK provider. The
+[code map](../development/code-map.md) identifies exact upper/physical runtime,
+deployment and Console files; module READMEs describe the same responsibilities.
+
+Thirteen actual CPU subprocess cases pass. They verify batched scoped responses,
+operation errors, diagnostics, the exact 32-MiB boundary, malformed/oversized input,
+duplicate active identities and output disconnection. Input remains open during
+failure cases; every worker exits without forced termination or unobserved
+Task/Future errors. Production TypeScript host-to-worker checks independently
+confirm BEHAVIOR and RoboTwin missing-installation errors, normal close-protocol
+cleanup, absent child processes, removed recording probes and disposed image
+contexts. Exact source hashes remain unchanged. The original policy request also
+passes exclusive private recording and actual duplicate-write rejection.
+
+The Python source check now includes native Session, transport and record modules:
+58 files compile and 19 base modules import on the CPU host. These checks allocate
+no simulator and invoke no model or policy inference. Full current-code native
+tasks, multi-goal completion and active-SDK interruption retain their actual
+acceptance requirements. Evolver remains paused and SceneState remains deferred.
+Commands and original artifacts: [CPU release validation](cpu-release-validation.md).
 
 ## 2026-10-07 CPU transport and service ownership
 

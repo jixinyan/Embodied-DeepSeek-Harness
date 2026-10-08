@@ -1,6 +1,6 @@
 # v1 delivery and acceptance
 
-Updated: 2026-10-07. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
+Updated: 2026-10-08. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
 RoboDojo task success, real SAM/YOLO tool calls and source-bound RoboCasa RGB-D
 geometry are verified. Reusable native factories, complete retention bindings,
 packaged Desktop lifecycle and selected DSH recovery/JSON portability have production
@@ -25,6 +25,11 @@ prerequisite/terminal-continuity requirements. Shared worker preallocation check
 and actual Console readiness pass without allocating environments or models.
 Four original task histories pass the new CPU workflow reader. Current-code
 physical execution and original source acceptance retain their release gates.
+Actual CPU worker-process and TypeScript host checks cover communication failures,
+source-directory admission and initialization cleanup. Session, transport and
+recording implementations have explicit file owners; see the
+[source map](../development/code-map.md) and
+[CPU validation](cpu-release-validation.md#worker-process-transport).
 
 ## Acceptance register
 
