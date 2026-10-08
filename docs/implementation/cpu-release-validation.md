@@ -7,6 +7,33 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## ActionGate stop ownership
+
+[action_gate.py](../../harness/physical-runtime/src/physical_harness/execution/action_gate.py)
+retains one stop task independently of caller cancellation. Concurrent and
+repeated callers receive its original result. Action/resume failure handling
+preserves the original operation error and every stop error together, including
+their identities and complete receipt text. Unconfirmed stopping keeps its
+boundary unavailable and its motion authority retained.
+
+```sh
+CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-action-gate-owner-offline.py \
+  --request /absolute/path/original-robodojo-policy-request.json \
+  --output .local/work/<new-action-gate-owner-check>
+```
+
+Four cases use an unallocated production RoboDojo device, actual OS resource
+locks, original request scope/ActionSpec, source-file reads and OS pipes. They
+cover cancelled/concurrent stop waiters, actual stop deadline expiry, original
+FileNotFoundError with a closed-owner stop error and original FileNotFoundError
+with a stop deadline error. Every boundary remains unconfirmed; diagnostic
+leases release only after owner drain. The original input retains its SHA-256.
+There are zero inference tickets, returned actions, stop acknowledgements,
+model calls, native environment allocations and unobserved loop errors.
+Evidence: `.local/work/v1-action-gate-owner-20261008-final/acceptance.json`.
+These checks validate stop ownership and production failure aggregation;
+loaded dispatch/resume/device confirmation remain native campaign gates.
+
 ## Native device owner lifecycle
 
 [native_device.py](../../harness/physical-runtime/src/physical_harness/execution/native_device.py)

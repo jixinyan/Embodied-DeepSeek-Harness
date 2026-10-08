@@ -72,6 +72,7 @@ implementations load in their separately configured service processes.
 | Validate configured native scenes and policy endpoints before allocation | [check-native-scene-configuration.mjs](../../scripts/check-native-scene-configuration.mjs) |
 | Verify native owner-thread drain, cancellation and concurrent closure without an SDK allocation | [check-native-device-owner-offline.py](../../scripts/check-native-device-owner-offline.py) |
 | Verify shared Session/device/recording finalization and original file errors | [check-native-session-owner-offline.py](../../scripts/check-native-session-owner-offline.py) |
+| Verify retained ActionGate stops and original operation/stop errors | [check-action-gate-owner-offline.py](../../scripts/check-action-gate-owner-offline.py) |
 | Exercise native RoboCasa worker or SAM-backed measurement | [check-robocasa-worker.ts](../../scripts/check-robocasa-worker.ts) and [check-robocasa-object-measurement.ts](../../scripts/check-robocasa-object-measurement.ts) |
 | Submit and audit actual native tasks | [native release campaign](../implementation/native-release-campaign.md) |
 

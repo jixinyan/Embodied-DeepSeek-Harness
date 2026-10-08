@@ -1,8 +1,21 @@
 # Implementation progress
 
-Spec: v1.85. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.86. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 ActionGate stop ownership
+
+ActionGate retains its stop task independently of cancelled callers. Concurrent
+waiters receive the original result; action/resume failure handling preserves
+both the original operation exception and the stop exception, with complete
+receipt text. Failed stopping keeps its boundary unconfirmed and motion ownership
+retained. Four actual CPU cases pass through the production stop/failure paths
+with original scope/specification data, file reads, OS pipes and resource locks.
+They return zero actions/stop acknowledgements and allocate no SDK/model. Every
+thread/diagnostic lock releases after drain, with zero unobserved errors.
+See [ActionGate validation](cpu-release-validation.md#actiongate-stop-ownership).
+Loaded control/resume/device confirmation retain their native requirements.
 
 ## 2026-10-08 native device owner lifecycle
 

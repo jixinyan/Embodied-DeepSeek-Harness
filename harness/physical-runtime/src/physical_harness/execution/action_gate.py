@@ -1,8 +1,3 @@
-"""Deterministic admission between policy inference and device dispatch.
-
-The device must fence old generations at its actual command boundary. This layer
-cannot retract commands already committed inside an external controller.
-"""
 from __future__ import annotations
 
 import asyncio
@@ -10,7 +5,7 @@ import copy
 from datetime import datetime, timedelta, timezone
 import math
 import time
-from typing import Any, Awaitable, Callable, Protocol
+from typing import Any, Awaitable, Callable, NoReturn, Protocol
 from uuid import uuid4
 
 from physical_harness.validation import ContractValidator
@@ -126,7 +121,7 @@ class ActionGate:
         self._admission(bound["generation"])
         if self._clock() >= self._deadline:
             raise GateRejected("Policy result arrived after the observation deadline.")
-        self._ticket = None  # Consume exactly once before any device side effect.
+        self._ticket = None  # 设备操作开始以前消费唯一的 inference ticket。
         self._busy = True
         try:
             for index in range(0, len(bound["actions"]), self._segment):
@@ -140,7 +135,7 @@ class ActionGate:
                     raise GateRejected("Segment exceeds remaining execution budget.")
                 segment = {**bound, "schema_version": "physical.action_segment.v1", "segment_id": str(uuid4()), "actions": actions}
                 self._validator.parse("ActionSegment", segment)
-                self._reserved += len(actions)  # Uncertain dispatches remain charged; never silently replay.
+                self._reserved += len(actions)  # 未确认的 dispatch 持续占用原有预算。
                 async with asyncio.timeout(min(self._device_timeout, self.ticket_remaining_time())):
                     receipt = await self._device.dispatch(copy.deepcopy(segment))
                 self._validator.parse("ActionReceipt", receipt)
@@ -158,10 +153,7 @@ class ActionGate:
         except BaseException as error:
             self._error = str(error) or type(error).__name__
             if self._state == "running":
-                try:
-                    await self.pause(self.failure_reason(), terminal=True)
-                except Exception:
-                    pass
+                await self._raise_after_stop(error)
             raise
         finally:
             self._busy = False
@@ -177,8 +169,7 @@ class ActionGate:
         if self._state == "pausing":
             if terminal and not (reason == "planner_stop" and self._terminal_stop):
                 self._terminal_stop, self._reason = True, reason
-            if self._stop_task is not None:
-                await asyncio.shield(self._stop_task)
+            await self._wait_for_stop()
             return self.snapshot()
         self._generation += 1
         self._state, self._confirmed, self._boundary = "pausing", False, None
@@ -197,8 +188,22 @@ class ActionGate:
 
         self._stop_task = asyncio.create_task(stop_device())
         self._stop_task.add_done_callback(lambda task: None if task.cancelled() else task.exception())
-        await asyncio.shield(self._stop_task)
+        await self._wait_for_stop()
         return self.snapshot()
+
+    async def _wait_for_stop(self) -> None:
+        if self._stop_task is None:
+            raise RuntimeError("ActionGate stop ownership is unavailable.")
+        await asyncio.wait({self._stop_task})
+        self._stop_task.result()
+
+    async def _raise_after_stop(self, original: BaseException) -> NoReturn:
+        try:
+            await self.pause(self.failure_reason(), terminal=True)
+        except BaseException as stopping:
+            self._error = f"{type(original).__name__}: {original}; {type(stopping).__name__}: {stopping}"
+            raise BaseExceptionGroup(f"Action failure and device stop failed: {self._error}", [original, stopping]) from None
+        raise original
 
     def confirm_stop(self, acknowledgement: dict[str, Any]) -> None:
         """Accept a delayed matching acknowledgement; duplicate confirmation is idempotent."""
@@ -221,8 +226,7 @@ class ActionGate:
         if self._reserved >= self._budget or self.remaining_wall_time() <= 0:
             raise GateRejected("Execution budget is exhausted.")
         generation = self._generation
-        # A resume request can reach the device even if its acknowledgement is lost.
-        # Invalidate the earlier stop confirmation before sending that request.
+        # 发送 resume 以前取消原有停止确认，保留设备已经接收请求的可能性。
         self._state, self._confirmed, self._boundary = "resuming", False, None
         self._stop_task = None
         try:
@@ -231,11 +235,8 @@ class ActionGate:
             if resumed is not True or self._state != "resuming" or self._generation != generation or not self._lease() or self.remaining_wall_time() <= 0:
                 raise GateRejected("Device resume did not match the current control boundary.")
             self._state, self._reason = "running", None
-        except BaseException:
+        except BaseException as error:
             if self._state == "resuming" and self._generation == generation:
-                try:
-                    await self.pause(self.failure_reason(), terminal=True)
-                except Exception:
-                    pass
+                await self._raise_after_stop(error)
             raise
         return self.snapshot()
