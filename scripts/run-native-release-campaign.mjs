@@ -161,6 +161,7 @@ if (values.prepare) {
             },
           );
           const terminate = () => child.kill('SIGTERM');
+          console.log(JSON.stringify({ case: item.id, state: 'running', driverPid: child.pid }));
           abort.signal.addEventListener('abort', terminate, { once: true });
           if (abort.signal.aborted) terminate();
           child.once('error', reject);
