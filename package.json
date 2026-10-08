@@ -52,6 +52,7 @@
     "desktop": "electron apps/desktop",
     "build:desktop": "electron-packager apps/desktop EDH --out dist/desktop --overwrite --prune=false",
     "test:contracts": "tsx --tsconfig tsconfig.runtime.json --test --test-reporter=dot tests/contracts/*.test.ts && node scripts/test-python.mjs",
+    "start": "tsx --tsconfig tsconfig.runtime.json examples/deployments/native-workspace.mjs",
     "demo": "tsx --tsconfig tsconfig.runtime.json apps/server/src/main.ts"
   },
   "devDependencies": {

@@ -55,7 +55,7 @@ For task submission, start the configured native Console:
 
 ```sh
 EDH_NATIVE_WORKSPACE_CONFIG=/absolute/path/native-workspace.json \
-pnpm exec tsx --tsconfig tsconfig.runtime.json examples/deployments/native-workspace.mjs
+pnpm start
 ```
 
 Select its compatible environment, embodiment, checkpoint, execution mode, model

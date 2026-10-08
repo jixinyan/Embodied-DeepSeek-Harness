@@ -1,13 +1,22 @@
 # Upper runtime: development and extension
 
-Start from the repository root with `pnpm install --frozen-lockfile`, then `pnpm demo`.
-Open `http://127.0.0.1:4317`. No model key, simulator or GPU is needed for this fixture.
-`EDH_PORT`, `EDH_DATA_DIR` and `EDH_TEAM_FILE` configure the local demo service.
-Runtime records live under `.runs/console-demo` by default and are not public source.
+Install the declared dependencies with `pnpm install --frozen-lockfile` and the
+[development setup](../development/setup.md). Configure the actual model, policy
+and environment bindings in a [native workspace](native-workspace.md), then launch:
+
+```sh
+EDH_NATIVE_WORKSPACE_CONFIG=/absolute/path/native-workspace.json pnpm start
+```
+
+The configured port, data directory, deployment profiles and compatible Teams
+come from that workspace. Creating a Session admits its selected environment
+and configured service leases. Startup alone performs no model inference or
+simulator allocation. The [Desktop launcher](../../apps/desktop/README.md) opens
+the same production application from its selected configuration.
 
 ## Composition without another agent loop
 
-[main.ts](../../apps/server/src/main.ts) starts the
+[native workspace entry](../../examples/deployments/native-workspace.mjs) starts the
 [HTTP service](../../apps/server/src/http-server.ts), which composes a
 [DSH host](../../apps/server/src/runtime.ts), immutable
 [team](../../harness/agent-runtime/teams/src/loader.ts),
@@ -44,8 +53,7 @@ the configured decision owner's motion authority.
 6. Run [the configuration-to-role acceptance test](../../tests/runtime/team-extensions.test.ts)
    as a concrete example, then add behavior-specific provider tests.
 
-The default HTTP demo supplies built-in tools and the fixture provider through
-`createDemoDeployment`. The same `startServer` accepts a `ServerDeployment` containing
+`startServer` accepts a `ServerDeployment` containing
 model adapters, task presets, tools and backend factories; see the
 [deployment guide](deployments.md). Listing an arbitrary name in YAML alone cannot
 load executable code. These are trusted in-process extensions, not a plugin sandbox.
@@ -90,7 +98,7 @@ for that assignment. They immediately close new message/domain-tool admission, l
 the current native turn retain its receipt and final output, then dispose the handle
 at quiescence. New work needs a fresh delegation. The decision owner uses
 `tasks.finish` / `tasks.abandon` to end its task, rather than a final role report.
-An Evolver's successful recovery report can follow SKILL publication.
+Live Teams disable learning; Evolver execution/publication remains paused.
 
 An exact replay using the original expectedVersion returns the same accepted receipt
 without sending the report twice. The author may do this in its final native turn;

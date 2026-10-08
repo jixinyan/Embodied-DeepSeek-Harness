@@ -48,6 +48,37 @@ RoboTwin, RoboCasa and BEHAVIOR metadata, then releases its journal writer and
 listener with zero managed service processes. Evidence:
 `.local/work/v1-context-readiness-20261008/readiness.json`.
 
+Frozen `4391298` source passes the same context/recovery readers and full project
+checks on Linux with isolated Python 3.12.14, Node 24.21.0 and pnpm 11.19.0.
+All nine assignments, 392 events, 60 original tool calls and 24 prefix reads
+match the local source-journal hashes and measurement/projection values.
+Implementation hashes match the current module sources. Both registration scopes
+and every attached Session release; the original server checkout's before/after
+status is identical. No model, policy or environment is allocated.
+The server-retained complete archive has SHA-256
+`df0f973f61c109bf566a033f157a4698277db5a57bcaa2dd2dc6db0da9656fdb`.
+The downloaded check/source/ownership summary is under
+`.local/work/v1-cpu-source-20261008/linux-context/`; its source archive
+`cpu-context-summary.tar.gz` has SHA-256
+`ddbe38fd5eb67286d20ab60fe975cba13ac60bd760db9305487322745fc1045c`.
+
+## Configured native startup
+
+```sh
+EDH_NATIVE_WORKSPACE_CONFIG=/absolute/path/native-workspace.json pnpm start
+```
+
+The production command loads the configured native workspace and its existing
+factories. Missing configuration fails with the exact
+`EDH_NATIVE_WORKSPACE_CONFIG` field before server allocation. On 2026-10-08,
+the actual command starts the configured four-provider Console and serves its
+profile/model/Team metadata with zero Sessions, model calls or managed services.
+SIGTERM closes the journal writer, listener and both owned Node processes with
+exit status zero. Evidence:
+`.local/work/v1-native-start-cpu-20261008/acceptance.json`.
+This is configured application startup/shutdown acceptance; task execution
+retains the native campaign's requirements.
+
 ## Model-visible tool schemas
 
 `harness/agent-runtime/tools/src/model-schema.ts` owns production parameter

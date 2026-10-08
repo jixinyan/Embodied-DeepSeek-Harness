@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.81. Current checkpoint: **memory-owned native context measurement and foundation-owned registration scopes with actual journal validation; shared native policy-thread ownership and actual CPU cancellation/recording checks; tools-owned detached model schemas and actual recorded request/plan checks; separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.82. Current checkpoint: **current source-bound implementation sequence; memory-owned native context measurement and foundation-owned registration scopes with actual journal validation; shared native policy-thread ownership and actual CPU cancellation/recording checks; tools-owned detached model schemas and actual recorded request/plan checks; separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -23,6 +23,27 @@ Actual four-provider Console readiness passes with the configured Teams, models,
 checkpoints and native task criteria; shutdown releases its writer and listener
 with zero managed processes.
 Commands and evidence: [context CPU validation](cpu-release-validation.md#native-context-and-scope-ownership).
+
+The maintained [implementation plan](plan.md) records the actual owners, existing
+evidence and remaining gates for all seventeen steps. Its active scope covers
+CPU-accessible work and GPU-provider source/protocol/lifecycle debugging. The
+consolidated native campaign retains its one-GPU requirement. Evolver remains
+paused and SceneState remains deferred. The code map, capability register and
+per-step sources form the continuation entry point.
+
+`pnpm start` launches the configured native workspace through its existing
+production factory. The development/upper-runtime guides identify this entry,
+actual profile/Team/model bindings and Session-owned service allocation.
+The actual command verifies four profiles with zero Sessions/services, then
+SIGTERM releases its writer, listener and both owned Node processes with exit
+status zero. Missing configuration fails before allocation with the exact field.
+
+Frozen `4391298` passes full source checks and the same context/recovery readers
+on isolated Linux. All nine assignments, 392 events, 60 original calls and 24
+prefix reads match local source hashes and measurement/projection values.
+Original server Git status remains unchanged. The retained full archive has
+SHA-256 `df0f973f61c109bf566a033f157a4698277db5a57bcaa2dd2dc6db0da9656fdb`.
+Commands and source-bound summaries are in [CPU validation](cpu-release-validation.md).
 
 ## 2026-10-08 policy inference ownership
 

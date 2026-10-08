@@ -9,13 +9,19 @@ Modules are grouped by responsibility without an additional package-wrapper dire
 - `agents`, `teams`, `models`, `communication`: role execution and cooperation.
 - `tools`, `planning`, `files`: upper-level working capabilities.
 - `tasks`, `execution`, `perception`, `observation`, `verification`: the embodied task loop.
-- `memory`, `storage`: scoped evidence, experience and persistence.
-- `foundation`: plugin context, schema helpers and runtime support.
+- `memory`, `storage`: context measurement/compaction, scoped evidence, experience and persistence.
+- `foundation`: plugin context, native registration scopes, schema helpers and runtime support.
 
 The [module map](../../docs/architecture/modules.md) defines each boundary.
 Shared wire definitions live in [contracts](../contracts/README.md). Real policy
 stepping and simulator/device providers belong to [physical-runtime](../physical-runtime/README.md).
 
-**Status:** upper roles, native tools/TODOs, explicit communication, plans/files,
-verification, recovery and storage run through DSH with a CPU fixture backend.
-Physical providers are deferred. See the [upper-runtime guide](../../docs/implementation/upper-runtime.md).
+Native upper roles, tools/TODOs, explicit communication, plans/files, verification,
+recovery and storage run through the selected DSH services. Actual Qwen/learned-policy
+workflows have retained-scene retry and formal-success evidence on RoboTwin,
+RoboDojo and RoboCasa. BEHAVIOR preserves its observed failed task outcomes.
+CPU transport, ownership, source/record readers and scoped context checks have
+separate production validation. Evolver is paused and SceneState is deferred.
+See the [upper-runtime guide](../../docs/implementation/upper-runtime.md),
+[code map](../../docs/development/code-map.md) and
+[v1 register](../../docs/implementation/v1-delivery.md).

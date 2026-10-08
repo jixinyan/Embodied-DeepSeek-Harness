@@ -93,18 +93,16 @@ Model text comes from the actual provider; absent reasoning is not synthesized.
 Replay data comes from the authoritative records and images, without a separate
 invented event stream.
 
-If a real failure and Planner-directed recovery occur, include the Evolver handoff,
-subsequent evidence and resulting SKILL only when the original goal has a formally
-accepted success. Show the observed outcome for every recorded attempt. A failed
-rollout remains failed in the replay. The complete visual delivery is pending until
-the required provider and recovery acceptance gates are satisfied. The recorded
-RoboCasa console run `bc80d2aa-d6e4-4a38-b370-9efedc887936` already combines a real
-Planner, GR00T controls, simulator images and accepted formal GT failure. Its replay
-contains 2,300 events, 3,165 original images and three camera videos. Every video retains
-1,050 source frames. The run executes the official 1,050-control horizon and reaches
-formal verification at its confirmed stopped boundary. A later Planner model request
-ends with `TRANSPORT_ERROR`. The run contains no retry or recovery experience.
-The exported manifest identifies missing authoritative revision/seed fields and absent
-policy request/action-chunk events; separate service and configuration records retain
-additional provenance. These remain explicit evidence gaps in the complete delivery.
-See [replay export](../../scripts/REPLAY.md) for reproduction and evidence checks.
+Show the observed outcome for every recorded attempt. Native RoboDojo, RoboTwin
+and RoboCasa success/recovery exports retain their original Agent trace, action
+records, synchronized cameras and complete video decoding. The
+[Desktop workflow](../../apps/desktop/README.md) includes actual two-task submission,
+independent formal verification and released resources. The
+[RoboCasa success](robocasa-native-success.md) retains its identified GR00T inferences
+and completed plan/TODOs. Current Tower completion and the complete installed
+campaign retain their independent acceptance requirements.
+
+Evolver publication remains paused. If development is resumed, include its explicit
+handoff and resulting SKILL only after original-goal formal success. Recorded task
+recovery currently contains no Evolver assignment or new SKILL. See
+[replay export](../../scripts/REPLAY.md) for source, timestamp and decoding checks.

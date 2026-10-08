@@ -41,7 +41,9 @@ const variables = {
 };
 
 export async function readNativeWorkspaceConfiguration(environment = process.env) {
-  const file = nonblank.parse(environment.EDH_NATIVE_WORKSPACE_CONFIG);
+  const { EDH_NATIVE_WORKSPACE_CONFIG: file } = z
+    .object({ EDH_NATIVE_WORKSPACE_CONFIG: nonblank })
+    .parse(environment);
   const path = resolve(file);
   const directory = dirname(path);
   const configuration = configurationSchema.parse(JSON.parse(await readFile(path, 'utf8')));

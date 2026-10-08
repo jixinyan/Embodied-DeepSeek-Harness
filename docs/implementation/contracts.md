@@ -152,21 +152,29 @@ already pass `verdict()`** and come from the authoritative record. The lineage g
 alone cannot certify evidence or authenticate a model report. Opening a cabinet as a
 prerequisite cannot resolve a recovery whose original goal was storing the cup.
 
-## Acceptance and remaining integration
+## Production enforcement and acceptance
 
-`pnpm test:contracts` runs 77 shared wire cases and 69 shared lifecycle cases in both
-languages, plus 84 boundary cases and language-specific non-JSON rejection cases. Coverage includes stale
-attempts/assignments/boundaries, criteria drift, old/debug/cross-clock evidence,
-unknown versus pass, mixed `all`/`any`, paused motion, budgets and prerequisite recovery.
-All cases are synthetic. See [setup](../development/setup.md) for pinned dependencies.
+Wire validation and domain authority have explicit runtime owners. TeamSessions
+binds assignment identity, effective tools and explicit context. UpperRun connects
+TaskGoals/TaskPlans, evidence grants, formal boundaries and accepted verdicts.
+Native worker and ActionGate services validate current request/action scope,
+budgets, generations and device confirmation. Persisted record owners enforce
+immutable versions, reverse ownership and reference visibility during reads and
+maintenance. See the [module map](../architecture/modules.md) and
+[current Agent loop](current-agent-loop.md).
 
-Authentication, state storage, compare-and-swap/idempotency, assignment permissions,
-evidence access, event-type payload registration, actual pause acknowledgements,
-post-execution Verifier scheduling, owner retry coordination and SKILL publication are still future
-service work. A hostile caller can fabricate IDs or facts; schema validity is not
-proof of authority. Current gates are callable building blocks, not enforcement in a
-running physical system. Steps 04 and 06–10 must integrate them before physical claims.
-Next: [Step 02 Team/Role loading](plan.md#step-02--implement-teamrole-loading-and-the-tool-catalog).
+CPU diagnostics exercise actual original model/tool/plan records, request codecs,
+worker subprocesses, policy sockets, operation deadlines and owned shutdown.
+They retain original sources and perform no model or physical task execution.
+Commands and evidence are in [CPU validation](cpu-release-validation.md).
+Native task/stop/verification workflows retain independent provider evidence in
+the [v1 register](v1-delivery.md); complete current-code matrix acceptance remains open.
+
+Shared schema/lifecycle helper checks cover valid and invalid values independently
+of service authority. Their acceptance does not authenticate a caller or supply
+device evidence. Live Teams disable learning; Evolver execution and new recovery-SKILL
+publication remain paused. Existing authorized SKILL search/loading is available.
+The [implementation plan](plan.md) records the active sequence and remaining gates.
 
 ## F1 additions
 

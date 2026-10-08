@@ -1,493 +1,274 @@
 # Step-by-step implementation plan
 
-This is the construction sequence. Section references point to the
-[project specification](../project-spec.md). Work packages group responsibilities;
-these steps define executable slices, prerequisites and acceptance gates.
+Version: v1.82 · 2026-10-08
 
-**Steps 00–01 pass; upper slices of 02–12 run with fixtures. Physical acceptance remains open.**
-Skeleton interfaces and examples are implementation inputs, not completed behavior.
-[Progress](progress.md) records actual state. Steps 00–14 deliver v1; 15–16 extend it.
-A checklist or document change never substitutes for execution evidence.
+Use the [code map](../development/code-map.md) to locate implementation owners,
+the [progress record](progress.md) for verified checkpoints and the
+[v1 register](v1-delivery.md) for remaining acceptance. The
+[project specification](../project-spec.md) defines the required behavior.
 
-## Current delivery priority
+## Current development scope
 
-The [v1 delivery register](v1-delivery.md) is the current cross-module acceptance
-checklist. It includes all three simulators, actual model/policy services, complete
-agent observability, perception, experience and lifecycle/maintenance work. The
-numbered construction steps below retain their dependency order; their historical
-fixture checkpoints do not establish current v1 completion.
+Complete CPU-accessible implementation and debugging, including configuration,
+role/tool admission, independent contexts, original-record inspection, transport,
+resource ownership, shutdown and release preparation. GPU-dependent providers
+receive source, protocol, preallocation and lifecycle checks during this phase.
+Models, policy inference and simulator tasks remain stopped during CPU work.
 
-Complete the [live integration acceptance plan](live-integration.md) for the upper
-agent workflow and all three simulation providers with actual VLM and policy services.
-Retain the individual evidence gates; a successful SDK reset does not complete a
-provider's worker, policy or console acceptance.
+The consolidated native campaign must independently validate loaded-model and
+device behavior, original task success and complete installed workflows. On
+`jd_B300`, that campaign may use one physical GPU selected from GPUs 2–4;
+all model, policy, CUDA and graphics processes must use that same device.
+Framework device selection remains configuration-driven.
 
-Use the available GPU host to integrate a real-simulation MVP through isolated
-simulator, model and policy environments. Validate native rendering and task reset,
-connect the worker and action gate, then exercise actual model-driven task execution
-through the console. The [GPU integration sequence](gpu-integration.md) specifies
-source pins, environment isolation and acceptance evidence. The unified console provides
-session control, compatible configuration and observable agent/task state. The [current progress](progress.md)
-lists the exact status and next sequential actions. F1–F7 remain the full acceptance
-matrix: partial upper slices do not establish physical-provider readiness.
-
-Explicit journal compaction now retains all current records and their references.
-The console provides idle-only maintenance with a fresh sequence check. Continue with
-distinct-key/run/session retention and binary image/cache reference accounting; current
-compaction alone does not bound total disk usage. See [maintenance](storage-maintenance.md).
-
-### Session launcher and migration sequence (v1.14)
-
-1. **Implemented, CPU acceptance:** separate user-session environment ownership from
-   task runs and native DSH assignment sessions. Verify world continuity, task cleanup,
-   cancellation, late allocation, failed release and restart interruption.
-2. **Implemented, CPU console:** show installed launch bundles and their full bindings;
-   create/end sessions, run sequential tasks, inspect history and shared SKILL provenance.
-3. **Implemented, configuration/browser checks:** compatible environment, embodiment,
-   checkpoint, policy and default-model controls; shared admission validation, revision
-   checks and branded Team/workflow visualization. Editable task instructions and explicit
-   prior-task context now use registered criteria and native DSH briefs. **Next:** provider-backed
-   discovery/confirmation of new criteria and user clarification during active tasks.
-4. Add desktop/service bootstrap; starting the local server must become possible without
-   typing a command. Do not confuse browser session creation with server startup.
-5. Bind worker-owned media and physical resources. Port spatial memory and semantic frame
-   selection after scoped image retention is available; preserve explicit agent grants.
-6. Integrate one actual simulator/policy through the action gate and validate lifecycle;
-   then add the other providers and measure skill transfer across configurations.
-
-See [session guide](user-sessions.md) and [legacy migration audit](legacy-migration.md).
-
-### Immediate adapter integration sequence (v1.11)
-
-1. **Done:** reuse native DSH model serialization/streaming for OpenAI-compatible
-   endpoints; test tool calls, image results, malformed streams and cancellation.
-2. **Done:** define policy request/chunk/segment/receipt/stop wire contracts; test
-   local WebSocket inference and deterministic admission with CPU devices.
-3. **Next:** implement a nonblocking host-to-worker bridge through EmbodiedBackend.
-   Carry task/attempt/generation identity, job status and observation/evidence refs;
-   test startup, disconnection, cancellation and shutdown without replaying motion.
-4. Add owned resource leases and a worker watchdog that runs independently of policy
-   inference, including between rollout steps. Publish gate and actual device state
-   separately; a confirmed eligible budget end must start a fresh formal verifier.
-5. Validate the same path in the console with a CPU worker, then bind actual sensor
-   images, one simulator and an instruction-consuming policy server. Record separate
-   live model, robotics and stop-latency acceptance evidence.
-
-The [adapter guide](model-policy-adapters.md) supplies source entry points and the
-runnable examples. Steps 3–5 are incomplete even though transport tests pass.
+Evolver development is paused and SceneState implementation is deferred. Existing
+SKILL storage, explicit search and selective loading remain available. Hardware
+interfaces are in scope; real robot experiments require their selected deployment.
 
 ## Sequence and gates
 
-| Step | Capability | Prerequisite | Work package / milestone | Enables |
-| --- | --- | --- | --- | --- |
-| 00 | Pin and selectively absorb DSH; prove its runtime entry | None | Preparation | Runtime-backed contracts and modules |
-| 01 | Shared protocol and state contracts | 00 | W01 | Consistent TypeScript/Python boundaries |
-| 02 | Team/Role loader and tool catalog | 01 | W02 | Inspectable configuration snapshots |
-| 03 | Independent DSH role sessions | 02 | W03 | User-authored role execution |
-| 04 | Explicit communication, durable events and evidence | 03 | W03 | Asynchronous cooperation and handoff |
-| 05 | Planning/files and default roles | 04 | W04 | Persistent upper-level work |
-| 06 | CPU worker, resources and hardware contracts | 05 | W05 / M0 | Nonblocking jobs and confirmed device state |
-| 07 | Perception, active observation and provider replacement | 06 | W05 | Tool-based observation tasks |
-| 08 | Post-execution Verifier and mandatory formal checking | 07 | W06 | Authoritative post-budget outcomes |
-| 09 | Owner retry/replan and recovery linkage | 08 | W06 | Original-goal recovery tracking |
-| 10 | Evolver and skill storage/retrieval | 09 | W06 | Traceable recovery knowledge |
-| 11 | Full CPU acceptance slice | 10 | W01–W06 integration gate | Stable target for console and simulator integration |
-| 12 | Console on live framework events/streams | 11 | W07 / UI portion of M3 | Operable and explainable task process |
-| 13 | Real BEHAVIOR and policy compatibility | 12 + actual resources | W07 / real-environment M1–M2 | First actual simulation configuration |
-| 14 | v1 acceptance and reproducible handoff | 13 | M0–M3 | Evidence-backed release candidate |
-| 15 | Second environment/body and transfer evaluation | 14 | M4 | Tested replaceability and transfer claims |
-| 16 | Specific real robot integration | 14 + hardware binding | M5 | Separate real-device evidence |
+| Step | Owner and capability | Existing evidence | Remaining gate |
+| --- | --- | --- | --- |
+| 00 | Selected DSH source and host assembly | Exact provenance; actual model/tool Sessions | Preserve source/API boundaries through changes |
+| 01 | Shared wire schema and semantic admission | Production TS/Python checks and original records | Provider-specific native faults and complete release matrix |
+| 02 | Teams, role definitions and tool parameters | Ten authored Teams; 36 core tools; actual custom-role workflow | Additional configured Team/provider workflows |
+| 03 | Independent native role contexts | Original role journals and source-bound context reads | Additional live model/context configurations |
+| 04 | Explicit communication and evidence access | Actual context requests, reports, acknowledgements and scoped sources | Integrated multi-goal communication |
+| 05 | Plans, native TODOs and private files | Original plan/execution admissions and completed native TODOs | Multi-goal completion with actual providers |
+| 06 | Worker transport, ActionGate and resource ownership | Actual CPU subprocess/thread/socket checks and native stop evidence | Current-code loaded-model/device cancellation |
+| 07 | Perception and active observation | Native SAM3.1/YOLO26, calibrated RGB-D and R1Pro observation | Additional measured geometry and motion concurrency |
+| 08 | Independent post-execution verification | Native failed/successful outcomes and confirmed boundaries | Complete provider boundary matrix |
+| 09 | Planner retry/replan and recovery linkage | Native retained-scene recovery on three providers | Tower prerequisite/recovery completion |
+| 10 | Experience retrieval and Evolver | Failure-aware SKILL storage/search/section reads | Evolver paused; future transfer acceptance |
+| 11 | CPU release preparation | Source-bound diagnostics on macOS and isolated Linux | Keep current-source checks passing |
+| 12 | Console, launcher and retained Sessions | Packaged two-task Desktop; four-provider readiness | Full allocated switching and distribution validation |
+| 13 | Native simulator/policy configurations | RoboDojo/RoboTwin/RoboCasa success; BEHAVIOR failure evidence | Tower, BEHAVIOR success and complete native campaign |
+| 14 | Reproducible v1 release | Campaign preparation and original-source audits | Pass every active v1 gate before tagging |
+| 15 | Additional configurations and experience transfer | Four simulator adapters share the same upper runtime | New compatible task/body/checkpoint and transfer evaluation |
+| 16 | Physical robot deployment | Hardware interface, device watchdog and resource declarations | Selected robot with actual action/stop/task evidence |
 
-Milestones are capability groups, not code-writing order. Develop recovery and memory
-on CPU test backends before real simulator acceptance. Step 11 proves the framework
-protocol loop; Step 14 establishes the v1 simulation delivery.
-
-For each step: inspect prerequisite evidence → implement a minimal working slice →
-exercise normal and important failure paths → update progress → continue. Re-run affected
-checks after changes; do not repeat broad checks without a reason. Default to sequential
-construction; any later work split must preserve the dependency gates. Commit coherent,
-verified checkpoints frequently within a step.
+For each change, read its owner and current source, implement the required
+behavior, exercise production paths and relevant failures, inspect the result,
+update its documentation and commit a coherent verified checkpoint. Use real
+files, processes, sockets, provider records and native functions in CPU checks.
+Recorded inspection preserves input hashes and performs no physical replay.
+Native acceptance retains its original model, checkpoint, task and device sources.
 
 ## Step 00 — Establish the baseline and prove DSH integration
 
-**Prerequisite:** Source assets in spec Section 0 can be located. Continue the existing
-EDH checkout and preserve user changes.
+1. Inspect Git state, selected source provenance and current dependency bindings.
+2. Mount the original DSH model, Session, tools, loop and context services through
+   [runtime.ts](../../apps/server/src/runtime.ts).
+3. Keep absorbed source in the module that owns its responsibility: loop in
+   `agents`, dispatch in `tools`, model transport in `models`, context measurement
+   and compaction in `memory`, shared registration scopes in `foundation`.
+4. Verify exact source hashes, declarations and actual retained Session behavior.
 
-1. Verify DSH revision, source instructions, dependency declarations and workspace state.
-   Locate optional legacy/demo assets. Record spec v1.4 and initial step states in progress.
-2. Selectively absorb necessary DSH source into EDH, inspect imports/dependencies and
-   preserve provenance. Run relevant type/integration checks and separate baseline
-   failures. Do not copy the entire upstream product or install robot/GPU dependencies.
-3. Run a minimal DSH-native loop with a scripted model adapter, one tool returning a
-   structured result, and one subsequent host-delivered message.
-4. Verify scoped factory, target prompt/tools, background wake-up and cancellation/event
-   hooks. Record actual API signatures, internal assembly and necessary patches in
-   `docs/implementation/dsh-integration.md`.
+**Gate:** DSH owns model turns, tool dispatch, follow-ups and cancellation.
+The [import map](../provenance/dsh-imports.json) identifies every selected source.
 
-**Deliver:** Working DSH integration experiment, baseline results and concrete EDH
-assembly points.
+## Step 01 — Maintain shared schemas and state boundaries
 
-**Gate:** Actual tool calls and follow-up inputs advance through DSH's original loop.
-No new model loop exists. If APIs differ from the researched baseline, fix and document
-the bridge before Step 01.
+1. Edit the authoritative [physical schema](../../harness/contracts/schema/physical.schema.json)
+   and regenerate declarations with `pnpm generate:contracts`.
+2. Validate scope identities, units, frames, budgets, immutable task criteria,
+   attempt lineage and device confirmation on both runtime sides.
+3. Apply semantic authority checks through the domain owners before effects.
+4. Inspect actual requests, status transitions, verdicts and recorded action receipts.
 
-## Step 01 — Fix shared schemas and state contracts
-
-**Prerequisite:** Step 00. Primary locations: `harness/contracts/`, `tests/contracts/`.
-
-1. Refine the single schema source for teams, roles, tools, briefs, envelopes, reports,
-   plans, observations/media, subgoals, execution, verification, recovery and skills.
-2. Specify required fields, scope, units/frames/time, errors and version compatibility.
-   Distinguish defaults from references that must resolve during assembly.
-3. Define checkable execution/verification/recovery transition tables. Reject completion
-   based only on job termination, automatic budget renewal, or unknown treated as success.
-4. Validate identical positive/negative JSON fixtures in TypeScript and Python. Cross-file
-   unknown-tool/member errors belong to Step 02 semantic loading, not pure JSON shape.
-
-**Deliver:** Authoritative schemas, cross-language fixtures, transition tables and versions.
-
-**Gate:** Both sides accept the same valid values and reject invalid identity, units and
-versions. Old-attempt verdicts cannot advance new attempts. Resolve missing protocol
-fields here rather than allowing each side to invent them independently.
+**Gate:** Unknown state, stale identities and invalid wire values fail at their
+admission boundary. Job termination and TODO completion grant no task-success authority.
 
 ## Step 02 — Implement Team/Role loading and the tool catalog
 
-**Prerequisite:** Step 01. Locations: `harness/agent-runtime/teams/`, `harness/agent-runtime/tools/`, `examples/`.
+1. Resolve `team.yaml`, role files, selected schemas, tools, models and provider bindings
+   through [teams](../../harness/agent-runtime/teams/README.md).
+2. Validate supported media, responsibilities and embodiment capabilities before allocation.
+3. Freeze the effective Team snapshot and its digest for the chosen launch profile.
+4. Generate detached model-visible parameters through
+   [model-schema.ts](../../harness/agent-runtime/tools/src/model-schema.ts).
 
-1. Read team.yaml, ROLE.md and tool packs; resolve relative paths, built-ins, toolsets,
-   provider bindings and documented defaults.
-2. Check aliases, responsibilities, schemas, model/media capabilities and device
-   compatibility. Diagnostics identify the file, field and missing capability.
-3. Freeze a TeamRunSnapshot with effective instructions, tools, provider bindings and
-   versions. Loading/preflight must not initiate physical motion.
-4. Provide a documented, tested preflight command. Adding a role with existing providers
-   requires only a role file and team member entry.
+**Gate:** A custom role uses configuration and supported tools without a core role enum
+change. Planner/Verifier tool authority and required nested parameter types remain explicit.
 
-**Deliver:** Loader, catalog, snapshots, examples and actionable preflight diagnostics.
+## Step 03 — Create independent DSH role Sessions
 
-**Gate:** Load the minimal team; add roles without changing a core enum. Reject missing
-providers/responsibilities and incompatible models before startup. CPU defaults never
-import SAM, torch or simulator packages.
+1. Create a new assignment and native Session for each new delegation.
+2. Deliver its explicit InvocationBrief, prompt, tools and authorized evidence.
+3. Continue an existing assignment through its own native follow-up delivery.
+4. Inspect original model inputs and native histories for role identity and visibility.
 
-## Step 03 — Create genuinely independent DSH role sessions
+**Gate:** New roles start with their own context. Source-bound measurement/projection
+reads and Scope creation/disposal remain independent. See
+[context checks](cpu-release-validation.md#native-context-and-scope-ownership).
 
-**Prerequisite:** Step 02. Locations: `harness/agent-runtime/agents/`, `harness/agent-runtime/teams/` and DSH bridge.
+## Step 04 — Maintain explicit communication and evidence access
 
-1. Build instances from snapshots, assigning a fresh assignment/session for every new
-   delegation and explicitly selecting that role's prompt, tools and resource view.
-2. Inject validated InvocationBrief and a private workspace. Continue the same assignment
-   with its own messages; never automatically reuse old context for new work.
-3. Connect structured reports, cancellation and failure results. Publish instance lifecycle
-   and current work through events.
-4. Inspect actual model inputs using a recording adapter for unintended parent composition,
-   history, workspace or tool leakage.
+1. Bind caller identity and authority to delegation, messages and context requests.
+2. Persist versioned reports and immutable acknowledgement receipts before delivery.
+3. Extend evidence grants only through authorized observation or handoff.
+4. Preserve scoped delivery through missing-context continuation, cancellation and retirement.
 
-**Deliver:** Role factory, independent-session lifecycle and model-input acceptance checks.
+**Gate:** Reports retain their original schema/version and caller. Historical references
+grant no new evidence access. See [actual role workflows](role-context-acceptance.md).
 
-**Gate:** A withheld Planner marker is absent from scene inputs until explicitly handed
-over. Scene cannot see or invoke execution.start unless authorized in its effective
-role. A prompt instruction alone is not permission enforcement.
+## Step 05 — Maintain planning, native TODOs and private workspaces
 
-## Step 04 — Implement explicit communication and evidence access
+1. Read the complete plan-write template from `planning.read`.
+2. Commit structured plans with current version, actual owner and original criteria.
+3. Select only ready goals whose prerequisite successes have accepted formal verdicts.
+4. Keep native TODOs current and finish required plan/TODO rows before `tasks.finish`.
+5. Preserve private assignment files and explicitly authorized artifact handoff.
 
-**Prerequisite:** Step 03. Locations: `harness/agent-runtime/communication/`, `harness/agent-runtime/storage/`,
-`harness/agent-runtime/tasks/` and scoped evidence services.
+**Gate:** Execution admission reads the committed plan and exact current attempt.
+Prerequisite success requires its own verdict and completed plan row. See
+[original plan checks](cpu-release-validation.md#model-visible-tool-schemas).
 
-1. Implement nonblocking delegation, send/reply, context.request/response and scoped
-   subscriptions. The caller continues after acceptance rather than awaiting a long rollout.
-2. Verify real identity/permissions; assign IDs, causation/correlation and task sequences.
-   Persist formal requests/results before delivery and deduplicate redelivery.
-3. Resolve authorized evidence references. Separate raw media, critical events and
-   actual agent-seen messages/frames; a reference grants no blanket access to task data.
-4. Handle reconnect delivery, status queries, timeouts/cancellation and missing context.
-   Frame coalescing must not discard budget or stopping events.
+## Step 06 — Maintain worker transport and physical ownership
 
-**Deliver:** Router, recoverable event records, evidence interface and cross-role traces.
+1. Validate worker configuration before optional SDK import or device allocation.
+2. Own requests, bounded pipe input/output, response validation and subprocess shutdown
+   in [native-worker-transport.ts](../../apps/server/src/native-worker-transport.ts).
+3. Keep policy proposals behind the sole ActionGate; preserve scope, generation,
+   control budgets, resource leases and confirmed device boundaries.
+4. Own synchronous policy work and audit completion through caller cancellation
+   and deadlines using [inference.py](../../harness/physical-runtime/src/physical_harness/policies/inference.py).
+5. Drain owned requests, threads, processes and listeners during shutdown.
 
-**Gate:** Authorized non-parent/child members communicate; duplicates do not create new
-assignments. Missing context prompts explicit requests. No sender impersonation or GT
-visibility bypass. Trace acceptance, processing and actual model-visible input separately.
+**Gate:** Actual original errors remain observable. Unknown device state remains unknown;
+transport loss cannot replay motion or create a confirmed stop. CPU and loaded-SDK
+acceptance are identified separately in [CPU validation](cpu-release-validation.md).
 
-## Step 05 — Add upper-level tools and default roles
+## Step 07 — Maintain perception and active observation
 
-**Prerequisite:** Step 04. Locations: `harness/agent-runtime/planning/`, `harness/agent-runtime/files/`, `harness/agent-runtime/agents/`.
+1. Bind actual capture, SAM3.1 segmentation and YOLO26 detection providers.
+2. Return source-linked images, masks and calibrated depth/range/coordinates to Planner.
+3. Record the source observation, calibration, coverage, units and coordinate frame.
+4. Map active-view intent to the embodiment's actual camera/head/base resources.
+5. Keep SceneState outside the active implementation scope.
 
-1. Implement durable PlanDocument, expected-version updates and DSH todo/UI projection.
-   Keep plan progress distinct from authoritative goal/verdict state.
-2. Add private file read/write/edit/list/search and explicit artifact handoff. Ensure
-   subprocess search obeys the same scope as file-provider access.
-3. Register individual schema-bearing planning, file, communication and evidence tools;
-   avoid an opaque arbitrary-string tool dispatcher.
-4. Adapt useful legacy top_agent planning/context practices into default role instructions.
-   Remove fixed manipulation/navigation trees, robot constants and lower-level autonomous
-   retry. Clearly disable bindings to providers that do not yet exist.
+**Gate:** Every metric identifies its actual source and uncertainty. Unsupported
+calibration or motion fails explicitly; competing motion respects resource ownership.
+See [perception](../../harness/agent-runtime/perception/README.md).
 
-**Deliver:** Persistent upper-level work tools, default roles and async-turn work state.
+## Step 08 — Maintain independent post-execution verification
 
-**Gate:** Same-named files in two assignments do not collide; plans survive follow-ups;
-writing todos cannot fabricate success. A custom scene role can receive context, request
-missing information, use tools and return a report.
+1. Accept formal review only after eligible ended execution and confirmed device stop.
+2. Preserve `policy_stop`, `planner_stop`, `episode_terminated` and `budget_exhausted`.
+3. Create a fresh Verifier with the exact goal, attempt, criteria, boundary and evidence.
+4. Preserve failed/unknown outcomes and enforce formal verdict coverage and ownership.
 
-## Step 06 — Implement CPU execution and physical resource contracts
+**Gate:** Running frames and ordinary pauses stay with Planner. Budget exhaustion
+requires formal verification; cancellation/backend failure establishes no success.
+See [verification boundaries](verification-boundaries.md).
 
-**Prerequisite:** Step 05. Locations: `harness/agent-runtime/execution/` and Python execution,
-embodiment and backend modules.
+## Step 09 — Maintain Planner decisions and recovery linkage
 
-1. Connect TypeScript host and Python CPU worker through versioned requests/events.
-   Begin with test policies/devices declaring capabilities, step semantics and pause/stop support.
-2. Implement submit/query/pause/resume/stop job lifecycle. Return execution_id promptly,
-   advance actions in the background and measure control-step/wall-time budgets separately.
-3. Schedule actual actuator/base/head resources exclusively where required. Transfer
-   resources only after confirmed release/stop, never based on model prose.
-4. Implement idempotent acceptance, duplicate queries and reconciliation after disconnection.
-   Budget expiry stops new actions and emits a durable boundary event.
-5. Validate supported capability profiles against actual provider declarations and
-   device behavior, including viewpoint resources and resume support.
+1. Admit resume, retry, replan, finish and abandon only from the current decision owner.
+2. A failed formal attempt permits explicit retry with a factual summary and changes.
+3. Retain the environment, original criterion and per-goal execution limits.
+4. Capture new evidence and commit the plan before starting the admitted next attempt.
+5. Resolve recovery only when its original goal formally succeeds.
 
-**Deliver:** Nonblocking worker bridge, resource coordination and real-provider boundary evidence.
+**Gate:** Providers and other roles cannot create retry decisions. Repeated requests
+preserve attempt identity. See [current Agent loop](current-agent-loop.md) and
+[multi-goal admission](multi-goal-runtime.md).
 
-**Gate:** One idempotency key starts one job; request differs from confirmed pause;
-reconnect does not replay motion; action chunks do not create new attempts; exhausted
-budgets stop control. Simulator evidence does not establish real-hardware support.
+## Step 10 — Maintain retrievable skills and deferred evolution
 
-## Step 07 — Connect perception and active observation tools
+1. Persist immutable, failure-aware SKILL documents with original provenance and limits.
+2. Return metadata from `skills.search`; load selected documents/sections only on request.
+3. Preserve required scope, limitations and source sections on selective reads.
+4. Keep recovery linkage while live Teams have `learning_enabled: false`.
 
-**Prerequisite:** Step 06. Locations: `harness/agent-runtime/perception/`, `harness/agent-runtime/observation/`
-and Python providers.
+**Gate:** Experience informs Planner/Verifier without changing current criteria or
+evidence permissions. Evolver execution/publication remains paused. Future resumption
+requires original-goal formal success and independent experience-transfer acceptance.
+See [memory](../../harness/agent-runtime/memory/README.md).
 
-1. Implement capture, segmentation and depth/localization contracts with readable native
-   images and provider calibration. Check observation, mask, overlay, entity and frame linkage.
-2. Bind selected actual segmentation providers to the same logical tool where installed.
-   Change only the provider binding, keeping role and observation fixed.
-3. Map active-view intent to actual device actions/resources. Return achieved pose and
-   a new observation; “look left” can require different resources on different bodies.
-4. Store/report perception evidence without global cross-task scene-memory side effects.
-   Preserve native TS, Python RPC and MCP boundaries; heavy actual providers arrive in Step 13.
+## Step 11 — Complete CPU release preparation
 
-**Deliver:** Pluggable perception, active-view path and a complete scene-role tool assignment.
+1. Run full source, schema, role, provenance, dependency and Python checks.
+2. Exercise actual worker processes, original request recording, WebSocket transport,
+   inference-thread ownership, scoped failure records and cleanup.
+3. Inspect original native model schemas, plans, role histories and context projections.
+4. Verify actual Console readiness and owned foreground-service admission/shutdown.
+5. Run the affected checks from committed source in isolated Linux dependencies.
+6. Prepare the configured native campaign without allocating a model or environment.
 
-**Gate:** Swapping provider leaves the role unchanged. Missing calibration/frames produce
-explicit unavailability. Conflicting base observation/policy control cannot run together.
-Every candidate can be traced to the input frame and output evidence.
+**Gate:** Every CPU result records source identity, original inputs, observed outcomes
+and released ownership. No model or simulator result is supplied by a diagnostic.
+See [CPU release validation](cpu-release-validation.md).
 
-## Step 08 — Implement post-execution Verifier and mandatory formal checking
+## Step 12 — Maintain Console, launcher and retained user Sessions
 
-**Prerequisite:** Step 07. Locations: `harness/agent-runtime/verification/`, `harness/agent-runtime/tasks/`
-and Python fact providers.
+1. Bind compatible environment, embodiment, policy/checkpoint, Team and model selectors.
+2. Retain one environment across sequential tasks until explicit Session close.
+3. Show actual role output, tools, plans, TODOs, verdicts and resource status on one interface.
+4. Record headless simulator video on the worker; keep the Console focused on Agent trace.
+5. Preserve historical-context selection, restart reconciliation and idle-only maintenance.
+6. Validate packaged startup and complete owned Session/service shutdown.
 
-1. Persist a verification request after an eligible `ended` state and confirmed device
-   boundary. Eligible reasons are `policy_stop`, `episode_terminated`, and
-   `budget_exhausted`; ordinary pauses remain with Planner and do not start Verifier.
-2. Start a fresh independent DSH Verifier assignment with goal, criterion, budget,
-   execution report, boundary and authorized before/after evidence. Running frames
-   stay outside that assignment.
-3. Preserve failed or unknown status for external cancellation and backend failure.
-   Budget expiry creates a formal request even without a Planner tool call.
-4. Connect limited GT tools and formal reports. Check final owner, version, coverage and
-   factual consistency. Preserve unknown for missing evidence, unsupported checks or
-   uncertain device state.
+**Gate:** UI state comes from actual events and scoped reads. Additional configured
+roles require no special Console implementation. See [user Sessions](user-sessions.md),
+[headless simulation](headless-simulation.md) and [Desktop](../../apps/desktop/README.md).
 
-**Deliver:** Post-execution formal verification and verdict gates.
+## Step 13 — Validate native simulator and policy configurations
 
-**Gate:** No Verifier assignment receives running frames; confirmed eligible budget end
-always creates a formal request. Stale evidence/attempts or non-owner verdicts are
-rejected. Explicit GT false cannot become passed.
+1. Pin the installed BEHAVIOR, RoboCasa, RoboTwin and RoboDojo sources and compatible checkpoints.
+2. Keep datasets in `data/`, weights in `checkpoints/` and isolated SDK/model dependencies.
+3. Verify native reset, observations, calibration, capabilities, action specifications and task checks.
+4. Exercise actual model-driven subgoal execution, ActionGate controls, formal verification and retry.
+5. Independently verify task success, video decoding, unchanged-terminal continuity and shutdown.
+6. Complete RoboDojo `build_tower`, original BEHAVIOR task success and the remaining matrix.
 
-## Step 09 — Implement Planner decisions and recovery linkage
-
-**Prerequisite:** Step 08. Locations: `harness/agent-runtime/tasks/`, `harness/agent-runtime/communication/`
-and Planner decision tools.
-
-1. Add resume/retry/replan/finish/abandon with current decision-owner validation. Only
-   an explicit upper decision creates a new attempt; providers cannot retry independently.
-2. After accepting retry, create recovery_id with original goal, criterion version,
-   failed attempt, evidence and changes. Persist retry.started for Step 10.
-3. Link any prerequisite goals introduced by replanning. Close successful recovery only
-   when the original goal formally passes; record failure/abandonment distinctly.
-4. Handle delayed feedback, duplicate requests, cancellation and unconfirmed prior stops.
-   Prevent overlapping new attempts on the same physical resource.
-
-**Deliver:** Decision tools, recovery correlator and traceable multi-attempt records.
-
-**Gate:** For “cup outside cabinet → open cabinet → place cup,” opening the door does
-not resolve the original goal. Verifier/Evolver/policy retries are rejected. Duplicate
-acceptance does not create multiple chains.
-
-## Step 10 — Implement Evolver and retrievable skills
-
-**Prerequisite:** Step 09. Locations: `harness/agent-runtime/memory/`, `harness/agent-runtime/agents/` and DSH skill bridge.
-
-1. On retry.started, create a fresh Evolver with original failure, recovery goal, changes
-   and authorized evidence. Send subsequent attempts in the same chain explicitly.
-2. Record while execution continues. Before formal original-goal success, save work
-   records only, not successful-recovery skills.
-3. Generate a versioned bundle with decision/verification knowledge, prerequisites,
-   scope, sources and limitations. Validate and atomically save before experience.created.
-4. Implement skills.search/load with task semantics and capability/criterion compatibility.
-   Isolate fixture and real libraries; new agents retrieve explicitly rather than receiving
-   the entire library in their prompts.
-
-**Deliver:** Evolver lifecycle, skill persistence/versioning/retrieval and traceable reports.
-
-**Gate:** Ordinary success does not start Evolver. Failed recovery or prerequisite success
-cannot publish success skills. Duplicate completion does not produce duplicate versions.
-Fresh compatible Planner/Verifier assignments can explicitly retrieve knowledge;
-incompatible skills cannot become universal rules or change authoritative criteria.
-
-## Step 11 — Pass the complete real-provider acceptance slice
-
-**Prerequisite:** Recorded gates for Steps 00–10. Locations: task integration tests,
-`tests/contracts/`, `tests/integration/` and `examples/`.
-
-1. Implement spec Section 16.3 with actual VLM, policy and simulator providers.
-   Record a genuine failed attempt, Planner retry, independent Evolver and formal
-   original-goal success before claiming recovery or SKILL acceptance.
-2. Inspect actual DSH model-adapter briefs/tool schemas/messages. Save media references,
-   the event chain and final report rather than checking only helper flags.
-3. Add failure variants for duplication, stale verdicts, disconnect, unconfirmed pause,
-   missing context, GT isolation and unresolved original goals.
-4. Document actual installation/run commands, expected outputs and diagnostics. Run
-   affected checks and separate upstream baseline issues from new failures.
-
-**Deliver:** Real-provider integration acceptance and readable evidence.
-
-**Gate:** A configured deployment reproduces accepted task and device events with
-source/checkpoint revisions, actual sensor media and native control receipts. An
-unsuccessful real attempt leaves success-dependent gates pending.
-
-## Step 12 — Connect the physical console to framework data
-
-**Prerequisite:** Step 11. Locations: `apps/console/`, server/gateway projections.
-
-1. Map approved layout areas to spec Section 10 fields. Derive state from events/queries,
-   not from parsing natural-language model claims.
-2. Add team preflight/selection, tasks/constraints, pause/termination intent and Planner
-   feedback. Distinguish accepted, processed and device-executed commands.
-3. Display streams/overlays, private sessions, effective tools, device state, verdicts
-   and recovery; compare current sensor frames with actual agent-seen evidence.
-4. Add read-only history, stale/disconnected signals, skill sources and retrieval records.
-   Clearly distinguish historical fixtures, replay and actual runs.
-
-**Deliver:** Event-backed console with actual run and replay records.
-
-**Gate:** Users operate and inspect the Step 11 real run; a new scene member appears without
-special UI code. Unconfirmed pause is not shown as paused. Replay emits no physical
-commands and debug GT does not leak to agents. Refresh/reconnect restores state.
-
-## Step 13 — Integrate BEHAVIOR and the first actual policy
-
-**Prerequisite:** Step 12 plus actual simulator resources, robot configuration and
-compatible policy. Locations: Python environment/policy/body/perception/verification
-modules and deployment examples.
-
-1. Inspect actual legacy environment/policy/perception/motion entry points and dependencies.
-   Install selected locked simulator/checkpoint/providers in an isolated optional environment.
-2. Validate adapters first: reset, observations, capabilities, entities, frames/units,
-   frequency and success-contract mapping. Do not hide backend defects behind agents.
-3. Verify that the policy consumes the intended subgoal instructions. Run a bounded job
-   and check real steps, boundary observations and stop/pause acknowledgement. If it
-   cannot follow subgoals, record the blocker; a scripted policy is not a substitute
-   for real-policy acceptance. Training/fine-tuning is separate work.
-4. Migrate perception/active observation and verify actual base/head effects. If SAM is
-   selected, pin its code/checkpoint and run the tool contracts; otherwise keep it optional.
-5. Run real simulated single/multiple subgoals, budget checks, confirmed pause and
-   recovery, with actual sensor/state data in the console and all three default roles.
-
-**Deliver:** One working BEHAVIOR/body/policy configuration, instructions, evidence and limits.
-
-**Gate:** The simulator generates actual observations/control outcomes rather than replayed
-CPU data. GT remains limited, budget checks are mandatory and resource/stop boundaries
-are correct. Label intentionally injected faults and exclude them from natural success-rate claims.
+**Gate:** Each accepted configuration retains original source/checkpoint/task/model/device
+identity and actual actions, verdicts and decoded video. Failed outcomes retain their
+observed result. See the [native release campaign](native-release-campaign.md).
 
 ## Step 14 — Complete v1 acceptance and reproducible handoff
 
-**Prerequisite:** Step 13 and continued passage of affected earlier checks.
+1. Run the consolidated campaign sequentially against the frozen installed configuration.
+2. Verify every active row in the [v1 register](v1-delivery.md).
+3. Preserve original source, policy request/response, action, trace, media and cleanup evidence.
+4. Publish the exact supported configuration matrix and verified installation/run instructions.
+5. Update architecture/module documentation and SVGs for the delivered behavior.
+6. Tag v1 only after its required gates pass.
 
-1. Map every spec Section 13.1 requirement to actual run evidence. Validate
-   disconnect/reconnect/stop on supported simulator or hardware providers and identify
-   the provider for each result.
-2. Evaluate fixed tasks/policy/budgets/GT visibility with at least no-experience versus
-   retrieved-skill conditions. Preserve raw results and metrics; a few demos do not prove transfer.
-3. Provide complete default-team/custom-role/provider-swap/CPU/BEHAVIOR examples and
-   replace hypothetical commands with verified ones.
-4. Reproduce installation and simulation in a suitable environment.
-   Record config/dependency/model versions, attribution, limitations and next unfinished work.
-5. Prepare acceptance and release-candidate records. Outstanding release/deployment choices
-   follow spec Section 14; completion does not automatically publish packages or run hardware.
+**Gate:** Current-code native workflows and failure boundaries have independent
+acceptance. CPU preparation and old run inspection retain their stated scopes.
+Paused/deferred work and subsequent hardware experiments remain explicitly identified.
 
-**Deliver:** v1 code, examples, tests, evidence, initial evaluation and self-contained documentation.
+## Step 15 — Extend configurations and evaluate experience transfer
 
-**Gate:** M0–M3 each have locatable evidence. Keep historical CPU fixtures, actual simulation and
-unverified hardware separate. Without a real simulation loop, report partial delivery,
-not completed v1.
+1. Bind additional supported tasks, scenes, embodiments and policy checkpoints through configuration.
+2. Validate their native observation/action/calibration/criteria interfaces and full workflows.
+3. When experience evolution resumes, freeze source skills and compare target runs with and without retrieval.
+4. Record target applicability, adaptation, neutral/negative outcomes and source evidence.
 
-## Step 15 — Add a second configuration and evaluate transfer
-
-**Prerequisite:** Step 14 and resources for RoboCasa, RoboTwin or a second body.
-Record the selected configuration rather than assuming all are available together.
-
-1. Reuse adapter conformance tests for observations, entities, actions, capabilities and
-   criteria; bind a compatible policy and run actual tasks.
-2. Keep general core/protocols stable and record added files and unavoidable core changes.
-   If an abstraction is missing, document it and regress the first configuration rather
-   than hiding it in special-case branches.
-3. Align semantic tasks, object roles and criteria; freeze source skills and compare target
-   runs with/without them. Report target-side skill adaptation separately.
-4. Attempt minimal DiMOS interoperability when dependencies permit. Track unavailable
-   integration separately from the second environment's completion.
-
-**Deliver/gate:** A second real configuration, core-change accounting, conformance results
-and transfer evaluation. Schema/mock completion is not simulator support. Preserve neutral
-and negative transfer results.
+**Gate:** An additional configuration has its own task/device acceptance. Transfer
+claims require source and destination evidence with comparable task semantics.
 
 ## Step 16 — Integrate and independently verify real hardware
 
-**Prerequisite:** Step 14 and a specified robot/backend, compatible policy, operating
-conditions and authorized test scope. This may follow Step 15 or proceed independently
-when the second simulation configuration is unavailable.
+1. Select the robot, SDK/ROS2/DiMOS binding, policy, operating limits and authorized scope.
+2. Validate actual sensors, calibration, connection identity and read-only observations.
+3. Verify bounded actions, resource ownership, device-local stopping and disconnect behavior.
+4. Replace simulation fact checks with actual visual/device evidence; preserve uncertainty.
+5. Run tasks through the existing Team, Console and independent verification services.
 
-1. Map DiMOS/SDK/ROS2 backend to existing capabilities/jobs. Validate real sensors,
-   calibration, connection state and read-only observation first.
-2. Within the agreed test scope, validate bounded actions, resource ownership, device-local
-   stopping, disconnect behavior and reconnect queries before running subgoal policies.
-3. Replace simulation GT with actual visual/device evidence and retain unknown when
-   completion cannot be established.
-4. Use the same team, messages, console and recovery records. Express hardware-specific
-   limits through capabilities/adapters and submit a separate real-device report.
-
-**Deliver/gate:** Reproducible hardware configuration, actual actions/stop acknowledgements,
-tasks and evidence. Camera connection or mock-device tests are not complete robot-task acceptance.
+**Gate:** Retain actual action/stop acknowledgements, task outcomes, device identity
+and a reproducible configuration. Hardware experiments follow simulation/interface acceptance.
 
 ## Progress records and interrupted-work handoff
 
-`docs/implementation/progress.md` is the state entry point; this plan defines requirements.
-Statuses are `not_started / in_progress / blocked / done`. Functional steps remain
-not_started until implementation begins; Skeleton Bootstrap is recorded separately.
-The next functional goal is Step 00.
+Record exact source revision, configuration/input hashes, production commands,
+observed results, private artifact paths, acceptance limits and next required work
+in [progress](progress.md) and the appropriate capability guide. Preserve original
+failure evidence and task outcomes. Keep public documentation in English and
+architecture diagrams in SVG.
 
-Use this template; it does not contain passed checks:
-
-```yaml
-step: '00'
-status: not_started
-spec_version: '1.4'
-base_commit: null
-implementation_commit: null
-changed_files: []
-commands_run: []
-acceptance_evidence: []
-known_limitations: []
-blocked_on: []
-next_step: '01'
-```
-
-Done requires commands/results, artifact/log paths and gate-specific evidence. Blocked
-records the missing item, affected gate, resolution and independent work already done.
-For example, an absent checkpoint blocks Step 13 real execution, not a previously passed
-CPU loop; CPU evidence cannot fill that real-run gap. Ask the user before entering work
-that depends on an unspecified material configuration or constraint.
-
-On resumption, compare progress with actual code/checks and continue the first unfinished
-subtask. Do not recreate the repository or accept an unsupported “done” claim. Record
-new decisions in `docs/implementation/decisions/` with rationale, affected spec clauses
-and validation. Commit coherent verified checkpoints frequently and preserve published history.
+On resumption, inspect current Git/source state, read the progress/spec/module
+owners and continue the first active unfinished requirement. Preserve user changes,
+independent role contexts, Planner authority, formal verification and ActionGate.
+Commit and push coherent verified checkpoints without rewriting published history.
