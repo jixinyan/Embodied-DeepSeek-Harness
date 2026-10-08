@@ -100,10 +100,15 @@ terminal task with zero controls/inferences/physics steps. The separate original
 failed BEHAVIOR run `96c0b983` remains ineligible for task-success acceptance.
 Evidence: `.local/work/v1-campaign-recorded-20261007/`.
 
-Four current profiles and eight planned task submissions pass offline campaign
-preparation in `.local/work/v1-campaign-prepared-20261007/`. The actual Console
-also rejects release execution from a modified checkout before any Session or
-service allocation. Evidence: `.local/work/v1-campaign-admission-20261007/`.
+Frozen `f3e373c` passes actual four-provider readiness and prepares four cases
+with eight planned task submissions on 2026-10-08. Readiness retains each selected
+Team, model, checkpoint, policy, task criterion and admitted prerequisite check.
+Writer/listener resources release and no managed process, model or environment
+starts. Evidence:
+`.local/work/v1-cpu-release-preparation-20261008-validated/campaign/campaign-plan.json`.
+The actual Console separately rejects release execution from a modified checkout
+before any Session or service allocation. Evidence:
+`.local/work/v1-campaign-admission-20261007/`.
 
 ## Acceptance boundary
 

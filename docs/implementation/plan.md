@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.95 · 2026-10-08
+Version: v1.96 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -218,6 +218,12 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 **Gate:** Every CPU result records source identity, original inputs, observed outcomes
 and released ownership. No model or simulator result is supplied by a diagnostic.
 See [CPU release validation](cpu-release-validation.md).
+
+**Verified checkpoint:** macOS and frozen `f3e373c` on isolated Linux pass all
+twenty-six components, with matched original inputs/configurations, executable
+digests and released resources. Four actual profiles also prepare eight native
+task submissions. Loaded-model/device behavior and complete task workflows retain
+Steps 13–14's native acceptance requirements.
 
 ## Step 12 — Maintain Console, launcher and retained user Sessions
 

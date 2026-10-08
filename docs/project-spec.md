@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.95 · 2026-10-08
+Version: v1.96 · 2026-10-08
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -1884,10 +1884,10 @@ timestamps and provider source revisions:
    `budget_exhausted`, confirm the native device boundary and final execution report.
    Start a fresh Verifier with the criterion, budget and authorized before/after
    evidence. Record each limited GT result and its source.
-4. Interpret the actual formal verdict. A failed verdict permits Planner to decide
-   whether to retry or replan, which then starts Evolver. A successful original-goal
-   verdict permits a provenance-bound SKILL. If the real attempt does not succeed,
-   retain recovery and SKILL acceptance as pending.
+4. Interpret the actual formal verdict. Planner owns retry or replan after a
+   failed verdict and supplies the next attempt's explicit context. Evolver remains
+   paused for the active work scope. Its separately enabled publication workflow
+   requires original-goal formal success and complete experience provenance.
 5. Confirm external cancellation and backend errors remain failed or unknown, and
    verify final resource release. Inspect persisted DSH requests, tool calls, native
    receipts and replay evidence rather than inferring success from model narration.

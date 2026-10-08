@@ -58,17 +58,24 @@ original native context reads and four-provider readiness. The admission/resourc
 count includes 108 configuration rejections, four Worker initialization cases and
 25 Console CLI signal cases. Original inputs retain their hashes. There are no
 model calls, policy results, simulator allocations or controls. Evidence:
-`.local/work/v1-cpu-release-matrix-20261008-final-02/acceptance.json`.
+`.local/work/v1-cpu-release-matrix-20261008-final-03/acceptance.json`.
 
-Frozen `917a4ff` independently passes the sixteen-component campaign on isolated
-Linux: 85 process/wire/resource cases, six visual cases, twelve original context
-reads and four configured profiles. Six original input hashes, six original
-configuration hashes, sixteen diagnostic hashes and 78 component source hashes
-match macOS. Reports verify original histories, scoped resource release and an
+Frozen `f3e373c` independently passes all twenty-six components on isolated Linux
+with Python 3.12.14, Node 24.21.0 and the complete frozen package lock. The same
+222 admission/process/wire/resource cases, six visual cases, twelve original
+context reads and four configured profiles pass. Six original input hashes,
+six original configuration hashes, nineteen diagnostic hashes and 188 component
+source-hash comparisons match macOS. Source dictionaries compare each named file
+and its digest independently of filesystem enumeration order. Every retained
+report matches its recorded digest; the downloaded archive matches the server's
+SHA-256. Reports verify original histories, scoped resource release and an
 unchanged canonical server checkout. The archive SHA-256 is
-`3b91dee110fed0339fecec062005392b9b6315703396e48e309d700fc9dd8d32`.
-Local reports and the independent summary are under
-`.local/work/v1-cpu-release-campaign-20261008/linux/`.
+`1ed919a586f530e52a93d8afad3225a73253bc804497e9b8075217c6e4811ceb`.
+Local reports and the independently verified summary are under
+`.local/work/v1-cpu-release-matrix-validated-linux-20261008/linux/`.
+The archived revision identifies frozen source; its extracted workspace correctly
+reports Git identity as unavailable. Actual native execution requires a clean
+committed checkout and fresh readiness tied to that exact revision.
 Loaded-model/device behavior and original task completion retain the
 [native campaign](native-release-campaign.md) requirements.
 

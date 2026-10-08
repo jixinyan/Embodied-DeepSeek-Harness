@@ -20,10 +20,13 @@ tracks the remaining work across that behavior.
 The [CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign) executes
 26 source/production components from actual configuration and original records.
 macOS passes 222 admission/process/wire/resource cases, six visual-context cases,
-twelve original context reads and four-provider readiness. Frozen `917a4ff` has
-matched isolated-Linux evidence for the sixteen-component campaign, including
-six original configurations and complete owned-resource release. Current-code
-loaded models, simulator actions and complete task workflows retain their native gates.
+twelve original context reads and four-provider readiness. Frozen `f3e373c` passes
+the same twenty-six components on isolated Linux. Six original inputs, six
+original configurations, nineteen diagnostic hashes and 188 component source-hash
+comparisons match; every report and the downloaded archive retain their verified
+digests. Owned resources release and the canonical remote checkout remains
+unchanged. Current-code loaded models, simulator actions and complete task
+workflows retain their native gates.
 
 The [release validation guide](release-validation.md) defines source checks,
 actual native task submission, source-bound audits and product/safety evidence.

@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.95. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.96. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
@@ -32,17 +32,25 @@ environment identity and all child diagnostics run with CUDA invisible.
 The macOS campaign passes 222 configured admission/process/wire/resource cases, six native visual-context
 cases, twelve original context reads, all project checks and actual four-provider
 readiness. No model, policy result, simulator or control is supplied.
-Evidence: `.local/work/v1-cpu-release-matrix-20261008-final-02/acceptance.json`.
+Evidence: `.local/work/v1-cpu-release-matrix-20261008-final-03/acceptance.json`.
 The command covers 108 configuration rejections, four real Worker initialization
 failures and 25 startup/signal cases across the unified and four provider CLIs.
 Writer-lock-triggered and HTTP-ready cases retain their actual URL-observation
 state before signalling and before exit, alongside strict process/port/writer release.
 Source hashes are unique; each invocation retains its own report and logs.
-Frozen `917a4ff` also passes the sixteen-component Linux campaign with six
-original data hashes, six original configuration hashes, sixteen diagnostic hashes
-and 78 executable component hashes matching macOS. Original journals and the
+Frozen `f3e373c` also passes all twenty-six components on isolated Linux.
+Independent comparison verifies six original data hashes, six original
+configuration hashes, nineteen diagnostic hashes, 188 component source-hash
+comparisons and every original report digest. Named source files retain their
+digest regardless of filesystem enumeration order. Original journals and the
 canonical server checkout remain unchanged. No GPU, model, policy result or
-environment is allocated. Exact source/evidence checks are recorded in the guide.
+environment is allocated. The downloaded evidence matches the server's SHA-256.
+Reports and the verified summary are under
+`.local/work/v1-cpu-release-matrix-validated-linux-20261008/linux/`.
+Four actual profiles additionally pass committed-source readiness and prepare
+eight task submissions with explicit Tower prerequisite and retained-terminal
+requirements. Preparation starts no managed service, model or environment.
+Exact source/evidence checks are recorded in the guide.
 See [campaign command and inputs](cpu-release-validation.md#consolidated-cpu-campaign).
 
 ## 2026-10-08 managed service startup ownership
