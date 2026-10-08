@@ -23,6 +23,10 @@ configuration/catalog snapshot before preparing or creating a Worker process.
 The transport establishes process ownership before invoking the optional startup
 observer, awaits its completion before initialization and confirms process release
 before propagating an observer error.
+Host requests admit bounded operation names and finite JSON arguments before
+serialization or pending-request publication; successful result values use the
+same finite JSON domain. Actual initialization interruption retains unknown
+device/resource state after owned-process release.
 Planner prerequisite goals use only admitted native checks and commit their own
 passed-verdict plan update before a dependent goal starts. Source and readiness
 checks have separate acceptance from physical tasks; see

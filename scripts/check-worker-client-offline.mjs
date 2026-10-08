@@ -163,6 +163,56 @@ await inspect('operation-errors-and-batch', async (transport) => {
   return { operationErrors: errors.length, receipt, expectCloseError: false };
 });
 
+await inspect('finite-json-request-admission', async (transport) => {
+  const invalidArguments = [
+    { value: JSON.parse('1e400') },
+    { value: JSON.parse('-1e400') },
+    { nested: [0, { value: Number.POSITIVE_INFINITY }] },
+    { value: NaN },
+    { value: undefined },
+    { value: 1n },
+    { value: JSON.stringify },
+    { value: new Date('2026-10-08T00:00:00Z') },
+    { value: new Map([['value', 1]]) },
+    { value: new Set([1]) },
+    { value: new Uint8Array([1]) },
+    { value: Symbol('native-request') },
+  ];
+  for (const args of invalidArguments)
+    assert.throws(transport.request.bind(transport, 'unknown', args), (error) => {
+      assert.equal(error.name, 'ZodError');
+      assert(error.issues.every((issue) => issue.path[0] === 'args'));
+      return true;
+    });
+  const invalidOperations = ['', '   ', 'x'.repeat(65), null, 1, [], {}];
+  for (const operation of invalidOperations)
+    assert.throws(transport.request.bind(transport, operation), (error) => {
+      assert.equal(error.name, 'ZodError');
+      assert(error.issues.every((issue) => issue.path[0] === 'op'));
+      return true;
+    });
+  assert.equal(transport.disconnected, false);
+  const admissible = {
+    scalars: [null, true, false, 0, -1, 0.5, 'native'],
+    nested: { arrays: [[1, 2], {}], empty: [] },
+  };
+  await assert.rejects(
+    transport.request('unknown', admissible),
+    /^Error: Native worker ValueError: Unknown native worker operation\.$/,
+  );
+  assert.equal(transport.disconnected, false);
+  const receipt = await transport.request('close');
+  assert.deepEqual(receipt, { closed: true });
+  return {
+    rejectedArguments: invalidArguments.length,
+    rejectedOperations: invalidOperations.length,
+    transportRemainsConnected: true,
+    originalOperationErrorPreserved: true,
+    receipt,
+    expectCloseError: false,
+  };
+});
+
 await inspect('cancelled-read-drains-original-response', async (transport) => {
   const signal = new AbortController();
   const request = transport.request('capture', {}, { signal: signal.signal });

@@ -121,6 +121,40 @@ image context and empty policy-record directory. The local reports are under
 `.local/work/v1-worker-startup-host-sync-20261008/` and
 `.local/work/v1-worker-startup-host-async-20261008/`.
 
+Frozen `4a3fc5d` passes the eight client cases, both observer-error host cases,
+both caller-mutation host cases, finite-scene admission, four-provider readiness
+and full project checks in isolated Linux dependencies. All forty-three
+implementation/provider hash comparisons across the five process reports match
+their macOS reports. The canonical checkout's before/after status is identical.
+The reports and verified summary are under
+`.local/work/v1-cpu-source-20261008/linux-worker-observer/`; the archive SHA-256 is
+`2c012c161e99f28c11300ba940f6b5c2c587c693d07034c8ccdbaac444e5285e`.
+
+## Native finite-JSON request admission
+
+The host transport validates request envelopes before serialization, timer
+creation or pending-request publication. Operation names contain one to sixty-four
+characters with nonblank content; arguments contain recursively finite JSON data.
+Successful response values use the same JSON domain before request retirement.
+
+The client diagnostic's ninth case rejects twelve unsupported argument values
+and seven invalid operation values synchronously. Its actual CPU Worker remains
+connected, returns the original error for a valid unknown operation and confirms
+clean close. The other eight process cases continue to pass. Evidence:
+`.local/work/v1-worker-finite-json-client-20261008/acceptance.json`.
+
+The [initialization interruption diagnostic](../../scripts/check-native-worker-disconnect.ts)
+waits for the actual process-start observer, signals that owned process and inspects
+the original initialization/cleanup errors. It requires process/group absence;
+device/resource confirmation remains unknown following the interrupted transport.
+If initialization returns an environment, the diagnostic owns its close. Its
+output retains configuration and implementation hashes and requires a new file.
+Actual RoboTwin-configured CPU startup interruption passes in
+`.local/work/v1-worker-initialize-interrupt-20261008/acceptance.json`: the owned
+process/group is absent, original initialization and release errors retain their
+shared identity and device/resource state remains unknown. The diagnostic
+configuration disables CUDA and names an absent SDK source directory.
+
 ## Native context and scope ownership
 
 Selected DSH `token-meter` source belongs to `harness/agent-runtime/memory`,

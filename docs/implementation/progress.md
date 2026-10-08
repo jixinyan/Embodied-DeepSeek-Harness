@@ -6,6 +6,15 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## 2026-10-08 native context directory ownership
 
+Native transport admits bounded operations and finite JSON arguments before
+serialization or request ownership. Nine actual CPU client cases pass, including
+twelve unsupported argument values and seven invalid operation values with the
+same live Worker preserved. Successful response values use the same JSON domain.
+Initialization interruption follows the actual process-start observer, preserves
+the original initialization/release errors and confirms process/group absence
+while retaining unknown device/resource state. No SDK or inference is allocated.
+See [finite JSON admission](cpu-release-validation.md#native-finite-json-request-admission).
+
 Native Worker creation installs process/pipe ownership before its optional host
 startup observer. Initialization awaits observer completion. Actual synchronous
 and asynchronous ENOENT errors preserve their original identity after confirmed

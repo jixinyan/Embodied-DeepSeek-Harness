@@ -19,7 +19,7 @@ function object(value: unknown): JsonObject {
 }
 
 const responseSchema = z.union([
-  z.object({ id: z.string().min(1).max(128), result: z.unknown() }).strict(),
+  z.object({ id: z.string().min(1).max(128), result: z.json() }).strict(),
   z
     .object({
       id: z.string().min(1).max(128),
@@ -27,6 +27,18 @@ const responseSchema = z.union([
     })
     .strict(),
 ]);
+
+const requestSchema = z
+  .object({
+    id: z.string().min(1).max(128),
+    op: z
+      .string()
+      .min(1)
+      .max(64)
+      .refine((value) => value.trim().length > 0),
+    args: z.record(z.string(), z.json()),
+  })
+  .strict();
 
 export interface WorkerObservation {
   observation_id: string;
@@ -359,7 +371,7 @@ export class NativeWorkerTransport {
     if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0 || timeoutMs > 1800000)
       throw new Error('Native worker request timeout is invalid.');
     const id = randomUUID();
-    const encoded = JSON.stringify({ id, op: operation, args });
+    const encoded = JSON.stringify(requestSchema.parse({ id, op: operation, args }));
     if (Buffer.byteLength(encoded) > 32 * 1024 * 1024)
       throw new Error('Native worker request exceeds the transport bound.');
     return new Promise((resolve, reject) => {
