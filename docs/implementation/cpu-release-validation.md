@@ -69,6 +69,17 @@ Reports and verified summary are under
 
 ## Native Session resource closure
 
+Native operation error receipts retain their existing `type` and `message`
+fields. Grouped failures use Python's standard `TracebackException` formatter
+with local-variable capture disabled and complete group depth/width. Every
+original nested failure remains visible in the message. Single failures retain
+their original text. The actual resource diagnostic also validates these
+production receipts, JSON round trips and each original error type/message.
+Current macOS receipt evidence:
+`.local/work/v1-error-receipt-session-20261008-final-03/acceptance.json`.
+Nine actual client-process cases retain their original scoped errors and release
+outcomes in `.local/work/v1-error-receipt-client-20261008/acceptance.json`.
+
 [worker.py](../../harness/physical-runtime/src/physical_harness/execution/worker.py)
 owns a shared explicit Session-close operation. Cancellation of a caller leaves
 task stop/drain and resource finalization owned by that operation. Communication

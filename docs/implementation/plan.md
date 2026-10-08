@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.86 · 2026-10-08
+Version: v1.87 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the

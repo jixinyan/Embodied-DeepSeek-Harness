@@ -7,6 +7,7 @@ import json
 import math
 import os
 import sys
+from traceback import TracebackException
 from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -14,6 +15,15 @@ if TYPE_CHECKING:
 
 
 MAX_MESSAGE_BYTES = 32 * 1024 * 1024
+
+
+def operation_error(error: Exception) -> dict[str, str]:
+    message = str(error)
+    if isinstance(error, BaseExceptionGroup):
+        message = "".join(TracebackException.from_exception(
+            error, capture_locals=False, max_group_width=sys.maxsize, max_group_depth=sys.maxsize,
+        ).format(chain=True))
+    return {"type": type(error).__name__, "message": message}
 
 
 class _WriteProtocol(asyncio.streams.FlowControlMixin):
@@ -138,7 +148,7 @@ async def serve(session_factory: Callable[[Callable[[dict[str, Any]], Awaitable[
                     raise ValueError("Expected a JSON object.")
                 result = await handlers[operation](arguments)
             except Exception as error:
-                await emit({"id": request_id, "error": {"type": type(error).__name__, "message": str(error)}})
+                await emit({"id": request_id, "error": operation_error(error)})
             else:
                 await emit({"id": request_id, "result": result})
         finally:

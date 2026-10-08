@@ -23,6 +23,9 @@ revoke the lease before Session cleanup and pipe closure. Expected operation err
 return their scoped error receipt. The CPU transport and actual host/worker
 initialization checks are in the
 [validation guide](../../../../../docs/implementation/cpu-release-validation.md#worker-process-transport).
+Grouped error messages retain the original nested exceptions through Python's
+standard traceback formatter, with local-variable capture disabled. The existing
+error envelope and ordinary-error text remain stable.
 
 `ActionGate` validates generation, task identity, ActionSpec, observation freshness,
 resource ownership and budgets before bounded device dispatch. `PolicyRollout` composes

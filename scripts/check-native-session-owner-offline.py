@@ -10,6 +10,7 @@ from physical_harness.environments.robodojo import RoboDojoEnvironment
 from physical_harness.execution.native_device import NativeActionDevice
 from physical_harness.execution.video import SimulationVideoRecorder
 from physical_harness.execution.worker import NativeWorkerSession
+from physical_harness.execution.worker_transport import operation_error
 from physical_harness.validation import ContractValidator
 
 
@@ -92,6 +93,21 @@ async def inspect_case(root: Path, directory: Path, *, device_error: bool, video
             expected = ([FileNotFoundError] if device_error else []) + ([IsADirectoryError] if video_error else [])
             if [type(error) for error in errors] != expected:
                 raise AssertionError("Session shutdown did not preserve all original resource errors.")
+            wire_error = operation_error(original_error)
+            if set(wire_error) != {"type", "message"} or wire_error["type"] != type(original_error).__name__:
+                raise AssertionError("Native worker changed its error receipt fields or type.")
+            if json.loads(json.dumps(wire_error)) != wire_error:
+                raise AssertionError("Native worker grouped error did not survive its JSON encoding.")
+            with (directory / "original-error-receipt.json").open("x", encoding="utf-8") as stream:
+                json.dump({"wire": wire_error, "originalErrors": [
+                    {"type": type(error).__name__, "message": str(error)} for error in errors
+                ]}, stream, allow_nan=False, indent=2)
+            if any(str(error) not in wire_error["message"] for error in errors):
+                raise AssertionError("Native worker error receipt omitted original resource failures.")
+            if isinstance(original_error, BaseExceptionGroup) and any(
+                type(error).__name__ not in wire_error["message"] for error in errors
+            ):
+                raise AssertionError("Native worker grouped error omitted original failure types.")
             for close in (session.close, session.transport_disconnected):
                 try:
                     await close()
@@ -126,6 +142,7 @@ async def inspect_case(root: Path, directory: Path, *, device_error: bool, video
             "originalErrors": [type(error).__name__ for error in leaf_errors(original_error)] if original_error else [],
             "cancelledCloseRetained": True,
             "sharedCompletionIdentity": True,
+            "originalReceiptDetailsPreserved": bool(original_error),
             "owner": snapshot,
             "recordingJournalClosed": True,
             "recordingManifestPublished": not video_error,
@@ -158,7 +175,7 @@ async def inspect(args) -> None:
     paths = [
         Path(__file__), root / "harness/contracts/schema/physical.schema.json",
         *(root / "harness/physical-runtime/src/physical_harness/execution" / name for name in (
-            "native_device.py", "worker.py", "video.py",
+            "native_device.py", "worker.py", "worker_transport.py", "video.py",
         )),
         root / "harness/physical-runtime/src/physical_harness/environments/robodojo/__init__.py",
     ]

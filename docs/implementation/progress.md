@@ -1,10 +1,17 @@
 # Implementation progress
 
-Spec: v1.86. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.87. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## 2026-10-08 ActionGate stop ownership
+
+Native grouped operation errors retain every original cause through the standard
+Python traceback formatter, with local-variable capture disabled. Actual resource
+errors verify the unchanged envelope, JSON encoding and original type/message
+visibility. Nine production client-process cases retain their original admission,
+cancellation, timeout and release outcomes; full project checks pass.
+See [resource/error receipts](cpu-release-validation.md#native-session-resource-closure).
 
 ActionGate retains its stop task independently of cancelled callers. Concurrent
 waiters receive the original result; action/resume failure handling preserves
