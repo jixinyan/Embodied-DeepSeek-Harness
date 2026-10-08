@@ -24,8 +24,10 @@ ActionChunk validation and ActionGate continue to decide whether a returned
 proposal is eligible for physical execution.
 
 The [CPU owner diagnostic](../../../../../scripts/check-policy-owner-offline.py)
-uses actual original-request recording, file reads and OS pipes to check admission,
-cancellation, late recorder errors and thread shutdown. It performs no model
+uses actual original-request recording, file reads, OS pipes and production
+WebSocket connections to check admission, server deadlines, cancellation, late
+recorder errors and thread shutdown. Strict JSON Lines checks preserve scoped
+failure records and original tracebacks. It performs no model
 inference or controls. The [validation guide](../../../../../docs/implementation/cpu-release-validation.md#policy-inference-ownership)
 records its commands and evidence; loaded-model cancellation and task acceptance
 retain separate native requirements.

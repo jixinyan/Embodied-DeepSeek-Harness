@@ -14,9 +14,13 @@ admission fails and actual model/recording errors emit scoped evidence before
 propagation. Shutdown rejects new work, shares its completion and drains the
 actual thread even when a close waiter is cancelled.
 
-Six CPU cases pass with the original PolicyRequest, production recorder, real file
-reads and OS pipes. Late duplicate-file errors remain observed and recorded; all
-threads close and source bytes remain unchanged. Full checks compile 59 physical
+Nine CPU cases pass with the original PolicyRequest, production recorder, real file
+reads, OS pipes, production policy server and two actual WebSocket clients.
+Concurrent requests fail while a server deadline leaves its actual thread owned.
+Strict JSON Lines inspection retains five genuine recording/admission/deadline
+failure records with original identities and tracebacks. Both client connections,
+listener and owner threads close; source bytes remain unchanged.
+Full checks compile 59 physical
 files and seven policy entry points, with 20 base imports. These checks perform
 no inference, environment allocation or controls. Commands and source-bound
 evidence: [CPU owner validation](cpu-release-validation.md#policy-inference-ownership).

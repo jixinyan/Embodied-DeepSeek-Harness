@@ -26,8 +26,11 @@ def recorded_inference(operation: Callable[[dict], T], request: dict, identity: 
             )},
             "error_type": f"{type(error).__module__}.{type(error).__qualname__}",
             "error": str(error),
+            "traceback": [
+                {"file": frame.filename, "line": frame.lineno, "function": frame.name}
+                for frame in traceback.extract_tb(error.__traceback__)
+            ],
         }, allow_nan=False), file=sys.stderr, flush=True)
-        traceback.print_exception(error, file=sys.stderr)
         raise
 
 

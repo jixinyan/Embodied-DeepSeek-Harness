@@ -112,14 +112,20 @@ PYTHONDONTWRITEBYTECODE=1 PYTHONASYNCIODEBUG=1 CUDA_VISIBLE_DEVICES='' \
   --output .local/work/<new-policy-owner-check>
 ```
 
-Six actual CPU cases pass on 2026-10-08 with Python 3.14. Original request recording
+Install the `policy` and `diagnostics` extras in the isolated environment.
+Nine actual CPU cases pass on 2026-10-08 with Python 3.14. Original request recording
 uses production exclusive file creation. A second write raises FileExistsError
 and releases its owner for an actual source read. OS-pipe operations establish
 concurrent rejection, caller cancellation with retained ownership, an original
-late recorder failure and cancelled-close thread draining. Their actual errors
-retain scoped records and propagate; no unobserved asynchronous errors or owned
-threads remain. Source bytes and implementation hashes are retained in
-`.local/work/v1-policy-owner-cpu-20261008-final/acceptance.json`.
+late recorder failure and cancelled-close thread draining. The production server
+and two actual WebSocket clients also check concurrent rejection and a real server
+deadline while the operation remains owned. Both clients discard their connections;
+the late recorder failure drains and the listener closes. A strict JSON Lines reader
+verifies all five original recorder/admission/deadline failure records, including
+three complete execution/task/observation scopes and their tracebacks.
+No unobserved asynchronous errors or owned threads remain. Source bytes,
+failure-log digest and service/helper implementation hashes are retained in
+`.local/work/v1-policy-owner-transport-cpu-20261008-final/acceptance.json`.
 No model result, environment or control is supplied by the diagnostic. Loaded-model
 cancellation and physical task acceptance require the subsequent native campaign.
 Full source checks compile 59 physical-runtime files and all seven policy service
