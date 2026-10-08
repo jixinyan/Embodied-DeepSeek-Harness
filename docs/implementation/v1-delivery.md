@@ -66,6 +66,12 @@ actions. The native OpenPI producer retains its original upstream service/loadin
 sequence; its CPU entry check covers help only. Complete loaded-service startup
 and task behavior remain native gates. See
 [policy startup](cpu-release-validation.md#policy-service-startup).
+Frozen `9b3b4a8` also passes all thirty-two affected startup/client/inference/wire
+cases, original telemetry inspection and full project checks in isolated Linux.
+Thirty-two original/source hash comparisons match macOS; canonical checkout status
+remains unchanged and all owned processes/threads/listeners release. Current-source
+four-provider readiness and eight task-definition preparation pass without
+model, GPU, environment or task allocation.
 
 Seven malformed numeric/duplicate policy messages pass actual decoder and
 authenticated server rejection before inference admission, with generic failures,

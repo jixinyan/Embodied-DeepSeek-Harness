@@ -599,6 +599,24 @@ separate reports. GPU/model/environment allocation and controls remain zero.
 Loaded checkpoint initialization, native producer service readiness and complete
 task execution require the consolidated native campaign.
 
+Frozen `9b3b4a8` passes all twelve startup cases, four connection-owner cases,
+nine inference-owner cases, seven malformed-wire cases, 95 original telemetry
+events and full project checks in isolated Linux Python 3.12.14. Thirty-two
+original/source hash comparisons match macOS. Linux preserves its actual
+ConnectionRefusedError for the unstarted listener and unavailable endpoint;
+macOS preserves TimeoutError. All compared admission, release and failure fields
+agree. The canonical server checkout retains its exact before/after status.
+GPU/model/environment allocation and controls remain zero. Verified summary:
+`.local/work/v1-cpu-policy-startup-20261008/linux/verified-summary.json`;
+archive SHA-256:
+`e4b80ba4ca0865f37c8cd4474ef0aa8d4754f7b257f11ad6513d965fb72335a2`.
+
+Current-source production readiness for all four configured providers and
+preparation of eight actual task definitions pass under
+`.local/work/v1-policy-startup-readiness-20261008/` and
+`.local/work/v1-policy-startup-campaign-20261008/`. These paths perform no task,
+model or simulator execution.
+
 ## Policy client connection ownership
 
 [`WebSocketPolicyClient`](../../harness/physical-runtime/src/physical_harness/policies/client.py)

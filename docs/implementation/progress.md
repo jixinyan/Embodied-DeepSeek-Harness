@@ -22,6 +22,14 @@ port reuse. Current-source inference-owner, client-close and wire checks retain
 their own evidence. These CPU checks allocate no model, GPU, environment or action.
 Loaded service startup and complete physical tasks retain their native gates.
 See [startup validation](cpu-release-validation.md#policy-service-startup).
+Frozen `9b3b4a8` passes the same twelve startup cases, four client-close cases,
+nine inference-owner cases, seven malformed-wire cases, original telemetry
+inspection and full project checks in isolated Linux. Thirty-two original/source
+hash comparisons match macOS. Platform-specific connection errors remain in
+their reports; all owned listeners/processes/threads release. The canonical server
+checkout remains unchanged and GPU/model/environment allocation stays zero.
+Current-source four-provider readiness and eight task-submission preparation also
+pass without allocating a Session or provider.
 
 ## 2026-10-08 finite policy JSON admission
 
