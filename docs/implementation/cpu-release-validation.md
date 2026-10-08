@@ -80,6 +80,18 @@ Current resource/client/host reports are under
 `.local/work/v1-shared-failure-host-20261008-final/`.
 Loaded model, simulator observation/control and SDK stopping remain native gates.
 
+Frozen `2ae6eaa` passes full project checks and all twenty-one affected cases
+under isolated Linux Python 3.12.14: four ActionGate, four Session resource,
+three rollout/Worker and ten actual client/host process cases. Thirty-eight
+source-hash comparisons match macOS, with identical ActionGate/Session reports
+and complete original fault receipts. Linux reports ConnectionRefusedError for
+its two TCP attempts; macOS reports the client's actual TimeoutError. Both
+preserve their original trace and stop error. Canonical checkout status remains
+unchanged. Reports and verified summary are under
+`.local/work/v1-cpu-source-20261008/linux-shared-failure/`; archive SHA-256:
+`1f44d790a234c38307cc393fd96735f33201f40b43276449f0aa34d2f5c7e0dd`.
+All GPU/model/policy-server/environment/action/stop-acknowledgement counts are zero.
+
 ## Native device owner lifecycle
 
 [native_device.py](../../harness/physical-runtime/src/physical_harness/execution/native_device.py)

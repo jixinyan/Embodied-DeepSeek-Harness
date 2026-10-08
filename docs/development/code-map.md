@@ -47,6 +47,7 @@ All Python provider code belongs under
 | Change worker process communication | [execution/worker_transport.py](../../harness/physical-runtime/src/physical_harness/execution/worker_transport.py) |
 | Save original policy requests and actual controls | [execution/policy_records.py](../../harness/physical-runtime/src/physical_harness/execution/policy_records.py) |
 | Admit actions and enforce execution budgets | [execution/action_gate.py](../../harness/physical-runtime/src/physical_harness/execution/action_gate.py) |
+| Compose an inference client with ActionGate and preserve rollout failures | [execution/policy_rollout.py](../../harness/physical-runtime/src/physical_harness/execution/policy_rollout.py) |
 | Confirm simulator execution and stopping | [execution/native_device.py](../../harness/physical-runtime/src/physical_harness/execution/native_device.py) |
 | Add a WebSocket policy protocol or checkpoint | [policies](../../harness/physical-runtime/src/physical_harness/policies/README.md) |
 | Own inference threads, cancellation and operation records | [policies/inference.py](../../harness/physical-runtime/src/physical_harness/policies/inference.py) |

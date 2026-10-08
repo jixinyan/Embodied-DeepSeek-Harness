@@ -12,7 +12,11 @@ that exact stop exception. PolicyRollout shutdown attempts both device and polic
 closure and propagates original single/grouped errors. Three actual CPU cases
 verify policy connection failures with closed-owner/deadline stop failures and
 the Worker's scoped background fault. Resource/client/host checks pass against
-the same current source. See [rollout checks](cpu-release-validation.md#shared-rollout-failure-handling).
+the same current source. Frozen `2ae6eaa` passes the twenty-one affected cases
+and full project checks on isolated Linux; thirty-eight source-hash comparisons
+match macOS. Original OS-specific TCP failure types remain in their reports.
+Canonical server checkout status is unchanged, with zero GPU or model jobs.
+See [rollout checks](cpu-release-validation.md#shared-rollout-failure-handling).
 
 Native grouped operation errors retain every original cause through the standard
 Python traceback formatter, with local-variable capture disabled. Actual resource
