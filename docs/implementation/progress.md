@@ -1,8 +1,34 @@
 # Implementation progress
 
-Spec: v1.99. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.100. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 native campaign cancellation ownership
+
+The native campaign keeps its SIGINT/SIGTERM handlers active until its live
+driver and matching Session complete cleanup. Repeated signals preserve that
+drain. JSON output identifies each actual active driver PID. The live driver
+retains an admitted response and closes its exact request-owned Session; original
+admission/cleanup errors and evidence remain available.
+
+Four actual macOS CPU cases pass from committed `80cb025`: ordinary environment
+admission failure, SIGTERM, SIGINT and repeated signals. Production factories
+reject an occupied actual Console endpoint before Worker allocation. Every case
+retains its original failure, closes the matching Session, releases service
+leases, processes, listeners and writers, and publishes no workflow acceptance.
+Evidence: `.local/work/v1-native-campaign-owner-20261008-verified/`. No model,
+GPU, managed service or environment starts. Loaded inference/control/device
+cancellation retains its native release requirement. See
+[campaign cancellation](cpu-release-validation.md#native-campaign-cancellation).
+
+The same four cases and full source checks pass on isolated Linux from clean
+`80cb025`. Independent comparison verifies thirteen matching executable/model/
+manifest/original configuration hashes, eight original Session closure records
+and all driver exits and original failure logs. The downloaded archive matches
+server SHA-256. The canonical server checkout retains its exact status and the
+isolated source remains clean. Evidence and independent summary:
+`.local/work/v1-native-campaign-owner-linux-20261008/`.
 
 ## 2026-10-08 CPU campaign process ownership
 

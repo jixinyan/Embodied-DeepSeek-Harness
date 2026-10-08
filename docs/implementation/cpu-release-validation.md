@@ -1109,6 +1109,58 @@ They pass on 2026-10-07 in
 `.local/work/v1-cpu-admission-failure-20261007-02/` and
 `.local/work/v1-cpu-admission-interrupt-20261007/`.
 
+## Native campaign cancellation
+
+[check-native-campaign-shutdown.mjs](../../scripts/check-native-campaign-shutdown.mjs)
+executes the actual native release campaign, its live driver and production
+Console factories. It requires a clean committed checkout, a configured
+owner workspace, a probe workspace and a one-case manifest that
+selects the probe's original native task. The selected profile must require
+exactly one managed service with HTTP readiness at `127.0.0.1:<port>/api/config`.
+The owner Console occupies that configured endpoint before admission begins.
+No service command or Worker starts; the original managed-service ownership
+check rejects environment creation before allocation.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-campaign-shutdown.mjs \
+  --config /absolute/path/probe-workspace.json \
+  --owner /absolute/path/owner-workspace.json \
+  --manifest /absolute/path/one-native-task-campaign.json \
+  --output .local/work/<new-native-campaign-shutdown-check>
+```
+
+Four cases cover ordinary admission failure, SIGTERM, SIGINT and repeated
+SIGTERM/SIGINT/SIGTERM. Signal cases suspend the known owned live driver at actual
+environment admission while the campaign receives its signals, then resume it
+before calling the unchanged native factory. This requires the campaign to
+remain active until its driver and matching Session finish closure. The
+diagnostic also retains driver ownership during its own cleanup.
+
+Each case checks original request-to-Session identity, closed/released Session
+state, zero task admissions, the actual occupied-service error, absent campaign
+and driver processes, zero service leases/PIDs, released listeners/writer locks
+and absent final workflow acceptance. Original driver logs and configuration/
+executable hashes remain in the new output directory. Every signal path exits
+with failure after cleanup; it preserves the original environment admission
+failure and does not generate a task outcome.
+
+All four macOS cases pass from committed `80cb025` under
+`.local/work/v1-native-campaign-owner-20261008-verified/`. GPU jobs, model calls,
+managed service starts and environment allocations remain zero. Cancellation
+with loaded inference, physical controls and native device stopping retains its
+separate actual release requirement.
+
+The same four cases and full source checks pass on isolated Linux from a clean
+`80cb025` checkout with Python 3.12.14, Node 24.21.0 and the complete frozen lock.
+Independent comparison verifies thirteen matching model, campaign, executable
+and original four-provider configuration hashes. Original request/closed-Session
+identities, driver exits, failure logs and zero-admission/resource results verify
+on both platforms. The canonical server checkout retains its exact status and
+the isolated source remains clean. The evidence archive matches server SHA-256
+`b35a3b759776f1f63d933ee1f313751fcb37e79388107cb29f071af38011e3cd`.
+Reports and the independently verified summary are under
+`.local/work/v1-native-campaign-owner-linux-20261008/`.
+
 ## Native geometry and role records
 
 `scripts/check-recorded-metric.py --record DIRECTORY --output .local/work/<new-file>.json`

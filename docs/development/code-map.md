@@ -76,6 +76,8 @@ implementations load in their separately configured service processes.
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |
 | Execute the configured CPU diagnostic campaign | [run-cpu-release-campaign.mjs](../../scripts/run-cpu-release-campaign.mjs) |
 | Verify signal-driven CPU campaign closure and actual diagnostic process-group release | [check-cpu-campaign-shutdown.mjs](../../scripts/check-cpu-campaign-shutdown.mjs) |
+| Own actual native campaign cancellation through live-driver and matching Session release | [run-native-release-campaign.mjs](../../scripts/run-native-release-campaign.mjs) and [run-live-acceptance.mjs](../../scripts/run-live-acceptance.mjs) |
+| Verify native campaign admission, repeated signals and released processes without Worker allocation | [check-native-campaign-shutdown.mjs](../../scripts/check-native-campaign-shutdown.mjs) |
 | Verify image-group retention and budget rejection through the native loop | [check-recorded-visual-context.mjs](../../scripts/check-recorded-visual-context.mjs) |
 | Validate configured native scenes and policy endpoints before allocation | [check-native-scene-configuration.mjs](../../scripts/check-native-scene-configuration.mjs) |
 | Verify native CLI startup and signal-driven process release for every provider | [check-native-startup-offline.mjs](../../scripts/check-native-startup-offline.mjs) |

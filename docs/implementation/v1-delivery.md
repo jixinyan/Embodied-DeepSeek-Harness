@@ -37,6 +37,21 @@ their active source check and stop subsequent admission with no final acceptance
 report. Commands and retained evidence are in the
 [CPU guide](cpu-release-validation.md#consolidated-cpu-campaign).
 
+Native campaign cancellation retains persistent SIGINT/SIGTERM handlers and
+actual driver identity through matching Session closure. Four macOS CPU cases
+verify ordinary admission failure, both signals and repeated signals against
+production native factories and an occupied actual Console endpoint. Every owned
+process, lease, listener and writer releases. No model or Worker starts; loaded
+policy/device cancellation and current-code task workflows retain native gates.
+See [campaign cancellation](cpu-release-validation.md#native-campaign-cancellation).
+
+Clean `80cb025` passes the same four native campaign cases and full source checks
+on isolated Linux. Independent comparison verifies thirteen model, executable,
+manifest and original configuration hashes plus eight original Session closure
+records and all driver exits/failure logs. The archive digest verifies and the
+canonical server checkout preserves its exact status. Loaded native gates remain
+open.
+
 The [release validation guide](release-validation.md) defines source checks,
 actual native task submission, source-bound audits and product/safety evidence.
 The [consolidated native campaign](native-release-campaign.md) now prepares the

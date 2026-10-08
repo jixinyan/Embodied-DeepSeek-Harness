@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.99 · 2026-10-08
+Version: v1.100 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -28,6 +28,16 @@ workflow requirements remain independent of these CPU results.
 Independent report/source comparison verifies 202 component source hashes,
 all twenty-six process receipts, original data/configuration hashes and the
 downloaded evidence digest. The canonical remote checkout remains unchanged.
+
+The actual native campaign retains persistent cancellation and live-driver
+ownership through request-matched Session closure. Four CPU cases validate
+ordinary admission failure, both signals and repeated signals through actual
+Console service-ownership checks. No Worker or model allocates; loaded
+inference/control/device cancellation retains its separate native requirement.
+
+The same four cases and full source checks pass on isolated Linux from clean
+`80cb025`, with thirteen matching source/configuration hashes, independently
+verified closure records and unchanged canonical server checkout status.
 
 The consolidated native campaign must independently validate loaded-model and
 device behavior, original task success and complete installed workflows. On

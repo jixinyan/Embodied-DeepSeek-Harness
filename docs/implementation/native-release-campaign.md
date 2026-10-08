@@ -53,9 +53,12 @@ pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/run-native-release-campai
 Each case retains its driver log, exit status, Session request, configuration,
 catalog, task submissions, complete event histories and closure receipts.
 The driver preserves the original task outcome and collects before/after-close
-histories. Failure stops the campaign. Interruption signals the campaign-owned
-driver. The driver interrupts reads and polling, retains an already submitted
-admission response, captures evidence and closes its exact owned Session before
+histories. Each active driver is identified by its case and actual PID in the
+campaign's JSON output. Failure stops the campaign. SIGINT/SIGTERM request
+cancellation through persistent handlers until driver exit and Session cleanup
+finish; repeated signals retain the same owner. Interruption signals the
+campaign-owned driver. The driver interrupts reads and polling, retains an
+already submitted admission response, captures evidence and closes its exact owned Session before
 exiting. Cleanup HTTP calls continue under their bounded deadlines. The campaign
 checks the persisted admission request against the active
 Session and closes only an exact matching request/profile/deployment identity.
@@ -112,13 +115,21 @@ before any Session or service allocation. Evidence:
 
 ## Acceptance boundary
 
+Four CPU cases verify the actual campaign's environment admission and closure:
+ordinary service-ownership rejection, SIGTERM, SIGINT and repeated signals. They
+run production native factories against an occupied actual Console endpoint and
+retain the original failure, matching Session identity and released process,
+listener and writer resources. No Worker, model or task starts. Commands and
+evidence are in
+[CPU campaign cancellation](cpu-release-validation.md#native-campaign-cancellation).
+
 The campaign's accepted output establishes production HTTP workflow checks.
 Original simulator source, checkpoint, policy requests/responses, ActionGate
 receipts, calibrated observations, video decoding and process placement require
 the [recorded source audit](../../scripts/REPLAY.md). Interrupt-triggered owned
-Session cleanup during native execution and the complete new campaign require actual native execution.
-CPU admission interruption has separate production acceptance using an actual
-occupied Console endpoint; see [CPU release validation](cpu-release-validation.md).
+Session cleanup with loaded policy/device execution and the complete new campaign
+require actual native execution. CPU admission interruption retains its separate
+production acceptance using an actual occupied Console endpoint.
 Neither preparation nor recorded-history inspection establishes current-code
 physical task success. The [v1 register](v1-delivery.md) remains authoritative
 for the full release.

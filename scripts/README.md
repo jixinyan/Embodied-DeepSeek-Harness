@@ -18,6 +18,14 @@ SIGINT/SIGTERM finish the active diagnostic and stop subsequent admission.
 source checks and three signal cases. Inputs, commands and evidence scopes are
 in the [CPU release guide](../docs/implementation/cpu-release-validation.md).
 
+`check-native-campaign-shutdown.mjs` runs the actual native campaign and live
+driver against production Console factories. A configured occupied service
+endpoint rejects environment admission before Worker allocation. Four ordinary
+failure/signal cases verify exact owned Session closure, driver/campaign exit and
+released service/writer/listener resources. It requires a clean committed source
+and actual workspace/manifest bindings. Commands and acceptance boundaries are
+in [native campaign cancellation](../docs/implementation/cpu-release-validation.md#native-campaign-cancellation).
+
 Native provider and workspace assembly live in
 [`apps/server/src`](../apps/server/README.md). Runnable example entries select
 those production factories. The [source map](../docs/development/code-map.md)
