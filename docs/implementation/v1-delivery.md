@@ -92,6 +92,12 @@ see [Console process checks](cpu-release-validation.md#native-console-process-ow
 
 ## Acceptance register
 
+Native OpenPI fixed-port, checkpoint inventory and verification-report checks
+precede optional SDK imports. Thirty-four actual example/module startup cases
+and full project checks pass on macOS without model or GPU allocation. No
+verification report is published after parameter or missing-file rejection;
+loaded producer readiness and physical workflows retain their native gates.
+
 Five native policy services have production startup/audit owners under
 `physical_harness/policies/services`; example scripts import their same functions.
 Twenty-four actual macOS example/module startup cases, nine inference-owner cases
@@ -137,8 +143,9 @@ connections only after policy readiness. All five JSON/native CLI help commands,
 four actual occupied-port failures and three actual missing-checkpoint failures
 pass on macOS. Production delayed-admission, context-managed failure release,
 original-request forwarding and port reuse checks pass without model results or
-actions. The native OpenPI producer retains its original upstream service/loading
-sequence; its CPU entry check covers help only. Complete loaded-service startup
+actions. The native OpenPI producer checks its fixed port, complete checkpoint
+inventory and verification-report write before optional SDK imports. Its CPU
+entry checks cover help, invalid ports and named missing files. Complete loaded-service startup
 and task behavior remain native gates. See
 [policy startup](cpu-release-validation.md#policy-service-startup).
 Frozen `9b3b4a8` also passes all thirty-two affected startup/client/inference/wire

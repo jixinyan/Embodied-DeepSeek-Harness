@@ -96,6 +96,35 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
             raise AssertionError(f"Native OpenPI help did not finish before optional model loading: {entry}")
         cases.append({"service": "openpi-robodojo-native", "entry": entry, "mode": "help", "pid": pid,
                       "exitCode": exit_code, "ownedProcessExited": True, "modelLoaded": False})
+        arguments = ["--checkpoint", str(output / "absent-checkpoint"),
+                     "--inventory", str(output / "absent-inventory"),
+                     "--verification-output", str(output / "verification.json")]
+        for selected_port in (-1, 0, 65536):
+            mode = f"invalid-port-{selected_port}"
+            pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable,
+                "serve_openpi_robodojo_native.py", arguments + ["--port", str(selected_port)],
+                f"openpi-robodojo-native.{entry}", mode, module)
+            if (exit_code != 2 or b"--port must be between 1 and 65535." not in stderr
+                    or b"ModuleNotFoundError" in stderr or b"Traceback" in stderr or stdout):
+                raise AssertionError(f"Native OpenPI port admission did not finish before source/model loading: {entry}")
+            cases.append({"service": "openpi-robodojo-native", "entry": entry, "mode": mode, "pid": pid,
+                          "exitCode": exit_code, "ownedProcessExited": True, "modelLoaded": False})
+        for mode, checkpoint, absent in (
+                ("missing-checkpoint", output / "absent-checkpoint", output / "absent-checkpoint"),
+                ("missing-inventory", root, output / "absent-inventory")):
+            pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable,
+                "serve_openpi_robodojo_native.py",
+                ["--checkpoint", str(checkpoint), "--inventory", str(output / "absent-inventory"),
+                 "--verification-output", str(output / "verification.json")],
+                f"openpi-robodojo-native.{entry}", mode, module)
+            if (exit_code == 0 or b"FileNotFoundError" not in stderr or b"ModuleNotFoundError" in stderr
+                    or os.fsencode(str(absent)) not in stderr or stdout):
+                raise AssertionError(f"Native OpenPI file admission did not preserve its actual source error: {entry}/{mode}")
+            cases.append({"service": "openpi-robodojo-native", "entry": entry, "mode": mode, "pid": pid,
+                          "exitCode": exit_code, "ownedProcessExited": True,
+                          "originalFileErrorPreserved": True, "modelLoaded": False})
+        if (output / "verification.json").exists():
+            raise AssertionError("Rejected native OpenPI startup published a checkpoint verification result.")
     return cases
 
 

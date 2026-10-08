@@ -1,8 +1,25 @@
 # Implementation progress
 
-Spec: v1.101. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.102. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 native OpenPI preallocation
+
+The native OpenPI producer admits its fixed port in `1..65535`, verifies the
+complete pinned checkpoint inventory and writes its verification report before
+optional SDK imports. JAX device selection, trained-policy loading and upstream
+WebSocket startup follow these filesystem checks. Original policy identity,
+inference records, action dimensions and sole ActionGate admission remain unchanged.
+
+Thirty-four actual macOS example/module startup cases and full project checks
+pass. Native missing-checkpoint, missing-inventory and invalid-port cases preserve
+their actual admission outcomes with no verification report after rejection.
+Production listener checks retain the exact original request/network failure,
+release connections and permit port reuse. Evidence:
+`.local/work/v1-openpi-preallocation-startup-20261008/acceptance.json`.
+No GPU, SDK model, environment or action executes. Loaded policy readiness and
+physical task workflows retain their native release requirements.
 
 ## 2026-10-08 production policy service ownership
 

@@ -766,12 +766,22 @@ CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-policy-startup-offline.py
 ```
 
 Install the base package and `policy` extra in the isolated Python environment.
-Twenty-four actual subprocess cases cover ten example/module help commands,
-eight occupied ports and six missing-checkpoint failures. Existing listeners retain actual connection
+Thirty-four actual subprocess cases cover ten example/module help commands,
+eight occupied ports, eight missing-checkpoint failures, two native missing-inventory
+failures and six native invalid-port rejections. Existing listeners retain actual connection
 acceptance after each candidate exits; failed-startup ports become reusable.
 Help completes without optional SDK imports, including the native OpenPI producer.
-That producer retains its original upstream service/model-loading sequence; this
-CPU check makes no native producer startup claim beyond argument help.
+The native producer validates its fixed port in `1..65535`, verifies the complete
+pinned checkpoint and writes the verification report before SDK imports. The
+diagnostic checks named missing-file errors and exit status 2 for invalid ports,
+with no verification report after rejection. Loaded producer readiness and model
+inference retain their native requirements.
+
+All thirty-four cases and full project checks pass on macOS. The actual original
+request/network failure, listener closure and zero-model/device scope retain their
+own assertions. Sixteen executable/schema hashes and the original request digest
+identify this check. Evidence:
+`.local/work/v1-openpi-preallocation-startup-20261008/acceptance.json`.
 
 Actual production listener checks cover bound-but-unstarted admission, explicit
 `start_serving`, context-managed source-file failure and an occupied listener.

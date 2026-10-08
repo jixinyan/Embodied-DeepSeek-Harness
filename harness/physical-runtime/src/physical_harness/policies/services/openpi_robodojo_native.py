@@ -15,6 +15,14 @@ def main():
     parser.add_argument("--verification-output", required=True, type=Path)
     parser.add_argument("--port", type=int, default=18830)
     args = parser.parse_args()
+    if not 1 <= args.port <= 65535:
+        parser.error("--port must be between 1 and 65535.")
+    checkpoint = args.checkpoint.resolve(strict=True)
+    verified = verify_checkpoint(checkpoint, args.inventory)
+    if verified["revision"] != "35efbc7dedfdbeeb6e95fb749bd885d73d483e41" or len(verified["files"]) != 18:
+        raise ValueError("The selected RoboDojo inference checkpoint requires the pinned 18-file revision.")
+    args.verification_output.parent.mkdir(parents=True, exist_ok=True)
+    args.verification_output.write_text(json.dumps(verified, indent=2) + "\n", encoding="utf-8")
     import jax
     import numpy as np
     from openpi.policies import policy_config
@@ -53,12 +61,6 @@ def main():
             print(json.dumps({"event": "native_policy_inference", **identity}, allow_nan=False), flush=True)
             return {**output, "policy_identity": identity}
 
-    checkpoint = args.checkpoint.resolve(strict=True)
-    verified = verify_checkpoint(checkpoint, args.inventory)
-    if verified["revision"] != "35efbc7dedfdbeeb6e95fb749bd885d73d483e41" or len(verified["files"]) != 18:
-        raise ValueError("The selected RoboDojo inference checkpoint requires the pinned 18-file revision.")
-    args.verification_output.parent.mkdir(parents=True, exist_ok=True)
-    args.verification_output.write_text(json.dumps(verified, indent=2) + "\n", encoding="utf-8")
     devices = jax.devices()
     if len(devices) != 1 or devices[0].platform != "gpu":
         raise RuntimeError("RoboDojo OpenPI requires exactly one explicitly selected GPU.")

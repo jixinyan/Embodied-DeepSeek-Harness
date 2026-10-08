@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.101 · 2026-10-08
+Version: v1.102 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,11 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+Native OpenPI port, complete checkpoint inventory and verification-report checks
+precede SDK imports. Thirty-four actual example/module startup cases and full
+source checks pass on macOS without model or GPU allocation. Original action and
+request identity behavior remains unchanged; loaded service/task gates remain open.
 
 Native provider and workspace assembly now belong to `apps/server/src`.
 Original module exports and four-provider profile data pass direct checks;

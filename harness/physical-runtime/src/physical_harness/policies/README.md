@@ -37,9 +37,10 @@ its upstream connection. Ready metadata reports the actual bound port.
 
 All five JSON/native policy CLI entries support `--help` before optional model
 SDK imports. The native OpenPI producer retains the upstream service and its
-original model-loading sequence. Its CPU check covers argument help only.
+model protocol. It validates its fixed port, checkpoint inventory and verification
+report path before SDK imports. JAX device selection and model loading follow.
 The [startup diagnostic](../../../../../scripts/check-policy-startup-offline.py)
-exercises twenty-four actual CLI processes across the example and module entries,
+exercises thirty-four actual CLI processes across the example and module entries,
 delayed connection admission, original
 request forwarding to an unavailable endpoint and port release. It supplies no
 model result or action. See [startup validation](../../../../../docs/implementation/cpu-release-validation.md#policy-service-startup).

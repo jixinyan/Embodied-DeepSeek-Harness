@@ -42,7 +42,10 @@ with an explicitly selected GPU, `XLA_PYTHON_CLIENT_PREALLOCATE=false`,
 `--checkpoint`, `--inventory`, `--verification-output` and `--port`. It requires
 `XLA_FLAGS=--xla_gpu_enable_triton_gemm=false` for the selected B300 deployment,
 using the installed cuBLAS GEMM compiler path. It requires
-one visible JAX GPU and verifies the pinned 18-file checkpoint before loading
+one visible JAX GPU. The native entry admits a fixed `--port` in `1..65535`,
+verifies the pinned 18-file checkpoint and publishes its verification report
+before importing JAX or OpenPI. Filesystem errors terminate startup at their
+source. JAX device selection then precedes loading
 `pi05_base_aloha_full_sim_arx-x5_seed_0`. Its welcome metadata identifies the
 checkpoint, absolute checkpoint directory, model config, backend, action dimensions,
 continuous gripper semantics and the imported OpenPI Python source inventory.
