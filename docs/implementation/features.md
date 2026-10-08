@@ -1,6 +1,6 @@
 # Capabilities and acceptance
 
-Updated: 2026-10-03. Implementation and native task evidence are recorded separately.
+Updated: 2026-10-08. Implementation and native task evidence are recorded separately.
 The [v1 acceptance register](v1-delivery.md) contains outstanding delivery gates.
 
 ![Framework architecture](../architecture/assets/framework-overview.svg)
@@ -13,7 +13,7 @@ The [v1 acceptance register](v1-delivery.md) contains outstanding delivery gates
 | Replaceable upper models    | OpenAI-compatible cloud APIs and local vLLM endpoints; configurable models, modalities, context budgets, authentication and image transport.                                                                                    | Actual local Qwen and retained cloud API runs exist. Current task experiments use Qwen with learned execution policies.                                                                                                                             |
 | Composable roles            | YAML Teams, Markdown role instructions, explicit model/tool bindings, optional output schemas and independent delegation contexts.                                                                                              | Clean native SceneAnalyst communication and formal task recovery pass. Actual run `04823dd4` verifies same-assignment insufficient-context continuation, versioned reports, caller acknowledgement and cancellation of an independent waiting role. |
 | Perceive, plan, decide, act | Planner sees authorized images, maintains versioned plans and TODOs, selects admitted goals and starts bounded jobs. `planning.read.planWrite` returns complete structured write arguments with actual identities and criteria. | RoboTwin verifies formally failed execution followed by explicit retained-scene retry and success. Multi-goal physical acceptance remains pending.                                                                                                  |
-| Formal verification         | Fresh Verifier only after eligible confirmed execution end. It checks admitted criteria and returns a scoped passed, failed or unknown verdict.                                                                                 | Native RoboTwin and RoboDojo successes; truthful failed RoboCasa and BEHAVIOR attempts. A normal pause does not create a Verifier.                                                                                                                  |
+| Formal verification         | Fresh Verifier only after eligible confirmed execution end. It checks admitted criteria and returns a scoped passed, failed or unknown verdict.                                                                                 | Native RoboTwin, RoboDojo and RoboCasa success and failed-attempt outcomes are verified. BEHAVIOR retains its observed failed verdicts. A normal pause does not create a Verifier.                                                                                                                  |
 | Retry and replanning        | Planner owns every retry, replan and resume. Failed attempts retain scene state, original criteria, evidence and an explicit adjustment record.                                                                                 | Native RoboTwin, RoboDojo and RoboCasa recovery succeed. Other task bindings retain their actual unsuccessful outcomes and separate acceptance. |
 | Experience retrieval        | SKILL metadata search and selective section loading on demand; source identities and applicability accompany reads.                                                                                                             | Keyword retrieval is implemented. Semantic ranking and validated experience transfer require separate acceptance. Evolver development is paused; SceneState implementation is deferred.                                                             |
 
@@ -57,3 +57,11 @@ Qwen inspection and confirmed Session close through one Console. These inspectio
 tasks advance no learned controls and retain their own source-bound geometry records.
 README presents the framework architecture;
 [progress](progress.md) retains evidence and continuation details.
+
+CPU checks on macOS and isolated Linux verify configured Console startup,
+shared-service cancellation/release, complete owned process-group shutdown,
+worker transport, finite policy messages and inference ownership. Standalone
+policy/perception CLIs validate their declared arguments before optional SDK
+imports. Exact source, input and release evidence appears in
+[CPU validation](cpu-release-validation.md). Loaded-model cancellation and
+current-code physical task completion keep the native campaign's acceptance gates.

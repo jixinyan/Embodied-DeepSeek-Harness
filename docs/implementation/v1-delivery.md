@@ -69,6 +69,11 @@ and forced drain, preserving original failures and uncertain ownership.
 Eight standalone SAM/YOLO CLI argument checks pass before SDK/model imports.
 The normal perception service and its original license boundaries remain intact;
 see [perception arguments](cpu-release-validation.md#perception-service-arguments).
+Frozen `1192be3` passes these eleven startup/CLI cases, both actual shared-service
+lifecycle scenarios and full project checks in isolated Linux. Six original
+configuration hashes and nine executable hashes match macOS. Process-group,
+lease, writer and listener release are verified; the canonical server checkout
+retains its original status and GPU/model/environment allocation stays zero.
 
 Four JSON policy services bind before optional SDK/model initialization and admit
 connections only after policy readiness. All five JSON/native CLI help commands,

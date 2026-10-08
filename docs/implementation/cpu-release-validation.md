@@ -890,6 +890,17 @@ unexpected process exit and server closure with an active lease in
 `.local/work/v1-service-group-lifecycle-20261008-release/` and
 `.local/work/v1-service-group-close-held-20261008-release/`.
 
+Frozen `1192be3` passes these three startup cases, both actual shared-service
+lifecycle scenarios, the eight perception CLI cases below and full project checks
+under isolated Linux Python 3.12.14 and Node 24.21.0. Six original configuration
+hashes and nine executable hashes match macOS. Startup reports require owned
+process-group absence; shared release, actual restart, unexpected process exit
+and active-lease server closure retain their original outcomes. The canonical
+server checkout's before/after status is identical. No model, policy, simulator
+or GPU is allocated. Reports and the verified summary are under
+`.local/work/v1-cpu-service-group-20261008/linux/`; archive SHA-256:
+`6d2ad725331512f382dbc8949ff64cadd22e93c23173f7a6dd733fb0d044bcc0`.
+
 ## Perception service arguments
 
 Standalone SAM3.1 and YOLO26 service CLIs handle argument help, required fields and
@@ -911,6 +922,9 @@ Source hashes and complete original stdout/stderr remain in
 `.local/work/v1-perception-startup-20261008/acceptance.json`.
 Loaded model startup, source/weight validation and segmentation/depth results
 retain their native acceptance requirements.
+The same eight CLI cases and all three executable hashes also match the isolated
+Linux run from frozen `1192be3`; its reports are under
+`.local/work/v1-cpu-service-group-20261008/linux/perception-startup/`.
 
 ## Native admission and interrupted driver
 

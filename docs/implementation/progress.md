@@ -29,6 +29,15 @@ model loading and request behavior remain unchanged. Eight actual CLI subprocess
 cases pass without SDK/model allocation. The standalone SAM license boundary
 remains MIT. See [perception argument checks](cpu-release-validation.md#perception-service-arguments).
 
+Frozen `1192be3` passes all three startup cases, both shared-service lifecycle
+scenarios, all eight perception CLI cases and full project checks in isolated
+Linux. Six original configuration hashes and nine executable hashes match their
+macOS sources. Startup reports confirm complete owned process-group release;
+shared release, restart, unexpected exit and active-lease server close retain
+their original states. The canonical server checkout remains unchanged. No
+model, policy, environment or GPU is allocated. Reports and the verified summary
+are under `.local/work/v1-cpu-service-group-20261008/linux/`.
+
 ## 2026-10-08 policy service startup
 
 Four EDH JSON services bind their port before checkpoint/upstream initialization
