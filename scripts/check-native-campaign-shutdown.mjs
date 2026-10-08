@@ -299,6 +299,19 @@ try {
       if (campaign?.exitCode === null && campaign.signalCode === null) campaign.kill('SIGTERM');
       for (const action of [
         () => campaignExit && waitFor(campaignExit, AbortSignal.timeout(60_000)),
+        async () => {
+          if (!driverPid) return;
+          const deadline = AbortSignal.timeout(60_000);
+          for (;;) {
+            try {
+              process.kill(driverPid, 0);
+            } catch (error) {
+              if (error.code !== 'ESRCH') throw error;
+              return;
+            }
+            await delay(50, undefined, { signal: deadline });
+          }
+        },
         () => writeFile(resolve(directory, 'stdout.txt'), stdout, { flag: 'wx' }),
         () => writeFile(resolve(directory, 'stderr.txt'), stderr, { flag: 'wx' }),
         () => server.close(),

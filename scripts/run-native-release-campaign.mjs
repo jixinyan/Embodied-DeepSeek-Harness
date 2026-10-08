@@ -123,8 +123,8 @@ if (values.prepare) {
   assert.equal((await api('/api/sessions')).activeId, null);
   const abort = new AbortController();
   const interrupt = () => abort.abort(new Error('Native campaign interrupted.'));
-  process.once('SIGINT', interrupt);
-  process.once('SIGTERM', interrupt);
+  process.on('SIGINT', interrupt);
+  process.on('SIGTERM', interrupt);
   const results = [];
   try {
     for (const item of manifest.cases) {
