@@ -53,8 +53,11 @@ pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/run-native-release-campai
 Each case retains its driver log, exit status, Session request, configuration,
 catalog, task submissions, complete event histories and closure receipts.
 The driver preserves the original task outcome and collects before/after-close
-histories. Failure stops the campaign. Interruption terminates the campaign-owned
-driver; the campaign checks the persisted admission request against the active
+histories. Failure stops the campaign. Interruption signals the campaign-owned
+driver. The driver interrupts reads and polling, retains an already submitted
+admission response, captures evidence and closes its exact owned Session before
+exiting. Cleanup HTTP calls continue under their bounded deadlines. The campaign
+checks the persisted admission request against the active
 Session and closes only an exact matching request/profile/deployment identity.
 Cleanup failure accompanies the original error. Unrelated Sessions retain their
 ownership. Each accepted case requires released Session resources and zero owned
@@ -108,7 +111,9 @@ The campaign's accepted output establishes production HTTP workflow checks.
 Original simulator source, checkpoint, policy requests/responses, ActionGate
 receipts, calibrated observations, video decoding and process placement require
 the [recorded source audit](../../scripts/REPLAY.md). Interrupt-triggered owned
-Session cleanup and the complete new campaign require actual native execution.
+Session cleanup during native execution and the complete new campaign require actual native execution.
+CPU admission interruption has separate production acceptance using an actual
+occupied Console endpoint; see [CPU release validation](cpu-release-validation.md).
 Neither preparation nor recorded-history inspection establishes current-code
 physical task success. The [v1 register](v1-delivery.md) remains authoritative
 for the full release.

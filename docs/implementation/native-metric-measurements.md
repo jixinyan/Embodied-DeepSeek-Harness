@@ -31,7 +31,11 @@ Set `EDH_METRIC_RECORD_DIR` to retain actual measurement source PNGs, masks,
 this variable. No records are produced unless a measurement is requested.
 `scripts/check-recorded-metric.py --record DIRECTORY` recomputes the measurement
 through production metric geometry and compares every calculated value with the
-original record.
+original record. Identity, calibration and pixel-count fields remain exact;
+derived back-projected coordinates/range use a reported float64 accumulation
+allowance with their measured differences. `--output .local/work/<new-file>.json`
+retains source hashes and the complete numeric comparison. See
+[CPU geometry checks](cpu-release-validation.md#native-geometry-and-role-records).
 
 RoboDojo action receipts include the actual Isaac SimulationContext physics counter
 before and after each admitted command, its physics timestep and simulator time.

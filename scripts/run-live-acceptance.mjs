@@ -20,15 +20,25 @@ assert(
   'Required: --url, --profile, --task (repeatable), --output.',
 );
 const url = new URL(values.url);
-assert(['http:', 'https:'].includes(url.protocol));
+assert(
+  ['http:', 'https:'].includes(url.protocol) &&
+    !url.username &&
+    !url.password &&
+    !url.hash &&
+    !url.search,
+);
 const timeoutMs = Number(values['timeout-ms']);
 assert(Number.isSafeInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= 86400000);
 const output = resolve(values.output);
 await mkdir(output, { recursive: false });
 const save = (name, value) =>
   writeFile(resolve(output, name), `${JSON.stringify(value, null, 2)}\n`);
+const abort = new AbortController();
+let cleaning = false;
 
 async function api(path, body) {
+  if (!cleaning) abort.signal.throwIfAborted();
+  const deadline = AbortSignal.timeout(900000);
   const response = await request(new URL(path, url), {
     method: body === undefined ? 'GET' : 'POST',
     ...(body === undefined
@@ -38,7 +48,8 @@ async function api(path, body) {
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify(body),
         }),
-    signal: AbortSignal.timeout(900000),
+    // 保留已提交的 admission 响应，随后按确切 Session 身份完成关闭。
+    signal: cleaning || body !== undefined ? deadline : AbortSignal.any([deadline, abort.signal]),
     headersTimeout: 900000,
     bodyTimeout: 900000,
   });
@@ -93,12 +104,17 @@ let session;
 const accepted = [];
 const admitted = [];
 let failure;
+const interrupt = () => abort.abort(new Error('Live acceptance interrupted.'));
+process.on('SIGINT', interrupt);
+process.on('SIGTERM', interrupt);
 try {
   session = await api('/api/sessions', openRequest);
   await save('session.json', session);
+  abort.signal.throwIfAborted();
   const catalog = await api(`/api/sessions/${session.id}/tasks`);
   await save('catalog.json', catalog);
   for (const [index, scenario] of values.task.entries()) {
+    abort.signal.throwIfAborted();
     assert(catalog.tasks[scenario], `Unknown admitted task: ${scenario}`);
     const readyDeadline = Date.now() + timeoutMs;
     const lifecycle = [];
@@ -116,7 +132,7 @@ try {
       }
       assert(index > 0 && ['running', 'draining'].includes(current.state), JSON.stringify(current));
       assert(Date.now() < readyDeadline, 'Session did not finish retiring its previous task.');
-      await setTimeout(300);
+      await setTimeout(300, undefined, { signal: abort.signal });
     }
     const directory = resolve(output, `task-${index + 1}`);
     await mkdir(directory);
@@ -128,6 +144,7 @@ try {
     });
     admitted.push({ directory, runId: submission.runId, scenario });
     await writeFile(resolve(directory, 'submission.json'), JSON.stringify(submission, null, 2));
+    abort.signal.throwIfAborted();
     const deadline = Date.now() + timeoutMs;
     let previous;
     let run;
@@ -151,7 +168,7 @@ try {
         Date.now() < deadline,
         `Actual run exceeded its acceptance deadline: ${submission.runId}`,
       );
-      await setTimeout(3000);
+      await setTimeout(3000, undefined, { signal: abort.signal });
     }
     const captured = await capture(directory, submission.runId);
     run = captured.run;
@@ -174,6 +191,7 @@ try {
 } catch (error) {
   failure = error;
 } finally {
+  cleaning = true;
   const cleanupErrors = [];
   if (!session) {
     try {
@@ -230,6 +248,8 @@ try {
   } catch (error) {
     cleanupErrors.push(error);
   }
+  process.removeListener('SIGINT', interrupt);
+  process.removeListener('SIGTERM', interrupt);
   if (cleanupErrors.length) {
     throw new AggregateError(
       [...(failure === undefined ? [] : [failure]), ...cleanupErrors],

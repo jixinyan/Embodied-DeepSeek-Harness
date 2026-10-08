@@ -54,6 +54,54 @@ Console as the configured foreground service. Evidence:
 `.local/work/v1-cpu-service-lifecycle-20261007/` and
 `.local/work/v1-cpu-service-close-held-20261007/`.
 
+## Native admission and interrupted driver
+
+The [admission diagnostic](../../scripts/check-native-admission-offline.mjs)
+starts the production four-provider Console and a production native deployment.
+The selected profile requires that Console's occupied endpoint as its managed
+service. The existing service owner remains active while native admission rejects
+the ownership conflict before starting a worker or loading a model.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-admission-offline.mjs \
+  --provider <provider> --config /absolute/path/deployment.json \
+  --workspace /absolute/path/workspace.json --models examples/models/qwen38-vllm.yaml \
+  --profile <configured-profile> --service <console-service> \
+  --output .local/work/<new-admission-check>
+```
+
+Repeat with `--interrupt` to send SIGTERM to the actual acceptance driver at
+environment admission. Its native factory still performs its original service
+checks. The driver retains the submitted response and closes the matching Session.
+Both paths require released resources, zero task admissions, zero service leases
+or child PIDs, unchanged configuration hashes and released listeners/writer locks.
+They pass on 2026-10-07 in
+`.local/work/v1-cpu-admission-failure-20261007-02/` and
+`.local/work/v1-cpu-admission-interrupt-20261007/`.
+
+## Native geometry and role records
+
+`scripts/check-recorded-metric.py --record DIRECTORY --output .local/work/<new-file>.json`
+recomputes original RGB-D measurements through production geometry. Source hashes,
+mask/image identity, calibration, pixel counts and original metadata remain exact.
+Derived range and camera/world surface coordinates use a reported float64
+accumulation allowance: `8 × (n × epsilon / (1 − n × epsilon)) × scale`, where
+`n` is the number of valid pixels and `scale` is at least one meter and includes
+the original/recomputed coordinate magnitudes. Each coordinate reports its actual
+drift and allowance. This numerical allowance represents arithmetic precision;
+sensor accuracy and semantic object selection require separate native evidence.
+RoboTwin's recorded camera centroid differs by `2.44e-19` m on this host;
+the original depth, calibration and PNG sources remain unchanged.
+
+Actual RoboCasa, RoboTwin and RoboDojo records pass recomputation. The production
+communication reader also checks all 141 original events of run `04823dd4`,
+same-context explicit continuation, report versions, acknowledgement and context-
+pending cancellation with released resources. Native DSH recovery readers preserve
+original tool results and recover interrupted prefixes without replaying controls.
+The actual BEHAVIOR journal verifies a retained two-task Session and its unchanged
+failed outcomes through the production history, catalog and verdict readers.
+These are CPU checks of original records.
+
 ## Native configuration and original histories
 
 The [workspace readiness check](native-workspace.md#offline-readiness) validates

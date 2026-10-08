@@ -20,6 +20,19 @@ unexpected exit and server closure with a held lease. Source files retain their
 original hashes. See [CPU release validation](cpu-release-validation.md).
 No model, policy inference or simulator task is started by these checks.
 
+The actual native admission driver handles SIGINT/SIGTERM through evidence capture
+and matching Session closure. Reads/polling stop promptly; submitted admission
+responses remain observable before cleanup. Production admission-conflict and
+interrupted-admission checks confirm released Session resources, zero allocated
+workers/tasks and owned process leases, unchanged configurations and closed writer
+locks/listeners. In-flight simulator interruption retains its native test requirement.
+
+Production CPU readers also verify the original 141-event role-context workflow,
+actual BEHAVIOR two-task history and DSH interrupted tool prefixes. Original
+RoboCasa, RoboTwin and RoboDojo metric records pass source-bound recomputation with
+reported float64 coordinate roundoff. Raw calibration, PNG/mask hashes, identity
+and counts remain exact. These checks start no model inference or physical controls.
+
 ## 2026-10-07 native configuration readiness
 
 The consolidated native campaign prepares four actual profiles and eight task

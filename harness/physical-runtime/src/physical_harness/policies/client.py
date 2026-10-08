@@ -190,9 +190,10 @@ class WebSocketPolicyClient:
                 else:
                     raise PolicyProtocolError("Policy telemetry message budget exhausted.")
                 normalized = normalize_mode_response(response, bound, self._execution_mode)
+                validated = validate_response(self._validator, bound, normalized)
                 self.motion = copy.deepcopy(response.get("motion"))
                 self.last_response = copy.deepcopy(response)
-                return copy.deepcopy(validate_response(self._validator, bound, normalized))
+                return copy.deepcopy(validated)
         except BaseException as error:
             # 取消或超时后关闭连接，保留请求错误及资源清理错误。
             try:
