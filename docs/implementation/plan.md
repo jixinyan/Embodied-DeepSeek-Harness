@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.88 · 2026-10-08
+Version: v1.89 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -133,7 +133,10 @@ Prerequisite success requires its own verdict and completed plan row. See
    control budgets, resource leases and confirmed device boundaries.
 4. Own synchronous policy work and audit completion through caller cancellation
    and deadlines using [inference.py](../../harness/physical-runtime/src/physical_harness/policies/inference.py).
-5. Drain owned requests, threads, processes and listeners during shutdown.
+5. Share policy connection closure and complete client shutdown across concurrent
+   or cancelled callers. Preserve caller-local cleanup and reject inference while
+   connection closure is pending or failed.
+6. Drain owned requests, threads, processes and listeners during shutdown.
 
 **Gate:** Actual original errors remain observable. Unknown device state remains unknown;
 transport loss cannot replay motion or create a confirmed stop. CPU and loaded-SDK

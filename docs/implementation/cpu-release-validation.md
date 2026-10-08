@@ -529,6 +529,43 @@ The actual upstream connection times out, both clients discard their connections
 the authenticated server rejects unauthorized admission and its listener closes.
 Evidence: `.local/work/v1-policy-transport-offline-20261007-02/acceptance.json`.
 
+## Policy client connection ownership
+
+[`WebSocketPolicyClient`](../../harness/physical-runtime/src/physical_harness/policies/client.py)
+owns one actual connection-close operation and one full shutdown operation.
+Cancelled waiters preserve those operations. Concurrent callers wait for their
+original result; pending or failed connection closure rejects new inference.
+Full shutdown drains the captured inference caller and attempts connection
+closure, retaining every original failure. Caller-local cleanup may join the
+connection operation while external shutdown awaits that caller's complete exit.
+Closing from a policy event/tool callback stops subsequent response handling.
+
+```sh
+CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-policy-client-owner-offline.py \
+  --request /absolute/path/original-robodojo-policy-request.json \
+  --output .local/work/<new-policy-client-owner-check>
+```
+
+Four POSIX cases use real WebSocket connections and a production policy server
+in a diagnostic-owned child process. The OS pauses that peer while the client
+sends its close frame. Three concurrent close waiters, including one cancelled
+waiter, retain the actual closure until the peer resumes. Idle, active inference,
+repeated inference cancellation and caller-local cleanup all finish with normal
+close code 1000, no retained caller/connection and server exit code zero.
+Production recording preserves three original requests and the input SHA-256.
+It returns zero policy responses and allocates no model, native environment,
+GPU job, control or stop acknowledgement. macOS evidence:
+`.local/work/v1-policy-client-owner-20261008-final/acceptance.json`.
+Client source SHA-256:
+`f5914bd09782e7e18462099265b15ba10a77257a70ed756edb40775f2c4f6266`.
+
+The same client source passes nine actual inference-owner cases in
+`.local/work/v1-policy-client-inference-20261008/`, three actual rollout/Worker
+failure cases in `.local/work/v1-policy-client-rollout-20261008/`, and production
+transport with 95 original telemetry events in
+`.local/work/v1-policy-client-transport-20261008/`.
+Loaded-policy cancellation and physical stopping retain native acceptance gates.
+
 ## Policy inference ownership
 
 All four native policy service entry points use production `ThreadedInference`

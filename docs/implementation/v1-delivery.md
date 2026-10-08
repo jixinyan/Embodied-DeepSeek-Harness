@@ -57,6 +57,14 @@ see [Console process checks](cpu-release-validation.md#native-console-process-ow
 
 ## Acceptance register
 
+Policy WebSocket closure and full client shutdown have shared owners. Four actual
+CPU connection cases preserve concurrent/cancelled waiters and caller-local
+cleanup through normal connection closure and owned-server exit. Current-source
+inference-owner, rollout/Worker and original telemetry checks pass with zero
+model, environment or action allocation. Loaded-policy/device cancellation
+remains a native acceptance gate. See
+[connection ownership](cpu-release-validation.md#policy-client-connection-ownership).
+
 ActionGate, PolicyRollout and Worker share failure-time stopping with original
 operation/stop errors, retained stop reasons and repeated error-group identity.
 Three actual CPU rollout/Worker cases verify unavailable TCP endpoints, closed

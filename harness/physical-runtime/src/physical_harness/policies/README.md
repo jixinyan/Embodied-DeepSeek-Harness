@@ -8,6 +8,21 @@ OpenPI Pi0.5/RoboDojo.
 
 ## Inference ownership
 
+[`client.py`](client.py) owns one connection-close operation and one client
+shutdown operation. Concurrent callers join those operations; cancelling a waiter
+keeps actual connection drain owned. Pending or failed connection closure rejects
+new inference. Full shutdown closes admission, drains its original inference caller
+and closes the connection. That caller may perform its own `close()` cleanup by
+joining connection closure while the external shutdown owner awaits its exit.
+Original inference and closure failures remain observable. Event/tool callbacks
+that close the client cannot continue response handling or send a tool result.
+
+The [CPU connection diagnostic](../../../../../scripts/check-policy-client-owner-offline.py)
+checks actual normal WebSocket closure with an owned policy-server process,
+original request recording and three concurrent close waiters. It covers idle,
+active, repeatedly cancelled and caller-cleanup cases. It returns no model or action
+result. See [client ownership validation](../../../../../docs/implementation/cpu-release-validation.md#policy-client-connection-ownership).
+
 [`inference.py`](inference.py) owns one model-operation thread through
 `ThreadedInference`. Concurrent admission fails immediately. Cancellation of an
 HTTP/WebSocket waiter propagates to that caller while the actual thread remains

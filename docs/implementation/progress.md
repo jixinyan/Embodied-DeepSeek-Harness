@@ -1,8 +1,22 @@
 # Implementation progress
 
-Spec: v1.88. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.89. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 policy connection ownership
+
+WebSocketPolicyClient owns shared connection-close and full shutdown operations.
+Concurrent/cancelled waiters retain actual drain; new inference fails during
+pending or failed connection closure. Full shutdown drains the original caller,
+including its own cleanup, and preserves original inference/close errors.
+Four actual CPU cases pass with production WebSockets, owned server processes,
+OS suspension/resumption and three original recorded requests. Every connection
+closes normally with code 1000; every server exits with code zero. The current
+client also passes nine inference-owner cases, three rollout/Worker failure
+cases and 95 original telemetry-event checks. These checks allocate no GPU,
+model, native environment, control or stop acknowledgement.
+See [connection validation](cpu-release-validation.md#policy-client-connection-ownership).
 
 ## 2026-10-08 ActionGate stop ownership
 

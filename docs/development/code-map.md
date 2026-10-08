@@ -46,6 +46,7 @@ All Python provider code belongs under
 | Manage worker Sessions and execution operations | [execution/worker.py](../../harness/physical-runtime/src/physical_harness/execution/worker.py) |
 | Change worker process communication | [execution/worker_transport.py](../../harness/physical-runtime/src/physical_harness/execution/worker_transport.py) |
 | Save original policy requests and actual controls | [execution/policy_records.py](../../harness/physical-runtime/src/physical_harness/execution/policy_records.py) |
+| Own policy WebSocket requests and shared connection/client shutdown | [policies/client.py](../../harness/physical-runtime/src/physical_harness/policies/client.py) |
 | Admit actions and enforce execution budgets | [execution/action_gate.py](../../harness/physical-runtime/src/physical_harness/execution/action_gate.py) |
 | Compose an inference client with ActionGate and preserve rollout failures | [execution/policy_rollout.py](../../harness/physical-runtime/src/physical_harness/execution/policy_rollout.py) |
 | Confirm simulator execution and stopping | [execution/native_device.py](../../harness/physical-runtime/src/physical_harness/execution/native_device.py) |
@@ -75,6 +76,7 @@ implementations load in their separately configured service processes.
 | Verify shared Session/device/recording finalization and original file errors | [check-native-session-owner-offline.py](../../scripts/check-native-session-owner-offline.py) |
 | Verify retained ActionGate stops and original operation/stop errors | [check-action-gate-owner-offline.py](../../scripts/check-action-gate-owner-offline.py) |
 | Verify real rollout connection/owner failures and scoped background faults | [check-rollout-failure-offline.py](../../scripts/check-rollout-failure-offline.py) |
+| Verify actual policy connection drain and concurrent/cancelled close callers | [check-policy-client-owner-offline.py](../../scripts/check-policy-client-owner-offline.py) |
 | Exercise native RoboCasa worker or SAM-backed measurement | [check-robocasa-worker.ts](../../scripts/check-robocasa-worker.ts) and [check-robocasa-object-measurement.ts](../../scripts/check-robocasa-object-measurement.ts) |
 | Submit and audit actual native tasks | [native release campaign](../implementation/native-release-campaign.md) |
 

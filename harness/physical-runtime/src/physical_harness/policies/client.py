@@ -121,21 +121,40 @@ class WebSocketPolicyClient:
         self._api_key, self._timeout, self._max_bytes = api_key, timeout_s, max_bytes
         self._execution_mode = ExecutionMode.parse(execution_mode)
         self._connection: Any = None
+        self._disconnecting: asyncio.Task[None] | None = None
         self._active: asyncio.Task[Any] | None = None
         self._closed = False
+        self._closing: asyncio.Task[None] | None = None
+        self._closing_active: asyncio.Task[Any] | None = None
         self.motion: dict[str, Any] | None = None
         self.last_response: dict[str, Any] | None = None
         self.tool_handler: Callable[[dict[str, Any], dict[str, Any]], Awaitable[Any]] | None = None
         self.event_handler: Callable[[dict[str, Any], dict[str, Any]], Awaitable[None]] | None = None
 
     async def _disconnect(self) -> None:
-        connection, self._connection = self._connection, None
-        if connection is not None:
-            await connection.close()
+        if self._disconnecting is None:
+            connection, self._connection = self._connection, None
+            if connection is None:
+                return
+            self._disconnecting = asyncio.create_task(connection.close())
+            self._disconnecting.add_done_callback(self._observe_close)
+        operation = self._disconnecting
+        # 连接关闭由独立任务负责，调用方取消等待以后仍然保留原有操作。
+        await asyncio.wait({operation})
+        operation.result()
+        if self._disconnecting is operation:
+            self._disconnecting = None
+
+    @staticmethod
+    def _observe_close(operation: asyncio.Future) -> None:
+        if not operation.cancelled():
+            operation.exception()
 
     async def infer(self, request: dict[str, Any]) -> dict[str, Any]:
         if self._closed or self._active is not None:
             raise RuntimeError("Policy client is closed or already has an in-flight request.")
+        if self._disconnecting is not None:
+            raise RuntimeError("Policy connection closure is pending or failed.")
         bound = copy.deepcopy(request)
         self.motion = None
         self.last_response = None
@@ -174,6 +193,8 @@ class WebSocketPolicyClient:
                                                       session_id=event_session, sequence=event_sequence)
                         event_session, event_sequence = event["sessionId"], event["sequence"]
                         await self.event_handler(copy.deepcopy(bound), copy.deepcopy(event))
+                        if self._closed:
+                            raise RuntimeError("Policy client closed during its event handler.")
                         continue
                     if response.get("type") != "policy_tool":
                         break
@@ -183,6 +204,8 @@ class WebSocketPolicyClient:
                         raise PolicyProtocolError("Unexpected or stale policy tool request.")
                     validate_tool_request(bound, response, tool_ids)
                     result = await self.tool_handler(copy.deepcopy(bound), response)
+                    if self._closed:
+                        raise RuntimeError("Policy client closed during its tool handler.")
                     if not isinstance(result, dict):
                         raise PolicyProtocolError("Policy tool result must be an object.")
                     await self._connection.send(json.dumps({"type": "policy_tool_result",
@@ -206,13 +229,41 @@ class WebSocketPolicyClient:
 
     async def close(self) -> None:
         self._closed = True
-        active = self._active
-        try:
-            if active is not None and active is not asyncio.current_task():
+        caller = asyncio.current_task()
+        if caller is not None and (caller is self._active or caller is self._closing_active):
+            # 原有调用方可以关闭连接，其完整退出仍由外部关闭任务等待。
+            await self._disconnect()
+            return
+        if self._closing is None:
+            active = self._active
+            self._closing = asyncio.create_task(self._close_client(active))
+            self._closing.add_done_callback(self._observe_close)
+        await asyncio.wait({self._closing})
+        self._closing.result()
+
+    async def _close_client(self, active: asyncio.Task | None) -> None:
+        errors: list[BaseException] = []
+        if active is not None and self._active is active:
+            self._closing_active = active
+            try:
                 active.cancel()
                 try:
-                    await active
+                    await asyncio.wait({active})
+                    active.result()
                 except asyncio.CancelledError:
                     pass
-        finally:
+            except BaseException as error:
+                errors.append(error)
+            finally:
+                self._closing_active = None
+        try:
             await self._disconnect()
+        except BaseException as error:
+            if not any(previous is error or isinstance(previous, BaseExceptionGroup) and previous.subgroup(
+                lambda original: original is error
+            ) is not None for previous in errors):
+                errors.append(error)
+        if len(errors) == 1:
+            raise errors[0]
+        if errors:
+            raise BaseExceptionGroup("Policy client shutdown failed.", errors)
