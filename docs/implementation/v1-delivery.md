@@ -54,7 +54,7 @@ workflow remain native release requirements. See
 [policy ownership checks](cpu-release-validation.md#policy-inference-ownership).
 
 Native workspace and single-provider entries share Console process ownership.
-Twenty-five actual CPU CLI cases verify initialization-time and ready-time
+Twenty-five actual CPU CLI cases verify writer-lock-triggered and HTTP-ready
 SIGINT/SIGTERM, repeated requests, zero-exit cleanup and released writers,
 listeners and owned Node processes. Missing workspace configuration fails before
 allocation with its required field. All twenty-five cases and full source checks

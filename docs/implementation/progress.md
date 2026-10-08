@@ -32,9 +32,11 @@ environment identity and all child diagnostics run with CUDA invisible.
 The macOS campaign passes 222 configured admission/process/wire/resource cases, six native visual-context
 cases, twelve original context reads, all project checks and actual four-provider
 readiness. No model, policy result, simulator or control is supplied.
-Evidence: `.local/work/v1-cpu-release-matrix-20261008/acceptance.json`.
+Evidence: `.local/work/v1-cpu-release-matrix-20261008-final-02/acceptance.json`.
 The command covers 108 configuration rejections, four real Worker initialization
 failures and 25 startup/signal cases across the unified and four provider CLIs.
+Writer-lock-triggered and HTTP-ready cases retain their actual URL-observation
+state before signalling and before exit, alongside strict process/port/writer release.
 Source hashes are unique; each invocation retains its own report and logs.
 Frozen `917a4ff` also passes the sixteen-component Linux campaign with six
 original data hashes, six original configuration hashes, sixteen diagnostic hashes

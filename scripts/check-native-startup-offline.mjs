@@ -64,11 +64,15 @@ const hashes = await Promise.all(
 await mkdir(output, { recursive: false });
 const results = [];
 const cases = [
-  { name: 'initializing-sigterm', initializing: true, signals: ['SIGTERM'] },
-  { name: 'initializing-sigint', initializing: true, signals: ['SIGINT'] },
-  { name: 'initializing-repeated', initializing: true, signals: ['SIGTERM', 'SIGINT', 'SIGTERM'] },
-  { name: 'ready-sigterm', initializing: false, signals: ['SIGTERM'] },
-  { name: 'ready-repeated', initializing: false, signals: ['SIGINT', 'SIGTERM', 'SIGINT'] },
+  { name: 'writer-lock-sigterm', trigger: 'writer-lock', signals: ['SIGTERM'] },
+  { name: 'writer-lock-sigint', trigger: 'writer-lock', signals: ['SIGINT'] },
+  {
+    name: 'writer-lock-repeated',
+    trigger: 'writer-lock',
+    signals: ['SIGTERM', 'SIGINT', 'SIGTERM'],
+  },
+  { name: 'ready-sigterm', trigger: 'http-ready', signals: ['SIGTERM'] },
+  { name: 'ready-repeated', trigger: 'http-ready', signals: ['SIGINT', 'SIGTERM', 'SIGINT'] },
 ];
 for (const item of cases) {
   const directory = resolve(output, item.name);
@@ -147,12 +151,12 @@ for (const item of cases) {
       }),
     ]);
   let owner;
-  let readyBeforeSignal;
+  let urlObservedBeforeSignal;
   let metadata;
   let outcome;
   try {
     await waitFor(lockCreated);
-    if (!item.initializing) {
+    if (item.trigger === 'http-ready') {
       await waitFor(ready.promise);
       const response = await fetch(`${url}/api/config`, { signal: deadline });
       assert.equal(response.status, 200);
@@ -161,8 +165,8 @@ for (const item of cases) {
     }
     owner = JSON.parse(await readFile(resolve(runtime, 'writer.lock'), 'utf8'));
     assert(Number.isSafeInteger(owner) && owner > 0);
-    readyBeforeSignal = stdout.includes(url);
-    if (item.initializing) assert.equal(readyBeforeSignal, false);
+    urlObservedBeforeSignal = stdout.includes(url);
+    if (item.trigger === 'http-ready') assert.equal(urlObservedBeforeSignal, true);
     for (const signal of item.signals) process.kill(owner, signal);
     outcome = await closed;
   } finally {
@@ -177,7 +181,6 @@ for (const item of cases) {
       `${JSON.stringify(metadata, null, 2)}\n`,
     );
   assert.deepEqual(outcome, [0, null]);
-  if (item.initializing) assert(!stdout.includes(url));
   await assert.rejects(access(resolve(runtime, 'writer.lock')), { code: 'ENOENT' });
   await assert.rejects(fetch(`${url}/api/config`, { signal: AbortSignal.timeout(3000) }));
   assert.throws(() => process.kill(owner, 0), { code: 'ESRCH' });
@@ -187,7 +190,8 @@ for (const item of cases) {
     ...item,
     owner,
     childPid: child.pid,
-    readyBeforeSignal,
+    urlObservedBeforeSignal,
+    urlObservedBeforeExit: stdout.includes(url),
     exitCode: 0,
     writerReleased: true,
     listenerClosed: true,

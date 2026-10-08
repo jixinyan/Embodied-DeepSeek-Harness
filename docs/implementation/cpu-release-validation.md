@@ -58,7 +58,7 @@ original native context reads and four-provider readiness. The admission/resourc
 count includes 108 configuration rejections, four Worker initialization cases and
 25 Console CLI signal cases. Original inputs retain their hashes. There are no
 model calls, policy results, simulator allocations or controls. Evidence:
-`.local/work/v1-cpu-release-matrix-20261008/acceptance.json`.
+`.local/work/v1-cpu-release-matrix-20261008-final-02/acceptance.json`.
 
 Frozen `917a4ff` independently passes the sixteen-component campaign on isolated
 Linux: 85 process/wire/resource cases, six visual cases, twelve original context
@@ -257,9 +257,11 @@ pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-startup-offl
 ```
 
 The diagnostic starts the actual configured native CLI with CUDA invisible.
-Three initialization cases send SIGTERM, SIGINT and repeated signals at the
-production journal's actual writer-lock creation, before URL readiness. Two
-running cases inspect actual HTTP configuration before single/repeated signals.
+Three writer-lock-triggered cases send SIGTERM, SIGINT and repeated signals after
+observing the production journal's writer initialization. Their reports retain
+whether the URL was observed before signalling and before exit. Two HTTP-ready
+cases inspect actual configuration before single/repeated signals. The report
+records the actual observed readiness at both milestones.
 All five require exit status zero, released writer locks/listeners and absence
 of both owned Node processes. Original configuration and implementation hashes
 remain unchanged. No model call, policy call, Session or environment is admitted.
