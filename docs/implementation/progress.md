@@ -33,6 +33,14 @@ RoboCasa, RoboTwin and RoboDojo metric records pass source-bound recomputation w
 reported float64 coordinate roundoff. Raw calibration, PNG/mask hashes, identity
 and counts remain exact. These checks start no model inference or physical controls.
 
+The current Python package also passes all 56 compilations and 16 base imports
+on `jd_B300` in the isolated Python 3.12 LeRobot environment with CUDA invisible.
+An original recorded Pi0.5 action passes the production Torch CPU converter;
+unchanged arm channels and native gripper conversion are checked independently
+of inference. The conversion report explicitly leaves original-request identity
+unchecked in its conversion-only mode. The recorded-input endpoint driver is
+prepared for actual policy validation with scoped hashes and private output.
+
 ## 2026-10-07 native configuration readiness
 
 The consolidated native campaign prepares four actual profiles and eight task

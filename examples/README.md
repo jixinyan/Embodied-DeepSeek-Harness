@@ -13,9 +13,10 @@ with a [custom result schema](roles/schemas/scene-assessment.json); it demonstra
 configuration and needs a model that performs that role's report protocol. The default
 console fixture model does not generate arbitrary custom-role behavior.
 
-The household/SAM/deployment examples describe future physical bindings and do not
-install providers or start robots. Runtime role/report acceptance uses explicit CPU
-fixtures. See [the extension guide](../docs/implementation/upper-runtime.md).
+The SAM example describes the implemented native tool and its optional loopback
+service binding. The household/deployment examples remain illustrative and do not
+install providers or start robots. See
+[the extension guide](../docs/implementation/upper-runtime.md).
 
 ## Executable endpoint examples
 

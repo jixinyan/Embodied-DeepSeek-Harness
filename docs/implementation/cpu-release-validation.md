@@ -102,6 +102,34 @@ The actual BEHAVIOR journal verifies a retained two-task Session and its unchang
 failed outcomes through the production history, catalog and verdict readers.
 These are CPU checks of original records.
 
+The [RoboTwin action reader](../../scripts/check-robotwin-recorded-actions.py)
+uses the actual production Torch converter on recorded model/native action pairs.
+`--conversion-only` checks the recorded checkpoint revision, finite action rows,
+native horizon, unchanged joint targets and gripper conversion on CPU. The
+separate `--request` and `--schema-path` arguments additionally require the exact
+original request and verify its identity, channel ranges and action budget.
+Reports explicitly state whether that original request was checked.
+
+```sh
+python scripts/check-robotwin-recorded-actions.py \
+  --record /absolute/path/robotwin-pi05-recorded-actions.json --conversion-only \
+  --output .local/work/<new-conversion-check>.json
+```
+
+On `jd_B300`, the current 56 Python files and 16 base modules pass compilation
+and imports in `edh-lerobot-pi05-py312` with `CUDA_VISIBLE_DEVICES` empty. The
+original recorded Pi0.5 action passes production CPU conversion without new
+inference or controls. That conversion-only check does not certify request
+identity or checkpoint bytes. Its original checkpoint revision is retained.
+
+The [recorded-input endpoint driver](../../scripts/check-recorded-policy-inference.py)
+is available for the subsequent actual policy validation. It supports bearer
+credentials through a named environment variable, preserves the request hash,
+validates the canonical response and requires a new private output file. It
+issues an actual inference request when invoked; this CPU phase does not invoke
+it against a model service. Its response still requires independent checkpoint
+and simulator source acceptance.
+
 ## Native configuration and original histories
 
 The [workspace readiness check](native-workspace.md#offline-readiness) validates
