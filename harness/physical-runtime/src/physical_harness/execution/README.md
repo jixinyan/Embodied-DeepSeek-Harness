@@ -15,7 +15,8 @@
 
 The process entry remains `python -m physical_harness.execution.worker`.
 Its transport accepts UTF-8 JSON messages of at most 32 MiB, with nonblank
-request identities and explicit operations. Duplicate active identities terminate
+request identities and explicit operations. Duplicate JSON fields and nonfinite
+numeric values fail during standard-library decoding. Duplicate active identities terminate
 admission. Python's stream reader bounds input before JSON decoding; TaskGroup owns
 request failures and cancellation. EOF, malformed input and failed publication
 revoke the lease before Session cleanup and pipe closure. Expected operation errors
@@ -73,8 +74,10 @@ confirmed ended executions release it. See the
 
 `encode_policy_observation` admits named PNG RGB cameras and finite proprioception
 arrays under byte, pixel and channel limits. The policy request carries the native
-observation ID and acquisition time. It excludes simulator ground truth; that remains
-available only through the stopped-boundary formal `check` path. A real RoboCasa
+observation ID and acquisition time. Learned-policy camera/state serialization
+contains no simulator task predicates. Configured simulation fact tools expose
+authorized native facts to Planner; independent formal `check` operations require
+their stopped boundary and fresh Verifier assignment. A real RoboCasa
 request with three camera images and five PandaOmron state arrays has been generated
 under ignored local deployment evidence. The full-horizon console run retains
 66 GR00T requests, 1,050 controls, 26,250 physics steps and formal native GT failure.

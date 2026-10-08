@@ -1,8 +1,32 @@
 # Implementation progress
 
-Spec: v1.79. Current checkpoint: **tools-owned detached model schemas and actual recorded request/plan checks; separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.80. Current checkpoint: **shared native policy-thread ownership and actual CPU cancellation/recording checks; tools-owned detached model schemas and actual recorded request/plan checks; separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 policy inference ownership
+
+GR00T/RoboCasa, GR00T/BEHAVIOR, LeRobot Pi0.5/RoboTwin and OpenPI/RoboDojo
+service entry points use one production owner in `policies/inference.py`.
+The owned thread includes model work, completed records and exclusive audit files.
+Caller cancellation preserves that operation until completion; concurrent
+admission fails and actual model/recording errors emit scoped evidence before
+propagation. Shutdown rejects new work, shares its completion and drains the
+actual thread even when a close waiter is cancelled.
+
+Six CPU cases pass with the original PolicyRequest, production recorder, real file
+reads and OS pipes. Late duplicate-file errors remain observed and recorded; all
+threads close and source bytes remain unchanged. Full checks compile 59 physical
+files and seven policy entry points, with 20 base imports. These checks perform
+no inference, environment allocation or controls. Commands and source-bound
+evidence: [CPU owner validation](cpu-release-validation.md#policy-inference-ownership).
+Current-code loaded-model cancellation and physical task acceptance remain open.
+
+Frozen `6031766` source also passes all sixteen Worker subprocess cases and
+production original-plan admission on Linux in its isolated CPU environment.
+Both original histories preserve four execution requests and six accepted plans;
+canonical remote Git status remains unchanged. The downloaded evidence archive
+has SHA-256 `3f4e98cd5ab8a88346be64784f17f1d93467a78d2aeb4ce4e43baac9c492b10f`.
 
 ## 2026-10-08 tool ownership and scoped parameters
 

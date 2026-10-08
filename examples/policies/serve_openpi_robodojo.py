@@ -1,11 +1,10 @@
 import argparse
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import json
 from pathlib import Path
 import signal
-from threading import BoundedSemaphore
 
+from physical_harness.policies.inference import ThreadedInference, recorded_inference
 from physical_harness.policies.openpi_robodojo import OpenPiRoboDojoPolicy
 from physical_harness.policies.server import serve_policy
 from physical_harness.validation import ContractValidator
@@ -23,18 +22,13 @@ async def main():
     root = Path(__file__).resolve().parents[2]
     validator = ContractValidator.from_path(root / "harness/contracts/schema/physical.schema.json")
     policy = OpenPiRoboDojoPolicy(args.native_policy_uri, args.checkpoint_sha256)
-    executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="edh-openpi-robodojo")
-    admission = BoundedSemaphore(1)
+    owner = ThreadedInference("edh-openpi-robodojo")
 
-    async def infer(request):
-        if not admission.acquire(blocking=False):
-            raise RuntimeError("OpenPI RoboDojo inference is already in progress.")
+    def infer_recorded(request):
         if args.audit_directory is not None:
             with (args.audit_directory / f"{request['request_id']}.request.json").open("x", encoding="utf-8") as stream:
                 json.dump(request, stream, allow_nan=False)
-        future = executor.submit(policy.infer, request)
-        future.add_done_callback(lambda _: admission.release())
-        actions, record = await asyncio.wrap_future(future)
+        actions, record = policy.infer(request)
         if args.audit_directory is not None:
             with (args.audit_directory / f"{request['request_id']}.inference.json").open("x", encoding="utf-8") as stream:
                 json.dump({"request_id": request["request_id"], "execution_id": request["execution_id"],
@@ -46,6 +40,10 @@ async def main():
                           "generation": request["generation"], "observation_id": request["observation_id"],
                           **record}, allow_nan=False), flush=True)
         return actions
+
+    async def infer(request):
+        return await owner.run(recorded_inference, infer_recorded, request,
+                               {"checkpoint_sha256": args.checkpoint_sha256})
 
     server = await serve_policy(infer, validator, port=args.port, timeout_s=300)
     print(json.dumps({"service": "openpi-robodojo-json", "port": args.port,
@@ -59,7 +57,7 @@ async def main():
     finally:
         server.close()
         await server.wait_closed()
-        await loop.run_in_executor(None, executor.shutdown, True)
+        await owner.close()
         policy.close()
 
 

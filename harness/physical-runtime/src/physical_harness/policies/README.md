@@ -2,12 +2,36 @@
 
 `SubgoalPolicy` defines `infer(request)` and `close()`. `WebSocketPolicyClient` sends
 one bounded EDH JSON request at a time. `serve_policy` validates the request and
-response and exposes a deployment-owned inference callback. The two providers below
-use a single inference thread and keep it reserved until GPU work finishes, including
-when the requesting client disconnects.
+response and exposes a deployment-owned inference callback. Native service entry
+points cover GR00T/RoboCasa, GR00T/BEHAVIOR, LeRobot Pi0.5/RoboTwin and
+OpenPI Pi0.5/RoboDojo.
+
+## Inference ownership
+
+[`inference.py`](inference.py) owns one model-operation thread through
+`ThreadedInference`. Concurrent admission fails immediately. Cancellation of an
+HTTP/WebSocket waiter propagates to that caller while the actual thread remains
+reserved until inference and its audit writes finish. An inference or recording
+error releases that reservation and retains the original exception. Closing stops
+new admission and drains the actual thread; concurrent or cancelled close waiters
+share that shutdown operation.
+
+All four service entry points invoke `recorded_inference` on this owner. Completed
+records and exclusive audit files are written inside the operation; failures emit
+their original request/execution/task/observation identity and traceback before
+propagation. Request cancellation cannot discard the operation's final record.
+ActionChunk validation and ActionGate continue to decide whether a returned
+proposal is eligible for physical execution.
+
+The [CPU owner diagnostic](../../../../../scripts/check-policy-owner-offline.py)
+uses actual original-request recording, file reads and OS pipes to check admission,
+cancellation, late recorder errors and thread shutdown. It performs no model
+inference or controls. The [validation guide](../../../../../docs/implementation/cpu-release-validation.md#policy-inference-ownership)
+records its commands and evidence; loaded-model cancellation and task acceptance
+retain separate native requirements.
 
 When the request observation declares `execution_mode: direct` or `hybrid`,
-`serve_policy` also accepts a Litchi-style mode envelope. A direct envelope carries
+`serve_policy` also accepts the EDH execution-mode envelope. A direct envelope carries
 one canonical action; a hybrid envelope carries a lower-policy proposal and an
 `allow`/`intervene` review. The server validates the envelope and the client performs
 the final normalization before ActionGate. An intervention must include its direct
@@ -110,7 +134,7 @@ The RoboTwin worker supplies three 640×480 RGB PNG cameras and its 14-value
 `robotwin.qpos_target` `ActionSpec`, returns absolute joint targets, and rejects
 nonfinite values or targets outside the declared joint ranges.
 
-Both services emit one JSON record per completed inference with checkpoint
+The GR00T and LeRobot services emit one JSON record per completed inference with checkpoint
 identity, request and execution identifiers, observation identifier, reception and
 completion timestamps, duration, and returned action chunk. `checkpoint_identity`
 hashes the actual weight, processor, and configuration files. The known repository
@@ -118,11 +142,29 @@ revision is recorded only when every hash matches the checked manifest; another
 compatible checkpoint records a local `checkpoint_digest`, its individual weight
 hashes, and a null revision. Service startup also records the listening address.
 
-On 2026-09-23, the GR00T service loaded on an NVIDIA H20G and processed a
-genuine RoboCasa OpenCabinet observation into 16 native 12-channel actions.
-In a complete worker check, RoboCasa confirmed six native control commands and
-150 MuJoCo physics steps for the same execution; the environment reported
-`task_success=false`. The LeRobot π0.5 service loaded its complete weights,
-local tokenizer, and saved processors and listened on an NVIDIA H20G. Its
-RoboTwin observation-to-action check awaits a native simulator reset. The
-deployment keeps raw service logs under its ignored `.local/work` directory.
+Current native task and action evidence for these services is in the
+[v1 acceptance register](../../../../../docs/implementation/v1-delivery.md).
+The deployment keeps raw service logs under its ignored `.local/work` directory.
+Current-code thread ownership, loaded-model cancellation and complete physical
+acceptance must be checked together in the consolidated native campaign.
+
+## GR00T N1.6 for BEHAVIOR R1Pro
+
+[`gr00t_n1d6_behavior.py`](gr00t_n1d6_behavior.py) validates the exact R1Pro
+camera, state and action mapping from
+[`gr00t-n1d6-behavior.json`](../../../../../examples/policies/gr00t-n1d6-behavior.json).
+[`serve_gr00t_n1d6_behavior.py`](../../../../../examples/policies/serve_gr00t_n1d6_behavior.py)
+requires the identified checkpoint, records the native controller conversion and
+uses the same operation owner. The [BEHAVIOR deployment guide](../../../../../docs/implementation/behavior-native-process.md)
+defines its isolated simulator and policy setup.
+
+## OpenPI Pi0.5 for RoboDojo dual ARX X5
+
+[`openpi_robodojo.py`](openpi_robodojo.py) connects the EDH JSON boundary to the
+identified OpenPI WebSocket service and validates metadata, normalization and
+the native action mapping. Its
+[`service entry point`](../../../../../examples/policies/serve_openpi_robodojo.py)
+accepts a native policy URI, checkpoint SHA-256 and optional new audit directory.
+Exclusive request and inference files belong to the same owned operation.
+The [RoboDojo policy guide](../../../../../docs/implementation/openpi-robodojo-policy.md)
+records native simulator, checkpoint and execution-mode bindings.

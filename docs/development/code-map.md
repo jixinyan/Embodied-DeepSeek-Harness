@@ -46,6 +46,7 @@ All Python provider code belongs under
 | Admit actions and enforce execution budgets | [execution/action_gate.py](../../harness/physical-runtime/src/physical_harness/execution/action_gate.py) |
 | Confirm simulator execution and stopping | [execution/native_device.py](../../harness/physical-runtime/src/physical_harness/execution/native_device.py) |
 | Add a WebSocket policy protocol or checkpoint | [policies](../../harness/physical-runtime/src/physical_harness/policies/README.md) |
+| Own inference threads, cancellation and operation records | [policies/inference.py](../../harness/physical-runtime/src/physical_harness/policies/inference.py) |
 | Add an environment | [environments](../../harness/physical-runtime/src/physical_harness/environments/README.md); each provider has one named subdirectory |
 | Adapt physical hardware | [backends](../../harness/physical-runtime/src/physical_harness/backends/README.md) and [embodiments](../../harness/physical-runtime/src/physical_harness/embodiments/README.md) |
 | Compute source-bound RGB-D measurements | [perception/metric_geometry.py](../../harness/physical-runtime/src/physical_harness/perception/metric_geometry.py) |

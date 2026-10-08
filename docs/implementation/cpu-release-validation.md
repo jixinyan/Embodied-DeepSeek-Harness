@@ -94,6 +94,37 @@ The actual upstream connection times out, both clients discard their connections
 the authenticated server rejects unauthorized admission and its listener closes.
 Evidence: `.local/work/v1-policy-transport-offline-20261007-02/acceptance.json`.
 
+## Policy inference ownership
+
+All four native policy service entry points use production `ThreadedInference`
+and `recorded_inference` from `physical_harness.policies.inference`. One thread
+owns model execution and its audit writes. Concurrent admission fails; caller
+cancellation leaves that operation and its records owned until completion.
+Original errors propagate after their scoped failure record. Close drains the
+thread, rejects new admission and remains shared across concurrent or cancelled
+waiters. Standard `asyncio.wait` retains the operation independently of its caller.
+
+```sh
+PYTHONPATH=harness/physical-runtime/src \
+PYTHONDONTWRITEBYTECODE=1 PYTHONASYNCIODEBUG=1 CUDA_VISIBLE_DEVICES='' \
+.venv/bin/python scripts/check-policy-owner-offline.py \
+  --request /absolute/path/original-policy-request.json \
+  --output .local/work/<new-policy-owner-check>
+```
+
+Six actual CPU cases pass on 2026-10-08 with Python 3.14. Original request recording
+uses production exclusive file creation. A second write raises FileExistsError
+and releases its owner for an actual source read. OS-pipe operations establish
+concurrent rejection, caller cancellation with retained ownership, an original
+late recorder failure and cancelled-close thread draining. Their actual errors
+retain scoped records and propagate; no unobserved asynchronous errors or owned
+threads remain. Source bytes and implementation hashes are retained in
+`.local/work/v1-policy-owner-cpu-20261008-final/acceptance.json`.
+No model result, environment or control is supplied by the diagnostic. Loaded-model
+cancellation and physical task acceptance require the subsequent native campaign.
+Full source checks compile 59 physical-runtime files and all seven policy service
+and diagnostic entry points; 20 base modules import without loading model SDKs.
+
 ## Worker process transport
 
 The worker remains runnable through `python -m physical_harness.execution.worker`.
@@ -150,6 +181,17 @@ overflow and both duplicate-field cases, in
 the actual Worker while the caller retains its input pipe; all sixteen children
 close at the process boundary without forced signals or unobserved exceptions.
 No native environment, model inference or controls are allocated.
+
+The expanded sixteen-case check and original-plan admission also pass on Linux
+from frozen `6031766` source with isolated Python 3.12.14 and frozen Node
+24.21.0/pnpm 11.19.0 dependencies. Two original histories preserve four execution
+requests, six accepted plans and eight read-only templates. Full `pnpm check`
+passes with 58 Python compilations, 19 base imports and 869 documentation links.
+The canonical remote checkout's status is unchanged. Source-bound reports and
+complete check output are retained under
+`.local/work/v1-cpu-source-20261008/linux-json/`; the downloaded
+`cpu-json-evidence.tar.gz` has SHA-256
+`3f4e98cd5ab8a88346be64784f17f1d93467a78d2aeb4ce4e43baac9c492b10f`.
 
 The host connection implementation is
 `apps/server/src/native-worker-transport.ts`. It owns worker pipes, pending requests,

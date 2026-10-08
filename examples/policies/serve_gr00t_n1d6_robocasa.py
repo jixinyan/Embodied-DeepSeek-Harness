@@ -2,15 +2,14 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 import json
 from pathlib import Path
 import signal
-from threading import BoundedSemaphore
 from time import monotonic
 
 from physical_harness.policies.gr00t_n1d6_robocasa import Gr00tN1d6RoboCasa
+from physical_harness.policies.inference import ThreadedInference, recorded_inference
 from physical_harness.policies.provenance import checkpoint_identity
 from physical_harness.policies.server import serve_policy
 from physical_harness.validation import ContractValidator
@@ -27,17 +26,12 @@ async def main() -> None:
     validator = ContractValidator.from_path(root / "harness/contracts/schema/physical.schema.json")
     identity = checkpoint_identity(args.checkpoint, root / "examples/policies/gr00t-n1d6-robocasa.json")
     policy = Gr00tN1d6RoboCasa(args.checkpoint, device=args.device)
-    executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="edh-gr00t")
-    admission = BoundedSemaphore(1)
+    owner = ThreadedInference("edh-gr00t")
 
-    async def infer(request: dict) -> list[list[float]]:
-        if not admission.acquire(blocking=False):
-            raise RuntimeError("GR00T inference is already in progress.")
+    def infer_recorded(request: dict) -> list[list[float]]:
         started = monotonic()
         received_at = datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
-        future = executor.submit(policy.infer_with_record, request)
-        future.add_done_callback(lambda _: admission.release())
-        actions, model_actions = await asyncio.wrap_future(future)
+        actions, model_actions = policy.infer_with_record(request)
         print(json.dumps({
             "event": "policy_inference_completed",
             **identity,
@@ -57,6 +51,9 @@ async def main() -> None:
         }), flush=True)
         return actions
 
+    async def infer(request: dict) -> list[list[float]]:
+        return await owner.run(recorded_inference, infer_recorded, request, identity)
+
     server = await serve_policy(infer, validator, host=args.host, port=args.port, timeout_s=120)
     print(json.dumps({
         "service": "gr00t-n1d6-robocasa-pandaomron",
@@ -70,10 +67,12 @@ async def main() -> None:
     loop = asyncio.get_running_loop()
     loop.add_signal_handler(signal.SIGINT, stop.set)
     loop.add_signal_handler(signal.SIGTERM, stop.set)
-    await stop.wait()
-    server.close()
-    await server.wait_closed()
-    await loop.run_in_executor(None, executor.shutdown, True)
+    try:
+        await stop.wait()
+    finally:
+        server.close()
+        await server.wait_closed()
+        await owner.close()
 
 
 if __name__ == "__main__":
