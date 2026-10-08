@@ -282,7 +282,8 @@ async def inspect_owned(args, root, output, error_log) -> None:
                              root / "harness/physical-runtime/src/physical_harness/policies/client.py",
                              root / "harness/physical-runtime/src/physical_harness/policies/server.py",
                              root / "scripts/check-policy-owner-offline.py",
-                             *(root / "examples/policies").glob("serve_*.py"))
+                             *(root / "examples/policies").glob("serve_*.py"),
+                             *(root / "harness/physical-runtime/src/physical_harness/policies/services").glob("*.py"))
             },
             "cases": cases,
             "transport": transport,

@@ -17,8 +17,9 @@ from physical_harness.validation import ContractValidator
 
 
 async def invoke_cli(root: Path, output: Path, executable: Path, filename: str,
-                     arguments: list[str], name: str, mode: str) -> tuple:
-    process = await asyncio.create_subprocess_exec(str(executable), str(root / "examples/policies" / filename),
+                     arguments: list[str], name: str, mode: str, module: str | None = None) -> tuple:
+    entry = ["-m", module] if module is not None else [str(root / "examples/policies" / filename)]
+    process = await asyncio.create_subprocess_exec(str(executable), *entry,
         *arguments, cwd=root,
         env={**os.environ, "CUDA_VISIBLE_DEVICES": "", "PYTHONDONTWRITEBYTECODE": "1",
              "PYTHONPATH": str(root / "harness/physical-runtime/src")},
@@ -37,55 +38,64 @@ async def invoke_cli(root: Path, output: Path, executable: Path, filename: str,
 
 async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
     entries = (
-        ("gr00t-robocasa", "serve_gr00t_n1d6_robocasa.py", ["--checkpoint", str(output / "absent-checkpoint")]),
-        ("gr00t-behavior", "serve_gr00t_n1d6_behavior.py", ["--checkpoint", str(output / "absent-checkpoint")]),
-        ("lerobot-robotwin", "serve_lerobot_pi05_robotwin.py", ["--checkpoint", str(output / "absent-checkpoint"),
+        ("gr00t-robocasa", "serve_gr00t_n1d6_robocasa.py", "physical_harness.policies.services.gr00t_n1d6_robocasa",
+         ["--checkpoint", str(output / "absent-checkpoint")]),
+        ("gr00t-behavior", "serve_gr00t_n1d6_behavior.py", "physical_harness.policies.services.gr00t_n1d6_behavior",
+         ["--checkpoint", str(output / "absent-checkpoint")]),
+        ("lerobot-robotwin", "serve_lerobot_pi05_robotwin.py", "physical_harness.policies.services.lerobot_pi05_robotwin",
+         ["--checkpoint", str(output / "absent-checkpoint"),
                                                               "--tokenizer", str(output / "absent-tokenizer")]),
-        ("openpi-robodojo-json", "serve_openpi_robodojo.py", ["--native-policy-uri", "ws://127.0.0.1:1",
+        ("openpi-robodojo-json", "serve_openpi_robodojo.py", "physical_harness.policies.services.openpi_robodojo",
+         ["--native-policy-uri", "ws://127.0.0.1:1",
                                                            "--checkpoint-sha256", "invalid-checkpoint-digest"]),
     )
     cases = []
     with socket.create_server(("127.0.0.1", 0)) as listener:
         port = listener.getsockname()[1]
-        for name, filename, arguments in entries:
-            for mode in ("help", "occupied-port"):
-                pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable, filename,
-                    arguments + (["--help"] if mode == "help" else ["--port", str(port)]), name, mode)
-                if mode == "help":
-                    if exit_code != 0 or b"usage:" not in stdout or stderr:
-                        raise AssertionError(f"Policy CLI help did not finish before optional model loading: {name}")
-                elif (exit_code == 0 or b"OSError" not in stderr
-                      or b"address already in use" not in stderr.lower() or b"ModuleNotFoundError" in stderr
-                      or stdout):
-                    raise AssertionError(f"Occupied policy port did not fail before model loading: {name}")
-                with socket.create_connection(("127.0.0.1", port), timeout=1) as probe:
-                    accepted, _ = listener.accept()
-                    with accepted:
-                        if accepted.getpeername() != probe.getsockname():
-                            raise AssertionError("Policy CLI altered the diagnostic-owned original listener.")
-                cases.append({"service": name, "mode": mode, "pid": pid,
-                              "exitCode": exit_code, "ownedProcessExited": True,
-                              "originalListenerPreserved": True, "modelLoaded": False})
+        for name, filename, module_name, arguments in entries:
+            for entry, module in (("example", None), ("module", module_name)):
+                for mode in ("help", "occupied-port"):
+                    pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable, filename,
+                        arguments + (["--help"] if mode == "help" else ["--port", str(port)]),
+                        f"{name}.{entry}", mode, module)
+                    if mode == "help":
+                        if exit_code != 0 or b"usage:" not in stdout or stderr:
+                            raise AssertionError(f"Policy CLI help did not finish before optional model loading: {name}/{entry}")
+                    elif (exit_code == 0 or b"OSError" not in stderr
+                          or b"address already in use" not in stderr.lower() or b"ModuleNotFoundError" in stderr
+                          or stdout):
+                        raise AssertionError(f"Occupied policy port did not fail before model loading: {name}/{entry}")
+                    with socket.create_connection(("127.0.0.1", port), timeout=1) as probe:
+                        accepted, _ = listener.accept()
+                        with accepted:
+                            if accepted.getpeername() != probe.getsockname():
+                                raise AssertionError("Policy CLI altered the diagnostic-owned original listener.")
+                    cases.append({"service": name, "entry": entry, "mode": mode, "pid": pid,
+                                  "exitCode": exit_code, "ownedProcessExited": True,
+                                  "originalListenerPreserved": True, "modelLoaded": False})
     with socket.create_server(("127.0.0.1", port)):
         pass
-    for name, filename, arguments in entries[:3]:
-        with socket.create_server(("127.0.0.1", 0)) as candidate:
-            selected_port = candidate.getsockname()[1]
-        pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable, filename,
-            arguments + ["--port", str(selected_port)], name, "missing-checkpoint")
-        if exit_code == 0 or b"FileNotFoundError" not in stderr or b"ModuleNotFoundError" in stderr or stdout:
-            raise AssertionError(f"Policy checkpoint admission did not preserve its actual source error: {name}")
-        with socket.create_server(("127.0.0.1", selected_port)):
-            pass
-        cases.append({"service": name, "mode": "missing-checkpoint", "pid": pid,
-                      "exitCode": exit_code, "ownedProcessExited": True,
-                      "boundPortReusable": True, "originalFileErrorPreserved": True, "modelLoaded": False})
-    pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable,
-        "serve_openpi_robodojo_native.py", ["--help"], "openpi-robodojo-native", "help")
-    if exit_code != 0 or b"usage:" not in stdout or stderr:
-        raise AssertionError("Native OpenPI help did not finish before optional model loading.")
-    cases.append({"service": "openpi-robodojo-native", "mode": "help", "pid": pid,
-                  "exitCode": exit_code, "ownedProcessExited": True, "modelLoaded": False})
+    for name, filename, module_name, arguments in entries[:3]:
+        for entry, module in (("example", None), ("module", module_name)):
+            with socket.create_server(("127.0.0.1", 0)) as candidate:
+                selected_port = candidate.getsockname()[1]
+            pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable, filename,
+                arguments + ["--port", str(selected_port)], f"{name}.{entry}", "missing-checkpoint", module)
+            if (exit_code == 0 or b"FileNotFoundError" not in stderr or b"ModuleNotFoundError" in stderr
+                    or os.fsencode(str(output / "absent-checkpoint")) not in stderr or stdout):
+                raise AssertionError(f"Policy checkpoint admission did not preserve its actual source error: {name}/{entry}")
+            with socket.create_server(("127.0.0.1", selected_port)):
+                pass
+            cases.append({"service": name, "entry": entry, "mode": "missing-checkpoint", "pid": pid,
+                          "exitCode": exit_code, "ownedProcessExited": True,
+                          "boundPortReusable": True, "originalFileErrorPreserved": True, "modelLoaded": False})
+    for entry, module in (("example", None), ("module", "physical_harness.policies.services.openpi_robodojo_native")):
+        pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable,
+            "serve_openpi_robodojo_native.py", ["--help"], f"openpi-robodojo-native.{entry}", "help", module)
+        if exit_code != 0 or b"usage:" not in stdout or stderr:
+            raise AssertionError(f"Native OpenPI help did not finish before optional model loading: {entry}")
+        cases.append({"service": "openpi-robodojo-native", "entry": entry, "mode": "help", "pid": pid,
+                      "exitCode": exit_code, "ownedProcessExited": True, "modelLoaded": False})
     return cases
 
 
@@ -196,7 +206,8 @@ async def inspect(args) -> None:
                root / "harness/contracts/schema/physical.schema.json",
                *(root / "examples/policies" / filename for filename in (
                    "serve_gr00t_n1d6_robocasa.py", "serve_gr00t_n1d6_behavior.py",
-                   "serve_lerobot_pi05_robotwin.py", "serve_openpi_robodojo.py", "serve_openpi_robodojo_native.py"))]
+                   "serve_lerobot_pi05_robotwin.py", "serve_openpi_robodojo.py", "serve_openpi_robodojo_native.py")),
+               *(root / "harness/physical-runtime/src/physical_harness/policies/services").glob("*.py")]
     report = {"sources": {str(path.relative_to(root)): sha256(path.read_bytes()).hexdigest() for path in sources},
               "originalRequestSha256": sha256(original_data).hexdigest(), "cliCases": cli, "listener": listener,
               "gpuJobs": 0, "modelLoads": 0, "modelCalls": 0, "nativeEnvironments": 0, "controls": 0,
