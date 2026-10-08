@@ -11,6 +11,10 @@ simulators, embodiments, checkpoints and model services through one Console.
   task-scoped backend ports, camera attachment storage and control-step frame events.
   The Session keeps one native scene across tasks;
   each task receives a separate run ID before its backend and UpperRun are created.
+- [native-worker-configuration.ts](src/native-worker-configuration.ts): authoritative
+  worker schema, derived configuration type and detached/frozen admission snapshot.
+  Scene parameters contain finite JSON data; preparation and startup use the
+  admitted command, environment, scene and task catalog.
 - [native-worker-transport.ts](src/native-worker-transport.ts): host request/response
   pipes, original worker errors, read cancellation, communication deadlines and
   confirmed owned-process release. Complete response validation precedes request

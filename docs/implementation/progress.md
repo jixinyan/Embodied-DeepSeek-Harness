@@ -6,6 +6,19 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## 2026-10-08 native context directory ownership
 
+Native scene parameters use recursive finite-JSON validation. The schema owns
+`NativeWorkerConfiguration`; the existing export remains available from
+`native-worker.ts`. Environment admission returns one detached, recursively frozen
+configuration/catalog snapshot before preparation and process creation. Four
+original scenes retain their parameters; forty-eight unsupported-value cases fail
+at schema/factory admission with zero Worker starts. Caller mutations leave
+admitted command/environment/scene/catalog values unchanged.
+Actual CPU BEHAVIOR and RoboTwin Workers preserve their admitted command/source
+through initialization-time caller mutation, return their original source-directory
+failure and confirm complete process/image-context release. Full project checks
+and four-provider Console readiness pass without model/environment allocation.
+See [configuration CPU validation](cpu-release-validation.md#native-scene-and-configuration-ownership).
+
 Selected DSH context measurement lives in `memory/src/dsh/token-meter`, with
 its existing context installer and compaction services. Shared native registration
 and event scopes live in `foundation/src/dsh/scope`. All eleven relocated files

@@ -25,17 +25,19 @@ import {
 } from '@edh/execution';
 import { parseTaskCatalog, type TaskCatalogDefinition, type TaskDefinition } from '@edh/tasks';
 import type { DeploymentServices, SessionEnvironment } from './deployment.js';
-import { validateNativeWorkerConfiguration } from './native-worker-configuration.js';
+import {
+  validateNativeWorkerConfiguration,
+  type NativeWorkerConfiguration,
+} from './native-worker-configuration.js';
 import {
   NativeWorkerTransport,
   type WorkerObservation,
   type WorkerPublication,
   type WorkerFramePublication,
 } from './native-worker-transport.js';
-import {
-  NativeProfileCleanup,
-  type NativeProfileCleanupConfiguration,
-} from './native-profile-cleanup.js';
+import { NativeProfileCleanup } from './native-profile-cleanup.js';
+
+export type { NativeWorkerConfiguration } from './native-worker-configuration.js';
 
 type JsonObject = Record<string, unknown>;
 
@@ -49,38 +51,6 @@ function string(value: unknown): string {
   if (typeof value !== 'string' || !value.length)
     throw new Error('Native worker omitted a string field.');
   return value;
-}
-
-export interface NativeWorkerConfiguration {
-  readonly command: readonly [string, ...string[]];
-  readonly transportFd?: 1 | 3;
-  readonly onProcessStarted?: (pid: number) => void;
-  readonly cwd: string;
-  readonly env: Readonly<Record<string, string>>;
-  readonly provider: 'robocasa' | 'robotwin' | 'behavior' | 'robodojo';
-  readonly nativeTaskId: string;
-  readonly sourceRoot?: string;
-  readonly sceneConfiguration: Readonly<Record<string, unknown>>;
-  readonly schemaPath: string;
-  readonly policyId: string;
-  readonly policyUri: string;
-  /** `policy` for learned action chunks, `direct` or `hybrid` for GPT-backed gateways. */
-  readonly executionMode?: 'policy' | 'direct' | 'hybrid';
-  readonly policyMaxActionsPerInference?: number;
-  readonly monitorEveryActions?: number;
-  readonly publishRunningImages?: boolean;
-  readonly enableSimulatorInspection?: boolean;
-  readonly recordSimulationFrames?: boolean;
-  readonly simulationVideoDirectory?: string;
-  readonly observationTtlS?: number;
-  readonly deviceTimeoutS?: number;
-  readonly policyTimeoutS?: number;
-  readonly toolTimeoutMs?: number;
-  readonly transportWriteTimeoutS?: number;
-  readonly initializeTimeoutMs?: number;
-  readonly closeTimeoutMs?: number;
-  readonly profileCleanup?: NativeProfileCleanupConfiguration;
-  readonly catalog: TaskCatalogDefinition;
 }
 
 interface WorkerDescription {
@@ -956,7 +926,7 @@ export async function createNativeWorkerEnvironment(
   services: DeploymentServices,
   validator: ContractValidator,
 ): Promise<SessionEnvironment> {
-  validateNativeWorkerConfiguration(configuration, validator);
+  configuration = validateNativeWorkerConfiguration(configuration, validator);
   const timeouts = {
     observationTtlS: configuration.observationTtlS ?? 30,
     deviceTimeoutS: configuration.deviceTimeoutS ?? 30,

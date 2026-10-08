@@ -40,7 +40,7 @@ All Python provider code belongs under
 
 | Change | Entry point |
 | --- | --- |
-| Validate native deployment before allocation | [apps/server/src/native-worker-configuration.ts](../../apps/server/src/native-worker-configuration.ts) |
+| Validate and freeze native configuration before allocation; derive its public type | [apps/server/src/native-worker-configuration.ts](../../apps/server/src/native-worker-configuration.ts) |
 | Connect the application to a native worker | [apps/server/src/native-worker.ts](../../apps/server/src/native-worker.ts) |
 | Change host-side worker pipes, request completion and process release | [apps/server/src/native-worker-transport.ts](../../apps/server/src/native-worker-transport.ts) |
 | Manage worker Sessions and execution operations | [execution/worker.py](../../harness/physical-runtime/src/physical_harness/execution/worker.py) |

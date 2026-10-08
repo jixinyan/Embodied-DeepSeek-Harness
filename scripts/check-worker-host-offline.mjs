@@ -15,6 +15,7 @@ const { values } = parseArgs({
     config: { type: 'string' },
     python: { type: 'string' },
     output: { type: 'string' },
+    'mutate-caller': { type: 'boolean', default: false },
   },
 });
 assert(values.config && values.output);
@@ -41,6 +42,7 @@ const sources = await Promise.all(
   [
     configurationPath,
     schemaPath,
+    resolve(root, 'apps/server/src/native-worker-configuration.ts'),
     resolve(root, 'apps/server/src/native-worker.ts'),
     resolve(root, 'apps/server/src/native-worker-transport.ts'),
     resolve(root, 'harness/physical-runtime/src/physical_harness/execution/worker.py'),
@@ -84,17 +86,26 @@ try {
       processId = pid;
     },
   };
-  await assert.rejects(
-    createNativeWorkerEnvironment(configuration, { images: context.attachments }, validator),
-    (error) => {
-      assert(error instanceof Error);
-      assert(!(error instanceof AggregateError));
-      assert.match(error.message, /Native worker FileNotFoundError/);
-      assert(error.message.includes(missingSource));
-      errorMessage = error.message;
-      return true;
-    },
+  const environment = createNativeWorkerEnvironment(
+    configuration,
+    { images: context.attachments },
+    validator,
   );
+  if (values['mutate-caller']) {
+    configuration.command[0] = resolve(output, 'absent-caller-executable');
+    configuration.cwd = resolve(output, 'absent-caller-directory');
+    configuration.env.PYTHONPATH = resolve(output, 'absent-caller-pythonpath');
+    configuration.sourceRoot = resolve(output, 'changed-caller-source');
+    configuration.sceneConfiguration = { __preallocation_probe__: Number.POSITIVE_INFINITY };
+  }
+  await assert.rejects(environment, (error) => {
+    assert(error instanceof Error);
+    assert(!(error instanceof AggregateError));
+    assert.match(error.message, /Native worker FileNotFoundError/);
+    assert(error.message.includes(missingSource));
+    errorMessage = error.message;
+    return true;
+  });
   assert(Number.isSafeInteger(processId) && processId > 0);
   assert.throws(
     () => process.kill(processId, 0),
@@ -128,6 +139,7 @@ await writeFile(
       resourceReleaseConfirmed,
       imageContextDisposed: true,
       recordingProbeRemoved: true,
+      callerMutationChecked: values['mutate-caller'],
       sources,
       sourceHashesUnchanged: true,
       environmentAllocationPerformed: false,

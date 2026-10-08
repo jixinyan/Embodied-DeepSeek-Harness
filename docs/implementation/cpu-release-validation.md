@@ -55,6 +55,40 @@ verified summary are under `.local/work/v1-cpu-source-20261008/linux-startup/`.
 The complete evidence archive SHA-256 is
 `126e561418fc228d596a8c64e5c24edde06caf97e8842ef023cd7685d07a9b13`.
 
+## Native scene and configuration ownership
+
+[native-worker-configuration.ts](../../apps/server/src/native-worker-configuration.ts)
+owns the schema and its derived `NativeWorkerConfiguration` type. Scene parameters
+use Zod's recursive JSON schema: finite scalars, arrays and objects. The environment
+factory receives a detached, recursively frozen admission snapshot with its
+validated task catalog and policy endpoint, before preparation or process creation.
+The host's optional process-start callback remains outside scene data.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-scene-configuration.mjs \
+  --config /absolute/path/original-native-workspace.json \
+  --output .local/work/<new-native-scene-check>
+```
+
+Four original configured scenes preserve their parameters and JSON round trips.
+Caller mutation of command, environment, scene and catalog leaves the admitted
+snapshot unchanged; direct writes to that snapshot fail. Forty-eight scene cases
+reject positive/negative numeric overflow, nested overflow, NaN and unsupported
+JavaScript values through both the schema and production environment factory.
+Every issue identifies `sceneConfiguration`. No Worker process, environment or
+inference starts, and the production image context disposes. Original source
+hashes remain unchanged. Local evidence:
+`.local/work/v1-scene-json-owner-cpu-20261008-current/acceptance.json`.
+
+The worker host diagnostic also accepts `--mutate-caller`. After invoking the
+actual environment factory, it changes the caller's command, working directory,
+Python environment, source path and scene before asynchronous startup resumes.
+The actual CPU Worker still uses its original admission: its genuine missing-SDK
+source error returns intact, close is confirmed and its process/image context
+release. Both BEHAVIOR and RoboTwin pass with CUDA invisible in
+`.local/work/v1-worker-host-caller-<provider>-20261008-current/acceptance.json`.
+This checks initialization ownership without allocating a native simulator.
+
 ## Native context and scope ownership
 
 Selected DSH `token-meter` source belongs to `harness/agent-runtime/memory`,

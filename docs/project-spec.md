@@ -17,6 +17,9 @@ records exact checks independently of native task acceptance.
 Native worker configuration uses one complete preallocation schema in the
 deployment loader and environment factory. Four configured providers pass the
 production Console readiness check with no environment or model allocation.
+The schema also owns the public Worker configuration type. Scene parameters
+contain finite JSON data, and initialization uses a detached, recursively frozen
+configuration/catalog snapshot before preparing or creating a Worker process.
 Planner prerequisite goals use only admitted native checks and commit their own
 passed-verdict plan update before a dependent goal starts. Source and readiness
 checks have separate acceptance from physical tasks; see
