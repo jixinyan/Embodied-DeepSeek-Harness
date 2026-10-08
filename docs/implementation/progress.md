@@ -13,6 +13,12 @@ malformed inputs pass direct rejection and actual authenticated server rejection
 with close code 1011 and zero inference admission. Their exact wire bodies are
 retained; the original finite request and 95 telemetry events remain unchanged.
 See [wire admission checks](cpu-release-validation.md#policy-transport).
+Frozen `da0b17f` passes the seven wire cases, four client-close cases, nine
+inference-owner cases, three rollout/Worker cases, original telemetry inspection
+and full project checks under isolated Linux. Thirty-one input/source hashes
+match macOS, including the exact rejected wire bodies. Original service errors
+retain complete tracebacks; the canonical server checkout remains unchanged.
+All owned connections/processes/threads release and GPU usage remains zero.
 
 ## 2026-10-08 policy connection ownership
 

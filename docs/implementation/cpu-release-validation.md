@@ -541,6 +541,17 @@ inference-owner cases and three rollout/Worker cases under
 `.local/work/v1-policy-json-inference-20261008/` and
 `.local/work/v1-policy-json-rollout-20261008/`. Full project checks pass.
 
+Frozen `da0b17f` passes all twenty-three affected cases and full project checks
+under isolated Linux Python 3.12.14. Thirty-one original/source hash comparisons
+match macOS, including all seven exact rejected wire bodies. Actual service logs
+retain seven decoder errors and one original TCP connection error with tracebacks.
+Normal close, caller drain, thread ownership and resource release checks agree
+across both systems; the original TCP exception retains its platform-specific type.
+The canonical checkout status remains unchanged, with zero GPU/model/environment
+allocation or control. Evidence and verified summary:
+`.local/work/v1-cpu-policy-json-20261008/linux/`; archive SHA-256:
+`ca8d6ae8b0548b11d2872f762746d5f03278031b72acb8a63fe67090ec4862a2`.
+
 On 2026-10-07, 95 original telemetry events across three policy requests pass.
 The actual upstream connection times out, both clients discard their connections,
 the authenticated server rejects unauthorized admission and its listener closes.

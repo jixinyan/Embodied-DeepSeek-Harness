@@ -61,6 +61,9 @@ Seven malformed numeric/duplicate policy messages pass actual decoder and
 authenticated server rejection before inference admission, with generic failures,
 closed connections and retained exact wire hashes. Original finite request and
 telemetry checks pass. See [policy transport](cpu-release-validation.md#policy-transport).
+Frozen `da0b17f` passes all twenty-three affected wire/client/inference/rollout
+cases and full checks on isolated Linux, with thirty-one matching input/source
+hashes, original service errors and unchanged canonical checkout status.
 
 Policy WebSocket closure and full client shutdown have shared owners. Four actual
 CPU connection cases preserve concurrent/cancelled waiters and caller-local
