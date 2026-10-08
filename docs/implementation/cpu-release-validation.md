@@ -7,6 +7,32 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Native device owner lifecycle
+
+[native_device.py](../../harness/physical-runtime/src/physical_harness/execution/native_device.py)
+owns queued simulator operations and a single shared shutdown task. Caller
+cancellation preserves the actual thread operation. Close rejects new admission,
+drains existing work and publishes the closed state after executor shutdown.
+Repeated or concurrent callers receive the same completion or original aggregate
+error. Queued binding, stop and resume operations recheck closure after their
+owner-thread barrier before publishing a result.
+
+```sh
+CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-native-device-owner-offline.py \
+  --output .local/work/<new-native-device-owner-check>
+```
+
+The diagnostic uses the production RoboDojo adapter in its unallocated state,
+actual source files and OS pipes. It performs no reset, SDK initialization,
+observation, policy inference or control. Six cases verify original source reads,
+cancelled operation/close waiters, three concurrent close callers, original late
+FileNotFoundError propagation and shutdown during queued bind/stop/resume barriers.
+Every case confirms an absent executor thread and empty operation records.
+Closing barriers produce no stop acknowledgement. There are no unobserved loop
+errors, GPU jobs or environment allocations. macOS Python 3.14 evidence is
+`.local/work/v1-native-device-owner-20261008-final/acceptance.json`.
+Loaded SDK lifecycle and device confirmation retain their separate native gates.
+
 ## Native Console process ownership
 
 Workspace and single-provider CLI entries share

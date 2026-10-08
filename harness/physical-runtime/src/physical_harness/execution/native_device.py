@@ -27,6 +27,7 @@ class NativeActionDevice:
         self._generation = 0
         self._stopped = False
         self._closed = False
+        self._closing: asyncio.Task[None] | None = None
         self._raw_sim_steps = 0
         self._executed_actions = 0
         self._uncertain_actions = 0
@@ -35,13 +36,23 @@ class NativeActionDevice:
         self._cancelled_operations: set[asyncio.Future] = set()
 
     async def on_owner(self, action: Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
-        if self._closed:
+        if self._closed or self._closing is not None:
             raise RuntimeError("Native simulation owner is closed.")
+        return await self._run_owned(action, *args, **kwargs)
+
+    @staticmethod
+    def _observe(operation: asyncio.Future) -> None:
+        if not operation.cancelled():
+            operation.exception()
+
+    async def _run_owned(self, action: Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
         operation = asyncio.get_running_loop().run_in_executor(self._executor, partial(action, *args, **kwargs))
         self._owner_operations.add(operation)
         operation.add_done_callback(self._owner_operations.discard)
+        operation.add_done_callback(self._observe)
         try:
-            return await asyncio.shield(operation)
+            await asyncio.wait({operation})
+            return operation.result()
         except asyncio.CancelledError:
             # 调用方按原有期限退出；所属线程的操作仍由设备负责确认和关闭。
             self._cancelled_operations.add(operation)
@@ -74,6 +85,7 @@ class NativeActionDevice:
                 "generation": self._generation,
                 "stopped": self._stopped,
                 "closed": self._closed,
+                "closing": self._closing is not None and not self._closing.done(),
                 "executed_actions": self._executed_actions,
                 "uncertain_actions": self._uncertain_actions,
                 "raw_sim_steps": self._raw_sim_steps,
@@ -97,6 +109,8 @@ class NativeActionDevice:
             raise ValueError("Native execution ID is required.")
         await self.on_owner(lambda: None)
         with self._lock:
+            if self._closed or self._closing is not None:
+                raise RuntimeError("Native simulation owner is closed.")
             if self._execution_id is not None and not self._stopped:
                 raise RuntimeError("Previous native execution is not stopped.")
             self._execution_id = execution_id
@@ -120,7 +134,7 @@ class NativeActionDevice:
         execution_id = segment["execution_id"]
         generation = segment["generation"]
         with self._lock:
-            if self._closed or self._stopped or execution_id != self._execution_id or generation != self._generation:
+            if self._closed or self._closing is not None or self._stopped or execution_id != self._execution_id or generation != self._generation:
                 raise RuntimeError("Native action generation is no longer admitted.")
         if len(segment["actions"]) != 1:
             raise ValueError("Native simulation device commits one control action per segment.")
@@ -181,13 +195,13 @@ class NativeActionDevice:
 
     async def stop(self, execution_id: str, generation: int) -> dict:
         with self._lock:
-            if self._closed or execution_id != self._execution_id or generation <= self._generation:
+            if self._closed or self._closing is not None or execution_id != self._execution_id or generation <= self._generation:
                 raise RuntimeError("Native stop generation is invalid.")
             self._generation = generation
             self._stopped = True
         await self.on_owner(lambda: None)
         with self._lock:
-            if self._closed or execution_id != self._execution_id or generation != self._generation:
+            if self._closed or self._closing is not None or execution_id != self._execution_id or generation != self._generation:
                 raise RuntimeError("Native stop was superseded before confirmation.")
         acknowledgement = {
             "schema_version": "physical.stop_ack.v1",
@@ -222,34 +236,38 @@ class NativeActionDevice:
 
     async def resume(self, execution_id: str, generation: int) -> bool:
         with self._lock:
-            if self._closed or execution_id != self._execution_id or generation != self._generation or not self._stopped:
+            if self._closed or self._closing is not None or execution_id != self._execution_id or generation != self._generation or not self._stopped:
                 raise RuntimeError("Native resume generation is invalid.")
         await self.on_owner(lambda: None)
         with self._lock:
-            if self._closed or execution_id != self._execution_id or generation != self._generation or not self._stopped:
+            if self._closed or self._closing is not None or execution_id != self._execution_id or generation != self._generation or not self._stopped:
                 raise RuntimeError("Native resume was superseded by a stop.")
             self._stopped = False
         return True
 
     async def close(self) -> None:
-        with self._lock:
-            if self._closed:
-                return
-            self._stopped = True
+        if self._closing is None:
+            with self._lock:
+                self._stopped = True
+            self._closing = asyncio.create_task(self._close_owner())
+            self._closing.add_done_callback(self._observe)
+        # 关闭调用方取消等待以后，设备继续负责排空线程和保存原有异常。
+        await asyncio.wait({self._closing})
+        self._closing.result()
+
+    async def _close_owner(self) -> None:
         errors: list[BaseException] = []
         try:
-            await self.on_owner(self.environment.close)
+            await self._run_owned(self.environment.close)
         except BaseException as error:
             errors.append(error)
         finally:
+            await asyncio.to_thread(self._executor.shutdown, True)
+            if self._cancelled_operations:
+                results = await asyncio.gather(*self._cancelled_operations, return_exceptions=True)
+                errors.extend(result for result in results if isinstance(result, BaseException))
+            self._cancelled_operations.clear()
             with self._lock:
                 self._closed = True
-            await asyncio.to_thread(self._executor.shutdown, True)
-            for operation in self._cancelled_operations:
-                try:
-                    operation.result()
-                except BaseException as error:
-                    errors.append(error)
-            self._cancelled_operations.clear()
         if errors:
             raise BaseExceptionGroup("Native owner close failed.", errors)

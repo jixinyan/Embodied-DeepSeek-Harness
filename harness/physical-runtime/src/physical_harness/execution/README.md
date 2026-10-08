@@ -39,6 +39,11 @@ physical effects. A new execution can bind only after the prior execution stops.
 Owner-thread waits propagate cancellation at the caller's admitted deadline.
 The device retains outstanding Futures, fences an uncertain dispatch and checks
 late operation errors during close. Deadline expiry supplies no stop acknowledgement.
+Concurrent and repeated close calls share one owner-drain operation. Cancelling a
+close waiter leaves that operation running; the executor drains before its closed
+state is published. New operations fail once closure starts. Queued execution
+binding, stop and resume barriers recheck closure before publishing their result.
+Original late-operation failures remain available to every close caller.
 Background policy or watchdog failure reaches the upper task through a scoped
 native fault, preserving the last recorded physical state and independent formal
 verification rules. Native transport closure confirms the owned process group

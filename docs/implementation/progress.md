@@ -1,8 +1,25 @@
 # Implementation progress
 
-Spec: v1.83. Current checkpoint: **current source-bound implementation sequence; memory-owned native context measurement and foundation-owned registration scopes with actual journal validation; shared native policy-thread ownership and actual CPU cancellation/recording checks; tools-owned detached model schemas and actual recorded request/plan checks; separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.84. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 native device owner lifecycle
+
+Native device closure uses one shared task for environment finalization, thread
+drain and original late-operation errors. Cancellation preserves this task;
+concurrent and repeated callers receive its same result. Admission closes when
+shutdown starts. Queued binding, stop and resume barriers recheck closure before
+publishing a result; the closed flag follows actual executor drain.
+
+Six actual CPU cases pass with an unallocated production RoboDojo adapter,
+original source files and OS pipes. They cover cancelled operations/close callers,
+three concurrent callers, original FileNotFoundError identity and close during
+queued execution boundaries. Every thread and retained operation releases;
+there are zero unobserved errors, controls, model calls or environment allocations.
+All Python diagnostic entries now participate in syntax checks without starting
+their optional providers. See [device owner validation](cpu-release-validation.md#native-device-owner-lifecycle).
+Loaded SDK cancellation and device shutdown retain the consolidated native gates.
 
 ## 2026-10-08 native context directory ownership
 

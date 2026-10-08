@@ -15,6 +15,9 @@ for file in sorted(source.rglob("*.py")):
 entrypoints = sorted((root / "examples/policies").glob("*.py"))
 for file in entrypoints:
     compile(file.read_text(), str(file), "exec")
+diagnostics = sorted((root / "scripts").glob("*.py"))
+for file in diagnostics:
+    compile(file.read_text(), str(file), "exec")
 core_modules = (
     "physical_harness",
     "physical_harness.validation",
@@ -24,6 +27,7 @@ core_modules = (
     "physical_harness.environments",
     "physical_harness.execution",
     "physical_harness.execution.action_gate",
+    "physical_harness.execution.native_device",
     "physical_harness.execution.policy_rollout",
     "physical_harness.execution.policy_records",
     "physical_harness.execution.worker_transport",
@@ -44,4 +48,5 @@ for file in (root / "docs/architecture/assets").glob("*.svg"):
 ET.parse(root / "tests/fixtures/cup-scene.svg")
 print(f"Compiled {compiled} Python files and imported {len(core_modules)} base modules; SVG XML valid.")
 print(f"Compiled {len(entrypoints)} policy service and diagnostic entry points without importing model SDKs.")
+print(f"Compiled {len(diagnostics)} Python diagnostic entries without starting their providers.")
 print("No worker, simulator, learned policy or hardware behavior was exercised.")
