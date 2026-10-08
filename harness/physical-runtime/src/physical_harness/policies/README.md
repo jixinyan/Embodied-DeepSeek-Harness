@@ -6,6 +6,13 @@ response and exposes a deployment-owned inference callback. Native service entry
 points cover GR00T/RoboCasa, GR00T/BEHAVIOR, LeRobot Pi0.5/RoboTwin and
 OpenPI Pi0.5/RoboDojo.
 
+The JSON codec uses Python's standard decoder with explicit duplicate-field and
+finite-number checks. Nested NaN/Infinity constants and numeric overflow fail
+before a decoded request, event or tool message reaches its consumer. The server
+closes invalid requests with code 1011 and its generic public error; original
+failure details stay in the service log. Encoding also requires finite JSON.
+See [wire admission validation](../../../../../docs/implementation/cpu-release-validation.md#policy-transport).
+
 ## Inference ownership
 
 [`client.py`](client.py) owns one connection-close operation and one client

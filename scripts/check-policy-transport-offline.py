@@ -1,5 +1,6 @@
 import argparse
 import asyncio
+import copy
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -39,18 +40,50 @@ def read_telemetry(path: Path, validator: ContractValidator) -> dict[str, int]:
     return {"events": count, "requests": len(states)}
 
 
+def rejected_wire_inputs(request: dict) -> dict[str, str]:
+    messages = {}
+    for name, value in (("nan", float("nan")), ("positive-infinity", float("inf")),
+                        ("negative-infinity", float("-inf"))):
+        invalid = copy.deepcopy(request)
+        invalid["observation"]["invalid_numeric_input"] = {"distance_m": value}
+        messages[name] = json.dumps(invalid)
+    prefix = JsonPolicyCodec().encode(request)[:-1]
+    for name, token in (("positive-overflow", "1e400"), ("negative-overflow", "-1e400")):
+        messages[name] = prefix + ',"invalid_numeric_input":{"distance_m":' + token + '}}'
+    messages["duplicate-request-field"] = prefix + ',"request_id":' + json.dumps(request["request_id"]) + '}'
+    messages["duplicate-nested-field"] = prefix + ',"invalid_numeric_input":{"distance_m":1,"distance_m":2}}'
+    return messages
+
+
 async def run(args: argparse.Namespace) -> None:
     root = Path(__file__).resolve().parents[1]
     output = args.output.resolve()
     assert output.is_relative_to(root / ".local" / "work")
     output.mkdir(parents=True, exist_ok=False)
     sources = [args.request.resolve(), args.telemetry.resolve(), args.schema.resolve(),
-               root / "harness/physical-runtime/src/physical_harness/execution/policy_records.py"]
+               root / "harness/physical-runtime/src/physical_harness/execution/policy_records.py",
+               root / "harness/physical-runtime/src/physical_harness/policies/client.py",
+               root / "harness/physical-runtime/src/physical_harness/policies/server.py", Path(__file__).resolve()]
     hashes = {str(path): sha256(path.read_bytes()).hexdigest() for path in sources}
     validator = ContractValidator.from_path(args.schema)
     request = json.loads(args.request.read_text(encoding="utf-8"))
     validator.parse("PolicyRequest", request)
     assert JsonPolicyCodec().decode(JsonPolicyCodec().encode(request), request) == request
+    invalid_messages = rejected_wire_inputs(request)
+    rejected_directory = output / "rejected-inputs"
+    rejected_directory.mkdir()
+    numeric_admission = []
+    for name, message in invalid_messages.items():
+        path = rejected_directory / f"{name}.json"
+        with path.open("x", encoding="utf-8") as stream:
+            stream.write(message)
+        try:
+            JsonPolicyCodec().decode(message, request)
+        except PolicyProtocolError as error:
+            numeric_admission.append({"case": name, "wireSha256": sha256(path.read_bytes()).hexdigest(),
+                                      "decoderError": str(error)})
+        else:
+            raise AssertionError(f"Policy decoder admitted invalid numeric/duplicate input: {name}")
     record_directory = output / "requests"
     record_directory.mkdir()
     record_policy_request(request, record_directory)
@@ -72,8 +105,10 @@ async def run(args: argparse.Namespace) -> None:
     closed_port.bind(("127.0.0.1", 0))
     upstream = WebSocketPolicyClient(f"ws://127.0.0.1:{closed_port.getsockname()[1]}", validator, timeout_s=3)
     upstream_failure: dict[str, str] = {}
+    forwarded_requests = []
 
     async def forward(original: dict) -> dict:
+        forwarded_requests.append(original["request_id"])
         try:
             return await upstream.infer(original)
         except (OSError, TimeoutError) as error:
@@ -90,6 +125,17 @@ async def run(args: argparse.Namespace) -> None:
                 raise AssertionError("An unauthenticated policy connection was admitted.")
         except InvalidStatus as error:
             assert error.response.status_code == 401
+        for entry in numeric_admission:
+            async with asyncio.timeout(5), connect(uri, proxy=None, compression=None,
+                               additional_headers={"Authorization": f"Bearer {key}"}, open_timeout=3) as connection:
+                await connection.send(invalid_messages[entry["case"]])
+                response = json.loads(await connection.recv())
+                assert response == {"error": "policy_inference_failed"}
+                await connection.wait_closed()
+                assert connection.close_code == 1011
+                entry["serverCloseCode"] = connection.close_code
+                entry["inferenceAdmitted"] = False
+            assert forwarded_requests == [], "Malformed policy input reached inference admission."
         try:
             await client.infer(request)
         except PolicyProtocolError as error:
@@ -99,6 +145,7 @@ async def run(args: argparse.Namespace) -> None:
         assert client.last_response is None and client.motion is None
         assert client._connection is None and upstream._connection is None
         assert upstream_failure, "Require an observed network connection failure."
+        assert forwarded_requests == [request["request_id"]]
     finally:
         server.close()
         results = await asyncio.gather(client.close(), upstream.close(), server.wait_closed(), return_exceptions=True)
@@ -117,6 +164,7 @@ async def run(args: argparse.Namespace) -> None:
         "sources": hashes,
         "request_id": request["request_id"],
         "original_request_codec": "passed",
+        "rejected_wire_inputs": numeric_admission,
         "original_request_recording": {"sha256": recorded_hash, "exact_content": True,
                                        "duplicate_write_rejected": True, "unchanged_after_rejection": True},
         "original_telemetry": telemetry,

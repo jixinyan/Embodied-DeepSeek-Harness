@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.89 · 2026-10-08
+Version: v1.90 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -136,7 +136,9 @@ Prerequisite success requires its own verdict and completed plan row. See
 5. Share policy connection closure and complete client shutdown across concurrent
    or cancelled callers. Preserve caller-local cleanup and reject inference while
    connection closure is pending or failed.
-6. Drain owned requests, threads, processes and listeners during shutdown.
+6. Reject duplicate fields and non-finite numeric values during standard policy
+   JSON decoding before inference, event handling or policy-tool delivery.
+7. Drain owned requests, threads, processes and listeners during shutdown.
 
 **Gate:** Actual original errors remain observable. Unknown device state remains unknown;
 transport loss cannot replay motion or create a confirmed stop. CPU and loaded-SDK

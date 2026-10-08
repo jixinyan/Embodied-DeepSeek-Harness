@@ -16,6 +16,17 @@ class PolicyProtocolError(ValueError):
     """The peer did not return the expected policy response."""
 
 
+def _reject_numeric_constant(token: str) -> None:
+    raise PolicyProtocolError(f"Non-finite JSON numeric constant: {token}.")
+
+
+def _finite_json_float(token: str) -> float:
+    value = float(token)
+    if not math.isfinite(value):
+        raise PolicyProtocolError("JSON numeric value exceeds the finite range.")
+    return value
+
+
 def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
@@ -37,7 +48,8 @@ class JsonPolicyCodec:
         return json.dumps(request, allow_nan=False, separators=(",", ":"))
 
     def decode(self, response: str | bytes, request: dict[str, Any]) -> dict[str, Any]:
-        value = json.loads(response, object_pairs_hook=_unique_object)
+        value = json.loads(response, object_pairs_hook=_unique_object,
+                           parse_constant=_reject_numeric_constant, parse_float=_finite_json_float)
         if not isinstance(value, dict):
             raise PolicyProtocolError("Expected an object policy response.")
         if "error" in value:

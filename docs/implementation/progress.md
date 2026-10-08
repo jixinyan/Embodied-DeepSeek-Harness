@@ -1,8 +1,18 @@
 # Implementation progress
 
-Spec: v1.89. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.90. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 finite policy JSON admission
+
+Policy request/response decoding uses the standard JSON library with finite-number
+and duplicate-field hooks. Non-finite constants and floating-point overflow fail
+before decoded messages reach inference, event consumers or policy tools. Seven
+malformed inputs pass direct rejection and actual authenticated server rejection
+with close code 1011 and zero inference admission. Their exact wire bodies are
+retained; the original finite request and 95 telemetry events remain unchanged.
+See [wire admission checks](cpu-release-validation.md#policy-transport).
 
 ## 2026-10-08 policy connection ownership
 

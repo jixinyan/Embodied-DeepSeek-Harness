@@ -524,6 +524,23 @@ The production recorder also saves the exact original request, checks private
 POSIX file permissions and rejects an actual second write without changing the
 stored content. Recorder source and original record hashes remain unchanged.
 
+The same production decoder serves client responses and server requests. Its
+standard JSON numeric hooks reject NaN/Infinity constants and overflowing
+floating-point tokens; duplicate-field rejection applies inside nested objects.
+Seven malformed messages pass direct rejection and actual authenticated server
+rejection with close code 1011, generic public errors and zero inference admission.
+Each exact rejected wire body and SHA-256 remains in the diagnostic output.
+The original finite request still round-trips and records exactly; all 95 original
+telemetry events retain their scope and sequence. Current macOS evidence:
+`.local/work/v1-policy-json-transport-20261008-bounded/acceptance.json`.
+The report binds codec, server, recorder, diagnostic and original source hashes.
+These checks return no policy actions or model results.
+The finite codec's current source also passes four client-close cases, nine
+inference-owner cases and three rollout/Worker cases under
+`.local/work/v1-policy-json-client-20261008/`,
+`.local/work/v1-policy-json-inference-20261008/` and
+`.local/work/v1-policy-json-rollout-20261008/`. Full project checks pass.
+
 On 2026-10-07, 95 original telemetry events across three policy requests pass.
 The actual upstream connection times out, both clients discard their connections,
 the authenticated server rejects unauthorized admission and its listener closes.
