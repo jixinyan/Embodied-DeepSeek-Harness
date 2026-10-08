@@ -6,6 +6,23 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## 2026-10-07 native configuration readiness
 
+The consolidated native campaign prepares four actual profiles and eight task
+submissions without allocation. Tower requires three completed goals; second
+tasks require independent terminal verification with zero new controls,
+inferences or physics steps. Actual execution requires the same unchanged
+committed EDH revision, original configuration hashes and deployment digest.
+The production Console rejects a modified checkout before allocating a Session.
+
+The shared workflow reader passes four original task histories across three
+Sessions: `551fa79d`, `a5d9132e`, `897f215d` and `ca43312e`. It checks independent
+retired contexts, Planner-owned recovery, confirmed formal boundaries, completed
+plans, requested tools and released Session resources. The original failed
+BEHAVIOR outcome remains ineligible for task-success acceptance. These checks
+perform no model inference or physical controls. Full current-code campaign,
+multi-goal execution, interrupt cleanup and original source/action/video acceptance
+retain their actual native testing requirements. See
+[consolidated release campaign](native-release-campaign.md).
+
 One complete worker schema now validates the deployment loader and native
 environment allocation. It covers WebSocket endpoints, action/monitor limits,
 transport/device/policy/lifecycle deadlines, recording flags and provider-specific

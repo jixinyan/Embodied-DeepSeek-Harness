@@ -110,6 +110,7 @@ try {
     assert.equal(service.pid, null);
   }
   result = {
+    sourceCode: configuration.sourceCode,
     deploymentDigest: configuration.deploymentDigest,
     sources: hashes,
     profiles: matrix,
@@ -136,7 +137,7 @@ result.listenerClosed = true;
 await save('readiness.json', result);
 console.log(
   JSON.stringify({
-    profiles: matrix.length,
+    profileCount: matrix.length,
     providers: [...new Set(matrix.map((item) => item.provider))],
     output,
     ...result,

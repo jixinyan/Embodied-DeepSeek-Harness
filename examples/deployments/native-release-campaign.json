@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "robodojo-tower",
+      "profileId": "dojo.robodojo-build_tower-pi05",
+      "tasks": [
+        {
+          "taskId": "build_tower",
+          "minimumGoals": 3,
+          "requiredTools": ["perception.capture", "planning.update", "execution.start"]
+        },
+        {
+          "taskId": "build_tower",
+          "minimumControls": 0,
+          "maximumControls": 0,
+          "requiredTools": ["planning.update", "verification.check"]
+        }
+      ]
+    },
+    {
+      "id": "robotwin-bottle",
+      "profileId": "twin.robotwin-adjust-bottle",
+      "tasks": [
+        {
+          "taskId": "adjust_bottle",
+          "requiredTools": ["perception.capture", "planning.update", "execution.start"]
+        },
+        {
+          "taskId": "adjust_bottle",
+          "minimumControls": 0,
+          "maximumControls": 0,
+          "requiredTools": ["planning.update", "verification.check"]
+        }
+      ]
+    },
+    {
+      "id": "robocasa-drawer",
+      "profileId": "casa.robocasa-close-drawer-gr00t",
+      "tasks": [
+        {
+          "taskId": "CloseDrawer",
+          "requiredTools": ["perception.capture", "planning.update", "execution.start"]
+        },
+        {
+          "taskId": "CloseDrawer",
+          "minimumControls": 0,
+          "maximumControls": 0,
+          "requiredTools": ["planning.update", "verification.check"]
+        }
+      ]
+    },
+    {
+      "id": "behavior-trash",
+      "profileId": "behavior.behavior-picking-up-trash",
+      "tasks": [
+        {
+          "taskId": "picking_up_trash",
+          "requiredTools": ["perception.capture", "planning.update", "execution.start"]
+        },
+        {
+          "taskId": "picking_up_trash",
+          "minimumControls": 0,
+          "maximumControls": 0,
+          "requiredTools": ["planning.update", "verification.check"]
+        }
+      ]
+    }
+  ]
+}

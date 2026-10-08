@@ -19,6 +19,12 @@ tracks the remaining work across that behavior.
 
 The [release validation guide](release-validation.md) defines source checks,
 actual native task submission, source-bound audits and product/safety evidence.
+The [consolidated native campaign](native-release-campaign.md) now prepares the
+actual four-provider profile matrix, eight task submissions and explicit Tower
+prerequisite/terminal-continuity requirements. Shared worker preallocation checks
+and actual Console readiness pass without allocating environments or models.
+Four original task histories pass the new CPU workflow reader. Current-code
+physical execution and original source acceptance retain their release gates.
 
 ## Acceptance register
 

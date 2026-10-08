@@ -20,6 +20,11 @@ same command. Its report contains no model inference or simulator task result.
 
 ## Native task acceptance
 
+The [consolidated native campaign](native-release-campaign.md) connects actual
+workspace readiness to sequential provider Sessions, same-environment tasks,
+formal-verdict and retry checks, source retention and owned cleanup. Its separate
+preparation mode performs no GPU or simulator work.
+
 Start the configured native deployment through the
 [Desktop launcher](../../apps/desktop/README.md) or
 [provider factory](../../examples/deployments/README.md). Select compatible model,
