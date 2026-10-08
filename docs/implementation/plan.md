@@ -15,6 +15,12 @@ resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
 
+Policy execution mode is validated before inference admission. Four actual
+WebSocket rejection cases and all original transport/recording checks pass on
+macOS without models, environments or controls. Next CPU action: run the
+current-source campaign on macOS and isolated Linux, preserving original inputs
+and confirming actual process release.
+
 Selected checkpoint identity reaches learned-policy requests and ActionGate
 admission. Services check their verified artifact before inference and identify
 responses. Hybrid lower-policy proposals validate selected identity and complete

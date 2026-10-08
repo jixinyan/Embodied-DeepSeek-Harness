@@ -18,6 +18,16 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
+Policy execution-mode admission uses four explicitly invalid selectors in original
+request derivatives and the actual authenticated production WebSocket server.
+Each selector closes with code 1011 before the inference callback. The diagnostic
+also verifies seven non-finite/duplicate JSON inputs, exclusive original request
+recording, original telemetry and genuine unavailable-upstream failure. All original
+files preserve their hashes; connections/listeners release and no model or
+environment executes. Local evidence:
+`.local/work/v1-policy-mode-admission-20261008-after/`. Complete source checks pass.
+The consolidated campaign includes these cases through `policy-transport`.
+
 Clean `416a38a` passes all twenty-eight configured components on macOS and isolated
 Linux, with 323 admission/process/wire/resource cases per platform, six
 visual-context cases, twelve original context reads and four-provider readiness.

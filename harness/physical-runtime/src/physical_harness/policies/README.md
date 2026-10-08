@@ -6,6 +6,12 @@ response and exposes a deployment-owned inference callback. Native service entry
 points cover GR00T/RoboCasa, GR00T/BEHAVIOR, LeRobot Pi0.5/RoboTwin and
 OpenPI Pi0.5/RoboDojo.
 
+Request schema, ActionSpec, execution mode and selected checkpoint identity are
+validated before the inference callback. Explicit invalid mode selectors close
+their connection with an admission failure and allocate no inference operation.
+An omitted selector retains the learned `policy` default. Response normalization,
+scoped validation and ActionGate admission keep their existing boundaries.
+
 The JSON codec uses Python's standard decoder with explicit duplicate-field and
 finite-number checks. Nested NaN/Infinity constants and numeric overflow fail
 before a decoded request, event or tool message reaches its consumer. The server

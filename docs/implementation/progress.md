@@ -1,5 +1,17 @@
 # Implementation progress
 
+## 2026-10-08 policy execution-mode admission
+
+The policy server validates execution mode before inference. Four declared invalid
+selectors in original-request derivatives—unsupported string, null, boolean and
+number—fail through the actual authenticated WebSocket endpoint before its inference
+callback. Seven non-finite/duplicate JSON checks, original request recording,
+telemetry inspection and actual unavailable-upstream failure also pass. Connections
+and listeners release; original sources remain unchanged. No model, environment or
+GPU starts. Complete source checks pass, including 128 pinned DSH files and 25
+bindings. Evidence: `.local/work/v1-policy-mode-admission-20261008-after/`.
+The current-source macOS/Linux campaign is the next CPU verification.
+
 Spec: v1.106. Current checkpoint: **checkpoint-bound action admission, source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.

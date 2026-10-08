@@ -48,15 +48,15 @@ async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[flo
                 validator.parse("PolicyRequest", request)
                 validator.parse("ActionSpec", request["action_spec"])
                 request_id = request["request_id"]
+                mode = ExecutionMode.parse(
+                    request.get("observation", {}).get("execution_mode", ExecutionMode.POLICY.value)
+                    if isinstance(request.get("observation"), dict) else ExecutionMode.POLICY.value
+                )
                 identity = validate_checkpoint_sha256(checkpoint_sha256()) if checkpoint_sha256 is not None else None
                 if "checkpoint_sha256" in request and request["checkpoint_sha256"] != identity:
                     raise ValueError("Policy request selects a different or unidentified checkpoint.")
                 async with asyncio.timeout(timeout_s):
                     result = await infer(copy.deepcopy(request))
-                mode = ExecutionMode.parse(
-                    request.get("observation", {}).get("execution_mode", ExecutionMode.POLICY.value)
-                    if isinstance(request.get("observation"), dict) else ExecutionMode.POLICY.value
-                )
                 if isinstance(result, dict):
                     # 服务端和客户端分别检查 execution mode 的响应内容。
                     response = copy.deepcopy(result)

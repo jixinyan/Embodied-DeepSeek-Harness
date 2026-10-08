@@ -15,6 +15,7 @@ from websockets.exceptions import InvalidStatus
 from physical_harness.policies.client import JsonPolicyCodec, PolicyProtocolError, WebSocketPolicyClient, validate_policy_event
 from physical_harness.policies.server import serve_policy
 from physical_harness.execution.policy_records import record_policy_request
+from physical_harness.execution.modes import ExecutionMode
 from physical_harness.validation import ContractValidator
 
 
@@ -62,6 +63,7 @@ async def run(args: argparse.Namespace) -> None:
     output.mkdir(parents=True, exist_ok=False)
     sources = [args.request.resolve(), args.telemetry.resolve(), args.schema.resolve(),
                root / "harness/physical-runtime/src/physical_harness/execution/policy_records.py",
+               root / "harness/physical-runtime/src/physical_harness/execution/modes.py",
                root / "harness/physical-runtime/src/physical_harness/policies/client.py",
                root / "harness/physical-runtime/src/physical_harness/policies/server.py", Path(__file__).resolve()]
     hashes = {str(path): sha256(path.read_bytes()).hexdigest() for path in sources}
@@ -84,6 +86,27 @@ async def run(args: argparse.Namespace) -> None:
                                       "decoderError": str(error)})
         else:
             raise AssertionError(f"Policy decoder admitted invalid numeric/duplicate input: {name}")
+    mode_admission = []
+    mode_messages = {}
+    for name, mode in (("unknown-execution-mode", "unsupported"), ("null-execution-mode", None),
+                       ("boolean-execution-mode", True), ("numeric-execution-mode", 1)):
+        invalid = copy.deepcopy(request)
+        invalid["observation"]["execution_mode"] = mode
+        message = JsonPolicyCodec().encode(invalid)
+        path = rejected_directory / f"{name}.json"
+        with path.open("x", encoding="utf-8") as stream:
+            stream.write(message)
+        decoded = JsonPolicyCodec().decode(message, request)
+        validator.parse("PolicyRequest", decoded)
+        try:
+            ExecutionMode.parse(decoded["observation"]["execution_mode"])
+        except ValueError as error:
+            mode_admission.append({"case": name, "wireSha256": sha256(path.read_bytes()).hexdigest(),
+                                   "modeError": str(error)})
+            mode_messages[name] = message
+        else:
+            raise AssertionError(f"Execution mode admitted an invalid selector: {name}")
+    rejected_messages = {**invalid_messages, **mode_messages}
     record_directory = output / "requests"
     record_directory.mkdir()
     record_policy_request(request, record_directory)
@@ -125,10 +148,10 @@ async def run(args: argparse.Namespace) -> None:
                 raise AssertionError("An unauthenticated policy connection was admitted.")
         except InvalidStatus as error:
             assert error.response.status_code == 401
-        for entry in numeric_admission:
+        for entry in [*numeric_admission, *mode_admission]:
             async with asyncio.timeout(5), connect(uri, proxy=None, compression=None,
                                additional_headers={"Authorization": f"Bearer {key}"}, open_timeout=3) as connection:
-                await connection.send(invalid_messages[entry["case"]])
+                await connection.send(rejected_messages[entry["case"]])
                 response = json.loads(await connection.recv())
                 assert response == {"error": "policy_inference_failed"}
                 await connection.wait_closed()
@@ -165,6 +188,7 @@ async def run(args: argparse.Namespace) -> None:
         "request_id": request["request_id"],
         "original_request_codec": "passed",
         "rejected_wire_inputs": numeric_admission,
+        "rejected_execution_modes": mode_admission,
         "original_request_recording": {"sha256": recorded_hash, "exact_content": True,
                                        "duplicate_write_rejected": True, "unchanged_after_rejection": True},
         "original_telemetry": telemetry,
