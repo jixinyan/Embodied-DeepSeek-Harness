@@ -1,10 +1,19 @@
 # Implementation progress
 
-Spec: v1.82. Current checkpoint: **current source-bound implementation sequence; memory-owned native context measurement and foundation-owned registration scopes with actual journal validation; shared native policy-thread ownership and actual CPU cancellation/recording checks; tools-owned detached model schemas and actual recorded request/plan checks; separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.83. Current checkpoint: **current source-bound implementation sequence; memory-owned native context measurement and foundation-owned registration scopes with actual journal validation; shared native policy-thread ownership and actual CPU cancellation/recording checks; tools-owned detached model schemas and actual recorded request/plan checks; separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
 
 ## 2026-10-08 native context directory ownership
+
+All nine TypeScript diagnostic entries participate in full type/format checks.
+RoboCasa action/metric entries await the native catalog API, select the configured
+task and own allocation/image cleanup from startup through final result publication.
+Actual CLI field-error checks dispose both image contexts and preserve failed
+allocation/resource state. Sixty endpoint rejections across four configured
+profiles retain `policyUri` issues with zero Worker starts; the forty-eight scene
+rejections and snapshot checks continue to pass.
+See [diagnostic entry validation](cpu-release-validation.md#native-diagnostic-entries).
 
 Native transport admits bounded operations and finite JSON arguments before
 serialization or request ownership. Nine actual CPU client cases pass, including

@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.82 · 2026-10-08
+Version: v1.83 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -188,7 +188,8 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 
 ## Step 11 — Complete CPU release preparation
 
-1. Run full source, schema, role, provenance, dependency and Python checks.
+1. Run full source, schema, role, provenance, dependency and Python checks,
+   including all TypeScript diagnostic entries and configured endpoint admission.
 2. Exercise actual worker processes, original request recording, WebSocket transport,
    inference-thread ownership, scoped failure records and cleanup.
 3. Inspect original native model schemas, plans, role histories and context projections.

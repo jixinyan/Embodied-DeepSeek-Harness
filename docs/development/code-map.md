@@ -69,6 +69,8 @@ implementations load in their separately configured service processes.
 | Read actual run updates | [run-update.js](../../apps/console/public/run-update.js) |
 | Configure and start the desktop launcher | [apps/desktop](../../apps/desktop/README.md) |
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |
+| Validate configured native scenes and policy endpoints before allocation | [check-native-scene-configuration.mjs](../../scripts/check-native-scene-configuration.mjs) |
+| Exercise native RoboCasa worker or SAM-backed measurement | [check-robocasa-worker.ts](../../scripts/check-robocasa-worker.ts) and [check-robocasa-object-measurement.ts](../../scripts/check-robocasa-object-measurement.ts) |
 | Submit and audit actual native tasks | [native release campaign](../implementation/native-release-campaign.md) |
 
 Runtime output belongs under ignored `.local/` or `.runs/`. Provider data and

@@ -11,16 +11,18 @@ const lifecycle = z.number().int().min(1).max(1_800_000);
 export const nativePolicyEndpointSchema = z
   .string()
   .url()
-  .refine((value) => {
-    const url = new URL(value);
-    return (
-      ['ws:', 'wss:'].includes(url.protocol) &&
-      Boolean(url.hostname) &&
-      !url.username &&
-      !url.password &&
-      !url.hash
-    );
-  }, 'Native policy requires a ws(s) endpoint without embedded credentials or fragment.');
+  .pipe(
+    z.string().refine((value) => {
+      const url = new URL(value);
+      return (
+        ['ws:', 'wss:'].includes(url.protocol) &&
+        Boolean(url.hostname) &&
+        !url.username &&
+        !url.password &&
+        !url.hash
+      );
+    }, 'Native policy requires a ws(s) endpoint without embedded credentials or fragment.'),
+  );
 
 export const nativeWorkerConfigurationSchema = z
   .object({

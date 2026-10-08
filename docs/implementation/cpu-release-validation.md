@@ -155,6 +155,41 @@ process/group is absent, original initialization and release errors retain their
 shared identity and device/resource state remains unknown. The diagnostic
 configuration disables CUDA and names an absent SDK source directory.
 
+Frozen `f22f0af` passes all nine client cases, four host cases, initialization
+interruption, finite-scene admission, four-provider readiness and full checks on
+isolated Linux. Forty-seven implementation/provider comparisons match their
+macOS reports; the interruption retains unknown device/resource state and absent
+owned processes. Canonical checkout status remains unchanged. Reports and verified
+summary are under `.local/work/v1-cpu-source-20261008/linux-worker-json/`.
+Archive SHA-256:
+`8d8b62d1a30b777c38b4c67287d2732f2a1b2cffe73c48f2b0d1f0cfc937da62`.
+
+## Native diagnostic entries
+
+All nine `scripts/**/*.ts` entries participate in the project TypeScript check,
+and `format:check` includes TypeScript diagnostics. RoboCasa worker and metric
+entries await the current `describeTasks({ signal })` API and select the configured
+`nativeTaskId`. They own the image context and admitted environment throughout
+startup, task checks and release. Results publish after all owned cleanup stages;
+task/cleanup/output failures retain their original errors, and new output files
+are required. A rejected allocation retains unconfirmed environment-resource state.
+
+Both actual RoboCasa CLI entries pass their policy-endpoint preallocation failure
+check with production configuration, an original recorded request and CUDA
+invisible. They preserve field-specific Zod errors, dispose the image context,
+publish failed results and exit with status one. No Worker, SAM service, model,
+simulator or controls execute. Original input and entry-point hashes remain
+unchanged. Evidence:
+`.local/work/v1-casa-entry-admission-20261008-final/acceptance.json`.
+
+The scene/configuration diagnostic additionally checks fifteen invalid policy
+endpoint values across four original profiles. All sixty fail schema and factory
+admission with `policyUri` issues and zero Worker starts; original valid endpoints
+remain unchanged. URL syntax validation completes before protocol/credential/
+fragment checks. The same invocation preserves its forty-eight finite-scene
+rejections and admitted snapshot checks. Evidence:
+`.local/work/v1-endpoint-scene-admission-20261008/acceptance.json`.
+
 ## Native context and scope ownership
 
 Selected DSH `token-meter` source belongs to `harness/agent-runtime/memory`,

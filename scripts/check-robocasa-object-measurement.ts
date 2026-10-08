@@ -7,11 +7,13 @@ import { setTimeout } from 'node:timers/promises';
 import { Context } from '@deepseek-ai/cordis';
 import { ContractValidator, type SubgoalRequest } from '@edh/contracts';
 import { Sam31HttpClient } from '@edh/perception';
+import type { BackendObjectMeasurement } from '@edh/execution';
 import { LocalImageStore } from '@edh/storage';
 import {
   createNativeWorkerEnvironment,
   type NativeWorkerConfiguration,
 } from '../apps/server/src/native-worker.js';
+import type { SessionEnvironment } from '../apps/server/src/deployment.js';
 
 const [configurationPath, outputPath, samAddress] = process.argv.slice(2);
 if (!configurationPath || !outputPath || !samAddress)
@@ -26,31 +28,39 @@ if (configuration.worker.provider !== 'robocasa')
 const outputDirectory = dirname(resolve(outputPath));
 await mkdir(outputDirectory, { recursive: true });
 const context = new Context();
-await context.plugin(LocalImageStore, { directory: resolve(outputDirectory, 'images') });
-const images = context.attachments as LocalImageStore;
 const validator = new ContractValidator(
   JSON.parse(await readFile('harness/contracts/schema/physical.schema.json', 'utf8')),
 );
 const sam = new Sam31HttpClient(samAddress);
-const environment = await createNativeWorkerEnvironment(
-  {
-    ...configuration.worker,
-    simulationVideoDirectory: resolve(outputDirectory, 'videos'),
-  },
-  { images },
-  validator,
-);
+let environment: SessionEnvironment | undefined;
 const startedAt = new Date().toISOString();
 const report: Record<string, unknown> = {
   startedAt,
   sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   sourceChanges: execFileSync('git', ['status', '--short'], { encoding: 'utf8' }).trim(),
 };
+const failures: unknown[] = [];
+let environmentReleased = false;
+let imageContextDisposed = false;
 try {
-  const task = environment.describeTasks().tasks.OpenCabinet;
+  await context.plugin(LocalImageStore, { directory: resolve(outputDirectory, 'images') });
+  const images = context.attachments as LocalImageStore;
+  environment = await createNativeWorkerEnvironment(
+    {
+      ...configuration.worker,
+      simulationVideoDirectory: resolve(outputDirectory, 'videos'),
+    },
+    { images },
+    validator,
+  );
+  assert(environment.describeTasks);
+  const signal = new AbortController().signal;
+  const catalog = await environment.describeTasks({ signal });
+  const taskId = configuration.worker.nativeTaskId;
+  const task = catalog.tasks[taskId];
   assert.ok(task);
   const runId = randomUUID();
-  const backend = await environment.createTaskBackend('OpenCabinet', {
+  const backend = await environment.createTaskBackend(taskId, {
     signal: new AbortController().signal,
     runId,
     task,
@@ -80,7 +90,7 @@ try {
   }));
   for (const [index, instance] of segmentation.instances.entries())
     await writeFile(resolve(outputDirectory, `mask-${index}.png`), instance.maskPng);
-  const measurements = [];
+  const measurements: BackendObjectMeasurement[] = [];
   for (const [index, input] of inputs.entries()) {
     const measurement = await backend.measureObject(input);
     assert.equal(measurement.selectedPixels, segmentation.instances[index]!.areaPixels);
@@ -172,7 +182,7 @@ try {
   assert.ok(stoppedMeasurement.simulationTimeS > measurements[0]!.simulationTimeS);
   await backend.stop();
   await backend.close();
-  const second = await environment.createTaskBackend('OpenCabinet', {
+  const second = await environment.createTaskBackend(taskId, {
     signal: new AbortController().signal,
     runId: randomUUID(),
     task,
@@ -198,10 +208,35 @@ try {
     stoppedMeasurement,
     crossSessionCaptureRejected: true,
   });
+} catch (error) {
+  failures.push(error);
 } finally {
-  await environment.close();
-  await context.fiber.dispose();
-  Object.assign(report, { closedAt: new Date().toISOString(), resourcesReleased: true });
-  await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`);
+  try {
+    await environment?.close();
+    environmentReleased = environment !== undefined;
+  } catch (error) {
+    failures.push(error);
+  }
+  try {
+    await context.fiber.dispose();
+    imageContextDisposed = true;
+  } catch (error) {
+    failures.push(error);
+  }
 }
+Object.assign(report, {
+  status: failures.length ? 'failed' : 'passed',
+  closedAt: new Date().toISOString(),
+  environmentReleased,
+  imageContextDisposed,
+  resourcesReleased: environmentReleased && imageContextDisposed,
+  errors: failures.map((error) => (error instanceof Error ? error.stack : String(error))),
+});
+try {
+  await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx' });
+} catch (error) {
+  failures.push(error);
+}
+if (failures.length)
+  throw new AggregateError(failures, 'Native object measurement acceptance failed.');
 process.stdout.write(`${outputPath}\n`);

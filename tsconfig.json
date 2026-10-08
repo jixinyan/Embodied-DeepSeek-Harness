@@ -194,6 +194,7 @@
   "include": [
     "harness/**/*.ts",
     "apps/**/*.ts",
+    "scripts/**/*.ts",
     "tests/contracts/**/*.ts",
     "tests/console/**/*.ts",
     "tests/runtime/**/*.ts"

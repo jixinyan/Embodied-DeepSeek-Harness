@@ -62,10 +62,28 @@ const invalidValues = [
   ['typed-array', new Uint8Array([1])],
   ['symbol', Symbol('invalid-scene-value')],
 ];
+const invalidEndpoints = [
+  '',
+  'not-a-policy-endpoint',
+  'ws://',
+  'ws://[',
+  'http://127.0.0.1:8018',
+  'https://127.0.0.1:8018',
+  'file:///workspace/checkpoints/policy',
+  'ws://operator@127.0.0.1:8018',
+  'ws://operator:embedded-credential@127.0.0.1:8018',
+  'ws://127.0.0.1:8018/#fragment',
+  null,
+  1,
+  false,
+  [],
+  {},
+];
 const context = new Context();
 const processes = [];
 const originals = [];
 const results = [];
+const endpointResults = [];
 try {
   await context.plugin(LocalImageStore, { directory: resolve(output, 'images') });
   for (const { settings: deployment } of settings.deployments) {
@@ -73,6 +91,7 @@ try {
       const original = profile.worker;
       const parsed = nativeWorkerConfigurationSchema.parse(original);
       assert.deepEqual(parsed.sceneConfiguration, original.sceneConfiguration);
+      assert.equal(parsed.policyUri, original.policyUri);
       assert.deepEqual(
         JSON.parse(JSON.stringify(parsed.sceneConfiguration)),
         JSON.parse(JSON.stringify(original.sceneConfiguration)),
@@ -132,6 +151,28 @@ try {
         assert.deepEqual(processes, []);
         results.push({ provider: deployment.provider, profileId, name, issues });
       }
+      for (const [index, policyUri] of invalidEndpoints.entries()) {
+        const configuration = {
+          ...original,
+          policyUri,
+          env: { ...original.env, CUDA_VISIBLE_DEVICES: '' },
+          onProcessStarted: (pid) => processes.push(pid),
+        };
+        const admission = nativeWorkerConfigurationSchema.safeParse(configuration);
+        assert.equal(admission.success, false);
+        const issues = admission.error.issues;
+        assert(issues.every((issue) => issue.path[0] === 'policyUri'));
+        await assert.rejects(
+          createNativeWorkerEnvironment(configuration, { images: context.attachments }, validator),
+          (error) => {
+            assert(error instanceof ZodError);
+            assert.deepEqual(error.issues, issues);
+            return true;
+          },
+        );
+        assert.deepEqual(processes, []);
+        endpointResults.push({ provider: deployment.provider, profileId, index, issues });
+      }
     }
   }
 } finally {
@@ -145,6 +186,7 @@ await writeFile(
       sources: sourceHashes,
       originals,
       results,
+      endpointResults,
       workerProcessesStarted: processes,
       imageContextDisposed: true,
       modelCalls: 0,
@@ -159,5 +201,5 @@ await writeFile(
   { flag: 'wx' },
 );
 process.stdout.write(
-  `${JSON.stringify({ output, profiles: originals.length, rejectedCases: results.length })}\n`,
+  `${JSON.stringify({ output, profiles: originals.length, rejectedCases: results.length, rejectedEndpointCases: endpointResults.length })}\n`,
 );

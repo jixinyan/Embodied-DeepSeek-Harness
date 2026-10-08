@@ -11,6 +11,7 @@ import {
   createNativeWorkerEnvironment,
   type NativeWorkerConfiguration,
 } from '../apps/server/src/native-worker.js';
+import type { SessionEnvironment } from '../apps/server/src/deployment.js';
 
 const configurationPath = process.argv[2];
 const outputPath = process.argv[3];
@@ -29,27 +30,33 @@ const schema = JSON.parse(await readFile('harness/contracts/schema/physical.sche
 const validator = new ContractValidator(schema);
 validator.parse('SubgoalRequest', configuration.request);
 const context = new Context();
-await mkdir(configuration.imageDirectory, { recursive: true });
-await context.plugin(LocalImageStore, { directory: configuration.imageDirectory });
-const images = context.attachments as LocalImageStore;
-const environment = await createNativeWorkerEnvironment(
-  configuration.worker,
-  { images },
-  validator,
-);
-const taskId = configuration.request.task_id;
-const selectedTask = environment.describeTasks().tasks[taskId];
-if (!selectedTask) throw new Error('Native session did not admit the configured task.');
-const firstRunId = randomUUID();
-const firstRequest = {
-  ...configuration.request,
-  task_id: firstRunId,
-  instruction: selectedTask.instruction,
-};
+let environment: SessionEnvironment | undefined;
 const updates: Array<Record<string, unknown>> = [];
 const frames: Array<Record<string, unknown>> = [];
 const failures: unknown[] = [];
+let report: Record<string, unknown> | undefined;
+let environmentReleased = false;
+let imageContextDisposed = false;
 try {
+  await mkdir(configuration.imageDirectory, { recursive: true });
+  await context.plugin(LocalImageStore, { directory: configuration.imageDirectory });
+  environment = await createNativeWorkerEnvironment(
+    configuration.worker,
+    { images: context.attachments as LocalImageStore },
+    validator,
+  );
+  assert(environment.describeTasks);
+  const signal = new AbortController().signal;
+  const catalog = await environment.describeTasks({ signal });
+  const taskId = configuration.worker.nativeTaskId;
+  const selectedTask = catalog.tasks[taskId];
+  if (!selectedTask) throw new Error('Native session did not admit the configured task.');
+  const firstRunId = randomUUID();
+  const firstRequest = {
+    ...configuration.request,
+    task_id: firstRunId,
+    instruction: selectedTask.instruction,
+  };
   const backend = await environment.createTaskBackend(taskId, {
     signal: new AbortController().signal,
     runId: firstRunId,
@@ -82,7 +89,9 @@ try {
   assert.equal(before.images?.length, 3);
   assert.equal(before.evidence.task_scope.task_id, firstRunId);
   const cancelledCapture = new AbortController();
-  const cancelledCaptureResult = backend.capture({ signal: cancelledCapture.signal });
+  const cancelledCaptureResult = Promise.resolve(
+    backend.capture({ signal: cancelledCapture.signal }),
+  );
   cancelledCapture.abort();
   await assert.rejects(cancelledCaptureResult, /Native worker capture request cancelled/);
   const captureAfterCancellation = await backend.capture();
@@ -154,9 +163,8 @@ try {
   assert.equal(second.query()?.state, 'ended');
   unsubscribeSecondFrames?.();
   await second.close();
-  const report = {
+  report = {
     startedAt,
-    completedAt: new Date().toISOString(),
     sourceRevision,
     sourceChanges,
     exitStatus: 'passed',
@@ -179,39 +187,41 @@ try {
     frames,
     learnedPolicyActionsExecuted: terminal?.control_steps ?? 0,
   };
-  await mkdir(dirname(resolve(outputPath)), { recursive: true });
-  await writeFile(outputPath, `${JSON.stringify(report, null, 2)}\n`);
-  process.stdout.write(`${outputPath}\n`);
 } catch (error) {
   failures.push(error);
-  await mkdir(dirname(resolve(outputPath)), { recursive: true });
-  await writeFile(
-    resolve(dirname(outputPath), 'failure.json'),
-    `${JSON.stringify(
-      {
-        startedAt,
-        completedAt: new Date().toISOString(),
-        sourceRevision,
-        sourceChanges,
-        exitStatus: 'failed',
-        error: error instanceof Error ? error.stack : String(error),
-        updates,
-        frames,
-      },
-      null,
-      2,
-    )}\n`,
-  );
 } finally {
   try {
-    await environment.close();
+    await environment?.close();
+    environmentReleased = environment !== undefined;
   } catch (error) {
     failures.push(error);
   }
   try {
     await context.fiber.dispose();
+    imageContextDisposed = true;
   } catch (error) {
     failures.push(error);
   }
-  if (failures.length) throw new AggregateError(failures, 'Native worker acceptance failed.');
 }
+const result = {
+  startedAt,
+  sourceRevision,
+  sourceChanges,
+  updates,
+  frames,
+  ...report,
+  completedAt: new Date().toISOString(),
+  exitStatus: failures.length ? 'failed' : 'passed',
+  environmentReleased,
+  imageContextDisposed,
+  resourcesReleased: environmentReleased && imageContextDisposed,
+  errors: failures.map((error) => (error instanceof Error ? error.stack : String(error))),
+};
+try {
+  await mkdir(dirname(resolve(outputPath)), { recursive: true });
+  await writeFile(outputPath, `${JSON.stringify(result, null, 2)}\n`, { flag: 'wx' });
+} catch (error) {
+  failures.push(error);
+}
+if (failures.length) throw new AggregateError(failures, 'Native worker acceptance failed.');
+process.stdout.write(`${outputPath}\n`);
