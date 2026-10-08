@@ -46,6 +46,22 @@ read-only templates. Their new private journals are under `.local/checks/recorde
 These checks establish CPU schema/record behavior. Current-code model-driven
 multi-goal and simulator completion require their actual native acceptance.
 
+The same schema tests, original request inspection and original custom-role plan
+reader pass on Linux from committed `6488510` source. Its isolated Python 3.12.14
+environment and Node 24.21.0/pnpm 11.19.0 workspace use frozen dependencies.
+Full `pnpm check` passes, including 58 Python compilations, 19 base imports,
+128 pinned DSH files, 25 source bindings, ten Teams and 868 documentation links.
+The canonical server checkout has identical before/after Git status. No native
+environment, model inference or controls are allocated. Retained output is
+`.local/work/v1-cpu-source-20261008/linux-tools/`; the original
+`cpu-tools-evidence.tar.gz` has SHA-256
+`636f0b8a07a3d5763beabff7f68a0fe1807408080e4edbb1c3337db8785d18f7`.
+
+The actual four-provider Console also passes readiness at that source revision
+in `.local/work/v1-tools-readiness-20261008/`. Configured Teams, models, policies,
+checkpoints and RoboDojo Tower prerequisite checks retain their original bindings.
+Shutdown releases the journal writer and listener with zero managed processes.
+
 ## Policy transport
 
 Install the `policy` and `diagnostics` extras in the isolated Python environment.

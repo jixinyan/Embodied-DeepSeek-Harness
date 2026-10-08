@@ -24,9 +24,13 @@ failed Verifiers. Both retain independent run/role identities and inspectable co
 the Session closes with released resources. This confirms admission/history continuity
 for the recorded outcomes. Successful multi-task continuation needs its own actual run.
 
-Current RoboCasa, RoboTwin, BEHAVIOR and RoboDojo native adapters advertise only the
-original `task_success` check. Distinct prerequisite conditions require independently
-supported native checks and authoritative catalog bindings. The auditor reports actual
+RoboCasa, RoboTwin and BEHAVIOR expose the original `task_success` check. RoboDojo
+`build_tower` also exposes `tower_base_structure` and `tower_middle_structure`,
+bound to the original native structure predicates. Its deployment catalog admits
+`native_tower_base_structure` and `native_tower_middle_structure` with empty
+argument lists. Other RoboDojo tasks expose `task_success`. Additional prerequisite
+conditions require provider-supported checks and authoritative catalog bindings.
+The auditor reports actual
 multiple-task history and distinct goal-condition sets separately. Supply
 `--require-distinct-goals` to require an actual recorded multi-goal history with different
 admitted conditions. Repeated attempts of one goal preserve their source identities.
@@ -36,30 +40,30 @@ decides item statuses and dependencies; selecting or completing one prerequisite
 requires that goal's current formal success. The final task retains its original
 criterion and requires its own latest confirmed verification boundary.
 
-Implemented in the upper application with a deterministic CPU fixture. DSH owns
-model turns, scoped tool dispatch, sessions and explicit followups. EDH supplies
-physical task identity, goal admission and verification/recovery rules.
+DSH owns model turns, scoped tool dispatch, Sessions and explicit follow-ups.
+TaskGoals and TaskPlans supply task identity, goal admission, immutable criteria
+and dependency validation; UpperRun assembles execution and formal-verification
+transitions. Current native Teams disable learning; Evolver work remains paused.
 
 ![Multi-goal recovery](../architecture/assets/multi-goal-recovery.svg)
 
-## Run the example
+## Native multi-goal workflow
 
-Start `pnpm demo`, open the local console, and choose **Placement → access repair →
-storage**. The HTTP scenario name is `multi-goal-recovery`. No model key or simulator
-is required. Synthetic cabinet state changes are CPU fixture transitions, not robot
-motion or evidence of learned planning competence.
+The [native release campaign](native-release-campaign.md) submits the configured
+RoboDojo `build_tower` task with a three-goal requirement. Planner reads the actual
+Session catalog, commits the original final criterion and declares dependencies:
 
-| Order | Planner-selected goal | Formal result | Recovery / task meaning |
-| --- | --- | --- | --- |
-| 1 | Place cup | Failed | Failure alone does not start the Evolver |
-| 2 | Replan: add access prerequisite | Planner decision | Fresh Evolver receives failed attempt, evidence and proposed changes |
-| 3 | Open cabinet | Passed | Dependency can be marked done; placement recovery stays open |
-| 4 | Return to placement, explicitly retry | Passed | Original placement recovery resolves; its SKILL can be published |
-| 5 | Close cabinet with cup inside | Passed | Final task criteria pass; Planner completes the plan and task |
+| Goal condition | Admitted check | Transition requirement |
+| --- | --- | --- |
+| Base structure | `tower_base_structure` | Its own confirmed execution boundary and passed formal verdict |
+| Middle structure | `tower_middle_structure` | Base plan row completed with its current passed verdict before selection |
+| Original complete task | `task_success` | Required prerequisites complete; original final criterion passes at the latest confirmed boundary |
 
-The failure-to-success sequence is predetermined by the test model and backend.
-The resulting skill identifies observations and hypotheses separately. This is no
-causal study or demonstration of transfer between environments or embodiments.
+Planner determines concrete goal IDs, instructions, budgets available through the
+catalog and recovery decisions. Failed or unknown attempts preserve their observed
+outcomes. Formal success must come from the independent Verifier and current native
+facts. Original Tower task completion and the full prerequisite/recovery sequence
+retain actual model/policy/simulator acceptance requirements.
 
 ## Bind task criteria and available checks
 
@@ -68,10 +72,11 @@ entity bindings, capability requirements, source configuration and execution bud
 `allowedSubgoalChecks` registers exact `SuccessCheck` objects, including bound entity
 arguments. `predefinedGoals` optionally supplies complete deployment-owned bindings.
 
-For example, the storage fixture supplies `inside(cup, cabinet)`, `open(cabinet)` and
-`closed(cabinet)`. The final task requires both inside and closed. Planner may combine
-registered checks using `all` or `any`; it cannot change the object from `cup` to a
-new arbitrary object or invent an unsupported predicate.
+For example, the configured RoboDojo Tower catalog admits the two native structure
+checks while retaining `task_success` for the original final task. Planner may
+combine registered checks using `all` or `any`; check arguments and source identities
+must match their admitted bindings. Newly named checks require an actual provider
+implementation and catalog admission.
 
 `planning.read` returns the complete plan, owner IDs, active goal/attempt, final goal
 ID, admitted bindings, allowed checks and `subgoalSource`. New Planner-authored
@@ -176,21 +181,25 @@ boundaries, detached bodies, UTF-8 byte sizes, large individual records, legacy 
 reopening, invalid references and traces exceeding the 8 MiB record limit. These
 checks use authored history documents and do not simulate model or physical behavior.
 
-## Acceptance and next work
+## Acceptance
 
-[Runtime acceptance](../../tests/runtime/upper-run.test.ts) executes native DSH calls
-for the full sequence, denies premature publication and stale verifier control,
-checks dependency/switch/retry guards and per-goal budgets, and injects an Evolver
-model failure. [Planning tests](../../tests/runtime/planning.test.ts) reject criterion
-changes, dropped executed goals and stale success references. HTTP tests check the
-new scenario binding. A regression also runs the normal demo timing (140 ms model
-delay, 650 ms backend ticks), requiring both task success and SKILL publication.
-Session audits append native events independently so total history can exceed the
-8 MiB single-record limit. The repository-wide command is `pnpm check`.
+[CPU validation](cpu-release-validation.md) checks original native requests,
+canonical model-visible parameters, accepted/rejected plan writes and generated
+read-only next-write arguments. Original records retain their hashes and verdicts;
+these checks execute no models or physical controls. Session audits publish native
+events independently, allowing complete history to exceed the 8-MiB record limit.
+The repository-wide source command is `pnpm check`.
+
+The [native campaign](native-release-campaign.md) and its recorded-task reader
+require current-code model/policy execution, independent Verifiers, prerequisite
+ordering, completed plans/TODOs, exact terminal boundaries and released resources.
+Each provider's original source/action/video audit remains part of task acceptance.
 
 The current upper application admits one active retained User Session with sequential
 physical jobs, one observing recovery chain, fixed deployment-bound check arguments,
 bounded Session/event/file budgets and read-only interrupted-run history. Each supported
 native task combination retains its own physical and formal-verification acceptance;
-see [progress](progress.md). Successful native multi-task continuation and distinct
-prerequisite checks require the actual evidence described above.
+see [progress](progress.md). Successful native RoboTwin and RoboDojo retained-session
+continuation has its recorded acceptance. Current-code Tower completion and further
+provider configurations require the actual evidence described above. Evolver
+remains paused and SceneState remains deferred.

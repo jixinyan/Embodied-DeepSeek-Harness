@@ -23,6 +23,16 @@ eight rejected original string-valued writes and thirteen read-only plan templat
 These checks perform no model inference, simulator allocation or physical controls.
 Exact commands and artifacts: [CPU tool validation](cpu-release-validation.md#model-visible-tool-schemas).
 
+Frozen `6488510` source passes the same tool/plan checks and complete project
+validation in an isolated Linux workspace. All 344 original schemas and three
+parameter tests pass without allocating an environment or running a model.
+The canonical server checkout remains unchanged. The retained evidence archive
+has SHA-256 `636f0b8a07a3d5763beabff7f68a0fe1807408080e4edbb1c3337db8785d18f7`.
+Actual four-provider Console readiness also passes at this revision with its
+original configuration hashes, zero service leases and released writer/listener.
+The multi-goal guide records the original RoboDojo base/middle/final criteria and
+the independent formal-verification requirement for each dependency transition.
+
 ## 2026-10-08 native worker organization and CPU process checks
 
 Host communication belongs to `apps/server/src/native-worker-transport.ts`; native
