@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { LocalStore } from '@edh/storage';
 import { startServer } from '../apps/server/src/index.ts';
-import { readNativeDeploymentConfiguration } from '../examples/deployments/native-live.mjs';
+import { readNativeDeploymentConfiguration } from '../apps/server/src/native-deployment.mjs';
 
 const { values } = parseArgs({
   options: {

@@ -7,7 +7,7 @@ import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 import { request } from 'undici';
 import { nativeCampaignSchema, auditNativeCampaignTask } from './native-campaign.mjs';
-import { nativeDeploymentRoot } from '../examples/deployments/native-live.mjs';
+import { nativeDeploymentRoot } from '../apps/server/src/native-deployment.mjs';
 
 const { values } = parseArgs({
   options: {

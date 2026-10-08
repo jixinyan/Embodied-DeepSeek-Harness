@@ -12,7 +12,7 @@ import {
   nativeWorkerConfigurationSchema,
   validateNativeWorkerConfiguration,
 } from '../apps/server/src/native-worker-configuration.ts';
-import { readNativeWorkspaceConfiguration } from '../examples/deployments/native-workspace.mjs';
+import { readNativeWorkspaceConfiguration } from '../apps/server/src/native-workspace.mjs';
 
 const { values } = parseArgs({
   options: { config: { type: 'string' }, output: { type: 'string' } },
@@ -41,6 +41,8 @@ const sources = [
   resolve(root, 'apps/server/src/native-worker-configuration.ts'),
   resolve(root, 'apps/server/src/native-worker.ts'),
   resolve(root, 'examples/deployments/native-live.mjs'),
+  resolve(root, 'apps/server/src/native-deployment.mjs'),
+  resolve(root, 'apps/server/src/native-workspace.mjs'),
   resolve(root, 'scripts/check-native-scene-configuration.mjs'),
 ];
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');

@@ -10,11 +10,11 @@ import {
   createNativeDeploymentFactory,
   nativeDeploymentRoot,
   readNativeDeploymentConfiguration,
-} from '../examples/deployments/native-live.mjs';
+} from '../apps/server/src/native-deployment.mjs';
 import {
   createNativeWorkspaceFactory,
   readNativeWorkspaceConfiguration,
-} from '../examples/deployments/native-workspace.mjs';
+} from '../apps/server/src/native-workspace.mjs';
 
 const { values } = parseArgs({
   options: {

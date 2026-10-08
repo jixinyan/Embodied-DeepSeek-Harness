@@ -9,8 +9,8 @@ import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { setImmediate as nextTurn } from 'node:timers/promises';
 import { parseArgs, promisify } from 'node:util';
 import { ManagedServices, waitFor } from '../apps/server/src/managed-services.ts';
-import { readNativeWorkspaceConfiguration } from '../examples/deployments/native-workspace.mjs';
-import { nativeDeploymentRoot } from '../examples/deployments/native-live.mjs';
+import { readNativeWorkspaceConfiguration } from '../apps/server/src/native-workspace.mjs';
+import { nativeDeploymentRoot } from '../apps/server/src/native-deployment.mjs';
 
 const { values } = parseArgs({
   options: { workspace: { type: 'string' }, output: { type: 'string' } },
@@ -40,6 +40,8 @@ const sources = [
     'apps/server/src/console-process.ts',
     'examples/deployments/native-workspace.mjs',
     'examples/deployments/native-live.mjs',
+    'apps/server/src/native-deployment.mjs',
+    'apps/server/src/native-workspace.mjs',
     'scripts/check-service-startup-owner-offline.mjs',
   ].map((path) => resolve(nativeDeploymentRoot, path)),
 ];

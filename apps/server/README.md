@@ -6,6 +6,12 @@ the domain store and retained environment factories. Use the
 simulators, embodiments, checkpoints and model services through one Console.
 
 - [runtime.ts](src/runtime.ts): original DSH services and cooperative timeout policy.
+- [native-deployment.mjs](src/native-deployment.mjs): shared native configuration,
+  Team/profile admission, model/perception binding, managed-service leases and
+  policy/environment assembly for all four backends.
+- [native-workspace.mjs](src/native-workspace.mjs): multiple configured providers
+  in one Console, profile namespacing, shared model/perception admission and complete
+  service release. Example deployment files supply runnable entry points.
 - [application.ts](src/application.ts): role tools, task/verification/recovery coordination.
 - [native-worker.ts](src/native-worker.ts): retained native environment assembly,
   task-scoped backend ports, camera attachment storage and control-step frame events.

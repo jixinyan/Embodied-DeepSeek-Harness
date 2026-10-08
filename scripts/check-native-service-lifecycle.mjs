@@ -7,7 +7,7 @@ import {
   createNativeDeploymentFactory,
   nativeDeploymentRoot,
   readNativeDeploymentConfiguration,
-} from '../examples/deployments/native-live.mjs';
+} from '../apps/server/src/native-deployment.mjs';
 import { startServer } from '../apps/server/src/index.ts';
 
 const { values } = parseArgs({

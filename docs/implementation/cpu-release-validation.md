@@ -9,6 +9,15 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 ## Consolidated CPU campaign
 
+The production native deployment and workspace factories are owned by
+`apps/server/src/native-deployment.mjs` and `native-workspace.mjs`. After this
+source relocation, all twenty-six macOS CPU components pass under
+`.local/work/v1-native-deployment-ownership-20261008/`. The accompanying
+`source-relocation.json` verifies original exports, root resolution, exact moved
+logic and unchanged four-provider profiles/configuration. Formatting checks
+cover production and example MJS entries; workspace dependency checks include MJS
+sources. Native executable and CLI diagnostics hash the production owner files.
+
 [run-cpu-release-campaign.mjs](../../scripts/run-cpu-release-campaign.mjs) executes
 twenty-six existing source/production diagnostics sequentially and fails on the first
 unsuccessful component. Each component retains stdout, stderr and its original

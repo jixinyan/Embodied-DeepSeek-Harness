@@ -7,8 +7,8 @@ import { startServer } from '../apps/server/src/index.ts';
 import {
   createNativeWorkspaceFactory,
   readNativeWorkspaceConfiguration,
-} from '../examples/deployments/native-workspace.mjs';
-import { nativeDeploymentRoot } from '../examples/deployments/native-live.mjs';
+} from '../apps/server/src/native-workspace.mjs';
+import { nativeDeploymentRoot } from '../apps/server/src/native-deployment.mjs';
 
 const { values } = parseArgs({
   options: { config: { type: 'string' }, output: { type: 'string' } },

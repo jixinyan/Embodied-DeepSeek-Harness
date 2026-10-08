@@ -58,7 +58,7 @@ for (const { file, data } of manifests.values()) {
   }
   const sourceRoot = path.join(path.dirname(file), 'src');
   for await (const sourceFile of files(sourceRoot)) {
-    if (!sourceFile.endsWith('.ts')) continue;
+    if (!/\.(?:ts|mjs)$/.test(sourceFile)) continue;
     for (const match of (await readFile(sourceFile, 'utf8')).matchAll(
       /from ['"](@deepseek-ai\/[^'"/]+)(?:\/[^'"]+)?['"]/g,
     )) {

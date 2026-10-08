@@ -14,8 +14,11 @@ does not start a server, allocate an environment, or send model requests.
 
 Execute a selected module through `pnpm exec tsx --tsconfig tsconfig.runtime.json`
 with its path as the final argument. The named variable points to an actual JSON
-configuration. `native-live.mjs` contains the shared configuration loader and
-factory. The desktop launch configuration selects the same provider module as
+configuration. The shared configuration loader and factory belong to
+[native-deployment.mjs](../../apps/server/src/native-deployment.mjs); workspace
+composition belongs to [native-workspace.mjs](../../apps/server/src/native-workspace.mjs).
+The example entries select a provider and invoke those production modules.
+The desktop launch configuration selects the same provider module as
 `deployment`, supplies its environment file, and controls console port and data
 directory. See the [desktop launcher](../../apps/desktop/README.md).
 

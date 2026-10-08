@@ -8,8 +8,8 @@ import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { waitFor as waitWithSignal } from '../apps/server/src/managed-services.ts';
-import { readNativeWorkspaceConfiguration } from '../examples/deployments/native-workspace.mjs';
-import { nativeDeploymentRoot } from '../examples/deployments/native-live.mjs';
+import { readNativeWorkspaceConfiguration } from '../apps/server/src/native-workspace.mjs';
+import { nativeDeploymentRoot } from '../apps/server/src/native-deployment.mjs';
 
 const { values } = parseArgs({
   options: {
@@ -56,6 +56,8 @@ const sources = [
   resolve(nativeDeploymentRoot, 'apps/server/src/managed-services.ts'),
   resolve(nativeDeploymentRoot, 'examples/deployments/native-workspace.mjs'),
   resolve(nativeDeploymentRoot, 'examples/deployments/native-live.mjs'),
+  resolve(nativeDeploymentRoot, 'apps/server/src/native-deployment.mjs'),
+  resolve(nativeDeploymentRoot, 'apps/server/src/native-workspace.mjs'),
   resolve(nativeDeploymentRoot, 'scripts/check-native-startup-offline.mjs'),
   ...(selected ? [resolve(nativeDeploymentRoot, `examples/deployments/${entry}-live.mjs`)] : []),
 ];

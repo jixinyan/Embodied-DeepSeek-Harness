@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.96 · 2026-10-08
+Version: v1.97 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,11 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+Native provider and workspace assembly now belong to `apps/server/src`.
+Original module exports and four-provider profile data pass direct checks;
+all twenty-six macOS CPU components pass. Frozen Linux validation follows the
+committed refactor. Example entries retain their public startup paths.
 
 The consolidated native campaign must independently validate loaded-model and
 device behavior, original task success and complete installed workflows. On

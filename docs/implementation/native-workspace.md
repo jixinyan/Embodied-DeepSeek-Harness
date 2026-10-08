@@ -1,7 +1,8 @@
 # Native workspace deployment
 
-`examples/deployments/native-workspace.mjs` composes configured native deployments
-into one Console and workspace. Environment, embodiment, execution mode, checkpoint
+[native-workspace.mjs](../../apps/server/src/native-workspace.mjs) composes configured
+native deployments into one Console and workspace. Its runnable entry is
+`examples/deployments/native-workspace.mjs`. Environment, embodiment, execution mode, checkpoint
 and model selectors continue to resolve complete compatible launch profiles.
 Each profile retains its own trusted Team file and role directory, so R1Pro and
 arm-based environments can use different planning and verification prompts.

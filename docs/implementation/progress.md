@@ -1,8 +1,27 @@
 # Implementation progress
 
-Spec: v1.96. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.97. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 production deployment ownership
+
+Native provider configuration and factory assembly belong to
+`apps/server/src/native-deployment.mjs`; multi-provider workspace composition
+belongs to `apps/server/src/native-workspace.mjs`. Runnable example entries retain
+their default factory and CLI behavior. Proxy transport is an explicit Server
+dependency. Source checks include these production MJS files and every native
+deployment entry.
+
+All twenty-six configured CPU components pass on macOS, including four-provider
+readiness and twenty-five actual CLI startup/signal cases. Direct module checks
+verify identical exported function identities, repository root and original
+profile/configuration data. The relocated implementation matches its original
+source after the declared import/root and CLI-function changes. All 128 selected
+DSH files and 25 bindings remain unchanged. Evidence:
+`.local/work/v1-native-deployment-ownership-20261008/acceptance.json` and
+`source-relocation.json`. No model, environment, policy result or GPU executes.
+Frozen Linux validation and loaded native workflows retain their independent gates.
 
 ## 2026-10-08 native visual-context admission
 

@@ -9,7 +9,8 @@
     "node": ">=22.19.0"
   },
   "scripts": {
-    "check": "pnpm format:check && pnpm format:desktop && pnpm check:generated && pnpm check:role-workflows && pnpm check:provenance && pnpm typecheck && pnpm check:structure && pnpm check:python",
+    "check": "pnpm format:check && pnpm format:desktop && pnpm format:deployment && pnpm check:generated && pnpm check:role-workflows && pnpm check:provenance && pnpm typecheck && pnpm check:structure && pnpm check:python",
+    "format:deployment": "prettier --check apps/server/src/*.mjs examples/deployments/*.mjs",
     "generate:contracts": "node scripts/generate-contracts.mjs",
     "check:generated": "node scripts/generate-contracts.mjs --check",
     "check:contracts": "node scripts/generate-contracts.mjs --check && tsx --tsconfig tsconfig.runtime.json scripts/check-contracts.mjs",

@@ -9,8 +9,9 @@ production path from Session selection to native commands and formal verificatio
 
 | Change | Entry point |
 | --- | --- |
-| Compose configured native providers | [examples/deployments/native-workspace.mjs](../../examples/deployments/native-workspace.mjs) |
-| Bind one provider, Team and launch profile | [examples/deployments/native-live.mjs](../../examples/deployments/native-live.mjs) |
+| Compose configured native providers | [apps/server/src/native-workspace.mjs](../../apps/server/src/native-workspace.mjs) |
+| Bind one provider, Team and launch profile | [apps/server/src/native-deployment.mjs](../../apps/server/src/native-deployment.mjs) |
+| Launch the unified Console or a selected backend | [examples/deployments](../../examples/deployments/README.md) |
 | Start the HTTP/SSE application | [apps/server/src/http-server.ts](../../apps/server/src/http-server.ts) |
 | Own native CLI startup, signals and resource release | [apps/server/src/console-process.ts](../../apps/server/src/console-process.ts) |
 | Own shared model/policy service startup, readiness and leases | [apps/server/src/managed-services.ts](../../apps/server/src/managed-services.ts) |
