@@ -1,8 +1,9 @@
 # Development setup
 
 Use Node.js >=22.19.0, pnpm 11.19.0 and Python >=3.11. The Python source package
-uses `jsonschema` for boundary validation. The commands below install its pinned CPU
-dependencies. Checks prefer `.venv/bin/python`; `EDH_PYTHON` overrides the executable.
+uses `jsonschema` for boundary validation and Pillow for native PNG observation
+encoding. The commands below install its declared CPU dependencies. Checks prefer
+`.venv/bin/python`; `EDH_PYTHON` overrides the executable.
 
 ```sh
 pnpm install --frozen-lockfile

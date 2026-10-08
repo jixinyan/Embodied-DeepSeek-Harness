@@ -31,6 +31,9 @@ no simulator and invoke no model or policy inference. Full current-code native
 tasks, multi-goal completion and active-SDK interruption retain their actual
 acceptance requirements. Evolver remains paused and SceneState remains deferred.
 Commands and original artifacts: [CPU release validation](cpu-release-validation.md).
+The base Python package declares Pillow for the worker's PNG observation encoder,
+alongside boundary validation and resource locking dependencies. Model and SDK
+packages retain their configured optional dependency environments.
 
 ## 2026-10-07 CPU transport and service ownership
 

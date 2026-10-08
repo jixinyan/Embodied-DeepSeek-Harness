@@ -4,6 +4,8 @@ The checks exercise production configuration, journals, HTTP services and policy
 transport without starting models or simulators. Original record inspection
 preserves source hashes and identifies its acceptance scope. GPU task success
 continues to require the [native campaign](native-release-campaign.md).
+The base Python package includes Pillow for PNG observation encoding; WebSocket
+inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
 ## Policy transport
 
