@@ -1,8 +1,29 @@
 # Implementation progress
 
-Spec: v1.105. Current checkpoint: **source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.106. Current checkpoint: **checkpoint-bound action admission, source-bound CPU diagnostics, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 checkpoint-bound action admission
+
+Learned profiles bind the selected checkpoint digest into Worker initialization,
+ActionGate inference tickets and canonical request/response/segment metadata.
+Worker initialization confirms the same binding. JSON policy services obtain
+response identity from their verified artifact and reject a different or
+unidentified selection before inference. Client and Gate reject an unidentified
+or inconsistent response before reserving actions. Hybrid proposal requests use
+the selected lower-policy identity and validate its complete request scope.
+Direct model profiles use their selected model binding. Profile/Worker conflicts
+fail configuration admission before allocation.
+
+Thirty-three original-record/wire/Gate/actual-WebSocket checks and thirty-six
+four-provider configuration/factory/HTTP checks pass on macOS. Original request
+and action values, files and task outcomes remain unchanged. Actual transport
+checks return original admission/upstream failures without actions. Device owner,
+resource lease, listener and connections release; no model SDK, simulator or GPU
+starts. All twenty-eight CPU campaign components and full source checks pass.
+Evidence: `.local/work/v1-cpu-checkpoint-wire-macos-20261008/`.
+Current-source isolated Linux campaign verification is the next CPU check.
 
 ## 2026-10-08 configured checkpoint rollout identity
 

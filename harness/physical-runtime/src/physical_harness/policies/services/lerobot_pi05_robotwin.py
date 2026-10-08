@@ -55,7 +55,8 @@ async def main() -> None:
 
     try:
         async with await serve_policy(infer, validator, host=args.host, port=args.port,
-                                      timeout_s=args.timeout_s, start_serving=False) as server:
+                                      timeout_s=args.timeout_s, start_serving=False,
+                                      checkpoint_sha256=lambda: identity["checkpoint_digest"]) as server:
             identity = checkpoint_identity(args.checkpoint, root / "examples/policies/lerobot-pi05-robotwin.json",
                                            expected_sha256=args.checkpoint_sha256)
             from physical_harness.policies.lerobot_pi05_robotwin import LeRobotPi05RoboTwin

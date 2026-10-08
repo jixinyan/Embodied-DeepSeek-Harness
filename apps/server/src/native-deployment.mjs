@@ -193,11 +193,24 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
       .string()
       .regex(/^[a-f0-9]{64}$/)
       .optional()
-      .parse(entry.checkpointSha256);
+      .parse(
+        entry.checkpointSha256 === undefined
+          ? worker.policyCheckpointSha256
+          : entry.checkpointSha256,
+      );
+    if (
+      worker.policyCheckpointSha256 !== undefined &&
+      worker.policyCheckpointSha256 !== checkpointSha256
+    )
+      throw new Error('Native profile and Worker checkpoint identities differ.');
     const plannerModel = nonblank.parse(entry.plannerModel ?? defaultModel);
     if (!modelAliases.includes(plannerModel))
       throw new Error('Unknown native Planner model binding.');
     const mode = worker.executionMode ?? 'policy';
+    if (mode === 'direct' && checkpointSha256 !== undefined)
+      throw new Error('Direct model execution does not select a learned-policy checkpoint digest.');
+    if (mode === 'policy' && checkpointSha256 !== undefined)
+      worker.policyCheckpointSha256 = checkpointSha256;
     const serviceIds = serviceIdsSchema.parse([
       ...commonServiceIds,
       ...(provider === 'robodojo' ? serviceIdsSchema.parse(entry.serviceIds ?? []) : []),
@@ -399,7 +412,9 @@ async function openNativeEnvironment(settings, profile, models, services, signal
               propose: (request, signal) =>
                 requestPolicyProposal(
                   profile.entry.lowerPolicyUri,
-                  request,
+                  profile.checkpointSha256 === undefined
+                    ? request
+                    : { ...request, checkpoint_sha256: profile.checkpointSha256 },
                   settings.validator,
                   signal,
                 ),

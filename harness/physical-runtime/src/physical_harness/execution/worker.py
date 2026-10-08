@@ -26,6 +26,7 @@ from physical_harness.execution.resources import ResourceArbiter, ResourceBusy, 
 from physical_harness.execution.watchdog import ExecutionWatchdog
 from physical_harness.execution.policy_observation import encode_policy_observation
 from physical_harness.policies.client import WebSocketPolicyClient
+from physical_harness.policies.provenance import validate_checkpoint_sha256
 from physical_harness.validation import ContractValidator
 
 
@@ -51,6 +52,7 @@ class NativeWorkerSession:
         self._run_task_id: str | None = None
         self._seen_run_ids: set[str] = set()
         self._policy_uri: str | None = None
+        self._policy_checkpoint_sha256: str | None = None
         self._policy_id: str | None = None
         self._execution_mode = ExecutionMode.POLICY
         self._control_mode = "0-shot"
@@ -260,6 +262,10 @@ class NativeWorkerSession:
         self._policy_uri = arguments["policy_uri"]
         self._policy_id = arguments["policy_id"]
         self._execution_mode = ExecutionMode.parse(arguments.get("execution_mode", "policy"))
+        if "policy_checkpoint_sha256" in arguments:
+            self._policy_checkpoint_sha256 = validate_checkpoint_sha256(arguments["policy_checkpoint_sha256"])
+            if self._execution_mode is not ExecutionMode.POLICY:
+                raise ValueError("Native worker checkpoint identity requires learned-policy execution.")
         if not isinstance(self._policy_id, str) or not self._policy_id:
             raise ValueError("Native worker requires an explicit policy ID.")
         configuration = require_object(arguments["scene_configuration"])
@@ -338,6 +344,8 @@ class NativeWorkerSession:
             "native_task_id": self._native_task_id,
             "clock_id": self._clock_id,
             "policy_id": self._policy_id,
+            **({"policy_checkpoint_sha256": self._policy_checkpoint_sha256}
+               if self._policy_checkpoint_sha256 is not None else {}),
             "execution_mode": self._execution_mode.value,
             "supports_object_measurement": callable(getattr(self._environment, "measure_object", None)),
             "supports_simulator_inspection": self._simulator_inspection,
@@ -436,6 +444,7 @@ class NativeWorkerSession:
                 max_wall_time_s=request["budget"]["max_wall_time_s"],
                 lease_valid=self._execution_lease_valid, max_segment_actions=1,
                 max_policy_actions=self._policy_max_actions_per_inference,
+                checkpoint_sha256=self._policy_checkpoint_sha256,
                 observation_ttl_s=arguments.get("observation_ttl_s", 30),
                 device_timeout_s=arguments.get("device_timeout_s", 30),
                 on_segment=self._on_segment,

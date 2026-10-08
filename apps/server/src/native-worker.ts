@@ -61,6 +61,7 @@ interface WorkerDescription {
   rotation_axes: string[];
   clock_id: string;
   policy_id: string;
+  policy_checkpoint_sha256?: string;
   execution_mode: 'policy' | 'direct' | 'hybrid';
   task_instruction?: string | null;
   scene_metadata?: JsonObject | null;
@@ -947,6 +948,9 @@ export async function createNativeWorkerEnvironment(
         native_task_id: configuration.nativeTaskId,
         policy_uri: configuration.policyUri,
         policy_id: configuration.policyId,
+        ...(configuration.policyCheckpointSha256
+          ? { policy_checkpoint_sha256: configuration.policyCheckpointSha256 }
+          : {}),
         transport_write_timeout_s: transportWriteTimeoutS,
         execution_mode: configuration.executionMode ?? 'policy',
         scene_configuration: configuration.sceneConfiguration,
@@ -966,6 +970,7 @@ export async function createNativeWorkerEnvironment(
       description.provider !== configuration.provider ||
       description.native_task_id !== configuration.nativeTaskId ||
       description.policy_id !== configuration.policyId ||
+      description.policy_checkpoint_sha256 !== configuration.policyCheckpointSha256 ||
       description.execution_mode !== (configuration.executionMode ?? 'policy')
     )
       throw new Error('Native worker initialized a different provider or task.');

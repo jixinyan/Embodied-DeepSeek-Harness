@@ -10,6 +10,33 @@ label. Admission requires 64 lowercase hexadecimal characters before environment
 allocation. The prepared deployment, Console API, Session and run configuration
 retain that selected identity in immutable profile metadata.
 
+## Runtime admission
+
+Learned-policy profiles copy `checkpointSha256` into the Worker's
+`policyCheckpointSha256`. A directly authored Worker binding also supplies the
+profile identity; conflicting declarations fail configuration admission.
+Initialization transmits and confirms `policy_checkpoint_sha256` before execution.
+ActionGate retains that value through request creation and ordinary pause/resume.
+
+`PolicyRequest`, `ActionChunk` and `ActionSegment` accept optional
+`checkpoint_sha256`. A selected request requires an identified response with the
+same digest before client acceptance or Gate dispatch. The JSON service's
+`checkpoint_sha256` reader supplies its own verified artifact identity, admits
+requests before inference and publishes response identity. Native GR00T/LeRobot
+services use their computed digest; OpenPI uses the validated producer metadata.
+Missing or different service identity fails the request and releases its connection.
+
+Hybrid profiles use the digest on their lower-policy proposal request. The
+TypeScript proposal client checks its returned scope, action specification and
+checkpoint before review. Direct model profiles use the model binding and accept
+no learned-policy digest. Existing profiles without an explicit digest retain
+ordinary checkpoint/source validation and optional identified responses.
+
+The recorded reader verifies identified requests and native segments against
+the actual service artifact. Historical records retain their original fields.
+CPU inspection of declared selection metadata preserves original action values;
+loaded native inference and task success require their separate acceptance.
+
 ## Service selection
 
 | Service | Selected digest | Compatibility owner |
@@ -167,3 +194,9 @@ its saved normalization. Reports and independent summaries:
 These results establish configured reference selection and rejection boundaries.
 Custom-checkpoint inference and complete physical workflows require their native
 acceptance with actual selected artifacts.
+
+Current runtime-admission checks pass thirty-three original-record/wire/Gate and
+actual WebSocket cases plus thirty-six configuration/factory/HTTP cases within
+all twenty-eight macOS CPU components. They use original reference identities
+and declared invalid derivatives, perform no model inference or controls, and
+preserve source files. Evidence: `.local/work/v1-cpu-checkpoint-wire-macos-20261008/`.

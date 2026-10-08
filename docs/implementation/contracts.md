@@ -189,3 +189,10 @@ ActionReceipt and StopAcknowledgement. Shape checks are shared between TS/Python
 request identity, action dimension/bounds, generation/freshness and budget checks
 are exercised by the Python policy client and action gate. Consult the
 [adapter contract guide](model-policy-adapters.md) before connecting a worker.
+
+`PolicyRequest`, `ActionChunk` and `ActionSegment` accept optional
+`checkpoint_sha256`, a lowercase 64-character hexadecimal digest. When a request
+selects that identity, policy response validation and ActionGate require the same
+service-owned value before dispatch. Native profiles carry that selection through
+Worker initialization; hybrid proposal clients check it on the lower-policy
+response. See [checkpoint bindings](checkpoint-bindings.md).

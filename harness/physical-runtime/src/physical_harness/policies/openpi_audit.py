@@ -229,6 +229,8 @@ def task_sources(run: dict, request_directory: Path, bridge_directory: Path, bri
         bridge_request = json.loads((bridge_directory / f"{request_id}.request.json").read_text(encoding="utf-8"))
         inference = json.loads((bridge_directory / f"{request_id}.inference.json").read_text(encoding="utf-8"))
         validator.parse("PolicyRequest", request)
+        require("checkpoint_sha256" not in request or request["checkpoint_sha256"] == identity["checkpoint_sha256"],
+                "OpenPI worker request selects a different checkpoint.")
         require(request == bridge_request, "JSON bridge canonical PolicyRequest differs from the recorded worker request.")
         require(all(record[name] == inference[name] == request[name] for name in REQUEST_FIELDS),
                 "OpenPI inference identity differs from the actual worker and bridge requests.")
@@ -244,7 +246,8 @@ def task_sources(run: dict, request_directory: Path, bridge_directory: Path, bri
         require(len(admitted) == 1 and request["instruction"] == admitted[0]["instruction"],
                 "OpenPI task instruction differs from its admitted execution request.")
         response = {**{name: request[name] for name in (*REQUEST_FIELDS, "valid_until", "action_spec")},
-                    "schema_version": "physical.action_chunk.v1", "actions": actions}
+                    "schema_version": "physical.action_chunk.v1", "actions": actions,
+                    "checkpoint_sha256": identity["checkpoint_sha256"]}
         validate_response(validator, request, response)
         requests[request_id] = request
         inferences[request_id] = {**record, "actions": actions}

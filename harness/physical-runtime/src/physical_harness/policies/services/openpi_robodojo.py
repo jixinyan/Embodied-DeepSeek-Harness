@@ -48,7 +48,8 @@ async def main():
 
     try:
         async with await serve_policy(infer, validator, port=args.port, timeout_s=300,
-                                      start_serving=False) as server:
+                                      start_serving=False,
+                                      checkpoint_sha256=lambda: policy.metadata["checkpoint_sha256"]) as server:
             from physical_harness.policies.openpi_robodojo import OpenPiRoboDojoPolicy
             policy = OpenPiRoboDojoPolicy(args.native_policy_uri, args.checkpoint_sha256)
             await server.start_serving()

@@ -40,6 +40,10 @@ export const nativeWorkerConfigurationSchema = z
     schemaPath: nonblank,
     policyId: nonblank,
     policyUri: nativePolicyEndpointSchema.optional(),
+    policyCheckpointSha256: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
     executionMode: z.enum(['policy', 'direct', 'hybrid']).optional(),
     policyMaxActionsPerInference: z.number().int().min(1).max(512).optional(),
     monitorEveryActions: z.number().int().min(1).max(512).optional(),
@@ -61,6 +65,15 @@ export const nativeWorkerConfigurationSchema = z
   })
   .strict()
   .superRefine((configuration, context) => {
+    if (
+      configuration.policyCheckpointSha256 &&
+      (configuration.executionMode ?? 'policy') !== 'policy'
+    )
+      context.addIssue({
+        code: 'custom',
+        path: ['policyCheckpointSha256'],
+        message: 'Native worker checkpoint identity requires learned-policy execution.',
+      });
     if (configuration.enableSimulatorInspection && configuration.provider !== 'robodojo')
       context.addIssue({
         code: 'custom',

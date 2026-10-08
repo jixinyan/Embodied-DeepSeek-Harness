@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.105 · 2026-10-08
+Version: v1.106 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,15 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+Selected checkpoint identity reaches learned-policy requests and ActionGate
+admission. Services check their verified artifact before inference and identify
+responses. Hybrid lower-policy proposals validate selected identity and complete
+request scope. Thirty-three original-record/wire/Gate/WebSocket checks and
+thirty-six four-provider configuration/factory/HTTP checks pass within all
+twenty-eight macOS CPU components. Next CPU action: verify the current-source
+campaign on isolated Linux, including original record preservation and actual
+process release.
 
 Native profile admission retains `checkpointSha256` in immutable Console/Session/run
 metadata. GR00T/LeRobot telemetry retains complete checkpoint files, and rollout

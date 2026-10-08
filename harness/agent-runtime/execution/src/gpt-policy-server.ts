@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
+import { isDeepStrictEqual } from 'node:util';
 import type { IncomingMessage } from 'node:http';
 import { timingSafeEqual } from 'node:crypto';
 import { WebSocketServer, WebSocket } from 'ws';
@@ -272,6 +273,7 @@ export async function requestPolicyProposal(
   )
     throw new Error('Invalid lower-policy WebSocket endpoint.');
   signal.throwIfAborted();
+  validator.parse('PolicyRequest', request);
   const socket = new WebSocket(uri, {
     perMessageDeflate: false,
     maxPayload: 32 * 1024 * 1024,
@@ -302,7 +304,24 @@ export async function requestPolicyProposal(
     socket.send(
       JSON.stringify({ ...request, observation: { ...observation, execution_mode: 'policy' } }),
     );
-    return validator.parse('ActionChunk', await response);
+    const chunk = validator.parse('ActionChunk', await response);
+    for (const key of [
+      'request_id',
+      'execution_id',
+      'task_scope',
+      'generation',
+      'observation_id',
+      'valid_until',
+      'action_spec',
+    ] as const)
+      if (!isDeepStrictEqual(chunk[key], request[key]))
+        throw new Error(`Lower policy response has a mismatched ${key}.`);
+    if (
+      request.checkpoint_sha256 !== undefined &&
+      chunk.checkpoint_sha256 !== request.checkpoint_sha256
+    )
+      throw new Error('Lower policy response does not identify the selected checkpoint.');
+    return chunk;
   } finally {
     signal.removeEventListener('abort', abort);
     socket.terminate();

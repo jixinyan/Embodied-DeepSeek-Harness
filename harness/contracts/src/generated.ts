@@ -485,6 +485,7 @@ export interface PolicyRequest {
   observation_id: string;
   valid_until: string;
   action_spec: ActionSpec;
+  checkpoint_sha256?: string;
   instruction: string;
   observation: {
     [k: string]: unknown;
@@ -500,6 +501,7 @@ export interface ActionChunk {
   observation_id: string;
   valid_until: string;
   action_spec: ActionSpec;
+  checkpoint_sha256?: string;
   /**
    * @minItems 1
    * @maxItems 512
@@ -529,6 +531,7 @@ export interface ActionSegment {
   observation_id: string;
   valid_until: string;
   action_spec: ActionSpec;
+  checkpoint_sha256?: string;
   /**
    * @minItems 1
    * @maxItems 512

@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from physical_harness.validation import ContractValidator
 from physical_harness.policies.client import validate_response
+from physical_harness.policies.provenance import validate_checkpoint_sha256
 
 
 class GateRejected(RuntimeError):
@@ -30,7 +31,7 @@ class ActionGate:
                  max_segment_actions: int = 1, observation_ttl_s: float = 2,
                  device_timeout_s: float = 10, clock: Callable[[], float] = time.monotonic,
                  on_segment: Callable[[dict[str, Any], dict[str, Any]], Awaitable[None]] | None = None,
-                 max_policy_actions: int = 512) -> None:
+                 max_policy_actions: int = 512, checkpoint_sha256: str | None = None) -> None:
         validator.parse("ActionSpec", action_spec)
         validator.parse("ExecutionScope", task_scope)
         if type(max_control_steps) is not int or not 0 < max_control_steps <= 9007199254740991:
@@ -46,6 +47,8 @@ class ActionGate:
         self._budget, self._wall_budget = max_control_steps, max_wall_time_s
         self._lease, self._segment = lease_valid, max_segment_actions
         self._max_policy_actions = max_policy_actions
+        self._checkpoint_sha256 = (validate_checkpoint_sha256(checkpoint_sha256)
+                                   if checkpoint_sha256 is not None else None)
         self._ttl, self._device_timeout, self._clock = observation_ttl_s, device_timeout_s, clock
         self._on_segment = on_segment
         self._started = clock()
@@ -109,6 +112,8 @@ class ActionGate:
             "instruction": instruction, "observation": copy.deepcopy(observation),
             "max_actions": min(self._max_policy_actions, self._budget - self._reserved),
         }
+        if self._checkpoint_sha256 is not None:
+            request["checkpoint_sha256"] = self._checkpoint_sha256
         self._validator.parse("PolicyRequest", request)
         self._deadline, self._ticket = deadline, request
         return copy.deepcopy(request)

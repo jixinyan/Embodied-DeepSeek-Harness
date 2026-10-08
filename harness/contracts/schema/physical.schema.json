@@ -2884,6 +2884,10 @@
         "action_spec": {
           "$ref": "#/$defs/ActionSpec"
         },
+        "checkpoint_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$(?![\\s\\S])"
+        },
         "instruction": {
           "type": "string",
           "minLength": 1,
@@ -2949,6 +2953,10 @@
         },
         "action_spec": {
           "$ref": "#/$defs/ActionSpec"
+        },
+        "checkpoint_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$(?![\\s\\S])"
         },
         "actions": {
           "type": "array",
@@ -3101,6 +3109,10 @@
         },
         "action_spec": {
           "$ref": "#/$defs/ActionSpec"
+        },
+        "checkpoint_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$(?![\\s\\S])"
         },
         "actions": {
           "type": "array",

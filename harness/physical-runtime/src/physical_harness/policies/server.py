@@ -13,13 +13,15 @@ from typing import Any, Awaitable, Callable
 from physical_harness.validation import ContractValidator
 from physical_harness.execution.modes import ExecutionMode, normalize_mode_response
 from .client import JsonPolicyCodec, validate_response
+from .provenance import validate_checkpoint_sha256
 
 
 async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[float]] | dict[str, Any]]],
                        validator: ContractValidator, *, host: str = "127.0.0.1", port: int = 0,
                        api_key: str | None = None, timeout_s: float = 30,
                        max_bytes: int = 32 * 1024 * 1024, ssl: Any = None,
-                       start_serving: bool = True) -> Any:
+                       start_serving: bool = True,
+                       checkpoint_sha256: Callable[[], str] | None = None) -> Any:
     """Return a websockets Server; caller closes it and awaits wait_closed during shutdown."""
     from websockets.asyncio.server import serve
     from websockets.exceptions import ConnectionClosed
@@ -29,6 +31,8 @@ async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[flo
         raise ValueError("Configured policy key must not be empty.")
     if type(start_serving) is not bool:
         raise ValueError("Policy connection admission must be a boolean.")
+    if checkpoint_sha256 is not None and not callable(checkpoint_sha256):
+        raise ValueError("Policy checkpoint identity requires its service-owned reader.")
     codec = JsonPolicyCodec()
 
     def authenticate(connection: Any, request: Any) -> Any:
@@ -44,6 +48,9 @@ async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[flo
                 validator.parse("PolicyRequest", request)
                 validator.parse("ActionSpec", request["action_spec"])
                 request_id = request["request_id"]
+                identity = validate_checkpoint_sha256(checkpoint_sha256()) if checkpoint_sha256 is not None else None
+                if "checkpoint_sha256" in request and request["checkpoint_sha256"] != identity:
+                    raise ValueError("Policy request selects a different or unidentified checkpoint.")
                 async with asyncio.timeout(timeout_s):
                     result = await infer(copy.deepcopy(request))
                 mode = ExecutionMode.parse(
@@ -53,12 +60,20 @@ async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[flo
                 if isinstance(result, dict):
                     # 服务端和客户端分别检查 execution mode 的响应内容。
                     response = copy.deepcopy(result)
+                    if identity is not None:
+                        if "checkpoint_sha256" in response and response["checkpoint_sha256"] != identity:
+                            raise ValueError("Policy response changed its service checkpoint identity.")
+                        response["checkpoint_sha256"] = identity
                     validate_response(validator, request, normalize_mode_response(response, request, mode))
                 else:
                     response = {key: copy.deepcopy(request[key]) for key in (
                         "request_id", "execution_id", "task_scope", "generation", "observation_id", "valid_until", "action_spec")}
                     response.update(schema_version="physical.action_chunk.v1", actions=result)
+                    if identity is not None:
+                        response["checkpoint_sha256"] = identity
                     validate_response(validator, request, response)
+                if identity is not None and response.get("checkpoint_sha256") != identity:
+                    raise ValueError("Policy response changed its service checkpoint identity.")
                 encoded = json.dumps(response, allow_nan=False)
                 if len(encoded.encode("utf-8")) > max_bytes:
                     raise ValueError("Policy response too large.")

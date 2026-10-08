@@ -61,6 +61,7 @@ for (const { id, settings: deployment } of settings.deployments) {
     ['non-digest', 'invalid'],
     ['uppercase', 'A'.repeat(64)],
     ['non-string', 12],
+    ['null', null],
   ]) {
     const copy = structuredClone(document);
     if (provider === 'robodojo')
@@ -90,9 +91,43 @@ for (const { id, settings: deployment } of settings.deployments) {
     [variables[provider]]: selectedPath,
     EDH_MODEL_CONFIG: resolve(directory, settings.configuration.modelConfiguration),
   });
-  assert.deepEqual(Object.keys(admitted.profiles), Object.keys(deployment.profiles));
-  for (const profile of Object.values(admitted.profiles))
+  const readCopy = async (copy, name) => {
+    const path = resolve(output, `${id}.${name}.configuration.json`);
+    await writeFile(path, `${JSON.stringify(copy, null, 2)}\n`, { flag: 'wx' });
+    return readNativeDeploymentConfiguration(provider, {
+      ...process.env,
+      [variables[provider]]: path,
+      EDH_MODEL_CONFIG: resolve(directory, settings.configuration.modelConfiguration),
+    });
+  };
+  const entries = (copy) => (provider === 'robodojo' ? Object.values(copy.profiles) : [copy]);
+  const malformedWorker = structuredClone(selected);
+  for (const profile of entries(malformedWorker)) profile.worker.policyCheckpointSha256 = 'invalid';
+  await assert.rejects(
+    readCopy(malformedWorker, 'invalid-worker-digest'),
+    (error) => error.name === 'ZodError',
+  );
+  cases.push({ name: `${id}.invalid-worker-digest`, result: 'rejected' });
+  const conflict = structuredClone(selected);
+  for (const profile of entries(conflict)) profile.worker.policyCheckpointSha256 = '0'.repeat(64);
+  await assert.rejects(readCopy(conflict, 'conflicting-worker-digest'), {
+    message: 'Native profile and Worker checkpoint identities differ.',
+  });
+  cases.push({ name: `${id}.conflicting-worker-digest`, result: 'rejected' });
+  const inherited = structuredClone(selected);
+  for (const profile of entries(inherited)) {
+    delete profile.checkpointSha256;
+    profile.worker.policyCheckpointSha256 = digests[provider];
+  }
+  const inheritedSettings = await readCopy(inherited, 'worker-digest-selection');
+  for (const profile of Object.values(inheritedSettings.profiles))
     assert.equal(profile.checkpointSha256, digests[provider]);
+  cases.push({ name: `${id}.worker-digest-selection`, result: 'passed' });
+  assert.deepEqual(Object.keys(admitted.profiles), Object.keys(deployment.profiles));
+  for (const profile of Object.values(admitted.profiles)) {
+    assert.equal(profile.checkpointSha256, digests[provider]);
+    assert.equal(profile.worker.policyCheckpointSha256, digests[provider]);
+  }
   deployment.profiles = admitted.profiles;
 }
 const schema = resolve(nativeDeploymentRoot, 'harness/contracts/schema/physical.schema.json');
@@ -174,6 +209,9 @@ for (const file of [
   'apps/server/src/deployment.ts',
   'apps/server/src/native-deployment.mjs',
   'apps/server/src/native-workspace.mjs',
+  'apps/server/src/native-worker-configuration.ts',
+  'apps/server/src/native-worker.ts',
+  'harness/agent-runtime/execution/src/gpt-policy-server.ts',
   'scripts/check-checkpoint-profiles-offline.mjs',
 ]) {
   const path = resolve(nativeDeploymentRoot, file);

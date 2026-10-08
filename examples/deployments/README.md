@@ -107,6 +107,15 @@ service on the server's host; external/cloud endpoints retain their ordinary mod
 and policy configuration. Configuration owns host paths, environments and device
 selection. An occupied endpoint prevents managed startup.
 
+Optional profile `checkpointSha256` identifies the selected learned artifact and
+binds it to actual policy request/action admission. The native learned Worker
+receives `policyCheckpointSha256`; conflicting profile/Worker identities fail
+before allocation. Hybrid profiles apply the digest to lower-policy proposals.
+Direct model profiles use their model binding. Configure the same digest in the
+selected service's command arguments. See
+[checkpoint binding](../../docs/implementation/checkpoint-bindings.md) for hashing,
+wire fields and loaded-model acceptance requirements.
+
 `GET /api/services` and the console's service panel show lifecycle state, lease
 count, process ID and failure information. Commands, environment variables and
 readiness credentials remain private. An unexpected process exit interrupts its

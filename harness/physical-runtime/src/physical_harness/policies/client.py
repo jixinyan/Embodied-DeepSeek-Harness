@@ -62,6 +62,8 @@ def validate_response(validator: ContractValidator, request: dict[str, Any], res
     for key in ("request_id", "execution_id", "task_scope", "generation", "observation_id", "valid_until", "action_spec"):
         if response[key] != request[key]:
             raise PolicyProtocolError(f"Policy response has a mismatched {key}.")
+    if "checkpoint_sha256" in request and response.get("checkpoint_sha256") != request["checkpoint_sha256"]:
+        raise PolicyProtocolError("Policy response does not identify the selected checkpoint.")
     if len(response["actions"]) > request["max_actions"]:
         raise PolicyProtocolError("Policy response exceeds the requested action budget.")
     channels = request["action_spec"]["channels"]

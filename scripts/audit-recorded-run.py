@@ -432,6 +432,8 @@ def conventional_policy_sources(run, request_directory, service_log, policy_mani
     for request_id, record in inferences.items():
         request = json.loads((request_directory / f"{request_id}.json").read_text(encoding="utf-8"))
         validator.parse("PolicyRequest", request)
+        require("checkpoint_sha256" not in request or request["checkpoint_sha256"] == digest,
+                "Learned worker request selects a different checkpoint.")
         require(request["action_spec"]["embodiment_id"] == embodiment_id,
                 "The native PolicyRequest differs from its pinned learned embodiment.")
         admitted = [item for item in run["requests"] if all(
@@ -540,6 +542,11 @@ def audit_learned_policy(run, events, samples, request_directory, service_log, p
                 "Actual native receipt recording has an unsupported schema.")
         segment, receipt = recorded["segment"], recorded["receipt"]
         validator.parse("ActionSegment", segment)
+        if "checkpoint_sha256" in request or "checkpoint_sha256" in segment:
+            checkpoint = inferences[request_id].get("checkpoint_digest", inferences[request_id].get("checkpoint_sha256"))
+            require(segment.get("checkpoint_sha256") == checkpoint and
+                    ("checkpoint_sha256" not in request or request["checkpoint_sha256"] == checkpoint),
+                    "Native action segment does not identify its actual learned checkpoint.")
         validator.parse("ActionReceipt", receipt)
         require(all(segment[key] == request[key] for key in
                     ("request_id", "execution_id", "task_scope", "generation", "observation_id", "valid_until", "action_spec")) and

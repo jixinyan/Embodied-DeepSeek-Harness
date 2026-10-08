@@ -50,6 +50,13 @@ GR00T/LeRobot and native OpenPI services support an explicit selected
 retain actual file identity and mandatory provider-specific compatibility checks.
 See [checkpoint selection and CPU checks](../../../../../docs/implementation/checkpoint-bindings.md).
 
+`serve_policy` accepts an optional service-owned `checkpoint_sha256` reader. Native
+JSON entries bind that reader to their verified artifact. Requests with a selected
+digest require the same service identity before inference; responses identify the
+artifact through `checkpoint_sha256`. The policy client and ActionGate require
+that identity before accepting actions. The reader runs after argument/wire
+admission and preserves delayed connection admission during model initialization.
+
 ## Inference ownership
 
 [`client.py`](client.py) owns one connection-close operation and one client

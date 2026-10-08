@@ -54,7 +54,8 @@ async def main() -> None:
 
     try:
         async with await serve_policy(infer, validator, host=args.host, port=args.port,
-                                      timeout_s=120, start_serving=False) as server:
+                                      timeout_s=120, start_serving=False,
+                                      checkpoint_sha256=lambda: identity["checkpoint_digest"]) as server:
             identity = checkpoint_identity(args.checkpoint, root / "examples/policies/gr00t-n1d6-robocasa.json",
                                            expected_sha256=args.checkpoint_sha256)
             from physical_harness.policies.gr00t_n1d6_robocasa import Gr00tN1d6RoboCasa
