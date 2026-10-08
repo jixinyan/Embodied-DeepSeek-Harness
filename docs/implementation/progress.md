@@ -15,6 +15,13 @@ profiles retain `policyUri` issues with zero Worker starts; the forty-eight scen
 rejections and snapshot checks continue to pass.
 See [diagnostic entry validation](cpu-release-validation.md#native-diagnostic-entries).
 
+Committed `9d15198` also passes all affected checks in isolated Linux: complete
+source/type/provenance checks, four-provider readiness, 108 preallocation
+rejections, both RoboCasa CLI ownership checks and nine client process cases.
+Original inputs and executable source hashes match their macOS reports; the
+canonical remote checkout retains its exact before/after status. GPU/provider
+task acceptance remains reserved for the consolidated native campaign.
+
 Native transport admits bounded operations and finite JSON arguments before
 serialization or request ownership. Nine actual CPU client cases pass, including
 twelve unsupported argument values and seven invalid operation values with the

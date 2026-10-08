@@ -190,6 +190,18 @@ fragment checks. The same invocation preserves its forty-eight finite-scene
 rejections and admitted snapshot checks. Evidence:
 `.local/work/v1-endpoint-scene-admission-20261008/acceptance.json`.
 
+Frozen `9d15198` passes full project checks with all nine TypeScript diagnostics,
+the forty-eight scene and sixty endpoint rejections, four-provider Console
+readiness, both actual RoboCasa entry failures and all nine client process cases
+on isolated Linux. Every scene/error result and all twelve CLI/client source
+hashes match the macOS reports. Original scene/deployment/implementation hashes
+also match; only private workspace path references change. Canonical server
+checkout status is unchanged. No GPU/model/simulator work executes. The verified
+summary and reports are under
+`.local/work/v1-cpu-source-20261008/linux-diagnostic-entry/`.
+Archive SHA-256:
+`f77af3406c326a926aaee558f77ed5cf8bc020219556818a548896177f9df57a`.
+
 ## Native context and scope ownership
 
 Selected DSH `token-meter` source belongs to `harness/agent-runtime/memory`,
