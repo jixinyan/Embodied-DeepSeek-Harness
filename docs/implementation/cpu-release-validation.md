@@ -7,6 +7,46 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Consolidated CPU campaign
+
+[run-cpu-release-campaign.mjs](../../scripts/run-cpu-release-campaign.mjs) executes
+sixteen existing source/production diagnostics sequentially and fails on the first
+unsuccessful component. Each component retains stdout, stderr and its original
+report; `completed.json` retains completed components even after a later failure.
+The final `acceptance.json` records original-input hashes, diagnostic source hashes
+and every original report digest. Source and input hashes are rechecked after
+each component. Output requires a new directory beneath ignored `.local/work`.
+
+Use the [configuration example](../../examples/deployments/cpu-release.example.json)
+with actual original inputs. Paths resolve relative to that configuration. The
+Python executable preserves its virtual-environment symlink and requires the base
+package plus `policy`, `diagnostics`, `recording` and `robodojo` extras. Node/pnpm
+use the project's installed dependencies. The process/group checks require POSIX.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/run-cpu-release-campaign.mjs \
+  --config /absolute/path/cpu-release.json \
+  --output .local/work/<new-cpu-campaign>
+```
+
+The required workspace contains actual model/provider/Team configuration. The
+worker configuration is an original native deployment; the canonical policy
+request uses RoboDojo dual ARX X5 scope. Policy transport takes its own original
+request and policy audit journal. Each original Agent journal must contain at
+least one completed native assignment with three image-bearing surface groups,
+an actual three-view user message and an actual text input. No record is generated
+to satisfy an input requirement. Original journals are copied before writable
+readers inspect them. All child commands receive CUDA invisibility and CPU-only
+diagnostics; readiness allocates no provider and registers no successful response.
+
+On 2026-10-08, the current macOS source passes all sixteen components, including
+85 process/wire/resource cases, six native visual-context cases, twelve original
+native context reads and four-provider readiness. All original inputs retain their
+hashes. There are no model calls, policy results, simulator allocations or controls.
+Evidence: `.local/work/v1-cpu-release-campaign-20261008-01/acceptance.json`.
+Loaded-model/device behavior and original task completion retain the
+[native campaign](native-release-campaign.md) requirements.
+
 ## ActionGate stop ownership
 
 [action_gate.py](../../harness/physical-runtime/src/physical_harness/execution/action_gate.py)

@@ -19,6 +19,22 @@ error. Original tools are never replayed and no model, policy, simulator or GPU
 executes. Sources, events and scope:
 [visual-context validation](cpu-release-validation.md#native-visual-context-admission).
 
+## 2026-10-08 consolidated CPU campaign
+
+One configuration-driven command executes sixteen existing source and production
+diagnostics. Every component retains original stdout/stderr and its report; the
+campaign checks original input/source hashes after each component and publishes
+its final report only after all components pass. It preserves partial completed
+work on failure. Outputs require a new ignored directory, actual native requests,
+journals and configured workspace bindings. Python paths preserve isolated
+environment identity and all child diagnostics run with CUDA invisible.
+
+The macOS campaign passes 85 process/wire/resource cases, six native visual-context
+cases, twelve original context reads, all project checks and actual four-provider
+readiness. No model, policy result, simulator or control is supplied.
+Evidence: `.local/work/v1-cpu-release-campaign-20261008-01/acceptance.json`.
+See [campaign command and inputs](cpu-release-validation.md#consolidated-cpu-campaign).
+
 ## 2026-10-08 managed service startup ownership
 
 Managed service release waits for its leader and complete owned process group.

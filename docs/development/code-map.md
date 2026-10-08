@@ -73,6 +73,7 @@ implementations load in their separately configured service processes.
 | Read actual run updates | [run-update.js](../../apps/console/public/run-update.js) |
 | Configure and start the desktop launcher | [apps/desktop](../../apps/desktop/README.md) |
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |
+| Execute the configured CPU diagnostic campaign | [run-cpu-release-campaign.mjs](../../scripts/run-cpu-release-campaign.mjs) |
 | Verify image-group retention and budget rejection through the native loop | [check-recorded-visual-context.mjs](../../scripts/check-recorded-visual-context.mjs) |
 | Validate configured native scenes and policy endpoints before allocation | [check-native-scene-configuration.mjs](../../scripts/check-native-scene-configuration.mjs) |
 | Verify native owner-thread drain, cancellation and concurrent closure without an SDK allocation | [check-native-device-owner-offline.py](../../scripts/check-native-device-owner-offline.py) |

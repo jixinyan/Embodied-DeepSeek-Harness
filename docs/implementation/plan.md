@@ -200,6 +200,9 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 
 1. Run full source, schema, role, provenance, dependency and Python checks,
    including all TypeScript diagnostic entries and configured endpoint admission.
+   The [consolidated CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign)
+   runs source checks, real process/transport owners, original contexts and readiness
+   from one explicit original-input configuration.
 2. Exercise actual worker processes, original request recording, WebSocket transport,
    inference-thread ownership, scoped failure records and cleanup.
 3. Inspect original native model schemas, plans, role histories and context projections.

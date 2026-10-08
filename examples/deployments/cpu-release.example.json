@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "edh.cpu_release.v1",
+  "python": "/absolute/path/isolated-environment/bin/python",
+  "workspace": "/absolute/path/native-workspace.json",
+  "workerConfiguration": "/absolute/path/original-native-worker-deployment.json",
+  "policyRequest": "/absolute/path/original-robodojo-policy-request.json",
+  "transportRequest": "/absolute/path/original-transport-policy-request.json",
+  "policyTelemetry": "/absolute/path/original-policy-audits/events.jsonl",
+  "journalDirectories": [
+    "/absolute/path/original-native-journal",
+    "/absolute/path/another-original-native-journal"
+  ]
+}
