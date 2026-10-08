@@ -246,6 +246,21 @@ await reject(
   '{"id":"nan","op":"close","args":{"value":NaN}}\n',
   /nonfinite JSON constant/,
 );
+await reject(
+  'overflowing-json-number',
+  '{"id":"overflow","op":"close","args":{"value":1e400}}\n',
+  /nonfinite JSON number/,
+);
+await reject(
+  'duplicate-json-identity',
+  '{"id":"original","id":"replacement","op":"close","args":{}}\n',
+  /duplicate JSON field/,
+);
+await reject(
+  'duplicate-json-argument',
+  '{"id":"nested","op":"close","args":{"scope":{"task_id":"a","task_id":"b"}}}\n',
+  /duplicate JSON field/,
+);
 await reject('invalid-utf8', Buffer.from([255, 10]), /UnicodeDecodeError/);
 await reject('missing-identity', '{"op":"close"}\n', /Invalid native worker request envelope/);
 await reject('nonobject-envelope', '[]\n', /Invalid native worker request envelope/);

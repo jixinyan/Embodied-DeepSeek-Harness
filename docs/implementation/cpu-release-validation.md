@@ -43,6 +43,10 @@ headers. Evidence: `.local/work/v1-tool-schemas-cpu-20261008-final/acceptance.js
 Original task histories `ef8f9d03`, `686c9767` and `7dfb663e` preserve ten accepted
 object-valued plan writes, eight rejected string-valued writes and thirteen
 read-only templates. Their new private journals are under `.local/checks/recorded-plans-*`.
+The plan reader also applies production TaskGoals admission before each original
+plan write and checks all seven original execution requests against the preceding
+committed plan, ready dependencies, owner, per-goal attempt limit, criteria,
+entities, capabilities and budget. Event/run source hashes remain unchanged.
 These checks establish CPU schema/record behavior. Current-code model-driven
 multi-goal and simulator completion require their actual native acceptance.
 
@@ -114,11 +118,13 @@ pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-worker-host-offline
 The first check starts actual EDH worker subprocesses with CUDA invisible. It
 verifies 24 scoped responses, 20 batched close requests, task-identity rejection,
 unknown-operation and invalid-argument errors, enabled diagnostics, the exact
-32-MiB input boundary, oversized input, invalid UTF-8/JSON/constants, malformed
+32-MiB input boundary, oversized input, invalid UTF-8/JSON/constants, overflowing
+numeric values, duplicate JSON fields at envelope/nested argument levels, malformed
 envelopes, duplicate active identities and a disconnected response channel.
 Failure cases retain an open input pipe until the worker exits independently.
 Every child reaches process close without forced termination or an unobserved
 Task/Future exception. Source hashes and original stderr remain preserved.
+JSON decoding uses the standard library's object/number validation hooks.
 
 The host check reads an original configured BEHAVIOR or RoboTwin deployment and
 uses the production TypeScript environment factory and native transport. Its CPU
@@ -137,6 +143,13 @@ rejection and transport checks in
 `.local/work/v1-policy-recording-cpu-20261008-final/`.
 Active native SDK interruption and physical stopping retain their separate
 actual-environment acceptance requirements.
+
+The expanded sixteen-case check passes locally on 2026-10-08, including decimal
+overflow and both duplicate-field cases, in
+`.local/work/v1-worker-json-cpu-20261008/acceptance.json`. Invalid input terminates
+the actual Worker while the caller retains its input pipe; all sixteen children
+close at the process boundary without forced signals or unobserved exceptions.
+No native environment, model inference or controls are allocated.
 
 The host connection implementation is
 `apps/server/src/native-worker-transport.ts`. It owns worker pipes, pending requests,

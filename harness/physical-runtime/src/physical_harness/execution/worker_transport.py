@@ -36,11 +36,28 @@ def _nonfinite_constant(value: str) -> None:
     raise ValueError(f"Native worker request contains a nonfinite JSON constant: {value}.")
 
 
+def _finite_float(value: str) -> float:
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("Native worker request contains a nonfinite JSON number.")
+    return number
+
+
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for name, value in pairs:
+        if name in result:
+            raise ValueError("Native worker request contains a duplicate JSON field.")
+        result[name] = value
+    return result
+
+
 def _request(line: bytes) -> dict[str, Any]:
     payload = line.removesuffix(b"\n").removesuffix(b"\r")
     if len(payload) > MAX_MESSAGE_BYTES:
         raise ValueError("Native worker request exceeds the transport bound.")
-    message = json.loads(payload.decode("utf-8"), parse_constant=_nonfinite_constant)
+    message = json.loads(payload.decode("utf-8"), parse_constant=_nonfinite_constant,
+                         parse_float=_finite_float, object_pairs_hook=_unique_object)
     if (type(message) is not dict or set(message) - {"id", "op", "args"}
             or not {"id", "op"} <= set(message)):
         raise ValueError("Invalid native worker request envelope.")

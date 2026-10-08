@@ -6,6 +6,20 @@ remains in Git. [Capability map](features.md) separates working code from target
 
 ## 2026-10-08 tool ownership and scoped parameters
 
+The original-plan reader verifies seven actual execution admissions across three
+native histories through TaskGoals and TaskPlans. Each request retains its
+preceding committed plan, admitted criteria/budget/entities/capabilities, decision
+owner and unique attempt identity. Per-goal execution limits remain enforced and
+both original event/run hashes remain unchanged. These source inspections perform
+no model inference or physical execution.
+
+Actual Worker process checks now cover sixteen cases, including duplicate JSON
+fields at envelope and nested argument levels and decimal numeric overflow.
+Standard-library JSON hooks reject them before operation dispatch. Each child
+reaches process close without forced signals or an unobserved exception; no
+environment or model is allocated. Evidence:
+`.local/work/v1-worker-json-cpu-20261008/acceptance.json`.
+
 `harness/agent-runtime/tools/src/model-schema.ts` prepares model-visible parameters
 and canonical schema projection alongside the logical core definitions. Application
 assembly, role checks and original plan readers consume its public exports. The
