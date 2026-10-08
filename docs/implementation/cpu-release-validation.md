@@ -83,6 +83,19 @@ rejection and transport checks in
 Active native SDK interruption and physical stopping retain their separate
 actual-environment acceptance requirements.
 
+The same 13 process cases and both TypeScript host checks also pass on `jd_B300`
+with Python 3.12.14, Node 24.21.0 and pnpm 11.19.0. The frozen `feb8cc9` source
+is installed in its own CPU Python environment and its own frozen-lockfile Node
+workspace. Full `pnpm check` passes: 58 Python files, 19 base modules, 128 pinned
+DSH files, 25 source bindings, 10 Teams, 36 core tool descriptions and 850 local
+documentation links. CUDA is invisible throughout; no SDK environment is allocated.
+Source and outputs are under
+`.local/work/v1-cpu-source-20261008-final/source/` on that host. The retained
+`cpu-evidence.tar.gz` SHA-256 is
+`50a3b2ab28b0718381405f917308369f5c9a10a654489bcc8abd700e661255f0`.
+The archive includes original process stderr, host/source hashes, complete check
+output and the installed Python dependency versions.
+
 ## Managed foreground service
 
 The production service manager supports an actual foreground service with its

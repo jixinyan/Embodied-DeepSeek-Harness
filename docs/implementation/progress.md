@@ -34,6 +34,12 @@ Commands and original artifacts: [CPU release validation](cpu-release-validation
 The base Python package declares Pillow for the worker's PNG observation encoder,
 alongside boundary validation and resource locking dependencies. Model and SDK
 packages retain their configured optional dependency environments.
+The same process/host checks and full `pnpm check` also pass on Linux using frozen
+source `feb8cc9`, Python 3.12.14, Node 24.21.0 and pnpm 11.19.0. Python and Node
+dependencies are installed in isolated CPU/source environments. The original
+server checkout remains unchanged; only its remote Git references are refreshed.
+The source-bound archive retains stderr, source hashes, check output and installed
+dependencies. CUDA remains invisible, with zero model or simulator allocation.
 
 ## 2026-10-07 CPU transport and service ownership
 
