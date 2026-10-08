@@ -14,12 +14,8 @@ export interface ModelBinding {
   readonly adapter: LlmAdapter;
 }
 
-/**
- * Assemble the pinned DSH services for the Step 00 host experiment.
- * The caller owns the returned context and must await ctx.fiber.dispose().
- * No default tools, role prompts, physical services or network server are mounted.
- * This context is a trusted host API, not an interface exposed to model tools.
- */
+// 组装原始 DSH 服务；调用方通过 ctx.fiber.dispose() 释放 host。
+// 部署服务负责提供模型、role、tools 和 physical provider。
 export async function createDshHost(
   bindings: readonly ModelBinding[],
   contextManagement?: ContextManagementOptions,

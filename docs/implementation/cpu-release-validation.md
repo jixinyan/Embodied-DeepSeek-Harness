@@ -7,6 +7,47 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Native context and scope ownership
+
+Selected DSH `token-meter` source belongs to `harness/agent-runtime/memory`,
+alongside its context installer and compaction services. Native registration
+scope primitives belong to `harness/agent-runtime/foundation`, shared by Agents,
+Sessions and tools. Their original import names and all selected source hashes
+remain unchanged. Type aliases, provenance destinations and workspace dependencies
+describe the same ownership.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-context.mjs \
+  --data-directory /absolute/path/original-native-journal \
+  --data-directory /absolute/path/another-original-native-journal \
+  --output .local/work/<new-context-check>
+```
+
+The reader opens private copies of actual simulation or hardware journals through
+LocalStore and SessionAudits. The production DSH host installs context services
+without model bindings. Independently scoped native Sessions retain each original
+event prefix and provider usage. Full and prefix reads verify stable, detached
+measurements, isolated replay state and the native usage/pressure/composition
+projections. Creation and disposal events reach only their own registration scope;
+every attached Session and scope releases before host disposal. Model-free image
+pressure uses the native fixed heuristic, recorded explicitly in the result.
+
+On 2026-10-08, two original RoboDojo/RoboTwin journals pass with nine native
+assignments, 392 original events, 60 original tool calls and 24 prefix reads.
+The source journals and restored events retain their hashes. No tool calls are
+replayed, and no model, policy or environment is allocated.
+Evidence: `.local/work/v1-context-ownership-cpu-20261008-02/acceptance.json`.
+The original RoboDojo journal also passes nine interrupted-call recovery prefixes
+through the selected DSH recovery functions without replaying physical dispatch.
+Compaction summaries and route-specific image pricing keep their model-driven
+acceptance requirements.
+
+The configured four-provider Console also passes factory/Team/profile/model
+readiness with this source organization. Its actual HTTP reader returns RoboDojo,
+RoboTwin, RoboCasa and BEHAVIOR metadata, then releases its journal writer and
+listener with zero managed service processes. Evidence:
+`.local/work/v1-context-readiness-20261008/readiness.json`.
+
 ## Model-visible tool schemas
 
 `harness/agent-runtime/tools/src/model-schema.ts` owns production parameter

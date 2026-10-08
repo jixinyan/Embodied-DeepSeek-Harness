@@ -21,10 +21,10 @@
         "harness/agent-runtime/agents/src/dsh/loop/*.ts"
       ],
       "@deepseek-ai/dsh-scope": [
-        "harness/agent-runtime/agents/src/dsh/scope/index.ts"
+        "harness/agent-runtime/foundation/src/dsh/scope/index.ts"
       ],
       "@deepseek-ai/dsh-scope/*": [
-        "harness/agent-runtime/agents/src/dsh/scope/*.ts"
+        "harness/agent-runtime/foundation/src/dsh/scope/*.ts"
       ],
       "@deepseek-ai/dsh-system-prompt": [
         "harness/agent-runtime/agents/src/dsh/prompts/index.ts"
@@ -162,10 +162,10 @@
         "harness/agent-runtime/memory/src/dsh/tool-result-pruner/*.ts"
       ],
       "@deepseek-ai/dsh-token-meter": [
-        "harness/agent-runtime/models/src/dsh/token-meter/index.ts"
+        "harness/agent-runtime/memory/src/dsh/token-meter/index.ts"
       ],
       "@deepseek-ai/dsh-token-meter/*": [
-        "harness/agent-runtime/models/src/dsh/token-meter/*.ts"
+        "harness/agent-runtime/memory/src/dsh/token-meter/*.ts"
       ],
       "@deepseek-ai/dsh-commands": [
         "harness/agent-runtime/foundation/src/dsh/commands/brand.ts"

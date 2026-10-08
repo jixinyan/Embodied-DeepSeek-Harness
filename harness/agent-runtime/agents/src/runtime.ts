@@ -18,12 +18,8 @@ export interface DshSessionDefinition {
   readonly runtimeContext?: () => string;
 }
 
-/**
- * Create a fresh DSH session and register only its explicit prompt and tools.
- * Use the neutral host returned by createDshHost, never a caller-agent context.
- * This proves the runtime seam; Team loading and InvocationBrief validation are
- * later steps, and host-level contributors are outside this trusted seam's scope.
- */
+// 使用独立 host 创建原始 DSH Session，并注册明确提供的 prompt 和 tools。
+// TeamSessions 负责 assignment、InvocationBrief 和授权上下文的生命周期。
 export function createDshSession(
   host: Context,
   definition: DshSessionDefinition,

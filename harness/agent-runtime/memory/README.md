@@ -90,7 +90,10 @@ See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [module responsibilities](../../../docs/architecture/modules.md).
 
 [context.ts](src/context.ts) mounts original DSH token metering, compaction and optional
-tool-text pruning. [visual-history.ts](src/visual-history.ts) adds whole-message image
+tool-text pruning. The selected [token-meter](src/dsh/token-meter/index.ts) source
+owns isolated Session folds, request pressure and provider-usage projections;
+its original `@deepseek-ai/dsh-token-meter` imports and source hashes are retained.
+[visual-history.ts](src/visual-history.ts) adds whole-message image
 retention through native pre-step and logged surface replacement. It preserves fresh
 observations, original audits and existing evidence permissions; it does not delete
 evidence assets. See the [context guide](../../../docs/implementation/context-management.md).

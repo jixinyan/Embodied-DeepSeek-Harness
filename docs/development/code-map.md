@@ -15,6 +15,7 @@ production path from Session selection to native commands and formal verificatio
 | Manage retained user Sessions and task admission | [apps/server/src/user-sessions.ts](../../apps/server/src/user-sessions.ts) |
 | Connect domain tools, Planner decisions and independent roles | [apps/server/src/application.ts](../../apps/server/src/application.ts) |
 | Manage native DSH role contexts | [agents/src/runtime.ts](../../harness/agent-runtime/agents/src/runtime.ts) |
+| Route native registration and lifecycle scopes | [foundation/src/dsh/scope/index.ts](../../harness/agent-runtime/foundation/src/dsh/scope/index.ts) |
 | Change the absorbed DSH agent loop | [agents/src/dsh/loop/index.ts](../../harness/agent-runtime/agents/src/dsh/loop/index.ts); preserve [source provenance](../provenance/README.md) |
 | Load composable Teams | [teams/src/loader.ts](../../harness/agent-runtime/teams/src/loader.ts) |
 | Configure cloud/local upper models | [models/src/configuration.ts](../../harness/agent-runtime/models/src/configuration.ts) |
@@ -24,6 +25,7 @@ production path from Session selection to native commands and formal verificatio
 | Enforce goals, retries and task completion | [tasks](../../harness/agent-runtime/tasks/README.md) |
 | Admit formal verification after device confirmation | [verification/src/boundaries.ts](../../harness/agent-runtime/verification/src/boundaries.ts) and [contexts.ts](../../harness/agent-runtime/verification/src/contexts.ts) |
 | Retrieve source-linked SKILL sections | [memory/src/library.ts](../../harness/agent-runtime/memory/src/library.ts) and [skill-sections.ts](../../harness/agent-runtime/memory/src/skill-sections.ts) |
+| Install native context measurement and compaction | [memory/src/context.ts](../../harness/agent-runtime/memory/src/context.ts) and [memory/src/dsh/token-meter/index.ts](../../harness/agent-runtime/memory/src/dsh/token-meter/index.ts) |
 
 Prompts, tools and schemas resolve through the selected Team. The
 [current Agent loop](../implementation/current-agent-loop.md) records their actual

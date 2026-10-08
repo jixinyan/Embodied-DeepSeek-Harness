@@ -247,9 +247,6 @@ importers:
       '@edh/foundation':
         specifier: workspace:*
         version: link:../foundation
-      '@edh/memory':
-        specifier: workspace:*
-        version: link:../memory
       '@edh/storage':
         specifier: workspace:*
         version: link:../storage
@@ -301,9 +298,6 @@ importers:
 
   harness/agent-runtime/storage:
     dependencies:
-      '@edh/agents':
-        specifier: workspace:*
-        version: link:../agents
       '@edh/contracts':
         specifier: workspace:*
         version: link:../../contracts

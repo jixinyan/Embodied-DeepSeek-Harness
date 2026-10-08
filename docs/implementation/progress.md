@@ -1,8 +1,28 @@
 # Implementation progress
 
-Spec: v1.80. Current checkpoint: **shared native policy-thread ownership and actual CPU cancellation/recording checks; tools-owned detached model schemas and actual recorded request/plan checks; separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
+Spec: v1.81. Current checkpoint: **memory-owned native context measurement and foundation-owned registration scopes with actual journal validation; shared native policy-thread ownership and actual CPU cancellation/recording checks; tools-owned detached model schemas and actual recorded request/plan checks; separate native host/Session/transport/recording modules; actual CPU worker pipes, request cancellation and host initialization cleanup; policy telemetry and tool scope checks; actual CPU foreground-service lifecycle; complete native worker preallocation checks; four-provider offline readiness; native Qwen/Pi0.5 task success and retained-scene retry; bounded native Qwen tool generation; DSH failed-step recovery and JSON portability; complete default native retention; packaged Desktop two-task execution and cleanup; scoped Planner turn completion; native background faults and owned process cleanup; unified native profiles and Teams**. Full v1 acceptance remains in progress.
 This page supersedes the pre-upper-runtime status at `d1fe6f4`. Historical evidence
 remains in Git. [Capability map](features.md) separates working code from targets.
+
+## 2026-10-08 native context directory ownership
+
+Selected DSH context measurement lives in `memory/src/dsh/token-meter`, with
+its existing context installer and compaction services. Shared native registration
+and event scopes live in `foundation/src/dsh/scope`. All eleven relocated files
+retain their exact bytes, original imports and provenance hashes. Compiler aliases,
+workspace dependencies, the code map and module READMEs reflect these owners.
+
+Two original RoboDojo/RoboTwin journals pass through the production DSH host with
+nine independently scoped assignments, 392 original events, 60 original tool calls
+and 24 prefix measurements. Native usage, pressure and context-composition reads
+remain stable across independent Sessions. Scope-specific creation/disposal,
+complete Session release and host disposal pass. Journal/event sources retain
+their hashes; no tools, models, policies or environments execute. The original
+RoboDojo history also passes nine interrupted-call recovery prefixes.
+Actual four-provider Console readiness passes with the configured Teams, models,
+checkpoints and native task criteria; shutdown releases its writer and listener
+with zero managed processes.
+Commands and evidence: [context CPU validation](cpu-release-validation.md#native-context-and-scope-ownership).
 
 ## 2026-10-08 policy inference ownership
 

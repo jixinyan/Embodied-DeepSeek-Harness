@@ -63,7 +63,7 @@ host. Authorized observation tools continue to supply images to models. See
 | `apps/console` | Team/agent/robot state, plans, tools, verdicts and Agent trace | Device truth or planner decisions | ConsoleProjection; Step 12 |
 | `apps/desktop` | Native configuration selection, owned service process, console window and shutdown | Models, agent loops or physical allocation | Default deployment factory into existing startServer |
 | `harness/agent-runtime/agents` | Independent assignments, DSH session lifecycle, built-in role definitions | Implicit parent context or another loop | AgentFactory; Step 03 |
-| `harness/agent-runtime/foundation` | Plugin context, schemas and selected runtime support | Another agent loop or physical policy | Pinned source and compiler boundaries; Step 00 |
+| `harness/agent-runtime/foundation` | Plugin context, schemas, native registration scopes and selected runtime support | Another agent loop or physical policy | Pinned source and compiler boundaries; Step 00 |
 | `harness/agent-runtime/teams` | Team/member definitions and immutable role/provider bindings | Hard-coded role enum | TeamLoader; Step 02 |
 | `harness/agent-runtime/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelRegistry; Step 00 |
 | `harness/agent-runtime/tools` | Logical IDs, model-visible parameters, role/device schema selection and input limits | Every concrete perception/robot implementation | Native DSH tools, core-inputs.ts and model-schema.ts; Step 02/07 |
@@ -75,7 +75,7 @@ host. Authorized observation tools continue to supply images to models. See
 | `harness/agent-runtime/perception` | Model-facing capture/segmentation/depth/localization tool adapters | Shared global scene state | PerceptionProvider; Step 07 |
 | `harness/agent-runtime/observation` | Active-view intent, resource effects and achieved pose | Assumption that turn-view only moves a camera | ActiveObservation; Step 07 |
 | `harness/agent-runtime/verification` | Post-execution formal-verdict coordination | In-flight observation, retry, replan or ground-truth fabrication | VerificationCoordinator; Step 08 |
-| `harness/agent-runtime/memory` | Authorized evidence access, skills, recovery experience and the planned initialized Session SceneState | Automatic shared prompts or VLA training | SkillStore/EvidenceReader; SceneState implementation pending; Step 10 |
+| `harness/agent-runtime/memory` | Native context measurement/compaction, authorized evidence access, skills, recovery experience and the planned initialized Session SceneState | Automatic shared prompts or VLA training | SkillStore/EvidenceReader; SceneState implementation pending; Step 10 |
 | `harness/agent-runtime/storage` | Persistence primitives used through scoped service boundaries | Bypass of evidence visibility | EventStore/AssetStore; Step 04 |
 | `harness/contracts` | Authoritative wire schema and generated declarations | Runtime semantic authorization | physical.schema.json; Step 01 |
 | `harness/physical-runtime/src/physical_harness/execution` | Actual action progression, budget and device job handling | Upper-level retry decision | ExecutionWorker; Step 06 |

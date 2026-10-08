@@ -6,6 +6,14 @@ pruner can reduce long tool text. The DSH loop still owns pre-step admission,
 balanced tool-call/result spans, maintenance, cancellation and transactional
 model-visible surface replacement. No second transcript manager is introduced.
 
+[memory/src/context.ts](../../harness/agent-runtime/memory/src/context.ts) installs
+the services; the selected [token-meter source](../../harness/agent-runtime/memory/src/dsh/token-meter/index.ts)
+lives with compaction in `memory`. Model adapters provide route metadata and
+image pricing through their existing model service. Shared native registration
+and event scope primitives live in
+[foundation](../../harness/agent-runtime/foundation/src/dsh/scope/index.ts).
+Directory ownership preserves original DSH imports and exact source hashes.
+
 ## Enable and configure
 
 ```ts

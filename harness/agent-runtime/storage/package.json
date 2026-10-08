@@ -17,7 +17,6 @@
     "zod": "4.4.3",
     "n-readlines": "1.0.1",
     "@types/n-readlines": "1.0.2",
-    "@edh/agents": "workspace:*",
     "@edh/models": "workspace:*"
   }
 }

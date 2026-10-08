@@ -140,8 +140,8 @@
     {
       "name": "@deepseek-ai/dsh-scope",
       "source": "packages/core/scope",
-      "destination": "harness/agent-runtime/agents/src/dsh/scope",
-      "owner": "agents",
+      "destination": "harness/agent-runtime/foundation/src/dsh/scope",
+      "owner": "foundation",
       "manifest_sha256": "208685b735bbb2479c2b9b7f382f6e59d828b6a475cebab1b76259c753e103cf",
       "license": "MIT"
     },
@@ -292,8 +292,8 @@
     {
       "name": "@deepseek-ai/dsh-token-meter",
       "source": "packages/llm/token-meter",
-      "destination": "harness/agent-runtime/models/src/dsh/token-meter",
-      "owner": "models",
+      "destination": "harness/agent-runtime/memory/src/dsh/token-meter",
+      "owner": "memory",
       "manifest_sha256": "a32f5d9fe72c3dbbb6c8a9f111d3caea6eb94816ff212774a958766ec4499562",
       "license": "MIT"
     },
@@ -517,14 +517,14 @@
     },
     {
       "source": "packages/core/scope/src/index.ts",
-      "destination": "harness/agent-runtime/agents/src/dsh/scope/index.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/scope/index.ts",
       "source_sha256": "074b8f0c3fa2e240effd0a7e65c54be7c14debc1e53bb712334ce20d15affe4a",
       "local_sha256": "074b8f0c3fa2e240effd0a7e65c54be7c14debc1e53bb712334ce20d15affe4a",
       "modifications": []
     },
     {
       "source": "packages/core/scope/src/store.ts",
-      "destination": "harness/agent-runtime/agents/src/dsh/scope/store.ts",
+      "destination": "harness/agent-runtime/foundation/src/dsh/scope/store.ts",
       "source_sha256": "e2f6c98e271cbae483393ccd1e5212a255def165a8a591d308efbd827af67278",
       "local_sha256": "e2f6c98e271cbae483393ccd1e5212a255def165a8a591d308efbd827af67278",
       "modifications": []
@@ -1144,63 +1144,63 @@
     },
     {
       "source": "packages/llm/token-meter/src/projection.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/token-meter/projection.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/token-meter/projection.ts",
       "source_sha256": "60f84d29ef7a9d701fa769aafdddd705d25692d0d0db973fbf168c748ca522fd",
       "local_sha256": "60f84d29ef7a9d701fa769aafdddd705d25692d0d0db973fbf168c748ca522fd",
       "modifications": []
     },
     {
       "source": "packages/llm/token-meter/src/types.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/token-meter/types.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/token-meter/types.ts",
       "source_sha256": "d0c153b4ff135839c072b1c57056366003028fb2f5ba7ea745845580c5fcb08f",
       "local_sha256": "d0c153b4ff135839c072b1c57056366003028fb2f5ba7ea745845580c5fcb08f",
       "modifications": []
     },
     {
       "source": "packages/llm/token-meter/src/estimate.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/token-meter/estimate.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/token-meter/estimate.ts",
       "source_sha256": "002d8cf11416228ba2be76ac2ac81f57c204a2f200c75aaae57cbff1c6e87272",
       "local_sha256": "002d8cf11416228ba2be76ac2ac81f57c204a2f200c75aaae57cbff1c6e87272",
       "modifications": []
     },
     {
       "source": "packages/llm/token-meter/src/surface-projection.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/token-meter/surface-projection.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/token-meter/surface-projection.ts",
       "source_sha256": "05381f4d2b373dab8144ba2a11fdb77ccd1c98a819224c35885322b28a075ec0",
       "local_sha256": "05381f4d2b373dab8144ba2a11fdb77ccd1c98a819224c35885322b28a075ec0",
       "modifications": []
     },
     {
       "source": "packages/llm/token-meter/src/breakdown-projection.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/token-meter/breakdown-projection.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/token-meter/breakdown-projection.ts",
       "source_sha256": "c5643c037e8c87b7f1acc6e6ce523af6ec7f8cdf2b566be039edf538a1997af0",
       "local_sha256": "c5643c037e8c87b7f1acc6e6ce523af6ec7f8cdf2b566be039edf538a1997af0",
       "modifications": []
     },
     {
       "source": "packages/llm/token-meter/src/usage-projection.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/token-meter/usage-projection.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/token-meter/usage-projection.ts",
       "source_sha256": "d1b4d2402430c50536fb328b0e4390e0359d21b05fd80b085462c74d83bbc87c",
       "local_sha256": "d1b4d2402430c50536fb328b0e4390e0359d21b05fd80b085462c74d83bbc87c",
       "modifications": []
     },
     {
       "source": "packages/llm/token-meter/src/surface-fold.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/token-meter/surface-fold.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/token-meter/surface-fold.ts",
       "source_sha256": "d4fa98bcce6be27a26455dbfbd08b107418948670565d3c437df9053d6730080",
       "local_sha256": "d4fa98bcce6be27a26455dbfbd08b107418948670565d3c437df9053d6730080",
       "modifications": []
     },
     {
       "source": "packages/llm/token-meter/src/route-pricing.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/token-meter/route-pricing.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/token-meter/route-pricing.ts",
       "source_sha256": "4201c430b66e12fd40dcf264034bbc517cb73867f4b31a68b90c8a3ff3210840",
       "local_sha256": "4201c430b66e12fd40dcf264034bbc517cb73867f4b31a68b90c8a3ff3210840",
       "modifications": []
     },
     {
       "source": "packages/llm/token-meter/src/index.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/token-meter/index.ts",
+      "destination": "harness/agent-runtime/memory/src/dsh/token-meter/index.ts",
       "source_sha256": "98cb7763e71be7cbe47f50bf3b9b4dd0a4ba6094d6a7efbe321d7ef0d9a1a527",
       "local_sha256": "98cb7763e71be7cbe47f50bf3b9b4dd0a4ba6094d6a7efbe321d7ef0d9a1a527",
       "modifications": []
@@ -1241,10 +1241,10 @@
       "harness/agent-runtime/agents/src/dsh/loop/*.ts"
     ],
     "@deepseek-ai/dsh-scope": [
-      "harness/agent-runtime/agents/src/dsh/scope/index.ts"
+      "harness/agent-runtime/foundation/src/dsh/scope/index.ts"
     ],
     "@deepseek-ai/dsh-scope/*": [
-      "harness/agent-runtime/agents/src/dsh/scope/*.ts"
+      "harness/agent-runtime/foundation/src/dsh/scope/*.ts"
     ],
     "@deepseek-ai/dsh-system-prompt": [
       "harness/agent-runtime/agents/src/dsh/prompts/index.ts"
@@ -1373,7 +1373,7 @@
       "harness/agent-runtime/memory/src/dsh/tool-result-pruner/index.ts"
     ],
     "@deepseek-ai/dsh-token-meter": [
-      "harness/agent-runtime/models/src/dsh/token-meter/index.ts"
+      "harness/agent-runtime/memory/src/dsh/token-meter/index.ts"
     ],
     "@deepseek-ai/dsh-commands": [
       "harness/agent-runtime/foundation/src/dsh/commands/brand.ts"
