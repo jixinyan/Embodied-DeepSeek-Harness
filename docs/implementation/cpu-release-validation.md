@@ -262,6 +262,10 @@ observing the production journal's writer initialization. Their reports retain
 whether the URL was observed before signalling and before exit. Two HTTP-ready
 cases inspect actual configuration before single/repeated signals. The report
 records the actual observed readiness at both milestones.
+The file watcher remains attached throughout initialization. Startup waits use
+the shared bounded cancellation helper, and diagnostic cleanup waits for child
+exit. Every outcome preserves stdout/stderr before propagating the original
+failure, including any process-release failure.
 All five require exit status zero, released writer locks/listeners and absence
 of both owned Node processes. Original configuration and implementation hashes
 remain unchanged. No model call, policy call, Session or environment is admitted.

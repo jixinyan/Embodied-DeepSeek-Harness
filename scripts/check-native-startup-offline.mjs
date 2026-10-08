@@ -7,6 +7,7 @@ import { watch } from 'node:fs';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
+import { waitFor as waitWithSignal } from '../apps/server/src/managed-services.ts';
 import { readNativeWorkspaceConfiguration } from '../examples/deployments/native-workspace.mjs';
 import { nativeDeploymentRoot } from '../examples/deployments/native-live.mjs';
 
@@ -52,6 +53,7 @@ const sources = [
     resolve(configurationRoot, entry.configuration),
   ),
   resolve(nativeDeploymentRoot, 'apps/server/src/console-process.ts'),
+  resolve(nativeDeploymentRoot, 'apps/server/src/managed-services.ts'),
   resolve(nativeDeploymentRoot, 'examples/deployments/native-workspace.mjs'),
   resolve(nativeDeploymentRoot, 'examples/deployments/native-live.mjs'),
   resolve(nativeDeploymentRoot, 'scripts/check-native-startup-offline.mjs'),
@@ -103,14 +105,12 @@ for (const item of cases) {
       };
   const file = resolve(directory, selected ? 'deployment.json' : 'workspace.json');
   await writeFile(file, `${JSON.stringify(privateConfiguration, null, 2)}\n`, { flag: 'wx' });
-  const watcher = watch(runtime);
   const deadline = AbortSignal.timeout(30000);
-  const lockCreated = (async () => {
-    for (;;) {
-      const [, filename] = await once(watcher, 'change', { signal: deadline });
-      if (filename === 'writer.lock') return;
-    }
-  })();
+  const lockCreated = Promise.withResolvers();
+  const watcher = watch(runtime, (_event, filename) => {
+    if (filename === 'writer.lock') lockCreated.resolve();
+  });
+  watcher.on('error', lockCreated.reject);
   const ready = Promise.withResolvers();
   let stdout = '';
   let stderr = '';
@@ -142,20 +142,24 @@ for (const item of cases) {
   child.stderr.on('data', (chunk) => {
     stderr += chunk;
   });
-  const closed = once(child, 'close', { signal: deadline });
+  const closed = once(child, 'close');
   const waitFor = (milestone) =>
-    Promise.race([
-      milestone,
-      closed.then(() => {
-        throw new Error('Native CLI closed before reaching its requested startup boundary.');
-      }),
-    ]);
+    waitWithSignal(
+      Promise.race([
+        milestone,
+        closed.then(() => {
+          throw new Error('Native CLI closed before reaching its requested startup boundary.');
+        }),
+      ]),
+      deadline,
+    );
   let owner;
   let urlObservedBeforeSignal;
   let metadata;
   let outcome;
+  let failure;
   try {
-    await waitFor(lockCreated);
+    await waitFor(lockCreated.promise);
     if (item.trigger === 'http-ready') {
       await waitFor(ready.promise);
       const response = await fetch(`${url}/api/config`, { signal: deadline });
@@ -168,13 +172,24 @@ for (const item of cases) {
     urlObservedBeforeSignal = stdout.includes(url);
     if (item.trigger === 'http-ready') assert.equal(urlObservedBeforeSignal, true);
     for (const signal of item.signals) process.kill(owner, signal);
-    outcome = await closed;
+    outcome = await waitWithSignal(closed, deadline);
+  } catch (error) {
+    failure = error;
   } finally {
     watcher.close();
     if (child.exitCode === null && child.signalCode === null) child.kill('SIGTERM');
+    try {
+      await waitWithSignal(closed, AbortSignal.timeout(15000));
+    } catch (cleanup) {
+      failure = new AggregateError(
+        [...(failure === undefined ? [] : [failure]), cleanup],
+        'Native CLI diagnostic and process release failed.',
+      );
+    }
+    await writeFile(resolve(directory, 'stdout.txt'), stdout);
+    await writeFile(resolve(directory, 'stderr.txt'), stderr);
   }
-  await writeFile(resolve(directory, 'stdout.txt'), stdout);
-  await writeFile(resolve(directory, 'stderr.txt'), stderr);
+  if (failure !== undefined) throw failure;
   if (metadata)
     await writeFile(
       resolve(directory, 'configuration.json'),
