@@ -18,6 +18,30 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
+## Verified source 7e04e8e
+
+All twenty-nine configured components pass on macOS and isolated Linux, including
+sixty shared policy-input checks. Each platform passes 387 admission/process/wire/
+resource cases, six visual-context cases, twelve original context reads and
+four-provider readiness. Source checks retain 128 pinned DSH files, 25 bindings,
+66 Python files, 27 base imports and 45 diagnostic entries.
+
+Independent verification matches 355 component source/input hashes, twenty-two
+diagnostic hashes and fifty-eight process receipts. Fifty-nine actual OS checks
+confirm owned diagnostic group/script absence. Original input bytes and task
+outcomes remain unchanged; the canonical server preserves its exact status and
+isolated source remains clean. The Linux execution script exits zero.
+
+Both platforms prepare the same four native cases and eight planned submissions
+with matching profile, task and prerequisite bindings. GPU jobs, model calls,
+environment allocations and controls remain zero. Evidence and independent reports
+are under `.local/work/v1-cpu-policy-inputs-macos-20261008/` and
+`.local/work/v1-cpu-policy-inputs-linux-20261008-verified/`. The downloaded archive
+matches server SHA-256
+`dd4f61a3271e9c72a302fcdc3ab47334f9fa634398abb63a96396abc3beb6271`.
+Loaded-model cancellation, physical stop behavior and complete native tasks retain
+the native campaign's acceptance requirements.
+
 ## Policy observation input preparation
 
 The shared [`observation_inputs.py`](../../harness/physical-runtime/src/physical_harness/policies/observation_inputs.py)
@@ -34,14 +58,15 @@ CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
   --output .local/work/<new-policy-input-check>
 ```
 
-Sixty checks pass on four original policy requests: twelve camera frames and
-twenty-eight state groups. Original RoboDojo tensor hashes match the actual native
-inference records. Declared invalid derivatives cover identity, image metadata/
+Sixty checks pass on both platforms using four original policy requests: twelve
+camera frames and twenty-eight state groups. Original RoboDojo tensor hashes match
+the actual native inference records. Declared invalid derivatives cover identity, image metadata/
 encoding, dimensions, booleans, nonfinite values and float32 overflow. All original
 file hashes remain unchanged; no model SDK or inference, simulator or GPU executes.
-Local evidence: `.local/work/v1-policy-inputs-macos-20261008/`. The consolidated
-campaign includes this diagnostic when `checkpointAuditConfiguration` is supplied,
-for twenty-nine configured components. Loaded SDK/model/device/task requirements
+Standalone local evidence: `.local/work/v1-policy-inputs-macos-20261008/`.
+The consolidated campaign includes this diagnostic when
+`checkpointAuditConfiguration` is supplied, for twenty-nine configured components.
+Loaded SDK/model/device/task requirements
 retain their independent acceptance gates.
 
 ## Prior verified CPU checkpoints

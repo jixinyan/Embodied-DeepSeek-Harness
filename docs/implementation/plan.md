@@ -17,11 +17,17 @@ Models, policy inference and simulator tasks remain stopped during CPU work.
 
 Shared policy input admission validates source/body identity, bounded RGB PNGs
 and finite float32 states for all four learned adapters before model calls.
-Sixty original-request/declared invalid-input checks and complete source checks
-pass on macOS. The configured CPU campaign includes `policy-inputs` when
+Sixty original-request/declared invalid-input checks pass on both platforms.
+The configured CPU campaign includes `policy-inputs` when
 `checkpointAuditConfiguration` is supplied and has twenty-nine components.
-Next CPU action: verify current-source macOS/Linux campaigns and original input/
-process preservation. Loaded-model and native task behavior retain their GPU gates.
+Clean `7e04e8e` passes all components on macOS and isolated Linux, with 387
+admission/process/wire/resource cases per platform. Independent comparison verifies
+355 component source/input hashes, twenty-two diagnostic hashes, fifty-eight
+process receipts and fifty-nine actual OS release checks. Original inputs and
+canonical server status remain unchanged. Both platforms prepare four native
+cases and eight task submissions with no GPU, model, environment or control
+allocation. Current-source CPU preparation is complete; Steps 13–14 retain the
+loaded-model/device/task acceptance gates.
 
 Policy execution mode is validated before inference admission. Four actual
 WebSocket rejection cases and all original transport/recording checks pass on

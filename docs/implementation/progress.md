@@ -12,14 +12,31 @@ native modality mappings, tensor transforms, checkpoint processing and action
 conversion retain their adapter owners. Selected service dependencies remain
 isolated; the `policy-inputs` extra supports standalone CPU inspection.
 
-Sixty macOS checks inspect four original requests, twelve cameras and twenty-eight
-state groups. Prepared RoboDojo pixels/state match actual native inference hashes.
-Declared invalid identity, image metadata/encoding, dimension, boolean, nonfinite
-and overflowing float32 inputs fail before model calls. Original files remain
-unchanged; no model SDK, environment or GPU starts. Full source checks pass with
-66 Python files, 27 base imports, 45 diagnostics and unchanged 128-file/25-binding
-DSH provenance. Evidence: `.local/work/v1-policy-inputs-macos-20261008/`.
-The current-source twenty-nine-component macOS/Linux campaign is the next CPU check.
+Sixty checks on both platforms inspect four original requests, twelve cameras and
+twenty-eight state groups. Prepared RoboDojo pixels/state match actual native
+inference hashes. Declared invalid identity, image metadata/encoding, dimension,
+boolean, nonfinite and overflowing float32 inputs fail before model calls.
+
+Clean `7e04e8e` passes all twenty-nine configured components on macOS and isolated
+Linux, with 387 admission/process/wire/resource cases per platform, six
+visual-context cases, twelve original context reads and four-provider readiness.
+Independent comparison verifies 355 component source/input hashes, twenty-two
+diagnostic hashes and fifty-eight process receipts. Fifty-nine actual OS checks
+confirm diagnostic group/script absence; the Linux execution script exits zero.
+Original files and task outcomes remain unchanged, the canonical server retains
+its exact status and isolated source stays clean. Full source checks retain
+66 Python files, 27 base imports, 45 diagnostics and 128 pinned DSH files/25 bindings.
+
+Both platforms prepare the same four native cases and eight planned task
+submissions with matching profile, task and prerequisite bindings. GPU jobs,
+model calls, environment allocations and controls remain zero. Evidence and
+independent verification reports: `.local/work/v1-cpu-policy-inputs-macos-20261008/`
+and `.local/work/v1-cpu-policy-inputs-linux-20261008-verified/`. The downloaded
+archive matches server SHA-256
+`dd4f61a3271e9c72a302fcdc3ab47334f9fa634398abb63a96396abc3beb6271`.
+Current-source CPU preparation is complete. Loaded-model/device cancellation,
+native multi-goal recovery, BEHAVIOR task success, RoboDojo Tower completion and
+the complete installed configuration matrix retain their native acceptance gates.
 
 ## 2026-10-08 policy execution-mode admission
 

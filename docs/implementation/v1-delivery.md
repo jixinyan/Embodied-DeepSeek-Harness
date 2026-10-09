@@ -17,13 +17,14 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
-Current-source CPU preparation passes all twenty-eight components from clean
-`d3336fc` on macOS and isolated Linux, with 327 admission/process/wire/resource
-cases per platform. This includes four execution-mode admission cases, thirty-three
+Current-source CPU preparation passes all twenty-nine components from clean
+`7e04e8e` on macOS and isolated Linux, with 387 admission/process/wire/resource
+cases per platform. This includes sixty shared policy-input checks on four original
+requests, four execution-mode admission cases, thirty-three
 checkpoint original-record/wire/Gate/WebSocket and thirty-six profile/configuration/
-factory/HTTP cases. Independent comparison verifies 327 component source/input
-hashes and all fifty-six process receipts;
-fifty-seven actual OS checks confirm owned process release. Original artifacts,
+factory/HTTP cases. Independent comparison verifies 355 component source/input
+hashes, twenty-two diagnostic hashes and all fifty-eight process receipts;
+fifty-nine actual OS checks confirm owned process release. Original artifacts,
 task outcomes and canonical server status remain unchanged. GPU/model/environment
 allocation and controls remain zero. Both platforms prepare the same four native
 cases and eight planned task submissions through production readiness and campaign
@@ -32,7 +33,7 @@ native faults/cancellation, multi-goal workflows, original BEHAVIOR success and
 RoboDojo Tower completion retain their release gates.
 
 The [CPU campaign](cpu-release-validation.md#consolidated-cpu-campaign) executes
-28 configured source/production components from actual configuration and original records.
+29 configured source/production components from actual configuration and original records.
 Clean `6877ce3` passes 290 admission/process/wire/resource cases per platform on
 macOS and isolated Linux, six visual-context cases, twelve original context reads
 and four-provider readiness. Twenty-one diagnostic hashes and 318 component

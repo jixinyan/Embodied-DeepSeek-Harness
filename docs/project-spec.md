@@ -13,8 +13,14 @@ must pass admission. Native camera/state mappings, tensor batch transforms,
 checkpoint normalization and action conversion stay with the selected adapter.
 Sixty CPU checks on four original requests verify twelve cameras, twenty-eight
 state groups and declared invalid derivatives without SDK imports or model calls.
-RoboDojo prepared tensors match their actual native inference hashes. Current-source
-macOS/Linux campaign verification remains required for this implementation.
+RoboDojo prepared tensors match their actual native inference hashes. Clean
+`7e04e8e` passes all twenty-nine configured CPU components on macOS and isolated
+Linux, with 387 admission/process/wire/resource cases per platform. Independent
+comparison verifies 355 component source/input hashes, twenty-two diagnostic hashes,
+fifty-eight process receipts and fifty-nine actual OS release checks. Original
+files and canonical server status remain unchanged. Both platforms prepare four
+native cases and eight planned submissions without model, environment or control
+allocation. Loaded-model/device and native-task behavior retain their GPU gates.
 
 The policy server validates the request schema, ActionSpec, execution mode and
 selected checkpoint identity before inference admission. Explicit unsupported,
