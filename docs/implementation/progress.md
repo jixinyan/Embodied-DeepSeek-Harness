@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-08 · Spec v1.113 · v1 release acceptance in progress.
+Updated: 2026-10-08 · Spec v1.114 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| `27b3950` | Native RGB-D range and coordinate arithmetic fails at numerical overflow. Thirty-nine checks pass per CPU platform on thirteen original captures and twenty-six invalid calibration derivatives, with original geometry preserved within its recorded precision allowance. |
 | `48bcc47` | Both GR00T adapters admit actual collator tensors after native bfloat16 conversion and before model inference. Seventy-two installed processor/codec cases cover forty-six original requests and twenty-six declared invalid derivatives. Original prepared values remain unchanged. |
 | `d937330` | RoboTwin prepares and admits actual saved checkpoint processors before policy construction. Twenty-two original/invalid JSON, safetensors and selector checks pass in the installed LeRobot environment. |
 | `2821c21` | Both GR00T constructors admit model/processor/statistics compatibility before optional SDK imports. All 111 original/invalid configuration checks pass on macOS and isolated Linux. |
@@ -57,6 +58,13 @@ release. CUDA stays uninitialized; model, inference, environment and control
 allocations remain zero. Full source checks pass with 69 Python files, 28 base
 imports, 49 diagnostics and 128 pinned DSH files/25 bindings.
 Evidence and commands: [CPU validation](cpu-release-validation.md#gr00t-pre-inference-model-input-admission).
+
+Native geometry additionally passes 39 checks on both platforms with 78 original
+input/production-source comparisons per platform. Original file identities,
+numeric admission, report digests and the Linux archive digest independently match.
+The actual Linux runner/diagnostic processes release, frozen source stays clean and
+canonical server status remains unchanged. No model, simulator or GPU allocates.
+See [geometry validation](cpu-release-validation.md#numeric-geometry-admission).
 
 ## Remaining release requirements
 

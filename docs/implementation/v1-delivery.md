@@ -17,6 +17,14 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Clean `27b3950` verifies scoped arithmetic checks in native RGB-D back-projection,
+range and coordinate reductions. Thirty-nine CPU cases pass on both macOS and
+isolated Linux using thirteen original captures and twenty-six invalid finite-
+calibration derivatives. Original measurements retain their recorded precision;
+78 input/source comparisons per platform, report/archive digests and actual
+process release independently verify. No model, simulator or GPU allocates.
+See [numeric geometry acceptance](cpu-release-validation.md#numeric-geometry-admission).
+
 Clean `48bcc47` admits actual GR00T collator output after native bfloat16 conversion
 and before inference. Seventy-two installed processor/codec checks on forty-six
 original requests pass, including twelve GR00T invalid-state/dtype/conversion

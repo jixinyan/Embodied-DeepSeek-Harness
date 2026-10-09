@@ -1593,6 +1593,46 @@ Reports and the independently verified summary are under
 
 ## Native geometry and role records
 
+### Numeric geometry admission
+
+Native back-projection, camera range and camera/world coordinate reductions use
+NumPy's scoped arithmetic checks. Overflow, invalid floating-point operations and
+division by zero raise at their calculation site before a measurement is returned.
+The original equations, units, output fields and source identities remain unchanged.
+
+Clean `27b3950` passes 39 CPU checks per platform on macOS and isolated Linux:
+
+| Provider | Original captures | Original recomputation | Invalid calibration checks |
+| --- | --- | --- | --- |
+| RoboCasa | 4 | 4 | 8 |
+| RoboTwin | 3 | 3 | 6 |
+| RoboDojo | 6 | 6 | 12 |
+
+The explicitly declared derivatives contain finite float64 camera intrinsics or
+world translations and check range/centroid overflow. They retain original RGB,
+mask and depth files. Every original measurement passes the existing recorded
+float64 accumulation allowance. Each diagnostic report includes hashes of its
+four original capture files and two production source files. Independent checks
+match 78 input/source hashes per platform, original identities, numeric admission
+and report/archive digests. The actual Linux runner/diagnostic processes release;
+frozen source stays clean and canonical server status remains unchanged.
+No model, simulator, GPU or physical controls allocate.
+
+```sh
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
+  python scripts/check-recorded-metric.py \
+  --record /absolute/path/to/original-native-measurement \
+  --check-numeric-admission --output .local/work/<new-numeric-check>.json
+```
+
+Evidence: `.local/work/metric-numeric-cpu-macos-20261008-verified/` and
+`.local/work/metric-numeric-cpu-linux-20261008-verified/`. The Linux archive matches
+SHA256 `cbbe852fe6b0583c38c39c7f8868241e14bb50dad9a647631a5c7a8be5fac374`.
+These checks use stored native capture data. New semantic masks, physical camera
+calibration accuracy and complete loaded-provider tasks require native acceptance.
+
+### Original measurement and role inspection
+
 `scripts/check-recorded-metric.py --record DIRECTORY --output .local/work/<new-file>.json`
 recomputes original RGB-D measurements through production geometry. Source hashes,
 mask/image identity, calibration, pixel counts and original metadata remain exact.

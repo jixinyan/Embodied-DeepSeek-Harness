@@ -82,6 +82,7 @@ implementations load in their separately configured service processes.
 | Read actual run updates | [run-update.js](../../apps/console/public/run-update.js) |
 | Configure and start the desktop launcher | [apps/desktop](../../apps/desktop/README.md) |
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |
+| Recompute original RGB-D measurements and check numeric calibration admission without a simulator | [check-recorded-metric.py](../../scripts/check-recorded-metric.py), `--check-numeric-admission` |
 | Execute the configured CPU diagnostic campaign | [run-cpu-release-campaign.mjs](../../scripts/run-cpu-release-campaign.mjs) |
 | Verify signal-driven CPU campaign closure and actual diagnostic process-group release | [check-cpu-campaign-shutdown.mjs](../../scripts/check-cpu-campaign-shutdown.mjs) |
 | Own actual native campaign cancellation through live-driver and matching Session release | [run-native-release-campaign.mjs](../../scripts/run-native-release-campaign.mjs) and [run-live-acceptance.mjs](../../scripts/run-live-acceptance.mjs) |

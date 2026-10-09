@@ -1,8 +1,31 @@
 # Implementation checkpoint history
 
-Recorded through spec v1.113, 2026-10-08. Each checkpoint retains its own source
+Recorded through spec v1.114, 2026-10-08. Each checkpoint retains its own source
 revision, execution scope and acceptance evidence. Read [current progress](progress.md)
 for active requirements and [v1 delivery](v1-delivery.md) for release gates.
+
+## 2026-10-08 native geometry numeric admission
+
+Production back-projection, camera range and camera/world coordinate reductions
+use scoped NumPy arithmetic checks. Overflow, invalid operations and division by
+zero terminate the measurement at their calculation site. Successful output
+retains native equations, units, field identities and source ownership.
+
+Clean `27b3950` passes 39 CPU checks per platform on macOS and isolated Linux:
+thirteen original RoboCasa, RoboTwin and RoboDojo captures plus twenty-six
+explicitly invalid finite-calibration derivatives. Original geometry remains within
+its declared float64 accumulation allowance. Independent verification checks
+78 original input/production-source hashes per platform, original identities,
+numeric admission, report/archive digests and actual diagnostic process release.
+Frozen source stays clean and canonical server status remains unchanged. Full
+source checks pass with 69 Python files, 28 base imports, 49 diagnostics and
+128 pinned DSH files/25 bindings. Model, simulator and GPU allocations remain zero.
+
+Evidence: `.local/work/metric-numeric-cpu-macos-20261008-verified/` and
+`.local/work/metric-numeric-cpu-linux-20261008-verified/`. The Linux archive matches
+SHA256 `cbbe852fe6b0583c38c39c7f8868241e14bb50dad9a647631a5c7a8be5fac374`.
+Actual semantic-mask, sensor-calibration and loaded-provider task acceptance retain
+their native release requirements.
 
 ## 2026-10-08 GR00T pre-inference tensor admission
 

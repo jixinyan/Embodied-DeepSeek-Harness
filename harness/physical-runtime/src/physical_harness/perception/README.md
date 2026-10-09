@@ -25,6 +25,15 @@ camera/world centroids and coordinate-wise medians in meters. The visible surfac
 centroid describes selected observations; semantic object identity and complete
 object geometry require their own evidence.
 
+Back-projection, camera range and camera/world coordinate reductions use NumPy's
+scoped arithmetic checks. Overflow, invalid floating-point operations and division
+by zero raise at their calculation site. Successful measurements retain the same
+equations, output fields, units and source identities.
+`scripts/check-recorded-metric.py --check-numeric-admission` recomputes an original
+native record and rejects explicitly invalid finite-calibration derivatives for
+camera-range and world-centroid overflow. It retains input and production-source
+hashes and starts no model or simulator.
+
 An identified native RoboCasa OpenCabinet capture and actual SAM masks pass
 [`check_metric_geometry.py`](../../../../../examples/perception/check_metric_geometry.py).
 Independent pinhole equations and homogeneous camera transforms reproduce the

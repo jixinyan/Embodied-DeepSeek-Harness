@@ -134,6 +134,12 @@ formal-verdict lifecycle enforcement in `verification`, and a simulator predicat
 check in the Python verification provider. These are different responsibilities,
 not three implementations of the same agent.
 
+`perception/metric_geometry.py` owns source-bound native RGB-D back-projection,
+range statistics and camera/world surface coordinates. Scoped NumPy arithmetic
+checks terminate overflow, invalid operations and division by zero before a
+measurement is returned. `MetricCapture` retains capture identity and recording;
+Worker retains observation ownership and confirmed-device admission.
+
 ## Recovery sequence
 
 ![Async recovery](assets/async-recovery-sequence.svg)
