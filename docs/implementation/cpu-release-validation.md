@@ -326,6 +326,38 @@ Reports: `.local/work/v1-policy-outputs-robotwin-tensors-linux-20261008.acceptan
 and `.local/work/v1-policy-outputs-robotwin-tensors-linux-20261008.verified.json`.
 Raw GR00T SDK groups, loaded-model/device and physical behavior retain native gates.
 
+### GR00T controller conversion
+
+The [controller diagnostic](../../scripts/check-gr00t-actions-offline.py) calls the
+same `native_action_record` used after online `Gr00tPolicy.get_action` in both
+GR00T adapters. Original request/action identity and checkpoint/controller
+compatibility pass through the production recorded-run audit before inspection.
+
+```sh
+CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 \
+  PYTHONPATH=harness/physical-runtime/src \
+  .venv/bin/python scripts/check-gr00t-actions-offline.py \
+  --configuration /absolute/path/original-checkpoint-audit-inputs.json \
+  --output .local/work/<new-gr00t-controller-check>
+```
+
+The configuration selects original BEHAVIOR and RoboCasa entries under
+`conventional`, with `run`, `requests`, `serviceLog` and `manifest` paths. Each
+report identifies its source field, restored float64 values, model horizon and
+selected native prefix. Original BEHAVIOR `model_actions` retain concatenated
+groups; legacy `actions` records retain only the native prefix. RoboCasa
+`model_actions` retain mapped controller values. Their inverse grouping supports
+checks on explicit controller derivatives; original category probabilities and
+SDK array dtypes remain outside that record's scope.
+
+Checks cover exact original native values, limits 1 and 512, full-record retention,
+invalid count types/ranges, numeric group dtypes, batch/channel/horizon dimensions,
+nonfinite values, ActionSpec ordering, RoboCasa category thresholds and bounds,
+and BEHAVIOR native clipping with preserved model values. Supplied groups and
+source files must remain unchanged. Model SDK imports, model calls, GPU jobs,
+environment allocations and controls stay zero. Loaded-model and physical task
+acceptance retain their native requirements.
+
 ## Prior verified CPU checkpoints
 
 Clean `d3336fc` passes all twenty-eight configured components on macOS and isolated

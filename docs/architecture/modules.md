@@ -124,7 +124,9 @@ The RoboTwin adapter's `prepare_checkpoint_processors` loads and admits actual
 saved SDK processors before policy construction. Its constructor and installed
 CPU diagnostic use that same feature, normalization and absolute-target admission.
 `policies/action_outputs.py` owns real numeric array, positive dimension, shape,
-finite-value and optional float32-range admission. Native group semantics,
+finite-value, bounded action-count and optional float32-range admission. Each
+GR00T provider exposes `native_action_record` in its existing module, shared by
+online inference and original-record CPU inspection. Native group semantics,
 Torch conversion and gripper/controller mapping retain their adapter owners.
 `contracts` must not import agents, apps or Python.
 Communication uses storage for persistence; agents receive authorized evidence

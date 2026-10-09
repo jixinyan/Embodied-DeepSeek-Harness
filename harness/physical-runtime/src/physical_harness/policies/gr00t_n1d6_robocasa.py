@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from physical_harness.policies.action_outputs import read_action_array
+from physical_harness.policies.action_outputs import read_action_array, selected_action_count
 from physical_harness.policies.gr00t_checkpoint import verify_gr00t_configuration
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
@@ -88,6 +88,31 @@ def _action_group(action: dict[str, Any], key: str) -> np.ndarray:
     return value[0]
 
 
+def native_action_record(action: dict[str, Any], request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
+    _check_action_spec(request["action_spec"])
+    groups = {key: _action_group(action, key) for key in ACTION_SIZES}
+    horizon = groups["end_effector_position"].shape[0]
+    count = selected_action_count(request["max_actions"], horizon, source="GR00T RoboCasa")
+    if any(value.shape[0] != horizon for value in groups.values()):
+        raise ValueError("GR00T returned inconsistent action horizons.")
+    native = np.concatenate(
+        (
+            groups["end_effector_position"],
+            groups["end_effector_rotation"],
+            np.where(groups["gripper_close"] < 0.5, -1.0, 1.0),
+            groups["base_motion"],
+            np.where(groups["control_mode"] < 0.5, -1.0, 1.0),
+        ),
+        axis=1,
+    )
+    if native.shape != (horizon, 12) or not np.isfinite(native).all():
+        raise ValueError("GR00T returned invalid native RoboCasa actions.")
+    if np.any(native < -1) or np.any(native > 1):
+        raise ValueError("GR00T returned actions outside the native RoboCasa controller range.")
+    model_actions = native.astype(np.float64).tolist()
+    return model_actions[:count], model_actions
+
+
 def verify_checkpoint_configuration(checkpoint: str) -> dict:
     return verify_gr00t_configuration(
         checkpoint, embodiment_id="robocasa_panda_omron", video_keys=list(CAMERAS.values()),
@@ -117,23 +142,4 @@ class Gr00tN1d6RoboCasa:
     def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
         inputs = prepare_policy_input(request, language_key=self.policy.language_key)
         action, _ = self.policy.get_action(inputs)
-        groups = {key: _action_group(action, key) for key in ACTION_SIZES}
-        horizon = groups["end_effector_position"].shape[0]
-        if any(value.shape[0] != horizon for value in groups.values()):
-            raise ValueError("GR00T returned inconsistent action horizons.")
-        native = np.concatenate(
-            (
-                groups["end_effector_position"],
-                groups["end_effector_rotation"],
-                np.where(groups["gripper_close"] < 0.5, -1.0, 1.0),
-                groups["base_motion"],
-                np.where(groups["control_mode"] < 0.5, -1.0, 1.0),
-            ),
-            axis=1,
-        )
-        if native.shape != (horizon, 12) or not np.isfinite(native).all():
-            raise ValueError("GR00T returned invalid native RoboCasa actions.")
-        if np.any(native < -1) or np.any(native > 1):
-            raise ValueError("GR00T returned actions outside the native RoboCasa controller range.")
-        model_actions = native.astype(np.float64).tolist()
-        return model_actions[:request["max_actions"]], model_actions
+        return native_action_record(action, request)

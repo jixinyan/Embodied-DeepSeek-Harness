@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from physical_harness.policies.action_outputs import read_action_array
+from physical_harness.policies.action_outputs import read_action_array, selected_action_count
 from physical_harness.policies.gr00t_checkpoint import verify_gr00t_configuration
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
@@ -141,6 +141,24 @@ def _action_group(action: dict[str, Any], key: str) -> np.ndarray:
     return value[0]
 
 
+def native_action_record(action: dict[str, Any], request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
+    _check_action_spec(request["action_spec"])
+    groups = {key: _action_group(action, key) for key in ACTION_GROUPS}
+    horizon = groups["base"].shape[0]
+    count = selected_action_count(request["max_actions"], horizon, source="GR00T BEHAVIOR")
+    if any(value.shape[0] != horizon for value in groups.values()):
+        raise ValueError("GR00T returned inconsistent BEHAVIOR action horizons.")
+    model_actions = np.concatenate([groups[key] for key in ACTION_GROUPS], axis=1)
+    if model_actions.shape != (horizon, 23) or not np.isfinite(model_actions).all():
+        raise ValueError("GR00T returned invalid native BEHAVIOR actions.")
+    channels = request["action_spec"]["channels"]
+    lower = np.asarray([channel["minimum"] for channel in channels], dtype=np.float64)
+    upper = np.asarray([channel["maximum"] for channel in channels], dtype=np.float64)
+    # OmniGibson 对 normalized command 和 absolute joint target 应用原生 controller 范围。
+    native = np.clip(model_actions[:count], lower, upper)
+    return native.astype(np.float64).tolist(), model_actions.astype(np.float64).tolist()
+
+
 def verify_checkpoint_configuration(checkpoint: str) -> dict:
     return verify_gr00t_configuration(
         checkpoint, embodiment_id="behavior_r1_pro", video_keys=list(CAMERAS.values()),
@@ -169,17 +187,4 @@ class Gr00tN1d6Behavior:
     def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
         inputs = prepare_policy_input(request, language_key=self.policy.language_key)
         action, _ = self.policy.get_action(inputs)
-        groups = {key: _action_group(action, key) for key in ACTION_GROUPS}
-        horizon = groups["base"].shape[0]
-        if any(value.shape[0] != horizon for value in groups.values()):
-            raise ValueError("GR00T returned inconsistent BEHAVIOR action horizons.")
-        count = min(request["max_actions"], horizon)
-        model_actions = np.concatenate([groups[key] for key in ACTION_GROUPS], axis=1)
-        if model_actions.shape != (horizon, 23) or not np.isfinite(model_actions).all():
-            raise ValueError("GR00T returned invalid native BEHAVIOR actions.")
-        channels = request["action_spec"]["channels"]
-        lower = np.asarray([channel["minimum"] for channel in channels], dtype=np.float64)
-        upper = np.asarray([channel["maximum"] for channel in channels], dtype=np.float64)
-        # OmniGibson 对 normalized command 和 absolute joint target 应用原生 controller 范围。
-        native = np.clip(model_actions[:count], lower, upper)
-        return native.astype(np.float64).tolist(), model_actions.astype(np.float64).tolist()
+        return native_action_record(action, request)

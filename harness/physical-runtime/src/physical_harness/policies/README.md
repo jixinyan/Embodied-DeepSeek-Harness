@@ -81,6 +81,22 @@ conversion. LeRobot rejects Boolean/complex tensors before CPU conversion and
 uses one CPU float64 copy for its recorded output and native gripper conversion.
 Canonical response validation and ActionGate remain required after these checks.
 
+Both GR00T adapters expose `native_action_record` in their existing provider module.
+Online `infer_with_record` calls that same function after `Gr00tPolicy.get_action`.
+It admits the requested ActionSpec, numeric group dimensions and matching horizons,
+then applies the provider's native controller conversion. The shared
+`selected_action_count` admits an integer request limit from 1 through 512 and
+selects its prefix within the model horizon. BEHAVIOR retains complete original
+model values alongside its range-clipped native prefix. RoboCasa retains the
+complete mapped controller sequence alongside its selected prefix.
+
+The [controller diagnostic](../../../../../scripts/check-gr00t-actions-offline.py)
+uses identified original request/action records through that exact production
+conversion, with explicit data provenance for restored groups and invalid
+derivatives. It checks controller thresholds, BEHAVIOR clipping, prefix selection,
+group admission and unchanged inputs without constructing a policy or simulator.
+See [CPU controller checks](../../../../../docs/implementation/cpu-release-validation.md#gr00t-controller-conversion).
+
 The [recorded-output diagnostic](../../../../../scripts/check-policy-outputs-offline.py)
 inspects original numeric matrices for all four providers and declared invalid
 derivatives without importing model SDKs. Recorded JSON matrices do not retain
