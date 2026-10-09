@@ -1,10 +1,27 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.118 · 2026-10-09
+Version: v1.119 · 2026-10-09
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
+
+RoboTwin's `decode_model_actions` admits complete finite floating-point
+`1-by-50-by-14` action tensors before and after actual saved postprocessing.
+Native inference admits integer action limits 1–512 before input preparation or
+model calls and retains native prefix/gripper conversion. Clean `a278547` passes
+34 actual LeRobot 0.6.1 CPU postprocessor checks on seven explicitly
+original-selected-prefix-derived inputs with declared capacity padding. Guarded
+actions and controller mapping match the same SDK result exactly. It additionally
+passes 21 saved input-processing, 70 original Torch/controller and 76 four-provider
+numeric cases. Independent verification confirms 472 source/input comparisons,
+five actual process releases, clean frozen source and unchanged canonical user
+changes. Local comparison verifies 35 implementation/manifest comparisons and
+unchanged prepared input, original native Torch and shared numeric results.
+CUDA stays uninitialized; model, inference, simulator and control allocations
+remain zero. Original complete normalized network predictions and loaded-policy
+behavior retain their separate requirements.
+See [saved postprocessor validation](implementation/cpu-release-validation.md#robotwin-checkpoint-action-postprocessing).
 
 GR00T normalized model output and checkpoint-decoded actions pass admission in
 `policies/gr00t_model_output.py`, bound to the actual processor by both native

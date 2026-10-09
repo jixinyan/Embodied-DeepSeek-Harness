@@ -1,8 +1,34 @@
 # Implementation checkpoint history
 
-Recorded through spec v1.118, 2026-10-09. Each checkpoint retains its own source
+Recorded through spec v1.119, 2026-10-09. Each checkpoint retains its own source
 revision, execution scope and acceptance evidence. Read [current progress](progress.md)
 for active requirements and [v1 delivery](v1-delivery.md) for release gates.
+
+## 2026-10-09 saved RoboTwin action postprocessing
+
+Clean `a278547` admits integer action counts 1–512 before input preparation/model
+calls and complete finite floating-point `1-by-50-by-14` tensors before and after
+saved SDK postprocessing. Native prefix/gripper/controller conversion retains its
+semantics.
+
+Actual LeRobot 0.6.1 passes 34 CPU checks on seven explicitly
+original-selected-prefix-derived normalized inputs with declared capacity padding.
+Guarded actions and controller mapping match the same actual saved postprocessor
+exactly. Twelve valid cases and twenty-two invalid numeric/type/shape/count/inverse-
+overflow derivatives pass. Original complete normalized predictions remain outside
+that recorded scope.
+
+The same frozen Linux source passes 21 input-processing, 70 original Torch/controller
+and 76 four-provider numeric cases. Independent verification matches 472 source/input
+comparisons and confirms four actual diagnostic process-group releases plus runner
+release. Source stays clean, canonical user changes remain unchanged and CUDA stays
+uninitialized. Local verification matches 35 implementation/manifest comparisons,
+unchanged original prepared tensors and identical original native/shared numeric
+results. The retained archive has SHA256
+`dd067186d1bb4a2645b11c1f2b0a709685bdd2897575ef97c4952899dfec8513`.
+Evidence: `.local/work/robotwin-postprocessor-cpu-linux-20261009-verified/`.
+Model, inference, simulator and control allocations remain zero; native loaded-policy
+and task behavior retain their own release requirements.
 
 ## 2026-10-09 installed GR00T action decoding
 

@@ -17,6 +17,20 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Clean `a278547` admits RoboTwin action count before model calls and complete finite
+floating-point tensors before/after saved postprocessing. Actual LeRobot 0.6.1
+passes 34 CPU postprocessor cases on seven explicitly original-selected-prefix-derived
+inputs with declared capacity padding. Guarded actions and controller conversion
+match the same saved SDK result exactly. Twenty-one input-processing, seventy
+original Torch/controller and seventy-six four-provider numeric cases also pass.
+Independent checks match 472 source/input comparisons, five actual process releases,
+clean frozen source and unchanged canonical user changes. Local verification matches
+35 implementation/manifest comparisons and unchanged prepared input, native Torch
+and shared numeric results. CUDA stays uninitialized, with zero model, inference,
+simulator or control allocation. Complete normalized network predictions and native
+loaded-policy/task acceptance retain their own requirements.
+See [saved postprocessor acceptance](cpu-release-validation.md#robotwin-checkpoint-action-postprocessing).
+
 Clean `2592b1d` binds normalized model-output and decoded-group admission around
 each GR00T checkpoint processor. Actual installed SDK normalization and relative
 decoding pass 1,306 CPU checks on 1,272 explicitly original-record-derived inputs.

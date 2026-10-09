@@ -195,6 +195,27 @@ CUDA stays uninitialized. Model loads, inference, simulator allocation and contr
 remain zero. Complete normalized predictions, loaded-policy/device behavior and
 native task outcomes retain their own requirements.
 
+Clean `a278547` passes 34 actual LeRobot 0.6.1 CPU postprocessor checks on seven
+original selected 16-step model prefixes, each explicitly normalized by the saved
+SDK and capacity-padded to 50 steps. Twelve cases pass: seven recorded-prefix
+derivatives, three additional floating dtypes and two action-count limits.
+Twenty-two invalid numeric/type/shape/count/inverse-overflow derivatives fail
+production admission. Guarded actions and native mapping match the same actual
+SDK exactly.
+
+The same clean Linux source passes 21 saved input-processing cases, 70 original
+Torch/controller cases and 76 four-provider numeric cases. Independent verification
+matches 472 source/input hashes and confirms four actual diagnostic process-group
+releases plus runner release. Original files and canonical user changes remain
+unchanged, frozen source stays clean and CUDA stays uninitialized. Local verification
+matches 35 implementation/manifest comparisons, unchanged original prepared tensors,
+identical original native Torch results and identical shared numeric results.
+GPU jobs, model loads/calls, simulator allocations and controls remain zero.
+
+The retained archive has SHA256
+`dd067186d1bb4a2645b11c1f2b0a709685bdd2897575ef97c4952899dfec8513`.
+Evidence: `.local/work/robotwin-postprocessor-cpu-linux-20261009-verified/`.
+
 ### RoboTwin pre-model saved-processor admission
 
 The production `prepare_checkpoint_processors` function admits the tokenizer and

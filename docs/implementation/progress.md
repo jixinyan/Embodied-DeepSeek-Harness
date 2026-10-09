@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-09 · Spec v1.118 · v1 release acceptance in progress.
+Updated: 2026-10-09 · Spec v1.119 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| `a278547` | RoboTwin admits action count before input preparation/model calls and complete finite floating-point tensors before/after saved postprocessing. Actual LeRobot 0.6.1 CPU checks pass 34 saved-postprocessor cases on seven original selected-prefix derivatives, 21 input cases, 70 original Torch/controller cases and 76 four-provider numeric cases. Independent verification matches 472 source/input comparisons, five actual process releases and 35 local implementation/manifest comparisons. Original prepared/native values remain unchanged and CUDA stays uninitialized. |
 | `2592b1d` | Both GR00T constructors bind normalized float32 model-output and decoded-group admission to the actual checkpoint processor. Installed SDK CPU checks pass 1,306 cases on 1,272 original-record-derived inputs, with exact SDK float32/controller equality and checkpoint padding. Clean Linux source additionally passes 1,330 controller and 76 numeric checks. Independent verification matches 2,706 source/input hashes, five actual process releases and 44 local production/manifest comparisons. CUDA stays uninitialized and canonical user changes remain unchanged. |
 | `de9b7f2` | CPU campaign output admission resolves the existing parent through the actual filesystem, supports configured directory aliases and keeps output within this checkout's `.local/work`. Thirty-one components and 548 admission/process/wire/resource cases pass per platform on macOS and isolated Linux, with 469 source/input comparisons, twelve context-source comparisons and thirty-one released diagnostic process groups per platform. Three actual CLI output-admission cases also reject before component startup. |
 | `e38d488` | The configured CPU release campaign includes the same production GR00T controller conversion used by online inference. Thirty-one components and 548 admission/process/wire/resource cases pass on macOS, with source identities, independent context inspection and actual diagnostic process-group release. |
@@ -61,7 +62,7 @@ Recorded GR00T model-input checks independently verify 418 SDK/checkpoint/input/
 Original files/server status remain unchanged and actual diagnostic processes
 release. CUDA stays uninitialized; model, inference, environment and control
 allocations remain zero. Full source checks pass with 70 Python files, 28 base
-imports, 51 diagnostics and 128 pinned DSH files/25 bindings.
+imports, 52 diagnostics and 128 pinned DSH files/25 bindings.
 Evidence and commands: [CPU validation](cpu-release-validation.md#gr00t-pre-inference-model-input-admission).
 
 Current GR00T controller conversion separately verifies original group/horizon,
@@ -81,6 +82,15 @@ The guarded float32 groups and native mapping match the same SDK decoding exactl
 Source/report/archive identities and actual process releases verify independently;
 GPU, model, simulator and control allocations remain zero.
 See [decoding validation](cpu-release-validation.md#gr00t-checkpoint-action-decoding).
+
+Current RoboTwin saved action postprocessing admits complete model tensors and
+checks inverse-normalization results before native prefix selection. Explicit
+original-selected-prefix derivatives and declared capacity padding match the same
+actual SDK postprocessor exactly; original complete normalized predictions remain
+outside these records. Saved input processing and original native conversion retain
+their prior verified values. Reports, source identities and actual process-group
+releases verify independently with zero model, simulator or GPU allocation.
+See [postprocessor validation](cpu-release-validation.md#robotwin-checkpoint-action-postprocessing).
 
 Native geometry additionally passes 39 checks on both platforms with 78 original
 input/production-source comparisons per platform. Original file identities,
