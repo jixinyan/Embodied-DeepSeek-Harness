@@ -17,6 +17,16 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Clean `48bcc47` admits actual GR00T collator output after native bfloat16 conversion
+and before inference. Seventy-two installed processor/codec checks on forty-six
+original requests pass, including twelve GR00T invalid-state/dtype/conversion
+derivatives; original prepared values remain unchanged. All 111 configuration
+checks pass on both CPU platforms. Independent verification matches 418 SDK/input/
+source hashes, 16 configuration sources, 327 derivative hashes and 51 local source
+comparisons. CUDA remains uninitialized and actual diagnostic processes release.
+No policy network, inference, environment or controls allocate.
+See [model-input acceptance](cpu-release-validation.md#gr00t-pre-inference-model-input-admission).
+
 Clean `d937330` loads and admits actual saved RoboTwin SDK processors before policy
 construction. Twenty-two original/invalid JSON/safetensors/selector checks pass in
 the installed LeRobot environment; sixty installed processor/codec checks on

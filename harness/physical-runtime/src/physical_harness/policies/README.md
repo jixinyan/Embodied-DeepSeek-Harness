@@ -52,6 +52,15 @@ relative-action references and instruction key. This reader uses checkpoint
 metadata and JSON Schema without NumPy, Torch or the GR00T SDK; original SDK
 processing and model inference remain in `Gr00tPolicy`.
 
+[`gr00t_model_input.py`](gr00t_model_input.py) admits the actual collator output
+after the SDK's native bfloat16 conversion and before `model.get_action`.
+Both selected GR00T adapters bind this check to their policy's `collate_fn`.
+The prepared state must be a floating-point tensor; every model-input tensor
+must be finite and noncomplex. This includes finite float32 state values that
+overflow during conversion to bfloat16. Native processing, dtype conversion,
+inference and action decoding retain their SDK owners. The module imports the
+selected SDK and Torch only when the GR00T adapter is constructed.
+
 The [configuration diagnostic](../../../../../scripts/check-gr00t-configuration-offline.py)
 checks original pinned metadata and explicitly declared invalid copies through
 these production constructors in a CPU environment without the model SDK. Valid

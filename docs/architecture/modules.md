@@ -113,6 +113,10 @@ uses original request and checkpoint sources with no policy network allocation.
 The two native GR00T constructors supply their ordered modalities, dimensions,
 horizons and action semantics. Original SDK processing and inference remain with
 `Gr00tPolicy`; file identity remains with the provenance reader.
+`policies/gr00t_model_input.py` wraps the selected SDK collator and native bfloat16
+conversion with floating-state and finite/noncomplex tensor admission before
+model inference. Both GR00T constructors bind that same function; the installed
+CPU diagnostic uses it with actual checkpoint processing and original requests.
 The RoboTwin adapter's `prepare_checkpoint_processors` loads and admits actual
 saved SDK processors before policy construction. Its constructor and installed
 CPU diagnostic use that same feature, normalization and absolute-target admission.

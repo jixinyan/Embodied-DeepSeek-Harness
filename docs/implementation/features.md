@@ -82,6 +82,13 @@ processor/codec checks on forty-six original requests preserve exact prepared
 values, with independently verified file/source identities and released diagnostic
 processes. These checks allocate no policy network, simulator or device operation.
 
+GR00T also admits actual collator tensors after native bfloat16 conversion and
+before inference. Clean `48bcc47` passes 72 installed processor/codec checks on
+forty-six original requests, including twelve GR00T invalid-state/dtype/conversion
+derivatives. Original prepared values remain unchanged; independent source/report
+checks pass and diagnostic processes release with CUDA uninitialized.
+See [model-input validation](cpu-release-validation.md#gr00t-pre-inference-model-input-admission).
+
 RoboTwin's constructor admits actual saved SDK processors before policy construction.
 Clean `d937330` passes 22 original/invalid configuration/statistic checks and sixty
 installed processor/codec checks on forty-six original requests with unchanged

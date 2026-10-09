@@ -1,7 +1,39 @@
 # Implementation progress
 
-Spec: v1.112. Current checkpoint: **pre-model saved RoboTwin processor admission, pre-SDK GR00T configuration admission, installed checkpoint CPU preprocessing, shared policy input/output admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.113. Current checkpoint: **GR00T pre-inference tensor admission, pre-model saved RoboTwin processor admission, pre-SDK GR00T configuration admission, installed checkpoint CPU preprocessing, shared policy input/output admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 The [capability map](features.md) records implementation and acceptance boundaries.
+
+## 2026-10-08 GR00T pre-inference tensor admission
+
+Both native GR00T adapters bind `collate_model_input` to the selected SDK's
+`collate_fn`. It uses the actual collator and original bfloat16 conversion,
+then requires floating-point state and finite, noncomplex model-input tensors.
+Finite float32 values that overflow during bfloat16 conversion fail before
+`model.get_action`. Native inference, decoding and action conversion retain
+their original SDK and adapter owners.
+
+Clean `48bcc47` passes 72 actual installed processor/codec checks on forty-six
+original requests: RoboTwin 21, RoboCasa 30, BEHAVIOR 9 and RoboDojo 12.
+Twelve GR00T derivatives check NaN, Infinity, both signs of bfloat16 conversion
+overflow, Boolean state and complex state through the actual collator. Every
+original prepared tensor/envelope remains identical to its prior verified values.
+The production constructors pass all 111 configuration checks on both macOS and
+isolated Linux. Independent checks match 418 SDK/checkpoint/input/source hashes,
+16 configuration sources, 327 derivative hashes and 51 local source comparisons.
+Archive/report digests match; original files and canonical server status remain
+unchanged, source stays clean and actual OS inspection confirms diagnostic release.
+CUDA stays uninitialized; policy network, inference, environment and controls
+remain unallocated.
+
+Full macOS source checks and isolated Linux Python checks pass: 69 Python files,
+28 base imports, 49 diagnostics and 128 pinned DSH files/25 bindings.
+Evidence: `.local/work/v1-gr00t-model-input-linux-20261008-verified/` and
+`.local/work/v1-gr00t-model-input-macos-20261008/`.
+Installed SDK archive SHA256:
+`64c4050f7280b3b27d2d9552a61f95f963a65648a96d8c311614b739bf202bac`.
+Source/configuration archive SHA256:
+`929f94705514cce06bc851840c12722432336cc27f68de3cb2e10ffd214008fc`.
+Loaded-model/device behavior and complete native tasks retain their release gates.
 
 ## 2026-10-08 RoboTwin saved-processor admission
 

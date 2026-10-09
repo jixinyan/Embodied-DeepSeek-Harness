@@ -58,6 +58,47 @@ cancellation, physical stopping and native task outcomes retain their release ga
 
 ## Installed checkpoint processors
 
+### GR00T pre-inference model-input admission
+
+`collate_model_input` uses the real SDK collator and native bfloat16 conversion,
+then checks floating-point state and finite, noncomplex model-input tensors.
+Both GR00T adapters bind it to their selected policy's `collate_fn` before online
+inference. The installed processor diagnostic calls the same production function
+with actual checkpoint processors and original requests, without a policy network.
+
+Clean `48bcc47` passes the following isolated Linux checks:
+
+| Provider | Original requests | Total checks | Invalid derivatives |
+| --- | --- | --- | --- |
+| RoboTwin | 7 | 21 | 14 saved-normalization overflows |
+| RoboCasa | 24 | 30 | 6 GR00T prepared-state/dtype/conversion checks |
+| BEHAVIOR | 3 | 9 | 6 GR00T prepared-state/dtype/conversion checks |
+| RoboDojo | 12 | 12 | 0 |
+
+GR00T derivatives cover NaN, Infinity, both signs of finite-float32-to-bfloat16
+overflow, Boolean state and complex state. Each derivative uses the actual SDK
+collator and fails at production admission. All forty-six original requests retain
+identical prepared tensor/envelope values, including tensor path, dtype, shape and
+byte identity. The configuration diagnostic also passes 111 checks on both macOS
+and isolated Linux, with invalid production constructors failing before SDK imports.
+
+Independent verification matches 418 SDK/checkpoint/input/source hashes,
+16 configuration sources, 327 derivative hashes and 51 local source comparisons.
+Report/archive digests match, original files and canonical server status remain
+unchanged, frozen source stays clean and actual OS checks confirm diagnostic
+process absence. CUDA remains uninitialized; model, inference, environment and
+control allocations remain zero. Full macOS source checks and isolated Linux
+Python checks pass with 69 Python files, 28 base imports and 49 diagnostics.
+
+Evidence: `.local/work/v1-gr00t-model-input-linux-20261008-verified/` and
+`.local/work/v1-gr00t-model-input-macos-20261008/`.
+Installed processor archive SHA256:
+`64c4050f7280b3b27d2d9552a61f95f963a65648a96d8c311614b739bf202bac`.
+Source/configuration archive SHA256:
+`929f94705514cce06bc851840c12722432336cc27f68de3cb2e10ffd214008fc`.
+Loaded-model stopping, device behavior and complete native tasks retain their
+individual release gates.
+
 ### RoboTwin pre-model saved-processor admission
 
 The production `prepare_checkpoint_processors` function admits the tokenizer and

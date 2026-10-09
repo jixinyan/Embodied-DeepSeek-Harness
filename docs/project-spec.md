@@ -1,10 +1,21 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.112 · 2026-10-08
+Version: v1.113 · 2026-10-08
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
+
+GR00T model-input admission uses the actual SDK collator and native bfloat16
+conversion before model inference. State must remain floating-point and every
+prepared tensor must be finite and noncomplex. Clean `48bcc47` passes 72 installed
+processor/codec checks on forty-six original four-provider requests, including
+twelve GR00T invalid-state/dtype/conversion derivatives. Original prepared values
+are unchanged. The production constructors also pass 111 configuration checks
+on macOS and isolated Linux. Independent checks verify 418 SDK/input/source hashes,
+16 configuration sources, 327 derivative hashes and 51 local source comparisons.
+CUDA remains uninitialized; model, inference, simulator and control allocations
+remain zero. See [model-input acceptance](implementation/cpu-release-validation.md#gr00t-pre-inference-model-input-admission).
 
 RoboTwin startup prepares its real saved SDK processors before policy construction.
 Tokenizer/model features, loaded normalization modes and finite native statistics,

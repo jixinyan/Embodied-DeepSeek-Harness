@@ -60,6 +60,7 @@ All Python provider code belongs under
 | Start a configured native policy, record model identity and admit service connections | [policies/services](../../harness/physical-runtime/src/physical_harness/policies/services/README.md) |
 | Validate selected GR00T/LeRobot file identity | [policies/provenance.py](../../harness/physical-runtime/src/physical_harness/policies/provenance.py) |
 | Admit GR00T model/processor/statistics compatibility before SDK or model loading | [policies/gr00t_checkpoint.py](../../harness/physical-runtime/src/physical_harness/policies/gr00t_checkpoint.py) |
+| Admit actual GR00T collator tensors after native bfloat16 conversion and before model inference | [policies/gr00t_model_input.py](../../harness/physical-runtime/src/physical_harness/policies/gr00t_model_input.py) |
 | Load and admit saved RoboTwin checkpoint processors before policy construction | [policies/lerobot_pi05_robotwin.py](../../harness/physical-runtime/src/physical_harness/policies/lerobot_pi05_robotwin.py), `prepare_checkpoint_processors` |
 | Verify complete native OpenPI inventory and saved ARX X5 normalization before model imports | [policies/openpi_checkpoint.py](../../harness/physical-runtime/src/physical_harness/policies/openpi_checkpoint.py) |
 | Add an environment | [environments](../../harness/physical-runtime/src/physical_harness/environments/README.md); each provider has one named subdirectory |
