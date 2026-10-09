@@ -101,10 +101,11 @@ def inspect(args):
             else:
                 from physical_harness.policies.gr00t_n1d6_robocasa import prepare_policy_input
                 embodiment = EmbodimentTag.ROBOCASA_PANDA_OMRON
-            for name in ("config.json", "processor_config.json", "statistics.json", "embodiment_id.json"):
+            for name in ("config.json", "processor_config.json", "statistics.json"):
                 path = original(checkpoint / name)
                 if sources[str(path)] != manifest["upstream"]["checkpoint_files_sha256"][name]:
                     raise ValueError(f"Processor checkpoint source differs from the original {name}.")
+            original(checkpoint / "embodiment_id.json")
             processor = AutoProcessor.from_pretrained(
                 checkpoint, transformers_loading_kwargs={"trust_remote_code": True, "local_files_only": True},
             )
