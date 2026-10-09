@@ -2,7 +2,9 @@ import argparse
 from functools import partial
 import hashlib
 import json
+import os
 from pathlib import Path
+import socket
 import time
 from uuid import UUID
 
@@ -20,6 +22,14 @@ def main():
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error("--port must be between 1 and 65535.")
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+        if os.name == "posix":
+            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        listener.bind(("127.0.0.1", args.port))
+        start_native_service(args, listener)
+
+
+def start_native_service(args, listener):
     checkpoint = args.checkpoint.resolve(strict=True)
     verified = verify_checkpoint(checkpoint, args.inventory)
     expected_sha256 = (
@@ -42,13 +52,20 @@ def main():
     import jax
     import numpy as np
     from openpi.policies import policy_config
-    from openpi.serving.websocket_policy_server import WebsocketPolicyServer
+    from openpi.serving.websocket_policy_server import WebsocketPolicyServer, _health_check
     from openpi.training import config
     from openpi_client.base_policy import BasePolicy
+    from websockets.asyncio.server import serve
 
     from physical_harness.policies.action_outputs import read_action_array
     from physical_harness.policies.openpi_model_input import prepare_model_input
     from physical_harness.policies.openpi_model_output import decode_model_actions
+
+    class BoundPolicyServer(WebsocketPolicyServer):
+        async def run(self):
+            async with serve(self._handler, sock=listener, compression=None,
+                             max_size=None, process_request=_health_check) as server:
+                await server.serve_forever()
 
     class IdentifiedPolicy(BasePolicy):
         def __init__(self, policy, identity):
@@ -107,8 +124,8 @@ def main():
                 "gripper_semantics": "continuous_0_closed_1_open"}
     policy = IdentifiedPolicy(trained, identity)
     print(json.dumps({"service": "openpi-robodojo-native", "port": args.port, **identity}), flush=True)
-    WebsocketPolicyServer(policy, host="127.0.0.1", port=args.port,
-                          metadata=policy.metadata).serve_forever()
+    BoundPolicyServer(policy, host="127.0.0.1", port=args.port,
+                      metadata=policy.metadata).serve_forever()
 
 
 if __name__ == "__main__":

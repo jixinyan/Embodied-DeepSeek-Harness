@@ -48,6 +48,9 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
         ("openpi-robodojo-json", "serve_openpi_robodojo.py", "physical_harness.policies.services.openpi_robodojo",
          ["--native-policy-uri", "ws://127.0.0.1:1",
           "--checkpoint-sha256", "fbf1abbda5863ebe4193754a9db16a1637d9127f042052b828e2aaeee7cc5dc7"]),
+        ("openpi-robodojo-native", "serve_openpi_robodojo_native.py", "physical_harness.policies.services.openpi_robodojo_native",
+         ["--checkpoint", str(output / "absent-checkpoint"),
+          "--inventory", str(output / "absent-inventory"), "--verification-output", str(output / "verification.json")]),
     )
     cases = []
     with socket.create_server(("127.0.0.1", 0)) as listener:
@@ -84,7 +87,7 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
                 raise AssertionError(f"Policy checkpoint digest syntax did not fail during argument admission: {name}/{entry}")
             cases.append({"service": name, "entry": entry, "mode": "invalid-checkpoint-digest", "pid": pid,
                           "exitCode": exit_code, "ownedProcessExited": True, "modelLoaded": False})
-            if name == "openpi-robodojo-json":
+            if name in ("openpi-robodojo-json", "openpi-robodojo-native"):
                 continue
             with socket.create_server(("127.0.0.1", 0)) as candidate:
                 selected_port = candidate.getsockname()[1]
@@ -99,24 +102,11 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
                           "exitCode": exit_code, "ownedProcessExited": True,
                           "boundPortReusable": True, "originalFileErrorPreserved": True, "modelLoaded": False})
     for entry, module in (("example", None), ("module", "physical_harness.policies.services.openpi_robodojo_native")):
-        pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable,
-            "serve_openpi_robodojo_native.py", ["--help"], f"openpi-robodojo-native.{entry}", "help", module)
-        if exit_code != 0 or b"usage:" not in stdout or stderr:
-            raise AssertionError(f"Native OpenPI help did not finish before optional model loading: {entry}")
-        cases.append({"service": "openpi-robodojo-native", "entry": entry, "mode": "help", "pid": pid,
-                      "exitCode": exit_code, "ownedProcessExited": True, "modelLoaded": False})
         arguments = ["--checkpoint", str(output / "absent-checkpoint"),
                      "--inventory", str(output / "absent-inventory"),
                      "--verification-output", str(output / "verification.json")]
-        pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable,
-            "serve_openpi_robodojo_native.py", arguments + ["--checkpoint-sha256", "invalid"],
-            f"openpi-robodojo-native.{entry}", "invalid-checkpoint-digest", module)
-        if (exit_code != 2 or b"--checkpoint-sha256" not in stderr
-                or b"ModuleNotFoundError" in stderr or b"Traceback" in stderr or stdout):
-            raise AssertionError(f"Native OpenPI checkpoint digest syntax did not fail during argument admission: {entry}")
-        cases.append({"service": "openpi-robodojo-native", "entry": entry,
-                      "mode": "invalid-checkpoint-digest", "pid": pid, "exitCode": exit_code,
-                      "ownedProcessExited": True, "modelLoaded": False})
+        with socket.create_server(("127.0.0.1", 0)) as candidate:
+            native_port = candidate.getsockname()[1]
         for selected_port in (-1, 0, 65536):
             mode = f"invalid-port-{selected_port}"
             pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable,
@@ -133,14 +123,16 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
             pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable,
                 "serve_openpi_robodojo_native.py",
                 ["--checkpoint", str(checkpoint), "--inventory", str(output / "absent-inventory"),
-                 "--verification-output", str(output / "verification.json")],
+                 "--verification-output", str(output / "verification.json"), "--port", str(native_port)],
                 f"openpi-robodojo-native.{entry}", mode, module)
             if (exit_code == 0 or b"FileNotFoundError" not in stderr or b"ModuleNotFoundError" in stderr
                     or os.fsencode(str(absent)) not in stderr or stdout):
                 raise AssertionError(f"Native OpenPI file admission did not preserve its actual source error: {entry}/{mode}")
+            with socket.create_server(("127.0.0.1", native_port)):
+                pass
             cases.append({"service": "openpi-robodojo-native", "entry": entry, "mode": mode, "pid": pid,
                           "exitCode": exit_code, "ownedProcessExited": True,
-                          "originalFileErrorPreserved": True, "modelLoaded": False})
+                          "originalFileErrorPreserved": True, "boundPortReusable": True, "modelLoaded": False})
         if (output / "verification.json").exists():
             raise AssertionError("Rejected native OpenPI startup published a checkpoint verification result.")
     return cases
