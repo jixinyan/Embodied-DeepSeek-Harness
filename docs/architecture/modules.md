@@ -120,6 +120,13 @@ horizons and action semantics. Original SDK processing and inference remain with
 conversion with floating-state and finite/noncomplex tensor admission before
 model inference. Both GR00T constructors bind that same function; the installed
 CPU diagnostic uses it with actual checkpoint processing and original requests.
+`policies/gr00t_model_output.py` wraps the actual checkpoint processor's
+`decode_action`. Both GR00T constructors bind it after policy construction. It
+admits finite normalized float32 model values, configured horizon/channel capacity,
+and exact decoded group keys, shapes and finite float32 range. Actual SDK
+normalization, model padding and relative-to-absolute semantics remain unchanged.
+Scoped NumPy arithmetic checks apply during decoding; native controller mapping
+and ActionGate retain their existing owners.
 The RoboTwin adapter's `prepare_checkpoint_processors` loads and admits actual
 saved SDK processors before policy construction. Its constructor and installed
 CPU diagnostic use that same feature, normalization and absolute-target admission.

@@ -62,6 +62,7 @@ All Python provider code belongs under
 | Validate selected GR00T/LeRobot file identity | [policies/provenance.py](../../harness/physical-runtime/src/physical_harness/policies/provenance.py) |
 | Admit GR00T model/processor/statistics compatibility before SDK or model loading | [policies/gr00t_checkpoint.py](../../harness/physical-runtime/src/physical_harness/policies/gr00t_checkpoint.py) |
 | Admit actual GR00T collator tensors after native bfloat16 conversion and before model inference | [policies/gr00t_model_input.py](../../harness/physical-runtime/src/physical_harness/policies/gr00t_model_input.py) |
+| Admit normalized GR00T model output and checkpoint-decoded float32 groups | [policies/gr00t_model_output.py](../../harness/physical-runtime/src/physical_harness/policies/gr00t_model_output.py) |
 | Convert GR00T groups into recorded native controller actions | [policies/gr00t_n1d6_behavior.py](../../harness/physical-runtime/src/physical_harness/policies/gr00t_n1d6_behavior.py) and [policies/gr00t_n1d6_robocasa.py](../../harness/physical-runtime/src/physical_harness/policies/gr00t_n1d6_robocasa.py), `native_action_record` |
 | Load and admit saved RoboTwin checkpoint processors before policy construction | [policies/lerobot_pi05_robotwin.py](../../harness/physical-runtime/src/physical_harness/policies/lerobot_pi05_robotwin.py), `prepare_checkpoint_processors` |
 | Verify complete native OpenPI inventory and saved ARX X5 normalization before model imports | [policies/openpi_checkpoint.py](../../harness/physical-runtime/src/physical_harness/policies/openpi_checkpoint.py) |
@@ -104,6 +105,7 @@ implementations load in their separately configured service processes.
 | Admit numeric policy outputs before native conversion | [action_outputs.py](../../harness/physical-runtime/src/physical_harness/policies/action_outputs.py) |
 | Check original recorded numeric outputs and declared invalid derivatives without model SDKs | [check-policy-outputs-offline.py](../../scripts/check-policy-outputs-offline.py) |
 | Check GR00T native controller conversion on identified original action records | [check-gr00t-actions-offline.py](../../scripts/check-gr00t-actions-offline.py) |
+| Check actual installed GR00T normalization/relative decoding on original-record-derived groups | [check-gr00t-decoding-offline.py](../../scripts/check-gr00t-decoding-offline.py) |
 | Prepare original requests through installed checkpoint processors or the OpenPI codec without policy inference | [check-policy-processors-offline.py](../../scripts/check-policy-processors-offline.py) |
 | Inspect original GR00T metadata and reject invalid configuration before policy construction | [check-gr00t-configuration-offline.py](../../scripts/check-gr00t-configuration-offline.py) |
 | Check actual saved RoboTwin processors and reject invalid metadata/statistics without a policy network | [check-lerobot-configuration-offline.py](../../scripts/check-lerobot-configuration-offline.py) |

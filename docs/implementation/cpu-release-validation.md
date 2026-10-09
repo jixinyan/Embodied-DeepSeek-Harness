@@ -330,6 +330,47 @@ Reports: `.local/work/v1-policy-outputs-robotwin-tensors-linux-20261008.acceptan
 and `.local/work/v1-policy-outputs-robotwin-tensors-linux-20261008.verified.json`.
 Raw GR00T SDK groups, loaded-model/device and physical behavior retain native gates.
 
+### GR00T checkpoint action decoding
+
+The [installed decoder diagnostic](../../scripts/check-gr00t-decoding-offline.py)
+uses actual local GR00T checkpoint processors without constructing a policy
+network. Both online adapter constructors bind the same
+[`decode_model_action`](../../harness/physical-runtime/src/physical_harness/policies/gr00t_model_output.py)
+around the processor's `decode_action`. Normalized model arrays require finite
+float32 values and configured horizon/channel capacity. Actual SDK decoding
+retains checkpoint padding, unnormalization and relative-to-absolute conversion.
+Exact decoded keys, group dimensions, finite values and float32 range are admitted
+before the SDK's final float32 cast. Scoped NumPy arithmetic terminates numerical
+overflow, invalid operations and division by zero during decoding.
+
+```sh
+CUDA_VISIBLE_DEVICES='' HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+  PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=harness/physical-runtime/src \
+  /path/to/installed-gr00t/bin/python scripts/check-gr00t-decoding-offline.py \
+  --configuration /absolute/path/original-checkpoint-audit-inputs.json \
+  --provider behavior --checkpoint /path/to/checkpoints/GR00T-N1.6-BEHAVIOR1k \
+  --output .local/work/<new-decoding-check>
+```
+
+Select `robocasa` with its actual compatible checkpoint for that provider. The
+configuration uses original `conventional` entries with `run`, `requests`,
+`serviceLog` and `manifest` paths. Complete `model_actions` are required: original
+concatenated model groups for BEHAVIOR and mapped controller derivatives for
+RoboCasa. The real SDK's `apply_action` creates explicitly derived normalized
+inputs from those records and their original states. Guarded output groups and
+native controller actions must match the same SDK decoder followed by its
+original float32 cast exactly. This inspection does not recover original
+normalized network predictions or RoboCasa category probabilities.
+
+Checks cover actual recorded cohorts, checkpoint capacity padding, nonfinite
+values, non-real dtypes, float16/float64 normalized inputs, rank, batch,
+insufficient horizon/channels, empty arrays and invalid BEHAVIOR relative states.
+Original request, normalized derivative, state and source files remain unchanged.
+Reports preserve source hashes, derived-input/group hashes and process identities.
+CUDA stays uninitialized, with zero model loads, inference, simulator allocation
+or controls. Loaded checkpoint and physical-task acceptance retain their native
+requirements.
+
 ### GR00T controller conversion
 
 The [controller diagnostic](../../scripts/check-gr00t-actions-offline.py) calls the

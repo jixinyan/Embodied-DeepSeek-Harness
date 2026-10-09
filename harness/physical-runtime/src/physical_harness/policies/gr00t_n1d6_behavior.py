@@ -173,6 +173,7 @@ class Gr00tN1d6Behavior:
         from gr00t.data.embodiment_tags import EmbodimentTag
         from gr00t.policy.gr00t_policy import Gr00tPolicy
         from physical_harness.policies.gr00t_model_input import collate_model_input
+        from physical_harness.policies.gr00t_model_output import decode_model_action
         self.policy = Gr00tPolicy(
             embodiment_tag=EmbodimentTag.BEHAVIOR_R1_PRO,
             model_path=checkpoint,
@@ -180,6 +181,10 @@ class Gr00tN1d6Behavior:
             strict=True,
         )
         self.policy.collate_fn = partial(collate_model_input, self.policy.collate_fn)
+        self.policy.processor.decode_action = partial(
+            decode_model_action, self.policy.processor.decode_action,
+            action_dimensions=ACTION_GROUPS, action_horizon=32,
+        )
 
     def infer(self, request: dict[str, Any]) -> list[list[float]]:
         return self.infer_with_record(request)[0]

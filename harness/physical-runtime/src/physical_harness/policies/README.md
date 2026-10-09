@@ -81,6 +81,22 @@ conversion. LeRobot rejects Boolean/complex tensors before CPU conversion and
 uses one CPU float64 copy for its recorded output and native gripper conversion.
 Canonical response validation and ActionGate remain required after these checks.
 
+[`gr00t_model_output.py`](gr00t_model_output.py) admits normalized float32 model
+output around the checkpoint processor's `decode_action`. Both GR00T constructors
+bind this function to their actual processor. Model output must be finite and
+provide the configured horizon and channel capacity; checkpoint padding remains
+supported. The SDK retains normalization and relative-to-absolute conversion.
+Its exact decoded keys, group dimensions, finite values and float32 range are
+checked before the native SDK's final float32 output conversion. NumPy overflow,
+invalid arithmetic and division by zero terminate at decoding.
+
+The [installed decoder diagnostic](../../../../../scripts/check-gr00t-decoding-offline.py)
+loads actual checkpoint processors and normalizes explicitly original-record-derived
+groups through the SDK. Guarded decoded groups and native controller conversion
+must match the same SDK decoder's float32 result exactly. Original normalized
+network predictions and fresh model inference remain outside that CPU inspection.
+See [SDK decoding checks](../../../../../docs/implementation/cpu-release-validation.md#gr00t-checkpoint-action-decoding).
+
 Both GR00T adapters expose `native_action_record` in their existing provider module.
 Online `infer_with_record` calls that same function after `Gr00tPolicy.get_action`.
 It admits the requested ActionSpec, numeric group dimensions and matching horizons,
