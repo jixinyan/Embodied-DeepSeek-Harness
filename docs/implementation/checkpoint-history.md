@@ -1,8 +1,38 @@
 # Implementation checkpoint history
 
-Recorded through spec v1.115, 2026-10-08. Each checkpoint retains its own source
+Recorded through spec v1.116, 2026-10-09. Each checkpoint retains its own source
 revision, execution scope and acceptance evidence. Read [current progress](progress.md)
 for active requirements and [v1 delivery](v1-delivery.md) for release gates.
+
+## 2026-10-09 cross-platform current-source CPU acceptance
+
+Clean `c857e13` passes all thirty CPU components on both macOS and isolated Linux,
+with 463 admission/process/wire/resource cases per platform. Six visual-context
+cases, twelve original context reads and four-provider readiness also pass.
+Independent checks verify 428 source/input hashes and thirty actual process-group
+releases per platform. Linux additionally verifies twelve context-implementation
+hashes, actual campaign-runner release, clean frozen source and unchanged canonical
+server status. Full source checks pass with 69 Python files, 28 base imports,
+49 diagnostics and 128 pinned DSH files/25 bindings.
+Local comparison additionally verifies 191 production-source comparisons, ten
+original inputs/contexts, thirty Linux process receipts and twenty-nine component
+reports. Original contexts and four-provider readiness match. The downloaded
+campaign archive retains SHA256
+`548d03105815cfc3c1cf8a7fcfb860546fe4d3bee859d89d8391b59aee99e2d0`.
+
+The same source preserves exact native DSH JSON and ordered image metadata for
+98 original tool results per platform across seven tasks: 27 image results,
+81 images and six formal checks. Independent checks verify seventeen source/journal
+identities per platform, report/archive digests and actual Linux diagnostic release.
+Original journals and task outcomes remain unchanged. Model, simulator, inference,
+physical-control and GPU allocations remain zero.
+
+Evidence: `.local/work/tool-evidence-cpu-campaign-macos-20261008/`,
+`.local/work/tool-evidence-cpu-campaign-linux-20261009-verified/`,
+`.local/work/tool-evidence-cpu-macos-20261008-verified/` and
+`.local/work/tool-evidence-cpu-linux-20261008-verified/`.
+Native original-goal success, loaded-policy stop/fault boundaries and complete
+configuration/perception workflows retain the active release gates.
 
 ## 2026-10-08 core tool evidence ownership
 

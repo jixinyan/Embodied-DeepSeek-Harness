@@ -18,6 +18,15 @@ SIGINT/SIGTERM finish the active diagnostic and stop subsequent admission.
 source checks and three signal cases. Inputs, commands and evidence scopes are
 in the [CPU release guide](../docs/implementation/cpu-release-validation.md).
 
+With `checkpointAuditConfiguration`, the campaign adds four-provider policy-input,
+numeric-output, checkpoint-audit and profile checks, for thirty components.
+
+`check-recorded-tool-evidence.mjs` compares original successful core tool results
+with their task events and persisted native DSH receipts. It exercises production
+evidence selection and sample/context readers, preserving exact JSON text and
+ordered image metadata. It requires closed original journals and invokes no
+models, tools or devices. See [commands and evidence](../docs/implementation/cpu-release-validation.md#core-tool-evidence-selection).
+
 `check-native-campaign-shutdown.mjs` runs the actual native campaign and live
 driver against production Console factories. A configured occupied service
 endpoint rejects environment admission before Worker allocation. Four ordinary

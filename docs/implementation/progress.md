@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-08 · Spec v1.115 · v1 release acceptance in progress.
+Updated: 2026-10-09 · Spec v1.116 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,7 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
-| `c857e13` | Core tool output evidence selection belongs to `tools/core-output.ts`. On macOS, 98 original results from seven tasks preserve exact native JSON and 81 ordered images, including six formal checks. All thirty current-source CPU components and 463 admission/process/wire/resource cases pass; independent checks verify 428 source/input comparisons and thirty process-group releases. |
+| `c857e13` | Core tool output evidence selection belongs to `tools/core-output.ts`. On macOS and isolated Linux, 98 original results per platform from seven tasks preserve exact native JSON and 81 ordered images, including six formal checks. All thirty current-source CPU components and 463 admission/process/wire/resource cases pass per platform; independent checks verify 428 source/input comparisons and thirty process-group releases per platform. Original records and canonical server changes remain unchanged. |
 | `27b3950` | Native RGB-D range and coordinate arithmetic fails at numerical overflow. Thirty-nine checks pass per CPU platform on thirteen original captures and twenty-six invalid calibration derivatives, with original geometry preserved within its recorded precision allowance. |
 | `48bcc47` | Both GR00T adapters admit actual collator tensors after native bfloat16 conversion and before model inference. Seventy-two installed processor/codec cases cover forty-six original requests and twenty-six declared invalid derivatives. Original prepared values remain unchanged. |
 | `d937330` | RoboTwin prepares and admits actual saved checkpoint processors before policy construction. Twenty-two original/invalid JSON, safetensors and selector checks pass in the installed LeRobot environment. |

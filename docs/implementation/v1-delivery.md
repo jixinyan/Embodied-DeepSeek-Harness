@@ -1,6 +1,6 @@
 # v1 delivery and acceptance
 
-Updated: 2026-10-08. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
+Updated: 2026-10-09. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
 RoboDojo task success, real SAM/YOLO tool calls and source-bound RoboCasa RGB-D
 geometry are verified. Reusable native factories, complete retention bindings,
 packaged Desktop lifecycle and selected DSH recovery/JSON portability have production
@@ -18,11 +18,15 @@ The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
 Clean `c857e13` centralizes core output evidence selection in the tools module.
-On macOS, 98 original receipts from seven tasks match their persisted native DSH
-results exactly, including 81 images and six formal checks. The current source
+On macOS and isolated Linux, 98 original receipts per platform from seven tasks
+match their persisted native DSH results exactly, including 81 images and six
+formal checks. The current source
 also passes all thirty CPU components and 463 admission/process/wire/resource
-cases. Independent verification confirms 428 source/input comparisons and thirty
-actual process-group releases. No model, simulator or GPU allocates. See
+cases per platform. Independent verification confirms 428 source/input comparisons
+and thirty actual process-group releases per platform. Linux additionally verifies
+twelve context-implementation hashes and actual runner release. Original sources,
+task outcomes and canonical server changes remain unchanged. No model, simulator
+or GPU allocates. See
 [tool evidence acceptance](cpu-release-validation.md#core-tool-evidence-selection).
 
 Clean `27b3950` verifies scoped arithmetic checks in native RGB-D back-projection,
@@ -70,8 +74,8 @@ SDK/checkpoint/input/source hashes, confirms unchanged originals/server status a
 diagnostic process absence. No policy network, model inference, environment or GPU
 allocates. See [installed processor acceptance](cpu-release-validation.md#installed-checkpoint-processors).
 
-Current-source CPU preparation passes all thirty components from clean
-`a97d0a9` on macOS and isolated Linux, with 463 admission/process/wire/resource
+Clean `a97d0a9` passes all thirty CPU components on macOS and isolated Linux,
+with 463 admission/process/wire/resource
 cases per platform. This includes sixty shared policy-input checks on four original
 requests, seventy-six numeric output checks, four execution-mode admission cases, thirty-three
 checkpoint original-record/wire/Gate/WebSocket and thirty-six profile/configuration/

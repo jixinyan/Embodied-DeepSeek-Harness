@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.115 · 2026-10-08
+Version: v1.116 · 2026-10-09
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -9,11 +9,15 @@ Project: Embodied DeepSeek Harness (EDH).
 Core tool output evidence selection belongs to `tools/core-output.ts`. UpperRun
 supplies the calling Verifier's check sample and admits assignment grants and
 visibility before native DSH rendering. Clean `c857e13` matches 98 original core
-results across seven tasks on macOS, including 27 image results, 81 images and
-six formal checks. The current source also passes all thirty CPU components and
-463 admission/process/wire/resource cases. Independent checks verify 428 source/
-input comparisons and thirty actual process-group releases. GPU/model/environment
-allocation and controls remain zero. See [tool evidence validation](implementation/cpu-release-validation.md#core-tool-evidence-selection).
+results per platform across seven tasks on macOS and isolated Linux, including
+27 image results, 81 images and six formal checks. The current source also passes
+all thirty CPU components and 463 admission/process/wire/resource cases per
+platform. Independent checks verify 428 source/input comparisons and thirty
+actual process-group releases per platform. Linux additionally
+verifies twelve context-implementation hashes and actual campaign-runner release.
+Original records, clean frozen source and canonical server changes remain unchanged.
+GPU/model/environment allocation and controls remain zero.
+See [tool evidence validation](implementation/cpu-release-validation.md#core-tool-evidence-selection).
 
 Native RGB-D geometry uses scoped arithmetic checks for back-projection, ranges
 and camera/world coordinate reductions. Clean `27b3950` passes 39 CPU checks per

@@ -45,18 +45,33 @@ directory under `.local/work`. The diagnostic invokes no models, tools, policies
 or devices. Its acceptance covers the supplied original results and reference
 selection; loaded perception providers retain their native release gates.
 
-On macOS, 98 original core results from seven tasks match their persisted native receipts,
+On macOS and isolated Linux, 98 original core results per platform from seven
+tasks match their persisted native receipts,
 including 27 image results, 81 images, six formal checks, active rotation and
 explicit evidence reads. Original journals and production sources retain their
-hashes. Evidence: `.local/work/tool-evidence-cpu-macos-20261008-verified/acceptance.json`.
+hashes. Independent checks verify seventeen source/journal identities per platform,
+exact original results across platforms, report/archive digests and actual Linux
+runner/diagnostic release. Frozen source stays clean and canonical server status
+remains unchanged. Evidence: `.local/work/tool-evidence-cpu-macos-20261008-verified/`
+and `.local/work/tool-evidence-cpu-linux-20261008-verified/`.
 
 The same clean `c857e13` source passes all thirty configured CPU components on
-macOS, with 463 admission/process/wire/resource cases, six visual-context cases,
-twelve original context reads and four-provider readiness. Independent local
-verification checks 428 source/input hashes, every report digest and thirty
-actual process-group releases. Evidence:
+macOS and isolated Linux, with 463 admission/process/wire/resource cases per
+platform, six visual-context cases, twelve original context reads and four-provider
+readiness. Independent checks verify 428 source/input hashes, every report digest
+and thirty actual process-group releases per platform. Linux additionally verifies
+twelve context-implementation hashes and actual campaign-runner release.
+Full source checks pass with 69 Python files, 28 base imports, 49 diagnostics,
+128 pinned DSH files and 25 bindings. Evidence:
 `.local/work/tool-evidence-cpu-campaign-macos-20261008/independently-verified.json`.
-These checks allocate no models, simulators or GPUs.
+Linux evidence: `.local/work/tool-evidence-cpu-campaign-linux-20261009-verified/`.
+Local cross-platform verification additionally checks 191 production-source
+comparisons, ten original input/context comparisons, thirty Linux process
+receipts and twenty-nine component reports. Original contexts and four-provider
+readiness match. The downloaded Linux campaign archive retains SHA256
+`548d03105815cfc3c1cf8a7fcfb860546fe4d3bee859d89d8391b59aee99e2d0`.
+These checks allocate no models, simulators or GPUs. Loaded checkpoints, native
+task completion and the complete configuration matrix retain their release gates.
 
 ## Pre-SDK GR00T configuration admission
 
