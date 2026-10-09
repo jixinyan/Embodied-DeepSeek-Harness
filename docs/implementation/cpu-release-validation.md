@@ -68,13 +68,13 @@ arguments. Each output directory must be new. Evidence:
 Loaded-model compatibility, GPU cancellation, physical actions and task outcomes
 retain their native acceptance requirements.
 
-## Verified source deb5207
+## Verified source a97d0a9
 
 All thirty configured components pass on macOS and isolated Linux, including
 sixty shared policy-input and seventy-six recorded-output checks. Each platform passes 463 admission/process/wire/
 resource cases, six visual-context cases, twelve original context reads and
 four-provider readiness. Source checks retain 128 pinned DSH files, 25 bindings,
-67 Python files, 27 base imports and 46 diagnostic entries.
+67 Python files, 27 base imports and 47 diagnostic entries.
 
 Independent verification matches 383 component source/input hashes, twenty-three
 diagnostic hashes and sixty process receipts. Sixty-one actual OS checks
@@ -85,10 +85,10 @@ isolated source remains clean. The Linux execution script exits zero.
 Both platforms prepare the same four native cases and eight planned submissions
 with matching profile, task and prerequisite bindings. GPU jobs, model calls,
 environment allocations and controls remain zero. Evidence and independent reports
-are under `.local/work/v1-cpu-policy-outputs-macos-20261008/` and
-`.local/work/v1-cpu-policy-outputs-linux-20261008-verified/`. The downloaded archive
+are under `.local/work/v1-cpu-policy-processors-macos-20261008/` and
+`.local/work/v1-cpu-policy-processors-linux-20261008-verified/`. The downloaded archive
 matches server SHA-256
-`489494245ea87a79e7918efb53b806016d05de81564dce8664e9c0e821669650`.
+`e75451f43ca0a603f0099ff9d6192ce0a4ab310b8374fabca899f8cedbe88561`.
 Loaded-model cancellation, physical stop behavior and complete native tasks retain
 the native campaign's acceptance requirements.
 

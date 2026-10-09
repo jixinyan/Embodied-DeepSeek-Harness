@@ -13,8 +13,12 @@ Clean `a97d0a9` passes sixty CPU checks on forty-six original four-provider requ
 including fourteen normalization rejection checks. Independent verification matches
 414 SDK/checkpoint/input/source hashes. CUDA stays uninitialized, original files and
 canonical server status remain unchanged, and diagnostic processes release. This
-acceptance constructs no policy network and performs no inference or device controls;
-loaded models and complete native tasks retain their release gates.
+acceptance constructs no policy network and performs no inference or device controls.
+The same clean source passes all thirty configured CPU components on macOS and
+isolated Linux, with 463 admission/process/wire/resource cases per platform, 383
+source/input comparisons, sixty process receipts and sixty-one actual OS release
+checks. Four native cases/eight planned submissions match across platforms with
+zero allocation. Loaded models and complete native tasks retain their release gates.
 
 Policy numeric output admission requires real numeric arrays, positive dimensions,
 declared action shapes and finite values before native conversion. OpenPI checks

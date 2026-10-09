@@ -26,7 +26,7 @@ diagnostic process absence. No policy network, model inference, environment or G
 allocates. See [installed processor acceptance](cpu-release-validation.md#installed-checkpoint-processors).
 
 Current-source CPU preparation passes all thirty components from clean
-`deb5207` on macOS and isolated Linux, with 463 admission/process/wire/resource
+`a97d0a9` on macOS and isolated Linux, with 463 admission/process/wire/resource
 cases per platform. This includes sixty shared policy-input checks on four original
 requests, seventy-six numeric output checks, four execution-mode admission cases, thirty-three
 checkpoint original-record/wire/Gate/WebSocket and thirty-six profile/configuration/

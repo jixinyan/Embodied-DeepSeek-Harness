@@ -23,6 +23,24 @@ CUDA remains uninitialized and no policy network, inference, simulator or contro
 execute. Evidence: `.local/work/v1-policy-processors-linux-20261008-verified/`.
 NN inference and simulator/device gates retain their native acceptance requirements.
 
+The same clean source completes all thirty configured CPU components on macOS
+and isolated Linux, with 463 admission/process/wire/resource cases per platform,
+six visual-context cases, twelve original context reads and four-provider readiness.
+Independent verification matches 383 component source/input hashes, twenty-three
+diagnostic hashes and sixty process receipts. Sixty-one actual OS checks confirm
+diagnostic group/runner absence. Both platforms prepare four native cases/eight
+submissions with matching task/profile/prerequisite bindings and no allocation.
+Source checks retain 67 Python files, 27 base imports, 47 diagnostics and 128 pinned
+DSH files/25 bindings. Original files, task outcomes and canonical server status
+stay unchanged; isolated source is clean and the runner exits zero. Evidence:
+`.local/work/v1-cpu-policy-processors-macos-20261008/` and
+`.local/work/v1-cpu-policy-processors-linux-20261008-verified/`. Archive SHA-256:
+`e75451f43ca0a603f0099ff9d6192ce0a4ab310b8374fabca899f8cedbe88561`.
+Current-source CPU preparation is complete. Loaded-model/device cancellation,
+native multi-goal recovery, BEHAVIOR success, RoboDojo Tower completion and the
+complete installed configuration matrix retain their native gates. Evolver
+remains paused and SceneState remains deferred.
+
 ## 2026-10-08 shared numeric policy outputs
 
 `policies/action_outputs.py` owns real numeric array, positive dimension, declared
