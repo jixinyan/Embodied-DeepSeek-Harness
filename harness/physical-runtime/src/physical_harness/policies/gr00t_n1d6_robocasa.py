@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import partial
 from typing import Any
 
 import numpy as np
@@ -100,12 +101,14 @@ class Gr00tN1d6RoboCasa:
         verify_checkpoint_configuration(checkpoint)
         from gr00t.data.embodiment_tags import EmbodimentTag
         from gr00t.policy.gr00t_policy import Gr00tPolicy
+        from physical_harness.policies.gr00t_model_input import collate_model_input
         self.policy = Gr00tPolicy(
             embodiment_tag=EmbodimentTag.ROBOCASA_PANDA_OMRON,
             model_path=checkpoint,
             device=device,
             strict=True,
         )
+        self.policy.collate_fn = partial(collate_model_input, self.policy.collate_fn)
 
     def infer(self, request: dict[str, Any]) -> list[list[float]]:
         actions, _ = self.infer_with_record(request)

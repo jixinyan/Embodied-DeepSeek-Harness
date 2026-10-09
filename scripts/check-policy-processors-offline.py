@@ -85,8 +85,8 @@ def inspect(args):
             import gr00t.model
             from gr00t.data.embodiment_tags import EmbodimentTag
             from gr00t.data.types import MessageType, VLAStepData
-            from gr00t.policy.gr00t_policy import _rec_to_dtype
             from transformers import AutoProcessor
+            from physical_harness.policies.gr00t_model_input import collate_model_input
             if args.provider == "behavior":
                 from physical_harness.policies.gr00t_n1d6_behavior import prepare_policy_input, verify_checkpoint_configuration
                 embodiment = EmbodimentTag.BEHAVIOR_R1_PRO
@@ -145,7 +145,7 @@ def inspect(args):
                                    states={name: value[0] for name, value in batch["state"].items()},
                                    actions={}, text=batch["language"][language_key][0][0], embodiment=embodiment)
                 transformed = processor([{"type": MessageType.EPISODE_STEP.value, "content": step}])
-                prepared = _rec_to_dtype(processor.collator([transformed]), dtype=torch.bfloat16)
+                prepared = collate_model_input(processor.collator, [transformed])
             tensors, _ = tree_flatten_with_path(prepared)
             details = []
             for path, value in tensors:
@@ -162,6 +162,35 @@ def inspect(args):
         prepared_records.append({"requestId": request_id, "observationId": request["observation_id"],
                                  "instructionSha256": sha256(request["instruction"].encode()).hexdigest(),
                                  "prepared": details})
+        if args.provider in ("behavior", "robocasa") and request_id == min(requests):
+            for name, value in (("nan", float("nan")), ("infinity", float("inf")),
+                                ("positive-bfloat16-overflow", float(np.finfo(np.float32).max)),
+                                ("negative-bfloat16-overflow", -float(np.finfo(np.float32).max))):
+                invalid = deepcopy(transformed)
+                invalid["state"].reshape(-1)[0] = value
+                if "overflow" in name and not torch.isfinite(invalid["state"]).all():
+                    raise ValueError("The bfloat16 overflow derivative must be finite before native conversion.")
+                try:
+                    collate_model_input(processor.collator, [invalid])
+                except ValueError as error:
+                    if "GR00T preprocessing returned invalid model input" not in str(error):
+                        raise
+                    cases.append({"requestId": request_id, "derivative": name,
+                                  "result": "rejected", "originalError": str(error)})
+                else:
+                    raise ValueError("Invalid native GR00T prepared values reached model input.")
+            for name, dtype in (("boolean-state", torch.bool), ("complex-state", torch.complex64)):
+                invalid = deepcopy(transformed)
+                invalid["state"] = invalid["state"].to(dtype=dtype)
+                try:
+                    collate_model_input(processor.collator, [invalid])
+                except ValueError as error:
+                    if "GR00T preprocessing requires a floating-point state tensor" not in str(error):
+                        raise
+                    cases.append({"requestId": request_id, "derivative": name,
+                                  "result": "rejected", "originalError": str(error)})
+                else:
+                    raise ValueError("Invalid native GR00T state type reached model input.")
         if args.provider == "robotwin":
             for sign in (1, -1):
                 invalid = deepcopy(request)
