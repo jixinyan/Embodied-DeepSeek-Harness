@@ -95,12 +95,17 @@ def summarize_metric_region(
     rows, columns = np.nonzero(valid)
     axial = axial_depth_m[valid].astype(np.float64)
     pixels = np.stack((columns, rows, np.ones(valid_count)), axis=0)
-    rays = np.linalg.solve(intrinsic, pixels)
-    camera_points = (rays * axial).T
-    world_points = camera_points @ transform[:3, :3].T + transform[:3, 3]
-    ranges = np.linalg.norm(camera_points, axis=1)
-    if not np.isfinite(camera_points).all() or not np.isfinite(world_points).all():
-        raise ValueError("Metric back-projection produced non-finite points.")
+    with np.errstate(over="raise", invalid="raise", divide="raise"):
+        rays = np.linalg.solve(intrinsic, pixels)
+        camera_points = (rays * axial).T
+        world_points = camera_points @ transform[:3, :3].T + transform[:3, 3]
+        ranges = np.linalg.norm(camera_points, axis=1)
+        if not np.isfinite(camera_points).all() or not np.isfinite(world_points).all():
+            raise ValueError("Metric back-projection produced non-finite points.")
+        centroid_camera = camera_points.mean(axis=0).tolist()
+        centroid_world = world_points.mean(axis=0).tolist()
+        median_camera = np.median(camera_points, axis=0).tolist()
+        median_world = np.median(world_points, axis=0).tolist()
     return {
         "source": source,
         "measurement_kind": "simulator_metric_depth",
@@ -126,10 +131,10 @@ def summarize_metric_region(
         "p90_axial_depth_m": float(np.percentile(axial, 90)),
         "median_camera_range_m": float(np.median(ranges)),
         "centroid_pixel": [float(columns.mean()), float(rows.mean())],
-        "centroid_camera_xyz": camera_points.mean(axis=0).tolist(),
-        "centroid_world_xyz": world_points.mean(axis=0).tolist(),
-        "median_camera_xyz": np.median(camera_points, axis=0).tolist(),
-        "median_world_xyz": np.median(world_points, axis=0).tolist(),
+        "centroid_camera_xyz": centroid_camera,
+        "centroid_world_xyz": centroid_world,
+        "median_camera_xyz": median_camera,
+        "median_world_xyz": median_world,
         "minimum_depth_m": minimum_depth_m,
         "maximum_depth_m": maximum_depth_m,
         "intrinsics": {
