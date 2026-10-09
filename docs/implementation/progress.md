@@ -1,7 +1,36 @@
 # Implementation progress
 
-Spec: v1.110. Current checkpoint: **installed checkpoint CPU preprocessing, shared policy input/output admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.111. Current checkpoint: **pre-SDK GR00T configuration admission, installed checkpoint CPU preprocessing, shared policy input/output admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 The [capability map](features.md) records implementation and acceptance boundaries.
+
+## 2026-10-08 GR00T configuration admission
+
+Both GR00T adapter constructors admit model, processor and normalization metadata
+before optional SDK imports or model construction. The shared reader owns ordered
+modalities, temporal indices, native action semantics, model/processor capacities
+and finite dimensionally consistent statistics. Original SDK processing and native
+action conversion retain their existing owners.
+
+Clean `2821c21` passes 111 original-metadata/invalid-configuration checks on macOS
+and isolated Linux: 52 RoboCasa and 59 BEHAVIOR. Each invalid sample calls the
+production constructor and fails without importing the model SDK. Sixty shared
+input checks also pass on each platform. The installed SDK/codec campaign passes
+sixty checks on all forty-six original four-provider requests; individual prepared
+tensor/envelope values match prior verified outputs. Independent verification
+checks 416 SDK source/input hashes, 45 configuration/input source hashes and
+84 local source comparisons. Original files and canonical server status remain
+unchanged; frozen source is clean and actual OS inspection confirms runner and
+diagnostic process absence. CUDA stays uninitialized; model, environment and
+control allocations remain zero.
+
+Full macOS source checks pass with 68 Python files, 28 base imports, 48 diagnostics
+and 128 pinned DSH files/25 bindings. Isolated Linux passes the same Python import
+and compilation checks. Evidence:
+`.local/work/v1-gr00t-configuration-macos-20261008/` and
+`.local/work/v1-gr00t-configuration-linux-20261008-verified/`. The configuration
+archive matches SHA-256 `b0e5a970c769df092d9cad5b2286d0996696dfe1c13ac3bbe4c3f5f7b873df2d`;
+the installed SDK archive matches `22ffd1533add2d1302e701efd7e7494a4bf71e21b8abde601d0587cd14d63976`.
+Loaded-model/device behavior and complete native tasks retain their release gates.
 
 ## 2026-10-08 independently callable policy preparation
 

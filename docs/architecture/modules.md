@@ -109,6 +109,10 @@ Each adapter exposes `prepare_policy_input` for both online inference and actual
 installed SDK CPU inspection. LeRobot's `prepare_model_input` also checks tensors
 after its saved processor and before model inference. The processor diagnostic
 uses original request and checkpoint sources with no policy network allocation.
+`policies/gr00t_checkpoint.py` owns pre-SDK model/processor/statistics admission.
+The two native GR00T constructors supply their ordered modalities, dimensions,
+horizons and action semantics. Original SDK processing and inference remain with
+`Gr00tPolicy`; file identity remains with the provenance reader.
 `policies/action_outputs.py` owns real numeric array, positive dimension, shape,
 finite-value and optional float32-range admission. Native group semantics,
 Torch conversion and gripper/controller mapping retain their adapter owners.

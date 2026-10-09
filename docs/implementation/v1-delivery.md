@@ -17,6 +17,15 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Clean `2821c21` admits GR00T model/processor/statistics compatibility before model
+SDK imports. The production constructors pass 111 original/invalid configuration
+checks on both macOS and isolated Linux. Sixty shared input checks also pass per
+platform. Sixty installed SDK/codec checks on forty-six original requests preserve
+their exact prepared values, with 416 SDK source/input, 45 configuration/input and
+84 local source comparisons. Actual diagnostic processes release; original files
+and canonical server status remain unchanged. No model, inference, environment or
+GPU allocates. See [pre-SDK admission](cpu-release-validation.md#pre-sdk-gr00t-configuration-admission).
+
 Clean `a97d0a9` additionally passes sixty actual installed SDK/codec CPU checks on
 forty-six original requests across all four providers. LeRobot admits prepared
 tensors after its saved processor and rejects fourteen declared normalization

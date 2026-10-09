@@ -59,6 +59,7 @@ All Python provider code belongs under
 | Own inference threads, cancellation and operation records | [policies/inference.py](../../harness/physical-runtime/src/physical_harness/policies/inference.py) |
 | Start a configured native policy, record model identity and admit service connections | [policies/services](../../harness/physical-runtime/src/physical_harness/policies/services/README.md) |
 | Validate selected GR00T/LeRobot file identity | [policies/provenance.py](../../harness/physical-runtime/src/physical_harness/policies/provenance.py) |
+| Admit GR00T model/processor/statistics compatibility before SDK or model loading | [policies/gr00t_checkpoint.py](../../harness/physical-runtime/src/physical_harness/policies/gr00t_checkpoint.py) |
 | Verify complete native OpenPI inventory and saved ARX X5 normalization before model imports | [policies/openpi_checkpoint.py](../../harness/physical-runtime/src/physical_harness/policies/openpi_checkpoint.py) |
 | Add an environment | [environments](../../harness/physical-runtime/src/physical_harness/environments/README.md); each provider has one named subdirectory |
 | Adapt physical hardware | [backends](../../harness/physical-runtime/src/physical_harness/backends/README.md) and [embodiments](../../harness/physical-runtime/src/physical_harness/embodiments/README.md) |
@@ -98,6 +99,7 @@ implementations load in their separately configured service processes.
 | Admit numeric policy outputs before native conversion | [action_outputs.py](../../harness/physical-runtime/src/physical_harness/policies/action_outputs.py) |
 | Check original recorded numeric outputs and declared invalid derivatives without model SDKs | [check-policy-outputs-offline.py](../../scripts/check-policy-outputs-offline.py) |
 | Prepare original requests through installed checkpoint processors or the OpenPI codec without policy inference | [check-policy-processors-offline.py](../../scripts/check-policy-processors-offline.py) |
+| Inspect original GR00T metadata and reject invalid configuration before policy construction | [check-gr00t-configuration-offline.py](../../scripts/check-gr00t-configuration-offline.py) |
 | Check selected digests against actual original checkpoints for all four providers | [check-checkpoint-binding-offline.py](../../scripts/check-checkpoint-binding-offline.py) |
 | Check original saved ARX X5 normalization and explicitly invalid derivative inputs | [check-openpi-normalization-offline.py](../../scripts/check-openpi-normalization-offline.py) |
 | Verify selected checkpoint identity through original records, wire/Gate admission and actual WebSocket rejection | [check-checkpoint-audit-offline.py](../../scripts/check-checkpoint-audit-offline.py) |

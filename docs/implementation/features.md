@@ -74,3 +74,10 @@ policy/perception CLIs validate their declared arguments before optional SDK
 imports. Exact source, input and release evidence appears in
 [CPU validation](cpu-release-validation.md). Loaded-model cancellation and
 current-code physical task completion keep the native campaign's acceptance gates.
+
+Both GR00T constructors admit model/processor/statistics compatibility before
+optional SDK imports. Clean `2821c21` passes 111 original/invalid configuration
+checks and sixty shared input checks on both CPU platforms. Sixty installed
+processor/codec checks on forty-six original requests preserve exact prepared
+values, with independently verified file/source identities and released diagnostic
+processes. These checks allocate no policy network, simulator or device operation.

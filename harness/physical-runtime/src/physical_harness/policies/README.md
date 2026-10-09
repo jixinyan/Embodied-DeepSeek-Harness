@@ -33,6 +33,22 @@ its tensor values before `predict_action_chunk`. Complex or nonfinite prepared
 values fail at that boundary. Original finite observations must remain finite
 after checkpoint normalization and tokenization.
 
+[`gr00t_checkpoint.py`](gr00t_checkpoint.py) validates GR00T model, processor and
+normalization configuration before optional SDK imports or policy construction.
+Both native GR00T adapters call `verify_checkpoint_configuration` from their
+constructors. Admission requires ordered camera/state/action keys, supported
+temporal indices and representations, matching processor/model capacities, and
+finite dimensionally consistent statistics. BEHAVIOR also requires its exact
+relative-action references and instruction key. This reader uses checkpoint
+metadata and JSON Schema without NumPy, Torch or the GR00T SDK; original SDK
+processing and model inference remain in `Gr00tPolicy`.
+
+The [configuration diagnostic](../../../../../scripts/check-gr00t-configuration-offline.py)
+checks original pinned metadata and explicitly declared invalid copies through
+these production constructors in a CPU environment without the model SDK. Valid
+configuration admission is separate from weight identity, loaded-model readiness
+and physical task success. See [checkpoint compatibility](../../../../../docs/implementation/checkpoint-bindings.md#gr00t-configuration-admission).
+
 The [installed SDK diagnostic](../../../../../scripts/check-policy-processors-offline.py)
 uses real saved LeRobot and GR00T processors, local tokenizers and the OpenPI
 codec on original requests with CUDA disabled. It constructs no policy network,

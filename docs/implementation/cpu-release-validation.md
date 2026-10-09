@@ -18,6 +18,44 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
+## Pre-SDK GR00T configuration admission
+
+The [configuration diagnostic](../../scripts/check-gr00t-configuration-offline.py)
+uses original pinned checkpoint metadata and declared invalid derivatives through
+the production GR00T adapter constructors. Both constructors check compatibility
+before optional SDK imports or model construction. The reader owns ordered
+modalities, temporal indices, representations and state references, capacity
+agreement, normalization dimensions, finite values and ordered finite ranges.
+See [admission behavior and commands](checkpoint-bindings.md#gr00t-configuration-admission).
+
+Clean `2821c21` passes 52 RoboCasa and 59 BEHAVIOR checks on both macOS and isolated
+Linux. Both original configurations pass; all 109 invalid samples terminate
+constructor admission with no model SDK import. Sixty shared input checks also
+pass per platform. Full macOS source checks pass with 68 Python files, 28 base
+imports, 48 diagnostics and 128 pinned DSH files/25 bindings. Linux passes the same
+Python compilation and base-import checks.
+
+The same clean source separately passes sixty installed processor/codec checks
+on forty-six original requests across all four providers. Comparison by exact
+tensor/envelope identity confirms unchanged prepared values, including image,
+normalized state, instruction and embodiment inputs. Independent verification
+matches 416 SDK/checkpoint/input/source hashes, 45 configuration/input hashes,
+84 local source comparisons and all report/archive digests. Actual OS inspection
+confirms runner and diagnostic absence. Frozen source stays clean, canonical
+server status and original files remain unchanged, and CUDA stays uninitialized.
+Models, inference, environments and device controls remain zero.
+
+Evidence: `.local/work/v1-gr00t-configuration-macos-20261008/` and
+`.local/work/v1-gr00t-configuration-linux-20261008-verified/`. Archive identities:
+
+| Archive | SHA256 |
+| --- | --- |
+| Configuration and shared inputs | `b0e5a970c769df092d9cad5b2286d0996696dfe1c13ac3bbe4c3f5f7b873df2d` |
+| Installed processors and codec | `22ffd1533add2d1302e701efd7e7494a4bf71e21b8abde601d0587cd14d63976` |
+
+These checks establish CPU configuration and preprocessing behavior. Loaded-model
+cancellation, physical stopping and native task outcomes retain their release gates.
+
 ## Installed checkpoint processors
 
 All four adapters expose `prepare_policy_input`; online inference and the installed

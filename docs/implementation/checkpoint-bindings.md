@@ -89,6 +89,44 @@ through ActionGate.
 
 ## Configuration
 
+### GR00T configuration admission
+
+Both GR00T adapter constructors call their production
+`verify_checkpoint_configuration` before importing `Gr00tPolicy` or loading
+weights. The shared [configuration reader](../../harness/physical-runtime/src/physical_harness/policies/gr00t_checkpoint.py)
+checks `config.json`, `processor_config.json` and `statistics.json` under the
+selected checkpoint directory and returns their individual SHA256 values.
+JSON Schema and semantic admission require:
+
+- Ordered camera, state and action keys; one language key; current-frame input
+  indices and the exact configured future action sequence.
+- The supported absolute/relative action representations, group sizes and state
+  references; BEHAVIOR's relative groups and coarse-action instruction key.
+- Matching model/processor backbone identity, state/action capacities and horizon
+  capacity, including any configured state sine/cosine expansion.
+- Complete finite normalization statistics with native group dimensions,
+  nonnegative standard deviations, consistent shapes and ordered finite ranges.
+  BEHAVIOR relative statistics may retain their saved per-step horizon dimension.
+
+Incompatible configuration raises at constructor admission before SDK imports.
+Compatible fine-tuned artifacts still require their selected full checkpoint
+identity and actual native model/task acceptance. This metadata reader performs
+no model construction or inference and preserves the original SDK transforms.
+
+```sh
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
+  .venv/bin/python scripts/check-gr00t-configuration-offline.py \
+  --provider behavior --checkpoint /path/to/original/gr00t-r1pro \
+  --output .local/work/gr00t-r1pro-configuration
+```
+
+Select `robocasa` with its original PandaOmron checkpoint for the other adapter.
+The diagnostic requires original reference metadata hashes and retains declared
+invalid copies with their individual hashes. Each invalid sample calls the actual
+adapter constructor; reaching an optional SDK import fails the diagnostic.
+
+### Profile commands
+
 For each profile, retain the existing service entry and provide its selected
 checkpoint directory and digest in the managed service's `command` array.
 These arguments execute directly. The configured Python environment supplies the
