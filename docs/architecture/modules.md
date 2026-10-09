@@ -130,6 +130,11 @@ and ActionGate retain their existing owners.
 The RoboTwin adapter's `prepare_checkpoint_processors` loads and admits actual
 saved SDK processors before policy construction. Its constructor and installed
 CPU diagnostic use that same feature, normalization and absolute-target admission.
+RoboTwin's `decode_model_actions` in its existing adapter admits complete finite
+floating-point `1-by-50-by-14` tensors before and after saved postprocessing.
+Its native inference method uses the shared bounded action-count reader before
+preparing inputs or calling the model. Saved normalization and native
+prefix/gripper/controller conversion remain with that adapter and the actual SDK.
 `policies/action_outputs.py` owns real numeric array, positive dimension, shape,
 finite-value, bounded action-count and optional float32-range admission. Each
 GR00T provider exposes `native_action_record` in its existing module, shared by

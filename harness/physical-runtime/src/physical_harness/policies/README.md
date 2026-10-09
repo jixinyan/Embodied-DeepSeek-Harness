@@ -73,6 +73,19 @@ codec on original requests with CUDA disabled. It constructs no policy network,
 calls no model and issues no device controls. See
 [CPU processor validation](../../../../../docs/implementation/cpu-release-validation.md#installed-checkpoint-processors).
 
+RoboTwin's `decode_model_actions` in
+[`lerobot_pi05_robotwin.py`](lerobot_pi05_robotwin.py) requires a complete finite
+floating-point `1-by-50-by-14` action tensor before and after the actual saved
+postprocessor. The inference method admits the requested action count before
+input preparation or model inference, then retains native prefix selection and
+gripper conversion. The
+[installed postprocessor diagnostic](../../../../../scripts/check-robotwin-postprocessor-offline.py)
+loads actual checkpoint processors and uses explicitly original-selected-prefix-derived
+normalized inputs with declared capacity padding. Guarded actions and controller
+conversion must match the same saved SDK postprocessor exactly. Original complete
+normalized network predictions and fresh inference remain outside these CPU checks.
+See [saved action postprocessing](../../../../../docs/implementation/cpu-release-validation.md#robotwin-checkpoint-action-postprocessing).
+
 [`action_outputs.py`](action_outputs.py) owns model-independent numeric action
 admission. It requires real numeric arrays, positive dimensions, the adapter's
 declared shape and finite values. OpenPI additionally checks the finite float32

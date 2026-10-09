@@ -158,6 +158,43 @@ Source/configuration archive SHA256:
 Loaded-model stopping, device behavior and complete native tasks retain their
 individual release gates.
 
+### RoboTwin checkpoint action postprocessing
+
+The [saved postprocessor diagnostic](../../scripts/check-robotwin-postprocessor-offline.py)
+loads actual saved SDK processors and the local tokenizer with CUDA disabled,
+without constructing a policy network. The production `decode_model_actions` in
+the [native adapter](../../harness/physical-runtime/src/physical_harness/policies/lerobot_pi05_robotwin.py)
+requires complete finite floating-point `1-by-50-by-14` action tensors before and
+after postprocessing. Native inference admits integer action limits 1–512 before
+input preparation or model calls, then retains native prefix/gripper conversion.
+
+```sh
+CUDA_VISIBLE_DEVICES='' HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+  PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=harness/physical-runtime/src \
+  /path/to/installed-lerobot/bin/python scripts/check-robotwin-postprocessor-offline.py \
+  --configuration /absolute/path/original-checkpoint-audit-inputs.json \
+  --checkpoint /path/to/checkpoints/pi05_robotwin \
+  --tokenizer /path/to/checkpoints/paligemma-3b-pt-224 \
+  --output .local/work/<new-postprocessor-check>
+```
+
+Original `conventional` RoboTwin entries supply `run`, `requests`, `serviceLog`
+and `manifest` paths. The real saved normalizer transforms each recorded selected
+model prefix. Declared zero normalized capacity padding forms the configured
+50-step input; it does not recover the original complete normalized model output.
+Guarded action tensors and native conversion must match the same SDK postprocessor
+exactly. Separate processor copies establish float16, bfloat16 and float64 SDK
+behavior without changing the original processor's statistics.
+
+Declared invalid derivatives cover non-tensors, non-floating dtypes, nonfinite
+values, rank/batch/horizon/channel/empty dimensions, action-count limits and both
+signs of finite float32 input overflowing actual saved inverse statistics.
+Reports retain original file/source identities, derived input/output digests and
+actual process identities. Original requests and supplied tensors remain unchanged;
+CUDA stays uninitialized. Model loads, inference, simulator allocation and controls
+remain zero. Complete normalized predictions, loaded-policy/device behavior and
+native task outcomes retain their own requirements.
+
 ### RoboTwin pre-model saved-processor admission
 
 The production `prepare_checkpoint_processors` function admits the tokenizer and

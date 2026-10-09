@@ -15,7 +15,7 @@ from lerobot.policies.pi05 import PI05Policy
 from lerobot.processor.normalize_processor import NormalizerProcessorStep, UnnormalizerProcessorStep
 from lerobot.processor.relative_action_processor import AbsoluteActionsProcessorStep, RelativeActionsProcessorStep
 
-from physical_harness.policies.action_outputs import read_action_array
+from physical_harness.policies.action_outputs import read_action_array, selected_action_count
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
@@ -94,6 +94,19 @@ def prepare_model_input(request: dict[str, Any], preprocessor: Callable) -> dict
         if isinstance(value, torch.Tensor) and (value.is_complex() or not torch.isfinite(value).all()):
             raise ValueError(f"LeRobot π0.5 preprocessing returned invalid model input {key}.")
     return prepared
+
+
+def decode_model_actions(normalized: torch.Tensor, postprocessor: Callable) -> torch.Tensor:
+    def admit(value: torch.Tensor, source: str) -> None:
+        if not isinstance(value, torch.Tensor) or tuple(value.shape) != (1, 50, len(CHANNELS)):
+            raise ValueError(f"LeRobot π0.5 {source} requires a complete 1-by-50-by-14 action tensor.")
+        if not value.is_floating_point() or not torch.isfinite(value).all():
+            raise ValueError(f"LeRobot π0.5 {source} requires finite floating-point actions.")
+
+    admit(normalized, "normalized model output")
+    actions = postprocessor(normalized)
+    admit(actions, "postprocessed model output")
+    return actions
 
 
 def native_action_record(selected: torch.Tensor) -> tuple[list[list[float]], list[list[float]]]:
@@ -238,15 +251,9 @@ class LeRobotPi05RoboTwin:
         return actions
 
     def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
+        count = selected_action_count(request["max_actions"], 50, source="LeRobot π0.5 RoboTwin")
         prepared = prepare_model_input(request, self.preprocessor)
         with torch.inference_mode():
             normalized = self.policy.predict_action_chunk(prepared)
-            actions = self.postprocessor(normalized)
-        if not isinstance(actions, torch.Tensor) or actions.ndim != 3 or actions.shape[0] != 1 or actions.shape[2] != 14:
-            raise ValueError("LeRobot π0.5 returned an invalid RoboTwin action chunk.")
-        if actions.dtype == torch.bool or actions.is_complex():
-            raise ValueError("LeRobot π0.5 actions require real numeric tensors.")
-        if not torch.isfinite(actions).all():
-            raise ValueError("LeRobot π0.5 returned nonfinite RoboTwin actions.")
-        count = min(request["max_actions"], actions.shape[1])
+            actions = decode_model_actions(normalized, self.postprocessor)
         return native_action_record(actions[0, :count])
