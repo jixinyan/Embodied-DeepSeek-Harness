@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from hashlib import sha256
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,8 @@ import torch
 from lerobot.configs import PreTrainedConfig
 from lerobot.policies import make_pre_post_processors
 from lerobot.policies.pi05 import PI05Policy
+from lerobot.processor.normalize_processor import NormalizerProcessorStep, UnnormalizerProcessorStep
+from lerobot.processor.relative_action_processor import AbsoluteActionsProcessorStep, RelativeActionsProcessorStep
 
 from physical_harness.policies.action_outputs import read_action_array
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
@@ -123,45 +126,102 @@ def native_action_record(selected: torch.Tensor) -> tuple[list[list[float]], lis
     return native.tolist(), model_actions
 
 
+def _check_saved_processors(config: PreTrainedConfig, preprocessor, postprocessor) -> None:
+    normalizers = []
+    for pipeline, kind, features in (
+        (preprocessor, NormalizerProcessorStep, {**config.input_features, **config.output_features}),
+        (postprocessor, UnnormalizerProcessorStep, config.output_features),
+    ):
+        steps = [step for step in pipeline.steps if isinstance(step, kind)]
+        if len(steps) != 1:
+            raise ValueError("RoboTwin requires one saved normalization step in each processor.")
+        step = steps[0]
+        described = {name: (feature.type, tuple(feature.shape)) for name, feature in step.features.items()}
+        expected = {name: (feature.type, tuple(feature.shape)) for name, feature in features.items()}
+        if described != expected or step.norm_map != config.normalization_mapping:
+            raise ValueError("Saved RoboTwin processor features or normalization differ from the model configuration.")
+        if isinstance(step.eps, bool) or not math.isfinite(step.eps) or step.eps <= 0:
+            raise ValueError("Saved RoboTwin normalization requires a positive finite epsilon.")
+        if (isinstance(step, NormalizerProcessorStep) and step.normalize_observation_keys is not None
+                and "observation.state" not in step.normalize_observation_keys):
+            raise ValueError("Saved RoboTwin normalization must include observation.state.")
+        statistics = step.state_dict()
+        for name, feature in features.items():
+            if feature.type.name == "VISUAL":
+                continue
+            for statistic in ("mean", "std"):
+                tensor = statistics[f"{name}.{statistic}"]
+                if (tensor.shape != torch.Size(feature.shape) or not tensor.is_floating_point()
+                        or not torch.isfinite(tensor).all()):
+                    raise ValueError(f"Saved RoboTwin normalization has invalid {name}.{statistic}.")
+                if statistic == "std" and (torch.any(tensor < 0) or not torch.isfinite(tensor + step.eps).all()):
+                    raise ValueError(f"Saved RoboTwin normalization has invalid {name} standard deviation.")
+        normalizers.append(statistics)
+        if any(isinstance(step, (RelativeActionsProcessorStep, AbsoluteActionsProcessorStep))
+               and step.enabled is not False for step in pipeline.steps):
+            raise ValueError("Saved RoboTwin processors require absolute joint targets.")
+    for statistic in ("mean", "std"):
+        key = f"action.{statistic}"
+        if not torch.equal(normalizers[0][key], normalizers[1][key]):
+            raise ValueError("Saved RoboTwin action normalization and inverse statistics differ.")
+
+
+def prepare_checkpoint_processors(checkpoint: str, tokenizer: str, *, device: str = "cuda:0",
+                                  compile_model: bool | None = None) -> tuple[PreTrainedConfig, Callable, Callable]:
+    path = Path(checkpoint).resolve(strict=True)
+    tokenizer_path = Path(tokenizer).resolve(strict=True)
+    for name, expected_hash in TOKENIZER_HASHES.items():
+        if sha256((tokenizer_path / name).read_bytes()).hexdigest() != expected_hash:
+            raise ValueError(f"PaliGemma tokenizer file {name} differs from the pinned checkpoint.")
+    with (path / "policy_preprocessor.json").open(encoding="utf-8") as stream:
+        processor_config = json.load(stream)
+    tokenizer_steps = [step for step in processor_config["steps"] if step["registry_name"] == "tokenizer_processor"]
+    if len(tokenizer_steps) != 1 or tokenizer_steps[0]["config"]["tokenizer_name"] != "google/paligemma-3b-pt-224":
+        raise ValueError("Checkpoint has an incompatible PaliGemma tokenizer configuration.")
+    config = PreTrainedConfig.from_pretrained(path, local_files_only=True)
+    config.device = device
+    if compile_model is not None:
+        if type(compile_model) is not bool:
+            raise ValueError("Pi0.5 compile_model must be a boolean.")
+        config.compile_model = compile_model
+    expected = {
+        "observation.state": ("STATE", (14,)),
+        **{name: ("VISUAL", (480, 640, 3)) for name in CAMERAS.values()},
+    }
+    if config.type != "pi05" or set(config.input_features) != set(expected):
+        raise ValueError("Checkpoint has incompatible LeRobot RoboTwin input features.")
+    for key, (kind, shape) in expected.items():
+        feature = config.input_features[key]
+        if feature.type.name != kind or tuple(feature.shape) != shape:
+            raise ValueError(f"Checkpoint has incompatible {key} feature shape.")
+    if set(config.output_features) != {"action"} or config.output_features["action"].type.name != "ACTION" or tuple(config.output_features["action"].shape) != (14,):
+        raise ValueError("Checkpoint has incompatible RoboTwin action dimensions.")
+    if config.chunk_size != 50 or config.use_relative_actions:
+        raise ValueError("Checkpoint has incompatible RoboTwin action semantics.")
+    if {key: value.value for key, value in config.normalization_mapping.items()} != {
+        "ACTION": "MEAN_STD", "STATE": "MEAN_STD", "VISUAL": "IDENTITY",
+    }:
+        raise ValueError("Checkpoint has incompatible RoboTwin normalization.")
+    preprocessor, postprocessor = make_pre_post_processors(
+        config,
+        pretrained_path=str(path),
+        preprocessor_overrides={
+            "device_processor": {"device": device},
+            "tokenizer_processor": {"tokenizer_name": str(tokenizer_path)},
+        },
+    )
+    _check_saved_processors(config, preprocessor, postprocessor)
+    return config, preprocessor, postprocessor
+
+
 class LeRobotPi05RoboTwin:
     def __init__(self, checkpoint: str, tokenizer: str, *, device: str = "cuda:0",
                  compile_model: bool | None = None) -> None:
-        path = Path(checkpoint).resolve(strict=True)
-        tokenizer_path = Path(tokenizer).resolve(strict=True)
-        for name, expected_hash in TOKENIZER_HASHES.items():
-            if sha256((tokenizer_path / name).read_bytes()).hexdigest() != expected_hash:
-                raise ValueError(f"PaliGemma tokenizer file {name} differs from the pinned checkpoint.")
-        with (path / "policy_preprocessor.json").open(encoding="utf-8") as stream:
-            processor_config = json.load(stream)
-        tokenizer_steps = [step for step in processor_config["steps"] if step["registry_name"] == "tokenizer_processor"]
-        if len(tokenizer_steps) != 1 or tokenizer_steps[0]["config"]["tokenizer_name"] != "google/paligemma-3b-pt-224":
-            raise ValueError("Checkpoint has an incompatible PaliGemma tokenizer configuration.")
-        config = PreTrainedConfig.from_pretrained(path, local_files_only=True)
-        config.device = device
-        if compile_model is not None:
-            if type(compile_model) is not bool:
-                raise ValueError("Pi0.5 compile_model must be a boolean.")
-            config.compile_model = compile_model
-        expected = {
-            "observation.state": ("STATE", (14,)),
-            **{name: ("VISUAL", (480, 640, 3)) for name in CAMERAS.values()},
-        }
-        if config.type != "pi05" or set(config.input_features) != set(expected):
-            raise ValueError("Checkpoint has incompatible LeRobot RoboTwin input features.")
-        for key, (kind, shape) in expected.items():
-            feature = config.input_features[key]
-            if feature.type.name != kind or tuple(feature.shape) != shape:
-                raise ValueError(f"Checkpoint has incompatible {key} feature shape.")
-        if set(config.output_features) != {"action"} or config.output_features["action"].type.name != "ACTION" or tuple(config.output_features["action"].shape) != (14,):
-            raise ValueError("Checkpoint has incompatible RoboTwin action dimensions.")
-        if config.chunk_size != 50 or config.use_relative_actions:
-            raise ValueError("Checkpoint has incompatible RoboTwin action semantics.")
-        if {key: value.value for key, value in config.normalization_mapping.items()} != {
-            "ACTION": "MEAN_STD", "STATE": "MEAN_STD", "VISUAL": "IDENTITY",
-        }:
-            raise ValueError("Checkpoint has incompatible RoboTwin normalization.")
+        config, preprocessor, postprocessor = prepare_checkpoint_processors(
+            checkpoint, tokenizer, device=device, compile_model=compile_model,
+        )
         policy = PI05Policy(config)
-        original = load_file(str(path / "model.safetensors"))
+        original = load_file(str(Path(checkpoint).resolve(strict=True) / "model.safetensors"))
         fixed = policy._fix_pytorch_state_dict_keys(original, config)
         remapped = {key if key.startswith("model.") else f"model.{key}": value for key, value in fixed.items()}
         policy.load_state_dict(remapped, strict=True)
@@ -171,14 +231,7 @@ class LeRobotPi05RoboTwin:
             raise ValueError("LeRobot π0.5 model tensors are on an unexpected device.")
         policy.eval()
         self.policy = policy
-        self.preprocessor, self.postprocessor = make_pre_post_processors(
-            config,
-            pretrained_path=str(path),
-            preprocessor_overrides={
-                "device_processor": {"device": device},
-                "tokenizer_processor": {"tokenizer_name": str(tokenizer_path)},
-            },
-        )
+        self.preprocessor, self.postprocessor = preprocessor, postprocessor
 
     def infer(self, request: dict[str, Any]) -> list[list[float]]:
         actions, _ = self.infer_with_record(request)

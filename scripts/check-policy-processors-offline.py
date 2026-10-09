@@ -66,9 +66,7 @@ def inspect(args):
         if args.provider == "robotwin":
             if args.tokenizer is None:
                 raise ValueError("A local PaliGemma tokenizer is required.")
-            from lerobot.configs import PreTrainedConfig
-            from lerobot.policies import make_pre_post_processors
-            from physical_harness.policies.lerobot_pi05_robotwin import TOKENIZER_HASHES, prepare_model_input
+            from physical_harness.policies.lerobot_pi05_robotwin import TOKENIZER_HASHES, prepare_checkpoint_processors, prepare_model_input
             tokenizer = args.tokenizer.resolve(strict=True)
             for name, digest in TOKENIZER_HASHES.items():
                 path = original(tokenizer / name)
@@ -81,13 +79,7 @@ def inspect(args):
                 path = original(checkpoint / name)
                 if sources[str(path)] != manifest["upstream"]["checkpoint_files_sha256"][name]:
                     raise ValueError(f"Processor checkpoint source differs from the original {name}.")
-            configuration = PreTrainedConfig.from_pretrained(checkpoint, local_files_only=True)
-            configuration.device = "cpu"
-            processor, _ = make_pre_post_processors(
-                configuration, pretrained_path=str(checkpoint),
-                preprocessor_overrides={"device_processor": {"device": "cpu"},
-                                       "tokenizer_processor": {"tokenizer_name": str(tokenizer)}},
-            )
+            configuration, processor, _ = prepare_checkpoint_processors(str(checkpoint), str(tokenizer), device="cpu")
             sdk_version = importlib.metadata.version("lerobot")
         else:
             import gr00t.model
