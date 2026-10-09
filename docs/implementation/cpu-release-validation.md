@@ -371,6 +371,30 @@ CUDA stays uninitialized, with zero model loads, inference, simulator allocation
 or controls. Loaded checkpoint and physical-task acceptance retain their native
 requirements.
 
+Clean `2592b1d` passes the actual GR00T 0.1.0 processor checks on isolated Linux:
+
+| Provider | Original record-derived inputs | CPU cases |
+| --- | --- | --- |
+| BEHAVIOR | 1,248 | 1,267 |
+| RoboCasa | 24 | 39 |
+| Total | 1,272 | 1,306 |
+
+Two valid capacity-padding cases use the actual 50-by-128 checkpoint capacities.
+Thirty-two declared invalid derivatives fail admission. Exact decoded float32
+groups, native controller conversion and original input/file identities remain
+unchanged. The same frozen source also passes 1,330 original controller cases and
+76 four-provider numeric cases. Independent verification matches 2,706 source/input
+hashes and confirms four actual diagnostic process-group releases plus runner
+release. Frozen source stays clean, canonical user changes remain unchanged and
+CUDA stays uninitialized. Local comparison verifies 44 implementation/manifest
+comparisons, 58 shared controller cases, 24 shared RoboCasa records and identical
+four-provider numeric results.
+
+The retained archive has SHA256
+`1e994596820701660005f9e3c9938f321bed50e04cde2ecbbfcbfc6902e1080a`.
+Evidence: `.local/work/gr00t-decoding-cpu-linux-20261009-verified/`.
+No policy network, inference, simulator or control allocation executes.
+
 ### GR00T controller conversion
 
 The [controller diagnostic](../../scripts/check-gr00t-actions-offline.py) calls the

@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-09 · Spec v1.117 · v1 release acceptance in progress.
+Updated: 2026-10-09 · Spec v1.118 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -26,7 +26,7 @@ allocation. Keep module responsibilities and source entry points explicit.
 | Agent loop and model routes | Absorbed native DSH loop, scoped tools, independent assignments, Qwen/cloud routes and original recovery journals | [Current Agent loop](current-agent-loop.md), [DSH integration](dsh-integration.md) |
 | Teams and communication | Configured custom roles, explicit briefs, independent reports and acknowledgements; native custom-role RoboTwin recovery succeeds | [Role contexts](role-context-acceptance.md), [source map](../development/code-map.md) |
 | Plans, retries and verification | Owner-only goal decisions, durable TODOs, retained-scene retry and fresh formal verification after confirmed eligible execution end | [Multi-goal runtime](multi-goal-runtime.md), [verification boundaries](native-tool-boundaries.md) |
-| Policy inputs and checkpoint startup | Four-provider original observation admission; GR00T metadata and prepared-tensor admission; real saved LeRobot processors; OpenPI normalization and checkpoint identity | [CPU validation](cpu-release-validation.md), [checkpoint bindings](checkpoint-bindings.md) |
+| Policy inputs and checkpoint startup | Four-provider original observation admission; GR00T metadata, prepared-tensor and actual checkpoint-decoded action admission; real saved LeRobot processors; OpenPI normalization and checkpoint identity | [CPU validation](cpu-release-validation.md), [checkpoint bindings](checkpoint-bindings.md) |
 | Policy transport and action execution | Real CPU WebSocket/pipe/thread/process ownership; action schema/range/identity admission; ActionGate and confirmed device boundaries | [CPU validation](cpu-release-validation.md), [execution module](../../harness/physical-runtime/src/physical_harness/execution/README.md) |
 | RoboTwin | Native Qwen/Pi0.5 retry success, custom-role execution and two packaged Desktop tasks with released resources | [v1 delivery](v1-delivery.md), [recorded demos](recorded-demos.md) |
 | RoboCasa | Native Qwen/GR00T CloseDrawer success and retained-scene recovery; source-bound RGB-D measurement | [v1 delivery](v1-delivery.md), [recorded demos](recorded-demos.md) |
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| `2592b1d` | Both GR00T constructors bind normalized float32 model-output and decoded-group admission to the actual checkpoint processor. Installed SDK CPU checks pass 1,306 cases on 1,272 original-record-derived inputs, with exact SDK float32/controller equality and checkpoint padding. Clean Linux source additionally passes 1,330 controller and 76 numeric checks. Independent verification matches 2,706 source/input hashes, five actual process releases and 44 local production/manifest comparisons. CUDA stays uninitialized and canonical user changes remain unchanged. |
 | `de9b7f2` | CPU campaign output admission resolves the existing parent through the actual filesystem, supports configured directory aliases and keeps output within this checkout's `.local/work`. Thirty-one components and 548 admission/process/wire/resource cases pass per platform on macOS and isolated Linux, with 469 source/input comparisons, twelve context-source comparisons and thirty-one released diagnostic process groups per platform. Three actual CLI output-admission cases also reject before component startup. |
 | `e38d488` | The configured CPU release campaign includes the same production GR00T controller conversion used by online inference. Thirty-one components and 548 admission/process/wire/resource cases pass on macOS, with source identities, independent context inspection and actual diagnostic process-group release. |
 | `30c50d4` | Both GR00T adapters expose `native_action_record`; the shared action-count reader admits integer limits 1–512. Eighty-five controller checks pass per CPU platform on 27 original records. Linux additionally passes 1,330 checks on 1,272 original records, including 1,248 complete BEHAVIOR model outputs. Original native values and full model records remain unchanged. |
@@ -59,8 +60,8 @@ Recorded GR00T model-input checks independently verify 418 SDK/checkpoint/input/
 16 configuration sources, 327 derivative hashes and 51 local source comparisons.
 Original files/server status remain unchanged and actual diagnostic processes
 release. CUDA stays uninitialized; model, inference, environment and control
-allocations remain zero. Full source checks pass with 69 Python files, 28 base
-imports, 50 diagnostics and 128 pinned DSH files/25 bindings.
+allocations remain zero. Full source checks pass with 70 Python files, 28 base
+imports, 51 diagnostics and 128 pinned DSH files/25 bindings.
 Evidence and commands: [CPU validation](cpu-release-validation.md#gr00t-pre-inference-model-input-admission).
 
 Current GR00T controller conversion separately verifies original group/horizon,
@@ -72,6 +73,14 @@ user changes. Local comparison verifies 24 implementation/manifest comparisons,
 results between CPU platforms. Raw RoboCasa probabilities, SDK group dtypes,
 loaded inference and original task success retain their native acceptance scope.
 See [controller validation](cpu-release-validation.md#gr00t-controller-conversion).
+
+Current installed GR00T decoding checks use actual checkpoint normalization and
+relative-to-absolute processing on explicitly original-record-derived inputs.
+Normalized network predictions are not retained in those original JSON records.
+The guarded float32 groups and native mapping match the same SDK decoding exactly.
+Source/report/archive identities and actual process releases verify independently;
+GPU, model, simulator and control allocations remain zero.
+See [decoding validation](cpu-release-validation.md#gr00t-checkpoint-action-decoding).
 
 Native geometry additionally passes 39 checks on both platforms with 78 original
 input/production-source comparisons per platform. Original file identities,

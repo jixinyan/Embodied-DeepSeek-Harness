@@ -1,10 +1,29 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.117 · 2026-10-09
+Version: v1.118 · 2026-10-09
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
+
+GR00T normalized model output and checkpoint-decoded actions pass admission in
+`policies/gr00t_model_output.py`, bound to the actual processor by both native
+constructors. Normalized values require finite float32 arrays with configured
+horizon/channel capacity. Checkpoint padding remains supported; SDK normalization
+and relative-to-absolute conversion retain their semantics. Exact decoded group
+keys, dimensions, finite values and float32 range are checked before the SDK's
+final cast, with numerical arithmetic checks during decoding.
+Clean `2592b1d` passes 1,306 installed SDK CPU checks on 1,272 explicitly
+original-record-derived inputs. Guarded float32 groups and controller actions
+match the same actual SDK result exactly. It also passes 1,330 original controller
+and 76 numeric checks on isolated Linux. Independent verification confirms 2,706
+source/input comparisons, five actual process releases, clean frozen source and
+unchanged canonical user changes. Local verification matches 44 production/manifest
+comparisons, 58 shared controller cases, 24 shared RoboCasa records and identical
+four-provider numeric results. CUDA remains uninitialized with zero model,
+inference, simulator or control allocation. Original normalized network predictions
+and loaded-model/task acceptance retain their separate requirements.
+See [SDK decoding validation](implementation/cpu-release-validation.md#gr00t-checkpoint-action-decoding).
 
 GR00T controller conversion belongs to each provider's `native_action_record`,
 used by both online inference and original-record CPU inspection. ActionSpec,

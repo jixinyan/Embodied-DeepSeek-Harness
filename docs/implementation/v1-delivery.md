@@ -17,6 +17,21 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Clean `2592b1d` binds normalized model-output and decoded-group admission around
+each GR00T checkpoint processor. Actual installed SDK normalization and relative
+decoding pass 1,306 CPU checks on 1,272 explicitly original-record-derived inputs.
+Guarded float32 groups and controller mapping match the same SDK result exactly;
+checkpoint padding and declared invalid numeric/shape/state derivatives also pass.
+Clean Linux source additionally passes 1,330 controller and 76 numeric cases.
+Independent verification confirms 2,706 source/input comparisons, five actual
+process releases, clean frozen source and unchanged canonical user changes.
+Local comparison verifies 44 implementation/manifest comparisons, 58 shared
+controller cases, 24 shared RoboCasa records and identical four-provider numeric
+results. CUDA remains uninitialized with zero model, inference, simulator or
+control allocation. Original normalized network predictions and native tasks
+retain their own acceptance requirements.
+See [SDK decoding acceptance](cpu-release-validation.md#gr00t-checkpoint-action-decoding).
+
 Clean `de9b7f2` passes 31 configured CPU components and 548 admission/process/
 wire/resource cases per platform on macOS and isolated Linux. Independent checks
 verify 469 source/input comparisons, twelve context-source comparisons and 31

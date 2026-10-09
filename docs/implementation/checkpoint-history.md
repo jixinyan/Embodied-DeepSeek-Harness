@@ -1,8 +1,35 @@
 # Implementation checkpoint history
 
-Recorded through spec v1.117, 2026-10-09. Each checkpoint retains its own source
+Recorded through spec v1.118, 2026-10-09. Each checkpoint retains its own source
 revision, execution scope and acceptance evidence. Read [current progress](progress.md)
 for active requirements and [v1 delivery](v1-delivery.md) for release gates.
+
+## 2026-10-09 installed GR00T action decoding
+
+Clean `2592b1d` binds normalized model-output and decoded-group admission around
+both native checkpoint processors. Finite float32 values, configured capacities,
+exact modality keys/dimensions and decoded float32 range are admitted with scoped
+numeric arithmetic checks. Actual SDK normalization, model padding and relative
+action conversion retain their original semantics.
+
+The installed GR00T 0.1.0 processor passes 1,306 CPU checks on 1,272 explicitly
+original-record-derived inputs: 1,248 BEHAVIOR records and 24 mapped RoboCasa
+controller derivatives. Two valid checkpoint-padding cases and 32 invalid
+numeric/shape/state derivatives pass. Guarded float32 groups and native controller
+mapping match the same actual SDK decoding exactly. Original normalized network
+predictions and category probabilities remain outside this inspection.
+
+The clean Linux source also passes 1,330 original controller and 76 numeric cases.
+Independent verification matches 2,706 source/input comparisons and confirms four
+actual diagnostic process-group releases plus runner release. Frozen source stays
+clean, canonical user changes remain unchanged and CUDA stays uninitialized.
+Local verification matches 44 implementation/manifest comparisons, 58 shared
+controller cases, 24 shared RoboCasa records and identical four-provider numeric
+results. The retained archive has SHA256
+`1e994596820701660005f9e3c9938f321bed50e04cde2ecbbfcbfc6902e1080a`.
+Evidence: `.local/work/gr00t-decoding-cpu-linux-20261009-verified/`.
+No model, inference, simulator or controls allocate. Loaded-model and original
+task acceptance retain their native requirements.
 
 ## 2026-10-09 native GR00T controller conversion
 
