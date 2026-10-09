@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -82,6 +83,14 @@ def prepare_policy_input(request: dict[str, Any]) -> dict[str, Any]:
         "task": request["instruction"],
         **{mapped: _decode_camera(cameras[source]) for source, mapped in CAMERAS.items()},
     }
+
+
+def prepare_model_input(request: dict[str, Any], preprocessor: Callable) -> dict[str, Any]:
+    prepared = preprocessor(prepare_policy_input(request))
+    for key, value in prepared.items():
+        if isinstance(value, torch.Tensor) and (value.is_complex() or not torch.isfinite(value).all()):
+            raise ValueError(f"LeRobot π0.5 preprocessing returned invalid model input {key}.")
+    return prepared
 
 
 def native_action_record(selected: torch.Tensor) -> tuple[list[list[float]], list[list[float]]]:
@@ -176,8 +185,7 @@ class LeRobotPi05RoboTwin:
         return actions
 
     def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
-        batch = prepare_policy_input(request)
-        prepared = self.preprocessor(batch)
+        prepared = prepare_model_input(request, self.preprocessor)
         with torch.inference_mode():
             normalized = self.policy.predict_action_chunk(prepared)
             actions = self.postprocessor(normalized)

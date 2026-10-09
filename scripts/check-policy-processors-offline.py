@@ -68,7 +68,7 @@ def inspect(args):
                 raise ValueError("A local PaliGemma tokenizer is required.")
             from lerobot.configs import PreTrainedConfig
             from lerobot.policies import make_pre_post_processors
-            from physical_harness.policies.lerobot_pi05_robotwin import TOKENIZER_HASHES, prepare_policy_input
+            from physical_harness.policies.lerobot_pi05_robotwin import TOKENIZER_HASHES, prepare_model_input
             tokenizer = args.tokenizer.resolve(strict=True)
             for name, digest in TOKENIZER_HASHES.items():
                 path = original(tokenizer / name)
@@ -141,7 +141,7 @@ def inspect(args):
             details = {"packedSha256": sha256(packed).hexdigest(), "packedBytes": len(packed)}
         else:
             if args.provider == "robotwin":
-                prepared = processor(prepare_policy_input(request))
+                prepared = prepare_model_input(request, processor)
             else:
                 batch = prepare_policy_input(request, language_key=language_key)
                 if set(batch["video"]) != set(modalities["video"].modality_keys) or set(batch["state"]) != set(modalities["state"].modality_keys):
@@ -167,6 +167,19 @@ def inspect(args):
         prepared_records.append({"requestId": request_id, "observationId": request["observation_id"],
                                  "instructionSha256": sha256(request["instruction"].encode()).hexdigest(),
                                  "prepared": details})
+        if args.provider == "robotwin":
+            for sign in (1, -1):
+                invalid = deepcopy(request)
+                invalid["observation"]["proprioception"]["joint_action.vector"][0] = sign * float(np.finfo(np.float32).max)
+                try:
+                    prepare_model_input(invalid, processor)
+                except ValueError as error:
+                    if "preprocessing returned invalid model input observation.state" not in str(error):
+                        raise
+                    cases.append({"requestId": request_id, "derivative": f"normalized-float32-overflow-{sign}",
+                                  "result": "rejected", "originalError": str(error)})
+                else:
+                    raise ValueError("Nonfinite normalized state reached the model input boundary.")
     for name, module in sorted(sys.modules.items()):
         if name.startswith(("physical_harness.policies", "lerobot", "gr00t", "openpi_client")):
             path = getattr(module, "__file__", None)
@@ -180,7 +193,8 @@ def inspect(args):
               "environmentAllocations": 0, "controls": 0,
               "scope": "Actual installed checkpoint processor or OpenPI codec on original requests; no NN inference, simulation or task acceptance."}
     (output / "acceptance.json").write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
-    print(json.dumps({"provider": args.provider, "requests": len(cases), "sources": len(sources), "sdkVersion": sdk_version, "gpuJobs": 0}))
+    print(json.dumps({"provider": args.provider, "requests": len(prepared_records), "cases": len(cases),
+                      "sources": len(sources), "sdkVersion": sdk_version, "gpuJobs": 0}))
 
 
 if __name__ == "__main__":
