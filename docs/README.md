@@ -1,6 +1,6 @@
 # Documentation
 
-1. [Current progress](implementation/progress.md): what exists and what to do next.
+1. [Current progress](implementation/progress.md): capabilities, active constraints, source entry points and remaining release requirements. [Checkpoint history](implementation/checkpoint-history.md) retains dated acceptance records.
 2. [Framework foundation](implementation/mvp-foundation.md): runtime owners, invariants and production acceptance boundaries.
 3. [Project specification](project-spec.md): confirmed product requirements.
 4. [Architecture and module map](architecture/modules.md): where code belongs.
