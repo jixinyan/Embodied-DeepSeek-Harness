@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.109 · 2026-10-08
+Version: v1.110 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,15 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+All four learned adapters share their online `prepare_policy_input` with installed
+SDK inspection. LeRobot checks tensors after saved preprocessing and before model
+inference. Clean `a97d0a9` passes sixty actual SDK/codec checks on forty-six original
+requests, including fourteen saved-normalization rejection checks. Independent
+verification compares 414 original source/input hashes and confirms runner/diagnostic
+absence, clean source and unchanged canonical server status. CUDA remains
+uninitialized; no policy network, inference, environment or controls execute.
+Steps 13–14 retain loaded-model/device/task acceptance requirements.
 
 Shared numeric action-output admission checks real numeric dtype, positive
 dimensions, declared shape and finite values; OpenPI checks float32 range before

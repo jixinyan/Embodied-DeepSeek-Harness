@@ -1,6 +1,6 @@
 # Implementation progress
 
-Spec: v1.109. Current checkpoint: **shared policy input/output admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.110. Current checkpoint: **installed checkpoint CPU preprocessing, shared policy input/output admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 The [capability map](features.md) records implementation and acceptance boundaries.
 
 ## 2026-10-08 independently callable policy preparation
@@ -9,9 +9,19 @@ All four learned adapters expose `prepare_policy_input`; their existing online
 inference paths call the same functions. Camera/state mappings, batch shapes,
 ActionSpec checks and instruction sources retain their original behavior. Sixty
 original-request/invalid-input checks and full source checks pass on macOS.
-The installed SDK diagnostic loads actual saved processors/tokenizers or the
-OpenPI codec and prepares original requests on CPU. Installed SDK acceptance is
-being collected; NN inference and simulator/device gates remain separate.
+LeRobot also exposes `prepare_model_input`, checking complex/nonfinite tensors
+after its saved processor and before model inference. Clean `a97d0a9` passes sixty
+installed SDK/codec checks on forty-six original requests: seven RoboTwin,
+twenty-four RoboCasa, three BEHAVIOR and twelve RoboDojo. Fourteen RoboTwin
+normalization rejection checks use actual saved processing on declared state
+derivatives. Independent verification compares 414 SDK/checkpoint/input/source
+hashes and four report digests. The archive matches SHA-256
+`2dc685057f891ba5b3c5761b792a27154b99a2c47bc62dd3f0545ef56956302b`.
+Original files and canonical server status remain unchanged; source is clean,
+the runner exits zero and OS inspection confirms diagnostic process absence.
+CUDA remains uninitialized and no policy network, inference, simulator or controls
+execute. Evidence: `.local/work/v1-policy-processors-linux-20261008-verified/`.
+NN inference and simulator/device gates retain their native acceptance requirements.
 
 ## 2026-10-08 shared numeric policy outputs
 

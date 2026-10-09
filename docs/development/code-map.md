@@ -94,6 +94,7 @@ implementations load in their separately configured service processes.
 | Verify actual policy connection drain and concurrent/cancelled close callers | [check-policy-client-owner-offline.py](../../scripts/check-policy-client-owner-offline.py) |
 | Verify policy CLI admission, bound-listener readiness and startup release | [check-policy-startup-offline.py](../../scripts/check-policy-startup-offline.py) |
 | Check four-provider input preparation on original observations without model SDKs | [check-policy-inputs-offline.py](../../scripts/check-policy-inputs-offline.py) |
+| Admit prepared LeRobot tensors after checkpoint preprocessing and before Pi0.5 inference | [lerobot_pi05_robotwin.py](../../harness/physical-runtime/src/physical_harness/policies/lerobot_pi05_robotwin.py), `prepare_model_input` |
 | Admit numeric policy outputs before native conversion | [action_outputs.py](../../harness/physical-runtime/src/physical_harness/policies/action_outputs.py) |
 | Check original recorded numeric outputs and declared invalid derivatives without model SDKs | [check-policy-outputs-offline.py](../../scripts/check-policy-outputs-offline.py) |
 | Prepare original requests through installed checkpoint processors or the OpenPI codec without policy inference | [check-policy-processors-offline.py](../../scripts/check-policy-processors-offline.py) |

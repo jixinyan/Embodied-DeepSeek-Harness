@@ -17,6 +17,14 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Clean `a97d0a9` additionally passes sixty actual installed SDK/codec CPU checks on
+forty-six original requests across all four providers. LeRobot admits prepared
+tensors after its saved processor and rejects fourteen declared normalization
+overflow cases before model inference. Independent verification compares 414
+SDK/checkpoint/input/source hashes, confirms unchanged originals/server status and
+diagnostic process absence. No policy network, model inference, environment or GPU
+allocates. See [installed processor acceptance](cpu-release-validation.md#installed-checkpoint-processors).
+
 Current-source CPU preparation passes all thirty components from clean
 `deb5207` on macOS and isolated Linux, with 463 admission/process/wire/resource
 cases per platform. This includes sixty shared policy-input checks on four original

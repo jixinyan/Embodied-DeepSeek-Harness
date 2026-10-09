@@ -28,6 +28,17 @@ key; RoboTwin returns the raw Torch batch; RoboDojo returns its OpenPI state/pro
 image envelope before request identity packing. SDK normalization, tokenization,
 model inference and controller conversion retain their existing owners.
 
+LeRobot's `prepare_model_input` applies the actual saved preprocessor and checks
+its tensor values before `predict_action_chunk`. Complex or nonfinite prepared
+values fail at that boundary. Original finite observations must remain finite
+after checkpoint normalization and tokenization.
+
+The [installed SDK diagnostic](../../../../../scripts/check-policy-processors-offline.py)
+uses real saved LeRobot and GR00T processors, local tokenizers and the OpenPI
+codec on original requests with CUDA disabled. It constructs no policy network,
+calls no model and issues no device controls. See
+[CPU processor validation](../../../../../docs/implementation/cpu-release-validation.md#installed-checkpoint-processors).
+
 [`action_outputs.py`](action_outputs.py) owns model-independent numeric action
 admission. It requires real numeric arrays, positive dimensions, the adapter's
 declared shape and finite values. OpenPI additionally checks the finite float32

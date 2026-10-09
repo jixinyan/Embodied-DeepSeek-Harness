@@ -18,6 +18,56 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
+## Installed checkpoint processors
+
+All four adapters expose `prepare_policy_input`; online inference and the installed
+SDK diagnostic call the same production preparation. LeRobot's `prepare_model_input`
+also admits tensor values after the actual saved processor and before model inference.
+Complex or nonfinite tensor values fail immediately, including state normalization
+overflow from otherwise finite float32 observations.
+
+Clean `a97d0a9` passes sixty actual CPU processor/codec checks on forty-six original
+requests in the isolated installed service environments:
+
+| Provider | Actual preparation | Original requests | Checks |
+| --- | --- | --- | --- |
+| RoboTwin | LeRobot 0.6.1 saved normalization and local PaliGemma tokenizer | 7 | 21 |
+| RoboCasa | GR00T 0.1.0 actual processor, VLAStepData, collator and native bfloat16 conversion | 24 | 24 |
+| BEHAVIOR | GR00T 0.1.0 R1Pro processor, VLAStepData, collator and native bfloat16 conversion | 3 | 3 |
+| RoboDojo | OpenPI client 0.1.0 production envelope and actual MessagePack round trip | 12 | 12 |
+
+Fourteen RoboTwin rejection checks use declared positive/negative float32-limit
+state derivatives and the real saved normalizer. Original observations still
+prepare successfully. Every prepared tensor remains finite and on CPU;
+RoboDojo camera/state hashes match their original actual inference records.
+No policy network is constructed and CUDA remains uninitialized. Models,
+inference calls, environments and device controls remain zero.
+
+Independent verification compares 414 original SDK/checkpoint/input/source hashes,
+all four report digests and the downloaded archive digest. Source stays clean,
+canonical server status remains unchanged, and actual OS inspection confirms
+the runner and SDK diagnostic processes are absent. GR00T configuration, processor
+and statistics files match the original checkpoint manifest; its supplemental
+`embodiment_id.json` is independently recorded with its unchanged-file digest.
+
+```sh
+CUDA_VISIBLE_DEVICES='' HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+  PYTHONPATH=harness/physical-runtime/src \
+  /path/to/selected-sdk-environment/bin/python scripts/check-policy-processors-offline.py \
+  --configuration /absolute/path/original-checkpoint-audit-inputs.json \
+  --provider robotwin --checkpoint /path/to/pi05_robotwin \
+  --tokenizer /path/to/paligemma-3b-pt-224 \
+  --output .local/work/<new-installed-processor-check>
+```
+
+Select `robocasa` or `behavior` with its real GR00T checkpoint and omit `--tokenizer`;
+select `robodojo` in the OpenPI client environment and omit both checkpoint/tokenizer
+arguments. Each output directory must be new. Evidence:
+`.local/work/v1-policy-processors-linux-20261008-verified/`. Archive SHA-256:
+`2dc685057f891ba5b3c5761b792a27154b99a2c47bc62dd3f0545ef56956302b`.
+Loaded-model compatibility, GPU cancellation, physical actions and task outcomes
+retain their native acceptance requirements.
+
 ## Verified source deb5207
 
 All thirty configured components pass on macOS and isolated Linux, including

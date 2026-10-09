@@ -105,6 +105,10 @@ modules in `policies`, and provider SDK loading stays inside selected startup.
 `policies/observation_inputs.py` owns model-independent identity, RGB PNG and
 float32 state admission. Native adapters retain their own modality mappings,
 SDK preprocessing and action conversion.
+Each adapter exposes `prepare_policy_input` for both online inference and actual
+installed SDK CPU inspection. LeRobot's `prepare_model_input` also checks tensors
+after its saved processor and before model inference. The processor diagnostic
+uses original request and checkpoint sources with no policy network allocation.
 `policies/action_outputs.py` owns real numeric array, positive dimension, shape,
 finite-value and optional float32-range admission. Native group semantics,
 Torch conversion and gripper/controller mapping retain their adapter owners.
