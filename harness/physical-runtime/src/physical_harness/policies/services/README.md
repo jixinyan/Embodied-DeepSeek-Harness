@@ -28,11 +28,16 @@ accepts the same checkpoint/tokenizer/device/port arguments as its example entry
 Every module supports `--help` before optional model SDK imports. The four EDH
 JSON servers bind their port before model initialization and open connection
 admission only after readiness. The native producer uses the upstream OpenPI
-server. It admits a fixed port in `1..65535`, verifies the complete selected
+server. It admits a fixed port in `1..65535` and reserves its loopback socket
+before checkpoint access or SDK imports. That socket starts accepting connections
+only through the actual OpenPI server after model readiness. The inherited
+inference handler, codec, metadata and health check retain their SDK implementation.
+The native entry verifies the complete selected
 checkpoint, validates saved normalization and writes its verification report
 before importing the model SDKs.
 JAX device selection, trained-policy loading and upstream service startup follow
-these filesystem checks.
+these filesystem checks. Startup errors release the reserved socket; its owner
+context also encloses the native server lifetime.
 
 [inference.py](../inference.py) owns model threads and records;
 [server.py](../server.py) owns validated WebSocket transport. These launchers

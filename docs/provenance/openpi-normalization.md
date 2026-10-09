@@ -35,6 +35,7 @@ source changes.
 | `policies/aloha_policy.py` | `c37aa90797665b1ec57cd5286fa5d6cbf29af0559ffce36d3fed98c02329eaea` |
 | `policies/policy.py` | `5a19b73e8d9c60a9e21849bf482c0e9c72f454c3aa88f2de544a24f209913b99` |
 | `models/tokenizer.py` | `965be8b3c393a6811875bbc32da9e01a5d01cc2f87802de801cf7293e049748c` |
+| `serving/websocket_policy_server.py` | `1370d345e6c3c5b8f15573050e485e60a5b423d1df33e24b237805e6b442b026` |
 
 The selected Policy composes and calls `_input_transform` and `_output_transform`.
 EDH binds its input/output admission to these existing callables after native
@@ -44,6 +45,13 @@ Output processing retains saved quantile inversion, absolute joint reconstructio
 and native fourteen-channel selection. The admission functions preserve the SDK's
 prepared input values and check float32 range before the native response cast.
 The JSON bridge retains continuous gripper clipping and the requested prefix.
+
+The native entry reserves an unlistening loopback socket before checkpoint/SDK
+startup. Its server subclass supplies that socket to the installed WebSocket
+server while inheriting the actual OpenPI inference handler, metadata, codec and
+health check. The socket owner encloses verification, model loading and serving;
+startup errors release it. Native model-loaded service behavior retains its own
+release acceptance requirement.
 
 The [actual SDK diagnostic](../../scripts/check-openpi-transforms-offline.py)
 uses the same selected configuration and saved checkpoint statistics without

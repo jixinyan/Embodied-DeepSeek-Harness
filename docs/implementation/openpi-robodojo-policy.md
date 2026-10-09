@@ -42,7 +42,13 @@ with an explicitly selected GPU, `XLA_PYTHON_CLIENT_PREALLOCATE=false`,
 `--checkpoint`, `--inventory`, `--verification-output` and `--port`. It requires
 `XLA_FLAGS=--xla_gpu_enable_triton_gemm=false` for the selected B300 deployment,
 using the installed cuBLAS GEMM compiler path. It requires
-one visible JAX GPU. The native entry admits a fixed `--port` in `1..65535`,
+one visible JAX GPU. The native entry admits a fixed `--port` in `1..65535` and
+reserves its loopback socket before checkpoint access or SDK imports. An occupied
+port fails at binding. The socket remains unlistening during checkpoint/model
+startup and is supplied to the actual OpenPI server after readiness. The native
+server inherits the SDK inference handler and retains its codec, metadata and
+health check. Startup errors release that same socket.
+The entry
 verifies the pinned 18-file checkpoint, validates its fourteen-channel state/action
 normalization and publishes its verification report
 before importing JAX or OpenPI. Filesystem errors terminate startup at their

@@ -183,10 +183,14 @@ its upstream connection. Ready metadata reports the actual bound port.
 
 All five JSON/native policy CLI entries support `--help` before optional model
 SDK imports. The native OpenPI producer retains the upstream service and its
-model protocol. It validates its fixed port, checkpoint inventory and verification
-report path before SDK imports. JAX device selection and model loading follow.
+model protocol. It reserves an unlistening loopback socket before checkpoint
+access or SDK imports, then supplies that socket to the actual OpenPI server.
+The inherited inference handler, codec and health check keep their SDK ownership.
+Its socket owner encloses verification, model loading and service lifetime;
+startup errors release the port. JAX device selection and model loading follow
+the original inventory/normalization/report admission.
 The [startup diagnostic](../../../../../scripts/check-policy-startup-offline.py)
-exercises forty-two actual CLI processes across the example and module entries,
+exercises forty-six actual CLI processes across the example and module entries,
 delayed connection admission, original
 request forwarding to an unavailable endpoint and port release. It supplies no
 model result or action. See [startup validation](../../../../../docs/implementation/cpu-release-validation.md#policy-service-startup).

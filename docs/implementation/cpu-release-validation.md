@@ -1420,13 +1420,17 @@ CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-policy-startup-offline.py
 ```
 
 Install the base package and `policy` extra in the isolated Python environment.
-Forty-four actual subprocess cases cover ten example/module help commands,
-eight occupied ports, eight missing-checkpoint failures, two native missing-inventory
+Forty-six actual subprocess cases cover ten example/module help commands,
+ten occupied ports, eight missing-checkpoint failures, two native missing-inventory
 failures, six native invalid-port rejections and ten malformed selected-digest
 rejections. Existing listeners retain actual connection
 acceptance after each candidate exits; failed-startup ports become reusable.
 Help completes without optional SDK imports, including the native OpenPI producer.
-The native producer validates its fixed port in `1..65535`, verifies the complete
+The native producer validates its fixed port in `1..65535` and reserves its
+unlistening loopback socket before checkpoint/SDK startup. The actual OpenPI
+server uses that same socket after readiness, retaining its inherited inference
+handler, codec and health check. Startup errors release the reserved port.
+The producer verifies the complete
 pinned checkpoint and writes the verification report before SDK imports. The
 diagnostic checks named missing-file errors and exit status 2 for invalid ports,
 with no verification report after rejection. Loaded producer readiness and model
@@ -1441,6 +1445,33 @@ listed above.
 The [checkpoint binding diagnostic](checkpoint-bindings.md#cpu-validation) uses
 actual original artifacts to check computed identity and mismatched-digest
 rejection; loaded custom-checkpoint and physical task acceptance remain native gates.
+
+Clean `18b513b` passes all 46 current actual CLI cases on macOS and isolated
+Linux. Both native entry forms reject an occupied endpoint before checkpoint/SDK
+access and preserve the existing listener. Actual missing-checkpoint/inventory
+errors release their selected reserved ports. The same clean Linux source passes
+complete original checkpoint identities for all four providers and four native
+selected-digest/report-path failures, each confirming its reserved port is reusable.
+No model SDK imports during the checkpoint identity check.
+
+The 87 actual installed OpenPI transform cases on twelve original request/native-action
+derivatives also pass on that source. Independent verification matches 155
+production/checkpoint/input comparisons and confirms 54 actual process releases,
+including the startup/native-checkpoint children, diagnostic groups and runner.
+Complete checkpoint bytes, original sources and canonical user changes remain
+unchanged; frozen source remains clean. JAX stays CPU-only, CUDA stays uninitialized,
+and model loads/calls, GPU jobs, simulator allocations and controls remain zero.
+Loaded producer connections, model execution and device/task behavior retain
+their native requirements.
+Local verification matches 39 implementation/manifest comparisons and all report/
+archive identities. All 46 CLI admission outcomes match between CPU platforms;
+the 87-case actual SDK results and twelve original-request-derived input/control
+records remain unchanged after native endpoint integration.
+
+Evidence: `.local/work/openpi-port-cpu-macos-20261009/` and
+`.local/work/openpi-port-cpu-linux-20261009-verified/`.
+Retained Linux archive SHA256:
+`91ea5fdd98625f49388692d4d0b8fc6cd2d701bc640438d712fbd5611bcd7c51`.
 
 The native producer additionally validates its saved ARX X5 state/actions
 normalization before optional SDK imports and verification-report publication.

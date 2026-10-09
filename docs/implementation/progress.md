@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-09 · Spec v1.120 · v1 release acceptance in progress.
+Updated: 2026-10-09 · Spec v1.121 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| `18b513b` | The native OpenPI producer reserves its unlistening socket before checkpoint/SDK startup and supplies it to the inherited SDK service after readiness. Forty-six actual CLI cases pass on both CPU platforms. Complete original four-provider checkpoint identities, four native digest/report failures with released ports and 87 unchanged actual SDK transform cases pass on clean Linux. Independent verification confirms 155 source/checkpoint/input comparisons, 54 process releases and 39 local implementation/manifest comparisons. Platform admission outcomes and SDK values remain unchanged, with preserved user changes and zero native allocations. |
 | `930963c` | The OpenPI producer admits actual SDK model inputs and complete normalized/decoded actions; the JSON bridge admits action limits before preparation/request transmission. Actual installed SDK CPU checks pass 87 transform cases on twelve original-request/native-action derivatives, plus twelve original codec inputs, 76 numeric and 44 real CLI startup cases. Independent verification matches 193 source/input comparisons, 49 actual process releases and fifty local implementation/manifest comparisons. Original prepared values, source cleanliness and user changes remain unchanged, with CPU-only JAX and zero native allocations. |
 | `a278547` | RoboTwin admits action count before input preparation/model calls and complete finite floating-point tensors before/after saved postprocessing. Actual LeRobot 0.6.1 CPU checks pass 34 saved-postprocessor cases on seven original selected-prefix derivatives, 21 input cases, 70 original Torch/controller cases and 76 four-provider numeric cases. Independent verification matches 472 source/input comparisons, five actual process releases and 35 local implementation/manifest comparisons. Original prepared/native values remain unchanged and CUDA stays uninitialized. |
 | `2592b1d` | Both GR00T constructors bind normalized float32 model-output and decoded-group admission to the actual checkpoint processor. Installed SDK CPU checks pass 1,306 cases on 1,272 original-record-derived inputs, with exact SDK float32/controller equality and checkpoint padding. Clean Linux source additionally passes 1,330 controller and 76 numeric checks. Independent verification matches 2,706 source/input hashes, five actual process releases and 44 local production/manifest comparisons. CUDA stays uninitialized and canonical user changes remain unchanged. |
