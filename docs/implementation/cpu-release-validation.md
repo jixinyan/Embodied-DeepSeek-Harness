@@ -50,6 +50,14 @@ including 27 image results, 81 images, six formal checks, active rotation and
 explicit evidence reads. Original journals and production sources retain their
 hashes. Evidence: `.local/work/tool-evidence-cpu-macos-20261008-verified/acceptance.json`.
 
+The same clean `c857e13` source passes all thirty configured CPU components on
+macOS, with 463 admission/process/wire/resource cases, six visual-context cases,
+twelve original context reads and four-provider readiness. Independent local
+verification checks 428 source/input hashes, every report digest and thirty
+actual process-group releases. Evidence:
+`.local/work/tool-evidence-cpu-campaign-macos-20261008/independently-verified.json`.
+These checks allocate no models, simulators or GPUs.
+
 ## Pre-SDK GR00T configuration admission
 
 The [configuration diagnostic](../../scripts/check-gr00t-configuration-offline.py)

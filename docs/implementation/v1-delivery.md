@@ -17,6 +17,14 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Clean `c857e13` centralizes core output evidence selection in the tools module.
+On macOS, 98 original receipts from seven tasks match their persisted native DSH
+results exactly, including 81 images and six formal checks. The current source
+also passes all thirty CPU components and 463 admission/process/wire/resource
+cases. Independent verification confirms 428 source/input comparisons and thirty
+actual process-group releases. No model, simulator or GPU allocates. See
+[tool evidence acceptance](cpu-release-validation.md#core-tool-evidence-selection).
+
 Clean `27b3950` verifies scoped arithmetic checks in native RGB-D back-projection,
 range and coordinate reductions. Thirty-nine CPU cases pass on both macOS and
 isolated Linux using thirteen original captures and twenty-six invalid finite-

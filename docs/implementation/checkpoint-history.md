@@ -1,8 +1,33 @@
 # Implementation checkpoint history
 
-Recorded through spec v1.114, 2026-10-08. Each checkpoint retains its own source
+Recorded through spec v1.115, 2026-10-08. Each checkpoint retains its own source
 revision, execution scope and acceptance evidence. Read [current progress](progress.md)
 for active requirements and [v1 delivery](v1-delivery.md) for release gates.
+
+## 2026-10-08 core tool evidence ownership
+
+`tools/core-output.ts` owns evidence-reference selection for model-facing core
+results. UpperRun supplies the calling Verifier's formal-check sample, admits
+assignment grants/visibility and keeps the native DSH renderer. Tool registration,
+dispatch, validation, task decisions and independent role contexts retain their
+existing owners.
+
+Clean `c857e13` passes original receipt inspection across seven tasks on macOS:
+98 core results, 27 image results, 81 images and six formal checks. Original tool
+calls, domain receipts, formal-check records and persisted native Session results
+match exactly. Four original journals and eight production source files retain
+their identities. No model, tool, policy or physical operation is replayed.
+
+The current source also passes all thirty CPU components and 463 admission,
+process, wire and resource cases. Independent local verification checks 428
+source/input hashes and thirty actual process-group releases. Six visual-context
+cases, twelve original context reads and four-provider readiness pass separately
+within that same campaign. GPU/model/environment allocation and controls remain
+zero. Evidence: `.local/work/tool-evidence-cpu-macos-20261008-verified/` and
+`.local/work/tool-evidence-cpu-campaign-macos-20261008/`.
+
+Loaded perception providers, policy/device boundaries and complete task outcomes
+retain the active native release requirements.
 
 ## 2026-10-08 native geometry numeric admission
 

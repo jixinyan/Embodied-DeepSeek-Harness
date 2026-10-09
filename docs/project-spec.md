@@ -1,10 +1,19 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.114 · 2026-10-08
+Version: v1.115 · 2026-10-08
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
+
+Core tool output evidence selection belongs to `tools/core-output.ts`. UpperRun
+supplies the calling Verifier's check sample and admits assignment grants and
+visibility before native DSH rendering. Clean `c857e13` matches 98 original core
+results across seven tasks on macOS, including 27 image results, 81 images and
+six formal checks. The current source also passes all thirty CPU components and
+463 admission/process/wire/resource cases. Independent checks verify 428 source/
+input comparisons and thirty actual process-group releases. GPU/model/environment
+allocation and controls remain zero. See [tool evidence validation](implementation/cpu-release-validation.md#core-tool-evidence-selection).
 
 Native RGB-D geometry uses scoped arithmetic checks for back-projection, ranges
 and camera/world coordinate reductions. Clean `27b3950` passes 39 CPU checks per
@@ -325,13 +334,18 @@ propagation. The CPU diagnostic verifies actual recording/pipe/thread lifecycle
 without allocating a simulator or providing a model result. Loaded-policy and
 physical-task acceptance retain their native release requirements.
 
-The tools module owns logical parameters and model-visible schema preparation
-in `core-inputs.ts` and `model-schema.ts`. The application, role workflow checks
+The tools module owns logical parameters, model-visible schema preparation and
+output evidence selection in `core-inputs.ts`, `model-schema.ts` and `core-output.ts`.
+The application, role workflow checks
 and recorded-plan readers use its public exports. Each generated parameter object
 is independent of canonical definitions and caller-provided role/plan schemas.
 Native DSH remains the registration, dispatch and validation owner. Actual
 recorded request/plan inspection and parameter-scope checks are documented in
 [CPU validation](implementation/cpu-release-validation.md#model-visible-tool-schemas).
+UpperRun supplies formal-check context and admits selected output references
+through assignment grants and SensorSamples before native DSH result rendering.
+Original tool receipts and persisted native Session audits verify exact JSON
+text and ordered image attachments through the production selector.
 
 Host worker communication and confirmed process release belong to
 `apps/server/src/native-worker-transport.ts`; retained environment/task/image
