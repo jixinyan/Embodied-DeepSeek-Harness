@@ -33,6 +33,15 @@ its tensor values before `predict_action_chunk`. Complex or nonfinite prepared
 values fail at that boundary. Original finite observations must remain finite
 after checkpoint normalization and tokenization.
 
+LeRobot's `prepare_checkpoint_processors` admits its tokenizer and model features,
+loads the actual saved input/output processors, and checks normalization before
+`PI05Policy` construction. The SDK's loaded normalization steps must match model
+features and modes, retain absolute joint targets, and supply finite native mean/
+standard-deviation tensors with positive finite epsilon. Saved action normalization
+and inverse statistics must agree. Both the production constructor and installed
+CPU diagnostic use this same preparation. Checkpoint weight loading, inference
+and controller conversion retain their existing native owners.
+
 [`gr00t_checkpoint.py`](gr00t_checkpoint.py) validates GR00T model, processor and
 normalization configuration before optional SDK imports or policy construction.
 Both native GR00T adapters call `verify_checkpoint_configuration` from their

@@ -81,3 +81,10 @@ checks and sixty shared input checks on both CPU platforms. Sixty installed
 processor/codec checks on forty-six original requests preserve exact prepared
 values, with independently verified file/source identities and released diagnostic
 processes. These checks allocate no policy network, simulator or device operation.
+
+RoboTwin's constructor admits actual saved SDK processors before policy construction.
+Clean `d937330` passes 22 original/invalid configuration/statistic checks and sixty
+installed processor/codec checks on forty-six original requests with unchanged
+prepared values. Native feature/mode consistency, finite statistics, absolute-target
+semantics and matching action inverse statistics are required. Actual diagnostic
+processes release; no GPU, policy network, inference or environment allocates.

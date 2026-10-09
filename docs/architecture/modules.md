@@ -113,6 +113,9 @@ uses original request and checkpoint sources with no policy network allocation.
 The two native GR00T constructors supply their ordered modalities, dimensions,
 horizons and action semantics. Original SDK processing and inference remain with
 `Gr00tPolicy`; file identity remains with the provenance reader.
+The RoboTwin adapter's `prepare_checkpoint_processors` loads and admits actual
+saved SDK processors before policy construction. Its constructor and installed
+CPU diagnostic use that same feature, normalization and absolute-target admission.
 `policies/action_outputs.py` owns real numeric array, positive dimension, shape,
 finite-value and optional float32-range admission. Native group semantics,
 Torch conversion and gripper/controller mapping retain their adapter owners.

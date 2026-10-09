@@ -125,6 +125,36 @@ The diagnostic requires original reference metadata hashes and retains declared
 invalid copies with their individual hashes. Each invalid sample calls the actual
 adapter constructor; reaching an optional SDK import fails the diagnostic.
 
+### LeRobot saved-processor admission
+
+The RoboTwin adapter calls `prepare_checkpoint_processors` before constructing
+`PI05Policy` or loading its model weights. The function verifies the local tokenizer,
+uses the SDK's `PreTrainedConfig` reader, admits the native feature/action mapping,
+and loads the actual saved input/output pipelines through `make_pre_post_processors`.
+The SDK retains ownership of checkpoint decoding, normalization and tokenization.
+
+Loaded normalization steps must match model features and modes. Their native
+mean/std tensors must have the declared dimensions and finite values; standard
+deviations are nonnegative and epsilon is positive and finite. State normalization
+must be enabled. Saved input/output action statistics must agree, and enabled
+relative-action conversion is incompatible with this absolute-joint-target adapter.
+The actual saved processors finish admission before any policy network is constructed.
+
+```sh
+CUDA_VISIBLE_DEVICES='' HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+  PYTHONPATH=harness/physical-runtime/src \
+  /path/to/lerobot-environment/bin/python scripts/check-lerobot-configuration-offline.py \
+  --checkpoint /path/to/original/pi05_robotwin \
+  --tokenizer /path/to/paligemma-3b-pt-224 \
+  --output .local/work/robotwin-processor-configuration
+```
+
+The diagnostic verifies original reference metadata/statistics and tokenizer hashes.
+Declared invalid JSON and safetensors copies call the same production preparation.
+The original-request processor diagnostic also uses this entry before its CPU tensor
+checks. Neither diagnostic constructs a policy network or performs inference.
+Fine-tuned checkpoint effectiveness and device execution retain native acceptance.
+
 ### Profile commands
 
 For each profile, retain the existing service entry and provide its selected

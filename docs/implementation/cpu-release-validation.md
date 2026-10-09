@@ -58,6 +58,43 @@ cancellation, physical stopping and native task outcomes retain their release ga
 
 ## Installed checkpoint processors
 
+### RoboTwin pre-model saved-processor admission
+
+The production `prepare_checkpoint_processors` function admits the tokenizer and
+model features, loads actual SDK saved input/output processors and validates
+normalization before policy construction. SDK-loaded features/modes must match
+the model. Native mean/std values must be finite, dimensionally correct and use
+nonnegative standard deviations and positive finite epsilon. State normalization,
+absolute joint targets and matching action normalization/inverse statistics remain
+mandatory. See [commands and behavior](checkpoint-bindings.md#lerobot-saved-processor-admission).
+
+Clean `d937330` passes 22 original/invalid configuration checks in the real installed
+LeRobot environment. Twenty-one declared derivatives cover model/processor dimensions,
+normalization modes, tokenizer identity, action representation, epsilon, selected
+state normalization, saved tensor statistics and compile selector admission.
+Actual JSON and safetensors readers handle those files. The diagnostic calls the
+same preparation used by the production constructor without constructing a policy
+network, loading its weights or issuing inference.
+
+The same source passes sixty installed processor/codec checks on forty-six original
+four-provider requests. Every prepared tensor/envelope retains its prior verified
+identity and values. Independent verification matches 416 SDK/checkpoint/input/source
+hashes, 14 original configuration/tokenizer/source hashes, 105 invalid-derivative
+hashes and 42 local source comparisons. Original files and canonical server status
+stay unchanged, frozen source is clean and actual OS checks confirm runner and
+diagnostic absence. CUDA remains uninitialized; model, inference, environment and
+control allocations remain zero. Full macOS source checks and isolated Linux Python
+checks retain 68 Python files, 28 base imports and 49 diagnostics.
+
+Evidence: `.local/work/v1-robotwin-processor-preallocation-linux-20261008-verified/`.
+Configuration archive SHA256:
+`25f05d0a08777c04255238796cc7cc00e519dc975656e63021216011905ba733`.
+Installed processor archive SHA256:
+`61d7f7904861f59cbd9a38a876b805fb1a6ab5cd4c17008c56e9b20135b73848`.
+Loaded-policy execution and complete native tasks retain their release gates.
+
+### Shared original-request preparation
+
 All four adapters expose `prepare_policy_input`; online inference and the installed
 SDK diagnostic call the same production preparation. LeRobot's `prepare_model_input`
 also admits tensor values after the actual saved processor and before model inference.

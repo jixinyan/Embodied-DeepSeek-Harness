@@ -1,7 +1,38 @@
 # Implementation progress
 
-Spec: v1.111. Current checkpoint: **pre-SDK GR00T configuration admission, installed checkpoint CPU preprocessing, shared policy input/output admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.112. Current checkpoint: **pre-model saved RoboTwin processor admission, pre-SDK GR00T configuration admission, installed checkpoint CPU preprocessing, shared policy input/output admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 The [capability map](features.md) records implementation and acceptance boundaries.
+
+## 2026-10-08 RoboTwin saved-processor admission
+
+`prepare_checkpoint_processors` owns tokenizer/model-feature admission and actual
+saved SDK processor loading before `PI05Policy` construction. Loaded normalization
+steps must match native features and modes, contain finite dimensionally correct
+mean/std tensors, use a positive finite epsilon, preserve state normalization and
+absolute joint targets, and agree on action normalization/inverse statistics.
+The production constructor and installed CPU request diagnostic call this same
+preparation. Native SDK transforms, weight loading and inference retain their owners.
+
+Clean `d937330` passes 22 original/invalid checkpoint-processor checks in the isolated
+installed LeRobot environment: one original configuration and 21 declared JSON/
+safetensors/selector derivatives. Sixty installed processor/codec checks on all
+forty-six original four-provider requests also pass with unchanged prepared values.
+Independent verification matches 416 SDK/checkpoint/input/source hashes,
+14 configuration/tokenizer/source hashes, 105 derivative hashes and 42 local source
+comparisons. Archive/report digests match, original files and canonical server
+status remain unchanged, source stays clean and actual OS inspection confirms
+runner/diagnostic absence. CUDA remains uninitialized; no policy network,
+inference, environment or controls allocate.
+
+Full macOS source checks pass with 68 Python files, 28 base imports, 49 diagnostics
+and 128 pinned DSH files/25 bindings. Isolated Linux passes the same Python
+compilation and base-import checks. Evidence:
+`.local/work/v1-robotwin-processor-preallocation-linux-20261008-verified/`.
+The configuration archive matches SHA-256
+`25f05d0a08777c04255238796cc7cc00e519dc975656e63021216011905ba733`;
+the installed SDK archive matches
+`61d7f7904861f59cbd9a38a876b805fb1a6ab5cd4c17008c56e9b20135b73848`.
+Loaded-model/device boundaries and complete native tasks retain their release gates.
 
 ## 2026-10-08 GR00T configuration admission
 

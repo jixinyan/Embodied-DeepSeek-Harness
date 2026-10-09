@@ -17,6 +17,16 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Clean `d937330` loads and admits actual saved RoboTwin SDK processors before policy
+construction. Twenty-two original/invalid JSON/safetensors/selector checks pass in
+the installed LeRobot environment; sixty installed processor/codec checks on
+forty-six original four-provider requests retain identical prepared values.
+Independent verification matches 416 SDK/input/source hashes, 14 original
+configuration/tokenizer hashes, 105 derivative hashes and 42 local source comparisons.
+Original files/server status remain unchanged, diagnostic processes release and
+CUDA remains uninitialized. No policy network, inference, environment or controls
+allocate. See [saved-processor acceptance](cpu-release-validation.md#robotwin-pre-model-saved-processor-admission).
+
 Clean `2821c21` admits GR00T model/processor/statistics compatibility before model
 SDK imports. The production constructors pass 111 original/invalid configuration
 checks on both macOS and isolated Linux. Sixty shared input checks also pass per
