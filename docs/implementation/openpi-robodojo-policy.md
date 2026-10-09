@@ -53,6 +53,17 @@ continuous gripper semantics and the imported OpenPI Python source inventory.
 Each inference identifies its sequence and SHA256 of the actual input
 state and all three camera arrays.
 
+The native producer binds model-input and model-output admission to the SDK's
+existing Policy transforms. Prepared camera, token and padded-state layouts must
+match this configuration and retain finite float32 state values. Complete
+normalized state/actions are admitted before checkpoint inversion and absolute
+joint reconstruction; all decoded native actions must remain finite and within
+float32 range. Numerical overflow terminates at its transform. The producer
+publishes the admitted float32 actions; the JSON bridge admits action count before
+preparing or transmitting inputs. Original checkpoint processing, instruction
+conditioning, gripper clipping and native prefixes retain their semantics.
+See [actual CPU transform checks](cpu-release-validation.md#openpi-checkpoint-model-transforms).
+
 The producer also accepts `--checkpoint-sha256` for another complete compatible
 ARX X5 checkpoint inventory. The computed file digest must equal the selected
 digest before SDK imports. The default retains the recorded eighteen-file artifact.

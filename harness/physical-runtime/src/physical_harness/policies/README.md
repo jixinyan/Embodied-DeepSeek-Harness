@@ -86,6 +86,26 @@ conversion must match the same saved SDK postprocessor exactly. Original complet
 normalized network predictions and fresh inference remain outside these CPU checks.
 See [saved action postprocessing](../../../../../docs/implementation/cpu-release-validation.md#robotwin-checkpoint-action-postprocessing).
 
+[`openpi_model_input.py`](openpi_model_input.py) admits the actual ARX X5 OpenPI
+input transform: three available uint8 224×224 cameras, 200 prompt tokens and a
+finite floating-point 32-channel state that remains representable as float32.
+[`openpi_model_output.py`](openpi_model_output.py) admits complete finite
+floating-point 50×32 normalized actions and their carried 32-channel state,
+applies the actual SDK output transforms, and admits the finite float32 50×14
+native result. Scoped NumPy arithmetic checks apply during both transforms.
+The native producer binds these functions to its existing SDK Policy transforms
+and publishes only admitted actions. The JSON bridge admits integer action
+limits 1–512 before preparation or request transmission; native gripper clipping
+and the selected prefix remain unchanged.
+
+The [actual SDK diagnostic](../../../../../scripts/check-openpi-transforms-offline.py)
+uses original requests, the saved normalization file and cached real tokenizer.
+Its normalized output inputs are explicit SDK derivatives of recorded native
+actions with model-capacity padding. Prepared values and float32 native controls
+must match the same SDK exactly. It constructs no policy network and performs
+no inference or simulation. See
+[OpenPI transform validation](../../../../../docs/implementation/cpu-release-validation.md#openpi-checkpoint-model-transforms).
+
 [`action_outputs.py`](action_outputs.py) owns model-independent numeric action
 admission. It requires real numeric arrays, positive dimensions, the adapter's
 declared shape and finite values. OpenPI additionally checks the finite float32

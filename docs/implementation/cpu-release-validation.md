@@ -216,6 +216,72 @@ The retained archive has SHA256
 `dd067186d1bb4a2645b11c1f2b0a709685bdd2897575ef97c4952899dfec8513`.
 Evidence: `.local/work/robotwin-postprocessor-cpu-linux-20261009-verified/`.
 
+### OpenPI checkpoint model transforms
+
+The [actual SDK diagnostic](../../scripts/check-openpi-transforms-offline.py)
+loads the selected ARX X5 configuration, saved checkpoint normalization and
+cached PaliGemma tokenizer with CUDA disabled and JAX restricted to CPU. It calls
+the actual SDK's input/output transforms without constructing a policy network,
+restoring weights, performing model inference or allocating a simulator.
+
+```sh
+CUDA_VISIBLE_DEVICES='' JAX_PLATFORMS=cpu \
+  OPENPI_DATA_HOME=/absolute/path/installed-openpi-cache \
+  HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+  PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=harness/physical-runtime/src \
+  /path/to/installed-openpi/bin/python scripts/check-openpi-transforms-offline.py \
+  --configuration /absolute/path/original-checkpoint-audit-inputs.json \
+  --checkpoint /path/to/checkpoints/RoboDojo-sim-arx_x5-joint-0/59999 \
+  --output .local/work/<new-transform-check>
+```
+
+The original `openpiTask` entry supplies `run`, `requests`, `bridgeDirectory`,
+`bridgeLog`, `nativeLog`, `verification` and `policyId`. The cached real tokenizer
+must exist at `big_vision/paligemma_tokenizer.model` inside `OPENPI_DATA_HOME`.
+Imported SDK sources must match the original identified inference inventory.
+
+Production input admission checks the three available uint8 resized cameras,
+prompt tokens and finite padded state before inference. Production output
+admission checks all normalized state/action channels and steps before SDK
+decoding, including padding and values beyond the selected action prefix, then
+checks the complete native float32 action horizon. Actual SDK normalization,
+tokenization, absolute-action reconstruction and gripper/prefix semantics remain
+unchanged. The JSON bridge admits the action count before preparation or request
+transmission. Scoped NumPy arithmetic checks terminate overflow at its transform.
+
+Normalized output inputs are explicitly SDK-derived from original recorded
+native actions, including delta normalization and declared capacity padding.
+They do not recover original normalized network predictions. Guarded prepared
+inputs and float32 native actions must match the same SDK exactly. Declared
+invalid derivatives cover types, shapes, nonfinite values, padding, prompt/image
+availability, action budgets, actual normalization overflow and finite normalized
+values that exceed float32 range after saved quantile inversion. Reports retain
+source/input identities and actual CPU process identities. Original files remain
+unchanged; loaded-policy and complete task behavior retain native release gates.
+
+Clean `930963c` passes 87 actual installed OpenPI transform cases on twelve
+original requests and their explicitly native-action-derived normalized outputs.
+Thirty-nine cases pass with exact same-SDK prepared input and native float32
+equality; forty-eight declared invalid derivatives fail production admission,
+including nonfinite model padding, values after the selected prefix and actual
+saved inverse normalization exceeding float32 range.
+
+The same source passes twelve original OpenPI codec inputs, 76 four-provider
+numeric cases and 44 actual CLI startup checks. Independent verification matches
+193 source/input comparisons and confirms 49 actual process releases, including
+all startup children and the runner. Frozen source remains clean, canonical user
+changes remain unchanged and original input/source bytes verify independently.
+JAX uses CPU devices and CUDA stays uninitialized. Model loads/calls, GPU jobs,
+simulator allocations and controls remain zero. Full source checks pass with
+72 Python files, 28 base imports, 53 diagnostic entries and 128 DSH files/25 bindings.
+Local verification matches fifty implementation/manifest comparisons, all report
+and archive identities, and unchanged prepared values for the twelve original
+OpenPI inputs against their prior installed-codec acceptance.
+
+Evidence: `.local/work/openpi-transforms-cpu-linux-20261009-verified/`.
+Retained archive SHA256:
+`5068ca1a6b7bc5c796c53c5a9294cf6d1c1ff0eb9e94b393f811832c2c7be774`.
+
 ### RoboTwin pre-model saved-processor admission
 
 The production `prepare_checkpoint_processors` function admits the tokenizer and

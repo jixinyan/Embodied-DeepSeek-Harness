@@ -135,6 +135,14 @@ floating-point `1-by-50-by-14` tensors before and after saved postprocessing.
 Its native inference method uses the shared bounded action-count reader before
 preparing inputs or calling the model. Saved normalization and native
 prefix/gripper/controller conversion remain with that adapter and the actual SDK.
+OpenPI's `policies/openpi_model_input.py` admits the actual SDK's three resized
+cameras, availability masks, prompt tokens and padded state before inference.
+`policies/openpi_model_output.py` admits complete normalized model outputs before
+the SDK's saved-statistics and absolute-action transforms, then admits the native
+fourteen-channel float32 result. The native producer binds both functions to its
+actual Policy transforms. The JSON bridge admits action count before preparing
+inputs or sending a request. Original SDK transform order, checkpoint identity,
+instruction source and native gripper conversion retain their existing owners.
 `policies/action_outputs.py` owns real numeric array, positive dimension, shape,
 finite-value, bounded action-count and optional float32-range admission. Each
 GR00T provider exposes `native_action_record` in its existing module, shared by

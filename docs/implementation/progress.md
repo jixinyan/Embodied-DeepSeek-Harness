@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-09 · Spec v1.119 · v1 release acceptance in progress.
+Updated: 2026-10-09 · Spec v1.120 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -26,7 +26,7 @@ allocation. Keep module responsibilities and source entry points explicit.
 | Agent loop and model routes | Absorbed native DSH loop, scoped tools, independent assignments, Qwen/cloud routes and original recovery journals | [Current Agent loop](current-agent-loop.md), [DSH integration](dsh-integration.md) |
 | Teams and communication | Configured custom roles, explicit briefs, independent reports and acknowledgements; native custom-role RoboTwin recovery succeeds | [Role contexts](role-context-acceptance.md), [source map](../development/code-map.md) |
 | Plans, retries and verification | Owner-only goal decisions, durable TODOs, retained-scene retry and fresh formal verification after confirmed eligible execution end | [Multi-goal runtime](multi-goal-runtime.md), [verification boundaries](native-tool-boundaries.md) |
-| Policy inputs and checkpoint startup | Four-provider original observation admission; GR00T metadata, prepared-tensor and actual checkpoint-decoded action admission; real saved LeRobot processors; OpenPI normalization and checkpoint identity | [CPU validation](cpu-release-validation.md), [checkpoint bindings](checkpoint-bindings.md) |
+| Policy inputs and checkpoint startup | Four-provider original observation admission; GR00T metadata, prepared-tensor and actual checkpoint-decoded action admission; real saved LeRobot processors; actual OpenPI model transforms, normalization and checkpoint identity | [CPU validation](cpu-release-validation.md), [checkpoint bindings](checkpoint-bindings.md) |
 | Policy transport and action execution | Real CPU WebSocket/pipe/thread/process ownership; action schema/range/identity admission; ActionGate and confirmed device boundaries | [CPU validation](cpu-release-validation.md), [execution module](../../harness/physical-runtime/src/physical_harness/execution/README.md) |
 | RoboTwin | Native Qwen/Pi0.5 retry success, custom-role execution and two packaged Desktop tasks with released resources | [v1 delivery](v1-delivery.md), [recorded demos](recorded-demos.md) |
 | RoboCasa | Native Qwen/GR00T CloseDrawer success and retained-scene recovery; source-bound RGB-D measurement | [v1 delivery](v1-delivery.md), [recorded demos](recorded-demos.md) |
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| `930963c` | The OpenPI producer admits actual SDK model inputs and complete normalized/decoded actions; the JSON bridge admits action limits before preparation/request transmission. Actual installed SDK CPU checks pass 87 transform cases on twelve original-request/native-action derivatives, plus twelve original codec inputs, 76 numeric and 44 real CLI startup cases. Independent verification matches 193 source/input comparisons, 49 actual process releases and fifty local implementation/manifest comparisons. Original prepared values, source cleanliness and user changes remain unchanged, with CPU-only JAX and zero native allocations. |
 | `a278547` | RoboTwin admits action count before input preparation/model calls and complete finite floating-point tensors before/after saved postprocessing. Actual LeRobot 0.6.1 CPU checks pass 34 saved-postprocessor cases on seven original selected-prefix derivatives, 21 input cases, 70 original Torch/controller cases and 76 four-provider numeric cases. Independent verification matches 472 source/input comparisons, five actual process releases and 35 local implementation/manifest comparisons. Original prepared/native values remain unchanged and CUDA stays uninitialized. |
 | `2592b1d` | Both GR00T constructors bind normalized float32 model-output and decoded-group admission to the actual checkpoint processor. Installed SDK CPU checks pass 1,306 cases on 1,272 original-record-derived inputs, with exact SDK float32/controller equality and checkpoint padding. Clean Linux source additionally passes 1,330 controller and 76 numeric checks. Independent verification matches 2,706 source/input hashes, five actual process releases and 44 local production/manifest comparisons. CUDA stays uninitialized and canonical user changes remain unchanged. |
 | `de9b7f2` | CPU campaign output admission resolves the existing parent through the actual filesystem, supports configured directory aliases and keeps output within this checkout's `.local/work`. Thirty-one components and 548 admission/process/wire/resource cases pass per platform on macOS and isolated Linux, with 469 source/input comparisons, twelve context-source comparisons and thirty-one released diagnostic process groups per platform. Three actual CLI output-admission cases also reject before component startup. |
@@ -91,6 +92,15 @@ outside these records. Saved input processing and original native conversion ret
 their prior verified values. Reports, source identities and actual process-group
 releases verify independently with zero model, simulator or GPU allocation.
 See [postprocessor validation](cpu-release-validation.md#robotwin-checkpoint-action-postprocessing).
+
+Current OpenPI input/output admission uses the same actual SDK camera, tokenizer,
+normalization and absolute-action transforms as native inference. Complete
+normalized output admission covers model padding and the full horizon before
+native channel/prefix selection. Explicit original-native-action-derived inputs
+match the same SDK's float32 controls exactly. Sources and process releases verify
+independently with CPU-only JAX and uninitialized CUDA. Original normalized network
+predictions and loaded-model behavior retain their native requirements.
+See [OpenPI transform validation](cpu-release-validation.md#openpi-checkpoint-model-transforms).
 
 Native geometry additionally passes 39 checks on both platforms with 78 original
 input/production-source comparisons per platform. Original file identities,
