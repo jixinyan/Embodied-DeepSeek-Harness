@@ -18,6 +18,38 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
+## Core tool evidence selection
+
+`coreToolEvidenceIds` in the tools module owns model-facing evidence selection.
+UpperRun supplies its calling Verifier's formal-check sample when required and
+admits references through existing assignment grants and SensorSamples. Native
+DSH continues to validate, render and persist results.
+
+The original-record diagnostic reads private copies of closed production journals
+through LocalStore, SensorSamples, VerificationContexts and SessionAudits. Every
+successful core result is compared with its original task event and persisted
+native DSH `tool/result`. JSON text and all ordered image attachments must match
+exactly. Formal images come from actual `verification.checked` captures and their
+persisted check identities. Sources retain their hashes.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-tool-evidence.mjs \
+  --data-directory /absolute/path/closed-production-journal \
+  --require-tool perception.capture --require-tool verification.check \
+  --output .local/work/<new-tool-evidence-check>
+```
+
+Repeat `--data-directory` for additional original journals and `--require-tool`
+for capabilities that must appear in the selected records. Output must be a new
+directory under `.local/work`. The diagnostic invokes no models, tools, policies
+or devices. Its acceptance covers the supplied original results and reference
+selection; loaded perception providers retain their native release gates.
+
+On macOS, 98 original core results from seven tasks match their persisted native receipts,
+including 27 image results, 81 images, six formal checks, active rotation and
+explicit evidence reads. Original journals and production sources retain their
+hashes. Evidence: `.local/work/tool-evidence-cpu-macos-20261008-verified/acceptance.json`.
+
 ## Pre-SDK GR00T configuration admission
 
 The [configuration diagnostic](../../scripts/check-gr00t-configuration-offline.py)

@@ -19,6 +19,8 @@ Ordinary tools can return DSH-supported JSON values, including numbers.
 projection. Application tool bodies enforce role authority and connect their
 scoped domain services to the native DSH dispatcher. Physical provider calls
 add task/job identity, resource/budget rules, evidence and confirmed device state.
+`core-output.ts` selects result evidence references; UpperRun supplies formal-check
+context and admits assignment grants/visibility before native output rendering.
 
 The F1 validator is named `PhysicalBoundaryValidator`, with files `physical-boundary.ts`
 and `physical_boundary.py`. Keep it for EDH domain messages, physical/provider wire

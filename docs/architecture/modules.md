@@ -66,7 +66,7 @@ host. Authorized observation tools continue to supply images to models. See
 | `harness/agent-runtime/foundation` | Plugin context, schemas, native registration scopes and selected runtime support | Another agent loop or physical policy | Pinned source and compiler boundaries; Step 00 |
 | `harness/agent-runtime/teams` | Team/member definitions and immutable role/provider bindings | Hard-coded role enum | TeamLoader; Step 02 |
 | `harness/agent-runtime/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelRegistry; Step 00 |
-| `harness/agent-runtime/tools` | Logical IDs, model-visible parameters, role/device schema selection and input limits | Every concrete perception/robot implementation | Native DSH tools, core-inputs.ts and model-schema.ts; Step 02/07 |
+| `harness/agent-runtime/tools` | Logical IDs, model-visible parameters, role/device schema selection, input limits and output evidence selection | Every concrete perception/robot implementation | Native DSH tools, core-inputs.ts, model-schema.ts and core-output.ts; Step 02/07 |
 | `harness/agent-runtime/communication` | Explicit briefs, scoped messages, delivery and subscriptions | Shared conversation memory | TeamRouter; Step 04 |
 | `harness/agent-runtime/planning` | Persistent PlanDocument and progress projection | Authoritative success | PlanStore; Step 05 |
 | `harness/agent-runtime/files` | Private assignment files and controlled search | Shared unrestricted filesystem | AgentFiles; Step 05 |
@@ -95,6 +95,9 @@ process communication in `execution/worker_transport.py` and original policy
 records in `execution/policy_records.py` inside the physical runtime.
 Native runtime mechanisms remain DSH-owned; see [reuse decision](../implementation/decisions/0003-reuse-dsh-mechanisms.md).
 Application assembly connects the runtime services through explicit interfaces.
+`tools/core-output.ts` selects model-facing image evidence from core results or
+the calling Verifier's formal-check sample. UpperRun supplies that check context,
+admits assignment grants/visibility and retains the native DSH result renderer.
 `apps/server/src/native-deployment.mjs` owns native configuration and provider
 assembly; `native-workspace.mjs` composes those providers into one application.
 `examples/deployments` contains runnable entry points that call these modules.

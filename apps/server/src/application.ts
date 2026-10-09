@@ -58,6 +58,7 @@ export type { GoalBinding } from '@edh/tasks';
 export { CORE_TOOLS } from '@edh/tools';
 import {
   coreModelToolParameters,
+  coreToolEvidenceIds,
   modelToolContractSchema,
   CORE_TOOL_PARAMETERS,
   CORE_TOOL_DESCRIPTIONS,
@@ -805,26 +806,14 @@ export class UpperRun {
             output: {
               schema: { type: 'object', additionalProperties: true },
               render: (_args, value) => {
-                const samples = [
-                  'perception.capture',
-                  'observation.turn_view',
-                  'observation.rotate',
-                  'evidence.read',
-                ].includes(logical)
-                  ? this.permit(a, [(value as unknown as SensorSample).evidence.id])
-                  : logical === 'perception.inspect_simulator'
-                    ? this.permit(a, [
-                        (value as unknown as { sample: SensorSample }).sample.evidence.id,
-                      ])
-                    : logical === 'perception.segment_objects'
-                      ? this.permit(a, [(value as { overlayEvidenceId: string }).overlayEvidenceId])
-                      : logical === 'perception.estimate_depth'
-                        ? this.permit(a, [
-                            (value as { overlayEvidenceId: string }).overlayEvidenceId,
-                          ])
-                        : logical === 'verification.check' && this.checks.get(a.id)?.sample
-                          ? this.permit(a, [this.checks.get(a.id)!.sample.evidence.id])
-                          : [];
+                const samples = this.permit(
+                  a,
+                  coreToolEvidenceIds(
+                    logical,
+                    value,
+                    logical === 'verification.check' ? this.checks.get(a.id)?.sample : undefined,
+                  ),
+                );
                 return [
                   { type: 'text' as const, text: JSON.stringify(value) },
                   ...sensorImages(samples).map((attachment) => ({

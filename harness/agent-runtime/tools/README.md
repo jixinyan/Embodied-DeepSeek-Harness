@@ -13,12 +13,23 @@ describe the physical wire format.
 | --- | --- |
 | [core-inputs.ts](src/core-inputs.ts) | Logical tool IDs, argument fields, descriptions and domain input limits |
 | [model-schema.ts](src/model-schema.ts) | Model-facing parameters, role/device-specific fields and canonical domain schema projection |
+| [core-output.ts](src/core-output.ts) | Evidence IDs selected for model-facing core tool results |
 | [index.ts](src/index.ts) | Native DSH authoring/validation exports and EDH parameter generation |
 
 `coreModelToolParameters` returns independent parameters for each assignment.
 Its plan, role-output and device arrays are detached from canonical definitions
 and caller inputs. The existing native DSH registration, execution and validation
 remain the consumers. The application owns role authority and tool body effects.
+
+`coreToolEvidenceIds` selects only references from the current tool result or the
+calling Verifier's formal-check sample. Capture, active observation and evidence
+reads select their sample; simulator inspection selects its nested sample;
+segmentation and estimated depth select their overlay. Formal verification uses
+the supplied check sample. Other core tools contribute no image references.
+UpperRun admits every selected reference against that assignment's grants and
+agent-visible SensorSamples before the existing native DSH renderer receives it.
+Native JSON text and ordered image attachments retain their original format.
+See [original receipt validation](../../../docs/implementation/cpu-release-validation.md#core-tool-evidence-selection).
 
 See [reuse decision](../../../docs/implementation/decisions/0003-reuse-dsh-mechanisms.md),
 [native runtime integration](../../../docs/implementation/dsh-integration.md) and

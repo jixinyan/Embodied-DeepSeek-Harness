@@ -25,3 +25,4 @@ export {
   assertCoreInputLimits,
 } from './core-inputs.js';
 export { coreModelToolParameters, modelToolContractSchema } from './model-schema.js';
+export { coreToolEvidenceIds } from './core-output.js';
