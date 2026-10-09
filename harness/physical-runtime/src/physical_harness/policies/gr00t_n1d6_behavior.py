@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from gr00t.data.embodiment_tags import EmbodimentTag
-from gr00t.policy.gr00t_policy import Gr00tPolicy
 import numpy as np
 
 from physical_harness.policies.action_outputs import read_action_array
+from physical_harness.policies.gr00t_checkpoint import verify_gr00t_configuration
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
@@ -141,36 +140,25 @@ def _action_group(action: dict[str, Any], key: str) -> np.ndarray:
     return value[0]
 
 
+def verify_checkpoint_configuration(checkpoint: str) -> dict:
+    return verify_gr00t_configuration(
+        checkpoint, embodiment_id="behavior_r1_pro", video_keys=list(CAMERAS.values()),
+        state_dimensions=STATES, action_dimensions=ACTION_GROUPS, action_horizon=32,
+        relative_state_keys=RELATIVE_STATE_KEYS, language_key="annotation.human.coarse_action",
+    )
+
+
 class Gr00tN1d6Behavior:
     def __init__(self, checkpoint: str, *, device: str = "cuda:0") -> None:
+        verify_checkpoint_configuration(checkpoint)
+        from gr00t.data.embodiment_tags import EmbodimentTag
+        from gr00t.policy.gr00t_policy import Gr00tPolicy
         self.policy = Gr00tPolicy(
             embodiment_tag=EmbodimentTag.BEHAVIOR_R1_PRO,
             model_path=checkpoint,
             device=device,
             strict=True,
         )
-        modalities = self.policy.get_modality_config()
-        for kind, keys in (
-            ("video", list(CAMERAS.values())),
-            ("state", list(STATES)),
-            ("action", list(ACTION_GROUPS)),
-        ):
-            if modalities[kind].modality_keys != keys:
-                raise ValueError(f"Checkpoint has incompatible BEHAVIOR {kind} modalities.")
-        if len(modalities["action"].delta_indices) != 32:
-            raise ValueError("Checkpoint has an incompatible BEHAVIOR action horizon.")
-        if not self.policy.processor.state_action_processor.use_relative_action:
-            raise ValueError("Checkpoint must convert BEHAVIOR relative actions to absolute targets.")
-        configs = modalities["action"].action_configs
-        if configs is None or len(configs) != len(ACTION_GROUPS):
-            raise ValueError("Checkpoint has incompatible BEHAVIOR action representations.")
-        for key, config in zip(ACTION_GROUPS, configs, strict=True):
-            expected_representation = "RELATIVE" if key in RELATIVE_STATE_KEYS else "ABSOLUTE"
-            expected_reference = RELATIVE_STATE_KEYS.get(key)
-            if config.rep.name != expected_representation or config.type.name != "NON_EEF" or config.state_key != expected_reference:
-                raise ValueError(f"Checkpoint has incompatible BEHAVIOR {key} action semantics.")
-        if self.policy.language_key != "annotation.human.coarse_action":
-            raise ValueError("Checkpoint has an incompatible BEHAVIOR instruction key.")
 
     def infer(self, request: dict[str, Any]) -> list[list[float]]:
         return self.infer_with_record(request)[0]

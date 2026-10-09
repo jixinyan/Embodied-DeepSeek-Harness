@@ -96,22 +96,25 @@ def inspect(args):
             from gr00t.policy.gr00t_policy import _rec_to_dtype
             from transformers import AutoProcessor
             if args.provider == "behavior":
-                from physical_harness.policies.gr00t_n1d6_behavior import prepare_policy_input
+                from physical_harness.policies.gr00t_n1d6_behavior import prepare_policy_input, verify_checkpoint_configuration
                 embodiment = EmbodimentTag.BEHAVIOR_R1_PRO
             else:
-                from physical_harness.policies.gr00t_n1d6_robocasa import prepare_policy_input
+                from physical_harness.policies.gr00t_n1d6_robocasa import prepare_policy_input, verify_checkpoint_configuration
                 embodiment = EmbodimentTag.ROBOCASA_PANDA_OMRON
             for name in ("config.json", "processor_config.json", "statistics.json"):
                 path = original(checkpoint / name)
                 if sources[str(path)] != manifest["upstream"]["checkpoint_files_sha256"][name]:
                     raise ValueError(f"Processor checkpoint source differs from the original {name}.")
             original(checkpoint / "embodiment_id.json")
+            admitted = verify_checkpoint_configuration(str(checkpoint))
             processor = AutoProcessor.from_pretrained(
                 checkpoint, transformers_loading_kwargs={"trust_remote_code": True, "local_files_only": True},
             )
             processor.eval()
             modalities = processor.get_modality_configs()[embodiment.value]
             language_key = modalities["language"].modality_keys[0]
+            if admitted["languageKey"] != language_key:
+                raise ValueError("Admitted instruction key differs from the actual checkpoint processor.")
             sdk_version = importlib.metadata.version("gr00t")
     original(Path(__file__).resolve())
     for name, module in sorted(sys.modules.items()):

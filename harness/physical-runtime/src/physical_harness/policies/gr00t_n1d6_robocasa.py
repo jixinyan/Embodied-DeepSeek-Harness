@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
-from gr00t.data.embodiment_tags import EmbodimentTag
-from gr00t.policy.gr00t_policy import Gr00tPolicy
 
 from physical_harness.policies.action_outputs import read_action_array
+from physical_harness.policies.gr00t_checkpoint import verify_gr00t_configuration
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
@@ -88,24 +87,25 @@ def _action_group(action: dict[str, Any], key: str) -> np.ndarray:
     return value[0]
 
 
+def verify_checkpoint_configuration(checkpoint: str) -> dict:
+    return verify_gr00t_configuration(
+        checkpoint, embodiment_id="robocasa_panda_omron", video_keys=list(CAMERAS.values()),
+        state_dimensions={name: size for name, size in STATES.values()},
+        action_dimensions=ACTION_SIZES, action_horizon=16,
+    )
+
+
 class Gr00tN1d6RoboCasa:
     def __init__(self, checkpoint: str, *, device: str = "cuda:0") -> None:
+        verify_checkpoint_configuration(checkpoint)
+        from gr00t.data.embodiment_tags import EmbodimentTag
+        from gr00t.policy.gr00t_policy import Gr00tPolicy
         self.policy = Gr00tPolicy(
             embodiment_tag=EmbodimentTag.ROBOCASA_PANDA_OMRON,
             model_path=checkpoint,
             device=device,
             strict=True,
         )
-        modalities = self.policy.get_modality_config()
-        for kind, keys in (
-            ("video", list(CAMERAS.values())),
-            ("state", [name for name, _ in STATES.values()]),
-            ("action", list(ACTION_SIZES)),
-        ):
-            if modalities[kind].modality_keys != keys:
-                raise ValueError(f"Checkpoint has incompatible RoboCasa {kind} modalities.")
-        if len(modalities["action"].delta_indices) != 16:
-            raise ValueError("Checkpoint has an incompatible RoboCasa action horizon.")
 
     def infer(self, request: dict[str, Any]) -> list[list[float]]:
         actions, _ = self.infer_with_record(request)
