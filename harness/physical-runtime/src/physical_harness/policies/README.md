@@ -21,6 +21,13 @@ batch dimensions, Torch transforms, checkpoint processors and action conversion.
 Install `edh-physical-harness[policy-inputs]` for standalone CPU input inspection;
 the selected model SDK still belongs to its configured service environment.
 
+Each learned adapter exposes `prepare_policy_input` in its own module. Online
+inference and installed SDK diagnostics use the same ActionSpec admission, camera/
+state mappings and instruction source. GR00T accepts the actual checkpoint language
+key; RoboTwin returns the raw Torch batch; RoboDojo returns its OpenPI state/prompt/
+image envelope before request identity packing. SDK normalization, tokenization,
+model inference and controller conversion retain their existing owners.
+
 [`action_outputs.py`](action_outputs.py) owns model-independent numeric action
 admission. It requires real numeric arrays, positive dimensions, the adapter's
 declared shape and finite values. OpenPI additionally checks the finite float32

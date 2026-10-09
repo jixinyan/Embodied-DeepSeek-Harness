@@ -70,6 +70,20 @@ def _decode_state(value: Any) -> torch.Tensor:
     return torch.from_numpy(decode_state(value, len(CHANNELS)))
 
 
+def prepare_policy_input(request: dict[str, Any]) -> dict[str, Any]:
+    _check_action_spec(request["action_spec"])
+    observation = read_policy_observation(request, "robotwin.aloha-agilex")
+    cameras = observation["cameras"]
+    states = observation["proprioception"]
+    if set(cameras) != set(CAMERAS) or set(states) != {"joint_action.vector"}:
+        raise ValueError("RoboTwin observation has incompatible camera or state keys.")
+    return {
+        "observation.state": _decode_state(states["joint_action.vector"]),
+        "task": request["instruction"],
+        **{mapped: _decode_camera(cameras[source]) for source, mapped in CAMERAS.items()},
+    }
+
+
 def native_action_record(selected: torch.Tensor) -> tuple[list[list[float]], list[list[float]]]:
     if selected.ndim != 2 or selected.shape[1] != len(CHANNELS) or selected.shape[0] == 0:
         raise ValueError("LeRobot π0.5 returned an invalid RoboTwin action selection.")
@@ -162,17 +176,7 @@ class LeRobotPi05RoboTwin:
         return actions
 
     def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
-        _check_action_spec(request["action_spec"])
-        observation = read_policy_observation(request, "robotwin.aloha-agilex")
-        cameras = observation["cameras"]
-        states = observation["proprioception"]
-        if set(cameras) != set(CAMERAS) or set(states) != {"joint_action.vector"}:
-            raise ValueError("RoboTwin observation has incompatible camera or state keys.")
-        batch = {
-            "observation.state": _decode_state(states["joint_action.vector"]),
-            "task": request["instruction"],
-            **{mapped: _decode_camera(cameras[source]) for source, mapped in CAMERAS.items()},
-        }
+        batch = prepare_policy_input(request)
         prepared = self.preprocessor(batch)
         with torch.inference_mode():
             normalized = self.policy.predict_action_chunk(prepared)

@@ -9,6 +9,23 @@ from physical_harness.policies.action_outputs import read_action_array
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
+def prepare_policy_input(request: dict) -> dict:
+    observation = read_policy_observation(request, "robodojo.dual-arx-x5")
+    if (request["action_spec"]["embodiment_id"] != "robodojo.dual-arx-x5" or
+            request["action_spec"]["control_mode"] != "robodojo.qpos_target"):
+        raise ValueError("The OpenPI RoboDojo service requires dual ARX X5 absolute qpos actions.")
+    state = decode_state(observation["proprioception"]["states"], 14)
+    instruction = observation["control_context"]["instruction"]
+    if not isinstance(instruction, str) or not instruction.strip():
+        raise ValueError("The original native instruction is required for learned inference.")
+    images = {}
+    for name in ("cam_high", "cam_left_wrist", "cam_right_wrist"):
+        camera = observation["cameras"][name]
+        pixels = decode_camera(camera, expected_sizes=((camera["width"], camera["height"]),))
+        images[name] = np.transpose(pixels, (2, 0, 1))
+    return {"state": state, "prompt": instruction, "images": images}
+
+
 class OpenPiRoboDojoPolicy:
     def __init__(self, uri: str, checkpoint_sha256: str, *, timeout_s: float = 300):
         if not re.fullmatch(r"[a-f0-9]{64}", checkpoint_sha256) or not 0 < timeout_s <= 900:
@@ -35,24 +52,12 @@ class OpenPiRoboDojoPolicy:
             raise
 
     def infer(self, request: dict) -> tuple[list[list[float]], dict]:
-        observation = read_policy_observation(request, "robodojo.dual-arx-x5")
-        if (request["action_spec"]["embodiment_id"] != "robodojo.dual-arx-x5" or
-                request["action_spec"]["control_mode"] != "robodojo.qpos_target"):
-            raise ValueError("The OpenPI RoboDojo service requires dual ARX X5 absolute qpos actions.")
-        state = decode_state(observation["proprioception"]["states"], 14)
-        instruction = observation["control_context"]["instruction"]
-        if not isinstance(instruction, str) or not instruction.strip():
-            raise ValueError("The original native instruction is required for learned inference.")
-        images = {}
-        camera_sha256 = {}
-        for name in ("cam_high", "cam_left_wrist", "cam_right_wrist"):
-            camera = observation["cameras"][name]
-            pixels = decode_camera(camera, expected_sizes=((camera["width"], camera["height"]),))
-            images[name] = np.transpose(pixels, (2, 0, 1))
-            camera_sha256[name] = hashlib.sha256(images[name].tobytes()).hexdigest()
+        prepared = prepare_policy_input(request)
+        state, instruction = prepared["state"], prepared["prompt"]
+        camera_sha256 = {name: hashlib.sha256(pixels.tobytes()).hexdigest()
+                         for name, pixels in prepared["images"].items()}
         try:
-            self._connection.send(self._packer.pack({"state": state, "prompt": instruction, "images": images,
-                                                     "edh_request_id": request["request_id"]}))
+            self._connection.send(self._packer.pack({**prepared, "edh_request_id": request["request_id"]}))
             response = self._connection.recv(timeout=self._timeout_s)
             if not isinstance(response, bytes):
                 raise ValueError("OpenPI returned a nonbinary policy result.")

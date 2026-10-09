@@ -3,6 +3,16 @@
 Spec: v1.109. Current checkpoint: **shared policy input/output admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 The [capability map](features.md) records implementation and acceptance boundaries.
 
+## 2026-10-08 independently callable policy preparation
+
+All four learned adapters expose `prepare_policy_input`; their existing online
+inference paths call the same functions. Camera/state mappings, batch shapes,
+ActionSpec checks and instruction sources retain their original behavior. Sixty
+original-request/invalid-input checks and full source checks pass on macOS.
+The installed SDK diagnostic loads actual saved processors/tokenizers or the
+OpenPI codec and prepares original requests on CPU. Installed SDK acceptance is
+being collected; NN inference and simulator/device gates remain separate.
+
 ## 2026-10-08 shared numeric policy outputs
 
 `policies/action_outputs.py` owns real numeric array, positive dimension, declared

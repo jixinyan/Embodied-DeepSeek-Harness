@@ -121,6 +121,20 @@ def _decode_state(value: Any, size: int) -> np.ndarray:
     return decode_state(value, size)[None, None, :]
 
 
+def prepare_policy_input(request: dict[str, Any], *, language_key: str) -> dict[str, Any]:
+    _check_action_spec(request["action_spec"])
+    observation = read_policy_observation(request, "behavior.r1pro")
+    cameras = observation["cameras"]
+    states = observation["proprioception"]
+    if set(cameras) != set(CAMERAS) or set(states) != {f"state.{name}" for name in STATES}:
+        raise ValueError("BEHAVIOR observation has incompatible camera or state keys.")
+    return {
+        "video": {mapped: _decode_camera(cameras[source]) for source, mapped in CAMERAS.items()},
+        "state": {name: _decode_state(states[f"state.{name}"], size) for name, size in STATES.items()},
+        "language": {language_key: [[request["instruction"]]]},
+    }
+
+
 def _action_group(action: dict[str, Any], key: str) -> np.ndarray:
     value = read_action_array(action[key], dimensions=(1, None, ACTION_GROUPS[key]),
                               source=f"GR00T BEHAVIOR {key}")
@@ -162,17 +176,7 @@ class Gr00tN1d6Behavior:
         return self.infer_with_record(request)[0]
 
     def infer_with_record(self, request: dict[str, Any]) -> tuple[list[list[float]], list[list[float]]]:
-        _check_action_spec(request["action_spec"])
-        observation = read_policy_observation(request, "behavior.r1pro")
-        cameras = observation["cameras"]
-        states = observation["proprioception"]
-        if set(cameras) != set(CAMERAS) or set(states) != {f"state.{name}" for name in STATES}:
-            raise ValueError("BEHAVIOR observation has incompatible camera or state keys.")
-        inputs = {
-            "video": {mapped: _decode_camera(cameras[source]) for source, mapped in CAMERAS.items()},
-            "state": {name: _decode_state(states[f"state.{name}"], size) for name, size in STATES.items()},
-            "language": {self.policy.language_key: [[request["instruction"]]]},
-        }
+        inputs = prepare_policy_input(request, language_key=self.policy.language_key)
         action, _ = self.policy.get_action(inputs)
         groups = {key: _action_group(action, key) for key in ACTION_GROUPS}
         horizon = groups["base"].shape[0]
