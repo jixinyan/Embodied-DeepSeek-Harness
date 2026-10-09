@@ -25,6 +25,13 @@ These checks use actual files, processes and connections with CUDA invisible.
 Their acceptance boundaries remain separate from current-code model, simulator
 and native task evidence.
 
+Fresh installation uses the frozen pnpm lockfile and the pinned Python CPU
+runtime constraints in the [setup guide](../development/setup.md). Preserve the
+actual pip installation report and run `check-cpu-installation.py` inside the new
+environment. Its version, source and import-origin checks precede source checks
+and native-workspace readiness. A fresh dependency installation grants no model,
+simulator or device allocation.
+
 ## Native task acceptance
 
 The [consolidated native campaign](native-release-campaign.md) connects actual

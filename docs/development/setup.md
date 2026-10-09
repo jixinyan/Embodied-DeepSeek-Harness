@@ -1,16 +1,32 @@
 # Development setup
 
 Use Node.js >=22.19.0, pnpm 11.19.0 and Python >=3.11. The Python source package
-uses `jsonschema` for boundary validation and Pillow for native PNG observation
-encoding. The commands below install its declared CPU dependencies. Checks prefer
+uses `jsonschema` for boundary validation, `filelock` for device ownership, Pillow
+for native PNG observation encoding and WebSockets for policy transport. The
+constraints file pins their CPU runtime dependency versions. Checks prefer
 `.venv/bin/python`; `EDH_PYTHON` overrides the executable.
 
 ```sh
+mkdir -p .local/work .local/cpu-tmp
+export TMPDIR="$PWD/.local/cpu-tmp"
 pnpm install --frozen-lockfile
 python3 -m venv .venv
-.venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e harness/physical-runtime
+.venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt \
+  -e 'harness/physical-runtime[policy]' --report .local/work/cpu-install-report.json
+CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-cpu-installation.py \
+  --install-report .local/work/cpu-install-report.json \
+  --output .local/work/cpu-installation
 pnpm check
 ```
+
+Use a new environment and output directory for installation acceptance. The
+installation check reads pip's actual report, compares every reported package
+version with the installed distribution, checks editable-source and dependency
+import origins, and runs `pip check`. It preserves artifact download identities
+and production-module hashes. Model and simulator SDKs remain outside this CPU
+environment; their selected native installations have independent requirements.
+Keep the temporary-directory path short enough for the operating system's local
+socket paths used by `tsx`.
 
 Verify edited source with `pnpm format:check` and `pnpm format:desktop`.
 Generated contract types are formatted by the schema generator.
@@ -94,7 +110,7 @@ for callable APIs, state tables and limits.
 
 ## Optional policy transport acceptance
 
-Install `-e 'harness/physical-runtime[policy]'` with the same constraints file to
-include the pinned WebSocket dependency. CI installs this extra. Without it, base
+The setup above and CI install `-e 'harness/physical-runtime[policy]'` with the
+same constraints file, including the pinned WebSocket dependency. Without it, base
 contracts/imports still work but socket acceptance is skipped. The runnable
 [adapter examples](../implementation/model-policy-adapters.md) need no GPU.
