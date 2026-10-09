@@ -8,9 +8,10 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  realpathSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 import { setTimeout as delay } from 'node:timers/promises';
 import { z } from 'zod';
@@ -38,7 +39,8 @@ const configuration = z
   .strict()
   .parse(JSON.parse(readFileSync(configurationPath, 'utf8')));
 const path = (value) => resolve(dirname(configurationPath), value);
-const output = resolve(values.output);
+const requestedOutput = resolve(values.output);
+const output = resolve(realpathSync(dirname(requestedOutput)), basename(requestedOutput));
 const childPath = relative(resolve(root, '.local/work'), output);
 assert(
   childPath && !isAbsolute(childPath) && childPath !== '..' && !childPath.startsWith(`..${sep}`),
