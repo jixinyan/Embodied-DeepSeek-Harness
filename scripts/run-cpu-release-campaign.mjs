@@ -139,6 +139,7 @@ add('readiness', 'check-native-workspace-readiness.mjs', ['--config', workspace]
 if (checkpointAudit) {
   add('policy-inputs', 'check-policy-inputs-offline.py', ['--configuration', checkpointAudit]);
   add('policy-outputs', 'check-policy-outputs-offline.py', ['--configuration', checkpointAudit]);
+  add('gr00t-actions', 'check-gr00t-actions-offline.py', ['--configuration', checkpointAudit]);
   add('checkpoint-audit', 'check-checkpoint-audit-offline.py', [
     '--configuration',
     checkpointAudit,

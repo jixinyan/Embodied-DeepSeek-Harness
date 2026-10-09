@@ -357,6 +357,9 @@ and BEHAVIOR native clipping with preserved model values. Supplied groups and
 source files must remain unchanged. Model SDK imports, model calls, GPU jobs,
 environment allocations and controls stay zero. Loaded-model and physical task
 acceptance retain their native requirements.
+The configured CPU campaign includes `gr00t-actions` when
+`checkpointAuditConfiguration` is supplied, with its own source identities, report
+digest and actual diagnostic process-group release.
 
 ## Prior verified CPU checkpoints
 
