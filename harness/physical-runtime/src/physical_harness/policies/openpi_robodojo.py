@@ -5,7 +5,7 @@ import numpy as np
 from openpi_client import msgpack_numpy
 from websockets.sync.client import connect
 
-from physical_harness.policies.action_outputs import read_action_array
+from physical_harness.policies.action_outputs import read_action_array, selected_action_count
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
@@ -52,6 +52,7 @@ class OpenPiRoboDojoPolicy:
             raise
 
     def infer(self, request: dict) -> tuple[list[list[float]], dict]:
+        count = selected_action_count(request["max_actions"], 50, source="OpenPI RoboDojo")
         prepared = prepare_policy_input(request)
         state, instruction = prepared["state"], prepared["prompt"]
         camera_sha256 = {name: hashlib.sha256(pixels.tobytes()).hexdigest()
@@ -78,7 +79,7 @@ class OpenPiRoboDojoPolicy:
         actions = raw.copy()
         actions[:, [6, 13]] = np.clip(actions[:, [6, 13]], 0, 1)
         self._index = identity["inference_index"]
-        return actions[:request["max_actions"]].tolist(), {
+        return actions[:count].tolist(), {
             **identity, "native_instruction": instruction,
             "raw_actions": raw.tolist(), "actions": actions.tolist(),
             "gripper_transform": "native_continuous_opening_clamp_0_1",

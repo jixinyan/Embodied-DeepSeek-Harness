@@ -1,4 +1,5 @@
 import argparse
+from functools import partial
 import hashlib
 import json
 from pathlib import Path
@@ -45,6 +46,10 @@ def main():
     from openpi.training import config
     from openpi_client.base_policy import BasePolicy
 
+    from physical_harness.policies.action_outputs import read_action_array
+    from physical_harness.policies.openpi_model_input import prepare_model_input
+    from physical_harness.policies.openpi_model_output import decode_model_actions
+
     class IdentifiedPolicy(BasePolicy):
         def __init__(self, policy, identity):
             self.policy = policy
@@ -62,9 +67,8 @@ def main():
             if not isinstance(prompt, str) or not prompt.strip():
                 raise ValueError("OpenPI inference requires its original nonempty instruction.")
             output = self.policy.infer(model_observation)
-            actions = np.asarray(output["actions"], dtype=np.float32)
-            if actions.shape != (50, 14) or not np.isfinite(actions).all():
-                raise ValueError("ARX X5 OpenPI inference must return a finite 50 by 14 action horizon.")
+            actions = read_action_array(output["actions"], dimensions=(50, 14),
+                                        source="ARX X5 OpenPI inference", float32=True)
             identity = {**self.identity, "inference_index": self.index, "source_request_id": request_id,
                         "instruction_sha256": hashlib.sha256(prompt.encode("utf-8")).hexdigest(),
                         "elapsed_s": time.monotonic() - started,
@@ -74,13 +78,15 @@ def main():
             self.index += 1
             self.metadata["inferences"] = self.index
             print(json.dumps({"event": "native_policy_inference", **identity}, allow_nan=False), flush=True)
-            return {**output, "policy_identity": identity}
+            return {**output, "actions": actions, "policy_identity": identity}
 
     devices = jax.devices()
     if len(devices) != 1 or devices[0].platform != "gpu":
         raise RuntimeError("RoboDojo OpenPI requires exactly one explicitly selected GPU.")
     name = "pi05_base_aloha_full_sim_arx-x5_seed_0"
     trained = policy_config.create_trained_policy(config.get_config(name), checkpoint)
+    trained._input_transform = partial(prepare_model_input, transform=trained._input_transform)
+    trained._output_transform = partial(decode_model_actions, transform=trained._output_transform)
     source_directory = Path(policy_config.__file__).resolve(strict=True).parents[1]
     source_hashes = {
         str(path.relative_to(source_directory)): hashlib.sha256(path.read_bytes()).hexdigest()
