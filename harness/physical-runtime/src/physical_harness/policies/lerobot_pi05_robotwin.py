@@ -11,6 +11,7 @@ from lerobot.configs import PreTrainedConfig
 from lerobot.policies import make_pre_post_processors
 from lerobot.policies.pi05 import PI05Policy
 
+from physical_harness.policies.action_outputs import read_action_array
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
@@ -72,10 +73,14 @@ def _decode_state(value: Any) -> torch.Tensor:
 def native_action_record(selected: torch.Tensor) -> tuple[list[list[float]], list[list[float]]]:
     if selected.ndim != 2 or selected.shape[1] != len(CHANNELS) or selected.shape[0] == 0:
         raise ValueError("LeRobot π0.5 returned an invalid RoboTwin action selection.")
+    if selected.dtype == torch.bool or selected.is_complex():
+        raise ValueError("LeRobot π0.5 actions require real numeric tensors.")
     if not torch.isfinite(selected).all():
         raise ValueError("LeRobot π0.5 returned nonfinite RoboTwin actions.")
-    model_actions = selected.detach().cpu().to(torch.float64).tolist()
-    native = selected.detach().cpu().to(torch.float64).clone()
+    selected = selected.detach().cpu().to(torch.float64)
+    read_action_array(selected.numpy(), dimensions=(None, len(CHANNELS)), source="LeRobot π0.5 RoboTwin")
+    model_actions = selected.tolist()
+    native = selected.clone()
     native[:, (6, 13)] = native[:, (6, 13)].clamp(0, 1)
     lower = torch.tensor([0 if name.endswith("joint7") else -10 for name in CHANNELS], dtype=torch.float64)
     upper = torch.tensor([1 if name.endswith("joint7") else 10 for name in CHANNELS], dtype=torch.float64)
@@ -174,6 +179,8 @@ class LeRobotPi05RoboTwin:
             actions = self.postprocessor(normalized)
         if not isinstance(actions, torch.Tensor) or actions.ndim != 3 or actions.shape[0] != 1 or actions.shape[2] != 14:
             raise ValueError("LeRobot π0.5 returned an invalid RoboTwin action chunk.")
+        if actions.dtype == torch.bool or actions.is_complex():
+            raise ValueError("LeRobot π0.5 actions require real numeric tensors.")
         if not torch.isfinite(actions).all():
             raise ValueError("LeRobot π0.5 returned nonfinite RoboTwin actions.")
         count = min(request["max_actions"], actions.shape[1])

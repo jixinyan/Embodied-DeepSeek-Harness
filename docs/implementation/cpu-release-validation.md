@@ -69,6 +69,32 @@ The consolidated campaign includes this diagnostic when
 Loaded SDK/model/device/task requirements
 retain their independent acceptance gates.
 
+## Policy numeric output admission
+
+[`action_outputs.py`](../../harness/physical-runtime/src/physical_harness/policies/action_outputs.py)
+validates real numeric arrays, positive horizon/batch dimensions, declared channel
+counts and finite values before native conversion. OpenPI checks float32 range
+before narrowing; each adapter retains its native action semantics and bounds.
+LeRobot rejects Boolean/complex tensors before conversion and reuses one CPU copy.
+
+```sh
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
+  .venv/bin/python scripts/check-policy-outputs-offline.py \
+  --configuration /absolute/path/original-checkpoint-audit-inputs.json \
+  --output .local/work/<new-policy-output-check>
+```
+
+Seventy-six macOS checks inspect four original numeric matrices and declared invalid
+derivatives. BEHAVIOR records admitted 16×23 controls; RoboCasa records converted
+16×12 model actions; RoboTwin records a selected 16×14 model-action prefix; RoboDojo
+retains raw 50×14 float32 outputs. Prepared OpenPI values match their exact original
+record. Batched numeric checks reshape those recorded channels explicitly and
+provide no raw SDK group acceptance. Original hashes and action values remain
+unchanged. SDK imports, model calls, environment allocations and GPU jobs stay zero.
+Evidence: `.local/work/v1-policy-outputs-macos-20261008/`. The configured campaign
+includes `policy-outputs` alongside `policy-inputs`, for thirty components.
+Installed SDK/Torch conversion and loaded-model/device behavior retain native gates.
+
 ## Prior verified CPU checkpoints
 
 Clean `d3336fc` passes all twenty-eight configured components on macOS and isolated

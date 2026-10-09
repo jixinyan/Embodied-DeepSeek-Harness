@@ -5,6 +5,7 @@ import numpy as np
 from openpi_client import msgpack_numpy
 from websockets.sync.client import connect
 
+from physical_harness.policies.action_outputs import read_action_array
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
@@ -64,9 +65,8 @@ class OpenPiRoboDojoPolicy:
                     identity["state_sha256"] != hashlib.sha256(state.tobytes()).hexdigest() or
                     identity["camera_sha256"] != camera_sha256):
                 raise ValueError("OpenPI policy identity or inference sequence differs from the admitted service.")
-            raw = np.asarray(predicted["actions"], dtype=np.float32)
-            if raw.shape != (50, 14) or not np.isfinite(raw).all():
-                raise ValueError("OpenPI RoboDojo must return a finite 50 by 14 action horizon.")
+            raw = read_action_array(predicted["actions"], dimensions=(50, 14),
+                                    source="OpenPI RoboDojo", float32=True)
         except BaseException:
             self.close()
             raise

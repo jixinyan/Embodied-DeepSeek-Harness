@@ -21,6 +21,20 @@ batch dimensions, Torch transforms, checkpoint processors and action conversion.
 Install `edh-physical-harness[policy-inputs]` for standalone CPU input inspection;
 the selected model SDK still belongs to its configured service environment.
 
+[`action_outputs.py`](action_outputs.py) owns model-independent numeric action
+admission. It requires real numeric arrays, positive dimensions, the adapter's
+declared shape and finite values. OpenPI additionally checks the finite float32
+range before conversion. GR00T adapters retain native group mapping and controller
+conversion. LeRobot rejects Boolean/complex tensors before CPU conversion and
+uses one CPU float64 copy for its recorded output and native gripper conversion.
+Canonical response validation and ActionGate remain required after these checks.
+
+The [recorded-output diagnostic](../../../../../scripts/check-policy-outputs-offline.py)
+inspects original numeric matrices for all four providers and declared invalid
+derivatives without importing model SDKs. Recorded JSON matrices do not retain
+raw GR00T group dtypes or perform Torch conversion; those boundaries require
+their installed SDK checks and loaded-model acceptance.
+
 The JSON codec uses Python's standard decoder with explicit duplicate-field and
 finite-number checks. Nested NaN/Infinity constants and numeric overflow fail
 before a decoded request, event or tool message reaches its consumer. The server

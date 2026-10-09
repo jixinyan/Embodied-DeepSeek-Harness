@@ -1,7 +1,23 @@
 # Implementation progress
 
-Spec: v1.108. Current checkpoint: **shared policy observation admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
+Spec: v1.109. Current checkpoint: **shared policy input/output admission, checkpoint-bound action admission, shared native resource ownership, independent DSH role contexts and configured four-provider workflows**. Full v1 acceptance remains in progress.
 The [capability map](features.md) records implementation and acceptance boundaries.
+
+## 2026-10-08 shared numeric policy outputs
+
+`policies/action_outputs.py` owns real numeric array, positive dimension, declared
+shape and finite-value admission. OpenPI checks float32 range before conversion.
+All four adapters retain native action mappings; LeRobot rejects Boolean/complex
+tensors and reuses one CPU float64 copy for recording and controller conversion.
+
+Seventy-six original-record/declared invalid-output checks pass on macOS, with
+unchanged source inputs and zero SDK imports, model calls, environments or GPU jobs.
+The check identifies each retained record field and its exact shape; restored
+numeric arrays provide no raw SDK group or Torch conversion acceptance. Full
+source checks pass: 67 Python files, 27 base imports, 46 diagnostics and 128 pinned
+DSH files/25 bindings. The configured CPU campaign includes thirty components.
+Cross-platform current-source and installed SDK checks remain required for this
+checkpoint; loaded-model/device and complete native task gates remain open.
 
 ## 2026-10-08 shared policy observation inputs
 

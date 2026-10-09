@@ -6,6 +6,7 @@ from gr00t.data.embodiment_tags import EmbodimentTag
 from gr00t.policy.gr00t_policy import Gr00tPolicy
 import numpy as np
 
+from physical_harness.policies.action_outputs import read_action_array
 from physical_harness.policies.observation_inputs import decode_camera, decode_state, read_policy_observation
 
 
@@ -121,11 +122,8 @@ def _decode_state(value: Any, size: int) -> np.ndarray:
 
 
 def _action_group(action: dict[str, Any], key: str) -> np.ndarray:
-    value = action[key]
-    if not isinstance(value, np.ndarray) or value.ndim != 3 or value.shape[0] != 1 or value.shape[2] != ACTION_GROUPS[key]:
-        raise ValueError(f"GR00T returned an invalid BEHAVIOR {key} action group.")
-    if not np.isfinite(value).all():
-        raise ValueError(f"GR00T returned a nonfinite BEHAVIOR {key} action group.")
+    value = read_action_array(action[key], dimensions=(1, None, ACTION_GROUPS[key]),
+                              source=f"GR00T BEHAVIOR {key}")
     return value[0]
 
 

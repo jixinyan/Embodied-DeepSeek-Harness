@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.108 · 2026-10-08
+Version: v1.109 · 2026-10-08
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,13 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+Shared numeric action-output admission checks real numeric dtype, positive
+dimensions, declared shape and finite values; OpenPI checks float32 range before
+conversion. All four learned adapters retain native mappings and controller
+semantics. Seventy-six macOS original-record/declared invalid-output checks and
+full source checks pass. The configured campaign includes thirty components;
+cross-platform current-source and installed SDK checks precede native acceptance.
 
 Shared policy input admission validates source/body identity, bounded RGB PNGs
 and finite float32 states for all four learned adapters before model calls.
