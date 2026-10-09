@@ -18,9 +18,15 @@ Models, policy inference and simulator tasks remain stopped during CPU work.
 Shared numeric action-output admission checks real numeric dtype, positive
 dimensions, declared shape and finite values; OpenPI checks float32 range before
 conversion. All four learned adapters retain native mappings and controller
-semantics. Seventy-six macOS original-record/declared invalid-output checks and
-full source checks pass. The configured campaign includes thirty components;
-cross-platform current-source and installed SDK checks precede native acceptance.
+semantics. Seventy-six original-record/declared invalid-output checks and full
+source checks pass on macOS and isolated Linux. Clean `deb5207` completes all thirty
+configured components and 463 admission/process/wire/resource cases per platform.
+Independent verification matches 383 component source/input hashes, twenty-three
+diagnostic hashes, sixty process receipts and sixty-one actual OS release checks.
+The installed LeRobot/Torch module additionally passes seventy CPU conversion
+checks on seven original records without GPU initialization. Both platforms prepare
+matching four native cases/eight submissions. Original files and server status
+remain unchanged; Steps 13–14 retain loaded-model/device/task acceptance gates.
 
 Shared policy input admission validates source/body identity, bounded RGB PNGs
 and finite float32 states for all four learned adapters before model calls.

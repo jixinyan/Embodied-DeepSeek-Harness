@@ -18,16 +18,16 @@ preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
 
-## Verified source 7e04e8e
+## Verified source deb5207
 
-All twenty-nine configured components pass on macOS and isolated Linux, including
-sixty shared policy-input checks. Each platform passes 387 admission/process/wire/
+All thirty configured components pass on macOS and isolated Linux, including
+sixty shared policy-input and seventy-six recorded-output checks. Each platform passes 463 admission/process/wire/
 resource cases, six visual-context cases, twelve original context reads and
 four-provider readiness. Source checks retain 128 pinned DSH files, 25 bindings,
-66 Python files, 27 base imports and 45 diagnostic entries.
+67 Python files, 27 base imports and 46 diagnostic entries.
 
-Independent verification matches 355 component source/input hashes, twenty-two
-diagnostic hashes and fifty-eight process receipts. Fifty-nine actual OS checks
+Independent verification matches 383 component source/input hashes, twenty-three
+diagnostic hashes and sixty process receipts. Sixty-one actual OS checks
 confirm owned diagnostic group/script absence. Original input bytes and task
 outcomes remain unchanged; the canonical server preserves its exact status and
 isolated source remains clean. The Linux execution script exits zero.
@@ -35,10 +35,10 @@ isolated source remains clean. The Linux execution script exits zero.
 Both platforms prepare the same four native cases and eight planned submissions
 with matching profile, task and prerequisite bindings. GPU jobs, model calls,
 environment allocations and controls remain zero. Evidence and independent reports
-are under `.local/work/v1-cpu-policy-inputs-macos-20261008/` and
-`.local/work/v1-cpu-policy-inputs-linux-20261008-verified/`. The downloaded archive
+are under `.local/work/v1-cpu-policy-outputs-macos-20261008/` and
+`.local/work/v1-cpu-policy-outputs-linux-20261008-verified/`. The downloaded archive
 matches server SHA-256
-`dd4f61a3271e9c72a302fcdc3ab47334f9fa634398abb63a96396abc3beb6271`.
+`489494245ea87a79e7918efb53b806016d05de81564dce8664e9c0e821669650`.
 Loaded-model cancellation, physical stop behavior and complete native tasks retain
 the native campaign's acceptance requirements.
 
@@ -65,7 +65,8 @@ encoding, dimensions, booleans, nonfinite values and float32 overflow. All origi
 file hashes remain unchanged; no model SDK or inference, simulator or GPU executes.
 Standalone local evidence: `.local/work/v1-policy-inputs-macos-20261008/`.
 The consolidated campaign includes this diagnostic when
-`checkpointAuditConfiguration` is supplied, for twenty-nine configured components.
+`checkpointAuditConfiguration` is supplied, alongside output/identity diagnostics
+for thirty configured components.
 Loaded SDK/model/device/task requirements
 retain their independent acceptance gates.
 
@@ -84,7 +85,7 @@ CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
   --output .local/work/<new-policy-output-check>
 ```
 
-Seventy-six macOS checks inspect four original numeric matrices and declared invalid
+Seventy-six checks on each platform inspect four original numeric matrices and declared invalid
 derivatives. BEHAVIOR records admitted 16×23 controls; RoboCasa records converted
 16×12 model actions; RoboTwin records a selected 16×14 model-action prefix; RoboDojo
 retains raw 50×14 float32 outputs. Prepared OpenPI values match their exact original
@@ -93,7 +94,16 @@ provide no raw SDK group acceptance. Original hashes and action values remain
 unchanged. SDK imports, model calls, environment allocations and GPU jobs stay zero.
 Evidence: `.local/work/v1-policy-outputs-macos-20261008/`. The configured campaign
 includes `policy-outputs` alongside `policy-inputs`, for thirty components.
-Installed SDK/Torch conversion and loaded-model/device behavior retain native gates.
+The actual installed LeRobot/Torch module also passes seventy CPU conversion checks
+on all seven original RoboTwin inference records. Both float32 and float64 selections
+produce exact original model/native values without mutation. Boolean, complex,
+nonfinite, invalid shape and out-of-range joint derivatives fail. Torch 2.11.0+cu130
+initializes no GPU, loads no model and issues no controls. Fourteen source/input
+hashes and the retained report/diagnostic hashes independently verify; the isolated
+environment's seventy-nine packages pass compatibility checks.
+Reports: `.local/work/v1-policy-outputs-robotwin-tensors-linux-20261008.acceptance.json`
+and `.local/work/v1-policy-outputs-robotwin-tensors-linux-20261008.verified.json`.
+Raw GR00T SDK groups, loaded-model/device and physical behavior retain native gates.
 
 ## Prior verified CPU checkpoints
 

@@ -10,9 +10,17 @@ Policy numeric output admission requires real numeric arrays, positive dimension
 declared action shapes and finite values before native conversion. OpenPI checks
 finite float32 range before narrowing. Adapter-owned GR00T mappings, LeRobot
 tensor/controller conversion and OpenPI gripper semantics remain authoritative.
-Seventy-six macOS original-record/declared invalid-output checks pass with no
-model SDK imports, model calls or GPU allocation. The configured CPU campaign has
-thirty components; installed SDK, loaded-model/device and native task gates apply.
+Seventy-six original-record/declared invalid-output checks pass on macOS and Linux
+with no model SDK imports, model calls or GPU allocation. Clean `deb5207` passes
+all thirty configured CPU components and 463 admission/process/wire/resource
+cases per platform. Independent verification matches 383 component source/input
+hashes, twenty-three diagnostic hashes, sixty process receipts and sixty-one
+actual OS release checks. The installed LeRobot/Torch module separately passes
+seventy CPU conversion checks on seven original RoboTwin records with exact action
+values and no GPU initialization. Fourteen source/input hashes independently match;
+the SDK environment's seventy-nine packages pass compatibility checks. Both platforms
+prepare four native cases/eight submissions without models, environments or controls.
+Loaded-model/device and complete native task gates remain required.
 
 All four learned-policy adapters use the shared model-independent observation
 input owner. Before model calls, source observation and embodiment identities,

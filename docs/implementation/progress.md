@@ -10,14 +10,36 @@ shape and finite-value admission. OpenPI checks float32 range before conversion.
 All four adapters retain native action mappings; LeRobot rejects Boolean/complex
 tensors and reuses one CPU float64 copy for recording and controller conversion.
 
-Seventy-six original-record/declared invalid-output checks pass on macOS, with
+Seventy-six original-record/declared invalid-output checks pass on both platforms, with
 unchanged source inputs and zero SDK imports, model calls, environments or GPU jobs.
 The check identifies each retained record field and its exact shape; restored
 numeric arrays provide no raw SDK group or Torch conversion acceptance. Full
 source checks pass: 67 Python files, 27 base imports, 46 diagnostics and 128 pinned
-DSH files/25 bindings. The configured CPU campaign includes thirty components.
-Cross-platform current-source and installed SDK checks remain required for this
-checkpoint; loaded-model/device and complete native task gates remain open.
+DSH files/25 bindings. Clean `deb5207` passes all thirty configured CPU components
+on macOS and isolated Linux, with 463 admission/process/wire/resource cases per
+platform, six visual-context cases, twelve original context reads and four-provider
+readiness. Independent verification matches 383 component source/input hashes,
+twenty-three diagnostic hashes and sixty process receipts. Sixty-one actual OS
+checks confirm diagnostic group/script absence. Original files, task outcomes and
+canonical server status remain unchanged; isolated source is clean and the runner
+exits zero. Both platforms prepare matching four native cases/eight submissions
+without model, environment or control allocation.
+
+The installed LeRobot/Torch module separately passes seventy CPU conversion checks
+on all seven original RoboTwin inference records. Float32/float64 selections produce
+the exact original native/model action values; declared invalid tensor derivatives
+fail. Fourteen source/input hashes and the report/diagnostic hashes independently
+verify. Torch 2.11.0+cu130 initializes no GPU; no model loads or inference occur.
+The isolated SDK environment's seventy-nine packages pass compatibility checks.
+
+Evidence: `.local/work/v1-cpu-policy-outputs-macos-20261008/` and
+`.local/work/v1-cpu-policy-outputs-linux-20261008-verified/`. The downloaded archive
+matches server SHA-256
+`489494245ea87a79e7918efb53b806016d05de81564dce8664e9c0e821669650`.
+CPU implementation/preparation checks are complete for this checkpoint.
+Loaded-model/device cancellation, native multi-goal recovery, BEHAVIOR task success,
+RoboDojo Tower completion and the complete installed configuration matrix retain
+their native gates. Evolver remains paused and SceneState remains deferred.
 
 ## 2026-10-08 shared policy observation inputs
 

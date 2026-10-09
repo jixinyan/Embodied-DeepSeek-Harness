@@ -60,11 +60,15 @@ README presents the framework architecture;
 
 CPU checks on macOS and isolated Linux verify configured Console startup,
 shared-service cancellation/release, complete owned process-group shutdown,
-worker transport, finite policy messages, inference ownership and shared RGB PNG/
-float32 input admission. Clean `7e04e8e` passes twenty-nine configured components
-and 387 admission/process/wire/resource cases per platform. Original requests
+worker transport, finite policy messages, inference ownership, shared RGB PNG/
+float32 input admission and numeric action-output admission. Clean `deb5207`
+passes thirty configured components and 463 admission/process/wire/resource cases
+per platform. Original requests
 cover twelve cameras and twenty-eight state groups; RoboDojo prepared tensors
-match actual native inference hashes. Fifty-eight process receipts and fifty-nine
+match actual native inference hashes. Seventy-six recorded-output checks preserve
+original action matrices and reject declared invalid derivatives. The installed
+LeRobot/Torch module separately passes seventy CPU conversion checks on seven
+actual records without GPU initialization. Sixty process receipts and sixty-one
 actual OS release checks verify. Standalone
 policy/perception CLIs validate their declared arguments before optional SDK
 imports. Exact source, input and release evidence appears in
