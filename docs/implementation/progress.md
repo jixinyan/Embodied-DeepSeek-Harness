@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-09 · Spec v1.116 · v1 release acceptance in progress.
+Updated: 2026-10-09 · Spec v1.117 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,9 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| `de9b7f2` | CPU campaign output admission resolves the existing parent through the actual filesystem, supports configured directory aliases and keeps output within this checkout's `.local/work`. Thirty-one components and 548 admission/process/wire/resource cases pass per platform on macOS and isolated Linux, with 469 source/input comparisons, twelve context-source comparisons and thirty-one released diagnostic process groups per platform. Three actual CLI output-admission cases also reject before component startup. |
+| `e38d488` | The configured CPU release campaign includes the same production GR00T controller conversion used by online inference. Thirty-one components and 548 admission/process/wire/resource cases pass on macOS, with source identities, independent context inspection and actual diagnostic process-group release. |
+| `30c50d4` | Both GR00T adapters expose `native_action_record`; the shared action-count reader admits integer limits 1–512. Eighty-five controller checks pass per CPU platform on 27 original records. Linux additionally passes 1,330 checks on 1,272 original records, including 1,248 complete BEHAVIOR model outputs. Original native values and full model records remain unchanged. |
 | `c857e13` | Core tool output evidence selection belongs to `tools/core-output.ts`. On macOS and isolated Linux, 98 original results per platform from seven tasks preserve exact native JSON and 81 ordered images, including six formal checks. All thirty current-source CPU components and 463 admission/process/wire/resource cases pass per platform; independent checks verify 428 source/input comparisons and thirty process-group releases per platform. Original records and canonical server changes remain unchanged. |
 | `27b3950` | Native RGB-D range and coordinate arithmetic fails at numerical overflow. Thirty-nine checks pass per CPU platform on thirteen original captures and twenty-six invalid calibration derivatives, with original geometry preserved within its recorded precision allowance. |
 | `48bcc47` | Both GR00T adapters admit actual collator tensors after native bfloat16 conversion and before model inference. Seventy-two installed processor/codec cases cover forty-six original requests and twenty-six declared invalid derivatives. Original prepared values remain unchanged. |
@@ -52,13 +55,23 @@ the release requirements below.
 | `2821c21` | Both GR00T constructors admit model/processor/statistics compatibility before optional SDK imports. All 111 original/invalid configuration checks pass on macOS and isolated Linux. |
 | `a97d0a9` | Four production adapters expose independently callable input preparation. Thirty configured CPU components pass 463 admission/process/wire/resource cases per platform on macOS and isolated Linux. |
 
-Current GR00T checks independently verify 418 SDK/checkpoint/input/source hashes,
+Recorded GR00T model-input checks independently verify 418 SDK/checkpoint/input/source hashes,
 16 configuration sources, 327 derivative hashes and 51 local source comparisons.
 Original files/server status remain unchanged and actual diagnostic processes
 release. CUDA stays uninitialized; model, inference, environment and control
 allocations remain zero. Full source checks pass with 69 Python files, 28 base
-imports, 49 diagnostics and 128 pinned DSH files/25 bindings.
+imports, 50 diagnostics and 128 pinned DSH files/25 bindings.
 Evidence and commands: [CPU validation](cpu-release-validation.md#gr00t-pre-inference-model-input-admission).
+
+Current GR00T controller conversion separately verifies original group/horizon,
+count, controller threshold and range handling without importing model SDKs.
+Independent Linux checks match 1,354 source/input comparisons and confirm four
+runner/diagnostic process releases, clean frozen source and unchanged canonical
+user changes. Local comparison verifies 24 implementation/manifest comparisons,
+31 original input identities and identical 85-case/76-case controller/numeric
+results between CPU platforms. Raw RoboCasa probabilities, SDK group dtypes,
+loaded inference and original task success retain their native acceptance scope.
+See [controller validation](cpu-release-validation.md#gr00t-controller-conversion).
 
 Native geometry additionally passes 39 checks on both platforms with 78 original
 input/production-source comparisons per platform. Original file identities,

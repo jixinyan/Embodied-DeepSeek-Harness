@@ -1,8 +1,56 @@
 # Implementation checkpoint history
 
-Recorded through spec v1.116, 2026-10-09. Each checkpoint retains its own source
+Recorded through spec v1.117, 2026-10-09. Each checkpoint retains its own source
 revision, execution scope and acceptance evidence. Read [current progress](progress.md)
 for active requirements and [v1 delivery](v1-delivery.md) for release gates.
+
+## 2026-10-09 native GR00T controller conversion
+
+Clean `30c50d4` exposes provider-owned `native_action_record` in both GR00T
+adapters, used directly by online inference. The shared action-count reader admits
+integer limits from 1 through 512. Original ActionSpec, numeric group dimensions,
+matching horizons, native controller bounds and complete model records retain
+their provider semantics.
+
+Both macOS and isolated Linux pass 85 controller checks on 27 original records,
+plus 76 four-provider numerical output checks. Linux additionally passes 1,330
+controller checks on 1,272 records, including 1,248 complete BEHAVIOR model
+outputs from failed original run `96c0b983`. Production conversion preserves exact
+native values, clips BEHAVIOR values within the original controller range and
+keeps complete model values. RoboCasa category probabilities and original SDK
+group dtypes remain outside its mapped JSON record scope.
+
+Independent Linux verification matches 1,354 source/input comparisons and four
+actual runner/diagnostic releases. Frozen source remains clean and canonical
+user changes remain unchanged. Local comparison verifies 24 production/manifest
+comparisons, 31 original inputs and exact shared 85-case/76-case results. The
+downloaded controller archive retains SHA256
+`3dca434ae52b0c8272b51714b677918d80857d2b4cd0855fa5f9650f56889bfe`.
+
+Clean `de9b7f2` includes this same production conversion in the configured CPU
+release campaign. Thirty-one components and 548 admission/process/wire/resource
+cases pass per platform on macOS and isolated Linux, with six visual-context cases,
+twelve original context reads and four-provider readiness. Independent checks verify
+469 source/input comparisons, twelve context-source comparisons and 31 actual
+diagnostic process-group releases per platform. Linux also confirms actual
+campaign-runner release, clean frozen source and unchanged canonical user changes.
+Output admission resolves actual filesystem parents within this checkout's
+`.local/work`. Three real CLI checks reject invalid output before component startup.
+The downloaded Linux campaign archive retains SHA256
+`eac2673d293afc6abeb5df8f4aac3af6fc3889e77a72e8ce0acd11d46826cc18`.
+Local comparison verifies 190 production-source comparisons, ten original input/
+context comparisons, 31 Linux process receipts and thirty component reports.
+Original contexts, four-provider readiness and shared controller cases match.
+Full source checks cover 69 Python files,
+28 base imports, 50 diagnostic entries and 128 pinned DSH files/25 bindings.
+Model, inference, simulator, GPU and physical-control allocations remain zero.
+
+Evidence: `.local/work/gr00t-actions-cpu-macos-20261009-final/`,
+`.local/work/gr00t-actions-cpu-linux-20261009-verified/`,
+`.local/work/gr00t-controller-cpu-campaign-macos-20261009-final/` and
+`.local/work/gr00t-controller-cpu-campaign-linux-20261009-verified/`.
+Loaded-policy, original-goal success and complete task/configuration/perception
+workflows retain their active native acceptance requirements.
 
 ## 2026-10-09 cross-platform current-source CPU acceptance
 

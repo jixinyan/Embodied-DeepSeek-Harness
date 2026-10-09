@@ -17,6 +17,24 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Clean `de9b7f2` passes 31 configured CPU components and 548 admission/process/
+wire/resource cases per platform on macOS and isolated Linux. Independent checks
+verify 469 source/input comparisons, twelve context-source comparisons and 31
+actual diagnostic process-group releases per platform. Linux additionally confirms
+campaign-runner release and unchanged canonical user changes. Campaign output
+admission resolves actual filesystem parents within the checkout's `.local/work`;
+three real CLI checks reject invalid outputs before component startup. GR00T controller
+conversion uses the same provider-owned `native_action_record` as online inference.
+Clean `30c50d4` preserves exact native values in 85 checks per CPU platform on
+27 original records; Linux additionally passes 1,330 checks on 1,272 records,
+including 1,248 complete BEHAVIOR model outputs. Independent checks verify 1,354
+Linux source/input comparisons, four actual process releases, clean frozen source
+and unchanged canonical user changes. Local comparison matches 24 implementation
+and 31 original-input identities. Raw RoboCasa category probabilities, original
+SDK group dtypes, loaded inference and complete task behavior retain their native
+gates. No model, simulator, inference, physical controls or GPU allocate.
+See [controller acceptance](cpu-release-validation.md#gr00t-controller-conversion).
+
 Clean `c857e13` centralizes core output evidence selection in the tools module.
 On macOS and isolated Linux, 98 original receipts per platform from seven tasks
 match their persisted native DSH results exactly, including 81 images and six

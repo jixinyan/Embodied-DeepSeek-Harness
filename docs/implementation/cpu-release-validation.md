@@ -17,6 +17,10 @@ own checks and cleanup before the next component is rejected. Repeated signals
 preserve that ownership. Interrupted campaigns exit with failure, retain
 `completed.json` and `interruption.json`, and publish no final `acceptance.json`.
 Process-group release after child exit has a ten-second confirmation deadline.
+Supply a new output directory with an existing parent. The campaign resolves the
+parent through the actual filesystem, admits it within this checkout's
+`.local/work`, and records canonical output paths. Configured directory aliases
+retain the same source and process ownership.
 
 ## Core tool evidence selection
 
@@ -360,6 +364,42 @@ acceptance retain their native requirements.
 The configured CPU campaign includes `gr00t-actions` when
 `checkpointAuditConfiguration` is supplied, with its own source identities, report
 digest and actual diagnostic process-group release.
+
+Clean `30c50d4` passes 85 checks per CPU platform on 27 original records: three
+legacy BEHAVIOR native prefixes and 24 mapped RoboCasa controller sequences.
+Both platforms additionally pass the same 76 four-provider numerical output
+checks. Linux independently passes 1,330 controller checks on 1,272 original
+records, including 1,248 complete BEHAVIOR model outputs from run `96c0b983`.
+That original task remains failed. Exact original native values and complete
+model values match production conversion; no fresh inference executes.
+
+Independent Linux verification matches 1,354 source/input comparisons, confirms
+four actual runner/diagnostic releases and preserves clean frozen source and
+canonical user changes. Local comparison verifies 24 implementation/manifest
+comparisons, 31 original input identities, report identities and identical shared
+85-case/76-case results. The retained archive has SHA256
+`3dca434ae52b0c8272b51714b677918d80857d2b4cd0855fa5f9650f56889bfe`.
+Evidence: `.local/work/gr00t-actions-cpu-macos-20261009-final/` and
+`.local/work/gr00t-actions-cpu-linux-20261009-verified/`.
+
+Clean `de9b7f2` includes this exact production conversion in the configured CPU
+release campaign. Thirty-one components pass 548 admission/process/wire/resource
+cases per platform on macOS and isolated Linux, alongside six visual-context
+cases, twelve original context reads and four-provider readiness.
+Independent checks verify 469 source/input comparisons, twelve context-source
+comparisons and 31 actual diagnostic process-group releases per platform. Linux
+also confirms campaign-runner release, clean frozen source and unchanged canonical
+user changes. Three actual CLI output-admission checks reject existing, external
+and external-linked outputs before component startup. Output parents resolve
+through the actual filesystem within this checkout's `.local/work`.
+Campaign evidence: `.local/work/gr00t-controller-cpu-campaign-macos-20261009-final/`
+and `.local/work/gr00t-controller-cpu-campaign-linux-20261009-verified/`.
+The Linux campaign archive retains SHA256
+`eac2673d293afc6abeb5df8f4aac3af6fc3889e77a72e8ce0acd11d46826cc18`.
+Local comparison verifies 190 production-source comparisons, ten original input/
+context comparisons, 31 Linux process receipts and thirty component reports.
+Original contexts, four-provider readiness and all shared controller cases match
+between platforms; the Linux runner and 31 diagnostic process groups are absent.
 
 ## Prior verified CPU checkpoints
 

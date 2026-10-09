@@ -1,10 +1,32 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.116 · 2026-10-09
+Version: v1.117 · 2026-10-09
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
+
+GR00T controller conversion belongs to each provider's `native_action_record`,
+used by both online inference and original-record CPU inspection. ActionSpec,
+numeric groups, matching horizons and integer request limits 1–512 pass admission
+before native mapping. Clean `30c50d4` passes 85 checks per CPU platform on 27
+original BEHAVIOR/RoboCasa records. Linux additionally passes 1,330 checks on
+1,272 original records, including 1,248 complete BEHAVIOR model outputs. Original
+native values and model records remain unchanged. Independent checks verify 1,354
+Linux source/input comparisons, four actual process releases and unchanged user
+changes; local comparison matches 24 implementation and 31 original-input identities.
+Clean `de9b7f2` includes this conversion in the configured CPU campaign, with
+31 components and 548 admission/process/wire/resource cases per platform on
+macOS and isolated Linux. Independent checks verify 469 source/input comparisons,
+twelve context-source comparisons and 31 actual diagnostic process-group releases
+per platform. Campaign output admission resolves actual filesystem parents within
+the checkout's `.local/work`; three real CLI checks reject invalid outputs before
+component startup. Linux additionally confirms actual campaign-runner release,
+clean frozen source and unchanged canonical user changes.
+No model, simulator, inference or GPU allocates. Raw
+RoboCasa probabilities, SDK group dtypes and complete loaded-model/task behavior
+retain native acceptance requirements.
+See [controller validation](implementation/cpu-release-validation.md#gr00t-controller-conversion).
 
 Core tool output evidence selection belongs to `tools/core-output.ts`. UpperRun
 supplies the calling Verifier's check sample and admits assignment grants and
