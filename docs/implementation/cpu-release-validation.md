@@ -12,7 +12,7 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 The [Source checks workflow](../../.github/workflows/source-checks.yml) installs
 the `policy,robodojo,recording` extras in a fresh constrained environment and runs
 the complete source checks, then the device-owner, Session-resource, actual
-Worker-transport and native DSH core-tool diagnostics. The adapter dependencies are msgpack 1.1.1,
+Worker-transport, native DSH core-tool and configured task-plan diagnostics. The adapter dependencies are msgpack 1.1.1,
 psutil 7.2.2 and NumPy 2.4.6 on Python 3.11 or 2.5.4 on Python >=3.12; recording
 uses the declared PyAV 18.1.0. Optional model/simulator SDKs remain separate.
 
@@ -21,7 +21,7 @@ four shared Session/device/recording cases and sixteen genuine Python Worker
 process cases. The checks preserve source hashes, require confirmed thread/process
 closure and retain original failure details. No model, simulator, sensor frame or
 physical action is generated. The installation artifact retains actual pip and
-installed-import provenance; the current runtime artifact requires all four
+installed-import provenance; the current runtime artifact requires all five
 named acceptance reports. See [CI source provenance](../provenance/ci-actions.md)
 and the [setup commands](../development/setup.md).
 
@@ -33,7 +33,7 @@ report digest and closed-owner/Worker outcomes. CUDA remains invisible and nativ
 allocations remain zero.
 
 `scripts/check-cpu-runtime-evidence.py` is the reusable artifact reader. It
-requires the original complete pip report, installation manifest and all four
+requires the original complete pip report, installation manifest and all five
 runtime reports, verifies their exact Git source identities and publishes a
 single source-bound inspection. The v1 inspector at `3accbb6` admits the actual
 `50dd522` downloaded CI artifacts. Four actual CLI cases pass, including rejection of a different source
@@ -50,8 +50,10 @@ evidence/checker identities remain unchanged; no model or simulator starts.
 
 The installation directory contains `cpu-install-report.json` and
 `cpu-installation/installation.json`; the runtime directory contains
-`device-owner/`, `session-owner/`, `worker-transport/` and `agent-tools/`. The v2
-inspector also verifies the actual agent-tools journal against its reported digest.
+`device-owner/`, `session-owner/`, `worker-transport/`, `agent-tools/` and `task-plans/`.
+The v3 inspector verifies the actual agent-tools journal and seven task-plan
+journals against their reported digests, including the published Tower goal and
+seventeen task-plan outcomes. All fifteen input files are required.
 Read only artifacts
 from the selected actual workflow run. This inspector verifies artifact
 consistency and source identities; native task acceptance remains in the
@@ -224,11 +226,36 @@ Loaded-policy decisions, native device behavior and complete task success retain
 their per-configuration release requirements.
 
 Source CI requires this diagnostic's `agent-tools/acceptance.json` alongside the
-three existing runtime reports. Consolidated `edh.cpu_runtime_evidence.v2`
-admission checks all 41 cases, six input manifests, the actual journal and 42 exact-commit source
-comparisons before artifact publication.
-Actual Ubuntu run `38172377733` passes that complete current-source workflow at
+device, Session, Worker and task-plan reports. The v3 inspector admits all five
+components and their actual journals before artifact publication.
+Actual Ubuntu run `38172377733` passes the complete v2 workflow at
 `4d9031b`; all fifteen DSH cases match the local CPU admission outcomes.
+
+## Configured task-plan storage
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-task-plans-offline.mjs \
+  --output .local/work/<new-task-plan-check>
+```
+
+The diagnostic parses the published `examples/tasks/robodojo-build-tower.json`
+through the production task-catalog parser, then uses TaskGoals, TaskPlans and
+LocalStore directly. Seventeen cases cover configured initial/next templates,
+durable writes, foreign ownership, stale writes, completion without an accepted
+verdict, immutable final criteria, required final-goal retention, versioned
+reopening, compaction and six original/invalid-derived stored reads. Rejected
+operations and next-write templates preserve the actual journal digest. All
+nine writer open/close cycles release; the report retains eleven production/
+configuration source identities and seven journal digests. It performs no model,
+simulator or physical control operations.
+
+Local macOS validation passes at `.local/work/task-plans-cpu-20261011-02/`.
+Source CI executes this diagnostic and requires its report, final compacted
+journal and all six derivative journals. The v3 consolidated inspector checks
+the exact configured Tower goal against the triggering Git source, all seventeen
+named outcomes, compaction/version consistency, eleven source identities and
+each unchanged/released derivative journal. Original-record inspection retains
+the separate checks described under [model-visible tool schemas](#model-visible-tool-schemas).
 
 ## Core tool evidence selection
 

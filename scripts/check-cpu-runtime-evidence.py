@@ -48,6 +48,10 @@ def main():
 
     installation = args.installation.resolve(strict=True)
     runtime = args.runtime.resolve(strict=True)
+    plan_read_names = (
+        "original-plan", "foreign-task", "document-version", "storage-version",
+        "schema-version", "duplicate-goals",
+    )
     files = [
         installation / "cpu-install-report.json",
         installation / "cpu-installation/installation.json",
@@ -55,9 +59,13 @@ def main():
             "device-owner", "session-owner", "worker-transport", "agent-tools",
         )),
         runtime / "agent-tools/data/records.jsonl",
+        runtime / "task-plans/acceptance.json",
+        runtime / "task-plans/data/records.jsonl",
+        *(runtime / "task-plans/read" / name / "records.jsonl" for name in plan_read_names),
     ]
     inputs = [identity(path) for path in files]
-    report, manifest, device, session, transport, tools = [json.loads(path.read_bytes()) for path in files[:-1]]
+    report, manifest, device, session, transport, tools = [json.loads(path.read_bytes()) for path in files[:6]]
+    plans = json.loads(files[7].read_bytes())
     assert report["version"] == "1" and report["install"], "Require the complete actual pip installation report."
     assert manifest["format"] == "edh.cpu-installation.v1"
     assert manifest["supplementalInstallReports"] == [], "CI artifacts require one complete installation report."
@@ -151,7 +159,7 @@ def main():
                 assert all(case["recordingJournalClosed"] is True and case["recordingFrames"] == 0 for case in record["cases"])
         cases[component] = expected_count
     assert tools["schemaVersion"] == "edh.core_tools_cpu.v1"
-    assert tools["journalSha256"] == inputs[-1]["sha256"]
+    assert tools["journalSha256"] == inputs[6]["sha256"]
     assert tools["writerReleased"] is True and tools["hostDisposed"] is True
     for field in ("environmentAllocationPerformed", "modelInferencePerformed", "physicalControlPerformed"):
         assert tools[field] is False
@@ -177,10 +185,49 @@ def main():
                 "persist-question-and-conclude-turn", "same-call-question-identity",
             })
     cases["agent-tools"] = len(expected_tools)
+    assert plans["schemaVersion"] == "edh.task_plans_cpu.v1"
+    assert plans["journalSha256"] == inputs[8]["sha256"]
+    assert plans["writerReleased"] is True
+    for field in ("environmentAllocationPerformed", "modelInferencePerformed", "physicalControlPerformed"):
+        assert plans[field] is False
+    assert len(plans["sources"]) == 11
+    assert len({entry["path"] for entry in plans["sources"]}) == 11
+    for entry in plans["sources"]:
+        compare(Path(entry["path"]).relative_to(source_root), entry["sha256"])
+    catalog = json.loads(source_bytes("examples/tasks/robodojo-build-tower.json"))
+    assert plans["catalogRevision"] == catalog["revision"]
+    assert plans["configuredGoal"] == catalog["tasks"]["build_tower"]["goal"]
+    assert plans["storedPlanVersion"] == 2
+    compact = plans["compaction"]
+    assert compact["compacted"] is True
+    assert compact["before"]["records"] == compact["after"]["records"] == 1
+    assert compact["before"]["sequence"] == compact["after"]["sequence"] == 2
+    assert compact["after"]["supersededBytes"] == 0
+    assert compact["reclaimedBytes"] > 0
+    expected_plans = {
+        "configured-initial-template": False, "persist-configured-plan": False,
+        "read-only-next-template": False, "foreign-owner-template": True,
+        "stale-plan-write": True, "completion-without-verdict": True,
+        "changed-final-criterion": True, "abandoned-final-goal": True,
+        "publish-next-version": False, "reopen-versioned-plan": False,
+        "compacted-version": False,
+        **{f"read-{name}": name != "original-plan" for name in plan_read_names},
+    }
+    assert len(plans["checks"]) == len(expected_plans)
+    assert all(type(case["rejected"]) is bool for case in plans["checks"])
+    assert {case["name"]: case["rejected"] for case in plans["checks"]} == expected_plans
+    admissions = plans["readAdmissions"]
+    assert len(admissions) == len(plan_read_names)
+    for name, admission, saved in zip(plan_read_names, admissions, inputs[9:], strict=True):
+        assert admission["name"] == name
+        assert Path(admission["journalPath"]) == Path("read") / name / "records.jsonl"
+        assert admission["journalSha256"] == saved["sha256"]
+        assert admission["journalUnchanged"] is True and admission["writerReleased"] is True
+    cases["task-plans"] = len(expected_plans)
     assert [identity(path) for path in files] == inputs, "CPU evidence changed during inspection."
     output.parent.mkdir(parents=True, exist_ok=True)
     result = {
-        "schemaVersion": "edh.cpu_runtime_evidence.v2",
+        "schemaVersion": "edh.cpu_runtime_evidence.v3",
         "sourceRevision": revision,
         "checker": identity(Path(__file__)),
         "inputs": inputs, "sourceComparisons": comparisons,

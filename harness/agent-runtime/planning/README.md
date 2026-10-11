@@ -24,3 +24,8 @@ checks production reads, goal admission and writes against original model/tool
 events. It also checks declared invalid derivatives, final-plan reopening and
 journal compaction with released writers. Original model/simulator execution is
 not replayed by this command.
+
+[Configured task-plan CPU checks](../../../docs/implementation/cpu-release-validation.md#configured-task-plan-storage)
+use the published Tower catalog and production planning/storage services. Source CI
+requires this report and its actual journals as part of consolidated source-bound
+CPU validation.
