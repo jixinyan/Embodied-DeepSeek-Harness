@@ -111,6 +111,7 @@ if (values.wayland) {
 }
 const application = await _electron.launch({
   executablePath: executable,
+  chromiumSandbox: true,
   args,
   cwd: source,
   env: { ...process.env, EDH_LAUNCHER_DATA_DIR: applicationDirectory },
@@ -139,6 +140,8 @@ try {
   }));
   await save('application.json', { applicationPid, ...metadata });
   assert.equal(metadata.packaged, true);
+  assert(!metadata.arguments.includes('--no-sandbox'));
+  assert(!metadata.arguments.includes('--disable-setuid-sandbox'));
   for (const argument of args) assert(metadata.arguments.includes(argument));
   for (const value of Object.values(metadata.gpuFeatures))
     assert(!String(value).startsWith('enabled'));
