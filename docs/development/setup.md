@@ -47,10 +47,11 @@ The workflow pins its Ubuntu, Node.js, pnpm and Python versions and exact offici
 action commits. [CI provenance](../provenance/ci-actions.md) records those bindings
 and the required installation artifact paths.
 
-After source admission, GitHub runs the actual device-owner, Session-resource and
-Worker-transport diagnostics. The `cpu-runtime-<commit>` artifact retains all
-three source-bound acceptance reports and their case evidence. These checks use
-real files, pipes, threads and Worker processes with `CUDA_VISIBLE_DEVICES=''`.
+After source admission, GitHub runs the actual device-owner, Session-resource,
+Worker-transport and native DSH core-tool diagnostics. The `cpu-runtime-<commit>`
+artifact retains all four source-bound acceptance reports and their case evidence.
+These checks use real files, local question records, pipes, threads and Worker
+processes with `CUDA_VISIBLE_DEVICES=''`.
 They require no model weights, original task journals or simulator installation.
 Run the same diagnostics from an installed checkout:
 
@@ -63,6 +64,8 @@ CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 .venv/bin/python \
 CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 node \
   scripts/check-worker-transport-offline.mjs --python .venv/bin/python \
   --output .local/work/cpu-runtime/worker-transport
+CUDA_VISIBLE_DEVICES='' pnpm exec tsx --tsconfig tsconfig.runtime.json \
+  scripts/check-core-tools-offline.mjs --output .local/work/cpu-runtime/agent-tools
 ```
 
 Use new diagnostic output directories. The complete configured CPU campaign also

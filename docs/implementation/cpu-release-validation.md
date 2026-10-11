@@ -11,8 +11,8 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 The [Source checks workflow](../../.github/workflows/source-checks.yml) installs
 the `policy,robodojo,recording` extras in a fresh constrained environment and runs
-the complete source checks, then the existing device-owner, Session-resource and
-actual Worker-transport diagnostics. The adapter dependencies are msgpack 1.1.1,
+the complete source checks, then the device-owner, Session-resource, actual
+Worker-transport and native DSH core-tool diagnostics. The adapter dependencies are msgpack 1.1.1,
 psutil 7.2.2 and NumPy 2.4.6 on Python 3.11 or 2.5.4 on Python >=3.12; recording
 uses the declared PyAV 18.1.0. Optional model/simulator SDKs remain separate.
 
@@ -21,7 +21,7 @@ four shared Session/device/recording cases and sixteen genuine Python Worker
 process cases. The checks preserve source hashes, require confirmed thread/process
 closure and retain original failure details. No model, simulator, sensor frame or
 physical action is generated. The installation artifact retains actual pip and
-installed-import provenance; the separate runtime artifact requires all three
+installed-import provenance; the current runtime artifact requires all four
 named acceptance reports. See [CI source provenance](../provenance/ci-actions.md)
 and the [setup commands](../development/setup.md).
 
@@ -33,10 +33,10 @@ report digest and closed-owner/Worker outcomes. CUDA remains invisible and nativ
 allocations remain zero.
 
 `scripts/check-cpu-runtime-evidence.py` is the reusable artifact reader. It
-requires the original complete pip report, installation manifest and all three
+requires the original complete pip report, installation manifest and all four
 runtime reports, verifies their exact Git source identities and publishes a
-single source-bound inspection. It admits the actual `50dd522` downloaded CI
-artifacts. Four actual CLI cases pass, including rejection of a different source
+single source-bound inspection. The v1 inspector at `3accbb6` admits the actual
+`50dd522` downloaded CI artifacts. Four actual CLI cases pass, including rejection of a different source
 revision, Python optimization and an already-published output file. Seven original
 evidence/checker identities remain unchanged; no model or simulator starts.
 
@@ -50,7 +50,9 @@ evidence/checker identities remain unchanged; no model or simulator starts.
 
 The installation directory contains `cpu-install-report.json` and
 `cpu-installation/installation.json`; the runtime directory contains
-`device-owner/`, `session-owner/` and `worker-transport/`. Read only artifacts
+`device-owner/`, `session-owner/`, `worker-transport/` and `agent-tools/`. The v2
+inspector also verifies the actual agent-tools journal against its reported digest.
+Read only artifacts
 from the selected actual workflow run. This inspector verifies artifact
 consistency and source identities; native task acceptance remains in the
 [release register](v1-delivery.md).
@@ -176,9 +178,47 @@ parent through the actual filesystem, admits it within this checkout's
 `.local/work`, and records canonical output paths. Configured directory aliases
 retain the same source and process ownership.
 
+## Core tool definitions and native dispatch
+
+`tools/core-definition.ts` owns native core definition assembly, assignment-specific
+parameters, provider timeout selection, existing DSH argument validation, EDH input
+limits and authoritative successful turn conclusion. UpperRun supplies its actual
+scoped operations, provider availability, role permissions and lifetime checks.
+`core-output.ts` renders canonical JSON with ordered admitted image attachments.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-core-tools-offline.mjs \
+  --output .local/work/<new-core-tool-check>
+```
+
+The diagnostic creates a real DSH host with no model bindings, registers the
+production core definitions and dispatches actual AssignmentFiles operations and
+UserClarifications requests into a private LocalStore. Fifteen cases cover original
+source-content writes, reads/search, empty content, current-version updates, native
+parameter admission, unsafe versions, conflicting versions, private paths, size
+limits, caller cancellation, question persistence, same-call identity and native
+turn conclusion. Rejected operations preserve the actual journal digest and native
+error identity. The writer closes, retained content survives reopening and the
+host disposes. Model, simulator and control allocation remains zero.
+
+Actual macOS checks pass at `.local/work/core-tools-cpu-20261011-05/`.
+Seven original tasks separately match 98 canonical native results, 27 image
+results, 81 images and six formal checks through the same production renderer.
+Sixteen original model requests match 344 schemas through the unchanged production
+parameter generator. Evidence: `.local/work/core-tools-original-evidence-20261011-01/`
+and `.local/work/core-tools-original-schemas-20261011-01/`.
+Loaded-policy decisions, native device behavior and complete task success retain
+their per-configuration release requirements.
+
+Source CI requires this diagnostic's `agent-tools/acceptance.json` alongside the
+three existing runtime reports. Consolidated `edh.cpu_runtime_evidence.v2`
+admission checks all 41 cases, six input manifests, the actual journal and 42 exact-commit source
+comparisons before artifact publication.
+
 ## Core tool evidence selection
 
-`coreToolEvidenceIds` in the tools module owns model-facing evidence selection.
+`coreToolEvidenceIds` in the tools module owns model-facing evidence selection;
+`renderCoreToolResult` produces canonical JSON text and ordered image content.
 UpperRun supplies its calling Verifier's formal-check sample when required and
 admits references through existing assignment grants and SensorSamples. Native
 DSH continues to validate, render and persist results.

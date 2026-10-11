@@ -68,8 +68,13 @@ jobs:
         env:
           CUDA_VISIBLE_DEVICES: ''
           PYTHONDONTWRITEBYTECODE: '1'
+      - name: Check native DSH core tools without model allocation
+        run: pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-core-tools-offline.mjs --output .local/work/cpu-runtime/agent-tools
+        env:
+          CUDA_VISIBLE_DEVICES: ''
+          TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
       - name: Require complete CPU runtime artifacts
-        run: test -s .local/work/cpu-runtime/device-owner/acceptance.json && test -s .local/work/cpu-runtime/session-owner/acceptance.json && test -s .local/work/cpu-runtime/worker-transport/acceptance.json
+        run: test -s .local/work/cpu-runtime/device-owner/acceptance.json && test -s .local/work/cpu-runtime/session-owner/acceptance.json && test -s .local/work/cpu-runtime/worker-transport/acceptance.json && test -s .local/work/cpu-runtime/agent-tools/acceptance.json
       - name: Verify CPU evidence against the triggering source
         run: .venv/bin/python scripts/check-cpu-runtime-evidence.py --installation .local/work --runtime .local/work/cpu-runtime --source-revision "${{ github.sha }}" --output .local/work/cpu-runtime/evidence.json
       - name: Preserve CPU runtime evidence (v7.0.2)
@@ -82,4 +87,5 @@ jobs:
             .local/work/cpu-runtime/device-owner/
             .local/work/cpu-runtime/session-owner/
             .local/work/cpu-runtime/worker-transport/
+            .local/work/cpu-runtime/agent-tools/
             .local/work/cpu-runtime/evidence.json

@@ -52,11 +52,12 @@ def main():
         installation / "cpu-install-report.json",
         installation / "cpu-installation/installation.json",
         *(runtime / component / "acceptance.json" for component in (
-            "device-owner", "session-owner", "worker-transport",
+            "device-owner", "session-owner", "worker-transport", "agent-tools",
         )),
+        runtime / "agent-tools/data/records.jsonl",
     ]
     inputs = [identity(path) for path in files]
-    report, manifest, device, session, transport = [json.loads(path.read_bytes()) for path in files]
+    report, manifest, device, session, transport, tools = [json.loads(path.read_bytes()) for path in files[:-1]]
     assert report["version"] == "1" and report["install"], "Require the complete actual pip installation report."
     assert manifest["format"] == "edh.cpu-installation.v1"
     assert manifest["supplementalInstallReports"] == [], "CI artifacts require one complete installation report."
@@ -149,10 +150,37 @@ def main():
                 assert type(record["recordedFrames"]) is int and record["recordedFrames"] == 0
                 assert all(case["recordingJournalClosed"] is True and case["recordingFrames"] == 0 for case in record["cases"])
         cases[component] = expected_count
+    assert tools["schemaVersion"] == "edh.core_tools_cpu.v1"
+    assert tools["journalSha256"] == inputs[-1]["sha256"]
+    assert tools["writerReleased"] is True and tools["hostDisposed"] is True
+    for field in ("environmentAllocationPerformed", "modelInferencePerformed", "physicalControlPerformed"):
+        assert tools[field] is False
+    assert len(tools["sources"]) == 14
+    assert len({entry["path"] for entry in tools["sources"]}) == 14
+    for entry in tools["sources"]:
+        compare(Path(entry["path"]).relative_to(source_root), entry["sha256"])
+    expected_tools = {
+        "write-original-source": False, "read-private-source": False,
+        "search-private-source": False, "write-empty-content": False,
+        "update-current-version": False, "persist-question-and-conclude-turn": False,
+        "same-call-question-identity": False, "additional-parameter": True,
+        "string-version": True, "unsafe-version": True, "version-conflict": True,
+        "invalid-private-path": True, "oversized-content": True,
+        "caller-abort-before-write": True, "conflicting-question-identity": True,
+    }
+    assert len(tools["checks"]) == len(expected_tools)
+    assert {case["name"]: case["isError"] for case in tools["checks"]} == expected_tools
+    for case in tools["checks"]:
+        assert type(case["isError"]) is bool
+        if not case["isError"]:
+            assert case["concludesTurn"] is (case["name"] in {
+                "persist-question-and-conclude-turn", "same-call-question-identity",
+            })
+    cases["agent-tools"] = len(expected_tools)
     assert [identity(path) for path in files] == inputs, "CPU evidence changed during inspection."
     output.parent.mkdir(parents=True, exist_ok=True)
     result = {
-        "schemaVersion": "edh.cpu_runtime_evidence.v1",
+        "schemaVersion": "edh.cpu_runtime_evidence.v2",
         "sourceRevision": revision,
         "checker": identity(Path(__file__)),
         "inputs": inputs, "sourceComparisons": comparisons,

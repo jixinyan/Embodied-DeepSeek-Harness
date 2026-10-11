@@ -6,7 +6,7 @@ import { parseArgs } from 'node:util';
 import { ContractValidator } from '@edh/contracts';
 import { SensorSamples, sensorImages } from '@edh/perception';
 import { LocalStore, SessionAudits } from '@edh/storage';
-import { CORE_TOOLS, coreToolEvidenceIds } from '@edh/tools';
+import { CORE_TOOLS, coreToolEvidenceIds, renderCoreToolResult } from '@edh/tools';
 import { VerificationContexts } from '@edh/verification';
 
 const { values } = parseArgs({
@@ -152,10 +152,7 @@ for (const [index, sourceDirectory] of values['data-directory'].entries()) {
           return sample;
         });
         const attachments = sensorImages(selected);
-        const rendered = [
-          { type: 'text', text: JSON.stringify(value) },
-          ...attachments.map((attachment) => ({ type: 'image', attachment })),
-        ];
+        const rendered = renderCoreToolResult(value, attachments);
         assert.deepEqual(rendered, blocks[0].content);
         results++;
         tools[tool] = (tools[tool] ?? 0) + 1;

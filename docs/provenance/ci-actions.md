@@ -32,8 +32,8 @@ admission is limited to those two named files inside `.local/work`.
 
 ## Production CPU runtime checks
 
-After source and installation admission, the workflow runs three existing
-production diagnostics in the same isolated Python environment. Its actual
+After source and installation admission, the workflow runs four production
+diagnostics using the installed project Node.js and isolated Python environment. Its actual
 installation uses the `policy,robodojo,recording` extras, including the adapter's
 msgpack, NumPy and psutil imports and PyAV 18.1.0 for recording resource checks.
 CPU constraints bind msgpack 1.1.1 and psutil 7.2.2.
@@ -48,12 +48,13 @@ Native SDK environments retain their provider-specific constraints.
 | `check-native-device-owner-offline.py` | Actual owner-thread file/pipe operations, cancelled and concurrent close, queued bind/stop/resume rejection | 6 |
 | `check-native-session-owner-offline.py` | Shared device/recording closure, original file/publication errors and independent caller cancellation | 4 |
 | `check-worker-transport-offline.mjs` | Actual Python Worker processes, dedicated response pipe, stdin closure, malformed/oversized JSON and disconnected output | 16 |
+| `check-core-tools-offline.mjs` | Actual native DSH dispatch, private file admission/versions, cancelled writes, local question persistence and turn conclusion | 15 |
 
 Each diagnostic records production-source hashes and confirmed resource outcomes.
 The actual macOS and Ubuntu diagnostics pass all 26 cases without importing model
 or simulator SDKs or allocating physical environments. Their source hashes match
 the triggering repository revision. The workflow requires each named `acceptance.json` before
-publishing its `cpu-runtime-<commit>` artifact; the artifact contains those three
+publishing its `cpu-runtime-<commit>` artifact; the artifact contains all four
 diagnostic directories. Missing or unsuccessful checks terminate admission.
 
 `check-cpu-runtime-evidence.py` reads the complete installation and runtime
@@ -61,7 +62,9 @@ artifacts and compares their source hashes to the triggering Git commit. It
 requires the expected imports, complete CPU dependency provenance, all runtime
 cases and released-owner/Worker outcomes. Source CI writes its `evidence.json`
 only after this admission; runtime artifact upload includes that consolidated
-report. The same command verifies downloaded artifacts locally. Different-source,
+report. The current `edh.cpu_runtime_evidence.v2` admission requires 41 cases,
+six input manifests, the original agent-tools journal and 42 exact-commit source comparisons. The same command
+verifies downloaded artifacts locally. Different-source,
 optimized-Python and existing-output invocations terminate before publication.
 
 Stable-action installation run

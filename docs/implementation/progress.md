@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-11 · Spec v1.126 · v1 release acceptance in progress.
+Updated: 2026-10-11 · Spec v1.127 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| Core native tool definitions | `tools/core-definition.ts` owns definition assembly, provider timeout selection, DSH argument admission and turn conclusion; `core-output.ts` owns canonical JSON/image rendering. UpperRun supplies availability, scoped operations, role authority and assignment lifetime. Actual native DSH dispatch passes fifteen CPU file/clarification cases with preserved rejected-call journals and released writers/host. Seven original tasks retain 98 exact native results and 81 ordered images; sixteen original model requests retain 344 valid schemas. Source CI requires the additional `agent-tools` report and v2 consolidated admission of all four components. GPU/model/simulator allocation remains zero. |
 | `3accbb6` | The production CPU artifact inspector passes in actual GitHub run `38162874886` after fresh installation, complete source checks and all 26 runtime cases. Downloaded artifacts independently match fourteen distributions, thirteen imports and 28 exact-commit source comparisons. The uploaded consolidated report matches seven result fields, all five input digests and the inspector's Git source digest; four local admission processes are confirmed released. Source, records and native allocation boundaries remain unchanged. |
 | CPU runtime artifact admission | `check-cpu-runtime-evidence.py` compares complete actual pip/install records and all three runtime reports against the selected Git commit. Actual `50dd522` CI artifacts pass fourteen distributions, thirteen imports, 28 source comparisons and 26 runtime cases. Four actual CLI admission cases pass, preserving seven original input/source identities; different-source, optimized-Python and existing-output inputs reject before publication. Source CI invokes this production checker before uploading consolidated runtime evidence. |
 | `50dd522` / `e3fef01` | Source CI binds Ubuntu 24.04, project Node.js 22.23.3/Python 3.11.17 and official stable Node.js 24 action commits. Actual installation/source/runtime run `38161986298` passes with fourteen distributions, thirteen imports and 26 device-owner/Session-resource/Worker-transport cases. Independent artifact inspection matches 28 exact-commit source comparisons, complete pip/download records and released-owner/Worker outcomes. The same 26 cases pass in a fresh macOS CPU environment. CUDA remains invisible and native allocations remain zero. |

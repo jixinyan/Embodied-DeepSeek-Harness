@@ -13,13 +13,25 @@ describe the physical wire format.
 | --- | --- |
 | [core-inputs.ts](src/core-inputs.ts) | Logical tool IDs, argument fields, descriptions and domain input limits |
 | [model-schema.ts](src/model-schema.ts) | Model-facing parameters, role/device-specific fields and canonical domain schema projection |
-| [core-output.ts](src/core-output.ts) | Evidence IDs selected for model-facing core tool results |
+| [core-definition.ts](src/core-definition.ts) | Core native definitions, provider timeouts, argument admission and DSH turn conclusion |
+| [core-output.ts](src/core-output.ts) | Evidence selection and native JSON/image content rendering |
 | [index.ts](src/index.ts) | Native DSH authoring/validation exports and EDH parameter generation |
 
 `coreModelToolParameters` returns independent parameters for each assignment.
 Its plan, role-output and device arrays are detached from canonical definitions
 and caller inputs. The existing native DSH registration, execution and validation
 remain the consumers. The application owns role authority and tool body effects.
+
+`createCoreToolDefinition` produces the native DSH ToolDefinition from the selected
+assignment parameters, provider timeout budgets, scoped operation and result
+renderer. It applies the existing DSH argument validator and EDH input limits
+before the operation. Successful decision, execution-start/end, report and formal
+verdict tools conclude their DSH turn. `execution.query` concludes only when the
+decision owner supplies `completeTurn=true`; `execution.resume` concludes when
+its accepted result reports running execution. Native DSH owns dispatch, timeout,
+canonical output admission and cancellation. UpperRun supplies provider availability,
+role permissions, assignment lifetime, actual operations and domain event recording.
+See [CPU dispatch validation](../../../docs/implementation/cpu-release-validation.md#core-tool-definitions-and-native-dispatch).
 
 `coreToolEvidenceIds` selects only references from the current tool result or the
 calling Verifier's formal-check sample. Capture, active observation and evidence
@@ -29,6 +41,8 @@ the supplied check sample. Other core tools contribute no image references.
 UpperRun admits every selected reference against that assignment's grants and
 agent-visible SensorSamples before the existing native DSH renderer receives it.
 Native JSON text and ordered image attachments retain their original format.
+`renderCoreToolResult` produces that content from the canonical value and admitted
+image attachments; the original-record diagnostic uses this same production renderer.
 See [original receipt validation](../../../docs/implementation/cpu-release-validation.md#core-tool-evidence-selection).
 
 See [reuse decision](../../../docs/implementation/decisions/0003-reuse-dsh-mechanisms.md),

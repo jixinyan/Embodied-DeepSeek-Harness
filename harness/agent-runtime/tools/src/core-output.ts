@@ -1,6 +1,18 @@
 import type { EvidenceRef } from '@edh/contracts';
+import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
+import type { ContentBlock } from '@deepseek-ai/dsh-llm';
 
 type EvidenceSample = { evidence: Pick<EvidenceRef, 'id'> };
+
+export function renderCoreToolResult(
+  value: unknown,
+  images: readonly ImageAttachmentRef[],
+): ContentBlock[] {
+  return [
+    { type: 'text', text: JSON.stringify(value) },
+    ...images.map((attachment) => ({ type: 'image' as const, attachment })),
+  ];
+}
 
 export function coreToolEvidenceIds(
   logical: string,

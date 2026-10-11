@@ -24,5 +24,10 @@ export {
   CORE_TOOL_DESCRIPTIONS,
   assertCoreInputLimits,
 } from './core-inputs.js';
-export { coreModelToolParameters, modelToolContractSchema } from './model-schema.js';
-export { coreToolEvidenceIds } from './core-output.js';
+export {
+  coreModelToolParameters,
+  modelToolContractSchema,
+  type CoreModelToolOptions,
+} from './model-schema.js';
+export { createCoreToolDefinition, type CoreToolBinding } from './core-definition.js';
+export { coreToolEvidenceIds, renderCoreToolResult } from './core-output.js';

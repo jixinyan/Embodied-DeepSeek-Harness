@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.126 · 2026-10-11
+Version: v1.127 · 2026-10-11
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -24,9 +24,9 @@ and [CPU installation acceptance](implementation/cpu-release-validation.md#fresh
 Source CI pins Ubuntu 24.04, Node.js 22.23.3, Python 3.11.17 and exact official
 stable-action commits. Its isolated CPU installation includes the `policy`,
 `robodojo` and `recording` extras with Python-version-specific NumPy constraints.
-It also runs existing production device-owner,
-Session-resource and actual Worker-transport checks without model or simulator
-allocation. All three named acceptance reports are required for its separate
+It also runs production device-owner,
+Session-resource, actual Worker-transport and native DSH core-tool checks without model or simulator
+allocation. All four named acceptance reports are required for its separate
 runtime artifact. Actual macOS and GitHub Ubuntu diagnostics pass 26
 file/pipe/thread/process cases. Installation/source/runtime run `38161986298`
 passes at `50dd522` with fourteen distributions and thirteen imports; independent
@@ -477,18 +477,25 @@ propagation. The CPU diagnostic verifies actual recording/pipe/thread lifecycle
 without allocating a simulator or providing a model result. Loaded-policy and
 physical-task acceptance retain their native release requirements.
 
-The tools module owns logical parameters, model-visible schema preparation and
-output evidence selection in `core-inputs.ts`, `model-schema.ts` and `core-output.ts`.
+The tools module owns logical parameters, model-visible schema preparation,
+native core definitions and result rendering in `core-inputs.ts`, `model-schema.ts`,
+`core-definition.ts` and `core-output.ts`.
 The application, role workflow checks
 and recorded-plan readers use its public exports. Each generated parameter object
 is independent of canonical definitions and caller-provided role/plan schemas.
 Native DSH remains the registration, dispatch and validation owner. Actual
 recorded request/plan inspection and parameter-scope checks are documented in
 [CPU validation](implementation/cpu-release-validation.md#model-visible-tool-schemas).
+`createCoreToolDefinition` binds provider timeout budgets, existing DSH argument
+validation, EDH input limits and successful turn conclusion to the supplied scoped
+operation. UpperRun owns provider availability, role authority, assignment lifetime
+and domain events. Actual DSH dispatch validates private file reads/writes/search,
+version and path admission, cancellation, local question persistence and native
+turn conclusion through fifteen CPU cases.
 UpperRun supplies formal-check context and admits selected output references
 through assignment grants and SensorSamples before native DSH result rendering.
 Original tool receipts and persisted native Session audits verify exact JSON
-text and ordered image attachments through the production selector.
+text and ordered image attachments through the production selector and renderer.
 
 Host worker communication and confirmed process release belong to
 `apps/server/src/native-worker-transport.ts`; retained environment/task/image

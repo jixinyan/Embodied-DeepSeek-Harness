@@ -57,15 +57,11 @@ export type { GoalBinding } from '@edh/tasks';
 
 export { CORE_TOOLS } from '@edh/tools';
 import {
-  coreModelToolParameters,
+  createCoreToolDefinition,
   coreToolEvidenceIds,
+  renderCoreToolResult,
   modelToolContractSchema,
   CORE_TOOL_PARAMETERS,
-  CORE_TOOL_DESCRIPTIONS,
-  assertObjectJsonSchema,
-  validateJsonSchemaValue,
-  ToolArgsError,
-  assertCoreInputLimits,
 } from '@edh/tools';
 export const terminal = (state: RunState['state']) =>
   ['succeeded', 'failed', 'cancelled', 'interrupted', 'unknown'].includes(state);
@@ -740,10 +736,6 @@ export class UpperRun {
           if (native.name !== logical.replaceAll('.', '__'))
             throw new Error('Native tool name must match its logical binding.');
         } else {
-          const properties = CORE_TOOL_PARAMETERS[logical];
-          if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
-          const description = CORE_TOOL_DESCRIPTIONS[logical];
-          if (!description) throw new Error(`Tool description is unavailable: ${logical}`);
           if (
             logical === 'perception.segment_objects' &&
             (!this.options.segmentation || !this.options.images)
@@ -758,51 +750,30 @@ export class UpperRun {
             throw new Error('Depth provider and image storage are unavailable.');
           if (logical === 'perception.measure_object' && !this.options.backend.measureObject)
             throw new Error('This native provider does not support object measurement.');
-          native = {
-            name: logical.replaceAll('.', '__'),
-            ...([
-              'perception.capture',
-              'perception.measure_object',
-              'perception.inspect_simulator',
-              'observation.turn_view',
-              'observation.rotate',
-              'execution.start',
-              'execution.pause',
-              'execution.end',
-              'execution.resume',
-              'verification.check',
-              'tasks.abandon',
-            ].includes(logical) && this.options.backend.toolTimeoutMs !== undefined
-              ? { timeoutMs: this.options.backend.toolTimeoutMs }
+          native = createCoreToolDefinition(logical, {
+            executionTurnCompletion: a.id === this.state.decisionAssignmentId,
+            ...(this.planToolSchema ? { planSchema: this.planToolSchema } : {}),
+            ...(this.sessions.team.members[a.member]!.outputSchema
+              ? { roleOutputSchema: this.sessions.team.members[a.member]!.outputSchema!.schema }
               : {}),
-            ...(logical === 'perception.segment_objects' &&
-            this.options.segmentation?.timeoutMs !== undefined
-              ? { timeoutMs: this.options.segmentation.timeoutMs }
+            ...(this.options.backend.rotationAxes
+              ? { rotationAxes: this.options.backend.rotationAxes }
               : {}),
-            ...(logical === 'perception.estimate_depth' &&
-            this.options.depth?.timeoutMs !== undefined
-              ? { timeoutMs: this.options.depth.timeoutMs }
+            ...(this.options.backend.activeViewDirections
+              ? { activeViewDirections: this.options.backend.activeViewDirections }
               : {}),
-            description:
-              logical === 'execution.query' && a.id !== this.state.decisionAssignmentId
-                ? 'Read the current published execution and formal-verification status using an empty argument object. This is an informational observation. Inspect the identified boundary, stop reason, device confirmation and authorized evidence; complete your assigned role workflow.'
-                : description,
-            parameters: coreModelToolParameters(logical, {
-              executionTurnCompletion: a.id === this.state.decisionAssignmentId,
-              ...(this.planToolSchema ? { planSchema: this.planToolSchema } : {}),
-              ...(this.sessions.team.members[a.member]!.outputSchema
-                ? { roleOutputSchema: this.sessions.team.members[a.member]!.outputSchema!.schema }
-                : {}),
-              ...(this.options.backend.rotationAxes
-                ? { rotationAxes: this.options.backend.rotationAxes }
-                : {}),
-              ...(this.options.backend.activeViewDirections
-                ? { activeViewDirections: this.options.backend.activeViewDirections }
-                : {}),
-              ...(this.options.backend.simulatorInspectionCheckIds
-                ? { simulatorInspectionCheckIds: this.options.backend.simulatorInspectionCheckIds }
-                : {}),
-            }),
+            ...(this.options.backend.simulatorInspectionCheckIds
+              ? { simulatorInspectionCheckIds: this.options.backend.simulatorInspectionCheckIds }
+              : {}),
+            ...(this.options.backend.toolTimeoutMs !== undefined
+              ? { backendTimeoutMs: this.options.backend.toolTimeoutMs }
+              : {}),
+            ...(this.options.segmentation?.timeoutMs !== undefined
+              ? { segmentationTimeoutMs: this.options.segmentation.timeoutMs }
+              : {}),
+            ...(this.options.depth?.timeoutMs !== undefined
+              ? { depthTimeoutMs: this.options.depth.timeoutMs }
+              : {}),
             output: {
               schema: { type: 'object', additionalProperties: true },
               render: (_args, value) => {
@@ -814,52 +785,13 @@ export class UpperRun {
                     logical === 'verification.check' ? this.checks.get(a.id)?.sample : undefined,
                   ),
                 );
-                return [
-                  { type: 'text' as const, text: JSON.stringify(value) },
-                  ...sensorImages(samples).map((attachment) => ({
-                    type: 'image' as const,
-                    attachment,
-                  })),
-                ];
+                return renderCoreToolResult(value, sensorImages(samples));
               },
             },
-            execute: async (args, exec) => {
-              // Raw ToolDefinition owns input validation; use DSH's existing validator,
-              // just as defineTool does, before any EDH side effects.
-              const parameters = native.parameters;
-              assertObjectJsonSchema(parameters);
-              const violations = validateJsonSchemaValue(parameters, args, 'arguments');
-              if (violations.length) throw new ToolArgsError(violations);
-              assertCoreInputLimits(args as Record<string, unknown>);
-              const result = await this.invoke(
-                a,
-                logical,
-                args as Record<string, unknown>,
-                exec.signal,
-                exec.callId,
-              );
-              if (
-                [
-                  'user.ask',
-                  'agent.report',
-                  'verification.submit',
-                  'tasks.finish',
-                  'tasks.abandon',
-                  'execution.start',
-                  'execution.end',
-                ].includes(logical) ||
-                (logical === 'execution.query' &&
-                  (args as { completeTurn?: boolean }).completeTurn === true) ||
-                (logical === 'execution.resume' &&
-                  (result as { execution: ExecutionStatus }).execution.state === 'running')
-              )
-                exec.concludeTurn();
-              return result;
-            },
-          };
+            invoke: (args, exec) => this.invoke(a, logical, args, exec.signal, exec.callId),
+          });
         }
-        // DSH still owns registration, schema checks, timeout and dispatch. This
-        // application guard only enforces EDH run lifetime and records domain activity.
+        // DSH 管理注册、Schema 检查、超时和调用；这里管理任务生命周期和活动记录。
         return {
           ...native,
           timeoutMs: native.timeoutMs ?? 10_000,

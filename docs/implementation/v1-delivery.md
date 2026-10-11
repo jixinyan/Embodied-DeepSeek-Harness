@@ -42,6 +42,15 @@ The production consolidated artifact inspector also passes at `3accbb6` in
 run `38162874886`, matching independently downloaded source/input/result identities
 and confirmed local admission-process release.
 
+Core native definitions, provider timeouts, argument admission and turn conclusion
+belong to `tools/core-definition.ts`; canonical JSON/image rendering belongs to
+`core-output.ts`. Actual DSH dispatch passes fifteen CPU private-file and local
+clarification cases with released writers/host. Seven original tasks match 98
+results and 81 ordered images through the production renderer; sixteen original
+model requests retain 344 schemas. Source CI requires all four runtime reports
+and v2 exact-source admission. Native role/device workflows retain their release
+requirements. See [core dispatch validation](cpu-release-validation.md#core-tool-definitions-and-native-dispatch).
+
 The reusable `bd8cb9d` packaged Desktop diagnostic also passes actual macOS and
 Linux headless Wayland/Pixman windows with Chromium sandboxing enabled. Both
 platforms select all four configured profiles and complete service-stop and

@@ -3,16 +3,18 @@ import type { ContractName, ContractValidator } from '@edh/contracts';
 import { assertObjectJsonSchema } from '@deepseek-ai/dsh-tools';
 import { CORE_TOOL_PARAMETERS, CORE_TOOL_OPTIONAL_PARAMETERS } from './core-inputs.js';
 
+export interface CoreModelToolOptions {
+  planSchema?: Record<string, unknown>;
+  roleOutputSchema?: object;
+  rotationAxes?: readonly string[];
+  activeViewDirections?: readonly string[];
+  simulatorInspectionCheckIds?: readonly string[];
+  executionTurnCompletion?: boolean;
+}
+
 export function coreModelToolParameters(
   logical: string,
-  options: {
-    planSchema?: Record<string, unknown>;
-    roleOutputSchema?: object;
-    rotationAxes?: readonly string[];
-    activeViewDirections?: readonly string[];
-    simulatorInspectionCheckIds?: readonly string[];
-    executionTurnCompletion?: boolean;
-  } = {},
+  options: CoreModelToolOptions = {},
 ): Record<string, unknown> {
   const properties = CORE_TOOL_PARAMETERS[logical];
   if (!properties) throw new Error(`Tool is not implemented: ${logical}`);
