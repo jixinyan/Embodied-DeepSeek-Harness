@@ -1,4 +1,4 @@
-# Tested CPU contract dependencies. No model or simulator packages.
+# 已验证的 CPU 接口依赖；模型和 simulator 由部署环境管理。
 attrs==26.1.0
 jsonschema==4.25.1
 jsonschema-specifications==2025.9.1
@@ -8,5 +8,11 @@ filelock==3.32.7
 Pillow==12.3.0
 typing_extensions==4.16.0
 
-# Optional policy transport; no policy weights or simulator dependency.
+# 可选 policy 通信依赖。
 websockets==17.0.1
+
+# RoboDojo adapter 的 CPU 通信、数值和进程检查依赖。
+msgpack==1.1.1
+numpy==2.4.6; python_version < "3.12"
+numpy==2.5.4; python_version >= "3.12"
+psutil==7.2.2

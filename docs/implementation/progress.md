@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-11 · Spec v1.124 · v1 release acceptance in progress.
+Updated: 2026-10-11 · Spec v1.125 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,7 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
-| `e3fef01` and production CPU CI | Source CI binds Ubuntu 24.04, project Node.js 22.23.3/Python 3.11.17 and official stable Node.js 24 action commits. Actual run `38160908873` passes; downloaded installation evidence matches ten distributions, thirteen imports and twelve source comparisons. The workflow additionally executes device-owner, Session-resource and actual Worker-transport diagnostics, requiring all three reports before artifact publication. Local macOS execution passes 26 actual file/pipe/thread/process cases with zero native allocations. |
+| `e3fef01` and production CPU CI | Source CI binds Ubuntu 24.04, project Node.js 22.23.3/Python 3.11.17 and official stable Node.js 24 action commits. Actual run `38160908873` passes; downloaded installation evidence matches ten distributions, thirteen imports and twelve source comparisons. The workflow additionally installs the `policy,robodojo,recording` CPU extras and executes device-owner, Session-resource and actual Worker-transport diagnostics, requiring all three reports before artifact publication. Local macOS execution passes 26 actual file/pipe/thread/process cases with zero native allocations. |
 | `7639e58` / `bd8cb9d` | The reusable packaged Desktop CPU diagnostic checks actual ASAR source identities, all configured component selections, renderer isolation, Chromium sandboxing and two owned-service shutdown cycles. macOS and Linux headless Wayland/Pixman workflows pass with four profiles, ten packaged files, zero browser errors and zero native allocations. Source checks and GitHub installation/source CI pass. |
 | `bc9a79e` | CPU installation admission requires the complete initial package report and consistent supplemental provenance. Actual combined core/provider installation passes with twelve distributions and thirteen production imports; a genuine supplemental-only report rejects before output publication. Complete source checks and Python 3.11 GitHub installation/source CI pass. Conditional `typing_extensions` is pinned to the same 4.16.0 verified on Python 3.11/3.12. |
 | `6b63217` / `8e63230` | Fresh macOS/Linux checkouts install the frozen pnpm dependencies and isolated Python package, pass complete source checks, four-provider readiness and four real ActionGate/thread/lock cases, and build Desktop artifacts. The macOS package passes all four compatible selections and two shutdown cycles with zero browser errors. Independent verification compares 857 tracked files per platform, 53/46 evidence files and five/eight released processes; Linux additionally confirms six released process groups. Nine source comparisons and thirteen matching import identities connect both platforms to Python 3.11 CI. All native allocations remain zero and canonical user changes remain unchanged. |

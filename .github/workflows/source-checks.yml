@@ -32,7 +32,7 @@ jobs:
         env:
           TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
       - run: python -m venv .venv
-      - run: .venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e "harness/physical-runtime[policy]" --report .local/work/cpu-install-report.json
+      - run: .venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e "harness/physical-runtime[policy,robodojo,recording]" --report .local/work/cpu-install-report.json
         env:
           TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
       - run: .venv/bin/python scripts/check-cpu-installation.py --install-report .local/work/cpu-install-report.json --output .local/work/cpu-installation

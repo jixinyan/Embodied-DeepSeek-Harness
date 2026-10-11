@@ -7,6 +7,31 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Continuous production CPU checks
+
+The [Source checks workflow](../../.github/workflows/source-checks.yml) installs
+the `policy,robodojo,recording` extras in a fresh constrained environment and runs
+the complete source checks, then the existing device-owner, Session-resource and
+actual Worker-transport diagnostics. The adapter dependencies are msgpack 1.1.1,
+psutil 7.2.2 and NumPy 2.4.6 on Python 3.11 or 2.5.4 on Python >=3.12; recording
+uses the declared PyAV 18.1.0. Optional model/simulator SDKs remain separate.
+
+All 26 cases pass in the actual macOS CPU environment: six owner-thread cases,
+four shared Session/device/recording cases and sixteen genuine Python Worker
+process cases. The checks preserve source hashes, require confirmed thread/process
+closure and retain original failure details. No model, simulator, sensor frame or
+physical action is generated. The installation artifact retains actual pip and
+installed-import provenance; the separate runtime artifact requires all three
+named acceptance reports. See [CI source provenance](../provenance/ci-actions.md)
+and the [setup commands](../development/setup.md).
+
+Private local evidence:
+
+- `.local/work/ci-runtime-local-20261011/`
+- `.local/work/ci-runtime-installation-macos-20261011/`
+- `.local/work/ci-evidence-local-20261011.json`
+- `.local/work/cpu-installation-ci-pinned-20261011/`
+
 ## Fresh CPU installation
 
 The production `scripts/check-cpu-installation.py` reads actual pip installation

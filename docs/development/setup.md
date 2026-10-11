@@ -12,7 +12,7 @@ export TMPDIR="$PWD/.local/cpu-tmp"
 pnpm install --frozen-lockfile
 python3 -m venv .venv
 .venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt \
-  -e 'harness/physical-runtime[policy]' --report .local/work/cpu-install-report.json
+  -e 'harness/physical-runtime[policy,robodojo,recording]' --report .local/work/cpu-install-report.json
 CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-cpu-installation.py \
   --install-report .local/work/cpu-install-report.json \
   --output .local/work/cpu-installation
@@ -25,6 +25,12 @@ version with the installed distribution, checks editable-source and dependency
 import origins, and runs `pip check`. It preserves artifact download identities
 and production-module hashes. Model and simulator SDKs remain outside this CPU
 environment; their selected native installations have independent requirements.
+The `robodojo` extra supplies msgpack, NumPy and psutil for the adapter's CPU
+communication, ownership and transport checks. It installs no simulator SDK.
+CPU constraints select NumPy 2.4.6 on Python 3.11 and 2.5.4 on Python >=3.12.
+Native SDK environments retain their selected provider constraints.
+The `recording` extra supplies PyAV for actual recording-journal closure checks.
+Its declared version is 18.1.0.
 Keep the temporary-directory path short enough for the operating system's local
 socket paths used by `tsx` and Electron.
 

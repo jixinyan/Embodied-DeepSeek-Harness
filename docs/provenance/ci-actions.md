@@ -33,7 +33,15 @@ admission is limited to those two named files inside `.local/work`.
 ## Production CPU runtime checks
 
 After source and installation admission, the workflow runs three existing
-production diagnostics in the same isolated Python environment:
+production diagnostics in the same isolated Python environment. Its actual
+installation uses the `policy,robodojo,recording` extras, including the adapter's
+msgpack, NumPy and psutil imports and PyAV 18.1.0 for recording resource checks.
+CPU constraints bind msgpack 1.1.1 and psutil 7.2.2.
+NumPy 2.4.6 is selected on Python 3.11 and 2.5.4 on Python >=3.12, matching the
+official distribution requirements:
+[NumPy 2.4.6](https://pypi.org/project/numpy/2.4.6/),
+[NumPy 2.5.4](https://pypi.org/project/numpy/2.5.4/).
+Native SDK environments retain their provider-specific constraints.
 
 | Diagnostic | Exercised boundary | Cases |
 | --- | --- | --- |
