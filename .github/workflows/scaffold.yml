@@ -19,7 +19,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - run: mkdir -p .local/work .local/cpu-tmp
       - run: pnpm install --frozen-lockfile
+        env:
+          TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
       - run: python -m venv .venv
-      - run: .venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e "harness/physical-runtime[policy]"
+      - run: .venv/bin/python -m pip install -c harness/physical-runtime/constraints.txt -e "harness/physical-runtime[policy]" --report .local/work/cpu-install-report.json
+        env:
+          TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
+      - run: .venv/bin/python scripts/check-cpu-installation.py --install-report .local/work/cpu-install-report.json --output .local/work/cpu-installation
+        env:
+          CUDA_VISIBLE_DEVICES: ''
+          PYTHONDONTWRITEBYTECODE: '1'
       - run: pnpm check
+        env:
+          TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cpu-installation-${{ github.sha }}
+          path: |
+            .local/work/cpu-install-report.json
+            .local/work/cpu-installation/installation.json
