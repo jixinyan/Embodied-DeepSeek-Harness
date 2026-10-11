@@ -7,6 +7,44 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Protocol-specific model request options
+
+`models/src/configuration.ts` admits request settings for the selected protocol
+during configuration reading. Nondefault Chat Completions role, token field,
+reasoning replay, strict-tool, tool-choice and extension settings require that
+protocol. Responses retains its native instructions/output-token mapping and
+output replay. The published cloud API, local vLLM, Qwen and Astra model files
+retain their declared bindings. Eight authored configuration tests pass locally
+and in actual Ubuntu CI; they exercise configuration admission without provider
+requests or model/simulator/GPU allocation.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json --test \
+  tests/runtime/model-request-options.test.ts
+```
+
+Current source `620d507` passes the complete 36-component/1,165-case CPU campaign.
+Independent inspection confirms 570 source/input comparisons, 115 distinct
+production/checker files against Git, original journal/image identities and
+36 absent diagnostic process groups. Actual four-provider HTTP metadata retains
+the configured Teams/checkpoints/models, idle services and released resources.
+The original-image/Responses diagnostics retain their recorded scopes above.
+
+Actual Ubuntu CI `38183379841` passes fresh installation, complete source checks,
+seven SKILL tests, eight protocol-configuration tests and its separate 58-case
+production runtime suite. Downloaded artifacts independently verify fourteen
+distributions, thirteen imports, fifteen input digests and 53 exact-commit source
+comparisons. Consolidated/checker identities agree and seven task-plan journals
+remain unchanged with released writers. The actual JUnit report contains all
+eight configuration cases with zero failures/skips; configuration/test/workflow
+and four model-file sources independently match the selected Git revision.
+
+Evidence: `.local/work/model-options-cpu-campaign-20261011/independently-verified.json`,
+`.local/work/model-options-cpu-campaign-20261011/committed-source-verification.json`,
+`.local/work/ci-model-options-inspection-20261011.json`,
+`.local/work/ci-model-options-independently-verified-20261011.json` and
+`.local/work/ci-model-request-options-independently-verified-20261011.json`.
+
 ## Model image request admission
 
 `models/src/model-images.ts` admits the shared cloud/local adapter image boundary

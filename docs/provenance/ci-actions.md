@@ -69,13 +69,13 @@ source comparisons. The same command
 verifies downloaded artifacts locally. Different-source,
 optimized-Python and existing-output invocations terminate before publication.
 
-Actual source/installation/runtime run `38182924925` passes at `1012df8` on the
+Actual source/installation/runtime run `38183379841` passes at `620d507` on the
 selected Ubuntu platform. Downloaded artifacts independently match fourteen
 distributions, thirteen imports, fifteen input digests and 53 exact-commit source
 comparisons. Uploaded/local inspection matches all seven consolidated fields and
 the checker identity. Seven task-plan journals preserve their bytes and release
 writers; all native allocations remain zero. Exact evidence is recorded in the
-[CPU validation guide](../implementation/cpu-release-validation.md#model-image-request-admission).
+[CPU validation guide](../implementation/cpu-release-validation.md#protocol-specific-model-request-options).
 
 Source CI separately runs seven authored SKILL document/metadata tests and eight
 authored model-request configuration tests. The latter checks the published model
@@ -83,6 +83,10 @@ files and protocol-specific option admission without model/provider allocation.
 Its JUnit report is retained as `model-request-options.xml` in the same runtime
 artifact. These authored checks have their own scope and are excluded from the
 production diagnostic case count above.
+
+The actual downloaded eight-case JUnit report has zero failures/skips. Its
+configuration/test/workflow sources and all four published model files independently
+match `620d507`; the XML is read with the standard library's ElementTree.
 
 The [setup guide](../development/setup.md) documents the equivalent local
 installation checks. The [configuration matrix](../implementation/supported-configurations.md)
