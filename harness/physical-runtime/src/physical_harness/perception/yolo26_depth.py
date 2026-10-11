@@ -3,7 +3,6 @@ import argparse
 import base64
 import hashlib
 import io
-import math
 import subprocess
 from pathlib import Path
 from threading import Lock
@@ -36,6 +35,7 @@ from fastapi import FastAPI
 from PIL import Image
 from pydantic import BaseModel, ConfigDict, Field
 from ultralytics import YOLO
+from physical_harness.perception.depth_statistics import summarize_predicted_depth
 
 
 class CameraIntrinsics(BaseModel):
@@ -120,25 +120,10 @@ def depth_once(model, request: DepthRequest, provenance: dict, device: str):
     depth = result.depth.data.detach().cpu().numpy().astype(np.float32)
     if depth.shape != (height, width):
         raise ValueError("YOLO26 depth dimensions differ from the source image.")
-    valid = selected & np.isfinite(depth) & (depth > 0)
-    selected_count = int(selected.sum())
-    valid_count = int(valid.sum())
-    axial = depth[valid]
-    camera_range = None
-    if request.intrinsics is not None:
-        calibration = request.intrinsics
-        if not all(math.isfinite(value) for value in (calibration.fx, calibration.fy, calibration.cx, calibration.cy)):
-            raise ValueError("Camera intrinsics must be finite.")
-        rows, columns = np.nonzero(valid)
-        range_values = axial * np.sqrt(
-            1.0
-            + np.square((columns - calibration.cx) / calibration.fx)
-            + np.square((rows - calibration.cy) / calibration.fy)
-        )
-        if valid_count:
-            camera_range = float(np.median(range_values))
-    if valid_count == 0:
-        raise ValueError("Selected region contains no valid predicted depth pixels.")
+    statistics = summarize_predicted_depth(
+        depth, selected,
+        request.intrinsics.model_dump() if request.intrinsics is not None else None,
+    )
     depth_file = io.BytesIO()
     np.save(depth_file, depth, allow_pickle=False)
     depth_bytes = depth_file.getvalue()
@@ -169,16 +154,7 @@ def depth_once(model, request: DepthRequest, provenance: dict, device: str):
                 else None
             ),
         },
-        "statistics": {
-            "selected_pixels": selected_count,
-            "valid_pixels": valid_count,
-            "valid_fraction": valid_count / selected_count,
-            "invalid_pixels": selected_count - valid_count,
-            "median_axial_depth_m": float(np.median(axial)) if valid_count else None,
-            "p10_axial_depth_m": float(np.percentile(axial, 10)) if valid_count else None,
-            "p90_axial_depth_m": float(np.percentile(axial, 90)) if valid_count else None,
-            "median_camera_range_m": camera_range,
-        },
+        "statistics": statistics,
         "depth_npy_sha256": hashlib.sha256(depth_bytes).hexdigest(),
         "depth_npy_base64": base64.b64encode(depth_bytes).decode("ascii"),
         "overlay_png_base64": base64.b64encode(overlay_file.getvalue()).decode("ascii"),

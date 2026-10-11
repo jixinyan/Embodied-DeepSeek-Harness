@@ -15,6 +15,17 @@ Eight actual CLI process checks cover these preallocation boundaries without
 loading SDKs or models. See [perception startup validation](../../../../../docs/implementation/cpu-release-validation.md#perception-service-arguments).
 Loaded model startup and segmentation/depth outcomes keep their native gates.
 
+`depth_statistics.summarize_predicted_depth` owns learned float32 depth region
+reductions used by the YOLO service. It admits matching boolean masks, finite
+intrinsics and nonempty positive finite samples, then computes the existing axial
+percentiles and optional camera range in meters. Scoped NumPy arithmetic checks
+raise on overflow, invalid operations and division by zero. Original float32
+reductions, counts, wire fields and calibration/source identities are preserved.
+Six original cold/warm and calibrated records pass 168 CPU checks through that
+same helper. Source arrays and NumPy error settings remain unchanged. Camera
+intrinsics define geometry; learned predictions retain their declared
+`unverified_for_source_camera` accuracy status.
+
 `metric_geometry.summarize_metric_region` computes a mask region from paired
 native float32 axial depth and PNG RGB. It checks source-image identity, source
 dimensions, binary PNG mask, intrinsic calibration, a rigid camera transform,

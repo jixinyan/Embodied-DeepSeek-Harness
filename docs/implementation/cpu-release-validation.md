@@ -187,6 +187,59 @@ files, 28 base imports, 55 diagnostics, 128 pinned DSH files/25 bindings and 19
 private workspaces. GPU, model and simulator allocations remain zero. Evidence:
 `.local/work/rotation-cpu-campaign-20261011/independently-verified.json`.
 
+## Perception input and depth statistics admission
+
+Both actual SAM/YOLO HTTP clients use production request admission before network
+transmission. Original image/mask/ROI/calibration records pass; empty or oversized
+bytes, unsupported media, invalid ROI/calibration fields and excessive Unicode
+prompt/calibration lengths reject. Admitted image/mask bytes are copied, ROI and
+calibration metadata are detached and immutable, and original cancellation reasons
+are preserved. The diagnostic binds a TCP listener solely to observe unintended
+requests: rejected calls create zero connections, no provider response is supplied,
+and the listener releases at completion.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-perception-inputs-offline.mjs \
+  --image /absolute/path/original-source.png \
+  --directory /absolute/path/original-ts-acceptance \
+  --intrinsics /absolute/path/original-camera/intrinsics.json \
+  --prompt cabinet --output .local/work/<new-perception-input-check>
+
+CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-depth-statistics-offline.py \
+  --image /absolute/path/original-source.png \
+  --directory /absolute/path/original-ts-acceptance \
+  --calibrated-directory /absolute/path/original-camera \
+  --output .local/work/<new-depth-statistics-check>
+```
+
+The Python diagnostic calls `summarize_predicted_depth`, the same production helper
+used by YOLO, on four original cold/warm records and two original calibrated
+records. All selected/valid counts, fractions, float32 axial statistics and camera
+ranges match the saved service outputs within `rtol=1e-7`, `atol=1e-9`. Invalid
+array/mask/calibration derivatives reject, and camera-range division/squaring or
+axial reduction overflow raises at the arithmetic site. Original arrays, source
+files and NumPy settings remain unchanged; no model SDK is imported.
+
+Actual macOS checks pass 134 request cases and 168 depth-statistic cases with zero
+GPU jobs, model calls and environment allocations. Saved predictions retain their
+original `unverified_for_source_camera` accuracy status. Evidence:
+`.local/work/perception-input-complete-20261011/acceptance.json` and
+`.local/work/depth-statistics-admission-20261011/acceptance.json`.
+
+The optional strict `perceptionRecords` CPU campaign configuration contains
+`image`, `directory`, `intrinsics`, `calibratedDirectory` and `prompt`. Its
+`perception-inputs` and `depth-statistics` components use the existing process-group
+ownership, report/source hashes, original-file checks and confirmed process release.
+
+The complete configured macOS campaign passes all 34 components and 970
+admission/process/wire/resource cases. Independent inspection matches 533
+source/input hashes and all 34 absent process groups. It rereads original admitted
+perception requests, six saved depth-statistic results and both rotations, preserving
+every journal/report digest and releasing journal writers. Complete source checks
+pass with 73 Python files, 28 base imports, 56 diagnostics, 128 pinned DSH files/25
+bindings and 19 private workspaces. Evidence:
+`.local/work/perception-cpu-campaign-20261011/independently-verified.json`.
+
 ## Fresh CPU installation
 
 The production `scripts/check-cpu-installation.py` reads actual pip installation

@@ -1,24 +1,7 @@
 import { createHash } from 'node:crypto';
-import type { ImageMediaType } from '@deepseek-ai/dsh-attachment';
+import { admitDepthInput, type DepthInput } from './request-inputs.js';
 
-export interface DepthCameraIntrinsics {
-  calibrationId: string;
-  fx: number;
-  fy: number;
-  cx: number;
-  cy: number;
-}
-
-export interface DepthInput {
-  image: Uint8Array;
-  mediaType: ImageMediaType;
-  width: number;
-  height: number;
-  maskPng?: Uint8Array;
-  roiXyxy?: readonly [number, number, number, number];
-  intrinsics?: DepthCameraIntrinsics;
-  signal: AbortSignal;
-}
+export type { DepthInput, DepthCameraIntrinsics } from './request-inputs.js';
 
 export interface DepthOutput {
   provider: string;
@@ -176,28 +159,8 @@ export class Yolo26HttpClient implements DepthEngine {
   }
 
   async estimate(input: DepthInput): Promise<DepthOutput> {
-    input.signal.throwIfAborted();
-    if (
-      !input.image.byteLength ||
-      input.image.byteLength > 32 * 1024 * 1024 ||
-      !integer(input.width) ||
-      !integer(input.height) ||
-      input.width < 1 ||
-      input.height < 1 ||
-      input.width * input.height > 4_000_000
-    )
-      throw new Error('Depth source image exceeds its input bounds.');
+    input = admitDepthInput(input);
     const intrinsics = input.intrinsics;
-    if (
-      intrinsics &&
-      (!intrinsics.calibrationId ||
-        intrinsics.calibrationId.length > 128 ||
-        !positive(intrinsics.fx) ||
-        !positive(intrinsics.fy) ||
-        !Number.isFinite(intrinsics.cx) ||
-        !Number.isFinite(intrinsics.cy))
-    )
-      throw new Error('Depth camera intrinsics are invalid.');
     const response = await fetch(this.endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },

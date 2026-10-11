@@ -72,7 +72,7 @@ host. Authorized observation tools continue to supply images to models. See
 | `harness/agent-runtime/files` | Private assignment files and controlled search | Shared unrestricted filesystem | AssignmentFiles and WorkspaceFile; Step 05 |
 | `harness/agent-runtime/tasks` | Goals, attempts, decision ownership and recovery linkage | Policy action generation | TaskGoals, task catalog parsers and run/assignment/recovery/verdict history; UpperRun owns transitions; Step 09 |
 | `harness/agent-runtime/execution` | Backend port, profile/mode admission, policy events and DSH GPT policy services | Device resource leases, TS control loop or autonomous retry | EmbodiedBackend, profiles.ts, execution-mode.ts and DshGptPolicy; Step 06 |
-| `harness/agent-runtime/perception` | Scoped sensor metadata, immutable image references and SAM/YOLO HTTP clients | Shared global scene state | SensorSamples, Sam31HttpClient and Yolo26HttpClient; Step 07 |
+| `harness/agent-runtime/perception` | Scoped sensor metadata, immutable image references, detached request admission and SAM/YOLO HTTP clients | Shared global scene state | SensorSamples, request-inputs.ts, Sam31HttpClient and Yolo26HttpClient; Step 07 |
 | `harness/agent-runtime/observation` | Active rotation request, measured receipt and immutable pose admission | Device control, scheduling or formal task verification | admitRotationRequest and readRotationMotion in rotation.ts; Step 07 |
 | `harness/agent-runtime/verification` | Post-execution formal-verdict coordination | In-flight observation, retry, replan or ground-truth fabrication | VerificationContexts and VerificationBoundaries; UpperRun coordinates formal roles; Step 08 |
 | `harness/agent-runtime/memory` | Native context measurement/compaction, authorized evidence access, skills, recovery experience and the planned initialized Session SceneState | Automatic shared prompts or VLA training | SkillLibrary, AssignmentEvidenceGrants and native context management; SceneState implementation pending; Step 10 |
@@ -83,7 +83,7 @@ host. Authorized observation tools continue to supply images to models. See
 | `harness/physical-runtime/src/physical_harness/environments` | Native simulator observation/action/task mapping for BEHAVIOR, RoboCasa, RoboTwin and RoboDojo | Environment-specific host protocol implementation | EnvironmentAdapter; Step 13/15 |
 | `harness/physical-runtime/src/physical_harness/embodiments` | Capabilities, units, frames and action/observation specifications | Simulator lifecycle | EmbodimentAdapter; Step 06/13 |
 | `harness/physical-runtime/src/physical_harness/backends` | Device connection, commands and confirmed state | Agent-mediated emergency response | DeviceBackend; Step 06/16 |
-| `harness/physical-runtime/src/physical_harness/perception` | Optional model/provider execution | Host role permissions | PerceptionProvider; Step 07/13 |
+| `harness/physical-runtime/src/physical_harness/perception` | Optional model/provider execution, calibrated RGB-D geometry and learned-depth statistics | Host role permissions | PerceptionProvider, metric_geometry.py and depth_statistics.py; Step 07/13 |
 | `harness/physical-runtime/src/physical_harness/verification` | Limited GT/device fact checks | Final agent verdict | VerificationProvider; Step 08/13 |
 
 ## Direction of dependencies

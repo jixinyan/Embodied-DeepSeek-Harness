@@ -35,6 +35,16 @@ const configuration = z
     policyTelemetry: z.string().min(1),
     journalDirectories: z.array(z.string().min(1)).min(1).max(8),
     rotationJournalDirectories: z.array(z.string().min(1)).min(1).max(8).optional(),
+    perceptionRecords: z
+      .object({
+        image: z.string().min(1),
+        directory: z.string().min(1),
+        intrinsics: z.string().min(1),
+        calibratedDirectory: z.string().min(1),
+        prompt: z.string().min(1),
+      })
+      .strict()
+      .optional(),
     checkpointAuditConfiguration: z.string().min(1).optional(),
   })
   .strict()
@@ -55,6 +65,15 @@ const transportRequest = path(configuration.transportRequest);
 const telemetry = path(configuration.policyTelemetry);
 const journals = configuration.journalDirectories.map(path);
 const rotationJournals = configuration.rotationJournalDirectories?.map(path) ?? [];
+const perception = configuration.perceptionRecords
+  ? {
+      ...configuration.perceptionRecords,
+      image: path(configuration.perceptionRecords.image),
+      directory: path(configuration.perceptionRecords.directory),
+      intrinsics: path(configuration.perceptionRecords.intrinsics),
+      calibratedDirectory: path(configuration.perceptionRecords.calibratedDirectory),
+    }
+  : undefined;
 const checkpointAudit = configuration.checkpointAuditConfiguration
   ? path(configuration.checkpointAuditConfiguration)
   : undefined;
@@ -68,6 +87,15 @@ const inputs = [
   telemetry,
   ...journals.map((directory) => resolve(directory, 'records.jsonl')),
   ...rotationJournals.map((directory) => resolve(directory, 'records.jsonl')),
+  ...(perception
+    ? [
+        perception.image,
+        perception.intrinsics,
+        resolve(perception.directory, 'result.json'),
+        resolve(perception.calibratedDirectory, 'yolo-00/result.json'),
+        resolve(perception.calibratedDirectory, 'yolo-01/result.json'),
+      ]
+    : []),
   ...(checkpointAudit ? [checkpointAudit] : []),
 ];
 const sources = [...new Set(inputs)].map((path) => ({ path, sha256: digest(path) }));
@@ -128,6 +156,21 @@ add('policy-startup', 'check-policy-startup-offline.py', [
   python,
 ]);
 add('perception-startup', 'check-perception-startup-offline.py', ['--python', python]);
+if (perception) {
+  const originalImages = ['--image', perception.image, '--directory', perception.directory];
+  add('perception-inputs', 'check-perception-inputs-offline.mjs', [
+    ...originalImages,
+    '--intrinsics',
+    perception.intrinsics,
+    '--prompt',
+    perception.prompt,
+  ]);
+  add('depth-statistics', 'check-depth-statistics-offline.py', [
+    ...originalImages,
+    '--calibrated-directory',
+    perception.calibratedDirectory,
+  ]);
+}
 add('service-startup', 'check-service-startup-owner-offline.mjs', ['--workspace', workspace]);
 add('console-startup', 'check-native-startup-offline.mjs', ['--config', workspace]);
 for (const provider of ['behavior', 'robocasa', 'robodojo', 'robotwin'])

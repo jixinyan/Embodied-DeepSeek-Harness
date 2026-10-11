@@ -1,12 +1,7 @@
-import type { ImageMediaType } from '@deepseek-ai/dsh-attachment';
 import { createHash } from 'node:crypto';
+import { admitSegmentationInput, type SegmentationInput } from './request-inputs.js';
 
-export interface SegmentationInput {
-  image: Uint8Array;
-  mediaType: ImageMediaType;
-  textPrompt: string;
-  signal: AbortSignal;
-}
+export type { SegmentationInput } from './request-inputs.js';
 
 export interface SegmentationInstance {
   objectId: number;
@@ -143,9 +138,7 @@ export class Sam31HttpClient implements SegmentationEngine {
   }
 
   async segment(input: SegmentationInput): Promise<SegmentationOutput> {
-    input.signal.throwIfAborted();
-    if (input.image.byteLength > 32 * 1024 * 1024)
-      throw new Error('Segmentation image exceeds 32 MiB.');
+    input = admitSegmentationInput(input);
     const response = await fetch(this.endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },

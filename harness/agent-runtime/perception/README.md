@@ -1,5 +1,24 @@
 # Perception tools
 
+`request-inputs.ts` owns the shared SAM/YOLO request types and admission. Both
+HTTP clients admit inputs before sending a request, preserve the caller's
+cancellation reason and copy image/mask bytes. ROI and calibration metadata are
+detached and immutable. The public workspace exports and direct client type
+exports remain available.
+
+Requests use PNG, JPEG or WebP, nonempty encoded images/masks up to 32 MiB,
+safe integer dimensions up to four million source pixels, source-bounded integer
+ROIs and finite positive focal lengths. SAM prompts allow 1–1,024 Unicode code
+points; calibration identities allow 1–128. These limits match the Python service
+fields for supplementary Unicode characters as well as ASCII.
+
+The original-image CPU diagnostic passes 134 admission, cancellation and detached
+input checks. Invalid requests create zero network connections. The production
+depth helper independently preserves six original learned-depth records and rejects
+invalid arrays/calibrations and arithmetic overflow in 168 CPU checks. See
+[perception input and calculation validation](../../../docs/implementation/cpu-release-validation.md#perception-input-and-depth-statistics-admission).
+Loaded segmentation/depth inference and camera accuracy retain their native checks.
+
 The Planner calls capture/active observation directly and receives images as native
 DSH image content. `admitSensorSample` validates bounded metadata and immutable image
 references supplied by an EmbodiedBackend. `sensorImages` assembles only explicitly

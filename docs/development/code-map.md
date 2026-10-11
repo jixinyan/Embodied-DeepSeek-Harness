@@ -24,6 +24,7 @@ production path from Session selection to native commands and formal verificatio
 | Configure cloud/local upper models | [models/src/configuration.ts](../../harness/agent-runtime/models/src/configuration.ts) |
 | Resolve configured policy/direct/hybrid execution modes | [execution/src/execution-mode.ts](../../harness/agent-runtime/execution/src/execution-mode.ts) |
 | Admit active rotation requests and measured motion receipts | [observation/src/rotation.ts](../../harness/agent-runtime/observation/src/rotation.ts); NativeTaskBackend retains task identity and uses NativeWorkerTransport |
+| Admit and detach SAM/YOLO image, mask, ROI, prompt and calibration inputs | [perception/src/request-inputs.ts](../../harness/agent-runtime/perception/src/request-inputs.ts); both HTTP clients use this admission |
 | Maintain plans and TODO tools | [planning](../../harness/agent-runtime/planning/README.md) and [tools](../../harness/agent-runtime/tools/README.md) |
 | Read and write owner-bound, versioned task plans | [planning/src/plans.ts](../../harness/agent-runtime/planning/src/plans.ts) |
 | Generate assignment-specific model-visible tool parameters | [tools/src/model-schema.ts](../../harness/agent-runtime/tools/src/model-schema.ts) |
@@ -76,6 +77,7 @@ All Python provider code belongs under
 | Add an environment | [environments](../../harness/physical-runtime/src/physical_harness/environments/README.md); each provider has one named subdirectory |
 | Adapt physical hardware | [backends](../../harness/physical-runtime/src/physical_harness/backends/README.md) and [embodiments](../../harness/physical-runtime/src/physical_harness/embodiments/README.md) |
 | Compute source-bound RGB-D measurements | [perception/metric_geometry.py](../../harness/physical-runtime/src/physical_harness/perception/metric_geometry.py) |
+| Compute admitted learned-depth region statistics with scoped numerical checks | [perception/depth_statistics.py](../../harness/physical-runtime/src/physical_harness/perception/depth_statistics.py); the YOLO service uses this helper |
 | Extend cross-language wire schemas | [physical.schema.json](../../harness/contracts/schema/physical.schema.json); regenerate TypeScript declarations with `pnpm generate:contracts` |
 
 The runnable worker entry remains `python -m physical_harness.execution.worker`.
@@ -130,6 +132,8 @@ implementations load in their separately configured service processes.
 | Verify four-provider checkpoint profile admission and Console metadata | [check-checkpoint-profiles-offline.mjs](../../scripts/check-checkpoint-profiles-offline.mjs) |
 | Verify configured service startup cancellation and shared admissions | [check-service-startup-owner-offline.mjs](../../scripts/check-service-startup-owner-offline.mjs) |
 | Verify standalone SAM/YOLO argument admission before SDK imports | [check-perception-startup-offline.py](../../scripts/check-perception-startup-offline.py) |
+| Verify original SAM/YOLO image requests and reject invalid inputs before HTTP | [check-perception-inputs-offline.mjs](../../scripts/check-perception-inputs-offline.mjs) |
+| Recompute saved learned-depth statistics and reject invalid arrays/calibrations and numerical overflow | [check-depth-statistics-offline.py](../../scripts/check-depth-statistics-offline.py) |
 | Exercise native RoboCasa worker or SAM-backed measurement | [check-robocasa-worker.ts](../../scripts/check-robocasa-worker.ts) and [check-robocasa-object-measurement.ts](../../scripts/check-robocasa-object-measurement.ts) |
 | Submit and audit actual native tasks | [native release campaign](../implementation/native-release-campaign.md) |
 
