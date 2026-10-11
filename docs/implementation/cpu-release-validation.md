@@ -263,6 +263,17 @@ source/input hashes, unchanged original records and all 34 absent process groups
 No model, simulator or GPU allocates. Current evidence:
 `.local/work/perception-source-cpu-campaign-20261011/independently-verified.json`.
 
+Clean `5527e60` also passes actual Ubuntu CI `38179611064`: full source checks,
+seven SKILL document/metadata tests and 58 separate runtime cases. Independent
+downloaded-artifact inspection matches fourteen distributions, thirteen imports,
+fifteen input digests and 53 exact-commit source comparisons. Consolidated
+result/checker identities agree, all seven original plan journals retain their
+digests and their writers release. Native allocations remain zero. Evidence:
+`.local/work/ci-perception-source-installation-20261011/`,
+`.local/work/ci-perception-source-runtime-20261011/`,
+`.local/work/ci-perception-source-inspection-20261011.json` and
+`.local/work/perception-source-ci-independently-verified-20261011.json`.
+
 ## Fresh CPU installation
 
 The production `scripts/check-cpu-installation.py` reads actual pip installation
