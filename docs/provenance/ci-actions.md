@@ -69,13 +69,13 @@ source comparisons. The same command
 verifies downloaded artifacts locally. Different-source,
 optimized-Python and existing-output invocations terminate before publication.
 
-Actual source/installation/runtime run `38183379841` passes at `620d507` on the
+Actual source/installation/runtime run `38185797204` passes at `f6a890a` on the
 selected Ubuntu platform. Downloaded artifacts independently match fourteen
 distributions, thirteen imports, fifteen input digests and 53 exact-commit source
 comparisons. Uploaded/local inspection matches all seven consolidated fields and
 the checker identity. Seven task-plan journals preserve their bytes and release
 writers; all native allocations remain zero. Exact evidence is recorded in the
-[CPU validation guide](../implementation/cpu-release-validation.md#protocol-specific-model-request-options).
+[CPU validation guide](../implementation/cpu-release-validation.md#model-failure-admission).
 
 Source CI separately runs seven authored SKILL document/metadata tests and eight
 authored model-request configuration tests. The latter checks the published model
@@ -90,9 +90,10 @@ functions and native retry taxonomy without a provider response or model
 allocation. Actual application HTTP error-reader checks belong to the configured
 workspace diagnostic; loaded-provider failure/recovery acceptance remains separate.
 
-The actual downloaded eight-case JUnit report has zero failures/skips. Its
-configuration/test/workflow sources and all four published model files independently
-match `620d507`; the XML is read with the standard library's ElementTree.
+The actual downloaded thirteen-case failure and eight-case configuration JUnit
+reports have zero failures/skips. Their production/test/workflow sources and all
+four published model files independently match `f6a890a`; the XML is read with
+the standard library's ElementTree.
 
 The [setup guide](../development/setup.md) documents the equivalent local
 installation checks. The [configuration matrix](../implementation/supported-configurations.md)

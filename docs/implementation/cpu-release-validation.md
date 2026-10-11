@@ -49,6 +49,23 @@ Responses/output and complete image-context admission retain their documented
 scopes. All model/provider/simulator/GPU allocations remain zero. Evidence:
 `.local/work/model-failures-cpu-campaign-20261011/independently-verified.json`.
 
+Source `f6a890a` additionally matches 116 distinct production/checker files
+against the exact Git commit. Actual Ubuntu CI `38185797204` passes complete
+source/fresh-installation checks, seven SKILL tests, eight model-configuration
+tests, thirteen model-failure tests and its separate 58-case production runtime
+suite. Independent downloaded-artifact inspection verifies fourteen installed
+distributions, thirteen imports, fifteen input digests and 53 exact-commit source
+comparisons. Seven plan journals remain unchanged and release writers.
+Both actual JUnit reports contain every expected case with zero failures/skips;
+their configuration/test/workflow sources independently match the revision.
+
+Evidence: `.local/work/model-failures-cpu-campaign-20261011/committed-source-verification.json`,
+`.local/work/model-failures-independently-verified-20261011.json`,
+`.local/work/ci-model-failures-inspection-20261011.json`,
+`.local/work/ci-model-failures-independently-verified-20261011.json`,
+`.local/work/ci-model-failures-junit-independently-verified-20261011.json` and
+`.local/work/ci-model-failures-options-independently-verified-20261011.json`.
+
 ## Protocol-specific model request options
 
 `models/src/configuration.ts` admits request settings for the selected protocol
