@@ -80,7 +80,21 @@ Evidence: `.local/work/ci-core-tools-installation-20261011/`,
 `.local/work/ci-core-tools-independently-verified-20261011.json` and
 `.local/work/core-tools-refactor-ci-verified-20261011.json`.
 
-Private local evidence:
+Complete v3 run `38173880914` passes at `82cdc7e` with all 58 actual CPU cases,
+including seventeen configured task-plan cases. Independent downloaded-artifact
+inspection verifies fourteen distributions, thirteen imports, all fifteen input
+digests and 53 exact-commit source comparisons. Uploaded/local inspection matches
+seven consolidated result fields and the inspector's Git source identity.
+Production TaskPlans/LocalStore readers independently verify all seven downloaded
+plan journals, exact configured goal/owner/version, declared read rejections,
+unchanged journal/report digests and released writer locks. The seventeen Linux
+plan outcomes match local macOS validation. All native allocations remain zero.
+Evidence: `.local/work/ci-task-plans-installation-20261011/`,
+`.local/work/ci-task-plans-runtime-20261011/`,
+`.local/work/ci-task-plans-inspection-20261011.json` and
+`.local/work/task-plans-ci-independently-verified-20261011.json`.
+
+Other private local evidence:
 
 - `.local/work/ci-runtime-local-20261011/`
 - `.local/work/ci-runtime-installation-macos-20261011/`
@@ -250,6 +264,9 @@ configuration source identities and seven journal digests. It performs no model,
 simulator or physical control operations.
 
 Local macOS validation passes at `.local/work/task-plans-cpu-20261011-02/`.
+Actual GitHub Ubuntu run `38173880914` passes the same seventeen outcomes at
+`82cdc7e`; independent production reads of its seven downloaded journals preserve
+their digests and release every writer lock.
 Source CI executes this diagnostic and requires its report, final compacted
 journal and all six derivative journals. The v3 consolidated inspector checks
 the exact configured Tower goal against the triggering Git source, all seventeen
