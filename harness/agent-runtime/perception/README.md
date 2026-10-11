@@ -110,6 +110,21 @@ The client verifies source/mask digests, region identity, dimensions, statistics
 calibration identity and the retained depth-array digest. Both clients apply
 cancellation and the configured bounded timeout throughout response reading.
 
+Install the EDH physical package in the isolated YOLO environment alongside the
+selected official model SDK, FastAPI and Uvicorn. The service imports its numerical
+helper from that installed package. From the repository root:
+
+```sh
+<yolo-python> -m pip install -e harness/physical-runtime \
+  --report .local/work/<new-yolo-package-install-report>.json
+<yolo-python> -m physical_harness.perception.yolo26_depth --help
+```
+
+Use that environment's Python executable for service startup and retain its
+installation report. Configure the checkpoint, source/checkpoint digests, device
+and loopback port explicitly. SAM retains its independently runnable service file
+and source license.
+
 YOLO26 results carry `measurementKind=monocular_prediction`,
 `metricAccuracy=unverified_for_source_camera`, global checkpoint scale calibration
 and unavailable model uncertainty. Intrinsic calibration supplies projection

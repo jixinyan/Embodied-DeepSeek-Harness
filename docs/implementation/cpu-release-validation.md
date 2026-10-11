@@ -189,6 +189,18 @@ private workspaces. GPU, model and simulator allocations remain zero. Evidence:
 
 ## Perception input and depth statistics admission
 
+Clean `6d1f4e2` passes actual Ubuntu CI `38179169536`, including complete source
+checks, seven authored SKILL tests and all 58 cases in the five-component artifact
+suite. Independent downloaded-artifact inspection matches fourteen distributions,
+thirteen imports, fifteen input digests and 53 exact-commit source comparisons.
+Consolidated result/checker identities agree; every copied plan journal retains
+its digest and releases its writer. The original-record perception diagnostics
+below have their separate local evidence. CI evidence:
+`.local/work/ci-perception-installation-20261011/`,
+`.local/work/ci-perception-runtime-20261011/`,
+`.local/work/ci-perception-inspection-20261011.json` and
+`.local/work/perception-ci-independently-verified-20261011.json`.
+
 Both actual SAM/YOLO HTTP clients use production request admission before network
 transmission. Original image/mask/ROI/calibration records pass; empty or oversized
 bytes, unsupported media, invalid ROI/calibration fields and excessive Unicode
@@ -219,6 +231,11 @@ ranges match the saved service outputs within `rtol=1e-7`, `atol=1e-9`. Invalid
 array/mask/calibration derivatives reject, and camera-range division/squaring or
 axial reduction overflow raises at the arithmetic site. Original arrays, source
 files and NumPy settings remain unchanged; no model SDK is imported.
+The diagnostic requires enabled Python assertions and verifies that the imported
+production helper belongs to the selected checkout before reading source records.
+The actual optimized-Python invocation rejects without creating an output, and
+the guarded six-record inspection passes all 168 cases. Its report is
+`.local/work/depth-statistics-source-admission-20261011/acceptance.json`.
 
 Actual macOS checks pass 134 request cases and 168 depth-statistic cases with zero
 GPU jobs, model calls and environment allocations. Saved predictions retain their
@@ -239,6 +256,12 @@ every journal/report digest and releasing journal writers. Complete source check
 pass with 73 Python files, 28 base imports, 56 diagnostics, 128 pinned DSH files/25
 bindings and 19 private workspaces. Evidence:
 `.local/work/perception-cpu-campaign-20261011/independently-verified.json`.
+
+The source-origin/optimized-Python admission also passes the complete configured
+34-component, 970-case campaign. Independent inspection again verifies 533
+source/input hashes, unchanged original records and all 34 absent process groups.
+No model, simulator or GPU allocates. Current evidence:
+`.local/work/perception-source-cpu-campaign-20261011/independently-verified.json`.
 
 ## Fresh CPU installation
 

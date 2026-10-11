@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import inspect
 import json
 from pathlib import Path
 import sys
@@ -12,7 +13,11 @@ from physical_harness.perception.depth_statistics import summarize_predicted_dep
 
 
 def check(args):
+    if not __debug__:
+        raise RuntimeError("Depth statistic inspection requires Python assertions to remain enabled.")
     root = Path(__file__).resolve().parents[1]
+    production_source = Path(inspect.getsourcefile(summarize_predicted_depth)).resolve(strict=True)
+    assert production_source == root / "harness/physical-runtime/src/physical_harness/perception/depth_statistics.py"
     output = args.output.resolve()
     assert output.is_relative_to(root / ".local/work") and output != root / ".local/work"
     assert not output.exists()
@@ -165,6 +170,7 @@ def check(args):
         "originalFilesUnchanged": True, "arrayInputsUnchanged": True, "numericSettingsRestored": True,
         "gpuJobs": 0, "modelCalls": 0, "environmentAllocations": 0,
         "numpyVersion": np.__version__,
+        "productionModuleOrigin": str(production_source),
         "scope": "Original learned depth/mask/calibration statistics and declared invalid derivatives through the production helper; no new depth inference or metric-accuracy acceptance.",
     }
     output.mkdir(parents=True, exist_ok=False)
