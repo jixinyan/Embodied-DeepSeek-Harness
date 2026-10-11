@@ -12,10 +12,13 @@ import {
   type LlmModelInfo,
   type LlmResolvedModelInfo,
   type StreamChunk,
-  type ToolCallId,
 } from '@deepseek-ai/dsh-llm';
-import { brandString } from '@deepseek-ai/dsh-brand';
 import type { ImageAttachmentRef, RequestImageAttachment } from '@deepseek-ai/dsh-attachment';
+import {
+  ResponsesFunctionCalls,
+  responsesEventType,
+  responsesReplayOutput,
+} from './responses-function-calls.js';
 
 export interface OpenAIResponsesModel {
   id: string;
@@ -113,11 +116,7 @@ async function inputItems(
         replayResponse !== null &&
         Array.isArray((replayResponse as { output?: unknown }).output)
       ) {
-        items.push(
-          ...(replayResponse as { output: ResponsesItem[] }).output.map((item) =>
-            structuredClone(item),
-          ),
-        );
+        items.push(...responsesReplayOutput(replayResponse, toolCalls));
         continue;
       }
       for (const call of toolCalls)
@@ -392,11 +391,9 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
     let textValue = '';
     let reasoningValue = '';
     let pendingUsage: ReturnType<typeof usage>;
-    const calls = new Map<
-      number,
-      { index: number; id: ToolCallId; name: string; arguments: string }
-    >();
-    for await (const { event, data } of events) {
+    const calls = new ResponsesFunctionCalls();
+    for await (const { event: wireEvent, data } of events) {
+      const event = responsesEventType(wireEvent, data);
       if (event === 'response.output_text.delta') {
         const delta = typeof data?.delta === 'string' ? data.delta : '';
         if (!delta) continue;
@@ -413,47 +410,15 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
         reasoningValue += delta;
         yield { type: 'reasoning-delta', index: reasoningIndex, text: delta };
       } else if (event === 'response.output_item.added' && data?.item?.type === 'function_call') {
-        const outputIndex = Number(data.output_index);
-        if (!Number.isSafeInteger(outputIndex)) continue;
-        const id = brandString<ToolCallId>(
-          String(data.item.call_id ?? data.item.id ?? `call-${outputIndex}`),
-        );
-        const call = { index: nextIndex++, id, name: String(data.item.name ?? ''), arguments: '' };
-        calls.set(outputIndex, call);
-        yield { type: 'block-start', index: call.index, blockType: 'tool-call' };
+        yield* calls.added(data, nextIndex++);
       } else if (event === 'response.function_call_arguments.delta') {
-        const outputIndex = Number(data.output_index);
-        const call = calls.get(outputIndex);
-        if (!call) continue;
-        const delta = typeof data.delta === 'string' ? data.delta : '';
-        call.arguments += delta;
-        yield {
-          type: 'tool-call-delta',
-          index: call.index,
-          id: call.id,
-          ...(call.name ? { name: call.name } : {}),
-          argumentsDelta: delta,
-        };
+        yield* calls.append(data);
+      } else if (event === 'response.function_call_arguments.done') {
+        yield* calls.argumentsDone(data);
       } else if (event === 'response.output_item.done' && data?.item?.type === 'function_call') {
-        const outputIndex = Number(data.output_index);
-        const call = calls.get(outputIndex);
-        if (!call) continue;
-        if (!call.arguments && typeof data.item.arguments === 'string') {
-          call.arguments = data.item.arguments;
-          yield {
-            type: 'tool-call-delta',
-            index: call.index,
-            id: call.id,
-            ...(call.name ? { name: call.name } : {}),
-            argumentsDelta: call.arguments,
-          };
-        }
-        yield {
-          type: 'block-end',
-          index: call.index,
-          block: { type: 'tool-call', id: call.id, name: call.name, arguments: call.arguments },
-        };
+        yield* calls.closed(data);
       } else if (event === 'response.completed' || event === 'response.incomplete') {
+        const response = calls.terminal(data);
         if (textIndex !== undefined)
           yield { type: 'block-end', index: textIndex, block: { type: 'text', text: textValue } };
         if (reasoningIndex !== undefined)
@@ -462,7 +427,6 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
             index: reasoningIndex,
             block: { type: 'reasoning', text: reasoningValue },
           };
-        const response = data?.response ?? data;
         pendingUsage = usage(response?.usage);
         if (pendingUsage) yield { type: 'usage', usage: pendingUsage };
         yield {

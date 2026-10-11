@@ -7,6 +7,70 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Responses function-call and replay admission
+
+`models/src/responses-function-calls.ts` owns protocol admission for the production
+Responses adapter. The existing installed `eventsource-parser` owns SSE decoding;
+native DSH owns message assembly, tool validation/dispatch, cancellation and retries.
+Required event fields use Zod without number/string coercion. Output indices and
+sequence numbers are nonnegative safe integers; function-call events have increasing
+sequence numbers. Named SSE events must agree with payload types, and unnamed events
+use their payload type. Call IDs, tool names and argument strings are required.
+The official optional item ID/status fields retain their optional/null semantics;
+argument events require item IDs and bind them to the same output/call identity.
+
+Duplicate identities, unknown argument targets, changed final arguments, repeated
+finalization and inconsistent completed terminal output throw
+`PROVIDER_PROTOCOL_ERROR` before native DSH tool dispatch. Completed output must
+include exactly the streamed calls at their original output indices. Existing
+token-budget and interrupted-stream handling remain in the native assembler/loop.
+Responses replay selects the calls retained in that DSH message, checks their
+identities/names/arguments and preserves other original output items. This keeps
+subsequent context consistent with DSH truncation and pruning.
+
+Primary field references: [Responses streaming events](https://developers.openai.com/api/reference/resources/responses/streaming-events),
+the official SDK [function-call item](https://github.com/openai/openai-python/blob/main/src/openai/types/responses/response_function_tool_call.py),
+[argument delta](https://github.com/openai/openai-python/blob/main/src/openai/types/responses/response_function_call_arguments_delta_event.py)
+and [item-added event](https://github.com/openai/openai-python/blob/main/src/openai/types/responses/response_output_item_added_event.py).
+
+`check-recorded-responses.mjs` uses production LocalStore readers and the native
+DSH stream expansion/assembler on copied original journals. Actual Astra records
+retain 69 complete model outputs and 70 tool calls. Their argument segments and
+assembled tool calls remain unchanged through current admission and replay.
+All 128 original-record/boundary/invalid-derivative cases pass, including duplicate
+or missing fields, item identity changes, argument disagreement, event ordering,
+terminal mismatch, selected replay calls and native token-budget/interruption
+handling. Copied writers release and source/copy digests remain unchanged.
+
+These records retain final provider output and durable DSH chunks. Event envelopes
+and sequence numbers in this diagnostic are explicitly projected from those
+records. Raw provider SSE is not retained. The diagnostic supplies no provider
+response and makes zero requests, dispatches or model/simulator/GPU allocations.
+Original live streaming and native task success retain their separate acceptance
+requirements. Evidence: `.local/work/responses-replay-admission-20261011/` and
+`.local/work/responses-cpu-campaign-20261011/responses/`.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-responses.mjs \
+  --data-directory .local/work/<original-responses-journal> \
+  --output .local/work/<new-responses-inspection>
+```
+
+`responsesJournalDirectories` is an optional bounded list in CPU campaign
+configuration. Selected journals join source provenance and the `responses`
+diagnostic uses the campaign's owned process group and release checks.
+
+The complete configured macOS campaign passes all 35 components and 1,098 cases.
+Independent inspection matches 543 source/input comparisons, unchanged report
+digests and all 35 released diagnostic process groups. Original Responses journals
+reopen with released writers and independently preserve all 69 outputs, 70 calls,
+durable native DSH assembly and detached replay items. Existing historical context
+checks retain twelve independent assignments and six visual-context cases; all
+four provider readiness checks pass. Complete source checks pass with 73 Python
+files, 28 base imports, 56 Python diagnostics and 128 pinned DSH files/25 bindings.
+No model, simulator or GPU allocates. Evidence:
+`.local/work/responses-cpu-campaign-20261011/independently-verified.json`.
+
 ## Continuous production CPU checks
 
 The [Source checks workflow](../../.github/workflows/source-checks.yml) installs

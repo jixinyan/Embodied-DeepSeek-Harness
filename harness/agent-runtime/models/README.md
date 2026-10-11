@@ -8,6 +8,18 @@ configuration declares protocol, capabilities, context capacity, output defaults
 authentication and image limits. Native DSH owns streaming, tool execution,
 model retries and cancellation.
 
+`src/responses-function-calls.ts` admits Responses function-call event fields,
+sequence order, output/item/call identities and complete argument consistency.
+The adapter requires streamed calls to agree with completed response output before
+DSH dispatch. Replay output follows the function calls retained in the native DSH
+message, including after token truncation or context pruning. SSE decoding uses
+the installed `eventsource-parser`; this module owns protocol admission only.
+Field definitions follow the official [streaming event reference](https://developers.openai.com/api/reference/resources/responses/streaming-events)
+and [function-call type](https://github.com/openai/openai-python/blob/main/src/openai/types/responses/response_function_tool_call.py).
+The [recorded CPU diagnostic](../../../docs/implementation/cpu-release-validation.md#responses-function-call-and-replay-admission)
+preserves original output, argument segments and journal identities without model
+requests. Actual provider streaming retains its native acceptance requirement.
+
 See the [model and policy adapter guide](../../../docs/implementation/model-policy-adapters.md)
 for endpoint configuration, private credentials, image resolvers and policy
 boundaries. Actual local Qwen and cloud Astra workflows have independent native

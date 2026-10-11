@@ -35,6 +35,7 @@ const configuration = z
     policyTelemetry: z.string().min(1),
     journalDirectories: z.array(z.string().min(1)).min(1).max(8),
     rotationJournalDirectories: z.array(z.string().min(1)).min(1).max(8).optional(),
+    responsesJournalDirectories: z.array(z.string().min(1)).min(1).max(8).optional(),
     perceptionRecords: z
       .object({
         image: z.string().min(1),
@@ -65,6 +66,7 @@ const transportRequest = path(configuration.transportRequest);
 const telemetry = path(configuration.policyTelemetry);
 const journals = configuration.journalDirectories.map(path);
 const rotationJournals = configuration.rotationJournalDirectories?.map(path) ?? [];
+const responsesJournals = configuration.responsesJournalDirectories?.map(path) ?? [];
 const perception = configuration.perceptionRecords
   ? {
       ...configuration.perceptionRecords,
@@ -87,6 +89,7 @@ const inputs = [
   telemetry,
   ...journals.map((directory) => resolve(directory, 'records.jsonl')),
   ...rotationJournals.map((directory) => resolve(directory, 'records.jsonl')),
+  ...responsesJournals.map((directory) => resolve(directory, 'records.jsonl')),
   ...(perception
     ? [
         perception.image,
@@ -188,6 +191,12 @@ if (rotationJournals.length)
     'rotation-receipts',
     'check-recorded-rotation.mjs',
     rotationJournals.flatMap((directory) => ['--data-directory', directory]),
+  );
+if (responsesJournals.length)
+  add(
+    'responses',
+    'check-recorded-responses.mjs',
+    responsesJournals.flatMap((directory) => ['--data-directory', directory]),
   );
 add('readiness', 'check-native-workspace-readiness.mjs', ['--config', workspace]);
 if (checkpointAudit) {
