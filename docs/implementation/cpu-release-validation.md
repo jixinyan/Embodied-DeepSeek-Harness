@@ -62,6 +62,17 @@ the native release requirements.
 Evidence: `.local/work/model-image-admission-b-20261011/` and
 `.local/work/model-images-cpu-campaign-20261011/independently-verified.json`.
 
+Committed source `1012df8` matches all 115 distinct campaign production/checker
+files against Git. Actual Ubuntu CI `38182924925` passes fresh installation,
+complete source checks, seven SKILL tests and the separate 58-case runtime suite.
+Independent downloaded-artifact admission verifies fourteen distributions,
+thirteen imports, fifteen input digests and 53 exact-commit source comparisons.
+Consolidated/checker identities agree; all seven task-plan journals remain unchanged
+and release writers. The original-image diagnostic retains its separate local scope.
+Evidence: `.local/work/model-images-cpu-campaign-20261011/committed-source-verification.json`,
+`.local/work/ci-model-images-inspection-20261011.json` and
+`.local/work/ci-model-images-independently-verified-20261011.json`.
+
 ## Responses function-call and replay admission
 
 `models/src/responses-function-calls.ts` owns protocol admission for the production
