@@ -1,6 +1,11 @@
 import type { LocalStore } from '@edh/storage';
-import type { WorkspaceFile } from './index.js';
-/** Logical assignment files. Paths never address the host filesystem. */
+export interface WorkspaceFile {
+  readonly path: string;
+  readonly content: string;
+  readonly version: string;
+}
+
+// AssignmentFiles 保存 assignment 范围内的逻辑文件。
 export class AssignmentFiles {
   constructor(private readonly store: LocalStore) {}
   private key(assignmentId: string, path: string): string {

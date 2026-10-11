@@ -2,9 +2,15 @@ import { readFile, realpath } from 'node:fs/promises';
 import { dirname, resolve, relative, isAbsolute } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { parseDocument } from 'yaml';
-import { ContractValidator, type RoleDefinition } from '@edh/contracts';
+import { ContractValidator, type RoleDefinition, type TeamDefinition } from '@edh/contracts';
 import { assertObjectJsonSchema, type ObjectJsonSchema } from '@edh/tools';
-import type { TeamRunSnapshot } from './index.js';
+
+export interface TeamRunSnapshot {
+  readonly teamRunId: string;
+  readonly definition: Readonly<TeamDefinition>;
+  readonly roles: Readonly<Record<string, RoleDefinition>>;
+  readonly sourceDigest: string;
+}
 
 export interface ResolvedRole {
   readonly definition: Readonly<RoleDefinition>;

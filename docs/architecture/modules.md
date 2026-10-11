@@ -62,21 +62,21 @@ host. Authorized observation tools continue to supply images to models. See
 | `apps/server` | EDH application assembly, local HTTP/SSE API and startup | Agent loop implementation | startServer + ServerDeployment; Step 00/12 |
 | `apps/console` | Team/agent/robot state, plans, tools, verdicts and Agent trace | Device truth or planner decisions | ConsoleProjection; Step 12 |
 | `apps/desktop` | Native configuration selection, owned service process, console window and shutdown | Models, agent loops or physical allocation | Default deployment factory into existing startServer |
-| `harness/agent-runtime/agents` | Independent assignments, DSH session lifecycle, built-in role definitions | Implicit parent context or another loop | AgentFactory; Step 03 |
+| `harness/agent-runtime/agents` | Independent assignments, DSH session lifecycle, built-in role definitions | Implicit parent context or another loop | createDshSession; TeamSessions admits assignments; Step 03 |
 | `harness/agent-runtime/foundation` | Plugin context, schemas, native registration scopes and selected runtime support | Another agent loop or physical policy | Pinned source and compiler boundaries; Step 00 |
-| `harness/agent-runtime/teams` | Team/member definitions and immutable role/provider bindings | Hard-coded role enum | TeamLoader; Step 02 |
-| `harness/agent-runtime/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelRegistry; Step 00 |
+| `harness/agent-runtime/teams` | Team/member definitions and immutable role/provider bindings | Hard-coded role enum | FileTeamLoader, LoadedTeam and TeamRunSnapshot; Step 02 |
+| `harness/agent-runtime/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelConfiguration, createConfiguredModels and native model adapters; Step 00 |
 | `harness/agent-runtime/tools` | Logical IDs, model-visible parameters, native core definitions, role/device schema selection, input limits, turn conclusion and result rendering | Every concrete perception/robot implementation | Native DSH tools, core-inputs.ts, model-schema.ts, core-definition.ts and core-output.ts; Step 02/07 |
-| `harness/agent-runtime/communication` | Explicit briefs, scoped messages, delivery and subscriptions | Shared conversation memory | TeamRouter; Step 04 |
+| `harness/agent-runtime/communication` | Explicit briefs, scoped messages, delivery and subscriptions | Shared conversation memory | TeamSessions and AssignmentReports; Step 04 |
 | `harness/agent-runtime/planning` | Persistent PlanDocument and progress projection | Authoritative success | TaskPlans in plans.ts; Step 05 |
-| `harness/agent-runtime/files` | Private assignment files and controlled search | Shared unrestricted filesystem | AgentFiles; Step 05 |
-| `harness/agent-runtime/tasks` | Goals, attempts, decision ownership and recovery linkage | Policy action generation | TaskCoordinator; Step 09 |
+| `harness/agent-runtime/files` | Private assignment files and controlled search | Shared unrestricted filesystem | AssignmentFiles and WorkspaceFile; Step 05 |
+| `harness/agent-runtime/tasks` | Goals, attempts, decision ownership and recovery linkage | Policy action generation | TaskGoals, task catalog parsers and run/assignment/recovery/verdict history; UpperRun owns transitions; Step 09 |
 | `harness/agent-runtime/execution` | Host/worker bridge, job status and resource coordination | TS control loop or autonomous retry | ExecutionClient; Step 06 |
 | `harness/agent-runtime/perception` | Model-facing capture/segmentation/depth/localization tool adapters | Shared global scene state | PerceptionProvider; Step 07 |
 | `harness/agent-runtime/observation` | Active-view intent, resource effects and achieved pose | Assumption that turn-view only moves a camera | ActiveObservation; Step 07 |
-| `harness/agent-runtime/verification` | Post-execution formal-verdict coordination | In-flight observation, retry, replan or ground-truth fabrication | VerificationCoordinator; Step 08 |
+| `harness/agent-runtime/verification` | Post-execution formal-verdict coordination | In-flight observation, retry, replan or ground-truth fabrication | VerificationContexts and VerificationBoundaries; UpperRun coordinates formal roles; Step 08 |
 | `harness/agent-runtime/memory` | Native context measurement/compaction, authorized evidence access, skills, recovery experience and the planned initialized Session SceneState | Automatic shared prompts or VLA training | SkillStore/EvidenceReader; SceneState implementation pending; Step 10 |
-| `harness/agent-runtime/storage` | Persistence primitives used through scoped service boundaries | Bypass of evidence visibility | EventStore/AssetStore; Step 04 |
+| `harness/agent-runtime/storage` | Persistence primitives used through scoped service boundaries | Bypass of evidence visibility | LocalStore, SessionHistory, SessionAudits and LocalImageStore; Step 04 |
 | `harness/contracts` | Authoritative wire schema and generated declarations | Runtime semantic authorization | physical.schema.json; Step 01 |
 | `harness/physical-runtime/src/physical_harness/execution` | Actual action progression, budget and device job handling | Upper-level retry decision | ExecutionWorker; Step 06 |
 | `harness/physical-runtime/src/physical_harness/policies` | Subgoal-to-action policy adapter plus direct/hybrid GPT gateway normalization | Agent orchestration | SubgoalPolicy; Step 13 |

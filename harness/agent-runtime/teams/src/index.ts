@@ -1,17 +1,7 @@
-import type { RoleDefinition, TeamDefinition } from '@edh/contracts';
-export interface TeamRunSnapshot {
-  readonly teamRunId: string;
-  readonly definition: Readonly<TeamDefinition>;
-  readonly roles: Readonly<Record<string, RoleDefinition>>;
-  readonly sourceDigest: string;
-}
-export interface TeamLoader {
-  inspect(file: string): Promise<TeamRunSnapshot>;
-}
-
 export {
   FileTeamLoader,
   type LoadedTeam,
   type TeamLoadOptions,
   type ResolvedRole,
+  type TeamRunSnapshot,
 } from './loader.js';

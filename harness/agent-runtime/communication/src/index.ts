@@ -1,15 +1,3 @@
-// Runtime exports and interfaces for future deployment boundaries.
-import type { InvocationBrief, MessageEnvelope } from '@edh/contracts';
-export interface MessageReceipt {
-  readonly messageId: string;
-  readonly acceptedAt: string;
-}
-export interface TeamRouter {
-  delegate(member: string, brief: InvocationBrief): Promise<MessageReceipt>;
-  send(message: MessageEnvelope): Promise<MessageReceipt>;
-  subscribe(taskId: string, afterSequence?: number): AsyncIterable<MessageEnvelope>;
-}
-
 export {
   TeamSessions,
   type AgentModelBinding,

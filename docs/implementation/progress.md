@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-11 · Spec v1.129 · v1 release acceptance in progress.
+Updated: 2026-10-11 · Spec v1.130 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| Runtime module exports | Agents, Teams, models, communication, files, tasks, verification and storage entry points expose the production services and their actual method/data types. WorkspaceFile belongs to AssignmentFiles in `files/workspace.ts`; TeamRunSnapshot belongs to FileTeamLoader in `teams/loader.ts`. Consumers continue to use the same workspace imports. The module map names concrete implementations. Complete source checks, fifteen native DSH CPU tool cases and seventeen configured task-plan CPU cases pass with released hosts/writers and zero native allocation. |
 | `82cdc7e` | Actual source/installation/runtime CI `38173880914` passes all 58 CPU cases across five components. Downloaded artifacts independently admit fourteen distributions, thirteen imports, fifteen input digests and 53 exact-commit source comparisons. Uploaded/local inspection matches seven consolidated fields and the inspector's Git source identity. Production readers independently admit/reject all seven downloaded task-plan journals with unchanged digests and released writers. The seventeen configured task-plan outcomes match local macOS validation. GPU/model/simulator allocation remains zero. |
 | Configured task-plan CPU checks | `check-task-plans-offline.mjs` uses the published RoboDojo Tower catalog and production TaskGoals/TaskPlans/LocalStore. Seventeen local cases verify configured templates, durable writes, owner/version/criterion/completion admission, six stored-read cases, reopening and compaction with released writers. Source CI requires its report and seven journals; the v3 consolidated inspector admits all five CPU components, configured goal identity, declared outcomes and exact Git source digests. These checks make no model calls or physical task claims. |
 | `fba367c` | Actual source/installation/runtime CI `38173531465` passes all 41 CPU cases at the stored-plan implementation checkpoint. Complete source checks, fresh installation, original runtime diagnostics and consolidated exact-source admission pass with zero native allocation. |

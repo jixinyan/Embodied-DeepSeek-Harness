@@ -83,15 +83,17 @@ The result owns `handle.agent` and asynchronous `handle.dispose()`. Actual APIs:
 | Typed tool | `defineTool({ parameters, output: { schema, render }, execute })` | Canonical structured value plus model-visible projection |
 | Dispatch boundary | `ctx.tools.execute({ agent, callId, name, arguments, signal })` | Out-of-scope tool is rejected, even through direct runtime dispatch |
 
-These are trusted assembly primitives. The future Team loader and AgentFactory
-must add validated InvocationBriefs, responsibility permissions, evidence/file
-access and physical effect/resource rules. A neutral host with no global prompt
+These are trusted assembly primitives. FileTeamLoader admits configured role
+definitions and model/tool bindings; TeamSessions supplies validated InvocationBriefs
+and independent role sessions. UpperRun binds responsibility permissions, explicit
+evidence/file access and physical effect/resource rules. A neutral host with no global prompt
 or tools proves sibling separation in this composition; it does not prove arbitrary
 third-party host plugins are isolated or safe. This is not the full Step 03 gate.
 
-DSH cancellation is cooperative, not a robot stop acknowledgement. DSH model API
-request retries are also distinct from EDH physical task retries. Steps 06–09 must
-enforce action budgets, confirmed device state and owner-only physical decisions.
+DSH cancellation is cooperative. Robot stopping requires a confirmed device
+acknowledgement. DSH model API request retries and EDH physical task retries have
+separate ownership. UpperRun, the physical execution services and ActionGate enforce
+action budgets, confirmed device state and owner-only physical decisions.
 
 ## Compatibility changes
 
