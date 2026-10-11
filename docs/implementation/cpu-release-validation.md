@@ -71,6 +71,18 @@ files, 28 base imports, 56 Python diagnostics and 128 pinned DSH files/25 bindin
 No model, simulator or GPU allocates. Evidence:
 `.local/work/responses-cpu-campaign-20261011/independently-verified.json`.
 
+The committed source at `72757e0` additionally matches 106 distinct campaign
+production/checker files against Git. Actual Ubuntu CI `38181160684` passes
+fresh installation, full source checks, seven SKILL document/metadata tests
+and its separate 58-case runtime suite. Independent artifact admission matches
+fourteen distributions, thirteen imports, fifteen input digests and 53 exact-commit
+source comparisons. The downloaded consolidated evidence and checker source agree;
+all seven task-plan journals preserve their bytes and release writers. The private
+Responses journal diagnostic has its local record-based acceptance above. Evidence:
+`.local/work/ci-responses-inspection-20261011.json`,
+`.local/work/ci-responses-independently-verified-20261011.json` and
+`.local/work/responses-cpu-campaign-20261011/committed-source-verification.json`.
+
 ## Continuous production CPU checks
 
 The [Source checks workflow](../../.github/workflows/source-checks.yml) installs
