@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.125 · 2026-10-11
+Version: v1.126 · 2026-10-11
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -27,9 +27,20 @@ stable-action commits. Its isolated CPU installation includes the `policy`,
 It also runs existing production device-owner,
 Session-resource and actual Worker-transport checks without model or simulator
 allocation. All three named acceptance reports are required for its separate
-runtime artifact. Actual macOS diagnostics pass 26 file/pipe/thread/process cases;
-the stable-action installation and source run `38160908873` independently matches
-its actual package/import/source identities. See [CI provenance](provenance/ci-actions.md).
+runtime artifact. Actual macOS and GitHub Ubuntu diagnostics pass 26
+file/pipe/thread/process cases. Installation/source/runtime run `38161986298`
+passes at `50dd522` with fourteen distributions and thirteen imports; independent
+artifact inspection matches 28 exact-commit source comparisons and complete pip
+record identities. All native allocations remain zero.
+See [CI provenance](provenance/ci-actions.md).
+
+`check-cpu-runtime-evidence.py` admits complete installation and all three runtime
+reports against the selected Git commit before publishing consolidated evidence.
+It checks installed distribution/download identities, required import origins,
+28 production/checker source comparisons and all 26 released-owner/Worker cases.
+Actual downloaded CI artifacts pass; different-source, optimized-Python and
+existing-output CLI cases reject before publication with unchanged inputs.
+The source CI uses this same admission before runtime artifact upload.
 
 The reusable packaged Desktop CPU diagnostic checks actual ASAR contents,
 configured component selections, renderer isolation and Chromium sandboxing.

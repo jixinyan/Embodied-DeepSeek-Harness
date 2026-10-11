@@ -50,11 +50,19 @@ Native SDK environments retain their provider-specific constraints.
 | `check-worker-transport-offline.mjs` | Actual Python Worker processes, dedicated response pipe, stdin closure, malformed/oversized JSON and disconnected output | 16 |
 
 Each diagnostic records production-source hashes and confirmed resource outcomes.
-The actual macOS diagnostics pass all 26 cases without importing model or simulator
-SDKs or allocating physical environments. Their source hashes match the triggering
-repository revision. The workflow requires each named `acceptance.json` before
+The actual macOS and Ubuntu diagnostics pass all 26 cases without importing model
+or simulator SDKs or allocating physical environments. Their source hashes match
+the triggering repository revision. The workflow requires each named `acceptance.json` before
 publishing its `cpu-runtime-<commit>` artifact; the artifact contains those three
 diagnostic directories. Missing or unsuccessful checks terminate admission.
+
+`check-cpu-runtime-evidence.py` reads the complete installation and runtime
+artifacts and compares their source hashes to the triggering Git commit. It
+requires the expected imports, complete CPU dependency provenance, all runtime
+cases and released-owner/Worker outcomes. Source CI writes its `evidence.json`
+only after this admission; runtime artifact upload includes that consolidated
+report. The same command verifies downloaded artifacts locally. Different-source,
+optimized-Python and existing-output invocations terminate before publication.
 
 Stable-action installation run
 [`38160908873`](https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/runs/38160908873)
@@ -63,6 +71,15 @@ Independent artifact inspection matches its ten pip distributions, thirteen impo
 identities and twelve production/checker source comparisons. Its downloaded
 installation report has SHA-256
 `8a02f6ca6c6352c438e7abdbfd32b1d41eac6011bd42bfe8dccffc87eb160ce8`.
+
+Complete installation/source/runtime run
+[`38161986298`](https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/runs/38161986298)
+passes at `50dd522` on the same selected CI platform. Its actual artifact contains
+fourteen installed distributions, thirteen admitted production/dependency imports
+and all 26 runtime cases. Independent artifact inspection verifies 28 source
+comparisons against that exact Git revision and each complete installation record.
+The installation-report SHA-256 is
+`f1873b8492413b741e3e6d76997922f32744b10370f8ecbbbabad08fb26eee3a`.
 
 The [setup guide](../development/setup.md) documents the equivalent local
 installation checks. The [configuration matrix](../implementation/supported-configurations.md)

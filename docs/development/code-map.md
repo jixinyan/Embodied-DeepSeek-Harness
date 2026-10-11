@@ -89,6 +89,7 @@ implementations load in their separately configured service processes.
 | Configure and start the desktop launcher | [apps/desktop](../../apps/desktop/README.md) |
 | Check packaged Desktop selectors, window isolation and service shutdown using CPU rendering | [check-desktop-configuration-cpu.mjs](../../scripts/check-desktop-configuration-cpu.mjs) |
 | Inspect a fresh isolated CPU installation and optional installation provenance | [check-cpu-installation.py](../../scripts/check-cpu-installation.py) and [setup](setup.md) |
+| Verify complete CPU CI artifacts against their exact Git source and publish consolidated inspection | [check-cpu-runtime-evidence.py](../../scripts/check-cpu-runtime-evidence.py) |
 | Find exact configured profiles and their acceptance boundaries | [configuration matrix](../implementation/supported-configurations.md) |
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |
 | Recompute original RGB-D measurements and check numeric calibration admission without a simulator | [check-recorded-metric.py](../../scripts/check-recorded-metric.py), `--check-numeric-admission` |

@@ -31,6 +31,14 @@ and the [configuration matrix](supported-configurations.md). Complete native SDK
 and task configurations and signed distribution retain
 their release requirements.
 
+Production source CI at `50dd522` additionally passes genuine device-owner,
+Session-resource and Worker-transport checks on Ubuntu 24.04/Python 3.11.17.
+All 26 cases and the constrained fourteen-distribution installation pass, with
+thirteen production/dependency imports and zero native allocations. Independent
+artifact inspection matches 28 exact-commit source comparisons and complete pip
+download/version identities. The same runtime cases pass in a fresh macOS CPU
+environment. See [continuous CPU acceptance](cpu-release-validation.md#continuous-production-cpu-checks).
+
 The reusable `bd8cb9d` packaged Desktop diagnostic also passes actual macOS and
 Linux headless Wayland/Pixman windows with Chromium sandboxing enabled. Both
 platforms select all four configured profiles and complete service-stop and

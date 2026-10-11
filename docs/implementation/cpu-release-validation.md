@@ -16,7 +16,7 @@ actual Worker-transport diagnostics. The adapter dependencies are msgpack 1.1.1,
 psutil 7.2.2 and NumPy 2.4.6 on Python 3.11 or 2.5.4 on Python >=3.12; recording
 uses the declared PyAV 18.1.0. Optional model/simulator SDKs remain separate.
 
-All 26 cases pass in the actual macOS CPU environment: six owner-thread cases,
+All 26 cases pass in actual macOS and GitHub Ubuntu CPU environments: six owner-thread cases,
 four shared Session/device/recording cases and sixteen genuine Python Worker
 process cases. The checks preserve source hashes, require confirmed thread/process
 closure and retain original failure details. No model, simulator, sensor frame or
@@ -25,12 +25,47 @@ installed-import provenance; the separate runtime artifact requires all three
 named acceptance reports. See [CI source provenance](../provenance/ci-actions.md)
 and the [setup commands](../development/setup.md).
 
+Committed `50dd522` passes actual GitHub run `38161986298` with fourteen installed
+distributions, thirteen production/dependency imports and all 26 runtime cases.
+Independent downloaded-artifact inspection matches 28 source comparisons against
+that exact commit, each distribution/version/download identity, the original pip
+report digest and closed-owner/Worker outcomes. CUDA remains invisible and native
+allocations remain zero.
+
+`scripts/check-cpu-runtime-evidence.py` is the reusable artifact reader. It
+requires the original complete pip report, installation manifest and all three
+runtime reports, verifies their exact Git source identities and publishes a
+single source-bound inspection. It admits the actual `50dd522` downloaded CI
+artifacts. Four actual CLI cases pass, including rejection of a different source
+revision, Python optimization and an already-published output file. Seven original
+evidence/checker identities remain unchanged; no model or simulator starts.
+
+```sh
+.venv/bin/python scripts/check-cpu-runtime-evidence.py \
+  --installation .local/work/<downloaded-installation-artifact> \
+  --runtime .local/work/<downloaded-runtime-artifact> \
+  --source-revision <exact-ci-commit> \
+  --output .local/work/<new-inspection>.json
+```
+
+The installation directory contains `cpu-install-report.json` and
+`cpu-installation/installation.json`; the runtime directory contains
+`device-owner/`, `session-owner/` and `worker-transport/`. Read only artifacts
+from the selected actual workflow run. This inspector verifies artifact
+consistency and source identities; native task acceptance remains in the
+[release register](v1-delivery.md).
+
 Private local evidence:
 
 - `.local/work/ci-runtime-local-20261011/`
 - `.local/work/ci-runtime-installation-macos-20261011/`
 - `.local/work/ci-evidence-local-20261011.json`
 - `.local/work/cpu-installation-ci-pinned-20261011/`
+- `.local/work/ci-installation-providers-20261011/`
+- `.local/work/ci-runtime-providers-20261011/`
+- `.local/work/ci-providers-verified-20261011.json`
+- `.local/work/ci-production-evidence-complete-20261011.json`
+- `.local/work/ci-evidence-admission-20261011/`
 
 ## Fresh CPU installation
 

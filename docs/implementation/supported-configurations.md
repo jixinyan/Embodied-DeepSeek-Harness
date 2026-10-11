@@ -12,7 +12,7 @@ Session admission.
 | --- | --- | --- | --- | --- |
 | macOS arm64 | 25.4.0 | 11.19.0 | 3.14.0 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, packaged Desktop selectors and two service shutdown cycles |
 | Linux x64 | 24.21.0 | 11.19.0 | 3.12.14 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, Linux Desktop packaging and headless Wayland/Pixman window/selector/shutdown checks |
-| GitHub Ubuntu x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh installation manifest and complete source checks |
+| GitHub Ubuntu 24.04 x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh fourteen-distribution installation manifest, complete source checks and 26 actual device-owner/Session-resource/Worker-transport cases |
 
 The base CPU dependency versions are in
 [constraints.txt](../../harness/physical-runtime/constraints.txt). Source setup
@@ -21,6 +21,8 @@ in the [setup guide](../development/setup.md). Actual pip reports retain each
 download identity and installation version. `typing_extensions` is required by
 the schema dependency on the recorded Python 3.11/3.12 installations; the recorded
 Python 3.14 installation does not require it.
+Production CPU CI installs the `policy,robodojo,recording` extras and binds the
+official stable action revisions described in [CI provenance](../provenance/ci-actions.md).
 
 These rows allocate no model, policy network, simulator or physical GPU. Native
 SDK environments have their own dependency constraints and provenance. The

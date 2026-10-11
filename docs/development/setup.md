@@ -69,6 +69,11 @@ Use new diagnostic output directories. The complete configured CPU campaign also
 uses original task records and deployment configuration; its commands are in
 [CPU release validation](../implementation/cpu-release-validation.md).
 
+`check-cpu-runtime-evidence.py` verifies complete downloaded installation/runtime
+artifacts against their selected Git commit. Source CI runs it before runtime
+upload and includes the consolidated `evidence.json`. See the
+[artifact inspection command](../implementation/cpu-release-validation.md#continuous-production-cpu-checks).
+
 Verify edited source with `pnpm format:check` and `pnpm format:desktop`.
 Generated contract types are formatted by the schema generator.
 
