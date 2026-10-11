@@ -37,6 +37,9 @@ require it. Optional native SDKs use their own environment-specific constraints.
 GitHub Source checks performs the same fresh Python installation inspection before
 the complete source checks. Its downloadable `cpu-installation-<commit>` artifact
 contains the actual pip report and the verified installation manifest.
+The workflow pins its Ubuntu, Node.js, pnpm and Python versions and exact official
+action commits. [CI provenance](../provenance/ci-actions.md) records those bindings
+and the required installation artifact paths.
 
 Verify edited source with `pnpm format:check` and `pnpm format:desktop`.
 Generated contract types are formatted by the schema generator.
