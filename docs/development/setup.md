@@ -28,6 +28,12 @@ environment; their selected native installations have independent requirements.
 Keep the temporary-directory path short enough for the operating system's local
 socket paths used by `tsx`.
 
+Retain the complete initial report when installing optional CPU provider extras.
+Supply each later pip report through `--supplemental-install-report`; the checker
+requires the complete core installation and consistent identities across reports.
+`typing_extensions` is pinned for Python versions where the schema dependencies
+require it. Optional native SDKs use their own environment-specific constraints.
+
 GitHub Source checks performs the same fresh Python installation inspection before
 the complete source checks. Its downloadable `cpu-installation-<commit>` artifact
 contains the actual pip report and the verified installation manifest.

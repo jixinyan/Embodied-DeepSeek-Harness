@@ -22,6 +22,7 @@ def identity(path):
 def main():
     parser = argparse.ArgumentParser(description="Inspect a real isolated CPU installation and its pip report.")
     parser.add_argument("--install-report", type=Path, required=True)
+    parser.add_argument("--supplemental-install-report", type=Path, action="append", default=[])
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
@@ -31,11 +32,11 @@ def main():
     assert sys.prefix != sys.base_prefix, "Use an isolated Python environment."
     assert os.environ.get("CUDA_VISIBLE_DEVICES") == "", "Set CUDA_VISIBLE_DEVICES to an empty value."
     assert not output.exists(), "Use a new output directory."
-    report_source = identity(args.install_report)
-    report = json.loads(args.install_report.read_text())
-    assert report["version"] == "1", "Unsupported pip installation report."
-    installed = report["install"]
-    assert installed, "The report must describe a fresh installation."
+    report_paths = [args.install_report, *args.supplemental_install_report]
+    report_sources = [identity(path) for path in report_paths]
+    reports = [json.loads(path.read_text()) for path in report_paths]
+    assert all(report["version"] == "1" for report in reports), "Unsupported pip installation report."
+    assert all(report["install"] for report in reports), "Installation reports must contain installed distributions."
     manifest_path = root / "harness/physical-runtime/pyproject.toml"
     manifest = tomllib.loads(manifest_path.read_text())
     package_name = manifest["project"]["name"]
@@ -45,17 +46,23 @@ def main():
     location = urlparse(editable["url"])
     assert location.scheme == "file" and location.netloc in ("", "localhost")
     assert Path(unquote(location.path)).resolve(strict=True) == manifest_path.parent
-    versions = []
-    names = set()
-    for entry in installed:
-        metadata = entry["metadata"]
-        name = metadata["name"]
-        normalized = name.lower().replace("_", "-").replace(".", "-")
-        assert normalized not in names, f"Duplicate installed distribution: {name}"
-        names.add(normalized)
-        assert importlib.metadata.version(name) == metadata["version"], f"Installed version differs for {name}."
-        versions.append({"name": name, "version": metadata["version"], "download": entry["download_info"]})
-    assert package_name in names, "The report must include the editable EDH package."
+    distributions = {}
+    for report in reports:
+        names = set()
+        for entry in report["install"]:
+            metadata = entry["metadata"]
+            name = metadata["name"]
+            normalized = name.lower().replace("_", "-").replace(".", "-")
+            assert normalized not in names, f"Duplicate installed distribution: {name}"
+            names.add(normalized)
+            assert importlib.metadata.version(name) == metadata["version"], f"Installed version differs for {name}."
+            value = {"name": name, "version": metadata["version"], "download": entry["download_info"]}
+            if normalized in distributions:
+                assert distributions[normalized] == value, f"Conflicting installation reports for {name}."
+            distributions[normalized] = value
+    required = {package_name, "jsonschema", "filelock", "pillow", "websockets"}
+    assert required.issubset(distributions), "Supply the complete initial CPU installation report."
+    versions = list(distributions.values())
     checked = subprocess.run([sys.executable, "-m", "pip", "check"], check=True, capture_output=True, text=True)
     modules = []
     for name in (
@@ -77,13 +84,13 @@ def main():
         modules.append({"module": name, **source})
     forbidden = {"torch", "jax", "vllm", "openpi", "lerobot", "gr00t", "omnigibson", "isaacsim", "robosuite", "sapien"}
     assert not forbidden.intersection(name.split(".")[0] for name in sys.modules), "Optional model/simulator SDK imported."
-    assert identity(args.install_report) == report_source
+    assert [identity(path) for path in report_paths] == report_sources
     output.mkdir(parents=True, exist_ok=False)
     result = {
         "format": "edh.cpu-installation.v1",
         "python": sys.version, "executable": sys.executable,
         "environment": str(Path(sys.prefix).resolve()), "platform": platform.platform(),
-        "installReport": report_source,
+        "installReport": report_sources[0], "supplementalInstallReports": report_sources[1:],
         "sources": [identity(manifest_path), identity(root / "harness/physical-runtime/constraints.txt"), identity(Path(__file__))],
         "distributions": versions, "importedModules": modules, "dependencyCheck": checked.stdout.strip(),
         "editableSource": editable, "optionalSDKsImported": [],
