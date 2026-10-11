@@ -2031,6 +2031,12 @@ and boundaries, and storage exposes journal/history/image services. `WorkspaceFi
 is defined with AssignmentFiles, and `TeamRunSnapshot` with FileTeamLoader. Consumers
 retain their workspace imports. The [module map](architecture/modules.md) and
 [source entry points](development/code-map.md) identify the concrete files.
+Actual CI `38176009858` passes all 58 CPU cases at `3398769`; independent
+artifact inspection verifies fifteen input digests and 53 exact-source
+comparisons. Production reads preserve seven downloaded plan journals and
+release their writers. Local core-tool/plan outcomes match the preceding Linux
+reports with 25 source comparisons and unchanged reopened records. These checks
+allocate no models, simulators or GPUs.
 
 ### 12.1 EDH ownership and selective DSH absorption
 

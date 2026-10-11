@@ -96,6 +96,23 @@ Evidence: `.local/work/ci-task-plans-installation-20261011/`,
 
 Other private local evidence:
 
+Production module exports at `3398769` pass actual CI `38176009858` with the
+same 58 CPU outcomes. Independent artifact admission verifies fourteen
+distributions, thirteen imports, fifteen input digests and 53 exact-source
+comparisons. Uploaded/local consolidated fields and checker identity match.
+Production readers preserve all seven downloaded task-plan journals and release
+every writer. Separate local verification compares 25 core-tool/task-plan source
+identities and their original Linux outcomes, then reopens actual file/question/
+plan records without changing their journals. Complete source checks pass; all
+native allocations remain zero. Evidence:
+`.local/work/ci-module-exports-installation-20261011/`,
+`.local/work/ci-module-exports-runtime-20261011/`,
+`.local/work/ci-module-exports-inspection-20261011.json`,
+`.local/work/module-exports-ci-independently-verified-20261011.json` and
+`.local/work/module-exports-independently-verified-20261011.json`.
+
+Additional private local evidence:
+
 - `.local/work/ci-runtime-local-20261011/`
 - `.local/work/ci-runtime-installation-macos-20261011/`
 - `.local/work/ci-evidence-local-20261011.json`
