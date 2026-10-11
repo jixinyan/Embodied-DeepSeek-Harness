@@ -27,6 +27,13 @@ evidence selection and sample/context readers, preserving exact JSON text and
 ordered image metadata. It requires closed original journals and invokes no
 models, tools or devices. See [commands and evidence](../docs/implementation/cpu-release-validation.md#core-tool-evidence-selection).
 
+`check-recorded-rotation.mjs` admits original active-observation requests and
+measured receipts through the production observation module, then rejects
+declared invalid derivatives. Private journal copies, original values and source
+hashes remain unchanged and writers release. Set `rotationJournalDirectories`
+in the CPU campaign to include this check. See
+[rotation admission](../docs/implementation/cpu-release-validation.md#active-observation-receipt-admission).
+
 `check-native-campaign-shutdown.mjs` runs the actual native campaign and live
 driver against production Console factories. A configured occupied service
 endpoint rejects environment admission before Worker allocation. Four ordinary

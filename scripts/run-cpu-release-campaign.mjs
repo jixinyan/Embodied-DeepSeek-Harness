@@ -34,6 +34,7 @@ const configuration = z
     transportRequest: z.string().min(1),
     policyTelemetry: z.string().min(1),
     journalDirectories: z.array(z.string().min(1)).min(1).max(8),
+    rotationJournalDirectories: z.array(z.string().min(1)).min(1).max(8).optional(),
     checkpointAuditConfiguration: z.string().min(1).optional(),
   })
   .strict()
@@ -53,6 +54,7 @@ const request = path(configuration.policyRequest);
 const transportRequest = path(configuration.transportRequest);
 const telemetry = path(configuration.policyTelemetry);
 const journals = configuration.journalDirectories.map(path);
+const rotationJournals = configuration.rotationJournalDirectories?.map(path) ?? [];
 const checkpointAudit = configuration.checkpointAuditConfiguration
   ? path(configuration.checkpointAuditConfiguration)
   : undefined;
@@ -65,6 +67,7 @@ const inputs = [
   transportRequest,
   telemetry,
   ...journals.map((directory) => resolve(directory, 'records.jsonl')),
+  ...rotationJournals.map((directory) => resolve(directory, 'records.jsonl')),
   ...(checkpointAudit ? [checkpointAudit] : []),
 ];
 const sources = [...new Set(inputs)].map((path) => ({ path, sha256: digest(path) }));
@@ -137,6 +140,12 @@ for (const provider of ['behavior', 'robocasa', 'robodojo', 'robotwin'])
 const journalArgs = journals.flatMap((directory) => ['--data-directory', directory]);
 add('context', 'check-recorded-context.mjs', journalArgs);
 add('visual-context', 'check-recorded-visual-context.mjs', journalArgs);
+if (rotationJournals.length)
+  add(
+    'rotation-receipts',
+    'check-recorded-rotation.mjs',
+    rotationJournals.flatMap((directory) => ['--data-directory', directory]),
+  );
 add('readiness', 'check-native-workspace-readiness.mjs', ['--config', workspace]);
 if (checkpointAudit) {
   add('policy-inputs', 'check-policy-inputs-offline.py', ['--configuration', checkpointAudit]);

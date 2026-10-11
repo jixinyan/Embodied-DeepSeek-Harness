@@ -94,6 +94,9 @@ importers:
       '@edh/models':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/models
+      '@edh/observation':
+        specifier: workspace:*
+        version: link:../../harness/agent-runtime/observation
       '@edh/perception':
         specifier: workspace:*
         version: link:../../harness/agent-runtime/perception
@@ -190,6 +193,9 @@ importers:
       '@edh/models':
         specifier: workspace:*
         version: link:../models
+      '@edh/observation':
+        specifier: workspace:*
+        version: link:../observation
       '@edh/storage':
         specifier: workspace:*
         version: link:../storage
@@ -265,9 +271,9 @@ importers:
 
   harness/agent-runtime/observation:
     dependencies:
-      '@edh/contracts':
-        specifier: workspace:*
-        version: link:../../contracts
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
 
   harness/agent-runtime/perception:
     dependencies:

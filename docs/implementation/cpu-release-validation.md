@@ -127,6 +127,52 @@ Additional private local evidence:
 - `.local/work/ci-current-artifacts-verified-20261011.json`
 - `.local/work/ci-consolidation-verified-20261011.json`
 
+## Active observation receipt admission
+
+The production observation module owns bounded request admission and strict,
+immutable measured receipt reads. NativeTaskBackend retains task identity and
+cancellation before transmitting a request or publishing sensor metadata.
+Device resource ownership and actual motion remain in the physical Worker/provider.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-rotation.mjs \
+  --data-directory /absolute/path/closed-original-behavior-journal \
+  --output .local/work/<new-rotation-check>
+```
+
+Repeat `--data-directory` for additional closed original journals. The diagnostic
+reads private copies through LocalStore and verifies actual Planner tool-call,
+request and receipt identities. Two original BEHAVIOR receipts retain exact
+measured angles, positions and control/physics counts; 94 invalid receipt
+derivatives and 22 invalid requests reject. Parsed receipts and position arrays
+are immutable. Original journals, private copies and eight source hashes remain
+unchanged, and every copied journal writer releases. No policy, model, simulator
+or motion runs. Additional pitch/provider/concurrency workflows retain their
+native release requirements.
+
+The separate original core-tool evidence check passes sixteen original results,
+including both rotations, fifteen ordered images and one formal check, against
+their persisted native DSH receipts. Original task outcomes remain unchanged.
+Evidence: `.local/work/rotation-cpu-campaign-20261011/rotation-receipts/` and
+`.local/work/rotation-tool-evidence-complete-20261011/`.
+
+`rotationJournalDirectories` is an optional bounded list in the CPU campaign
+configuration. Its original journals join input provenance and the
+`rotation-receipts` diagnostic uses the campaign's existing process-group
+ownership, cancellation and release checks.
+
+The complete configured macOS CPU campaign passes all 32 components and 668
+admission/process/wire/resource cases, including 118 original/invalid rotation
+inputs. Separate historical context checks retain twelve independent native
+assignments and six visual-context cases; four configured provider profiles pass
+readiness. Independent inspection matches 492 source/input hashes, every report
+digest and all 32 absent diagnostic process groups. Production LocalStore and
+rotation readers independently admit both recorded motions, preserve the copied
+journal digest and release its writer. Complete source checks pass with 72 Python
+files, 28 base imports, 55 diagnostics, 128 pinned DSH files/25 bindings and 19
+private workspaces. GPU, model and simulator allocations remain zero. Evidence:
+`.local/work/rotation-cpu-campaign-20261011/independently-verified.json`.
+
 ## Fresh CPU installation
 
 The production `scripts/check-cpu-installation.py` reads actual pip installation

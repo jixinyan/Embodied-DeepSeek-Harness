@@ -17,6 +17,7 @@
     "@edh/tools": "workspace:*",
     "@edh/contracts": "workspace:*",
     "@edh/storage": "workspace:*",
+    "@edh/observation": "workspace:*",
     "ws": "8.18.3",
     "zod": "4.4.3"
   }

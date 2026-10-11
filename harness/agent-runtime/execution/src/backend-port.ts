@@ -1,4 +1,5 @@
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
+import type { RotationMotion } from '@edh/observation';
 import type {
   CheckResult,
   EvidenceRef,
@@ -85,21 +86,7 @@ export interface BackendInspectionResult extends BackendCheckResult {
   controlSteps: number;
   rawSimSteps: number;
 }
-export interface BackendRotationMotion {
-  requested_yaw_deg: number;
-  requested_pitch_deg: number;
-  achieved_yaw_deg: number;
-  achieved_pitch_deg: number;
-  before_yaw_deg: number;
-  after_yaw_deg: number;
-  before_pitch_deg: number;
-  after_pitch_deg: number;
-  before_position: readonly [number, number, number];
-  after_position: readonly [number, number, number];
-  control_steps: number;
-  raw_sim_steps: number;
-  stop_reason: 'completed' | 'stalled' | 'budget_exhausted' | 'cancelled' | 'episode_terminated';
-}
+export type BackendRotationMotion = RotationMotion;
 export interface BackendRotationResult {
   sample: SensorSample;
   motion: BackendRotationMotion;

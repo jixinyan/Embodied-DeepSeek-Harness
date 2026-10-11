@@ -1,5 +1,11 @@
 # Upper execution boundary
 
+The public entry point exports the actual backend port, profile admission,
+policy-event reader and DSH GPT policy services. `execution-mode.ts` owns pure
+profile mode resolution for `policy`, `direct` and `hybrid`, including the
+supported configuration aliases and conflicting-key rejection. Device resource
+leases and action progression belong to the physical Worker.
+
 [backend-port.ts](src/backend-port.ts) defines the EmbodiedBackend port. The
 [native worker client](../../../apps/server/src/native-worker.ts) connects it to
 the Python worker and its simulator owner thread. RoboCasa acceptance includes

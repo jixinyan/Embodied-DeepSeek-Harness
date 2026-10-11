@@ -17,12 +17,12 @@ import {
   type BackendObjectMeasurementInput,
   type BackendObjectMeasurement,
   type BackendRotationResult,
-  type BackendRotationMotion,
   type EmbodiedBackend,
   type BackendFrame,
   type BackendUpdate,
   type SensorSample,
 } from '@edh/execution';
+import { admitRotationRequest, readRotationMotion } from '@edh/observation';
 import { parseTaskCatalog, type TaskCatalogDefinition, type TaskDefinition } from '@edh/tasks';
 import type { DeploymentServices, SessionEnvironment } from './deployment.js';
 import {
@@ -665,22 +665,15 @@ class NativeTaskBackend implements EmbodiedBackend {
     pitchDeg: number,
     options?: BackendCallOptions,
   ): Promise<BackendRotationResult> {
-    if (
-      !Number.isFinite(yawDeg) ||
-      !Number.isFinite(pitchDeg) ||
-      Math.abs(yawDeg) > 90 ||
-      Math.abs(pitchDeg) > 45 ||
-      (!this.rotationAxes.includes('yaw') && yawDeg !== 0) ||
-      (!this.rotationAxes.includes('pitch') && pitchDeg !== 0)
-    )
-      throw new Error('Requested rotation exceeds the device capability.');
+    options?.signal?.throwIfAborted();
+    const request = admitRotationRequest(yawDeg, pitchDeg, this.rotationAxes);
     const result = object(
       await this.transport.request(
         'rotate_view',
         {
           run_task_id: this.runId,
-          yaw_deg: yawDeg,
-          pitch_deg: pitchDeg,
+          yaw_deg: request.yawDeg,
+          pitch_deg: request.pitchDeg,
         },
         { signal: options?.signal },
       ),
@@ -688,38 +681,10 @@ class NativeTaskBackend implements EmbodiedBackend {
     options?.signal?.throwIfAborted();
     if (result.run_task_id !== this.runId)
       throw new Error('Native rotation belongs to another session task.');
-    const motion = object(result.motion);
-    for (const name of [
-      'requested_yaw_deg',
-      'requested_pitch_deg',
-      'achieved_yaw_deg',
-      'achieved_pitch_deg',
-      'before_yaw_deg',
-      'after_yaw_deg',
-      'before_pitch_deg',
-      'after_pitch_deg',
-    ])
-      metricNumber(motion[name]);
-    for (const name of ['before_position', 'after_position']) {
-      const position = motion[name];
-      if (!Array.isArray(position) || position.length !== 3)
-        throw new Error('Native rotation position is invalid.');
-      position.forEach(metricNumber);
-    }
-    for (const name of ['control_steps', 'raw_sim_steps'])
-      if (!Number.isSafeInteger(motion[name]) || (motion[name] as number) < 0)
-        throw new Error('Native rotation counters are invalid.');
-    if (
-      motion.requested_yaw_deg !== yawDeg ||
-      motion.requested_pitch_deg !== pitchDeg ||
-      !['completed', 'stalled', 'budget_exhausted', 'cancelled', 'episode_terminated'].includes(
-        string(motion.stop_reason),
-      )
-    )
-      throw new Error('Native rotation receipt differs from its request.');
+    const motion = readRotationMotion(result.motion, request);
     return {
       sample: await this.sample(result.observation as WorkerObservation),
-      motion: motion as unknown as BackendRotationMotion,
+      motion,
     };
   }
 

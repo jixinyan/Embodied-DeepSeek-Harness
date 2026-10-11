@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Active observation with declared head/gimbal/base resource effects",
+  "description": "Active observation request and measured motion receipt admission",
   "exports": {
     ".": {
       "types": "./src/index.ts",
@@ -11,6 +11,6 @@
     }
   },
   "dependencies": {
-    "@edh/contracts": "workspace:*"
+    "zod": "4.4.3"
   }
 }
