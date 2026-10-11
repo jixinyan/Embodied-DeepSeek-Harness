@@ -98,15 +98,23 @@ export function parseModelConfiguration(input: unknown): ModelConfiguration {
   for (const name of Object.keys(result.endpoints))
     if (!Object.values(result.models).some((value) => value.endpoint === name))
       throw new Error(`Model endpoint has no model bindings: ${name}`);
-  for (const value of Object.values(result.endpoints))
-    if (value.protocol === 'responses' && (value.strictTools || value.toolChoice !== 'auto'))
-      throw new Error('Tool decoding options require a Chat Completions endpoint.');
-  for (const value of Object.values(result.endpoints))
+  for (const value of Object.values(result.endpoints)) {
+    if (
+      value.protocol === 'responses' &&
+      (value.systemRole !== 'system' ||
+        value.maxTokensField !== 'max_tokens' ||
+        value.passReasoningContent ||
+        value.strictTools ||
+        value.toolChoice !== 'auto' ||
+        Object.keys(value.extraBody).length > 0)
+    )
+      throw new Error('Chat Completions request options require a Chat Completions endpoint.');
     if (
       value.connectionMode === 'close-after-response' &&
       (value.protocol !== 'chat_completions' || new URL(value.baseURL).protocol !== 'http:')
     )
       throw new Error('Closing each model connection requires an HTTP Chat Completions endpoint.');
+  }
   return result;
 }
 

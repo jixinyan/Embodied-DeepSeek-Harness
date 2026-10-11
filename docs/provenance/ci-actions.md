@@ -32,7 +32,7 @@ admission is limited to those two named files inside `.local/work`.
 
 ## Production CPU runtime checks
 
-After source and installation admission, the workflow runs four production
+After source and installation admission, the workflow runs five production
 diagnostics using the installed project Node.js and isolated Python environment. Its actual
 installation uses the `policy,robodojo,recording` extras, including the adapter's
 msgpack, NumPy and psutil imports and PyAV 18.1.0 for recording resource checks.
@@ -49,12 +49,13 @@ Native SDK environments retain their provider-specific constraints.
 | `check-native-session-owner-offline.py` | Shared device/recording closure, original file/publication errors and independent caller cancellation | 4 |
 | `check-worker-transport-offline.mjs` | Actual Python Worker processes, dedicated response pipe, stdin closure, malformed/oversized JSON and disconnected output | 16 |
 | `check-core-tools-offline.mjs` | Actual native DSH dispatch, private file admission/versions, cancelled writes, local question persistence and turn conclusion | 15 |
+| `check-task-plans-offline.mjs` | Configured task goal/owner admission, persisted plan versions and actual journal compaction | 17 |
 
 Each diagnostic records production-source hashes and confirmed resource outcomes.
-The actual macOS and Ubuntu diagnostics pass all 26 cases without importing model
+The actual Ubuntu diagnostics pass all 58 cases without importing model
 or simulator SDKs or allocating physical environments. Their source hashes match
 the triggering repository revision. The workflow requires each named `acceptance.json` before
-publishing its `cpu-runtime-<commit>` artifact; the artifact contains all four
+publishing its `cpu-runtime-<commit>` artifact; the artifact contains all five
 diagnostic directories. Missing or unsuccessful checks terminate admission.
 
 `check-cpu-runtime-evidence.py` reads the complete installation and runtime
@@ -62,42 +63,26 @@ artifacts and compares their source hashes to the triggering Git commit. It
 requires the expected imports, complete CPU dependency provenance, all runtime
 cases and released-owner/Worker outcomes. Source CI writes its `evidence.json`
 only after this admission; runtime artifact upload includes that consolidated
-report. The current `edh.cpu_runtime_evidence.v2` admission requires 41 cases,
-six input manifests, the original agent-tools journal and 42 exact-commit source comparisons. The same command
+report. The current `edh.cpu_runtime_evidence.v3` admission requires 58 cases,
+fifteen input digests, the original agent-tools/task-plan journals and 53 exact-commit
+source comparisons. The same command
 verifies downloaded artifacts locally. Different-source,
 optimized-Python and existing-output invocations terminate before publication.
 
-Stable-action installation run
-[`38160908873`](https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/runs/38160908873)
-passes at `e3fef01` on Ubuntu 24.04.5, Node.js 22.23.3 and Python 3.11.17.
-Independent artifact inspection matches its ten pip distributions, thirteen import
-identities and twelve production/checker source comparisons. Its downloaded
-installation report has SHA-256
-`8a02f6ca6c6352c438e7abdbfd32b1d41eac6011bd42bfe8dccffc87eb160ce8`.
+Actual source/installation/runtime run `38182924925` passes at `1012df8` on the
+selected Ubuntu platform. Downloaded artifacts independently match fourteen
+distributions, thirteen imports, fifteen input digests and 53 exact-commit source
+comparisons. Uploaded/local inspection matches all seven consolidated fields and
+the checker identity. Seven task-plan journals preserve their bytes and release
+writers; all native allocations remain zero. Exact evidence is recorded in the
+[CPU validation guide](../implementation/cpu-release-validation.md#model-image-request-admission).
 
-Complete installation/source/runtime run
-[`38161986298`](https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/runs/38161986298)
-passes at `50dd522` on the same selected CI platform. Its actual artifact contains
-fourteen installed distributions, thirteen admitted production/dependency imports
-and all 26 runtime cases. Independent artifact inspection verifies 28 source
-comparisons against that exact Git revision and each complete installation record.
-The installation-report SHA-256 is
-`f1873b8492413b741e3e6d76997922f32744b10370f8ecbbbabad08fb26eee3a`.
-
-Source-bound artifact admission also passes at `3accbb6` in
-[`38162874886`](https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/runs/38162874886).
-Its uploaded consolidated inspection independently matches all seven result
-fields, five input digests and the inspector's actual Git source digest.
-Four local admission processes are confirmed released. Complete source checks,
-fresh installation and all 26 runtime cases pass with zero native allocations.
-
-Current v2 source/installation/runtime admission passes at `4d9031b` in
-[`38172377733`](https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/runs/38172377733).
-All 41 actual CPU cases pass. Downloaded artifacts independently match fourteen
-distributions, thirteen imports, seven input digests and 42 exact-commit source
-comparisons. The uploaded/local inspection matches seven consolidated fields and
-the inspector's Git source identity. Native DSH file/clarification checks confirm
-released writers and host disposal; all native allocations remain zero.
+Source CI separately runs seven authored SKILL document/metadata tests and eight
+authored model-request configuration tests. The latter checks the published model
+files and protocol-specific option admission without model/provider allocation.
+Its JUnit report is retained as `model-request-options.xml` in the same runtime
+artifact. These authored checks have their own scope and are excluded from the
+production diagnostic case count above.
 
 The [setup guide](../development/setup.md) documents the equivalent local
 installation checks. The [configuration matrix](../implementation/supported-configurations.md)

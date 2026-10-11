@@ -67,6 +67,16 @@ their declared capabilities agree. Unknown fields, routes, defaults and conflict
 capabilities fail assembly. The image-request byte setting is the native attachment
 projection target; the overall transport byte limit remains independently enforced.
 
+Responses configuration requires the default values for `systemRole`,
+`maxTokensField`, `passReasoningContent`, `strictTools` and `toolChoice`, with
+an empty `extraBody`. Nondefault values are Chat Completions request options
+and fail during configuration reading for a Responses endpoint. Responses
+maps the shared system/output-token values to `instructions` and
+`max_output_tokens`; its native output replay remains enabled by the adapter.
+Eight authored configuration tests use the published YAML files and declared
+invalid-option derivatives. They allocate no model or provider, and Source CI
+retains their separate `model-request-options.xml` JUnit report.
+
 For a vLLM server with authentication enabled, use an environment credential exactly
 as for a cloud endpoint. Cloud deployments can explicitly select no authentication
 when their gateway permits it. No implicit cloud/local authentication defaults apply.

@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-11 · Spec v1.135 · v1 release acceptance in progress.
+Updated: 2026-10-11 · Spec v1.136 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| Protocol-specific model configuration | Configuration reading admits nondefault Chat Completions role/token/reasoning/tool/extension fields only for that protocol. Eight authored tests pass on actual published cloud/local YAML files, including the Responses defaults and explicit incompatible-option derivatives. The configured four-provider production HTTP workspace preserves profile/Team/model identities, idle services and writer/listener release without allocation. Source CI retains the separate JUnit configuration artifact alongside production runtime evidence. |
 | `1012df8` | The complete 36-component/1,165-case CPU campaign matches 115 distinct production/checker files against the exact commit. Actual Ubuntu CI `38182924925` passes fresh installation, complete source checks, seven SKILL tests and its separate 58-case runtime suite. Independent artifact admission verifies fourteen distributions, thirteen imports, fifteen input digests and 53 exact-commit source comparisons. Consolidated/checker identities agree; seven plan journals remain unchanged and release writers. Original-image and Responses diagnostics retain their local record-based scopes. All native allocations remain zero. |
 | Shared model image request admission | Both cloud/local adapters admit intrinsic references and complete native request metadata, detach resolver-owned data and preserve cancellation reasons. Responses resolves each image once and checks every represented occurrence against byte/count limits before HTTP. Actual DSH image services and two complete original contexts retain six images/15 occurrences through 67 checks. All 36 CPU components/1,165 cases pass; independent inspection verifies 570 source/input comparisons, unchanged journals/images and 36 absent diagnostic process groups. Original Responses output/argument admission and native historical contexts remain unchanged. All native allocations remain zero. |
 | `72757e0` | Actual Ubuntu source/installation/runtime CI `38181160684` passes full source checks, seven SKILL document/metadata tests and 58 separate runtime cases. Independent downloaded-artifact inspection matches fourteen distributions, thirteen imports, fifteen input digests and 53 exact-commit source comparisons; consolidated/checker identities agree, and seven plan journals remain unchanged with released writers. The local 35-component/1,098-case campaign independently matches 543 source/input comparisons and 106 distinct production/checker files against this exact commit. Original Responses admission retains its separately declared record-based scope. All native allocations remain zero. |

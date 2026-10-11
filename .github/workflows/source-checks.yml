@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.11.17'
-      - run: mkdir -p .local/work .local/cpu-tmp
+      - run: mkdir -p .local/work .local/cpu-tmp .local/work/cpu-runtime
       - run: pnpm install --frozen-lockfile
         env:
           TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
@@ -46,6 +46,11 @@ jobs:
         run: test -s .local/work/cpu-install-report.json && test -s .local/work/cpu-installation/installation.json
       - name: Check SKILL document reads and persisted metadata
         run: pnpm test:skill-sections
+        env:
+          CUDA_VISIBLE_DEVICES: ''
+          TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
+      - name: Check protocol-specific model request configuration
+        run: pnpm exec tsx --tsconfig tsconfig.runtime.json --test --test-reporter=junit tests/runtime/model-request-options.test.ts > .local/work/cpu-runtime/model-request-options.xml
         env:
           CUDA_VISIBLE_DEVICES: ''
           TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
@@ -100,3 +105,4 @@ jobs:
             .local/work/cpu-runtime/agent-tools/
             .local/work/cpu-runtime/task-plans/
             .local/work/cpu-runtime/evidence.json
+            .local/work/cpu-runtime/model-request-options.xml

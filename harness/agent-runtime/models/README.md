@@ -45,6 +45,12 @@ deployment digest without credential values. See the
 [configuration guide](../../../docs/implementation/model-configuration.md) and
 [examples](../../../examples/models/README.md).
 
+Configuration reading checks protocol-specific request options. Nondefault
+Chat Completions role/token/reasoning/tool/extension settings require that protocol.
+Responses uses its native instructions, output-token field and replay. The
+authored [configuration tests](../../../tests/runtime/model-request-options.test.ts)
+exercise the published model files without provider allocation.
+
 Per-Session context measurement and compaction belong to
 [memory](../memory/README.md). Model adapters supply route metadata and declared
 image pricing to those native services.
