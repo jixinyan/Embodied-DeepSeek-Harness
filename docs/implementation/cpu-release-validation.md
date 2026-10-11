@@ -113,6 +113,20 @@ native allocations remain zero. Evidence:
 
 Additional private local evidence:
 
+Active observation module integration at `8de1f01` passes actual Ubuntu CI
+`38177836119`: complete source checks, seven authored SKILL document/metadata
+tests and all 58 cases in the separate v3 artifact suite. Independent downloaded
+artifact admission verifies fourteen distributions, thirteen imports, fifteen
+input digests and 53 exact-commit source comparisons. Consolidated result fields
+and checker identity match; production readers preserve all seven plan journals
+and release their writers. The 32-component macOS original-record campaign is
+recorded in [rotation admission](#active-observation-receipt-admission).
+No native allocations occur. Evidence:
+`.local/work/ci-rotation-installation-20261011/`,
+`.local/work/ci-rotation-runtime-20261011/`,
+`.local/work/ci-rotation-inspection-20261011.json` and
+`.local/work/rotation-ci-independently-verified-20261011.json`.
+
 - `.local/work/ci-runtime-local-20261011/`
 - `.local/work/ci-runtime-installation-macos-20261011/`
 - `.local/work/ci-evidence-local-20261011.json`
