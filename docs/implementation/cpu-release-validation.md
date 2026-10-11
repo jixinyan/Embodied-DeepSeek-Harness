@@ -7,6 +7,61 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Model image request admission
+
+`models/src/model-images.ts` admits the shared cloud/local adapter image boundary
+with the native DSH attachment types. Intrinsic ID, format, byte length and dimensions
+must agree with the requested reference. Display names and original-dimension
+annotations retain their native alias semantics. Request metadata requires a
+nonempty variant ID, supported format, positive safe dimensions/byte length,
+actual Uint8Array bytes, `uchar` depth, `srgb` color space and a Boolean alpha flag.
+The declared request length must equal the encoded data length. Metadata and
+image bytes are detached from the resolver, including shared-memory data.
+The native attachment service owns decoding, compression and byte provenance.
+
+`models/src/responses-input.ts` converts existing DSH messages and retains
+function-call/result identities, text and ordered images. Each unique image is
+resolved once; every represented occurrence counts toward the image count and
+base64 byte budget. The final complete JSON request has its existing byte limit.
+Chat Completions retains native DSH image serialization and offloading. Both
+adapters check cancellation after credential/image resolution and before HTTP,
+preserve the caller's cancellation reason and reject empty configured credentials.
+
+`check-recorded-model-images.mjs` copies an original journal and admits six original
+RoboTwin PNGs through actual LocalImageStore decoding/storage. Two complete recorded
+Qwen contexts contain fifteen image occurrences; original messages, call/result IDs,
+native Chat Completions serialization and Responses image order remain unchanged.
+All 67 checks pass, including real native request compression, exact byte limits,
+duplicate-reference identity, metadata/data mutations, shared-memory isolation,
+represented-image limits and cancellation before/after actual image reads.
+The diagnostic also checks both production adapters' request preparation and
+public invalid-request streams. Its connection-audit socket supplies no response
+and observes zero connections. No provider/model/simulator/GPU allocates.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-model-images.mjs \
+  --data-directory .local/work/<original-journal> \
+  --images-directory .local/work/<original-png-directory> \
+  --output .local/work/<new-image-inspection>
+```
+
+CPU campaign configuration accepts optional `modelImageRecords` with `directory`
+and `imagesDirectory`. The selected original journal/images join source provenance;
+the diagnostic runs inside the campaign's owned process group. The complete
+configured macOS campaign passes 36 components and 1,165 cases. Independent
+inspection verifies 570 source/input comparisons, unchanged report/journal/image
+digests and all 36 absent process groups. Independent native reads verify both
+original contexts and all six persisted image objects. Existing Responses checks
+retain 69 Astra outputs/70 calls; historical native checks retain twelve independent
+assignments and six visual-context cases. Four-provider readiness and full source
+checks pass with 73 Python files, 28 base imports, 56 Python diagnostics and
+128 pinned DSH files/25 bindings. All allocations remain zero. This acceptance
+covers request preparation; current-code loaded provider/task behavior retains
+the native release requirements.
+
+Evidence: `.local/work/model-image-admission-b-20261011/` and
+`.local/work/model-images-cpu-campaign-20261011/independently-verified.json`.
+
 ## Responses function-call and replay admission
 
 `models/src/responses-function-calls.ts` owns protocol admission for the production

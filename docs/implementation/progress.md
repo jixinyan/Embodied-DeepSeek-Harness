@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-11 · Spec v1.134 · v1 release acceptance in progress.
+Updated: 2026-10-11 · Spec v1.135 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| Shared model image request admission | Both cloud/local adapters admit intrinsic references and complete native request metadata, detach resolver-owned data and preserve cancellation reasons. Responses resolves each image once and checks every represented occurrence against byte/count limits before HTTP. Actual DSH image services and two complete original contexts retain six images/15 occurrences through 67 checks. All 36 CPU components/1,165 cases pass; independent inspection verifies 570 source/input comparisons, unchanged journals/images and 36 absent diagnostic process groups. Original Responses output/argument admission and native historical contexts remain unchanged. All native allocations remain zero. |
 | `72757e0` | Actual Ubuntu source/installation/runtime CI `38181160684` passes full source checks, seven SKILL document/metadata tests and 58 separate runtime cases. Independent downloaded-artifact inspection matches fourteen distributions, thirteen imports, fifteen input digests and 53 exact-commit source comparisons; consolidated/checker identities agree, and seven plan journals remain unchanged with released writers. The local 35-component/1,098-case campaign independently matches 543 source/input comparisons and 106 distinct production/checker files against this exact commit. Original Responses admission retains its separately declared record-based scope. All native allocations remain zero. |
 | Complete CPU campaign with Responses admission | All 35 configured components and 1,098 admission/process/wire/resource cases pass on macOS. Independent inspection verifies 543 source/input comparisons, unchanged reports/journals and all 35 absent diagnostic process groups. Native DSH expansion and replay independently preserve 69 original Astra outputs and 70 calls, with detached replay items and released copied writers. Historical contexts retain twelve independent assignments and six visual-context cases; four-provider readiness and complete source checks pass. GPU/model/simulator allocations remain zero. |
 | Responses function-call and replay admission | The Responses adapter admits required fields, ordered sequence numbers, stable output/item/call identities and consistent final arguments. Completed terminal output must match every streamed call before native DSH dispatch. Replay follows retained DSH calls after token-budget/context pruning. Original-record CPU checks preserve 69 Astra outputs, 70 calls and durable argument segments across 128 admission/invalid-derivative cases. Journals remain unchanged and copied writers release; provider requests, dispatches and native allocations remain zero. The optional configured CPU campaign selects original Responses journals. Original provider SSE is outside this record-based scope. |

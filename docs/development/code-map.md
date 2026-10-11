@@ -22,6 +22,8 @@ production path from Session selection to native commands and formal verificatio
 | Change the absorbed DSH agent loop | [agents/src/dsh/loop/index.ts](../../harness/agent-runtime/agents/src/dsh/loop/index.ts); preserve [source provenance](../provenance/README.md) |
 | Load composable Teams | [teams/src/loader.ts](../../harness/agent-runtime/teams/src/loader.ts) |
 | Configure cloud/local upper models | [models/src/configuration.ts](../../harness/agent-runtime/models/src/configuration.ts) |
+| Admit and snapshot model image references, request versions and cancellation | [models/src/model-images.ts](../../harness/agent-runtime/models/src/model-images.ts); both OpenAI-compatible adapters use the native image resolver |
+| Convert Responses messages with per-request image caching and represented-image limits | [models/src/responses-input.ts](../../harness/agent-runtime/models/src/responses-input.ts); OpenAIResponsesAdapter retains native DSH loop ownership |
 | Admit Responses function-call identities, arguments, terminal output and retained replay | [models/src/responses-function-calls.ts](../../harness/agent-runtime/models/src/responses-function-calls.ts); OpenAIResponsesAdapter uses this admission before native DSH dispatch |
 | Resolve configured policy/direct/hybrid execution modes | [execution/src/execution-mode.ts](../../harness/agent-runtime/execution/src/execution-mode.ts) |
 | Admit active rotation requests and measured motion receipts | [observation/src/rotation.ts](../../harness/agent-runtime/observation/src/rotation.ts); NativeTaskBackend retains task identity and uses NativeWorkerTransport |
@@ -104,6 +106,7 @@ implementations load in their separately configured service processes.
 | Recompute original RGB-D measurements and check numeric calibration admission without a simulator | [check-recorded-metric.py](../../scripts/check-recorded-metric.py), `--check-numeric-admission` |
 | Execute the configured CPU diagnostic campaign | [run-cpu-release-campaign.mjs](../../scripts/run-cpu-release-campaign.mjs) |
 | Inspect original Responses output and native DSH argument records | [check-recorded-responses.mjs](../../scripts/check-recorded-responses.mjs); event envelopes project the original stored records without provider requests |
+| Check original model-facing images through the actual DSH attachment service | [check-recorded-model-images.mjs](../../scripts/check-recorded-model-images.mjs); prepares actual requests and declared invalid derivatives before HTTP |
 | Verify signal-driven CPU campaign closure and actual diagnostic process-group release | [check-cpu-campaign-shutdown.mjs](../../scripts/check-cpu-campaign-shutdown.mjs) |
 | Own actual native campaign cancellation through live-driver and matching Session release | [run-native-release-campaign.mjs](../../scripts/run-native-release-campaign.mjs) and [run-live-acceptance.mjs](../../scripts/run-live-acceptance.mjs) |
 | Verify native campaign admission, repeated signals and released processes without Worker allocation | [check-native-campaign-shutdown.mjs](../../scripts/check-native-campaign-shutdown.mjs) |

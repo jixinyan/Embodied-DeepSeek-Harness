@@ -14,3 +14,4 @@ export {
   readModelConfiguration,
   type ModelConfiguration,
 } from './configuration.js';
+export type { ModelImageResolver } from './model-images.js';

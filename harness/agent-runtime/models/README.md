@@ -8,6 +8,18 @@ configuration declares protocol, capabilities, context capacity, output defaults
 authentication and image limits. Native DSH owns streaming, tool execution,
 model retries and cancellation.
 
+`src/model-images.ts` owns shared image-reference and request-version admission.
+Both adapters check the intrinsic attachment identity, complete request metadata,
+encoded byte length and cancellation, then retain detached metadata/data snapshots.
+Display names and original-dimension annotations may differ for the same image.
+The native DSH attachment service owns image decoding, normalization, compression
+and storage. `src/responses-input.ts` owns Responses message conversion and caches
+each image once per request. Each represented occurrence counts toward its image
+and byte budgets; the complete serialized request has a separate final byte check.
+Chat Completions keeps the selected native DSH image serializer and offloading.
+The [original-image CPU diagnostic](../../../docs/implementation/cpu-release-validation.md#model-image-request-admission)
+checks actual stored contexts and image services without HTTP/model requests.
+
 `src/responses-function-calls.ts` admits Responses function-call event fields,
 sequence order, output/item/call identities and complete argument consistency.
 The adapter requires streamed calls to agree with completed response output before

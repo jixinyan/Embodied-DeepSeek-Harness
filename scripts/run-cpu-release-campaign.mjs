@@ -8,6 +8,7 @@ import {
   mkdirSync,
   openSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   writeFileSync,
 } from 'node:fs';
@@ -36,6 +37,13 @@ const configuration = z
     journalDirectories: z.array(z.string().min(1)).min(1).max(8),
     rotationJournalDirectories: z.array(z.string().min(1)).min(1).max(8).optional(),
     responsesJournalDirectories: z.array(z.string().min(1)).min(1).max(8).optional(),
+    modelImageRecords: z
+      .object({
+        directory: z.string().min(1),
+        imagesDirectory: z.string().min(1),
+      })
+      .strict()
+      .optional(),
     perceptionRecords: z
       .object({
         image: z.string().min(1),
@@ -67,6 +75,12 @@ const telemetry = path(configuration.policyTelemetry);
 const journals = configuration.journalDirectories.map(path);
 const rotationJournals = configuration.rotationJournalDirectories?.map(path) ?? [];
 const responsesJournals = configuration.responsesJournalDirectories?.map(path) ?? [];
+const modelImages = configuration.modelImageRecords
+  ? {
+      directory: path(configuration.modelImageRecords.directory),
+      imagesDirectory: path(configuration.modelImageRecords.imagesDirectory),
+    }
+  : undefined;
 const perception = configuration.perceptionRecords
   ? {
       ...configuration.perceptionRecords,
@@ -90,6 +104,14 @@ const inputs = [
   ...journals.map((directory) => resolve(directory, 'records.jsonl')),
   ...rotationJournals.map((directory) => resolve(directory, 'records.jsonl')),
   ...responsesJournals.map((directory) => resolve(directory, 'records.jsonl')),
+  ...(modelImages
+    ? [
+        resolve(modelImages.directory, 'records.jsonl'),
+        ...readdirSync(modelImages.imagesDirectory).map((name) =>
+          resolve(modelImages.imagesDirectory, name),
+        ),
+      ]
+    : []),
   ...(perception
     ? [
         perception.image,
@@ -198,6 +220,13 @@ if (responsesJournals.length)
     'check-recorded-responses.mjs',
     responsesJournals.flatMap((directory) => ['--data-directory', directory]),
   );
+if (modelImages)
+  add('model-images', 'check-recorded-model-images.mjs', [
+    '--data-directory',
+    modelImages.directory,
+    '--images-directory',
+    modelImages.imagesDirectory,
+  ]);
 add('readiness', 'check-native-workspace-readiness.mjs', ['--config', workspace]);
 if (checkpointAudit) {
   add('policy-inputs', 'check-policy-inputs-offline.py', ['--configuration', checkpointAudit]);

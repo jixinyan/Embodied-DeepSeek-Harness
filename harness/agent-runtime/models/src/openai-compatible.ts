@@ -17,6 +17,11 @@ import {
 } from './dsh/chat-completions/serialize.ts';
 import { parseSse } from './dsh/chat-completions/sse.ts';
 import { translate } from './dsh/chat-completions/translate.ts';
+import {
+  assertSameModelImageReference,
+  resolveModelImage,
+  type ModelImageResolver,
+} from './model-images.js';
 
 export interface OpenAICompatibleModel {
   id: string;
@@ -32,7 +37,7 @@ export interface OpenAICompatibleOptions {
   /** Private credential resolver; omission supports unauthenticated local vLLM. */
   apiKey?: (signal: AbortSignal) => string | Promise<string>;
   /** Resolve admitted immutable image references, never arbitrary model-supplied URLs. */
-  resolveImage?: (ref: ImageAttachmentRef, signal: AbortSignal) => Promise<RequestImageAttachment>;
+  resolveImage?: ModelImageResolver;
   timeoutMs?: number;
   maxRequestBytes?: number;
   maxResponseBytes?: number;
@@ -217,18 +222,17 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
         if (block.type !== 'image') continue;
         if (++imageCount > this.imageLimit)
           throw new LlmError('Request image count exceeded.', 'INVALID_REQUEST');
-        if (images.has(block.attachment.attachmentId)) continue;
-        if (!this.config.resolveImage)
-          throw new LlmError('No image resolver is configured.', 'UNSUPPORTED_CONTENT');
-        const image = await this.config.resolveImage(structuredClone(block.attachment), signal);
-        signal.throwIfAborted();
-        if (
-          image.attachment.attachmentId !== block.attachment.attachmentId ||
-          image.bytes !== image.data.byteLength ||
-          image.bytes <= 0 ||
-          !['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(image.mediaType)
-        )
-          throw new LlmError('Image resolver returned inconsistent image data.', 'INVALID_REQUEST');
+        const cached = images.get(block.attachment.attachmentId);
+        if (cached) {
+          assertSameModelImageReference(block.attachment, cached.attachment);
+          continue;
+        }
+        const image = await resolveModelImage(
+          block.attachment,
+          this.config.resolveImage,
+          signal,
+          this.requestLimit - imageBytes,
+        );
         imageBytes += Math.ceil(image.bytes / 3) * 4;
         if (imageBytes > this.requestLimit)
           throw new LlmError('Request image bytes exceeded.', 'INVALID_REQUEST');

@@ -7,18 +7,14 @@ import {
   LlmError,
   ProviderRequestId,
   ReasoningEffortId,
-  type ContentBlock,
   type GenerateOptions,
   type LlmModelInfo,
   type LlmResolvedModelInfo,
   type StreamChunk,
 } from '@deepseek-ai/dsh-llm';
-import type { ImageAttachmentRef, RequestImageAttachment } from '@deepseek-ai/dsh-attachment';
-import {
-  ResponsesFunctionCalls,
-  responsesEventType,
-  responsesReplayOutput,
-} from './responses-function-calls.js';
+import type { ModelImageResolver } from './model-images.js';
+import { responsesInputItems } from './responses-input.js';
+import { ResponsesFunctionCalls, responsesEventType } from './responses-function-calls.js';
 
 export interface OpenAIResponsesModel {
   id: string;
@@ -33,7 +29,7 @@ export interface OpenAIResponsesOptions {
   baseURL: string;
   models: readonly OpenAIResponsesModel[];
   apiKey?: (signal: AbortSignal) => string | Promise<string>;
-  resolveImage?: (ref: ImageAttachmentRef, signal: AbortSignal) => Promise<RequestImageAttachment>;
+  resolveImage?: ModelImageResolver;
   timeoutMs?: number;
   maxRequestBytes?: number;
   maxResponseBytes?: number;
@@ -45,110 +41,6 @@ function positive(value: number | undefined, fallback: number): number {
   if (!Number.isSafeInteger(result) || result <= 0 || result > 2_147_483_647)
     throw new Error('Responses transport limits must be positive bounded integers.');
   return result;
-}
-
-function text(blocks: readonly ContentBlock[]): string {
-  return blocks
-    .filter((block): block is Extract<ContentBlock, { type: 'text' }> => block.type === 'text')
-    .map((block) => block.text)
-    .join('');
-}
-
-type ResponsesItem = Record<string, unknown>;
-
-async function imageData(
-  block: Extract<ContentBlock, { type: 'image' }>,
-  resolver: OpenAIResponsesOptions['resolveImage'],
-  signal: AbortSignal,
-): Promise<ResponsesItem> {
-  if (!resolver) throw new LlmError('No image resolver is configured.', 'UNSUPPORTED_CONTENT');
-  const image = await resolver(structuredClone(block.attachment), signal);
-  if (
-    image.attachment.attachmentId !== block.attachment.attachmentId ||
-    image.bytes !== image.data.byteLength ||
-    image.bytes <= 0 ||
-    !['image/png', 'image/jpeg', 'image/webp', 'image/gif'].includes(image.mediaType)
-  )
-    throw new LlmError('Image resolver returned inconsistent image data.', 'INVALID_REQUEST');
-  return {
-    type: 'input_image',
-    image_url: `data:${image.mediaType};base64,${Buffer.from(image.data).toString('base64')}`,
-  };
-}
-
-async function inputItems(
-  options: GenerateOptions,
-  config: OpenAIResponsesOptions,
-  signal: AbortSignal,
-): Promise<ResponsesItem[]> {
-  const items: ResponsesItem[] = [];
-  let imageCount = 0;
-  const blocks = async (content: readonly ContentBlock[]): Promise<ResponsesItem[]> => {
-    const result: ResponsesItem[] = [];
-    for (const block of content) {
-      signal.throwIfAborted();
-      if (block.type === 'text') result.push({ type: 'input_text', text: block.text });
-      else if (block.type === 'image') {
-        if (++imageCount > (config.maxImagesPerRequest ?? 16))
-          throw new LlmError('Request image count exceeded.', 'INVALID_REQUEST');
-        result.push(await imageData(block, config.resolveImage, signal));
-      } else if (block.type === 'tool-result') {
-        result.push(...(await blocks(block.content)));
-      }
-    }
-    return result;
-  };
-  for (const message of options.messages) {
-    if (message.role === 'system') continue;
-    const toolCalls = message.content.filter(
-      (block): block is Extract<ContentBlock, { type: 'tool-call' }> => block.type === 'tool-call',
-    );
-    if (message.role === 'assistant') {
-      const source = message.source;
-      const replay = source.kind === 'model' && source.replayState;
-      const replayResponse =
-        replay && typeof replay === 'object' && replay !== null && 'response' in replay
-          ? (replay as { response?: unknown }).response
-          : undefined;
-      if (
-        replayResponse &&
-        typeof replayResponse === 'object' &&
-        replayResponse !== null &&
-        Array.isArray((replayResponse as { output?: unknown }).output)
-      ) {
-        items.push(...responsesReplayOutput(replayResponse, toolCalls));
-        continue;
-      }
-      for (const call of toolCalls)
-        items.push({
-          type: 'function_call',
-          call_id: call.id,
-          name: call.name,
-          arguments: call.arguments,
-        });
-      const parts = await blocks(message.content.filter((block) => block.type !== 'tool-call'));
-      if (parts.length) items.push({ role: 'assistant', content: parts });
-      continue;
-    }
-    const results = message.content.filter(
-      (block): block is Extract<ContentBlock, { type: 'tool-result' }> =>
-        block.type === 'tool-result',
-    );
-    const regular = message.content.filter((block) => block.type !== 'tool-result');
-    const parts = await blocks(regular);
-    if (parts.length) items.push({ role: 'user', content: parts });
-    for (const result of results) {
-      const output = await blocks(result.content);
-      items.push({
-        type: 'function_call_output',
-        call_id: result.toolCallId,
-        output: output.some((part) => part.type === 'input_image')
-          ? output
-          : text(result.content) || '(no output)',
-      });
-    }
-  }
-  return items;
 }
 
 async function* responseEvents(
@@ -223,6 +115,7 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
   private readonly timeout: number;
   private readonly requestLimit: number;
   private readonly responseLimit: number;
+  private readonly imageLimit: number;
 
   constructor(options: OpenAIResponsesOptions) {
     super();
@@ -249,6 +142,7 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
     this.timeout = positive(options.timeoutMs, 120_000);
     this.requestLimit = positive(options.maxRequestBytes, 32 * 1024 * 1024);
     this.responseLimit = positive(options.maxResponseBytes, 32 * 1024 * 1024);
+    this.imageLimit = positive(options.maxImagesPerRequest, 16);
   }
 
   override async listModels(provider: string): Promise<readonly LlmModelInfo[]> {
@@ -279,7 +173,15 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
   }
 
   private async request(options: GenerateOptions, signal: AbortSignal): Promise<string> {
-    const input = await inputItems(options, this.config, signal);
+    const input = await responsesInputItems(
+      options,
+      {
+        ...(this.config.resolveImage ? { resolveImage: this.config.resolveImage } : {}),
+        maxImagesPerRequest: this.imageLimit,
+        maxRequestBytes: this.requestLimit,
+      },
+      signal,
+    );
     const body = JSON.stringify({
       model: options.model,
       ...(options.system === undefined ? {} : { instructions: options.system }),
@@ -318,8 +220,12 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
     try {
       signal.throwIfAborted();
       const key = await this.config.apiKey?.(signal);
+      signal.throwIfAborted();
+      if (key !== undefined && !key.trim())
+        throw new LlmError('Configured model credential is empty.', 'MISSING_CREDENTIAL');
       stage = 'request preparation';
       const body = await this.request(options, signal);
+      signal.throwIfAborted();
       stage = 'HTTP connection';
       response = await fetch(this.endpoint, {
         method: 'POST',
