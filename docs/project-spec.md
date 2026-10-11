@@ -45,6 +45,12 @@ Actual `3accbb6` run `38162874886` passes that complete workflow; downloaded
 artifacts independently match the uploaded consolidated result, all input digests
 and the inspector's Git source identity. Local admission processes are released.
 
+Current `4d9031b` run `38172377733` passes all four CPU runtime components with
+41 actual cases. Consolidated v2 inspection independently matches fourteen
+distributions, thirteen imports, seven input digests and 42 exact-commit source
+comparisons, including native DSH core definitions, file operations and local
+clarification persistence. All model, simulator and control allocations remain zero.
+
 The reusable packaged Desktop CPU diagnostic checks actual ASAR contents,
 configured component selections, renderer isolation and Chromium sandboxing.
 Actual macOS and Linux headless Wayland/Pixman checks complete service-stop and

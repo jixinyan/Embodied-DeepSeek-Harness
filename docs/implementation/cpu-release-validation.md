@@ -65,6 +65,19 @@ digests and the inspector's Git source digest. Four local CLI-admission processe
 are confirmed absent after completion. All 26 actual runtime cases and complete
 source checks pass; native allocations remain zero.
 
+Complete v2 run `38172377733` passes at `4d9031b` with all 41 actual CPU cases,
+including fifteen native DSH core-tool cases. Downloaded artifacts independently
+admit fourteen distributions, thirteen imports, seven input digests and 42
+exact-commit source comparisons. Uploaded/local inspection matches seven
+consolidated result fields and the inspector's Git source digest. Independent
+local checks also match fourteen tool source identities, seven original receipt
+fields and eight original request/schema fields, with the canonical contract
+unchanged from the parent commit and released journal writers.
+Evidence: `.local/work/ci-core-tools-installation-20261011/`,
+`.local/work/ci-core-tools-runtime-20261011/`,
+`.local/work/ci-core-tools-independently-verified-20261011.json` and
+`.local/work/core-tools-refactor-ci-verified-20261011.json`.
+
 Private local evidence:
 
 - `.local/work/ci-runtime-local-20261011/`
@@ -214,6 +227,8 @@ Source CI requires this diagnostic's `agent-tools/acceptance.json` alongside the
 three existing runtime reports. Consolidated `edh.cpu_runtime_evidence.v2`
 admission checks all 41 cases, six input manifests, the actual journal and 42 exact-commit source
 comparisons before artifact publication.
+Actual Ubuntu run `38172377733` passes that complete current-source workflow at
+`4d9031b`; all fifteen DSH cases match the local CPU admission outcomes.
 
 ## Core tool evidence selection
 

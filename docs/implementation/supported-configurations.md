@@ -12,7 +12,7 @@ Session admission.
 | --- | --- | --- | --- | --- |
 | macOS arm64 | 25.4.0 | 11.19.0 | 3.14.0 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, packaged Desktop selectors and two service shutdown cycles |
 | Linux x64 | 24.21.0 | 11.19.0 | 3.12.14 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, Linux Desktop packaging and headless Wayland/Pixman window/selector/shutdown checks |
-| GitHub Ubuntu 24.04 x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh fourteen-distribution installation manifest, complete source checks and 26 actual device-owner/Session-resource/Worker-transport cases |
+| GitHub Ubuntu 24.04 x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh fourteen-distribution installation manifest, complete source checks and 41 actual device-owner/Session-resource/Worker-transport/native DSH tool cases |
 
 The base CPU dependency versions are in
 [constraints.txt](../../harness/physical-runtime/constraints.txt). Source setup

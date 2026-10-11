@@ -91,6 +91,14 @@ fields, five input digests and the inspector's actual Git source digest.
 Four local admission processes are confirmed released. Complete source checks,
 fresh installation and all 26 runtime cases pass with zero native allocations.
 
+Current v2 source/installation/runtime admission passes at `4d9031b` in
+[`38172377733`](https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/runs/38172377733).
+All 41 actual CPU cases pass. Downloaded artifacts independently match fourteen
+distributions, thirteen imports, seven input digests and 42 exact-commit source
+comparisons. The uploaded/local inspection matches seven consolidated fields and
+the inspector's Git source identity. Native DSH file/clarification checks confirm
+released writers and host disposal; all native allocations remain zero.
+
 The [setup guide](../development/setup.md) documents the equivalent local
 installation checks. The [configuration matrix](../implementation/supported-configurations.md)
 records separate native configuration and task acceptance boundaries. Source CI

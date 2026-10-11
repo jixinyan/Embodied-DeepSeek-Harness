@@ -50,6 +50,8 @@ results and 81 ordered images through the production renderer; sixteen original
 model requests retain 344 schemas. Source CI requires all four runtime reports
 and v2 exact-source admission. Native role/device workflows retain their release
 requirements. See [core dispatch validation](cpu-release-validation.md#core-tool-definitions-and-native-dispatch).
+Actual `4d9031b` run `38172377733` passes all 41 cases; downloaded artifacts
+independently match 42 exact-commit source comparisons and seven input digests.
 
 The reusable `bd8cb9d` packaged Desktop diagnostic also passes actual macOS and
 Linux headless Wayland/Pixman windows with Chromium sandboxing enabled. Both
