@@ -127,6 +127,26 @@ Hardware graphics stays disabled; no Session, managed policy/model service or
 inference starts. Linux graphical execution retains its own acceptance requirement.
 See [fresh installation acceptance](../../docs/implementation/cpu-release-validation.md#fresh-cpu-installation).
 
+Use the production CPU diagnostic with an actual packaged executable and native
+workspace configuration. Supply a clean source checkout and a new output path
+inside the diagnostic checkout's `.local/work`:
+
+```sh
+CUDA_VISIBLE_DEVICES='' TMPDIR="$PWD/.local/cpu-tmp" \
+  node scripts/check-desktop-configuration-cpu.mjs \
+  --repository /absolute/path/clean-edh-checkout \
+  --executable /absolute/path/packaged-EDH-executable \
+  --workspace /absolute/path/native-workspace.json \
+  --output .local/work/<new-desktop-check-directory>
+```
+
+The diagnostic checks actual ASAR contents, every configured component selection,
+renderer isolation and owned-service cleanup through two real window cycles.
+It disables hardware graphics, performs no Session/task submission and preserves
+the original configuration hashes. For a configured CPU Wayland compositor on
+Linux, add `--wayland` and supply its `XDG_RUNTIME_DIR` and `WAYLAND_DISPLAY`.
+No screenshots or substituted browser APIs are used.
+
 The packaged macOS application also passed a positive native configuration check:
 the actual saved RoboTwin deployment, configured Qwen model and Pi0.5 profile
 started its owned service and opened the unified Console. Every selected component

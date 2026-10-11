@@ -87,6 +87,7 @@ implementations load in their separately configured service processes.
 | Inspect role communication and Agent trace | [coordination.js](../../apps/console/public/coordination.js) and [session-audit.js](../../apps/console/public/session-audit.js) |
 | Read actual run updates | [run-update.js](../../apps/console/public/run-update.js) |
 | Configure and start the desktop launcher | [apps/desktop](../../apps/desktop/README.md) |
+| Check packaged Desktop selectors, window isolation and service shutdown using CPU rendering | [check-desktop-configuration-cpu.mjs](../../scripts/check-desktop-configuration-cpu.mjs) |
 | Inspect a fresh isolated CPU installation and optional installation provenance | [check-cpu-installation.py](../../scripts/check-cpu-installation.py) and [setup](setup.md) |
 | Find exact configured profiles and their acceptance boundaries | [configuration matrix](../implementation/supported-configurations.md) |
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |
