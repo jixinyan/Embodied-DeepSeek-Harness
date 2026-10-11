@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.130 · 2026-10-11
+Version: v1.131 · 2026-10-11
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -2021,6 +2021,15 @@ segmentation provider without changing the role, and inspects the brief, actual 
 tool list, evidence and returned report. No fixed role enum or special builder changes.
 
 ## 12. Implementation structure and legacy migration
+
+SkillLibrary admits each visited metadata-search record and each document load
+through the canonical SkillMetadata, immutable record version and exact stored
+identity. Search returns metadata only and applies origin filtering after
+admission; document sections enter context only through explicit load calls.
+SkillBundle/SkillRead are defined with the library, and SkillSelection with the
+CommonMark selector. Workspace exports remain stable. Seven authored-document CPU
+tests and complete source checks pass; Source CI requires the document suite.
+Evolver and SceneState retain their current paused/deferred scope.
 
 Runtime module entry points export their production services and actual method/data
 types. Agents expose `createDshSession`; Teams expose `FileTeamLoader` and its loaded

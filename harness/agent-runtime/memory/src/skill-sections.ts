@@ -1,7 +1,15 @@
 import { fromMarkdown } from 'mdast-util-from-markdown';
 import { toMarkdown } from 'mdast-util-to-markdown';
 import { visit } from 'unist-util-visit';
-import type { SkillSelection } from './index.js';
+
+export interface SkillSelection {
+  readonly fullDocument: false;
+  readonly requestedSections: readonly string[];
+  readonly includedSections: readonly string[];
+  readonly omittedSections: readonly string[];
+  readonly sourceBytes: number;
+  readonly returnedBytes: number;
+}
 
 export const SKILL_SECTIONS = [
   'When to use',

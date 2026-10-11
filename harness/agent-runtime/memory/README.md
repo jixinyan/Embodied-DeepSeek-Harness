@@ -67,8 +67,10 @@ precedence. Parsing and definition serialization use the mdast libraries.
 
 Saving and loading validate document structure. Unknown, duplicate or empty selections,
 duplicate section names, rewritten records and stored identity mismatches fail explicitly.
-Selected reads never update the journal or the exported SKILL.md. The extension port
-`SkillStore.load` exposes the same optional sections through `SkillRead`/`SkillSelection`.
+Selected reads never update the journal or the exported SKILL.md. `SkillLibrary.load`
+returns `SkillRead` with optional `SkillSelection`. Bundle/read types belong to
+`library.ts`; selection metadata belongs to `skill-sections.ts`. The module entry
+point exports these production types.
 
 `pnpm test:skill-sections` exercises actual documents, journals, export/reopen/compaction,
 CommonMark references and native DSH tool execution. No model or physical provider
@@ -77,6 +79,16 @@ executes in these checks; agent relevance decisions require live-model acceptanc
 The search iterates persisted bundles one at a time and stops after 20 matches;
 SKILL bodies from the whole library are not collected into one in-memory array.
 Export uses the same lazy store scan. Search results still contain metadata only.
+Each visited search record and each loaded document validates the canonical
+SkillMetadata, immutable storage version and exact skill/key identity through the
+same admission method. Invalid metadata, rewritten records and mismatched identities
+fail before returning search results. Origin filtering follows metadata admission.
+No document content is added to an agent's context by metadata search.
+
+Seven authored-document CPU tests cover full/selected reads, CommonMark references,
+actual journal export/reopen/compaction, native DSH tool dispatch, identity/version
+admission and invalid metadata fields. Source CI runs the same suite with CUDA
+hidden. These tests generate no recovery experience or physical task result.
 
 The workspace experience inspector resolves SKILL provenance through explicit recovery
 ownership and checks failure/success verdicts, run/session associations and sensor/image

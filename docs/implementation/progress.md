@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-11 · Spec v1.130 · v1 release acceptance in progress.
+Updated: 2026-10-11 · Spec v1.131 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| SKILL metadata admission | SkillLibrary search and document load share canonical SkillMetadata, immutable storage-version and skill/key identity admission. Search still returns metadata only, scans lazily and applies origin filtering after admission. Bundle/read types belong to `library.ts`; selection metadata belongs to `skill-sections.ts`, with unchanged workspace exports. Seven authored-document CPU tests and complete source checks pass; CI requires that suite. Evolver remains paused, SceneState remains deferred and no recovery experience or native task result is generated. |
 | `3398769` | Actual source/installation/runtime CI `38176009858` passes all 58 CPU cases after production module export consolidation. Independent downloaded-artifact inspection verifies fourteen distributions, thirteen imports, fifteen input digests and 53 exact-commit source comparisons; uploaded/local consolidated fields and checker identity match. Production reads preserve all seven downloaded plan journals and release their writers. Local service outcomes match the preceding Linux reports, with 25 implementation-source comparisons and unchanged reopened file/question/plan journals. Complete source checks pass and native allocations remain zero. |
 | Runtime module exports | Agents, Teams, models, communication, files, tasks, verification and storage entry points expose the production services and their actual method/data types. WorkspaceFile belongs to AssignmentFiles in `files/workspace.ts`; TeamRunSnapshot belongs to FileTeamLoader in `teams/loader.ts`. Consumers continue to use the same workspace imports. The module map names concrete implementations. Complete source checks, fifteen native DSH CPU tool cases and seventeen configured task-plan CPU cases pass with released hosts/writers and zero native allocation. |
 | `82cdc7e` | Actual source/installation/runtime CI `38173880914` passes all 58 CPU cases across five components. Downloaded artifacts independently admit fourteen distributions, thirteen imports, fifteen input digests and 53 exact-commit source comparisons. Uploaded/local inspection matches seven consolidated fields and the inspector's Git source identity. Production readers independently admit/reject all seven downloaded task-plan journals with unchanged digests and released writers. The seventeen configured task-plan outcomes match local macOS validation. GPU/model/simulator allocation remains zero. |

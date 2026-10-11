@@ -182,9 +182,27 @@ test('section selection and stored identity validation reject invalid requests w
     assert.equal(store.statistics().sequence, sequence);
     store.put('skill:another', { metadata, markdown }, 0);
     assert.throws(() => library.load('another'), /identity does not match/);
+    assert.throws(() => library.search('document', true), /identity does not match/);
     store.put(`skill:${metadata.skill_id}`, { metadata, markdown }, 1);
     assert.throws(() => library.load(metadata.skill_id, ['Limits']), /record was rewritten/);
+    assert.throws(() => library.search('document', true), /record was rewritten/);
   });
+});
+
+test('stored skill metadata rejects invalid schema fields before search or document loading', async () => {
+  for (const invalid of [
+    { ...metadata, schema_version: 'physical.skill_metadata.invalid' },
+    { ...metadata, task_semantics: 'document-inspection' },
+    { ...metadata, unknown_field: true },
+  ])
+    await withLibrary((library, store) => {
+      store.put(`skill:${metadata.skill_id}`, { metadata: invalid, markdown }, 0);
+      const sequence = store.statistics().sequence;
+      assert.throws(() => library.search('document', true), /SkillMetadata:/);
+      assert.throws(() => library.search('document'), /SkillMetadata:/);
+      assert.throws(() => library.load(metadata.skill_id), /SkillMetadata:/);
+      assert.equal(store.statistics().sequence, sequence);
+    });
 });
 
 test('native DSH tool execution returns selected document content with optional section arguments', async () => {

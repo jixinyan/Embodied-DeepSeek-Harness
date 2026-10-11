@@ -44,6 +44,11 @@ jobs:
           TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
       - name: Require complete installation artifacts
         run: test -s .local/work/cpu-install-report.json && test -s .local/work/cpu-installation/installation.json
+      - name: Check SKILL document reads and persisted metadata
+        run: pnpm test:skill-sections
+        env:
+          CUDA_VISIBLE_DEVICES: ''
+          TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
       - name: Preserve installation provenance (v7.0.2)
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:

@@ -291,6 +291,19 @@ named outcomes, compaction/version consistency, eleven source identities and
 each unchanged/released derivative journal. Original-record inspection retains
 the separate checks described under [model-visible tool schemas](#model-visible-tool-schemas).
 
+## SKILL document storage and retrieval
+
+`pnpm test:skill-sections` executes seven authored-document CPU tests through the
+production SkillLibrary, CommonMark selector, LocalStore and native DSH tool
+dispatch. Search and load share canonical SkillMetadata, immutable storage-version
+and skill/key identity admission. Invalid metadata fields, rewritten records and
+foreign identities reject before returning results; rejected reads preserve the
+journal sequence. Full/selected reads, references, export, reopening and compaction
+retain their document boundaries. Source CI requires the same suite with CUDA
+hidden. These tests perform no model inference, simulator allocation, physical
+control or recovery-experience production. Experience relevance and transfer
+retain their separately agreed acceptance scope.
+
 ## Core tool evidence selection
 
 `coreToolEvidenceIds` in the tools module owns model-facing evidence selection;
