@@ -30,6 +30,32 @@ the complete source checks. Artifact upload requires the explicit installation
 report and verified manifest paths. Missing files terminate the step. Hidden-path
 admission is limited to those two named files inside `.local/work`.
 
+## Production CPU runtime checks
+
+After source and installation admission, the workflow runs three existing
+production diagnostics in the same isolated Python environment:
+
+| Diagnostic | Exercised boundary | Cases |
+| --- | --- | --- |
+| `check-native-device-owner-offline.py` | Actual owner-thread file/pipe operations, cancelled and concurrent close, queued bind/stop/resume rejection | 6 |
+| `check-native-session-owner-offline.py` | Shared device/recording closure, original file/publication errors and independent caller cancellation | 4 |
+| `check-worker-transport-offline.mjs` | Actual Python Worker processes, dedicated response pipe, stdin closure, malformed/oversized JSON and disconnected output | 16 |
+
+Each diagnostic records production-source hashes and confirmed resource outcomes.
+The actual macOS diagnostics pass all 26 cases without importing model or simulator
+SDKs or allocating physical environments. Their source hashes match the triggering
+repository revision. The workflow requires each named `acceptance.json` before
+publishing its `cpu-runtime-<commit>` artifact; the artifact contains those three
+diagnostic directories. Missing or unsuccessful checks terminate admission.
+
+Stable-action installation run
+[`38160908873`](https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/runs/38160908873)
+passes at `e3fef01` on Ubuntu 24.04.5, Node.js 22.23.3 and Python 3.11.17.
+Independent artifact inspection matches its ten pip distributions, thirteen import
+identities and twelve production/checker source comparisons. Its downloaded
+installation report has SHA-256
+`8a02f6ca6c6352c438e7abdbfd32b1d41eac6011bd42bfe8dccffc87eb160ce8`.
+
 The [setup guide](../development/setup.md) documents the equivalent local
 installation checks. The [configuration matrix](../implementation/supported-configurations.md)
 records separate native configuration and task acceptance boundaries. Source CI

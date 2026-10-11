@@ -41,6 +41,28 @@ The workflow pins its Ubuntu, Node.js, pnpm and Python versions and exact offici
 action commits. [CI provenance](../provenance/ci-actions.md) records those bindings
 and the required installation artifact paths.
 
+After source admission, GitHub runs the actual device-owner, Session-resource and
+Worker-transport diagnostics. The `cpu-runtime-<commit>` artifact retains all
+three source-bound acceptance reports and their case evidence. These checks use
+real files, pipes, threads and Worker processes with `CUDA_VISIBLE_DEVICES=''`.
+They require no model weights, original task journals or simulator installation.
+Run the same diagnostics from an installed checkout:
+
+```sh
+mkdir -p .local/work/cpu-runtime
+CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 .venv/bin/python \
+  scripts/check-native-device-owner-offline.py --output .local/work/cpu-runtime/device-owner
+CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 .venv/bin/python \
+  scripts/check-native-session-owner-offline.py --output .local/work/cpu-runtime/session-owner
+CUDA_VISIBLE_DEVICES='' PYTHONDONTWRITEBYTECODE=1 node \
+  scripts/check-worker-transport-offline.mjs --python .venv/bin/python \
+  --output .local/work/cpu-runtime/worker-transport
+```
+
+Use new diagnostic output directories. The complete configured CPU campaign also
+uses original task records and deployment configuration; its commands are in
+[CPU release validation](../implementation/cpu-release-validation.md).
+
 Verify edited source with `pnpm format:check` and `pnpm format:desktop`.
 Generated contract types are formatted by the schema generator.
 
