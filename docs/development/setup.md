@@ -26,7 +26,7 @@ import origins, and runs `pip check`. It preserves artifact download identities
 and production-module hashes. Model and simulator SDKs remain outside this CPU
 environment; their selected native installations have independent requirements.
 Keep the temporary-directory path short enough for the operating system's local
-socket paths used by `tsx`.
+socket paths used by `tsx` and Electron.
 
 Retain the complete initial report when installing optional CPU provider extras.
 Supply each later pip report through `--supplemental-install-report`; the checker

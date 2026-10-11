@@ -11,7 +11,7 @@ Session admission.
 | Platform | Node.js | pnpm | Python | Verified boundary |
 | --- | --- | --- | --- | --- |
 | macOS arm64 | 25.4.0 | 11.19.0 | 3.14.0 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, packaged Desktop selectors and two service shutdown cycles |
-| Linux x64 | 24.21.0 | 11.19.0 | 3.12.14 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks and Linux Desktop packaging |
+| Linux x64 | 24.21.0 | 11.19.0 | 3.12.14 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, Linux Desktop packaging and headless Wayland/Pixman window/selector/shutdown checks |
 | GitHub Ubuntu x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh installation manifest and complete source checks |
 
 The base CPU dependency versions are in
@@ -33,7 +33,10 @@ Clean `6b63217` loads these four original configurations through the production
 native workspace. Both CPU platforms expose the corresponding model, checkpoint,
 policy, catalog and independently configured role definitions. The packaged
 macOS Console selects all four profiles through its actual component controls.
-No Session or managed model/policy service starts during this readiness check.
+No Session or managed model/policy service starts during these readiness checks.
+The actual Linux package also selects all four profiles and completes service-stop
+and application-quit cycles through CPU-rendered Wayland windows. Both platforms
+enable Chromium sandboxing and retain isolated renderers with zero browser errors.
 
 | Provider | Embodiment | Policy ID | Checkpoint identity | Configured task | Team |
 | --- | --- | --- | --- | --- | --- |

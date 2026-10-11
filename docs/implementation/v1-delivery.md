@@ -28,8 +28,15 @@ and matching production imports, with zero native allocations. The `bc9a79e`
 checker requires complete initial and consistent supplemental package records.
 See [installation acceptance](cpu-release-validation.md#fresh-cpu-installation)
 and the [configuration matrix](supported-configurations.md). Complete native SDK
-and task configurations, Linux graphical execution and signed distribution retain
+and task configurations and signed distribution retain
 their release requirements.
+
+The reusable `bd8cb9d` packaged Desktop diagnostic also passes actual macOS and
+Linux headless Wayland/Pixman windows with Chromium sandboxing enabled. Both
+platforms select all four configured profiles and complete service-stop and
+application-quit cycles with ten matching packaged files and zero browser errors.
+No Session, model/policy service, inference or environment starts. Source checks
+and actual GitHub installation/source CI pass.
 
 Clean `a278547` admits RoboTwin action count before model calls and complete finite
 floating-point tensors before/after saved postprocessing. Actual LeRobot 0.6.1

@@ -38,8 +38,8 @@ confirms six released process groups. Cross-platform comparison verifies nine
 source identities, thirteen matching module identities and unchanged results for
 the four actual ActionGate cases. Original configuration identities and canonical
 user changes remain unchanged. Model, inference, simulator and GPU allocations
-remain zero. Linux graphical execution, signed distribution and native task
-behavior retain their respective acceptance requirements.
+remain zero. Signed distribution and native task behavior retain their respective
+acceptance requirements.
 
 Private evidence under the canonical checkout:
 
@@ -55,6 +55,39 @@ The original Linux archive is
 `bc74bddd62313a25078cfd584df6997b98caf55fe980cde551a66dc806bcc19e`.
 Its contents and process releases were independently verified before transfer.
 Follow the [setup guide](../development/setup.md) for actual installation commands.
+
+## Packaged Desktop CPU workflow
+
+`scripts/check-desktop-configuration-cpu.mjs` verifies an actual packaged executable
+against its clean source checkout and original native workspace configuration.
+It checks ASAR bytes with the installed packager library, actual source revision,
+every configured component selector, Node/context isolation and renderer sandbox
+preferences. Chromium sandboxing stays enabled; disabling flags are rejected.
+Actual service-stop and application-quit cycles require absent application/service
+processes, released writer ownership and refused connections to the former listener.
+The original configuration hashes and clean source are checked after completion.
+
+The `bd8cb9d` diagnostic passes on macOS and Linux with four configured profiles,
+ten packaged files, two window/service cycles and zero browser errors. Linux uses
+Ubuntu 22.04's Weston 9.0.0 headless backend and Pixman CPU renderer, installed in
+an isolated directory from original distribution packages. Native allocations
+remain zero. Complete allocated profile/task switching and signed distribution
+retain their native and release requirements.
+
+Private evidence: `.local/work/desktop-configuration-cpu-macos-20261011-03/` and
+remote `.local/work/desktop-configuration-cpu-linux-20261011/`.
+Executable arguments and actual application versions are retained in
+`application.json`; per-cycle configuration/service/Session responses and
+`acceptance.json` preserve the selected components and cleanup identities.
+Independent verification rechecks twenty file identities per platform, three/four
+actual process releases on macOS/Linux and both refused former listeners. Linux
+additionally confirms its compositor process group and Wayland socket are released,
+with canonical user changes preserved. Cross-platform comparison matches all ten
+packaged files, eight profile selections and the diagnostic source identity.
+The transferred archive in
+`.local/work/desktop-configuration-cpu-linux-20261011-evidence/` has SHA-256
+`7bab4aebd455fd93ef61eaccba7d2ff69a644937aef35621c2ca40d45519e552`.
+The [Desktop guide](../../apps/desktop/README.md#acceptance) provides the command.
 
 ## Consolidated CPU campaign
 

@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-11 · Spec v1.122 · v1 release acceptance in progress.
+Updated: 2026-10-11 · Spec v1.123 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| `7639e58` / `bd8cb9d` | The reusable packaged Desktop CPU diagnostic checks actual ASAR source identities, all configured component selections, renderer isolation, Chromium sandboxing and two owned-service shutdown cycles. macOS and Linux headless Wayland/Pixman workflows pass with four profiles, ten packaged files, zero browser errors and zero native allocations. Source checks and GitHub installation/source CI pass. |
 | `bc9a79e` | CPU installation admission requires the complete initial package report and consistent supplemental provenance. Actual combined core/provider installation passes with twelve distributions and thirteen production imports; a genuine supplemental-only report rejects before output publication. Complete source checks and Python 3.11 GitHub installation/source CI pass. Conditional `typing_extensions` is pinned to the same 4.16.0 verified on Python 3.11/3.12. |
 | `6b63217` / `8e63230` | Fresh macOS/Linux checkouts install the frozen pnpm dependencies and isolated Python package, pass complete source checks, four-provider readiness and four real ActionGate/thread/lock cases, and build Desktop artifacts. The macOS package passes all four compatible selections and two shutdown cycles with zero browser errors. Independent verification compares 857 tracked files per platform, 53/46 evidence files and five/eight released processes; Linux additionally confirms six released process groups. Nine source comparisons and thirteen matching import identities connect both platforms to Python 3.11 CI. All native allocations remain zero and canonical user changes remain unchanged. |
 | `18b513b` | The native OpenPI producer reserves its unlistening socket before checkpoint/SDK startup and supplies it to the inherited SDK service after readiness. Forty-six actual CLI cases pass on both CPU platforms. Complete original four-provider checkpoint identities, four native digest/report failures with released ports and 87 unchanged actual SDK transform cases pass on clean Linux. Independent verification confirms 155 source/checkpoint/input comparisons, 54 process releases and 39 local implementation/manifest comparisons. Platform admission outcomes and SDK values remain unchanged, with preserved user changes and zero native allocations. |

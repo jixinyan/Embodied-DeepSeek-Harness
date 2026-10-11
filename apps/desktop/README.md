@@ -124,7 +124,8 @@ fresh macOS package selects all four configured provider profiles and completes
 service-stop and application-quit cycles with confirmed process/writer/listener
 release. Ten ASAR files match the original source and actual package sanitizer.
 Hardware graphics stays disabled; no Session, managed policy/model service or
-inference starts. Linux graphical execution retains its own acceptance requirement.
+inference starts. Linux additionally passes the configured window/selector/shutdown
+workflow through headless Wayland with Pixman CPU rendering and Chromium sandboxing.
 See [fresh installation acceptance](../../docs/implementation/cpu-release-validation.md#fresh-cpu-installation).
 
 Use the production CPU diagnostic with an actual packaged executable and native
