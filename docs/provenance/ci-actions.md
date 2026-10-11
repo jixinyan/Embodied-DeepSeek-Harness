@@ -81,6 +81,13 @@ comparisons against that exact Git revision and each complete installation recor
 The installation-report SHA-256 is
 `f1873b8492413b741e3e6d76997922f32744b10370f8ecbbbabad08fb26eee3a`.
 
+Source-bound artifact admission also passes at `3accbb6` in
+[`38162874886`](https://github.com/jixinyan/Embodied-DeepSeek-Harness/actions/runs/38162874886).
+Its uploaded consolidated inspection independently matches all seven result
+fields, five input digests and the inspector's actual Git source digest.
+Four local admission processes are confirmed released. Complete source checks,
+fresh installation and all 26 runtime cases pass with zero native allocations.
+
 The [setup guide](../development/setup.md) documents the equivalent local
 installation checks. The [configuration matrix](../implementation/supported-configurations.md)
 records separate native configuration and task acceptance boundaries. Source CI

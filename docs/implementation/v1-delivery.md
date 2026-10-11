@@ -38,6 +38,9 @@ thirteen production/dependency imports and zero native allocations. Independent
 artifact inspection matches 28 exact-commit source comparisons and complete pip
 download/version identities. The same runtime cases pass in a fresh macOS CPU
 environment. See [continuous CPU acceptance](cpu-release-validation.md#continuous-production-cpu-checks).
+The production consolidated artifact inspector also passes at `3accbb6` in
+run `38162874886`, matching independently downloaded source/input/result identities
+and confirmed local admission-process release.
 
 The reusable `bd8cb9d` packaged Desktop diagnostic also passes actual macOS and
 Linux headless Wayland/Pixman windows with Chromium sandboxing enabled. Both

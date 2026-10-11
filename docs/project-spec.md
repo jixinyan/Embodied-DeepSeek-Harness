@@ -41,6 +41,9 @@ It checks installed distribution/download identities, required import origins,
 Actual downloaded CI artifacts pass; different-source, optimized-Python and
 existing-output CLI cases reject before publication with unchanged inputs.
 The source CI uses this same admission before runtime artifact upload.
+Actual `3accbb6` run `38162874886` passes that complete workflow; downloaded
+artifacts independently match the uploaded consolidated result, all input digests
+and the inspector's Git source identity. Local admission processes are released.
 
 The reusable packaged Desktop CPU diagnostic checks actual ASAR contents,
 configured component selections, renderer isolation and Chromium sandboxing.

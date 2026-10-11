@@ -55,6 +55,14 @@ from the selected actual workflow run. This inspector verifies artifact
 consistency and source identities; native task acceptance remains in the
 [release register](v1-delivery.md).
 
+The same production inspector passes in actual GitHub run `38162874886` at
+`3accbb6` and independently admits both downloaded artifacts. Its fourteen
+distributions, thirteen imports and 28 source comparisons match that exact commit.
+The uploaded consolidated report matches seven inspection fields, all five input
+digests and the inspector's Git source digest. Four local CLI-admission processes
+are confirmed absent after completion. All 26 actual runtime cases and complete
+source checks pass; native allocations remain zero.
+
 Private local evidence:
 
 - `.local/work/ci-runtime-local-20261011/`
@@ -66,6 +74,10 @@ Private local evidence:
 - `.local/work/ci-providers-verified-20261011.json`
 - `.local/work/ci-production-evidence-complete-20261011.json`
 - `.local/work/ci-evidence-admission-20261011/`
+- `.local/work/ci-installation-admitted-20261011/`
+- `.local/work/ci-runtime-admitted-20261011/`
+- `.local/work/ci-current-artifacts-verified-20261011.json`
+- `.local/work/ci-consolidation-verified-20261011.json`
 
 ## Fresh CPU installation
 
