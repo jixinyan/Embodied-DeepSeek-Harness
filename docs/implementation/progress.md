@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-11 · Spec v1.127 · v1 release acceptance in progress.
+Updated: 2026-10-11 · Spec v1.128 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,7 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| Stored task plans | `planning/plans.ts` owns the production `TaskPlans` service and exports `PlanOwner`/`PlanWrite`. Reads validate the canonical PlanDocument, requested task identity and stored version. Four original task histories pass thirteen accepted plan writes, nine execution requests, seventeen read-only templates and twenty-four original/invalid-derived read checks. Reopening and journal compaction preserve each final plan and version. Independent verification matches 68 source/input/journal digests and confirms 28 released writer paths. Original failed/passed verdicts and source records remain unchanged. Complete source checks pass; GPU/model/simulator allocation remains zero. |
 | `4d9031b` | Complete source/installation/runtime CI run `38172377733` passes all 41 actual CPU cases: six device-owner, four Session-resource, sixteen Worker-transport and fifteen native DSH core-tool cases. Downloaded artifacts admit fourteen distributions, thirteen imports, seven original input digests and 42 exact-commit source comparisons. Uploaded/local inspection matches seven consolidated fields and the inspector's Git source identity. Separate local verification matches fourteen tool source identities, seven original receipt fields and eight request/schema fields with unchanged parent contract and released writers. All native allocations remain zero. |
 | Core native tool definitions | `tools/core-definition.ts` owns definition assembly, provider timeout selection, DSH argument admission and turn conclusion; `core-output.ts` owns canonical JSON/image rendering. UpperRun supplies availability, scoped operations, role authority and assignment lifetime. Actual native DSH dispatch passes fifteen CPU file/clarification cases with preserved rejected-call journals and released writers/host. Seven original tasks retain 98 exact native results and 81 ordered images; sixteen original model requests retain 344 valid schemas. Source CI requires the additional `agent-tools` report and v2 consolidated admission of all four components. GPU/model/simulator allocation remains zero. |
 | `3accbb6` | The production CPU artifact inspector passes in actual GitHub run `38162874886` after fresh installation, complete source checks and all 26 runtime cases. Downloaded artifacts independently match fourteen distributions, thirteen imports and 28 exact-commit source comparisons. The uploaded consolidated report matches seven result fields, all five input digests and the inspector's Git source digest; four local admission processes are confirmed released. Source, records and native allocation boundaries remain unchanged. |

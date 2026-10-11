@@ -1,6 +1,11 @@
 # Plans and native TODOs
 
-[workspace.ts](src/workspace.ts) stores versioned task plans with decision-owner and accepted-verdict gates. [DSH TODO](src/dsh/todo/index.ts) supplies session-local lists and history. Completing a TODO never establishes physical task success.
+[plans.ts](src/plans.ts) stores versioned task plans with decision-owner and accepted-verdict gates. [DSH TODO](src/dsh/todo/index.ts) supplies session-local lists and history. Completing a TODO never establishes physical task success.
+
+`TaskPlans.read` admits each stored PlanDocument through the canonical schema and
+requires its task identity and document version to match the requested key and
+storage version. `PlanOwner` and `PlanWrite` describe the actual public method
+inputs/results. The module entry point exports the production planning service.
 
 `TaskPlans.nextWrite` returns complete structured write arguments without changing
 the journal. Initial arguments contain the required final goal, actual owner/task
@@ -13,3 +18,9 @@ accepted-verdict checks apply at write time. A template grants no execution auth
 See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
 [module responsibilities](../../../docs/architecture/modules.md).
+
+The [original-record CPU diagnostic](../../../docs/implementation/cpu-release-validation.md#model-visible-tool-schemas)
+checks production reads, goal admission and writes against original model/tool
+events. It also checks declared invalid derivatives, final-plan reopening and
+journal compaction with released writers. Original model/simulator execution is
+not replayed by this command.

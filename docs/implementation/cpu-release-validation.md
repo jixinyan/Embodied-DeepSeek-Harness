@@ -1506,6 +1506,36 @@ entities, capabilities and budget. Event/run source hashes remain unchanged.
 These checks establish CPU schema/record behavior. Current-code model-driven
 multi-goal and simulator completion require their actual native acceptance.
 
+`TaskPlans` is exported from `planning/src/index.ts` and implemented in
+`planning/src/plans.ts`. `PlanOwner` and `PlanWrite` describe its actual public
+method inputs/results. Stored-plan reads validate the canonical PlanDocument,
+requested task identity and record/document version before producing a result
+or next write template.
+
+On 2026-10-11, the original-record reader passes four task histories: RoboTwin
+retry `686c9767`, custom-role task `ef8f9d03`, packaged Desktop task `bd3e1606`
+and failed RoboCasa task `e7f385ad`. The current implementation admits thirteen
+original plan writes and nine original execution requests, and verifies seventeen
+read-only write templates. Each original first plan also supplies six private
+storage cases: unchanged original, foreign task, document-version mismatch,
+storage-version mismatch, unsupported schema version and duplicate goals.
+All twenty-four read cases preserve their journals; invalid records reject both
+plan reads and next-write templates. Three actual writer open/close cycles per
+task check the final plan before and after compaction, preserving its version.
+Six derivative writers per task also release their locks.
+
+Independent inspection verifies 68 implementation/original-source/derivative-journal
+digest comparisons, all four compacted plans against their original final plan
+events and 28 released writer paths. Final-plan inspection leaves the compacted
+journals unchanged. Original failed/passed verdicts remain unchanged. Nine source
+identities per report bind the production service, goal admission, tool parameter
+builder, canonical schema/validator, store and diagnostic. No model, simulator,
+GPU or physical control allocates. Reports are under
+`.local/checks/recorded-plans-E7D6Mv/`, `.local/checks/recorded-plans-phDYia/`,
+`.local/checks/recorded-plans-rZOYwm/` and `.local/checks/recorded-plans-kGwjca/`.
+Independent results:
+`.local/work/plan-admission-independently-verified-20261011.json`.
+
 The same schema tests, original request inspection and original custom-role plan
 reader pass on Linux from committed `6488510` source. Its isolated Python 3.12.14
 environment and Node 24.21.0/pnpm 11.19.0 workspace use frozen dependencies.

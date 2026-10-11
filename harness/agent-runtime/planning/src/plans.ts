@@ -7,20 +7,36 @@ import type {
   SuccessContract,
 } from '@edh/contracts';
 import type { LocalStore } from '@edh/storage';
-/** Owner-bound planning; a claimed done item must reference an accepted formal verdict. */
+
+export interface PlanOwner {
+  agentId: string;
+  assignmentId: string;
+}
+
+export interface PlanWrite {
+  plan: PlanDocument;
+  expectedVersion: number;
+}
+
+// 计划写入受 decision owner 和 formal verdict 检查约束。
 export class TaskPlans {
   constructor(
     private readonly store: LocalStore,
     private readonly validator: ContractValidator,
   ) {}
   read(taskId: string): PlanDocument | undefined {
-    return this.store.get<PlanDocument>(`plan:${taskId}`)?.value;
+    const record = this.store.get(`plan:${taskId}`);
+    if (!record) return undefined;
+    const plan = this.validator.parse('PlanDocument', record.value);
+    if (plan.task_id !== taskId || plan.version !== record.version)
+      throw new Error('Plan record identity or version conflicts with its storage record.');
+    return plan;
   }
   nextWrite(
     taskId: string,
-    owner: { agentId: string; assignmentId: string },
+    owner: PlanOwner,
     finalGoal: { id: string; description: string; successContract: SuccessContract },
-  ): { plan: PlanDocument; expectedVersion: number } {
+  ): PlanWrite {
     const current = this.read(taskId);
     if (
       current &&
@@ -54,7 +70,7 @@ export class TaskPlans {
   update(
     plan: PlanDocument,
     expectedVersion: number,
-    owner: { agentId: string; assignmentId: string },
+    owner: PlanOwner,
     verdicts: readonly Pick<
       VerificationResult,
       'verdict_id' | 'task_scope' | 'status' | 'goal_contract_id' | 'goal_contract_version'

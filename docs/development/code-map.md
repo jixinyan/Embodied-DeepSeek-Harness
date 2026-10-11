@@ -23,6 +23,7 @@ production path from Session selection to native commands and formal verificatio
 | Load composable Teams | [teams/src/loader.ts](../../harness/agent-runtime/teams/src/loader.ts) |
 | Configure cloud/local upper models | [models/src/configuration.ts](../../harness/agent-runtime/models/src/configuration.ts) |
 | Maintain plans and TODO tools | [planning](../../harness/agent-runtime/planning/README.md) and [tools](../../harness/agent-runtime/tools/README.md) |
+| Read and write owner-bound, versioned task plans | [planning/src/plans.ts](../../harness/agent-runtime/planning/src/plans.ts) |
 | Generate assignment-specific model-visible tool parameters | [tools/src/model-schema.ts](../../harness/agent-runtime/tools/src/model-schema.ts) |
 | Bind core native tool definitions, timeouts, argument admission and turn conclusion | [tools/src/core-definition.ts](../../harness/agent-runtime/tools/src/core-definition.ts); UpperRun supplies scoped operations and authority |
 | Select evidence references and render model-facing core tool results | [tools/src/core-output.ts](../../harness/agent-runtime/tools/src/core-output.ts); UpperRun admits assignment grants and visibility |

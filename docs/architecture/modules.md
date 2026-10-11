@@ -68,7 +68,7 @@ host. Authorized observation tools continue to supply images to models. See
 | `harness/agent-runtime/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelRegistry; Step 00 |
 | `harness/agent-runtime/tools` | Logical IDs, model-visible parameters, native core definitions, role/device schema selection, input limits, turn conclusion and result rendering | Every concrete perception/robot implementation | Native DSH tools, core-inputs.ts, model-schema.ts, core-definition.ts and core-output.ts; Step 02/07 |
 | `harness/agent-runtime/communication` | Explicit briefs, scoped messages, delivery and subscriptions | Shared conversation memory | TeamRouter; Step 04 |
-| `harness/agent-runtime/planning` | Persistent PlanDocument and progress projection | Authoritative success | PlanStore; Step 05 |
+| `harness/agent-runtime/planning` | Persistent PlanDocument and progress projection | Authoritative success | TaskPlans in plans.ts; Step 05 |
 | `harness/agent-runtime/files` | Private assignment files and controlled search | Shared unrestricted filesystem | AgentFiles; Step 05 |
 | `harness/agent-runtime/tasks` | Goals, attempts, decision ownership and recovery linkage | Policy action generation | TaskCoordinator; Step 09 |
 | `harness/agent-runtime/execution` | Host/worker bridge, job status and resource coordination | TS control loop or autonomous retry | ExecutionClient; Step 06 |

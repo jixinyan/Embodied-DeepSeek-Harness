@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { ContractValidator } from '@edh/contracts';
@@ -32,6 +33,25 @@ const owner = {
   agentId: firstRead.ownerAgentId,
   assignmentId: firstRead.ownerAssignmentId,
 };
+const implementationPaths = [
+  'harness/agent-runtime/planning/src/plans.ts',
+  'harness/agent-runtime/planning/src/index.ts',
+  'harness/agent-runtime/tasks/src/goals.ts',
+  'harness/agent-runtime/tasks/src/goal-binding.ts',
+  'harness/agent-runtime/tools/src/model-schema.ts',
+  'harness/contracts/src/validation.ts',
+  'harness/contracts/schema/physical.schema.json',
+  'harness/agent-runtime/storage/src/local-store.ts',
+  'scripts/check-recorded-plan-writes.mjs',
+];
+const implementationSources = await Promise.all(
+  implementationPaths.map(async (path) => ({
+    path: resolve(path),
+    sha256: createHash('sha256')
+      .update(await readFile(path))
+      .digest('hex'),
+  })),
+);
 const finalGoal = {
   id: firstRead.finalGoalId,
   description: run.instruction,
@@ -56,6 +76,7 @@ let admittedExecutions = 0;
 const requests = [];
 const verdicts = [];
 const pendingWrites = new Map();
+const planReadAdmission = [];
 try {
   const initial = plans.nextWrite(run.id, owner, finalGoal);
   assert.equal(initial.expectedVersion, 0);
@@ -153,6 +174,103 @@ try {
         ),
       /decision owner/,
     );
+  const originalPlan = events.find((event) => event.type === 'plan.updated').detail.plan;
+  assert.equal(originalPlan.version, 1);
+  const derivativeCases = [
+    ['original-plan', originalPlan, false, null],
+    ['foreign-task', { ...originalPlan, task_id: `${run.id}-other` }, false, /identity or version/],
+    ['document-version', { ...originalPlan, version: 2 }, false, /identity or version/],
+    ['storage-version', originalPlan, true, /identity or version/],
+    [
+      'schema-version',
+      { ...originalPlan, schema_version: 'physical.plan.invalid' },
+      false,
+      /PlanDocument:.*schema_version/,
+    ],
+    [
+      'duplicate-goals',
+      { ...originalPlan, items: [originalPlan.items[0], originalPlan.items[0]] },
+      false,
+      /Identifiers must be unique/,
+    ],
+  ];
+  for (const [name, derivative, rewrite, expectedError] of derivativeCases) {
+    const derivativeDirectory = resolve(directory, `read-${name}`);
+    const derivedStore = new LocalStore(derivativeDirectory);
+    try {
+      derivedStore.put(`plan:${run.id}`, derivative, 0);
+      if (rewrite) derivedStore.put(`plan:${run.id}`, derivative, 1);
+      const journal = resolve(derivativeDirectory, 'records.jsonl');
+      const sourceDigest = createHash('sha256')
+        .update(await readFile(journal))
+        .digest('hex');
+      const reader = new TaskPlans(derivedStore, validator);
+      if (expectedError) {
+        assert.throws(() => reader.read(run.id), expectedError);
+        assert.throws(() => reader.nextWrite(run.id, owner, finalGoal), expectedError);
+      } else {
+        assert.deepEqual(reader.read(run.id), originalPlan);
+        const next = reader.nextWrite(run.id, owner, finalGoal);
+        assert.equal(next.expectedVersion, 1);
+        assert.equal(next.plan.version, 2);
+        assert.deepEqual(next.plan.items, originalPlan.items);
+      }
+      assert.equal(
+        createHash('sha256')
+          .update(await readFile(journal))
+          .digest('hex'),
+        sourceDigest,
+      );
+      planReadAdmission.push({
+        name,
+        derivativeOfOriginalPlanVersion: originalPlan.version,
+        rejected: expectedError !== null,
+        journalSha256: sourceDigest,
+        journalUnchanged: true,
+      });
+    } finally {
+      derivedStore.close();
+    }
+    assert(!existsSync(resolve(derivativeDirectory, 'writer.lock')));
+  }
+  const finalPlan = plans.read(run.id);
+  assert(finalPlan);
+  const beforeReopen = store.statistics();
+  store.close();
+  assert(!existsSync(resolve(directory, 'writer.lock')));
+  const reopenedStore = new LocalStore(directory);
+  let compaction;
+  try {
+    const reader = new TaskPlans(reopenedStore, validator);
+    assert.deepEqual(reader.read(run.id), finalPlan);
+    assert.deepEqual(reopenedStore.statistics(), beforeReopen);
+    const next = reader.nextWrite(run.id, owner, finalGoal);
+    assert.equal(next.expectedVersion, finalPlan.version);
+    assert.equal(next.plan.version, finalPlan.version + 1);
+    assert.deepEqual(next.plan.items, finalPlan.items);
+    compaction = reopenedStore.compact();
+    assert.deepEqual(reader.read(run.id), finalPlan);
+    assert.equal(reopenedStore.get(`plan:${run.id}`).version, finalPlan.version);
+  } finally {
+    reopenedStore.close();
+  }
+  assert(!existsSync(resolve(directory, 'writer.lock')));
+  const compactedStore = new LocalStore(directory);
+  try {
+    assert.deepEqual(new TaskPlans(compactedStore, validator).read(run.id), finalPlan);
+  } finally {
+    compactedStore.close();
+  }
+  assert(!existsSync(resolve(directory, 'writer.lock')));
+  assert.deepEqual(await readFile(resolve(sourceDirectory, 'events.json')), eventBytes);
+  assert.deepEqual(await readFile(resolve(sourceDirectory, 'run.json')), runBytes);
+  for (const source of implementationSources)
+    assert.equal(
+      createHash('sha256')
+        .update(await readFile(source.path))
+        .digest('hex'),
+      source.sha256,
+    );
   const result = {
     runId: run.id,
     sourceSha256: createHash('sha256').update(eventBytes).digest('hex'),
@@ -163,6 +281,12 @@ try {
     admittedRecordedExecutions: admittedExecutions,
     originalSourceHashesUnchanged: true,
     sourceVerdictStatuses: verdicts.map((verdict) => verdict.status),
+    implementationSources,
+    planReadAdmission,
+    reopenedFinalPlanVersion: finalPlan.version,
+    compactedPlanVersionPreserved: true,
+    compaction,
+    writersReleased: true,
     scope: 'Recorded production schema/plan checks; no new model or simulation execution.',
   };
   await writeFile(resolve(directory, 'audit.json'), `${JSON.stringify(result, null, 2)}\n`);

@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.127 · 2026-10-11
+Version: v1.128 · 2026-10-11
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -1618,6 +1618,18 @@ last-verification reference. Updates check expected versions. Completion require
 matching passed verdict. TaskGoals validates configured and Planner-created bindings
 before publication; TaskPlans enforces ownership, dependencies, versions and
 immutable executed criteria. See [goal admission](../harness/agent-runtime/tasks/README.md#goal-binding-admission).
+
+The production planning service is [TaskPlans](../harness/agent-runtime/planning/src/plans.ts),
+with exported `PlanOwner` and `PlanWrite` method types. Every stored plan read
+validates the canonical PlanDocument and requires the task identity and document
+version to match its storage key and record version. Subsequent write templates
+use this admitted record. Four original task histories pass thirteen accepted
+writes, nine execution requests and twenty-four original/invalid-derived read
+checks. Reopening and journal compaction preserve final plans and versions;
+independent inspection verifies 68 source/input/journal identities and 28 released
+writer paths. These are original-record and CPU storage checks with zero model,
+simulator or GPU allocation. Current-code native multi-goal acceptance retains
+its release requirements.
 
 Files are private by default. Cross-role handoff uses immutable artifact references or
 explicit read-only mounts of specific versions, not a mutually writable scratchpad.
