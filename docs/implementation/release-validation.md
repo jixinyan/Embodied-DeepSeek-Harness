@@ -2,6 +2,8 @@
 
 Each accepted configuration identifies its committed EDH revision, Team/model,
 immutable task catalog, checkpoint files, simulator source and actual outcome.
+The [configuration matrix](supported-configurations.md) identifies recorded CPU
+platforms and native profile bindings with their separate acceptance boundaries.
 
 ## Source checks
 

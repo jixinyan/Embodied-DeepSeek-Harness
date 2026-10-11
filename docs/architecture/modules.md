@@ -153,6 +153,12 @@ Communication uses storage for persistence; agents receive authorized evidence
 through memory/tools, not direct unrestricted storage handles. Python optional
 providers must not be imported by the base package at startup.
 
+The base CPU installation uses pinned runtime constraints and the frozen pnpm
+lockfile. `scripts/check-cpu-installation.py` owns actual package-report, editable
+source and import-origin admission. Native SDK environments retain their provider
+constraints and deployment provenance. See the [setup guide](../development/setup.md)
+and [configuration matrix](../implementation/supported-configurations.md).
+
 For example, a SAM tool is defined in `tools`, exposed through `perception`, and
 executed by the Python perception provider. A verifier role lives in `agents`,
 formal-verdict lifecycle enforcement in `verification`, and a simulator predicate

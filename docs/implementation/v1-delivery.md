@@ -1,6 +1,6 @@
 # v1 delivery and acceptance
 
-Updated: 2026-10-09. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
+Updated: 2026-10-11. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
 RoboDojo task success, real SAM/YOLO tool calls and source-bound RoboCasa RGB-D
 geometry are verified. Reusable native factories, complete retention bindings,
 packaged Desktop lifecycle and selected DSH recovery/JSON portability have production
@@ -16,6 +16,20 @@ checkpoint or successful simulator reset does not complete a capability. Each ro
 below needs an implementation, executable checks and retained acceptance evidence.
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
+
+Fresh CPU installation passes on macOS/Python 3.14, Linux/Python 3.12 and
+GitHub/Python 3.11 with frozen pnpm dependencies, pinned runtime constraints and
+actual installation provenance. Clean `6b63217` passes four-provider readiness,
+four real ActionGate/thread/lock cases and Desktop packaging on both CPU platforms.
+Its macOS package selects all four compatible profiles and completes service stop
+and application quit with confirmed process/writer/listener release. Independent
+checks compare 857 tracked files per platform, original configuration identities
+and matching production imports, with zero native allocations. The `bc9a79e`
+checker requires complete initial and consistent supplemental package records.
+See [installation acceptance](cpu-release-validation.md#fresh-cpu-installation)
+and the [configuration matrix](supported-configurations.md). Complete native SDK
+and task configurations, Linux graphical execution and signed distribution retain
+their release requirements.
 
 Clean `a278547` admits RoboTwin action count before model calls and complete finite
 floating-point tensors before/after saved postprocessing. Actual LeRobot 0.6.1
@@ -357,7 +371,7 @@ under loaded providers retains its native gate. See
 | V11 | Spatial memory and frame selection          | Native context compaction, whole-message image recency and original audit retention exist. SceneState lifecycle is specified in the spatial-memory proposal.                                                                                                                                                                                                                                                                                                                                                                               | SceneState implementation is deferred. Its initialization/update/reset and retrieval requirements remain documented for subsequent work.                                                                                                                              |
 | V12 | Console and launcher                        | Unified trace-only Console exposes compatible selectors, profile-specific Teams, history and actual model/tool/TODO status. Packaged Electron submits two real Qwen/Pi0.5 RoboTwin tasks with explicit historical-context selection, successful recovery, fresh formal verification and confirmed Session/service close. Source/video/DOM checks pass with zero browser errors and released writer/listener ownership. Unified four-provider configuration and selector checks pass without environment allocation. | Complete allocated environment/configuration switching across the supported matrix and signed distribution. |
 | V13 | Persistence and maintenance                 | Complete built-in native ownership covers submission, plan, file, clarification, native audit and leased external sources. Default factories bind record/original-image retention. Actual four-session journals verify independent selection and preservation through restart. Production HTTP/browser checks retire 626 private records, retain two request identities and explicitly collect 180 private original images while source digests remain unchanged.                                                                          | Validate complete installed maintenance/task workflows across additional native configurations. Unknown extension formats require explicit complete inspection.                                                                                                       |
-| V14 | Hardware portability and release handoff    | The hardware integration interface exposes capabilities, connection identity, ActionSpec and confirmed stopping. Watchdog/resource checks use actual threads and processes. Environments remain isolated and configuration selects devices.                                                                                                                                                                                                                                                                                                | Publish reproducible setup, supported configuration matrix and release checks. Physical robot experiments follow simulation/interface acceptance, as agreed, and need a selected device.                                                                              |
+| V14 | Hardware portability and release handoff | The hardware integration interface exposes capabilities, connection identity, ActionSpec and confirmed stopping. Watchdog/resource checks use actual threads and processes. Isolated CPU setup, actual fresh-installation provenance, configured profile matrix and source CI are published and verified on the recorded platforms. Configuration selects devices. | Complete native SDK/task configuration acceptance and signed distribution. Physical robot experiments follow simulation/interface acceptance, as agreed, and need a selected device. |
 | V15 | RoboDojo / dual ARX X5 | Actual Qwen/Pi0.5 run `897f215d` verifies failed 32-control execution followed by successful 26-control retained-scene retry, 580 native physics steps, four identified learned requests, two fresh Verifiers, eleven completed TODOs and zero tool errors. Six native camera videos and the composite MP4 pass complete source/decode checks. Same-Session run `ca43312e` verifies its unchanged ended episode with a fresh boundary/Verifier and zero new controls, physics steps or inferences; resources release. The 18-file checkpoint is verified. | Verify original build_tower stages, native interruption and remaining hybrid acceptance. Evolver remains paused. |
 
 ## Execution order

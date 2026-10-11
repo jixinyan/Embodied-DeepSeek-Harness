@@ -118,6 +118,15 @@ same checks against that build. This test does not automate the native file choo
 
 Desktop UI and packaging checks are recorded in [progress](../../docs/implementation/progress.md).
 
+Fresh clean `6b63217` installations also build the Desktop package on macOS and
+Linux with frozen pnpm dependencies and independent Python environments. The
+fresh macOS package selects all four configured provider profiles and completes
+service-stop and application-quit cycles with confirmed process/writer/listener
+release. Ten ASAR files match the original source and actual package sanitizer.
+Hardware graphics stays disabled; no Session, managed policy/model service or
+inference starts. Linux graphical execution retains its own acceptance requirement.
+See [fresh installation acceptance](../../docs/implementation/cpu-release-validation.md#fresh-cpu-installation).
+
 The packaged macOS application also passed a positive native configuration check:
 the actual saved RoboTwin deployment, configured Qwen model and Pi0.5 profile
 started its owned service and opened the unified Console. Every selected component

@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-09 · Spec v1.121 · v1 release acceptance in progress.
+Updated: 2026-10-11 · Spec v1.122 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,6 +45,8 @@ the release requirements below.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| `bc9a79e` | CPU installation admission requires the complete initial package report and consistent supplemental provenance. Actual combined core/provider installation passes with twelve distributions and thirteen production imports; a genuine supplemental-only report rejects before output publication. Complete source checks and Python 3.11 GitHub installation/source CI pass. Conditional `typing_extensions` is pinned to the same 4.16.0 verified on Python 3.11/3.12. |
+| `6b63217` / `8e63230` | Fresh macOS/Linux checkouts install the frozen pnpm dependencies and isolated Python package, pass complete source checks, four-provider readiness and four real ActionGate/thread/lock cases, and build Desktop artifacts. The macOS package passes all four compatible selections and two shutdown cycles with zero browser errors. Independent verification compares 857 tracked files per platform, 53/46 evidence files and five/eight released processes; Linux additionally confirms six released process groups. Nine source comparisons and thirteen matching import identities connect both platforms to Python 3.11 CI. All native allocations remain zero and canonical user changes remain unchanged. |
 | `18b513b` | The native OpenPI producer reserves its unlistening socket before checkpoint/SDK startup and supplies it to the inherited SDK service after readiness. Forty-six actual CLI cases pass on both CPU platforms. Complete original four-provider checkpoint identities, four native digest/report failures with released ports and 87 unchanged actual SDK transform cases pass on clean Linux. Independent verification confirms 155 source/checkpoint/input comparisons, 54 process releases and 39 local implementation/manifest comparisons. Platform admission outcomes and SDK values remain unchanged, with preserved user changes and zero native allocations. |
 | `930963c` | The OpenPI producer admits actual SDK model inputs and complete normalized/decoded actions; the JSON bridge admits action limits before preparation/request transmission. Actual installed SDK CPU checks pass 87 transform cases on twelve original-request/native-action derivatives, plus twelve original codec inputs, 76 numeric and 44 real CLI startup cases. Independent verification matches 193 source/input comparisons, 49 actual process releases and fifty local implementation/manifest comparisons. Original prepared values, source cleanliness and user changes remain unchanged, with CPU-only JAX and zero native allocations. |
 | `a278547` | RoboTwin admits action count before input preparation/model calls and complete finite floating-point tensors before/after saved postprocessing. Actual LeRobot 0.6.1 CPU checks pass 34 saved-postprocessor cases on seven original selected-prefix derivatives, 21 input cases, 70 original Torch/controller cases and 76 four-provider numeric cases. Independent verification matches 472 source/input comparisons, five actual process releases and 35 local implementation/manifest comparisons. Original prepared/native values remain unchanged and CUDA stays uninitialized. |
@@ -121,9 +123,11 @@ See [geometry validation](cpu-release-validation.md#numeric-geometry-admission).
 | Loaded-policy stop/fault boundaries | Actual loaded checkpoint, scoped cancellation/failure, confirmed device stopping and absence of stale actions |
 | Complete native perception and active observation | Source-bound measured geometry across selected providers, Planner pitch workflows and active-motion concurrency |
 | Complete configuration and maintenance workflows | Allocated Console switching, retained terminal-source records and task/maintenance workflows across the supported matrix |
-| Release distribution | Reproducible setup, exact supported configuration matrix and distribution checks; signed artifacts require deployment signing credentials |
+| Release distribution | CPU setup, fresh installation provenance and the configured profile matrix are published. Complete native SDK/task configurations and signed distribution retain their acceptance requirements. |
 
 The [v1 delivery register](v1-delivery.md) defines the full per-capability gates.
+The [configuration matrix](supported-configurations.md) records actual CPU
+platform versions and exact configured provider/checkpoint/Team identities.
 The [native campaign](native-release-campaign.md) defines executable configurations,
 task submissions and evidence requirements. GPU work remains stopped during the
 current CPU phase. A v1 tag requires every active release gate to pass.

@@ -7,6 +7,55 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Fresh CPU installation
+
+The production `scripts/check-cpu-installation.py` reads actual pip installation
+reports, checks installed versions and editable-source ownership, runs `pip check`
+and admits thirteen production/dependency imports. Complete initial provenance is
+required; supplemental reports add consistent package identities. The current
+`bc9a79e` checker admits twelve unique distributions from a genuine combined
+core/provider installation. A genuine supplemental-only report rejects before
+output publication. No optional model or simulator SDK is imported.
+
+Clean `6b63217` installs frozen pnpm dependencies and independent Python
+environments on macOS arm64/Python 3.14 and Linux x64/Python 3.12. Both pass complete
+source checks, four-provider HTTP readiness, four actual ActionGate/thread/file-lock
+cases and Desktop packaging. GitHub Source checks on Python 3.11 also passes for
+`6b63217`, `8e63230` and `bc9a79e`, retaining actual pip reports and installation
+manifests as workflow artifacts. The exact versions and configured native profiles
+are recorded in the [configuration matrix](supported-configurations.md).
+
+The fresh macOS package selects all four compatible profiles through the actual
+Console controls, then completes service-stop and application-quit cycles. Ten
+ASAR files match the source, including the packager's actual package sanitizer.
+Renderer isolation and disabled hardware graphics are confirmed. No Session,
+managed model/policy service or inference starts. Browser errors remain empty;
+service/application processes, writer ownership and listeners are released.
+
+Independent verification compares 857 tracked source files per platform, 53/46
+evidence files and five/eight released processes on macOS/Linux. Linux additionally
+confirms six released process groups. Cross-platform comparison verifies nine
+source identities, thirteen matching module identities and unchanged results for
+the four actual ActionGate cases. Original configuration identities and canonical
+user changes remain unchanged. Model, inference, simulator and GPU allocations
+remain zero. Linux graphical execution, signed distribution and native task
+behavior retain their respective acceptance requirements.
+
+Private evidence under the canonical checkout:
+
+- `.local/work/fresh-cpu-installation-macos-20261009/`
+- `.local/work/fresh-desktop-cpu-20261011-03/acceptance.json`
+- `.local/work/fresh-cpu-installation-linux-20261011-verified/`
+- `.local/work/fresh-cpu-installation-platform-comparison-20261011.json`
+- `.local/work/supplemental-cpu-installation-20261011/`
+- `.local/work/cpu-installation-ci-complete-20261011/`
+
+The original Linux archive is
+`.local/work/fresh-cpu-installation-linux-20261011-evidence.tar.gz`, SHA-256
+`bc74bddd62313a25078cfd584df6997b98caf55fe980cde551a66dc806bcc19e`.
+Its contents and process releases were independently verified before transfer.
+Follow the [setup guide](../development/setup.md) for actual installation commands.
+
 ## Consolidated CPU campaign
 
 Each diagnostic runs asynchronously in its own POSIX process group. A normally
