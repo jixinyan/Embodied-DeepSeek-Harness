@@ -37,6 +37,7 @@ const implementation = await Promise.all(
   [
     'apps/server/src/runtime.ts',
     'harness/agent-runtime/models/src/model-images.ts',
+    'harness/agent-runtime/models/src/model-failures.ts',
     'harness/agent-runtime/models/src/responses-input.ts',
     'harness/agent-runtime/models/src/openai-compatible.ts',
     'harness/agent-runtime/models/src/openai-responses.ts',

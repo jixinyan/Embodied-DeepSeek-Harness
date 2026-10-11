@@ -9,6 +9,7 @@ import {
   readNativeWorkspaceConfiguration,
 } from '../apps/server/src/native-workspace.mjs';
 import { nativeDeploymentRoot } from '../apps/server/src/native-deployment.mjs';
+import { modelHttpFailure } from '../harness/agent-runtime/models/src/model-failures.ts';
 
 const { values } = parseArgs({
   options: { config: { type: 'string' }, output: { type: 'string' } },
@@ -27,6 +28,8 @@ const settings = await readNativeWorkspaceConfiguration({
 const sources = [
   configurationPath,
   resolve(dirname(configurationPath), settings.configuration.modelConfiguration),
+  resolve(nativeDeploymentRoot, 'harness/agent-runtime/models/src/model-failures.ts'),
+  resolve(nativeDeploymentRoot, 'scripts/check-native-workspace-readiness.mjs'),
   ...Object.values(settings.configuration.deployments).map((entry) =>
     resolve(dirname(configurationPath), entry.configuration),
   ),
@@ -104,8 +107,37 @@ try {
       ]),
     );
   }
+  const httpErrors = [];
+  for (const byteLimit of [64 * 1024, 1]) {
+    const signal = AbortSignal.timeout(30_000);
+    const response = await fetch(`${server.url}/api/sessions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+      signal,
+    });
+    assert.equal(response.status, 400);
+    const error = await modelHttpFailure(response, byteLimit, signal);
+    assert.equal(error.code, 'HTTP_ERROR');
+    assert.equal(error.failure.status, 400);
+    assert.equal(response.bodyUsed, true);
+    assert.equal(response.body.locked, false);
+    assert.equal(error.message, 'Model endpoint returned HTTP 400.');
+    httpErrors.push({ status: response.status, byteLimit, code: error.code, readerReleased: true });
+  }
+  const forbidden = await fetch(`${server.url}/api/config`, {
+    headers: { Origin: 'https://example.invalid' },
+    signal: AbortSignal.timeout(30_000),
+  });
+  assert.equal(forbidden.status, 403);
+  const auth = await modelHttpFailure(forbidden, 64 * 1024, new AbortController().signal);
+  assert.equal(auth.code, 'AUTH');
+  assert.equal(auth.failure.status, 403);
+  await forbidden.body.cancel();
+  httpErrors.push({ status: forbidden.status, code: auth.code, readerReleased: true });
   const sessions = await get('/api/sessions');
   assert.equal(sessions.activeId, null);
+  assert.equal(sessions.sessions.length, 0);
   const services = await get('/api/services');
   await save('services.json', services);
   for (const service of services.services) {
@@ -118,6 +150,7 @@ try {
     deploymentDigest: configuration.deploymentDigest,
     sources: hashes,
     profiles: matrix,
+    httpErrors,
     nativeEnvironmentAllocated: false,
     modelInferencePerformed: false,
     managedProcessesStarted: false,

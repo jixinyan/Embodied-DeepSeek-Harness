@@ -7,6 +7,48 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Model failure admission
+
+`models/src/model-failures.ts` supplies the common HTTP boundary for cloud
+Responses and local/cloud Chat Completions. A JSON error body is read only for
+400/413/429 and within the configured response limit, capped at 64 KiB. Exact
+`context_length_exceeded` on 400/413 becomes DSH `CONTEXT_WINDOW_EXCEEDED`.
+Authentication status remains authoritative. Quota codes/types on 429 become
+terminal `QUOTA`; other 429 responses become `RATE_LIMIT`, 5xx becomes `SERVER`
+and 408 becomes `TIMEOUT`. Positive provider retry timing and request IDs are
+retained without error prose. Responses `error` and `response.failed` events
+retain the same structured classifications. Native DSH extensions own recovery.
+
+Thirteen authored tests check classification, status admission, native retry
+taxonomy, timing, input preservation and cancellation before metadata access.
+They supply scalar/object inputs to production functions, provide no model
+response and perform no provider request. Source CI saves the separate JUnit
+report as `model-failures.xml`; these tests do not contribute to the production
+diagnostic case count.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json --test \
+  tests/runtime/model-failures.test.ts
+```
+
+The configured production HTTP workspace separately checks two actual rejected
+Session requests (400) through the shared reader, including a one-byte bound,
+and an actual cross-origin rejection (403). Error readers release, no Session is
+created, all four providers/services remain unallocated, and the writer/listener
+release. These are application HTTP errors, with no provider error envelope or
+model result. Loaded-provider errors, live failure SSE and successful overflow
+recovery retain their actual-model acceptance requirements.
+
+Evidence: `.local/work/model-failures-20261011.xml` and
+`.local/work/model-failure-readiness-20261011/readiness.json`.
+
+The complete current-source CPU campaign passes 36 components and 1,165 cases.
+Independent inspection checks 574 source/input comparisons, the unchanged
+original journals/images and 36 absent diagnostic process groups. Original
+Responses/output and complete image-context admission retain their documented
+scopes. All model/provider/simulator/GPU allocations remain zero. Evidence:
+`.local/work/model-failures-cpu-campaign-20261011/independently-verified.json`.
+
 ## Protocol-specific model request options
 
 `models/src/configuration.ts` admits request settings for the selected protocol

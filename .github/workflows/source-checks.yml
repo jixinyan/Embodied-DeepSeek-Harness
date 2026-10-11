@@ -54,6 +54,11 @@ jobs:
         env:
           CUDA_VISIBLE_DEVICES: ''
           TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
+      - name: Check model failure classification and cancellation admission
+        run: pnpm exec tsx --tsconfig tsconfig.runtime.json --test --test-reporter=junit tests/runtime/model-failures.test.ts > .local/work/cpu-runtime/model-failures.xml
+        env:
+          CUDA_VISIBLE_DEVICES: ''
+          TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
       - name: Preserve installation provenance (v7.0.2)
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
@@ -106,3 +111,4 @@ jobs:
             .local/work/cpu-runtime/task-plans/
             .local/work/cpu-runtime/evidence.json
             .local/work/cpu-runtime/model-request-options.xml
+            .local/work/cpu-runtime/model-failures.xml

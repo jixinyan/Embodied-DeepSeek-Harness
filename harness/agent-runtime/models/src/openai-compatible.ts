@@ -1,8 +1,6 @@
 import {
-  CONTEXT_WINDOW_EXCEEDED_CODE,
   LlmAdapter,
   LlmError,
-  ProviderRequestId,
   type ContentBlock,
   type GenerateOptions,
   type LlmModelInfo,
@@ -22,6 +20,7 @@ import {
   resolveModelImage,
   type ModelImageResolver,
 } from './model-images.js';
+import { modelHttpFailure } from './model-failures.js';
 
 export interface OpenAICompatibleModel {
   id: string;
@@ -98,44 +97,6 @@ function safeTransportCode(error: unknown): string | undefined {
   if (!cause || typeof cause !== 'object') return undefined;
   const causeCode = 'code' in cause ? cause.code : undefined;
   return typeof causeCode === 'string' && transportCodes.has(causeCode) ? causeCode : undefined;
-}
-/** Recognize only an explicit structured overflow; never expose provider error text. */
-async function contextOverflow(
-  response: Response,
-  maxBytes: number,
-  signal: AbortSignal,
-): Promise<boolean> {
-  if (![400, 413].includes(response.status) || !response.body) return false;
-  const mediaType = response.headers.get('content-type')?.split(';')[0]?.trim().toLowerCase();
-  if (!mediaType || !/^application\/(?:[a-z0-9.+-]+\+)?json$/.test(mediaType)) return false;
-  const reader = response.body.getReader();
-  try {
-    const chunks: Uint8Array[] = [];
-    let size = 0;
-    while (true) {
-      signal.throwIfAborted();
-      const { done, value } = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > maxBytes) return false;
-      chunks.push(value);
-    }
-    const parsed: unknown = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-    if (!parsed || typeof parsed !== 'object' || !('error' in parsed)) return false;
-    const error = parsed.error;
-    return Boolean(
-      error &&
-        typeof error === 'object' &&
-        'code' in error &&
-        error.code === 'context_length_exceeded',
-    );
-  } catch {
-    signal.throwIfAborted();
-    return false;
-  } finally {
-    await reader.cancel().catch(() => {});
-    reader.releaseLock();
-  }
 }
 /** Native DSH adapter shared by local vLLM and remote Chat Completions endpoints. */
 export class OpenAICompatibleAdapter extends LlmAdapter {
@@ -314,34 +275,7 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
         body,
       });
       if (!response.ok) {
-        const retry = response.headers.get('retry-after');
-        const delay = retry
-          ? Number.isFinite(Number(retry))
-            ? Number(retry) * 1000
-            : Date.parse(retry) - Date.now()
-          : 0;
-        const requestId = response.headers.get('x-request-id');
-        const overflow = await contextOverflow(
-          response,
-          Math.min(this.responseLimit, 64 * 1024),
-          signal,
-        );
-        signal.throwIfAborted();
-        throw new LlmError(
-          `Model endpoint returned HTTP ${response.status}.`,
-          response.status === 401 || response.status === 403
-            ? 'AUTH'
-            : response.status === 429
-              ? 'RATE_LIMIT'
-              : overflow
-                ? CONTEXT_WINDOW_EXCEEDED_CODE
-                : 'HTTP_ERROR',
-          {
-            status: response.status,
-            ...(delay > 0 && Number.isFinite(delay) ? { providerRetryAfterMs: delay } : {}),
-            ...(requestId ? { requestId: ProviderRequestId(requestId) } : {}),
-          },
-        );
+        throw await modelHttpFailure(response, this.responseLimit, signal);
       }
       if (
         !response.body ||

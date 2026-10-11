@@ -8,6 +8,21 @@ configuration declares protocol, capabilities, context capacity, output defaults
 authentication and image limits. Native DSH owns streaming, tool execution,
 model retries and cancellation.
 
+`src/model-failures.ts` owns shared HTTP error admission for both adapters.
+Bounded JSON error fields identify explicit context overflow and terminal quota
+conditions; HTTP status retains authority for authentication, rate limits,
+server errors and timeouts. The error retains status, request ID and positive
+`Retry-After` timing without exposing provider prose. Responses failure events
+use the same structured code/type classification. Adapters make one request;
+native DSH extensions own recovery. The
+[CPU failure checks](../../../docs/implementation/cpu-release-validation.md#model-failure-admission)
+separate authored classification checks and actual production HTTP errors from
+loaded-model/context-recovery acceptance. Field definitions follow the official
+[Response error type](https://github.com/openai/openai-python/blob/main/src/openai/types/responses/response_error.py)
+and [stream error type](https://github.com/openai/openai-python/blob/main/src/openai/types/responses/response_error_event.py).
+Quota codes and retry guidance follow the official
+[API error guide](https://developers.openai.com/api/docs/guides/error-codes).
+
 `src/model-images.ts` owns shared image-reference and request-version admission.
 Both adapters check the intrinsic attachment identity, complete request metadata,
 encoded byte length and cancellation, then retain detached metadata/data snapshots.

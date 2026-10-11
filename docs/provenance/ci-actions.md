@@ -84,6 +84,12 @@ Its JUnit report is retained as `model-request-options.xml` in the same runtime
 artifact. These authored checks have their own scope and are excluded from the
 production diagnostic case count above.
 
+Source CI also runs thirteen authored model-failure classification/cancellation
+tests and preserves `model-failures.xml`. These checks exercise production
+functions and native retry taxonomy without a provider response or model
+allocation. Actual application HTTP error-reader checks belong to the configured
+workspace diagnostic; loaded-provider failure/recovery acceptance remains separate.
+
 The actual downloaded eight-case JUnit report has zero failures/skips. Its
 configuration/test/workflow sources and all four published model files independently
 match `620d507`; the XML is read with the standard library's ElementTree.

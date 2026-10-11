@@ -26,6 +26,7 @@ const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const implementation = await Promise.all(
   [
     'harness/agent-runtime/models/src/openai-responses.ts',
+    'harness/agent-runtime/models/src/model-failures.ts',
     'harness/agent-runtime/models/src/responses-function-calls.ts',
     'harness/agent-runtime/models/src/dsh/llm/assembler.ts',
     'harness/agent-runtime/models/src/dsh/llm/assistant-stream.ts',

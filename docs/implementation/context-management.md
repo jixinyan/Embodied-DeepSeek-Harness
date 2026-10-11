@@ -140,7 +140,7 @@ image transport require actual-model acceptance.
 
 - Automatic summarization failures preserve the original surface and follow DSH's
   warning/continue policy. Thresholds are proactive heuristics, not a hard token ceiling.
-- Native overflow recovery now receives the canonical error from the HTTP adapter
+- Native overflow recovery receives the canonical error from both HTTP adapters
   when status 400/413 contains a bounded JSON body with the exact
   `error.code: "context_length_exceeded"`. Ordinary bad requests, status-only 413,
   auth/rate-limit errors, prose matches and malformed/oversized bodies do not trigger
@@ -148,6 +148,11 @@ image transport require actual-model acceptance.
   DSH retries only after durable surface reduction and within `maxOverflowRetries`.
   If there is no useful reduction, summary failure preserves the original overflow;
   repeated overflow stops at the retry bound. The adapter never retries requests.
+  The shared `models/src/model-failures.ts` boundary also classifies structured
+  Responses stream failures and preserves HTTP status/request-ID/retry timing.
+  Quota errors have the terminal DSH `QUOTA` classification; transient rate/server
+  errors retain `RATE_LIMIT`/`SERVER`. Classification does not establish successful
+  model-driven recovery; actual route-specific acceptance remains required.
 - Image token estimates are approximate without provider-specific pricing metadata.
   The optional pruner targets tool text; it is not a visual frame-selection policy.
   Without `visualHistory`, per-request image count/byte bounds can be reached before pressure

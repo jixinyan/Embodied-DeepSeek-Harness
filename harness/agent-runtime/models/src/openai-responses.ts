@@ -5,7 +5,6 @@ import { EventSourceParserStream } from 'eventsource-parser/stream';
 import {
   LlmAdapter,
   LlmError,
-  ProviderRequestId,
   ReasoningEffortId,
   type GenerateOptions,
   type LlmModelInfo,
@@ -15,6 +14,7 @@ import {
 import type { ModelImageResolver } from './model-images.js';
 import { responsesInputItems } from './responses-input.js';
 import { ResponsesFunctionCalls, responsesEventType } from './responses-function-calls.js';
+import { modelHttpFailure, modelProviderFailureCode } from './model-failures.js';
 
 export interface OpenAIResponsesModel {
   id: string;
@@ -239,19 +239,7 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
         body,
       });
       if (!response.ok) {
-        const requestId = response.headers.get('x-request-id');
-        throw new LlmError(
-          `Responses endpoint returned HTTP ${response.status}.`,
-          response.status === 401 || response.status === 403
-            ? 'AUTH'
-            : response.status === 429
-              ? 'RATE_LIMIT'
-              : 'HTTP_ERROR',
-          {
-            status: response.status,
-            ...(requestId ? { requestId: ProviderRequestId(requestId) } : {}),
-          },
-        );
+        throw await modelHttpFailure(response, this.responseLimit, signal);
       }
       if (
         !response.body ||
@@ -344,7 +332,10 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
         };
         return;
       } else if (event === 'response.failed' || event === 'error') {
-        throw new LlmError('Responses model returned a failed event.', 'PROVIDER_ERROR');
+        throw new LlmError(
+          'Responses model returned a failed event.',
+          modelProviderFailureCode(event === 'response.failed' ? data?.response?.error : data),
+        );
       }
     }
     throw new LlmError('Responses stream ended without a terminal event.', 'STREAM_CLOSED');
