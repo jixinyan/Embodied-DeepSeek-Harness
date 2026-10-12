@@ -1,6 +1,6 @@
 # v1 delivery and acceptance
 
-Updated: 2026-10-11. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
+Updated: 2026-10-12. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
 RoboDojo task success, real SAM/YOLO tool calls and source-bound RoboCasa RGB-D
 geometry are verified. Reusable native factories, complete retention bindings,
 packaged Desktop lifecycle and selected DSH recovery/JSON portability have production
@@ -16,6 +16,17 @@ checkpoint or successful simulator reset does not complete a capability. Each ro
 below needs an implementation, executable checks and retained acceptance evidence.
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
+
+Current packaged Desktop source `887d707` passes three CPU service cycles,
+application restart and Console reuse/reload/reopening with all four configured
+provider profiles. Restart retains the configuration and remains idle. Independent
+inspection matches nineteen source/package/configuration identities and twelve
+profile selections; all five application/service processes, three listeners and
+writer ownership release. The production LocalStore remains empty and unchanged,
+with zero Session/model/policy/simulator/GPU allocations. This completes the tested
+unallocated configuration/lifecycle scope; allocated switching and complete native
+task/configuration workflows retain their release requirements. See
+[packaged Desktop CPU workflow](cpu-release-validation.md#packaged-desktop-cpu-workflow).
 
 Fresh CPU installation passes on macOS/Python 3.14, Linux/Python 3.12 and
 GitHub/Python 3.11 with frozen pnpm dependencies, pinned runtime constraints and

@@ -661,6 +661,18 @@ close and reopen without replacing its service process. The reopened Console
 selects every configured profile, exposes no launcher IPC and completes application
 quit with confirmed application/service/writer/listener release.
 
+Clean `887d707` passes the v2 workflow on macOS with all four configured providers,
+ten source-matched ASAR files, twelve profile selections, three service cycles and
+zero browser errors. Independent inspection matches nineteen source/package/
+configuration identities, confirms five released application/service processes
+and three refused listeners, and reopens the original empty production LocalStore.
+Its journal remains unchanged and writer ownership releases. Application restart
+preserves the selected path and stays idle. Native allocations remain zero.
+Evidence: `.local/work/desktop-restart-configuration-20261012/acceptance.json` and
+`.local/work/desktop-restart-configuration-20261012/independently-verified.json`.
+Linux restart/reopening and allocated profile/task acceptance retain their
+platform/native gates.
+
 The `bd8cb9d` diagnostic passes on macOS and Linux with four configured profiles,
 ten packaged files, two window/service cycles and zero browser errors. Linux uses
 Ubuntu 22.04's Weston 9.0.0 headless backend and Pixman CPU renderer, installed in

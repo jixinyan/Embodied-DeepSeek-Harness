@@ -1,10 +1,19 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.141 · 2026-10-12
+Version: v1.142 · 2026-10-12
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
+
+Packaged Desktop CPU acceptance at `887d707` covers all four configured provider
+profiles through three explicit service cycles, application restart and Console
+reuse/reload/reopening. Restart preserves the selected configuration and remains
+idle. Independent inspection matches nineteen source/package/configuration
+identities, twelve component selections, five released application/service
+processes, three refused former listeners and an unchanged empty production
+LocalStore. These checks perform no Session, model, policy, simulator or GPU allocation.
+Allocated task/configuration workflows retain the native release requirements.
 
 Model-request recovery uses the pinned native DSH retry plugin in
 `agents/src/dsh/model-retry`. Each endpoint supplies its immutable `retryPolicy`;

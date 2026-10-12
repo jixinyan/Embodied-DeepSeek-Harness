@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-12 · Spec v1.141 · v1 release acceptance in progress.
+Updated: 2026-10-12 · Spec v1.142 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,19 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Packaged Desktop source `887d707` passes three service cycles with all four
+configured provider profiles. Application restart retains its saved configuration
+and stays idle; Console reuse, reload, close and reopening preserve the same owned
+service. Independent inspection matches nineteen source/package/configuration
+identities and twelve profile selections, confirms five absent application/service
+processes and three refused listeners, and reopens the actual empty production
+LocalStore without changing its journal. Every writer releases; browser errors and
+Session/model/policy/simulator/GPU allocations remain zero. Evidence:
+`.local/work/desktop-restart-configuration-20261012/acceptance.json` and
+`.local/work/desktop-restart-configuration-20261012/independently-verified.json`.
+Complete source checks pass. Allocated native task and configuration workflows
+retain their release requirements.
 
 Native source relationships now belong to `native-record-references.ts`; the
 workspace factory retains composition, SKILL export leases and image sources.

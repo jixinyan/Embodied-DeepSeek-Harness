@@ -100,7 +100,7 @@ implementations load in their separately configured service processes.
 | Inspect role communication and Agent trace | [coordination.js](../../apps/console/public/coordination.js) and [session-audit.js](../../apps/console/public/session-audit.js) |
 | Read actual run updates | [run-update.js](../../apps/console/public/run-update.js) |
 | Configure and start the desktop launcher | [apps/desktop](../../apps/desktop/README.md) |
-| Check packaged Desktop selectors, window isolation and service shutdown using CPU rendering | [check-desktop-configuration-cpu.mjs](../../scripts/check-desktop-configuration-cpu.mjs) |
+| Check packaged Desktop selectors, restart, Console reopening, isolation and owned-service shutdown using CPU rendering | [check-desktop-configuration-cpu.mjs](../../scripts/check-desktop-configuration-cpu.mjs) |
 | Inspect a fresh isolated CPU installation and optional installation provenance | [check-cpu-installation.py](../../scripts/check-cpu-installation.py) and [setup](setup.md) |
 | Verify complete CPU CI artifacts against their exact Git source and publish consolidated inspection | [check-cpu-runtime-evidence.py](../../scripts/check-cpu-runtime-evidence.py) |
 | Exercise actual DSH core dispatch, private files and local clarification persistence | [check-core-tools-offline.mjs](../../scripts/check-core-tools-offline.mjs) |
