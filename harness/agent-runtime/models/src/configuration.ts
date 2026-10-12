@@ -8,6 +8,15 @@ import { LlmError, ReasoningEffortId } from '@deepseek-ai/dsh-llm';
 import { OpenAICompatibleAdapter, type OpenAICompatibleModel } from './openai-compatible.js';
 import { OpenAIResponsesAdapter } from './openai-responses.js';
 import type { LlmAdapter } from '@deepseek-ai/dsh-llm';
+import { resolveRetryPolicy, type RetryPolicyConfig } from './dsh/llm/retry-policy.ts';
+
+const retryPolicy = z
+  .custom<RetryPolicyConfig>()
+  .refine((value) => {
+    resolveRetryPolicy(value, 'model endpoint retryPolicy');
+    return true;
+  })
+  .transform((value) => structuredClone(value));
 
 const identifier = z
   .string()
@@ -45,6 +54,7 @@ const endpoint = z
       );
     }, 'Expected an HTTP(S) API root without URL credentials, query or fragment.'),
     authentication,
+    retryPolicy: retryPolicy.optional(),
     timeoutMs: bounded.default(120_000),
     maxRequestBytes: bounded.default(32 * 1024 * 1024),
     maxResponseBytes: bounded.default(32 * 1024 * 1024),
@@ -190,6 +200,7 @@ export function createConfiguredModels(
       maxRequestBytes: options.maxRequestBytes,
       maxResponseBytes: options.maxResponseBytes,
       maxImagesPerRequest: options.maxImagesPerRequest,
+      ...(options.retryPolicy === undefined ? {} : { retryPolicy: options.retryPolicy }),
       ...credentials,
       ...(images
         ? {

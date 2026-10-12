@@ -34,6 +34,7 @@ const actorEvents = new Set([
   'agent.status',
   'agent.context',
   'agent.context-capacity',
+  'agent.model-retry',
   'agent.todos',
   'agent.output',
   'agent.turn-ended',
@@ -98,7 +99,7 @@ export class RunEventReferences {
       ? Object.freeze({ version: extension.version, inspect: extension.inspect.bind(extension) })
       : undefined;
     this.version =
-      '1:' +
+      '2:' +
       createHash('sha256')
         .update(JSON.stringify(extension?.version ?? null))
         .digest('hex');

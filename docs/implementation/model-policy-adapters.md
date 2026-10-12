@@ -125,6 +125,14 @@ are rejected. Truncated streams, missing finish reasons,
 oversized responses and deadlines fail explicitly rather than becoming successful
 answers. No automatic transport retry is added beneath DSH.
 
+The host mounts the pinned native DSH model-request retry plugin. Endpoint
+`retryPolicy` supplies immutable provider settings for bounded normal backoff
+or explicit always mode. Both transports report network failures as native
+`TRANSPORT`. Retry waits and starts retain Session/assignment correlation in
+the Console, and cancellation/disposal drains pending waits. Planner retains
+physical retry/replan ownership. See the
+[configuration fields](model-configuration.md#model-request-retries).
+
 The HTTP adapter reads at most the smaller of 64 KiB and `maxResponseBytes` from
 candidate 400/413 JSON errors. EDH's narrow compatibility rule maps exact
 `error.code: "context_length_exceeded"` to DSH's canonical context error. It does

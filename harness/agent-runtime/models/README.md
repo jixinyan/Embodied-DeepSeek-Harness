@@ -23,6 +23,15 @@ and [stream error type](https://github.com/openai/openai-python/blob/main/src/op
 Quota codes and retry guidance follow the official
 [API error guide](https://developers.openai.com/api/docs/guides/error-codes).
 
+`agents/src/dsh/model-retry` contains the pinned native DSH retry plugin, mounted by
+`apps/server/src/runtime.ts`. Each model endpoint owns its `retryPolicy`.
+The default normal policy permits five retries for transient request failures;
+authentication and quota failures terminate under that policy. The native plugin
+records its retry chain and cancels pending waits during Session/host disposal.
+TeamSessions publishes correlated `agent.model-retry` events to the Console and
+retention owners. Planner continues to own physical retry/replan decisions.
+See [configuration](../../../docs/implementation/model-configuration.md#model-request-retries).
+
 `src/model-images.ts` owns shared image-reference and request-version admission.
 Both adapters check the intrinsic attachment identity, complete request metadata,
 encoded byte length and cancellation, then retain detached metadata/data snapshots.

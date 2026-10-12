@@ -7,6 +7,50 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Native model-request retries
+
+`scripts/check-model-retry-offline.mjs` starts the production native DSH host
+and configured Chat Completions/Responses adapters against a closed local TCP
+port. Genuine connection failures drive the original `llm-retry` plugin.
+Sixteen checks retain eighteen native journals and 44 failed request attempts,
+with zero provider responses or tool/physical execution. They cover bounded and
+disabled retries, concurrent independent Sessions, retry reset on a later turn,
+user cancellation, host disposal, explicit always-mode cancellation and loaded
+Team trace. Real 15-second retry waits release within the diagnostic's three-second
+bound when cancellation/disposal occurs. Retry/start events match their original
+Session sequences and retain distinct chains across Sessions/turns.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-model-retry-offline.mjs \
+  --output .local/work/model-retry-check
+pnpm exec tsx --tsconfig tsconfig.runtime.json --test \
+  tests/runtime/model-retry-configuration.test.ts
+```
+
+Fifteen authored configuration cases verify native policy defaults, route capture,
+input independence, disabled/always settings and invalid fields/counts/codes/backoff.
+They perform no HTTP request. An independent TypeScript printer comparison of the
+local retry executor with pinned DSH revision
+`d347e703908d0406b7a7ef80e3a0e594d86b2215` confirms identical executable source;
+only comments differ. The import map retains both source hashes.
+
+The complete CPU campaign includes `model-retry`. Source CI retains its journals,
+both Team traces and separate `model-retry-configuration.xml`. Consolidated v4
+artifact admission verifies every retry case, failure stream, journal digest,
+Team correlation and exact-commit source. Actual cloud/vLLM successful recovery
+and provider-specific retry timing require their native acceptance checks.
+
+The complete current-source CPU campaign passes 37 components and 1,181 cases.
+Independent inspection verifies 617 source/input comparisons, unchanged original
+journals/images and 37 absent diagnostic process groups. Original Responses/output
+and image-context checks retain their recorded acceptance boundaries. No model,
+simulator or GPU allocates. Evidence:
+`.local/work/model-retry-cpu-campaign-20261012/independently-verified.json`.
+
+Evidence: `.local/work/model-retry-cpu-campaign-20261012/model-retry/acceptance.json`,
+`.local/work/model-retry-configuration-20261011.xml` and
+`.local/work/model-retry-source-independently-verified-20261011.json`.
+
 ## Model failure admission
 
 `models/src/model-failures.ts` supplies the common HTTP boundary for cloud

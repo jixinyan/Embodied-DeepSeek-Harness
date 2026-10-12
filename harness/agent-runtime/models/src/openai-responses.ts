@@ -15,6 +15,11 @@ import type { ModelImageResolver } from './model-images.js';
 import { responsesInputItems } from './responses-input.js';
 import { ResponsesFunctionCalls, responsesEventType } from './responses-function-calls.js';
 import { modelHttpFailure, modelProviderFailureCode } from './model-failures.js';
+import {
+  resolveRetryPolicy,
+  type ResolvedRetryPolicy,
+  type RetryPolicyConfig,
+} from './dsh/llm/retry-policy.ts';
 
 export interface OpenAIResponsesModel {
   id: string;
@@ -34,6 +39,7 @@ export interface OpenAIResponsesOptions {
   maxRequestBytes?: number;
   maxResponseBytes?: number;
   maxImagesPerRequest?: number;
+  retryPolicy?: RetryPolicyConfig;
 }
 
 function positive(value: number | undefined, fallback: number): number {
@@ -109,6 +115,7 @@ function usage(
 
 /** OpenAI Responses adapter. It is a transport adapter only; DSH still owns tool dispatch and the loop. */
 export class OpenAIResponsesAdapter extends LlmAdapter {
+  private readonly retryPolicy: ResolvedRetryPolicy;
   private readonly endpoint: string;
   private readonly config: OpenAIResponsesOptions;
   private readonly models: readonly OpenAIResponsesModel[];
@@ -119,6 +126,7 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
 
   constructor(options: OpenAIResponsesOptions) {
     super();
+    this.retryPolicy = resolveRetryPolicy(options.retryPolicy, 'Responses retryPolicy');
     const url = new URL(options.baseURL);
     if (
       !['http:', 'https:'].includes(url.protocol) ||
@@ -145,6 +153,9 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
     this.imageLimit = positive(options.maxImagesPerRequest, 16);
   }
 
+  override providerRetryPolicy(): ResolvedRetryPolicy {
+    return this.retryPolicy;
+  }
   override async listModels(provider: string): Promise<readonly LlmModelInfo[]> {
     return this.models.map((model) => ({
       provider,
@@ -267,7 +278,7 @@ export class OpenAIResponsesAdapter extends LlmAdapter {
       if (options.signal?.aborted) throw options.signal.reason;
       if (timeoutOf(signal)) throw new LlmError('Model request timed out.', 'TIMEOUT');
       if (error instanceof LlmError) throw error;
-      throw new LlmError(`Responses request failed during ${stage}.`, 'TRANSPORT_ERROR', {
+      throw new LlmError(`Responses request failed during ${stage}.`, 'TRANSPORT', {
         cause: error,
         ...(response ? { status: response.status } : {}),
       });

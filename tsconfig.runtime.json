@@ -174,10 +174,10 @@
         "harness/agent-runtime/foundation/src/dsh/commands/*.ts"
       ],
       "@deepseek-ai/dsh-llm-retry": [
-        "harness/agent-runtime/models/src/dsh/retry-types/types.ts"
+        "harness/agent-runtime/agents/src/dsh/model-retry/index.ts"
       ],
       "@deepseek-ai/dsh-llm-retry/*": [
-        "harness/agent-runtime/models/src/dsh/retry-types/*.ts"
+        "harness/agent-runtime/agents/src/dsh/model-retry/*.ts"
       ]
     }
   }

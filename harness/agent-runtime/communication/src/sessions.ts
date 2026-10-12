@@ -172,6 +172,12 @@ export class TeamSessions {
           this.hooks.event('agent.context', { ...identity, type: event.type, data: event.data });
         if (event.type === 'request/context')
           this.hooks.event('agent.context-capacity', { ...identity, context: event.data });
+        if (event.type === 'llm/retry' || event.type === 'llm/retry-started')
+          this.hooks.event('agent.model-retry', {
+            ...identity,
+            type: event.type,
+            data: event.data,
+          });
         if (event.type === 'todo/write')
           this.hooks.event('agent.todos', { ...identity, todos: event.data.todos });
         if (event.type === 'assistant/message')

@@ -49,6 +49,7 @@ continue to use installed complete launch profiles and their existing validation
 | `systemRole`                          | Chat Completions: `system` by default; configurable as `developer`. Responses uses `instructions`.                                            |
 | `maxTokensField`                      | Chat Completions: `max_tokens` by default; configurable as `max_completion_tokens`. Responses uses `max_output_tokens`.                       |
 | `timeoutMs`                           | Positive request deadline; default 120,000 ms                                                                                                 |
+| `retryPolicy`                         | Native DSH provider-owned request retry policy; omission selects bounded normal defaults                                                       |
 | `maxRequestBytes`, `maxResponseBytes` | Encoded transport limits; each defaults to 32 MiB                                                                                             |
 | `maxImagesPerRequest`                 | Default 16 image blocks                                                                                                                       |
 | `imageRequest`                        | Request-image projection policy; default 1,048,576 pixels and 2 MiB encoded-byte target                                                       |
@@ -114,6 +115,53 @@ both native API output and DSH streaming translation with strict `auto` and
 blocks. Both responses must preserve the receipt's exact `planWrite`, including
 identities, versions, plan items and criteria. This check exercises model transport
 without executing physical tools.
+
+## Model-request retries
+
+Each endpoint may configure `retryPolicy`. The native DSH `llm-retry` plugin
+executes that policy through `agent/request-error`; adapters perform one request
+per native attempt. Both Chat Completions and Responses support these fields.
+For example, a bounded endpoint policy can specify:
+
+```yaml
+retryPolicy:
+  mode: normal
+  maxRetries: 3
+  retryableCodes: [EMPTY_RESPONSE, RATE_LIMIT, SERVER, TIMEOUT, TRANSPORT]
+  backoff:
+    initialDelayMs: 500
+    maxDelayMs: 10000
+    jitterRatio: 0.1
+```
+
+Omission selects `normal` with five retries after the original request, a 500 ms
+initial delay, a 10,000 ms maximum and 0.1 jitter. `maxRetries: 0` disables retries.
+Normal mode retries only the configured codes. Its default codes leave `AUTH`,
+`QUOTA`, malformed output, invalid configuration and context overflow outside
+transient retry. The configured compaction extension handles context overflow.
+Positive provider retry timing is admitted up to the policy's maximum; a larger
+provider delay terminates normal recovery. All waits observe native cancellation.
+
+The explicit native `always` mode retries every request failure until success,
+cancellation or disposal. It has no retry-count limit, including for authentication
+and quota failures. Its active settings are `mode` and `backoff`; layered
+`maxRetries`/`retryableCodes` values remain inactive under that native mode.
+Normal mode supplies the bounded product default. Unknown keys, invalid counts,
+empty/duplicate failure codes and invalid delay/jitter bounds fail configuration
+reading. Adapters capture a detached immutable resolved policy before registration.
+Configuration identity includes the selected policy without credential values.
+
+Native Session records contain `llm/retry` before waiting and `llm/retry-started`
+after a completed wait. The retry chain carries provider, turn, step, failure,
+count and delay. TeamSessions publishes `agent.model-retry` with assignment,
+member, Session and native sequence identity; the Console displays waiting and
+started transitions with their correlation details. These are model-request
+events. Planner retains ownership of embodied attempts and task retry/replan.
+
+The [CPU retry diagnostic](cpu-release-validation.md#native-model-request-retries)
+uses actual refused TCP connections through both production adapters and verifies
+native retry, independent Sessions, later turns, cancellation, host disposal and
+Team trace. Actual model recovery still requires a running provider.
 
 ## Credentials, images and configuration identity
 

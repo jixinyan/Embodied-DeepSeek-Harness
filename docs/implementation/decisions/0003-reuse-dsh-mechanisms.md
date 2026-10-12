@@ -52,10 +52,15 @@ native tool call is not a verified goal. These are the reasons for embodied addi
 ## Integration boundary
 
 `createDshHost` mounts original LLM, Session, projection, system-prompt, tool,
-tool-call timeout, Agent and Agent-loop services. Configured cloud/local adapters
+tool-call timeout, Agent, Agent-loop and model-request retry services. Configured cloud/local adapters
 register with that host. TeamSessions creates independent role contexts with
 explicit briefs, native TODOs, scoped tools, follow-ups and cooperative cancellation.
 Optional native context management retains its explicit deployment policy.
+Model-request retry configuration belongs to each provider route and is captured
+immutably during registration. The selected native retry plugin executes backoff,
+records retry identities and drains waits on cancellation/disposal. Context overflow
+continues through the separately configured native compaction extension. Physical
+retry/replan decisions remain with the decision owner.
 
 LocalStore persists domain records, native audits and scoped evidence through the
 application's lifecycle owners. Native factory checks and original recorded-task

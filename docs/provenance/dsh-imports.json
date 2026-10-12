@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/deepseek-ai/deepseek-harness",
   "commit": "d347e703908d0406b7a7ef80e3a0e594d86b2215",
-  "selection": "Transitive TypeScript imports, exports, type imports and module augmentations from the five audited seeds plus session-projection. Optional manifest peers not imported by this graph are excluded. The unmodified cooperative timeout policy is additionally imported for the upper application. Context integration additionally imports the unchanged compaction services and replay-aware token meter, plus command identity and retry event types only (no command/retry service). Image integration imports six local attachment primitives used by the EDH image service.",
+  "selection": "Transitive TypeScript imports, exports, type imports and module augmentations from the five audited seeds plus session-projection. Optional manifest peers not imported by this graph are excluded. The unmodified cooperative timeout policy is additionally imported for the upper application. Context integration additionally imports the compaction services and replay-aware token meter, plus command identity types. Model recovery imports the native provider-routed retry executor and event identities. Image integration imports six local attachment primitives used by the EDH image service.",
   "attachment_scope": "The LLM uses the native attachment interface. The local image provider uses pinned source primitives and is mounted explicitly by deployment-owned contexts.",
   "release_adaptations": [
     {
@@ -308,8 +308,8 @@
     {
       "name": "@deepseek-ai/dsh-llm-retry",
       "source": "packages/llm/llm-retry",
-      "destination": "harness/agent-runtime/models/src/dsh/retry-types",
-      "owner": "models",
+      "destination": "harness/agent-runtime/agents/src/dsh/model-retry",
+      "owner": "agents",
       "manifest_sha256": "e978a3658fb40364c09c1d41890c3350e255600966380c1123c8e305f40414cd",
       "license": "MIT"
     }
@@ -1214,17 +1214,26 @@
     },
     {
       "source": "packages/llm/llm-retry/src/brand.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/retry-types/brand.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/model-retry/brand.ts",
       "source_sha256": "3c30dc58c1ea674128a5ed98a6158fba654147c06b245522ccb1b1b08d45d721",
       "local_sha256": "3c30dc58c1ea674128a5ed98a6158fba654147c06b245522ccb1b1b08d45d721",
       "modifications": []
     },
     {
       "source": "packages/llm/llm-retry/src/types.ts",
-      "destination": "harness/agent-runtime/models/src/dsh/retry-types/types.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/model-retry/types.ts",
       "source_sha256": "9c377ed575053427da1f0cef97c056aee0f6c4a80d413dea0f70086bbd05fb0b",
       "local_sha256": "9c377ed575053427da1f0cef97c056aee0f6c4a80d413dea0f70086bbd05fb0b",
       "modifications": []
+    },
+    {
+      "source": "packages/llm/llm-retry/src/index.ts",
+      "destination": "harness/agent-runtime/agents/src/dsh/model-retry/index.ts",
+      "source_sha256": "d33553781ed2118aab3b249c159fae550d359627565e4714c9ea599e474b8093",
+      "local_sha256": "a9bf2f1bf37e84ce38cadb291c06aed487cf41c63ce257bd98e2bea44e60503d",
+      "modifications": [
+        "Translate and shorten source comments; preserve the pinned retry implementation unchanged."
+      ]
     }
   ],
   "aliases": {
@@ -1379,7 +1388,7 @@
       "harness/agent-runtime/foundation/src/dsh/commands/brand.ts"
     ],
     "@deepseek-ai/dsh-llm-retry": [
-      "harness/agent-runtime/models/src/dsh/retry-types/types.ts"
+      "harness/agent-runtime/agents/src/dsh/model-retry/index.ts"
     ]
   },
   "external_imports": [

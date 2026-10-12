@@ -226,7 +226,8 @@ Custom references inside configuration or free text still require deployment dec
 
 `RunEventReferences(store, validator, extension?)` exposes `owner()` for `event:` records
 and an own `inspect(event, runId)` function for `runRecordOwners`'s
-`inlineEventReferences` option. Its version includes a digest of the extension version.
+`inlineEventReferences` option. Built-in inspection version `2` includes correlated
+`agent.model-retry` events and a digest of the extension version.
 Event keys, sequence numbers and immutable versions must agree. Published legacy inline
 bodies must match their indexed copies; an unpublished assignment-created suffix can
 retain its supplied context before the assignment is published in the run projection.

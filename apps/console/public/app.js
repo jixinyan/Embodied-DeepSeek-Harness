@@ -549,6 +549,7 @@ function renderFeed() {
           'agent.report-acknowledged',
           'agent.context',
           'agent.context-usage',
+          'agent.model-retry',
           'skill.saved',
           'recovery.failed',
         ].includes(event.type);
@@ -655,6 +656,11 @@ function renderFeed() {
                     : event.type === 'skill.saved'
                       ? 'SKILL.md saved with failed and successful evidence.'
                       : `${event.type}: ${summarize(event)}`;
+        if (event.type === 'agent.model-retry')
+          notice.textContent =
+            d.type === 'llm/retry'
+              ? `Model retry ${d.data.retry}${d.data.mode === 'normal' ? `/${d.data.maxRetries}` : ''} · ${d.data.failure.code} · waiting ${Math.round(d.data.delayMs)} ms`
+              : `Model retry ${d.data.retry} started`;
         card.append(notice);
       }
       feed.append(card);

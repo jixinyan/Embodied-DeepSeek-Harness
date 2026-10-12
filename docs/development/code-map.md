@@ -22,6 +22,7 @@ production path from Session selection to native commands and formal verificatio
 | Change the absorbed DSH agent loop | [agents/src/dsh/loop/index.ts](../../harness/agent-runtime/agents/src/dsh/loop/index.ts); preserve [source provenance](../provenance/README.md) |
 | Load composable Teams | [teams/src/loader.ts](../../harness/agent-runtime/teams/src/loader.ts) |
 | Configure cloud/local upper models | [models/src/configuration.ts](../../harness/agent-runtime/models/src/configuration.ts) |
+| Execute native model-request backoff and cancel retry waits | [agents/src/dsh/model-retry/index.ts](../../harness/agent-runtime/agents/src/dsh/model-retry/index.ts); endpoint policy belongs to models, task retry decisions belong to Planner |
 | Classify model HTTP/Responses failures and retain bounded error metadata | [models/src/model-failures.ts](../../harness/agent-runtime/models/src/model-failures.ts); both adapters preserve native DSH recovery ownership |
 | Admit and snapshot model image references, request versions and cancellation | [models/src/model-images.ts](../../harness/agent-runtime/models/src/model-images.ts); both OpenAI-compatible adapters use the native image resolver |
 | Convert Responses messages with per-request image caching and represented-image limits | [models/src/responses-input.ts](../../harness/agent-runtime/models/src/responses-input.ts); OpenAIResponsesAdapter retains native DSH loop ownership |

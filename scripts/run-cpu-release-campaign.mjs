@@ -161,6 +161,7 @@ for (const [id, options] of [
 ])
   add(id, 'check-worker-host-offline.mjs', ['--python', python, '--config', worker, ...options]);
 add('device-owner', 'check-native-device-owner-offline.py', []);
+add('model-retry', 'check-model-retry-offline.mjs', []);
 add('session-owner', 'check-native-session-owner-offline.py', []);
 add('action-gate', 'check-action-gate-owner-offline.py', ['--request', request]);
 add('rollout', 'check-rollout-failure-offline.py', ['--request', request]);

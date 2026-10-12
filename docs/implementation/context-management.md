@@ -150,9 +150,15 @@ image transport require actual-model acceptance.
   repeated overflow stops at the retry bound. The adapter never retries requests.
   The shared `models/src/model-failures.ts` boundary also classifies structured
   Responses stream failures and preserves HTTP status/request-ID/retry timing.
-  Quota errors have the terminal DSH `QUOTA` classification; transient rate/server
+  Quota errors have the DSH `QUOTA` classification and terminate under the default
+  normal request-retry policy; transient rate/server
   errors retain `RATE_LIMIT`/`SERVER`. Classification does not establish successful
   model-driven recovery; actual route-specific acceptance remains required.
+  The host's native model-request retry plugin sends default normal-mode overflow
+  failures to this compaction extension. Its explicit always mode also awaits
+  downstream recovery before scheduling another request. Each endpoint configures
+  request backoff independently of the bounded `maxOverflowRetries` surface-recovery
+  policy. See [model-request retries](model-configuration.md#model-request-retries).
 - Image token estimates are approximate without provider-specific pricing metadata.
   The optional pruner targets tool text; it is not a visual frame-selection policy.
   Without `visualHistory`, per-request image count/byte bounds can be reached before pressure

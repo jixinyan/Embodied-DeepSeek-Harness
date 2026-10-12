@@ -6,7 +6,7 @@ They answer different questions: optional manifest peers are not necessarily run
 requirements, and the pinned LLM source references attachment types absent from its
 manifest dependency closure.
 
-The source import map pins 128 files from 31 modules. It preserves the original
+The source import map pins 129 files from 31 modules. It preserves the original
 Agent loop, session, scope, model, tool and lifecycle implementations in EDH's
 own domain directories. No upstream CLI, presets, Loader, console or full monorepo
 is copied. Supporting settings, approval, code-runtime and attachment definitions
@@ -24,8 +24,12 @@ compiler boundaries. Other code is checked with strict EDH settings. See
 
 The context-management import adds native compaction, optional tool-text pruning and
 token estimation. Only embodied summary instructions differ from pinned behavior;
-the source map records that patch and both hashes. Retry/command identity types do
-not mount their optional services. See [context management](../implementation/context-management.md).
+the source map records that patch and both hashes. Command identity types remain
+type dependencies. `agents/src/dsh/model-retry` contains the pinned executable model-request
+retry plugin and its event identities. The host mounts that plugin with provider-owned
+configuration; its executable behavior matches the original source. Comment translation
+is recorded with original/local hashes. See [context management](../implementation/context-management.md)
+and [model retry configuration](../implementation/model-configuration.md#model-request-retries).
 
 The [rc.2 release review](../implementation/dsh-release-adaptation.md#rc2-compatibility-review)
 checks the selected runtime against immutable upstream revision

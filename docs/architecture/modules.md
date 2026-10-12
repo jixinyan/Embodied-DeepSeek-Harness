@@ -62,10 +62,10 @@ host. Authorized observation tools continue to supply images to models. See
 | `apps/server` | EDH application assembly, local HTTP/SSE API and startup | Agent loop implementation | startServer + ServerDeployment; Step 00/12 |
 | `apps/console` | Team/agent/robot state, plans, tools, verdicts and Agent trace | Device truth or planner decisions | ConsoleProjection; Step 12 |
 | `apps/desktop` | Native configuration selection, owned service process, console window and shutdown | Models, agent loops or physical allocation | Default deployment factory into existing startServer |
-| `harness/agent-runtime/agents` | Independent assignments, DSH session lifecycle, built-in role definitions | Implicit parent context or another loop | createDshSession; TeamSessions admits assignments; Step 03 |
+| `harness/agent-runtime/agents` | Independent assignments, DSH session lifecycle, native model-request retry executor, built-in role definitions | Implicit parent context or another loop | createDshSession, dsh/model-retry; TeamSessions admits assignments; Step 03 |
 | `harness/agent-runtime/foundation` | Plugin context, schemas, native registration scopes and selected runtime support | Another agent loop or physical policy | Pinned source and compiler boundaries; Step 00 |
 | `harness/agent-runtime/teams` | Team/member definitions and immutable role/provider bindings | Hard-coded role enum | FileTeamLoader, LoadedTeam and TeamRunSnapshot; Step 02 |
-| `harness/agent-runtime/models` | Model capabilities and DSH model binding | Planning or tool orchestration | ModelConfiguration, createConfiguredModels and native model adapters; Step 00 |
+| `harness/agent-runtime/models` | Model capabilities, endpoint retry policy and DSH model binding | Planning or tool orchestration | ModelConfiguration, createConfiguredModels and native model adapters; Step 00 |
 | `harness/agent-runtime/tools` | Logical IDs, model-visible parameters, native core definitions, role/device schema selection, input limits, turn conclusion and result rendering | Every concrete perception/robot implementation | Native DSH tools, core-inputs.ts, model-schema.ts, core-definition.ts and core-output.ts; Step 02/07 |
 | `harness/agent-runtime/communication` | Explicit briefs, scoped messages, delivery and subscriptions | Shared conversation memory | TeamSessions and AssignmentReports; Step 04 |
 | `harness/agent-runtime/planning` | Persistent PlanDocument and progress projection | Authoritative success | TaskPlans in plans.ts; Step 05 |

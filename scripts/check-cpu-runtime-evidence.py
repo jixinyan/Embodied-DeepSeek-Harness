@@ -224,10 +224,103 @@ def main():
         assert admission["journalSha256"] == saved["sha256"]
         assert admission["journalUnchanged"] is True and admission["writerReleased"] is True
     cases["task-plans"] = len(expected_plans)
+    retry_directory = runtime / "model-retry"
+    retry_report_path = retry_directory / "acceptance.json"
+    retry = json.loads(retry_report_path.read_bytes())
+    assert retry["schemaVersion"] == "edh.model_retry.cpu.v1"
+    assert retry["listenerClosed"] is True and retry["agentsReleased"] is True
+    for field in ("gpuAllocationCount", "modelResponseCount", "simulatorAllocationCount"):
+        assert type(retry[field]) is int and retry[field] == 0
+    protocols = ("chat_completions", "responses")
+    modes = ("bounded", "disabled", "independent", "next-turn", "cancel", "dispose", "always-cancel", "team")
+    assert len(retry["checks"]) == len(protocols) * len(modes) == 16
+    assert {case["name"] for case in retry["checks"]} == {f"{protocol}:{mode}" for protocol in protocols for mode in modes}
+    assert len(retry["sources"]) == len({entry["path"] for entry in retry["sources"]}) == 24
+    for entry in retry["sources"]:
+        compare(Path(entry["path"]).relative_to(source_root), entry["sha256"])
+    retry_paths = [retry_report_path]
+    native_sessions = {}
+    assert len(retry["journals"]) == 18
+    assert len({entry["sessionId"] for entry in retry["journals"]}) == 18
+    for entry in retry["journals"]:
+        file = Path(entry["file"])
+        assert file.name == str(file) and file.suffix == ".json"
+        saved = retry_directory / file
+        assert identity(saved)["sha256"] == entry["sha256"]
+        events = json.loads(saved.read_bytes())
+        assert len(events) == entry["eventCount"]
+        assert [event["seq"] for event in events] == list(range(len(events)))
+        native_sessions[entry["sessionId"]] = events
+        retry_paths.append(saved)
+    chain_ids = set()
+    for protocol in protocols:
+        for mode in modes:
+            case = next(case for case in retry["checks"] if case["name"] == f"{protocol}:{mode}")
+            waiting = mode in ("cancel", "dispose", "always-cancel")
+            turns = 2 if mode == "next-turn" else 1
+            sessions = 2 if mode == "independent" else 1
+            requests = 1 if waiting or mode == "disabled" else 3 * turns
+            assert case["requests"] == requests * sessions and case["sessions"] == sessions
+            assert case["modelResponseCount"] == 0 and case["expectedFailure"] == "TRANSPORT"
+            if waiting:
+                assert 0 <= case["elapsedMs"] < 3000
+            selected = [entry for entry in retry["journals"] if entry["file"] == f"{protocol}-{mode}-{entry['sessionId']}.json"]
+            assert len(selected) == sessions
+            for entry in selected:
+                events = native_sessions[entry["sessionId"]]
+                attempts = [event for event in events if event["type"] == "assistant/attempt"]
+                scheduled = [event for event in events if event["type"] == "llm/retry"]
+                started = [event for event in events if event["type"] == "llm/retry-started"]
+                ended = [event for event in events if event["type"] == "turn/end"]
+                assert len(attempts) == requests and len(ended) == turns
+                assert not any(event["type"] in ("assistant/message", "tool/call", "tool/result") for event in events)
+                for attempt in attempts:
+                    stream = attempt["data"]["stream"]
+                    assert len(stream) == 1 and stream[0]["type"] == "chunk"
+                    chunk = stream[0]["chunk"]
+                    assert chunk["type"] == "finish" and chunk["reason"]["kind"] == "error"
+                    assert chunk["reason"]["failure"]["code"] == "TRANSPORT"
+                assert len(scheduled) == (1 if waiting else 0 if mode == "disabled" else 2 * turns)
+                assert len(started) == (0 if waiting else len(scheduled))
+                assert all(event["data"]["reason"]["kind"] == ("aborted" if waiting else "error") for event in ended)
+                for event in scheduled:
+                    data = event["data"]
+                    assert data["failure"]["code"] == "TRANSPORT" and data["provider"] == "local"
+                    assert data["mode"] == ("always" if mode == "always-cancel" else "normal")
+                    if data["mode"] == "normal":
+                        assert data["maxRetries"] == 2
+                for index in range(turns) if not waiting and scheduled else ():
+                    pair = scheduled[index * 2:index * 2 + 2]
+                    assert [event["data"]["retry"] for event in pair] == [1, 2]
+                    assert [event["data"]["delayMs"] for event in pair] == [5, 10]
+                    chain = pair[0]["data"]["retryId"]
+                    assert chain == pair[1]["data"]["retryId"] and chain not in chain_ids
+                    chain_ids.add(chain)
+                for scheduled_event, started_event in zip(scheduled, started):
+                    assert scheduled_event["seq"] < started_event["seq"]
+                    assert all(scheduled_event["data"][field] == started_event["data"][field] for field in ("retryId", "turn", "step", "retry"))
+    assert len(retry["traces"]) == 2
+    for trace in retry["traces"]:
+        file = Path(trace["file"])
+        assert file.name == str(file) and file.suffix == ".json"
+        saved = retry_directory / file
+        assert identity(saved)["sha256"] == trace["sha256"]
+        observed = [event for event in json.loads(saved.read_bytes()) if event["type"] == "agent.model-retry"]
+        events = native_sessions[trace["sessionId"]]
+        assert len(observed) == 4
+        for event in observed:
+            detail = event["detail"]
+            native = events[detail["sessionSequence"]]
+            assert detail["sessionId"] == trace["sessionId"] and detail["member"] == "lead"
+            assert detail["type"] == native["type"] and detail["data"] == native["data"]
+        retry_paths.append(saved)
+    files.extend(retry_paths)
+    inputs.extend(identity(path) for path in retry_paths)
+    cases["model-retry"] = len(retry["checks"])
     assert [identity(path) for path in files] == inputs, "CPU evidence changed during inspection."
     output.parent.mkdir(parents=True, exist_ok=True)
     result = {
-        "schemaVersion": "edh.cpu_runtime_evidence.v3",
+        "schemaVersion": "edh.cpu_runtime_evidence.v4",
         "sourceRevision": revision,
         "checker": identity(Path(__file__)),
         "inputs": inputs, "sourceComparisons": comparisons,

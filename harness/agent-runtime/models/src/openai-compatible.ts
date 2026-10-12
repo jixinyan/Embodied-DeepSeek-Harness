@@ -21,6 +21,11 @@ import {
   type ModelImageResolver,
 } from './model-images.js';
 import { modelHttpFailure } from './model-failures.js';
+import {
+  resolveRetryPolicy,
+  type ResolvedRetryPolicy,
+  type RetryPolicyConfig,
+} from './dsh/llm/retry-policy.ts';
 
 export interface OpenAICompatibleModel {
   id: string;
@@ -50,6 +55,7 @@ export interface OpenAICompatibleOptions {
   connectionMode?: 'pooled' | 'close-after-response';
   /** Server-specific generation options, e.g. vLLM chat_template_kwargs. */
   extraBody?: Readonly<Record<string, unknown>>;
+  retryPolicy?: RetryPolicyConfig;
 }
 const reserved = new Set([
   'model',
@@ -100,6 +106,7 @@ function safeTransportCode(error: unknown): string | undefined {
 }
 /** Native DSH adapter shared by local vLLM and remote Chat Completions endpoints. */
 export class OpenAICompatibleAdapter extends LlmAdapter {
+  private readonly retryPolicy: ResolvedRetryPolicy;
   private readonly endpoint: string;
   private readonly config: OpenAICompatibleOptions;
   private readonly models: readonly OpenAICompatibleModel[];
@@ -110,6 +117,7 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
   private readonly imageLimit: number;
   constructor(options: OpenAICompatibleOptions) {
     super();
+    this.retryPolicy = resolveRetryPolicy(options.retryPolicy, 'Chat Completions retryPolicy');
     const url = new URL(options.baseURL);
     if (
       !['http:', 'https:'].includes(url.protocol) ||
@@ -152,6 +160,9 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
     this.requestLimit = limit(options.maxRequestBytes, 32 * 1024 * 1024);
     this.responseLimit = limit(options.maxResponseBytes, 32 * 1024 * 1024);
     this.imageLimit = limit(options.maxImagesPerRequest, 16);
+  }
+  override providerRetryPolicy(): ResolvedRetryPolicy {
+    return this.retryPolicy;
   }
   override async listModels(provider: string): Promise<readonly LlmModelInfo[]> {
     return this.models.map((model) => ({
@@ -309,7 +320,7 @@ export class OpenAICompatibleAdapter extends LlmAdapter {
       const code = safeTransportCode(error);
       throw new LlmError(
         `Model request failed during ${stage}${code ? ` (${code})` : ''}.`,
-        'TRANSPORT_ERROR',
+        'TRANSPORT',
         {
           cause: error,
           ...(response ? { status: response.status } : {}),

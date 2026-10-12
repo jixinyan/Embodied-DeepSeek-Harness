@@ -3,6 +3,7 @@ import { installContextManagement, type ContextManagementOptions } from '@edh/me
 import AgentRegistry from '@deepseek-ai/dsh-agent';
 import AgentLoop from '@deepseek-ai/dsh-agent-loop';
 import LlmRuntime, { type LlmAdapter } from '@deepseek-ai/dsh-llm';
+import * as LlmRetry from '@deepseek-ai/dsh-llm-retry';
 import SessionStore from '@deepseek-ai/dsh-session';
 import SessionProjectionRegistry from '@deepseek-ai/dsh-session-projection';
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt';
@@ -30,6 +31,7 @@ export async function createDshHost(
     await ctx.plugin(TimeoutPolicy);
     await ctx.plugin(AgentRegistry);
     await ctx.plugin(AgentLoop, { agents: [] });
+    await ctx.plugin(LlmRetry);
     for (const binding of bindings) ctx.llm.registerAdapter(binding.providers, binding.adapter);
     if (contextManagement) await installContextManagement(ctx, contextManagement);
     return ctx;
