@@ -2874,6 +2874,19 @@ The actual native retry reader reopens 22 Sessions and verifies all 338 durable
 events with unchanged sources and released writers. Complete source checks pass.
 No model, simulator or GPU allocation occurs during this acceptance.
 
+Committed v5 source `ebf8e76` independently matches 156 production/checker files.
+Actual Ubuntu run `38302136882` passes fresh frozen installation, complete source
+checks, seven SKILL tests, eight request-option tests, thirteen failure tests,
+fifteen retry-configuration tests and 78 production runtime cases. Downloaded
+artifacts independently verify fourteen installed distributions, thirteen imports,
+41 input digests and 89 exact-commit source comparisons. Production readers
+verify all 338 native event bodies and seven unchanged task-plan journals with
+released writers. Three JUnit reports preserve all case names with zero failures
+or skips. Evidence:
+`.local/work/ci-native-identity-sources-inspection-20261012.json`,
+`.local/work/ci-native-identity-sources-independently-verified-20261012.json` and
+`.local/work/ci-native-identity-sources-native-independently-verified-20261012.json`.
+
 Committed `63054e2` independently matches 156 production/checker files across
 the full campaign and graph checks. Actual Ubuntu run `38297182234` passes fresh
 frozen installation, complete source checks, seven SKILL tests, eight request-option

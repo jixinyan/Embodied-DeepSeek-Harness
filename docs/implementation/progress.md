@@ -70,6 +70,20 @@ durable events with the v5 source policy. Complete source checks pass. Evidence:
 `.local/work/native-identity-sources-cpu-campaign-20261012/independently-verified.json`
 and `.local/work/native-identity-sources-cpu-campaign-20261012/model-retry/independently-verified.json`.
 
+Committed v5 source `ebf8e76` independently matches 156 production/checker files.
+Actual Ubuntu CI `38302136882` passes fresh frozen installation, complete source
+checks, seven SKILL tests, eight request-option tests, thirteen failure tests,
+fifteen retry-configuration tests and 78 production runtime cases. Downloaded
+artifacts independently match fourteen installed distributions, thirteen imports,
+41 input identities and 89 exact-commit source comparisons. Production readers
+verify all 338 native event bodies and seven unchanged task-plan journals with
+released writers. The three JUnit reports preserve every declared case name,
+with zero failures or skips. Evidence:
+`.local/work/native-identity-sources-cpu-campaign-20261012/committed-source-verification.json`,
+`.local/work/ci-native-identity-sources-inspection-20261012.json`,
+`.local/work/ci-native-identity-sources-independently-verified-20261012.json` and
+`.local/work/ci-native-identity-sources-native-independently-verified-20261012.json`.
+
 Committed source `63054e2` independently matches 156 production/checker files,
 including all four native graph checks. Actual Ubuntu CI `38297182234` passes
 fresh frozen installation, complete source checks, seven SKILL tests, eight
