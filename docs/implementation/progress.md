@@ -65,23 +65,29 @@ journals/images and 37 released diagnostic process groups. The pinned-source
 audit passes 129 files and 25 module bindings; complete source checks also pass.
 Evidence: `.local/work/model-retry-history-cpu-campaign-20261012/independently-verified.json`
 and `.local/work/model-retry-history-cpu-campaign-20261012/model-retry/independently-verified.json`.
-The v3 native binding also admits 2,991 actual RoboTwin records, 141 BEHAVIOR
-records and 6,541 RoboDojo records through complete namespace owners with unchanged
-source journals.
+The v3 native binding independently admits 2,991 actual RoboTwin records, 141
+BEHAVIOR records and 6,541 RoboDojo records through complete namespace owners.
+Thirteen selected sources match `4978102`; all three copied/source journals stay
+unchanged and copied writers release. Evidence:
+`.local/work/native-audit-retention-independently-verified-20261012.json`.
 
-Source `741311c` additionally matches 135 distinct production/checker files against
-its exact Git commit. Actual Ubuntu CI `38290122403` passes fresh installation,
+Source `4978102` additionally matches 144 distinct production/checker files against
+its exact Git commit. Actual Ubuntu CI `38293337371` passes fresh installation,
 complete source checks, seven SKILL tests, eight request-option tests, thirteen
-failure tests, fifteen retry-configuration tests and 74 production runtime cases.
+failure tests, fifteen retry-configuration tests and 78 production runtime cases.
 Downloaded-artifact admission independently verifies fourteen distributions,
-thirteen imports, 36 input digests and 77 exact-commit source comparisons. Native
-retry journals/Team traces and all JUnit cases retain their exact identities;
-seven plan journals remain unchanged with released writers. No native allocation
-occurs. Evidence: `.local/work/ci-model-retry-independently-verified-20261012.json`
-and `.local/work/ci-model-retry-configuration-independently-verified-20261012.json`.
+thirteen imports, 41 input digests and 88 exact-commit source comparisons. Native
+retry journals/Team traces and all JUnit cases retain their exact identities.
+Independent production reads additionally verify all 338 downloaded native event
+bodies and seven unchanged plan journals with released writers. No native
+allocation occurs. Evidence:
+`.local/work/ci-model-retry-history-independently-verified-20261012.json`,
+`.local/work/ci-model-retry-history-native-independently-verified-20261012.json`
+and `.local/work/ci-model-retry-history-configuration-independently-verified-20261012.json`.
 
 | Source checkpoint | Behavior and checks |
 | --- | --- |
+| `741311c` | Native model-request retries pass sixteen refused-connection cases, eighteen journals and 44 failed attempts with independent executable-source provenance. The 37-component/1,181-case CPU campaign verifies 617 source/input comparisons and 135 exact-commit production/checker files. Actual Ubuntu CI `38290122403` passes fresh installation, full source checks, seven SKILL tests, eight request-option tests, thirteen failure tests, fifteen retry-configuration tests and 74 production runtime cases. Downloaded artifacts verify fourteen distributions, thirteen imports, 36 inputs, 77 exact-commit sources, unchanged plan journals and released writers. No model responds or native resource allocates. |
 | `f6a890a` | The complete 36-component/1,165-case CPU campaign independently verifies 574 source/input comparisons, 116 exact-commit production/checker identities and 36 absent process groups. Actual Ubuntu CI `38185797204` passes fresh installation, full source checks, seven SKILL tests, eight model-configuration tests, thirteen model-failure tests and 58 separate production-runtime cases. Downloaded artifacts independently verify fourteen distributions, thirteen imports, fifteen input digests and 53 source comparisons; seven plan journals remain unchanged and release writers. Both JUnit reports and their exact configuration/test/workflow sources match this revision. Native allocations remain zero. |
 | Shared model failure admission | Both adapters share bounded HTTP error reading and canonical DSH context/auth/quota/rate/server/timeout classifications. Responses stream errors retain structured code/type classification; HTTP errors preserve request ID/retry timing without provider prose. Thirteen authored CPU checks and three actual application HTTP errors pass. The complete 36-component/1,165-case CPU campaign independently verifies 574 source/input comparisons, unchanged original records/images and 36 absent process groups. Four configured providers remain unallocated with zero Sessions and released writers/listeners. Actual provider failure/recovery acceptance remains separate. |
 | `620d507` | The complete current-source CPU campaign passes 36 components/1,165 cases with 570 independent source/input comparisons, 115 exact-commit production/checker identities and 36 absent process groups. Actual Ubuntu CI `38183379841` passes complete source/installation admission, seven SKILL tests, eight protocol-configuration tests and 58 separate production-runtime cases. Downloaded artifacts independently match fourteen distributions, thirteen imports, fifteen input digests and 53 source comparisons; seven plan journals remain unchanged and release writers. The eight-case JUnit report, configuration/test/workflow source and four model files match the exact revision. All native allocations remain zero. |

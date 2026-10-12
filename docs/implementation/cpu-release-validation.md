@@ -63,24 +63,27 @@ Sessions, all 338 durable event bodies, eight pending-wait archives, fractional
 delays, source preservation and released writers. Evidence:
 `.local/work/model-retry-history-cpu-campaign-20261012/model-retry/independently-verified.json`.
 
-Source `741311c` matches 135 distinct captured production/checker files against
-the exact Git commit. Actual Ubuntu CI `38290122403` passes fresh installation,
+Source `4978102` matches 144 distinct captured production/checker files against
+the exact Git commit. Actual Ubuntu CI `38293337371` passes fresh installation,
 complete source checks, seven SKILL tests, eight model request-option tests,
 thirteen failure tests, fifteen retry-configuration tests and its separate
-74-case production runtime suite. Independent downloaded-artifact admission
-verifies fourteen distributions, thirteen imports, 36 input digests and
-77 exact-commit source comparisons. Native retry streams/journals/Team traces
-retain their original identities. Seven plan journals remain unchanged and
+78-case production runtime suite. Independent downloaded-artifact admission
+verifies fourteen distributions, thirteen imports, 41 input digests and
+88 exact-commit source comparisons. Independent production readers additionally
+verify all 338 downloaded native event bodies, exact fractional delays and replay
+projections with unchanged history and released writers. Native retry streams,
+journals and Team traces retain their original identities. Seven plan journals remain unchanged and
 release writers; all three JUnit reports contain the expected cases with zero
 failures/skips. Configuration/test/workflow sources independently match the
 same revision. No model, simulator or GPU allocates.
 
-Evidence: `.local/work/model-retry-cpu-campaign-20261012/committed-source-verification.json`,
-`.local/work/ci-model-retry-inspection-20261012.json`,
-`.local/work/ci-model-retry-independently-verified-20261012.json`,
-`.local/work/ci-model-retry-configuration-independently-verified-20261012.json`,
-`.local/work/ci-model-retry-failures-independently-verified-20261012.json` and
-`.local/work/ci-model-retry-options-independently-verified-20261012.json`.
+Evidence: `.local/work/model-retry-history-cpu-campaign-20261012/committed-source-verification.json`,
+`.local/work/ci-model-retry-history-inspection-20261012.json`,
+`.local/work/ci-model-retry-history-independently-verified-20261012.json`,
+`.local/work/ci-model-retry-history-native-independently-verified-20261012.json`,
+`.local/work/ci-model-retry-history-configuration-independently-verified-20261012.json`,
+`.local/work/ci-model-retry-history-failures-independently-verified-20261012.json` and
+`.local/work/ci-model-retry-history-options-independently-verified-20261012.json`.
 
 Evidence: `.local/work/model-retry-cpu-campaign-20261012/model-retry/acceptance.json`,
 `.local/work/model-retry-configuration-20261011.xml` and

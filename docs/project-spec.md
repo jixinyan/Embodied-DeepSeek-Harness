@@ -23,8 +23,9 @@ TypeScript executable-source comparison also pass. Physical retry remains
 Planner-owned, and successful model recovery requires native provider acceptance.
 The complete CPU campaign passes 37 components and 1,185 cases with independent
 source, original-record and process-release evidence, without native allocation.
-Source `741311c` also passes actual Ubuntu CI, fresh installation and 74 production
-runtime cases. Downloaded artifacts verify 77 exact-commit source comparisons;
+Source `4978102` also passes actual Ubuntu CI, fresh installation and 78 production
+runtime cases. Downloaded artifacts verify 88 exact-commit source comparisons,
+41 input identities and independent production reads of all 338 native event bodies;
 separate request-option, failure and retry-configuration JUnit reports pass.
 See [request retry configuration](implementation/model-configuration.md#model-request-retries).
 

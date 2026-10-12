@@ -158,6 +158,10 @@ Current v3 admission additionally checks 2,991 original RoboTwin records, 141
 BEHAVIOR records and 6,541 RoboDojo records through complete namespace owners
 and declared references. Each private copy retains the exact source digest.
 These checks inspect source ownership; they perform no deletion or physical work.
+Independent production inspection repeats all 9,673 records and declared references,
+matches thirteen selected source files against `4978102`, preserves all source/copy
+journal hashes and verifies released writers. Evidence:
+`.local/work/native-audit-retention-independently-verified-20261012.json`.
 
 Verified original histories include native custom-role recovery/success (918 selected
 records, two retained identities), recorded SAM/YOLO grounding and five clarifications
