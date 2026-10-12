@@ -69,6 +69,20 @@ durable events with the v4 source policy. Complete source checks pass. Evidence:
 `.local/work/native-reference-cpu-campaign-20261012/independently-verified.json`
 and `.local/work/native-reference-cpu-campaign-20261012/model-retry/independently-verified.json`.
 
+Committed source `63054e2` independently matches 156 production/checker files,
+including all four native graph checks. Actual Ubuntu CI `38297182234` passes
+fresh frozen installation, complete source checks, seven SKILL tests, eight
+request-option tests, thirteen failure tests, fifteen retry-configuration tests
+and 78 production runtime cases. Downloaded artifacts independently match fourteen
+installed distributions, thirteen imports, 41 input identities and 89 exact-commit
+source comparisons. Production readers check all 338 native event bodies and
+seven unchanged task-plan journals with released writers. Separate JUnit reports
+preserve every case name with zero failures or skips. Evidence:
+`.local/work/native-reference-cpu-campaign-20261012/committed-source-verification.json`,
+`.local/work/ci-native-reference-inspection-20261012.json`,
+`.local/work/ci-native-reference-independently-verified-20261012.json` and
+`.local/work/ci-native-reference-native-independently-verified-20261012.json`.
+
 Native model-request retries use the selected DSH executor in
 `agents/src/dsh/model-retry`, with provider-owned endpoint configuration and
 correlated Console/retention events. Twenty CPU cases use actual refused TCP
