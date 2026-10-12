@@ -71,12 +71,14 @@ export function nativePayloadStrings(value: unknown): string[] {
 export function nativeRecordReferences(store: LocalStore): WorkspaceReferenceExtension {
   let inventorySequence = -1;
   let identities = new Map<string, Set<string>>();
+  let identitySources = new Map<string, string>();
   let runRecords = new Map<string, Set<string>>();
   let recordRuns = new Map<string, Set<string>>();
   const refresh = () => {
     const sequence = store.statistics().sequence;
     if (sequence === inventorySequence) return;
     identities = new Map();
+    identitySources = new Map();
     runRecords = new Map();
     recordRuns = new Map();
     const addIdentity = (identity: string, key: string) => {
@@ -100,8 +102,10 @@ export function nativeRecordReferences(store: LocalStore): WorkspaceReferenceExt
             identityFields.has(field) &&
             typeof child === 'string' &&
             generatedIdentity.test(child)
-          )
+          ) {
             addIdentity(child, row.key);
+            if (!identitySources.has(child)) identitySources.set(child, row.key);
+          }
           if (child && typeof child === 'object') pending.push(child);
         }
       }
@@ -136,7 +140,7 @@ export function nativeRecordReferences(store: LocalStore): WorkspaceReferenceExt
       }
   };
   return {
-    version: 'edh-native-payload-sources-v4',
+    version: 'edh-native-payload-sources-v5',
     inspect: ({ key, value }) => {
       if (key.startsWith('archived-request:')) return [];
       refresh();
@@ -155,6 +159,13 @@ export function nativeRecordReferences(store: LocalStore): WorkspaceReferenceExt
           const root = `run:${identity}`;
           if (!recordKeys.has(root)) throw new Error('Native Run identity source is incomplete.');
           keys.add(root);
+        } else if (recordKeys.size > 1) {
+          const source = identitySources.get(identity);
+          if (!source || !recordKeys.has(source))
+            throw new Error('Native generated identity source is incomplete.');
+          // 含有原始标识字段的来源记录保留整组引用，其他记录保留该来源。
+          if (key === source) for (const recordKey of recordKeys) keys.add(recordKey);
+          else keys.add(source);
         } else for (const recordKey of recordKeys) keys.add(recordKey);
       }
       return [...keys];

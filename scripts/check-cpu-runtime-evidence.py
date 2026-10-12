@@ -328,7 +328,7 @@ def main():
     journal_path = retry_directory / history["journalPath"]
     assert identity(journal_path)["sha256"] == history["journalSha256"]
     assert not (journal_path.parent / "writer.lock").exists()
-    assert history["referencePolicy"] == "edh-native-payload-sources-v4"
+    assert history["referencePolicy"] == "edh-native-payload-sources-v5"
     assert history["journalUnchanged"] is True and history["writerReleased"] is True and history["reopened"] is True
     assert len(history["sessions"]) == 22
     assert {item["sessionId"] for item in history["sessions"]} == set(native_sessions)

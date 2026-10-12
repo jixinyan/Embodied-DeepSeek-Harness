@@ -17,10 +17,17 @@ generated evidence identities and preceding event sequences retain their source
 relationships. Inventory caching is bound to the LocalStore sequence, so archival
 and retirement refresh the inventory before the next inspection.
 
+Generated identity groups use the first indexed record whose declared field
+contains the identity as their existing source. That source retains every record
+in its group. Other citations reference the source; single-record groups keep
+their direct reference. Source selection and group membership refresh at the
+same LocalStore sequence. Each record still passes its namespace owner, scoped
+source validation and mandatory retention rules.
+
 The source graph checker compares these relationships with the immutable prior
 production factory. Every current direct edge exists in the original graph;
-every original edge has either a current direct edge or a path through an
-originating Run. Consequently the two graphs protect the same record selections.
+every original edge has either a current direct edge or a two-edge path through
+an existing source. Consequently the two graphs protect the same record selections.
 Record bodies, revisions and mandatory retention flags remain unchanged.
 
 ## Owner and source configuration

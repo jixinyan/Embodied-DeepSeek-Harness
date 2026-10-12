@@ -314,6 +314,10 @@ the complete task inventory. Shared sources retain each originating Run. Explici
 journal addresses, generated evidence identities and preceding native event
 sources remain declared dependencies. The native workspace factory composes this
 inspector with SKILL export leases and original-image retention.
+For a generated identity shared by several records, the first indexed record
+with that identity in a declared field retains the complete group. Other records
+cite that existing source. Direct references and two-edge source paths preserve
+all original dependencies. Sequence changes refresh source selection and groups.
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys

@@ -79,9 +79,9 @@ export function nativeWorkspaceRetention(
   };
   const owners = workspaceRecordOwners(store, context.validator, references);
   return {
-    domainRetention: { version: 'edh-native-workspace-v4', references, sources: [nativeSource] },
+    domainRetention: { version: 'edh-native-workspace-v5', references, sources: [nativeSource] },
     imageRetention: {
-      version: 'edh-native-images-v4',
+      version: 'edh-native-images-v5',
       sources: [
         {
           id: 'native-payload-images',

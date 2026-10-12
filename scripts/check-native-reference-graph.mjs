@@ -117,17 +117,23 @@ const context = () => ({
 function compare(name, binding, baseline) {
   const owners = workspaceRecordOwners(store, validator, binding.domainRetention.references);
   const priorOwners = workspaceRecordOwners(store, validator, baseline.domainRetention.references);
-  const roots = new Map();
-  for (const row of store.scan('run:')) {
+  const currentRecords = new Map();
+  let currentMs = 0;
+  for (const row of store.scan('')) {
+    const before = JSON.stringify(row);
     const owner = owners.find((item) => row.key.startsWith(item.prefix));
-    roots.set(row.key, new Set(owner.inspect(row).references));
+    assert(owner);
+    const start = performance.now();
+    const inspected = owner.inspect(row);
+    currentMs += performance.now() - start;
+    assert.equal(JSON.stringify(row), before);
+    currentRecords.set(row.key, { ...inspected, references: new Set(inspected.references) });
   }
   let priorReferences = 0;
   let currentReferences = 0;
   let twoStepPaths = 0;
   let records = 0;
   let priorMs = 0;
-  let currentMs = 0;
   const declarations = createHash('sha256');
   for (const row of store.scan('')) {
     const before = JSON.stringify(row);
@@ -137,13 +143,11 @@ function compare(name, binding, baseline) {
     const start = performance.now();
     const prior = priorOwner.inspect(row);
     priorMs += performance.now() - start;
-    const middle = performance.now();
-    const current = owner.inspect(row);
-    currentMs += performance.now() - middle;
+    const current = currentRecords.get(row.key);
+    assert(current);
     assert.equal(current.retain, prior.retain);
     const priorKeys = new Set(prior.references);
-    const currentKeys = new Set(current.references);
-    const runRoots = current.references.filter((key) => roots.has(key));
+    const currentKeys = current.references;
     for (const key of currentKeys) {
       assert(store.revision(key));
       assert(priorKeys.has(key), `A new direct edge lacks its original edge: ${row.key} -> ${key}`);
@@ -151,7 +155,7 @@ function compare(name, binding, baseline) {
     for (const key of priorKeys) {
       if (currentKeys.has(key)) continue;
       assert(
-        runRoots.some((rootKey) => roots.get(rootKey).has(key)),
+        [...currentKeys].some((source) => currentRecords.get(source).references.has(key)),
         `A source path is missing: ${row.key} -> ${key}`,
       );
       twoStepPaths++;
@@ -182,7 +186,7 @@ try {
   assert.equal(hash(await readFile(resolve(directory, 'records.jsonl'))), sourceDigest);
   const binding = nativeWorkspaceRetention(context());
   const baseline = production.exports.nativeWorkspaceRetention(context());
-  assert.equal(binding.domainRetention.references.version, 'edh-native-payload-sources-v4');
+  assert.equal(binding.domainRetention.references.version, 'edh-native-payload-sources-v5');
   assert.equal(baseline.domainRetention.references.version, 'edh-native-payload-sources-v3');
   compare('original', binding, baseline);
   assert(phases[0].currentReferences < phases[0].priorReferences);
@@ -306,7 +310,7 @@ const report = {
   modelResponses: 0,
   simulatorAllocations: 0,
   scope:
-    'Actual retained source journals, complete production owner graphs and private-copy maintenance. Immutable Git baseline is compiled with installed TypeScript. Edge/path equivalence preserves every selection cut; no physical task is executed.',
+    'Actual retained source journals, complete production owner graphs and private-copy maintenance. Immutable Git baseline is compiled with installed TypeScript. Every prior dependency has a direct or two-edge current source path, preserving every selection cut; no physical task is executed.',
 };
 await writeFile(resolve(output, 'acceptance.json'), `${JSON.stringify(report, null, 2)}\n`, {
   flag: 'wx',

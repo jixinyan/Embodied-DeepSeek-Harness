@@ -2838,7 +2838,7 @@ identities bind the new graph, complete namespace owners and checker.
 For every original record, the check admits both complete production owners,
 compares mandatory retention flags, requires every current direct edge to exist
 in the original graph, and requires every removed original edge to have a
-current path through an originating Run. These conditions preserve every record
+current direct or two-edge path through an existing source. These conditions preserve every record
 selection's crossing dependencies. Partial Run selections reject. Optional
 Session retirement exercises actual request archival, equivalent old/current
 previews, single-use retirement and reopening. Unselected record values and
@@ -2854,7 +2854,7 @@ pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-reference-gr
 
 On 2026-10-12, RoboTwin (2,991 records), BEHAVIOR (141), RoboDojo (6,541)
 and grounding (859) pass all four phases: original, archived, retired and
-reopened. Direct references total 2,672,191; every original dependency remains
+reopened. Direct references total 44,667; every original dependency remains
 reachable. Seventy-seven declared checks also preserve request protection,
 preview identity, source digests and released copied writers. The four-Session
 grounding history retires 455 selected records and preserves all 404 original
@@ -2862,11 +2862,11 @@ records in three other Sessions. Final reopened graphs contain 414 records,
 including ten retained archived request identities. Per-owner timing fields
 describe these diagnostic calls only.
 
-Evidence: `.local/work/native-reference-{robotwin,behavior,robodojo,grounding}-final-20261012/acceptance.json`.
+Evidence: `.local/work/native-identity-sources-{robotwin,behavior,robodojo,grounding}-final-20261012/acceptance.json`.
 Independent production readers repeat the original and reopened graphs, verify
 all 404 preserved records and match 76 source identities, original/compiler
 digests and unchanged reports. Evidence:
-`.local/work/native-reference-independently-verified-final-20261012/acceptance.json`.
+`.local/work/native-identity-sources-independently-verified-20261012/acceptance.json`.
 The complete current-source campaign separately passes 37 components and
 1,185 cases. Independent inspection matches 634 source/input comparisons,
 original journal/image digests and all 37 absent diagnostic process groups.

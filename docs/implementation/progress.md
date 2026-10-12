@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-12 · Spec v1.140 · v1 release acceptance in progress.
+Updated: 2026-10-12 · Spec v1.141 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -46,28 +46,29 @@ the release requirements below.
 Native source relationships now belong to `native-record-references.ts`; the
 workspace factory retains composition, SKILL export leases and image sources.
 Each task source references its existing Run, and the Run retains the complete
-task inventory. Actual immutable-baseline comparison checks 10,532 original
+task inventory. Shared generated identities reference an existing indexed
+field-bearing record, which retains their complete group. Actual immutable-baseline comparison checks 10,532 original
 records in four retained histories. Direct dependencies decrease from 49,848,314
-to 2,672,191; every current edge exists in the prior graph and every prior edge
-has a current direct or originating-Run path. Retention flags and selection
+to 44,667; every current edge exists in the prior graph and every prior edge
+has a current direct or two-edge source path. Retention flags and selection
 admission remain equivalent. Actual private archival, retirement and reopening
 check sequence-bound inventory refresh and consumed preview tokens. The selected
 grounding Session retires 455 records, while three other Sessions preserve all
 404 original records with exact values and revisions. Source journals stay
 unchanged and copied writers release. These checks execute no physical task.
-Evidence: `.local/work/native-reference-{robotwin,behavior,robodojo,grounding}-final-20261012/acceptance.json`.
+Evidence: `.local/work/native-identity-sources-{robotwin,behavior,robodojo,grounding}-final-20261012/acceptance.json`.
 Independent production readers repeat the original and reopened complete graphs,
 verify all source/compiler/report digests and all 404 preserved record values
 and revisions. Seventy-six source comparisons bind the four results. Evidence:
-`.local/work/native-reference-independently-verified-final-20261012/acceptance.json`.
+`.local/work/native-identity-sources-independently-verified-20261012/acceptance.json`.
 
 The current complete CPU campaign passes 37 components and 1,185 cases.
 Independent inspection verifies 634 source/input comparisons, unchanged original
 journals/images and 37 released diagnostic process groups. The native retry
 reader independently checks 36 current sources, 22 native Sessions and all 338
-durable events with the v4 source policy. Complete source checks pass. Evidence:
-`.local/work/native-reference-cpu-campaign-20261012/independently-verified.json`
-and `.local/work/native-reference-cpu-campaign-20261012/model-retry/independently-verified.json`.
+durable events with the v5 source policy. Complete source checks pass. Evidence:
+`.local/work/native-identity-sources-cpu-campaign-20261012/independently-verified.json`
+and `.local/work/native-identity-sources-cpu-campaign-20261012/model-retry/independently-verified.json`.
 
 Committed source `63054e2` independently matches 156 production/checker files,
 including all four native graph checks. Actual Ubuntu CI `38297182234` passes

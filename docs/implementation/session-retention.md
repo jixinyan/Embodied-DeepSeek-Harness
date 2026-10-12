@@ -38,8 +38,8 @@ of source records.
 `native-audit-payloads.ts` supplies the shared event admission for record and image
 retention. It preserves finite fractional `llm/retry.delayMs`, requires the native
 normal/always payload shape and validates the normal retry budget. Native binding
-versions are `edh-native-workspace-v4`, `edh-native-payload-sources-v4` and
-`edh-native-images-v4`. These versions contribute to maintenance preview identity;
+versions are `edh-native-workspace-v5`, `edh-native-payload-sources-v5` and
+`edh-native-images-v5`. These versions contribute to maintenance preview identity;
 existing journal records retain their original bodies and revisions.
 
 `native-record-references.ts` owns the cached source inventory. A source record
@@ -49,6 +49,11 @@ record addresses and generated evidence identities retain their cited sources,
 and compaction/visual-history events retain their preceding event sources.
 The inventory refreshes whenever the LocalStore sequence changes, including
 request archival and retirement. Preview admission uses the current policy version.
+When several records share a generated identity, its first indexed record with
+that identity in a declared field retains the complete group. Other references
+cite that existing source. This preserves all group dependencies through direct
+or two-edge paths. Missing indexed sources fail admission. Single-record identity
+groups and preceding native event references retain their direct references.
 
 The `native-workspace-exports` lease checks the complete SKILL export inventory against
 immutable journal documents and holds their original file descriptors until inspection
@@ -171,7 +176,7 @@ matches thirteen selected source files against `4978102`, preserves all source/c
 journal hashes and verifies released writers. Evidence:
 `.local/work/native-audit-retention-independently-verified-20261012.json`.
 
-The v4 graph has complete production-owner comparison against immutable source
+Source `63054e2` v4 graph has complete production-owner comparison against immutable source
 `0c14399` for 2,991 RoboTwin, 141 BEHAVIOR, 6,541 RoboDojo and 859 grounding
 records. Every current direct dependency exists in the prior graph; every prior
 dependency remains reachable through a direct edge or an originating Run.
@@ -181,6 +186,14 @@ protection and consumed preview tokens. The selected grounding Session retires
 455 records while the other three Sessions preserve all 404 original records,
 including exact revisions and values. Original source journals remain unchanged.
 See [the executable graph check](cpu-release-validation.md#native-reference-graph-equivalence).
+
+The v5 graph additionally retains shared generated-identity groups through an
+existing indexed source. The same 10,532 original records pass all four maintenance
+phases and 77 declared checks. Direct references total 44,667, with every original
+dependency reachable through a direct or two-edge source path. Complete selection
+previews and mandatory retention flags match the immutable baseline. Independent
+production readers repeat original/reopened graphs, all 404 preserved records and
+76 source identities. Original journals remain unchanged and writers release.
 
 Verified original histories include native custom-role recovery/success (918 selected
 records, two retained identities), recorded SAM/YOLO grounding and five clarifications
