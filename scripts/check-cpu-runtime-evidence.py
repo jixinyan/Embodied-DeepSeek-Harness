@@ -235,7 +235,7 @@ def main():
     modes = ("bounded", "fractional", "jitter", "disabled", "independent", "next-turn", "cancel", "dispose", "always-cancel", "team")
     assert len(retry["checks"]) == len(protocols) * len(modes) == 20
     assert {case["name"] for case in retry["checks"]} == {f"{protocol}:{mode}" for protocol in protocols for mode in modes}
-    assert len(retry["sources"]) == len({entry["path"] for entry in retry["sources"]}) == 35
+    assert len(retry["sources"]) == len({entry["path"] for entry in retry["sources"]}) == 36
     for entry in retry["sources"]:
         compare(Path(entry["path"]).relative_to(source_root), entry["sha256"])
     retry_paths = [retry_report_path]
@@ -328,7 +328,7 @@ def main():
     journal_path = retry_directory / history["journalPath"]
     assert identity(journal_path)["sha256"] == history["journalSha256"]
     assert not (journal_path.parent / "writer.lock").exists()
-    assert history["referencePolicy"] == "edh-native-payload-sources-v3"
+    assert history["referencePolicy"] == "edh-native-payload-sources-v4"
     assert history["journalUnchanged"] is True and history["writerReleased"] is True and history["reopened"] is True
     assert len(history["sessions"]) == 22
     assert {item["sessionId"] for item in history["sessions"]} == set(native_sessions)

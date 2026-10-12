@@ -32,6 +32,7 @@ const sources = await Promise.all(
     'apps/server/src/runtime.ts',
     'apps/server/src/native-audit-payloads.ts',
     'apps/server/src/native-workspace-retention.ts',
+    'apps/server/src/native-record-references.ts',
     'apps/server/src/deployment-retention.ts',
     'apps/server/src/workspace-record-owners.ts',
     'harness/agent-runtime/storage/src/local-store.ts',

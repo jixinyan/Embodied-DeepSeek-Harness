@@ -308,6 +308,12 @@ versioned inspectors before history retirement can proceed.
 tool names. Native record and image retention share this admission. Model-request
 retry events retain finite fractional waits, native mode and consistent retry budgets;
 the selected DSH executor continues to own scheduling and cancellation.
+`native-record-references.ts` owns the sequence-bound native source inventory.
+Every originating source references its existing Run record, and that Run retains
+the complete task inventory. Shared sources retain each originating Run. Explicit
+journal addresses, generated evidence identities and preceding native event
+sources remain declared dependencies. The native workspace factory composes this
+inspector with SKILL export leases and original-image retention.
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys

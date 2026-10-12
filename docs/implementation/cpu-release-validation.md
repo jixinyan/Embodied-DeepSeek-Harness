@@ -2826,6 +2826,54 @@ independent Verifiers, completed plans and Session closure.
 source provenance, TypeScript, module/document structure, Python compilation/base
 imports and SVG XML. These checks establish their declared CPU boundaries.
 
+## Native reference graph equivalence
+
+`scripts/check-native-reference-graph.mjs` uses an actual retained journal and
+the immutable prior production retention factory from Git. The installed
+TypeScript compiler loads that factory in memory; the report retains its commit,
+original bytes, compiler version and compiled-source digest. Sixteen common
+production sources must still match the baseline. Nineteen current source
+identities bind the new graph, complete namespace owners and checker.
+
+For every original record, the check admits both complete production owners,
+compares mandatory retention flags, requires every current direct edge to exist
+in the original graph, and requires every removed original edge to have a
+current path through an originating Run. These conditions preserve every record
+selection's crossing dependencies. Partial Run selections reject. Optional
+Session retirement exercises actual request archival, equivalent old/current
+previews, single-use retirement and reopening. Unselected record values and
+revisions must remain identical. The original journal is never modified.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-reference-graph.mjs \
+  --data-directory /absolute/path/to/retained-history \
+  --baseline-revision 0c14399 \
+  --retire-session-id <actual-closed-session-id> \
+  --output .local/work/<new-reference-graph-check>
+```
+
+On 2026-10-12, RoboTwin (2,991 records), BEHAVIOR (141), RoboDojo (6,541)
+and grounding (859) pass all four phases: original, archived, retired and
+reopened. Direct references total 2,672,191; every original dependency remains
+reachable. Seventy-seven declared checks also preserve request protection,
+preview identity, source digests and released copied writers. The four-Session
+grounding history retires 455 selected records and preserves all 404 original
+records in three other Sessions. Final reopened graphs contain 414 records,
+including ten retained archived request identities. Per-owner timing fields
+describe these diagnostic calls only.
+
+Evidence: `.local/work/native-reference-{robotwin,behavior,robodojo,grounding}-final-20261012/acceptance.json`.
+Independent production readers repeat the original and reopened graphs, verify
+all 404 preserved records and match 76 source identities, original/compiler
+digests and unchanged reports. Evidence:
+`.local/work/native-reference-independently-verified-final-20261012/acceptance.json`.
+The complete current-source campaign separately passes 37 components and
+1,185 cases. Independent inspection matches 634 source/input comparisons,
+original journal/image digests and all 37 absent diagnostic process groups.
+The actual native retry reader reopens 22 Sessions and verifies all 338 durable
+events with unchanged sources and released writers. Complete source checks pass.
+No model, simulator or GPU allocation occurs during this acceptance.
+
 ## Required native release evidence
 
 Current-code multi-goal task execution, native stop/timeout races, policy/model

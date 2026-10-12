@@ -1,6 +1,6 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.139 · 2026-10-12
+Version: v1.140 · 2026-10-12
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
@@ -28,6 +28,18 @@ runtime cases. Downloaded artifacts verify 88 exact-commit source comparisons,
 41 input identities and independent production reads of all 338 native event bodies;
 separate request-option, failure and retry-configuration JUnit reports pass.
 See [request retry configuration](implementation/model-configuration.md#model-request-retries).
+
+Native retention uses the versioned source graph in `native-record-references.ts`.
+Each task source references its existing Run, which retains the complete task
+inventory. Full production-owner comparison against immutable source `0c14399`
+checks 10,532 original records across RoboTwin, BEHAVIOR, RoboDojo and grounding
+histories. Every original dependency remains reachable; direct references total
+2,672,191, with identical mandatory retention flags and deletion selection.
+Private-copy retirement and reopening preserve all 404 original records in the
+three unselected grounding Sessions. Current CPU validation passes 37 components
+and 1,185 cases, with 634 independent source/input comparisons and released
+diagnostic process groups. All model, simulator and GPU allocations remain zero.
+See [native reference graph validation](implementation/cpu-release-validation.md#native-reference-graph-equivalence).
 
 Both model adapters share bounded HTTP error admission in
 `models/src/model-failures.ts`. Exact context overflow reaches native DSH

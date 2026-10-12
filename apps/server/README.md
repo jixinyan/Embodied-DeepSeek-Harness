@@ -58,8 +58,11 @@ simulators, embodiments, checkpoints and model services through one Console.
   envelope/payload admission, supported tool names and detached event snapshots.
   Retry records preserve finite fractional waits and mode-specific budgets.
 - [native-workspace-retention.ts](src/native-workspace-retention.ts): native
-  record references, SKILL export leases and original-image source inventory;
+  retention composition, SKILL export leases and original-image source inventory;
   both retention paths use the shared native audit admission.
+- [native-record-references.ts](src/native-record-references.ts): versioned native
+  source relationships, originating Run references and sequence-bound inventory.
+  Run records retain their complete task sources; source records reference their Runs.
 - [session-record-owners.ts](src/session-record-owners.ts): Session/request/catalog
   reference declarations and task ownership checks for retention assembly.
 - [evidence-record-owners.ts](src/evidence-record-owners.ts): sensor and verification

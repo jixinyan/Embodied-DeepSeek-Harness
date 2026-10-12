@@ -38,9 +38,17 @@ of source records.
 `native-audit-payloads.ts` supplies the shared event admission for record and image
 retention. It preserves finite fractional `llm/retry.delayMs`, requires the native
 normal/always payload shape and validates the normal retry budget. Native binding
-versions are `edh-native-workspace-v3`, `edh-native-payload-sources-v3` and
-`edh-native-images-v3`. These versions contribute to maintenance preview identity;
+versions are `edh-native-workspace-v4`, `edh-native-payload-sources-v4` and
+`edh-native-images-v4`. These versions contribute to maintenance preview identity;
 existing journal records retain their original bodies and revisions.
+
+`native-record-references.ts` owns the cached source inventory. A source record
+references each originating Run; each Run references its complete task history.
+This preserves mutual task dependencies through existing Run records. Explicit
+record addresses and generated evidence identities retain their cited sources,
+and compaction/visual-history events retain their preceding event sources.
+The inventory refreshes whenever the LocalStore sequence changes, including
+request archival and retirement. Preview admission uses the current policy version.
 
 The `native-workspace-exports` lease checks the complete SKILL export inventory against
 immutable journal documents and holds their original file descriptors until inspection
@@ -154,7 +162,7 @@ is confined to the private copy. No model or provider executes during these chec
 `--native-binding --retire-private-copy --session-id <retained-session-id>` selects
 one existing session while preserving other sessions and their restart history.
 
-Current v3 admission additionally checks 2,991 original RoboTwin records, 141
+Source `4978102` v3 admission checks 2,991 original RoboTwin records, 141
 BEHAVIOR records and 6,541 RoboDojo records through complete namespace owners
 and declared references. Each private copy retains the exact source digest.
 These checks inspect source ownership; they perform no deletion or physical work.
@@ -162,6 +170,17 @@ Independent production inspection repeats all 9,673 records and declared referen
 matches thirteen selected source files against `4978102`, preserves all source/copy
 journal hashes and verifies released writers. Evidence:
 `.local/work/native-audit-retention-independently-verified-20261012.json`.
+
+The v4 graph has complete production-owner comparison against immutable source
+`0c14399` for 2,991 RoboTwin, 141 BEHAVIOR, 6,541 RoboDojo and 859 grounding
+records. Every current direct dependency exists in the prior graph; every prior
+dependency remains reachable through a direct edge or an originating Run.
+Mandatory retention flags and complete selection previews match. Private-copy
+archival, retirement and reopening check inventory refresh, request identity
+protection and consumed preview tokens. The selected grounding Session retires
+455 records while the other three Sessions preserve all 404 original records,
+including exact revisions and values. Original source journals remain unchanged.
+See [the executable graph check](cpu-release-validation.md#native-reference-graph-equivalence).
 
 Verified original histories include native custom-role recovery/success (918 selected
 records, two retained identities), recorded SAM/YOLO grounding and five clarifications

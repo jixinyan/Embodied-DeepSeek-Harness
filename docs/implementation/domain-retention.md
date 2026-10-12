@@ -8,6 +8,21 @@ deployment payload inspector. Configured HTTP and console operations archive req
 identities and retire selected closed-session history after reference inspection.
 See the [session-retention lifecycle](session-retention.md). Collection remains explicit.
 
+The native payload inspector in `native-record-references.ts` declares each task
+source's originating Run and gives that Run references to the complete task
+inventory. For example, a retained native audit protects its Run, which protects
+that task's observations, reports and verification sources. A source shared by
+multiple Runs retains every originating Run. Explicit journal addresses,
+generated evidence identities and preceding event sequences retain their source
+relationships. Inventory caching is bound to the LocalStore sequence, so archival
+and retirement refresh the inventory before the next inspection.
+
+The source graph checker compares these relationships with the immutable prior
+production factory. Every current direct edge exists in the original graph;
+every original edge has either a current direct edge or a path through an
+originating Run. Consequently the two graphs protect the same record selections.
+Record bodies, revisions and mandatory retention flags remain unchanged.
+
 ## Owner and source configuration
 
 `DomainRetentionPolicy` contains a version, a nonempty `owners` array and an explicit
