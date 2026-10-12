@@ -304,6 +304,10 @@ inspects deployment payload references; the same inspector handles legacy inline
 Submission, plan, private files, clarification and native-audit owners participate in
 the built-in application policy. Unknown extension namespaces require their own
 versioned inspectors before history retirement can proceed.
+`native-audit-payloads.ts` owns native event envelope/payload admission and supported
+tool names. Native record and image retention share this admission. Model-request
+retry events retain finite fractional waits, native mode and consistent retry budgets;
+the selected DSH executor continues to own scheduling and cancellation.
 The server
 owns idle-state and sequence admission, terminal-task drain and HTTP exposure. The
 console owns statistics and operation status. Compaction preserves all current keys

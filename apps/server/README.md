@@ -54,6 +54,12 @@ simulators, embodiments, checkpoints and model services through one Console.
   scoped cursors and independent active records; [API and acceptance](../../docs/implementation/workspace-history.md).
 - [domain-retention.ts](src/domain-retention.ts): configured record owners, reference
   leases and versioned retirement previews; [admission boundaries](../../docs/implementation/domain-retention.md).
+- [native-audit-payloads.ts](src/native-audit-payloads.ts): shared native audit
+  envelope/payload admission, supported tool names and detached event snapshots.
+  Retry records preserve finite fractional waits and mode-specific budgets.
+- [native-workspace-retention.ts](src/native-workspace-retention.ts): native
+  record references, SKILL export leases and original-image source inventory;
+  both retention paths use the shared native audit admission.
 - [session-record-owners.ts](src/session-record-owners.ts): Session/request/catalog
   reference declarations and task ownership checks for retention assembly.
 - [evidence-record-owners.ts](src/evidence-record-owners.ts): sensor and verification

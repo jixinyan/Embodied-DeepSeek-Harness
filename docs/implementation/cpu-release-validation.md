@@ -12,13 +12,25 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 `scripts/check-model-retry-offline.mjs` starts the production native DSH host
 and configured Chat Completions/Responses adapters against a closed local TCP
 port. Genuine connection failures drive the original `llm-retry` plugin.
-Sixteen checks retain eighteen native journals and 44 failed request attempts,
+Twenty checks retain 22 native journals and 56 failed request attempts,
 with zero provider responses or tool/physical execution. They cover bounded and
 disabled retries, concurrent independent Sessions, retry reset on a later turn,
-user cancellation, host disposal, explicit always-mode cancellation and loaded
+fractional backoff, actual native jitter, user cancellation, host disposal,
+explicit always-mode cancellation and loaded
 Team trace. Real 15-second retry waits release within the diagnostic's three-second
 bound when cancellation/disposal occurs. Retry/start events match their original
 Session sequences and retain distinct chains across Sessions/turns.
+
+The production SessionHistory/SessionAudits path persists 338 immutable event
+bodies. Eight cases release historical bodies during a real pending wait. Native
+retry continuation and cancellation preserve their projections after release.
+The shared audit admission in `apps/server/src/native-audit-payloads.ts` keeps the
+original finite millisecond values and native normal/always budget shape. Both
+record and image retention use it. Eighteen invalid derivatives reject. Reopened
+production LocalStore readers independently compare every event with its original
+native snapshot, derive the native replay projection and release their writers.
+The source journal hash remains unchanged. These checks provide no model response
+and resume no agent workflow.
 
 ```sh
 pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-model-retry-offline.mjs \
@@ -35,17 +47,21 @@ local retry executor with pinned DSH revision
 only comments differ. The import map retains both source hashes.
 
 The complete CPU campaign includes `model-retry`. Source CI retains its journals,
-both Team traces and separate `model-retry-configuration.xml`. Consolidated v4
+both Team traces, the actual history journal and separate `model-retry-configuration.xml`. Consolidated v5
 artifact admission verifies every retry case, failure stream, journal digest,
-Team correlation and exact-commit source. Actual cloud/vLLM successful recovery
+Team correlation, history digests and exact-commit source. Actual cloud/vLLM successful recovery
 and provider-specific retry timing require their native acceptance checks.
 
-The complete current-source CPU campaign passes 37 components and 1,181 cases.
-Independent inspection verifies 617 source/input comparisons, unchanged original
+The complete current-source CPU campaign passes 37 components and 1,185 cases.
+Independent inspection verifies 633 source/input comparisons, unchanged original
 journals/images and 37 absent diagnostic process groups. Original Responses/output
 and image-context checks retain their recorded acceptance boundaries. No model,
 simulator or GPU allocates. Evidence:
-`.local/work/model-retry-cpu-campaign-20261012/independently-verified.json`.
+`.local/work/model-retry-history-cpu-campaign-20261012/independently-verified.json`.
+Independent history inspection verifies 35 current source identities, 22 native
+Sessions, all 338 durable event bodies, eight pending-wait archives, fractional
+delays, source preservation and released writers. Evidence:
+`.local/work/model-retry-history-cpu-campaign-20261012/model-retry/independently-verified.json`.
 
 Source `741311c` matches 135 distinct captured production/checker files against
 the exact Git commit. Actual Ubuntu CI `38290122403` passes fresh installation,

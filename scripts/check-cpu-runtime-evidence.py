@@ -227,21 +227,21 @@ def main():
     retry_directory = runtime / "model-retry"
     retry_report_path = retry_directory / "acceptance.json"
     retry = json.loads(retry_report_path.read_bytes())
-    assert retry["schemaVersion"] == "edh.model_retry.cpu.v1"
+    assert retry["schemaVersion"] == "edh.model_retry.cpu.v2"
     assert retry["listenerClosed"] is True and retry["agentsReleased"] is True
     for field in ("gpuAllocationCount", "modelResponseCount", "simulatorAllocationCount"):
         assert type(retry[field]) is int and retry[field] == 0
     protocols = ("chat_completions", "responses")
-    modes = ("bounded", "disabled", "independent", "next-turn", "cancel", "dispose", "always-cancel", "team")
-    assert len(retry["checks"]) == len(protocols) * len(modes) == 16
+    modes = ("bounded", "fractional", "jitter", "disabled", "independent", "next-turn", "cancel", "dispose", "always-cancel", "team")
+    assert len(retry["checks"]) == len(protocols) * len(modes) == 20
     assert {case["name"] for case in retry["checks"]} == {f"{protocol}:{mode}" for protocol in protocols for mode in modes}
-    assert len(retry["sources"]) == len({entry["path"] for entry in retry["sources"]}) == 24
+    assert len(retry["sources"]) == len({entry["path"] for entry in retry["sources"]}) == 35
     for entry in retry["sources"]:
         compare(Path(entry["path"]).relative_to(source_root), entry["sha256"])
     retry_paths = [retry_report_path]
     native_sessions = {}
-    assert len(retry["journals"]) == 18
-    assert len({entry["sessionId"] for entry in retry["journals"]}) == 18
+    assert len(retry["journals"]) == 22
+    assert len({entry["sessionId"] for entry in retry["journals"]}) == 22
     for entry in retry["journals"]:
         file = Path(entry["file"])
         assert file.name == str(file) and file.suffix == ".json"
@@ -264,6 +264,11 @@ def main():
             assert case["modelResponseCount"] == 0 and case["expectedFailure"] == "TRANSPORT"
             if waiting:
                 assert 0 <= case["elapsedMs"] < 3000
+            if waiting or mode == "fractional":
+                status = case["waitingHistory"]
+                assert status["eventCount"] > status["archivedBefore"] > 0
+                assert status["residentEvents"] == status["eventCount"] - status["archivedBefore"] == 1
+                assert 0 < status["residentBytes"] <= 1024
             selected = [entry for entry in retry["journals"] if entry["file"] == f"{protocol}-{mode}-{entry['sessionId']}.json"]
             assert len(selected) == sessions
             for entry in selected:
@@ -292,7 +297,11 @@ def main():
                 for index in range(turns) if not waiting and scheduled else ():
                     pair = scheduled[index * 2:index * 2 + 2]
                     assert [event["data"]["retry"] for event in pair] == [1, 2]
-                    assert [event["data"]["delayMs"] for event in pair] == [5, 10]
+                    delays = [event["data"]["delayMs"] for event in pair]
+                    if mode == "jitter":
+                        assert 4.5 <= delays[0] <= 5.5 and 9 <= delays[1] <= 10
+                    else:
+                        assert delays == ([5.25, 10.5] if mode == "fractional" else [5, 10])
                     chain = pair[0]["data"]["retryId"]
                     assert chain == pair[1]["data"]["retryId"] and chain not in chain_ids
                     chain_ids.add(chain)
@@ -314,13 +323,34 @@ def main():
             assert detail["sessionId"] == trace["sessionId"] and detail["member"] == "lead"
             assert detail["type"] == native["type"] and detail["data"] == native["data"]
         retry_paths.append(saved)
+    history = retry["history"]
+    assert history["journalPath"] == "history/records.jsonl"
+    journal_path = retry_directory / history["journalPath"]
+    assert identity(journal_path)["sha256"] == history["journalSha256"]
+    assert not (journal_path.parent / "writer.lock").exists()
+    assert history["referencePolicy"] == "edh-native-payload-sources-v3"
+    assert history["journalUnchanged"] is True and history["writerReleased"] is True and history["reopened"] is True
+    assert len(history["sessions"]) == 22
+    assert {item["sessionId"] for item in history["sessions"]} == set(native_sessions)
+    assert len({(item["runId"], item["assignmentId"]) for item in history["sessions"]}) == 22
+    assert type(history["payloadAdmissions"]) is int
+    assert history["payloadAdmissions"] >= sum(len(events) for events in native_sessions.values())
+    invalid_names = ("negative-delay", "nonfinite-delay", "nan-delay", "timer-overflow", "retry-over-budget", "missing-normal-budget", "always-normal-budget", "unknown-mode", "unknown-field")
+    assert len(history["rejectedPayloadInputs"]) == 18
+    assert set(history["rejectedPayloadInputs"]) == {f"{protocol}:{name}" for protocol in protocols for name in invalid_names}
+    for item in history["sessions"]:
+        assert item["eventCount"] == len(native_sessions[item["sessionId"]])
+        assert item["eventCount"] > item["archivedBefore"] > 0
+        assert item["residentEvents"] == item["eventCount"] - item["archivedBefore"] == 1
+        assert 0 < item["residentBytes"] <= 1024
+    retry_paths.append(journal_path)
     files.extend(retry_paths)
     inputs.extend(identity(path) for path in retry_paths)
     cases["model-retry"] = len(retry["checks"])
     assert [identity(path) for path in files] == inputs, "CPU evidence changed during inspection."
     output.parent.mkdir(parents=True, exist_ok=True)
     result = {
-        "schemaVersion": "edh.cpu_runtime_evidence.v4",
+        "schemaVersion": "edh.cpu_runtime_evidence.v5",
         "sourceRevision": revision,
         "checker": identity(Path(__file__)),
         "inputs": inputs, "sourceComparisons": comparisons,

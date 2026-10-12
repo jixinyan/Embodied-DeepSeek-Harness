@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
@@ -12,8 +13,11 @@ import { TeamSessions } from '@edh/communication';
 import { ContractValidator } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
 import { CORE_TOOLS } from '@edh/tools';
-import { SessionId } from '@deepseek-ai/dsh-session';
+import { Session, SessionId } from '@deepseek-ai/dsh-session';
+import { LocalStore, SessionAudits, SessionHistory } from '@edh/storage';
 import { createDshHost } from '../apps/server/src/runtime.ts';
+import { nativeWorkspaceRetention } from '../apps/server/src/native-workspace-retention.ts';
+import { admitNativeAuditEvent } from '../apps/server/src/native-audit-payloads.ts';
 
 const { values } = parseArgs({ options: { output: { type: 'string' } } });
 assert(values.output, 'Supply a new --output directory.');
@@ -26,6 +30,17 @@ const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const sources = await Promise.all(
   [
     'apps/server/src/runtime.ts',
+    'apps/server/src/native-audit-payloads.ts',
+    'apps/server/src/native-workspace-retention.ts',
+    'apps/server/src/deployment-retention.ts',
+    'apps/server/src/workspace-record-owners.ts',
+    'harness/agent-runtime/storage/src/local-store.ts',
+    'harness/agent-runtime/storage/src/session-history.ts',
+    'harness/agent-runtime/storage/src/session-audits.ts',
+    'harness/agent-runtime/storage/src/dsh/session/index.ts',
+    'harness/agent-runtime/storage/src/dsh/session/surface.ts',
+    'harness/agent-runtime/storage/src/dsh/projection/index.ts',
+    'harness/agent-runtime/foundation/src/dsh/timeout/index.ts',
     'harness/agent-runtime/agents/src/runtime.ts',
     'harness/agent-runtime/agents/src/dsh/loop/agent.ts',
     'harness/agent-runtime/models/src/configuration.ts',
@@ -73,6 +88,43 @@ await assert.rejects(
 const checks = [];
 const journals = [];
 const traces = [];
+const validator = new ContractValidator(
+  JSON.parse(
+    await readFile(resolve(root, 'harness/contracts/schema/physical.schema.json'), 'utf8'),
+  ),
+);
+const historyDirectory = resolve(output, 'history');
+const store = new LocalStore(historyDirectory);
+const history = new SessionHistory(store, { maxResidentEvents: 1, maxResidentBytes: 1024 });
+const audits = new SessionAudits(store);
+const retention = nativeWorkspaceRetention({
+  store,
+  validator,
+  providers: ['robodojo'],
+  additionalTools: [],
+});
+const histories = [];
+const invalidInputs = [];
+let payloadAdmissions = 0;
+function retain(runId, assignmentId, session) {
+  const before = session.snapshotEvents();
+  const status = history.retain(runId, assignmentId, session);
+  assert.deepEqual(session.snapshotEvents(), before);
+  assert.deepEqual(
+    audits.read(runId).find((row) => row.key === `session-audit:${runId}:${assignmentId}`).value,
+    before,
+  );
+  for (const event of before) {
+    const key = `session-audit-event:${runId}:${assignmentId}:${event.seq}`;
+    const row = store.get(key);
+    assert.equal(row.version, 1);
+    assert.deepEqual(admitNativeAuditEvent(row.value), event);
+    assert(Array.isArray(retention.domainRetention.references.inspect({ key, value: row.value })));
+    payloadAdmissions++;
+  }
+  if (session.seq > 1) assert(status.archivedBefore > 0);
+  return status;
+}
 const bounded = async (operation) => {
   let timer;
   try {
@@ -99,6 +151,9 @@ const message = () =>
 
 async function check(protocol, mode) {
   const waiting = ['cancel', 'dispose', 'always-cancel'].includes(mode);
+  const runId = randomUUID();
+  const owners = new Map();
+  let waitingHistory;
   const models = createConfiguredModels({
     version: 1,
     defaultModel: 'diagnostic',
@@ -113,9 +168,9 @@ async function check(protocol, mode) {
           mode: mode === 'always-cancel' ? 'always' : 'normal',
           ...(mode === 'always-cancel' ? {} : { maxRetries: mode === 'disabled' ? 0 : 2 }),
           backoff: {
-            initialDelayMs: waiting ? 15_000 : 5,
-            maxDelayMs: waiting ? 15_000 : 10,
-            jitterRatio: 0,
+            initialDelayMs: waiting ? 15_000 : mode === 'fractional' ? 5.25 : 5,
+            maxDelayMs: waiting ? 15_000 : mode === 'fractional' ? 10.5 : 10,
+            ...(mode === 'jitter' ? {} : { jitterRatio: 0 }),
           },
         },
       },
@@ -128,15 +183,11 @@ async function check(protocol, mode) {
   const registry = host.agents;
   const requests = [];
   const handles = [];
+  const disposed = new Set();
   const errors = new Map();
   const trace = [];
   let teamSessions;
   if (mode === 'team') {
-    const validator = new ContractValidator(
-      JSON.parse(
-        await readFile(resolve(root, 'harness/contracts/schema/physical.schema.json'), 'utf8'),
-      ),
-    );
     const team = await new FileTeamLoader({
       validator,
       builtinDirectory: resolve(root, 'harness/agent-runtime/agents/roles'),
@@ -156,6 +207,7 @@ async function check(protocol, mode) {
         audit: (assignmentId, session) => {
           assert.equal(assignmentId, teamSessions.get(assignmentId).id);
           assert(session.seq > 0);
+          retain(runId, assignmentId, session);
         },
       },
       () => models.models.diagnostic,
@@ -190,7 +242,7 @@ async function check(protocol, mode) {
           team_run_id: teamSessions.team.teamRunId,
           objective: 'Inspect the unavailable model transport without physical execution.',
           task_scope: {
-            task_id: randomUUID(),
+            task_id: runId,
             goal_id: 'transport-check',
             attempt_id: 'attempt-1',
           },
@@ -225,6 +277,7 @@ async function check(protocol, mode) {
       );
       errors.set(String(handle.agent.id), failures);
       handles.push(handle);
+      owners.set(String(handle.agent.id), assignment?.id ?? randomUUID());
       if (assignment)
         await assert.rejects(
           bounded(
@@ -234,8 +287,21 @@ async function check(protocol, mode) {
         );
       else handle.agent.followup(message());
     }
-    if (waiting) {
+    if (waiting || mode === 'fractional') {
       await bounded(scheduled);
+      const session = handles[0].agent.session;
+      const retry = session.snapshotEvents().find((event) => event.type === 'llm/retry');
+      assert.equal(retry.data.delayMs, waiting ? 15_000 : 5.25);
+      waitingHistory = retain(runId, owners.get(String(session.id)), session);
+      assert.equal(session.snapshotEvents().at(-1).type, 'llm/retry');
+      assert.deepEqual(host.sessionProjections.stateOf(session, 'llmRetry'), {
+        [JSON.stringify([retry.data.provider, retry.data.policyKey])]: {
+          retry: retry.data.retry,
+          retryId: retry.data.retryId,
+        },
+      });
+    }
+    if (waiting) {
       const start = performance.now();
       if (mode !== 'dispose') handles[0].agent.cancel({ kind: 'user' });
       else {
@@ -257,8 +323,13 @@ async function check(protocol, mode) {
     }
     const chains = [];
     for (const handle of handles) {
+      if (!released) {
+        await bounded(handle.dispose());
+        disposed.add(handle);
+      }
       const sessionId = String(handle.agent.id);
       const events = handle.agent.session.snapshotEvents();
+      assert.equal(events.at(-1).type, 'turn/end');
       const retries = events.filter((event) => event.type === 'llm/retry');
       const started = events.filter((event) => event.type === 'llm/retry-started');
       const attempts = events.filter((event) => event.type === 'assistant/attempt');
@@ -299,16 +370,49 @@ async function check(protocol, mode) {
             pair.map((event) => event.data.retry),
             [1, 2],
           );
-          assert.deepEqual(
-            pair.map((event) => event.data.delayMs),
-            [5, 10],
-          );
+          if (mode === 'jitter') {
+            assert(pair[0].data.delayMs >= 4.5 && pair[0].data.delayMs <= 5.5);
+            assert(pair[1].data.delayMs >= 9 && pair[1].data.delayMs <= 10);
+          } else
+            assert.deepEqual(
+              pair.map((event) => event.data.delayMs),
+              mode === 'fractional' ? [5.25, 10.5] : [5, 10],
+            );
           assert.equal(pair[0].data.retryId, pair[1].data.retryId);
           chains.push(pair[0].data.retryId);
         }
       }
       if (!released)
         assert.deepEqual(host.sessionProjections.stateOf(handle.agent.session, 'llmRetry'), {});
+      const assignmentId = owners.get(sessionId);
+      const retained = retain(runId, assignmentId, handle.agent.session);
+      histories.push({ runId, assignmentId, sessionId, ...retained });
+      if (mode === 'fractional') {
+        for (const [name, change] of [
+          ['negative-delay', { delayMs: -0.5 }],
+          ['nonfinite-delay', { delayMs: Infinity }],
+          ['nan-delay', { delayMs: NaN }],
+          ['timer-overflow', { delayMs: 2_147_483_648 }],
+          ['retry-over-budget', { retry: 3 }],
+          ['missing-normal-budget', { maxRetries: undefined }],
+          ['always-normal-budget', { mode: 'always' }],
+          ['unknown-mode', { mode: 'unknown' }],
+          ['unknown-field', { unknown: true }],
+        ]) {
+          const input = structuredClone(retries[0]);
+          Object.assign(input.data, change);
+          const before = structuredClone(input);
+          assert.throws(() => admitNativeAuditEvent(input));
+          assert.throws(() =>
+            retention.domainRetention.references.inspect({
+              key: `session-audit-event:${runId}:${assignmentId}:${input.seq}`,
+              value: input,
+            }),
+          );
+          assert.deepEqual(input, before);
+          invalidInputs.push(`${protocol}:${name}`);
+        }
+      }
       const file = `${protocol}-${mode}-${sessionId}.json`;
       const bytes = `${JSON.stringify(events, null, 2)}\n`;
       await writeFile(resolve(output, file), bytes, { flag: 'wx' });
@@ -336,13 +440,14 @@ async function check(protocol, mode) {
       name: `${protocol}:${mode}`,
       requests: requests.length,
       sessions: handles.length,
+      ...(waitingHistory === undefined ? {} : { waitingHistory }),
       ...(elapsedMs === undefined ? {} : { elapsedMs }),
       expectedFailure: 'TRANSPORT',
       modelResponseCount: 0,
     });
   } finally {
     if (!released) {
-      for (const handle of handles) await bounded(handle.dispose());
+      for (const handle of handles) if (!disposed.has(handle)) await bounded(handle.dispose());
       if (teamSessions) await bounded(teamSessions.close());
       await bounded(host.fiber.dispose());
     }
@@ -350,36 +455,80 @@ async function check(protocol, mode) {
   assert.equal(registry.list().length, 0);
 }
 
-for (const protocol of ['chat_completions', 'responses'])
-  for (const mode of [
-    'bounded',
-    'disabled',
-    'independent',
-    'next-turn',
-    'cancel',
-    'dispose',
-    'always-cancel',
-    'team',
-  ])
-    await check(protocol, mode);
+try {
+  for (const protocol of ['chat_completions', 'responses'])
+    for (const mode of [
+      'bounded',
+      'fractional',
+      'jitter',
+      'disabled',
+      'independent',
+      'next-turn',
+      'cancel',
+      'dispose',
+      'always-cancel',
+      'team',
+    ])
+      await check(protocol, mode);
+} finally {
+  store.close();
+}
+assert(!existsSync(resolve(historyDirectory, 'writer.lock')));
+const journalPath = resolve(historyDirectory, 'records.jsonl');
+const journalDigest = hash(await readFile(journalPath));
+const reopened = new LocalStore(historyDirectory);
+const replayHost = await createDshHost([]);
+try {
+  const reader = new SessionAudits(reopened);
+  for (const item of histories) {
+    const saved = reader
+      .read(item.runId)
+      .find((row) => row.key === `session-audit:${item.runId}:${item.assignmentId}`).value;
+    const original = journals.find((row) => row.sessionId === item.sessionId);
+    assert.deepEqual(saved, JSON.parse(await readFile(resolve(output, original.file), 'utf8')));
+    const replay = Session.create(SessionId(item.sessionId), saved);
+    assert.deepEqual(replay.snapshotEvents(0, saved.length), saved);
+    assert.equal(replay.firstLiveSeq, saved.length);
+    assert.equal(replay.seq, saved.length + 1);
+    assert.equal(replay.snapshotEvents().at(-1).type, 'session/end-seed');
+    assert.deepEqual(replayHost.sessionProjections.stateOf(replay, 'llmRetry'), {});
+    for (const event of saved) assert.deepEqual(admitNativeAuditEvent(event), event);
+  }
+} finally {
+  reopened.close();
+  await bounded(replayHost.fiber.dispose());
+}
+assert(!existsSync(resolve(historyDirectory, 'writer.lock')));
+assert.equal(hash(await readFile(journalPath)), journalDigest);
 await assert.rejects(
   fetch(baseURL, { signal: AbortSignal.timeout(3000) }),
   (error) => error.cause?.code === 'ECONNREFUSED',
 );
 for (const source of sources) assert.equal(hash(await readFile(source.path)), source.sha256);
 const report = {
-  schemaVersion: 'edh.model_retry.cpu.v1',
+  schemaVersion: 'edh.model_retry.cpu.v2',
   checks,
   journals,
   traces,
   sources,
+  history: {
+    journalPath: 'history/records.jsonl',
+    journalSha256: journalDigest,
+    sessions: histories,
+    payloadAdmissions,
+    rejectedPayloadInputs: invalidInputs,
+    referencePolicy: retention.domainRetention.references.version,
+    journalUnchanged: true,
+    writerReleased: true,
+    reopened: true,
+  },
   listenerClosed: true,
   agentsReleased: true,
   gpuAllocationCount: 0,
   modelResponseCount: 0,
   simulatorAllocationCount: 0,
   scope:
-    'Actual native DSH requests through production model adapters to a closed local TCP port; transport failure, retry, cancellation and disposal only.',
+    'Actual native DSH requests through production adapters to a closed TCP port; retry, cancellation, disposal and durable audit reads only. No provider response or resumable agent workflow.',
 };
 await writeFile(resolve(output, 'acceptance.json'), `${JSON.stringify(report, null, 2)}\n`, {
   flag: 'wx',

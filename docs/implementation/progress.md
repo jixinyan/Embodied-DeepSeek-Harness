@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-12 · Spec v1.138 · v1 release acceptance in progress.
+Updated: 2026-10-12 · Spec v1.139 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -45,19 +45,29 @@ the release requirements below.
 
 Native model-request retries use the selected DSH executor in
 `agents/src/dsh/model-retry`, with provider-owned endpoint configuration and
-correlated Console/retention events. Sixteen CPU cases use actual refused TCP
-connections: 44 failed attempts in eighteen native journals, independent Sessions,
-reset counts on later turns, disabled retries, always-mode cancellation and prompt
-host disposal. Fifteen configuration checks pass, and independent TypeScript
+correlated Console/retention events. Twenty CPU cases use actual refused TCP
+connections: 56 failed attempts in 22 native journals, independent Sessions,
+reset counts on later turns, fractional waits, native jitter, disabled retries,
+always-mode cancellation and prompt host disposal. Shared native audit admission
+preserves exact wait values and normal/always budgets for record and image retention.
+Eight cases release historical bodies during a pending retry. Reopened LocalStore
+readers independently verify all 338 immutable event bodies, stable original
+snapshots, native replay projections, unchanged journal digest and released writers.
+Eighteen invalid payload derivatives reject without changing their sources.
+Fifteen configuration checks pass, and independent TypeScript
 normalization verifies executable-source identity with pinned DSH. These checks
 allocate no model, simulator or GPU and provide no model response. Successful
 provider recovery remains part of the native acceptance campaign.
 
-The complete current-source CPU campaign passes 37 components and 1,181 cases.
-Independent inspection verifies 617 source/input comparisons, unchanged original
+The complete current-source CPU campaign passes 37 components and 1,185 cases.
+Independent inspection verifies 633 source/input comparisons, unchanged original
 journals/images and 37 released diagnostic process groups. The pinned-source
 audit passes 129 files and 25 module bindings; complete source checks also pass.
-Evidence: `.local/work/model-retry-cpu-campaign-20261012/independently-verified.json`.
+Evidence: `.local/work/model-retry-history-cpu-campaign-20261012/independently-verified.json`
+and `.local/work/model-retry-history-cpu-campaign-20261012/model-retry/independently-verified.json`.
+The v3 native binding also admits 2,991 actual RoboTwin records, 141 BEHAVIOR
+records and 6,541 RoboDojo records through complete namespace owners with unchanged
+source journals.
 
 Source `741311c` additionally matches 135 distinct production/checker files against
 its exact Git commit. Actual Ubuntu CI `38290122403` passes fresh installation,

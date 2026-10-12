@@ -88,6 +88,19 @@ the failure produced by an unavailable model adapter and its retained final audi
 These checks use native services, actual files and authored documents. They do not
 evaluate model reasoning, summary accuracy or physical execution.
 
+The model-request diagnostic additionally exercises both production transports
+against a closed TCP port. Twenty cases retain 22 actual native Sessions and 338
+immutable audit event bodies. Eight cases publish and release historical bodies
+during a real pending retry wait; subsequent retry or cancellation preserves the
+native projection and request count. Fractional configuration and actual native
+jitter retain their exact milliseconds through persistence and payload admission.
+After all assignments close, a second LocalStore reader verifies every stored
+event against its original snapshot. Native replay preserves the complete stored
+prefix and its ordinary `session/end-seed` boundary. The journal digest remains
+unchanged and both writer lifetimes release. This verifies audit reading and
+projection derivation; no agent workflow resumes and no model responds.
+See [CPU retry validation](cpu-release-validation.md#native-model-request-retries).
+
 Remaining work includes live model/provider throughput and shutdown acceptance,
 active-context and application-projection lifetime, distinct-key retention and
 domain-aware archival that preserves SKILL provenance.

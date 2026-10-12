@@ -141,6 +141,12 @@ Normal mode retries only the configured codes. Its default codes leave `AUTH`,
 transient retry. The configured compaction extension handles context overflow.
 Positive provider retry timing is admitted up to the policy's maximum; a larger
 provider delay terminates normal recovery. All waits observe native cancellation.
+Backoff values and native jitter may produce fractional milliseconds. Durable
+audit records preserve the exact native delay, including zero when native jitter
+produces it, within the supported timer range. Record/image retention uses the
+same mode-specific native payload admission. Normal retry records require a
+positive budget and an attempt within that budget; always-mode records carry no
+normal retry budget.
 
 The explicit native `always` mode retries every request failure until success,
 cancellation or disposal. It has no retry-count limit, including for authentication

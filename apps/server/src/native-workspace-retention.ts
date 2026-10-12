@@ -2,156 +2,14 @@ import { createHash } from 'node:crypto';
 import { closeSync, existsSync, openSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { z } from 'zod';
-import { snapshotSessionEvent, type SessionEvent } from '@deepseek-ai/dsh-session';
-import { CORE_TOOLS } from '@edh/tools';
 import { inspectStoredImageReferences } from '@edh/storage';
+import { admitNativeAuditEvent } from './native-audit-payloads.js';
 import { workspaceRecordOwners } from './workspace-record-owners.js';
 import type {
   DeploymentRetentionContext,
   DeploymentRetentionBinding,
 } from './deployment-retention.js';
 
-const text = z.string();
-const count = z.number().int().nonnegative().safe();
-const step = { turn: count.positive(), step: count.positive() };
-const jsonObject = z.record(text, z.unknown());
-const range = z.object({ start: count, end: count }).strict();
-const nativeTools = new Set(CORE_TOOLS.map((name) => name.replaceAll('.', '__')));
-const toolName = text.refine((name) => nativeTools.has(name), 'Unknown native tool payload.');
-const nativeData = {
-  'turn/start': z.object({ turn: count.positive() }).strict(),
-  'turn/end': z.object({ turn: count.positive(), reason: jsonObject }).strict(),
-  'step/start': z.object(step).strict(),
-  'step/end': z.object(step).strict(),
-  'user/message': jsonObject,
-  'assistant/message': z
-    .object({
-      ...step,
-      message: jsonObject,
-      stream: z.array(jsonObject),
-      usage: jsonObject.optional(),
-      interrupted: z.literal(true).optional(),
-    })
-    .strict(),
-  'assistant/attempt': z.object({ ...step, stream: z.array(jsonObject) }).strict(),
-  'tool/call': z.object({ ...step, callId: text.min(1), name: toolName, arguments: text }).strict(),
-  'tool/result': z
-    .object({
-      ...step,
-      message: jsonObject,
-      error: z.object({ name: text, code: text }).strict().optional(),
-    })
-    .strict(),
-  'request/header': z
-    .object({
-      header: z
-        .object({
-          config: jsonObject,
-          adapterDefaults: jsonObject.optional(),
-          system: text.optional(),
-          tools: z.array(jsonObject).optional(),
-        })
-        .strict(),
-      reason: z.enum(['initial', 'resume', 'change', 'series']),
-      startsSeries: z.literal(true).optional(),
-    })
-    .strict(),
-  'request/context': z
-    .object({
-      provider: text.min(1),
-      model: text.min(1),
-      contextWindow: count.positive().optional(),
-    })
-    .strict(),
-  'session/end-seed': z.object({ inherited: z.literal(true).optional() }).strict(),
-  'agent/inbox/spliced': z
-    .object({
-      target: z.enum(['next-turn', 'next-step']),
-      start: count,
-      removedCount: count.optional(),
-      inserted: z.array(jsonObject),
-      outcome: z.literal('canceled').optional(),
-    })
-    .strict(),
-  'todo/write': z
-    .object({
-      todos: z.array(
-        z
-          .object({ content: text, status: z.enum(['pending', 'in_progress', 'completed']) })
-          .strict(),
-      ),
-    })
-    .strict(),
-  'compaction/start': z
-    .object({ compactionId: text.min(1), sourceCommandId: text.optional(), turn: count.nullable() })
-    .strict(),
-  'compaction/end': z
-    .object({
-      compactionId: text.min(1),
-      sourceCommandId: text.optional(),
-      turn: count.nullable(),
-      error: text.optional(),
-    })
-    .strict(),
-  'compaction/prune': z
-    .object({ shadowedRange: range, shadowedSeqs: z.array(count), shadowedTokenCount: count })
-    .strict(),
-  'compaction/summary': z
-    .object({
-      compactionId: text.min(1),
-      sourceCommandId: text.optional(),
-      summary: z.array(jsonObject),
-      shadowedRange: range,
-      shadowedSeqs: z.array(count),
-      shadowedTokenCount: count,
-      provider: text.min(1),
-      model: text.min(1),
-      maxTokens: count.positive().optional(),
-      usage: jsonObject.optional(),
-      rawOutput: z.array(jsonObject).optional(),
-      llmStreamCall: z.literal(true).optional(),
-    })
-    .strict(),
-  'edh/visual-history': z
-    .object({
-      maxImages: count.positive(),
-      incomingImages: count,
-      retainedImages: count,
-      omitted: z.array(
-        z
-          .object({ originalSeq: count, replacementSeq: count, attachmentIds: z.array(text) })
-          .strict(),
-      ),
-    })
-    .strict(),
-  'llm/retry': z
-    .object({
-      retryId: text.min(1),
-      ...step,
-      provider: text.min(1),
-      mode: z.enum(['normal', 'always']),
-      policyKey: text.min(1),
-      retry: count.positive(),
-      maxRetries: count.optional(),
-      delayMs: count,
-      failure: jsonObject,
-    })
-    .strict(),
-  'llm/retry-started': z
-    .object({ retryId: text.min(1), ...step, retry: count.positive() })
-    .strict(),
-} satisfies Record<string, z.ZodType>;
-const nativeEnvelope = z
-  .object({
-    type: text.min(1),
-    seq: count,
-    time: z.number().finite(),
-    data: z.unknown(),
-    ignorable: z.literal(true).optional(),
-    sourceEventSeqs: z.array(count).optional(),
-    surfaceOp: z.unknown().optional(),
-  })
-  .strict();
 const namespaces = new Set([
   'user-session',
   'session-open-request',
@@ -280,25 +138,7 @@ export function nativeWorkspaceRetention(
     inventorySequence = sequence;
   };
   const inspectNative = (key: string, value: unknown, references: Set<string>) => {
-    const event = nativeEnvelope.parse(value);
-    if (!Object.hasOwn(nativeData, event.type))
-      throw new Error(`Unknown native audit event schema: ${event.type}`);
-    const schema = nativeData[event.type as keyof typeof nativeData];
-    schema.parse(event.data);
-    if (event.type === 'request/header')
-      for (const tool of nativeData['request/header'].parse(event.data).header.tools ?? [])
-        toolName.parse(tool.name);
-    snapshotSessionEvent(event as SessionEvent);
-    const pending = [event.data];
-    while (pending.length) {
-      const item = pending.pop();
-      if (!item || typeof item !== 'object') continue;
-      const fields = item as Record<string, unknown>;
-      if (fields.type === 'tool-call') toolName.parse(fields.name);
-      if (fields.type === 'file')
-        throw new Error('Native file attachment extensions require their own retention binding.');
-      pending.push(...Object.values(item).filter((child) => child && typeof child === 'object'));
-    }
+    const event = admitNativeAuditEvent(value);
     const parts = key.slice('session-audit-event:'.length).split(':');
     const prefix = `session-audit-event:${parts[0]}:${parts[1]}:`;
     const source = (sequence: number) => {
@@ -309,18 +149,15 @@ export function nativeWorkspaceRetention(
       references.add(sourceKey);
     };
     if (event.type === 'compaction/prune' || event.type === 'compaction/summary')
-      for (const sequence of z
-        .array(count)
-        .parse((event.data as Record<string, unknown>).shadowedSeqs))
-        source(sequence);
+      for (const sequence of event.data.shadowedSeqs) source(sequence);
     if (event.type === 'edh/visual-history')
-      for (const omitted of nativeData['edh/visual-history'].parse(event.data).omitted) {
+      for (const omitted of event.data.omitted) {
         source(omitted.originalSeq);
         source(omitted.replacementSeq);
       }
   };
   const references = {
-    version: 'edh-native-payload-sources-v2',
+    version: 'edh-native-payload-sources-v3',
     inspect: ({ key, value }: { key: string; value: unknown }) => {
       if (key.startsWith('archived-request:')) return [];
       refresh();
@@ -387,9 +224,9 @@ export function nativeWorkspaceRetention(
   };
   const owners = workspaceRecordOwners(store, context.validator, references);
   return {
-    domainRetention: { version: 'edh-native-workspace-v2', references, sources: [nativeSource] },
+    domainRetention: { version: 'edh-native-workspace-v3', references, sources: [nativeSource] },
     imageRetention: {
-      version: 'edh-native-images-v2',
+      version: 'edh-native-images-v3',
       sources: [
         {
           id: 'native-payload-images',
@@ -423,10 +260,9 @@ export function nativeWorkspaceRetention(
                       ids.add(match[0]);
                   }
                 if (row.key.startsWith('session-audit-event:')) {
-                  const event = nativeEnvelope.parse(row.value);
+                  const event = admitNativeAuditEvent(row.value);
                   if (event.type === 'edh/visual-history')
-                    for (const omitted of nativeData['edh/visual-history'].parse(event.data)
-                      .omitted)
+                    for (const omitted of event.data.omitted)
                       for (const attachmentId of omitted.attachmentIds)
                         ids.add(
                           z

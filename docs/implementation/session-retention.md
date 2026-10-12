@@ -35,6 +35,13 @@ remain dependencies of each run. Referenced history must be included in the dele
 selection or remain retained. Archived request input reserves identifiers independently
 of source records.
 
+`native-audit-payloads.ts` supplies the shared event admission for record and image
+retention. It preserves finite fractional `llm/retry.delayMs`, requires the native
+normal/always payload shape and validates the normal retry budget. Native binding
+versions are `edh-native-workspace-v3`, `edh-native-payload-sources-v3` and
+`edh-native-images-v3`. These versions contribute to maintenance preview identity;
+existing journal records retain their original bodies and revisions.
+
 The `native-workspace-exports` lease checks the complete SKILL export inventory against
 immutable journal documents and holds their original file descriptors until inspection
 finishes. SKILL exports retain their journal sources and full recovery provenance.
@@ -146,6 +153,11 @@ every original journal record as a payload source. That complete-source declarat
 is confined to the private copy. No model or provider executes during these checks.
 `--native-binding --retire-private-copy --session-id <retained-session-id>` selects
 one existing session while preserving other sessions and their restart history.
+
+Current v3 admission additionally checks 2,991 original RoboTwin records, 141
+BEHAVIOR records and 6,541 RoboDojo records through complete namespace owners
+and declared references. Each private copy retains the exact source digest.
+These checks inspect source ownership; they perform no deletion or physical work.
 
 Verified original histories include native custom-role recovery/success (918 selected
 records, two retained identities), recorded SAM/YOLO grounding and five clarifications
