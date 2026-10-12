@@ -109,16 +109,19 @@ if (values.wayland) {
   assert(process.env.XDG_RUNTIME_DIR && process.env.WAYLAND_DISPLAY);
   args.push('--ozone-platform=wayland');
 }
-const application = await _electron.launch({
-  executablePath: executable,
-  chromiumSandbox: true,
-  args,
-  cwd: source,
-  env: { ...process.env, EDH_LAUNCHER_DATA_DIR: applicationDirectory },
-  artifactsDir: resolve(output, 'artifacts'),
-  timeout: 30_000,
-});
+const launchApplication = () =>
+  _electron.launch({
+    executablePath: executable,
+    chromiumSandbox: true,
+    args,
+    cwd: source,
+    env: { ...process.env, EDH_LAUNCHER_DATA_DIR: applicationDirectory },
+    artifactsDir: resolve(output, 'artifacts'),
+    timeout: 30_000,
+  });
+let application = await launchApplication();
 const applicationPid = application.process().pid;
+const applicationPids = [applicationPid];
 let closed = false;
 const browserErrors = [];
 const cycles = [];
@@ -145,7 +148,30 @@ try {
   for (const argument of args) assert(metadata.arguments.includes(argument));
   for (const value of Object.values(metadata.gpuFeatures))
     assert(!String(value).startsWith('enabled'));
-  for (let cycle = 0; cycle < 2; cycle++) {
+  for (let cycle = 0; cycle < 3; cycle++) {
+    if (cycle === 2) {
+      application = await launchApplication();
+      closed = false;
+      applicationPids.push(application.process().pid);
+      const restartedLauncher = await application.firstWindow();
+      restartedLauncher.on('pageerror', (error) => browserErrors.push(String(error)));
+      await restartedLauncher.waitForFunction(() =>
+        document.querySelector('#configuration').textContent.endsWith('launch.json'),
+      );
+      assert.equal(
+        await restartedLauncher.locator('#configuration').textContent(),
+        configurationFile,
+      );
+      assert.equal(await restartedLauncher.locator('#status').textContent(), 'idle');
+      assert.equal((await restartedLauncher.evaluate(() => window.launcher.state())).owned, false);
+      assert.equal(existsSync(resolve(dataDirectory, 'writer.lock')), false);
+      assert.equal(application.windows().length, 1);
+      await save(
+        'restart-state.json',
+        await restartedLauncher.evaluate(() => window.launcher.state()),
+      );
+    }
+    const launcher = await application.firstWindow();
     await launcher.locator('#start').click();
     await launcher.waitForFunction(() =>
       ['running', 'failed'].includes(document.querySelector('#status').textContent),
@@ -165,7 +191,7 @@ try {
     assert(Number.isInteger(childPid) && childPid > 0);
     const windowOpened = application.waitForEvent('window');
     await launcher.locator('#open').click();
-    const consolePage = await windowOpened;
+    let consolePage = await windowOpened;
     consolePage.on('pageerror', (error) => browserErrors.push(String(error)));
     await consolePage.waitForFunction(
       () => document.querySelector('#launch-profile')?.options.length > 0,
@@ -180,6 +206,27 @@ try {
     assert.equal(configuration.deploymentId, 'native-workspace');
     assert.equal(configuration.sourceCode.revision, revision);
     assert.equal(configuration.recordRetirement.available, true);
+    if (cycle === 2) {
+      await launcher.locator('#open').click();
+      assert.equal(application.windows().length, 2);
+      assert.equal(application.windows()[1], consolePage);
+      await consolePage.reload();
+      await consolePage.waitForFunction(
+        () => document.querySelector('#launch-profile')?.options.length > 0,
+      );
+      await consolePage.close();
+      assert.equal(application.windows().length, 1);
+      assert.equal((await launcher.evaluate(() => window.launcher.state())).status, 'running');
+      assert.equal(Number(await readFile(resolve(dataDirectory, 'writer.lock'), 'utf8')), childPid);
+      const reopened = application.waitForEvent('window');
+      await launcher.locator('#open').click();
+      consolePage = await reopened;
+      consolePage.on('pageerror', (error) => browserErrors.push(String(error)));
+      await consolePage.waitForFunction(
+        () => document.querySelector('#launch-profile')?.options.length > 0,
+      );
+      assert.deepEqual(await get('api/config'), configuration);
+    }
     const profiles = Object.entries(configuration.launchProfiles);
     assert(profiles.length > 0);
     const observed = [];
@@ -218,6 +265,7 @@ try {
       assert.equal(service.pid, null);
     }
     assert.equal(await consolePage.evaluate(() => typeof window.require), 'undefined');
+    assert.equal(await consolePage.evaluate(() => typeof window.launcher), 'undefined');
     const preferences = await application.evaluate(({ BrowserWindow }) =>
       BrowserWindow.getAllWindows().map((window) => {
         const values = window.webContents.getLastWebPreferences();
@@ -258,23 +306,26 @@ try {
       selectedProfiles: observed,
       servicePid: childPid,
       operation: cycle === 0 ? 'stop_service' : 'quit_application',
+      restartedApplication: cycle === 2,
+      consoleReopened: cycle === 2,
       writerReleased: true,
       serviceExited: true,
       listenerClosed: true,
       url: state.url,
     });
   }
-  assert.throws(() => process.kill(applicationPid, 0), { code: 'ESRCH' });
+  for (const pid of applicationPids) assert.throws(() => process.kill(pid, 0), { code: 'ESRCH' });
   assert.deepEqual(browserErrors, []);
   assert.deepEqual(await Promise.all(configurationSources.map(identity)), originalSources);
   assert.equal(git('status', '--porcelain=v1'), '');
   await save('acceptance.json', {
-    format: 'edh.desktop-configuration-cpu.v1',
+    format: 'edh.desktop-configuration-cpu.v2',
     source,
     revision,
     executable: await identity(executable),
     diagnostic: await identity(fileURLToPath(import.meta.url)),
     applicationPid,
+    applicationPids,
     applicationReleased: true,
     applicationMetadata: metadata,
     originalSources,

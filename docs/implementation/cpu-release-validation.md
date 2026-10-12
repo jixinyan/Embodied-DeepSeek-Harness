@@ -654,6 +654,12 @@ preferences. Chromium sandboxing stays enabled; disabling flags are rejected.
 Actual service-stop and application-quit cycles require absent application/service
 processes, released writer ownership and refused connections to the former listener.
 The original configuration hashes and clean source are checked after completion.
+The v2 diagnostic also relaunches the packaged application against the same saved
+configuration. Its startup must stay idle without writer ownership or an open
+Console. A third explicit service cycle verifies Console window reuse, reload,
+close and reopen without replacing its service process. The reopened Console
+selects every configured profile, exposes no launcher IPC and completes application
+quit with confirmed application/service/writer/listener release.
 
 The `bd8cb9d` diagnostic passes on macOS and Linux with four configured profiles,
 ten packaged files, two window/service cycles and zero browser errors. Linux uses

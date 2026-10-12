@@ -142,7 +142,10 @@ CUDA_VISIBLE_DEVICES='' TMPDIR="$PWD/.local/cpu-tmp" \
 ```
 
 The diagnostic checks actual ASAR contents, every configured component selection,
-renderer isolation and owned-service cleanup through two real window cycles.
+renderer isolation and owned-service cleanup through three real service cycles.
+It restarts the application with the saved configuration and requires idle startup,
+then reuses, reloads, closes and reopens the Console while retaining the same service.
+Both application processes and all three service processes must exit after cleanup.
 It disables hardware graphics, performs no Session/task submission and preserves
 the original configuration hashes. For a configured CPU Wayland compositor on
 Linux, add `--wayland` and supply its `XDG_RUNTIME_DIR` and `WAYLAND_DISPLAY`.
