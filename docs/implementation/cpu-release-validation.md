@@ -7,6 +7,22 @@ continues to require the [native campaign](native-release-campaign.md).
 The base Python package includes Pillow for PNG observation encoding; WebSocket
 inference and original-journal inspection use the `policy` and `diagnostics` extras.
 
+## Current CPU checkpoints
+
+| Scope | Exact source and verified result |
+| --- | --- |
+| Configured production campaign | `ebf8e76`: 37 components, 1,185 cases, 634 independently inspected source/input comparisons and 37 released diagnostic process groups |
+| Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
+| Latest Ubuntu source/installation CI | `86c612a`, run `38305942638`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
+| Persistent native retries | The latest downloaded CI journals preserve 22 independent native Sessions, 56 genuine failed connections and 338 source-matched event bodies; pending-history release and cancellation retain their declared scope |
+
+Between `ebf8e76` and `86c612a`, the source changes consist of the packaged Desktop
+diagnostic and documentation. The campaign's production runtime sources remain
+unchanged. Every checkpoint excludes model inference, loaded-policy execution,
+simulator allocation and new physical task acceptance. The
+[release requirements](progress.md#remaining-release-requirements) identify the
+native workflows that still require their actual model/policy/simulator runs.
+
 ## Native model-request retries
 
 `scripts/check-model-retry-offline.mjs` starts the production native DSH host
@@ -670,8 +686,22 @@ Its journal remains unchanged and writer ownership releases. Application restart
 preserves the selected path and stays idle. Native allocations remain zero.
 Evidence: `.local/work/desktop-restart-configuration-20261012/acceptance.json` and
 `.local/work/desktop-restart-configuration-20261012/independently-verified.json`.
-Linux restart/reopening and allocated profile/task acceptance retain their
-platform/native gates.
+Clean Linux `86c612a` passes the same v2 workflow with a real headless
+Wayland/Pixman compositor, ten matching ASAR files, twelve profile selections and
+three service cycles. Independent verification matches nineteen source/package/
+configuration identities and confirms six released processes including the
+compositor, its absent process group/sockets and unchanged canonical server source.
+All 31 transferred evidence files and their archive digest verify. Cross-platform
+inspection matches the ten packaged files and diagnostic source, twenty-four
+selections and six service cycles. The copied Linux production journal also reopens
+unchanged with zero records and released writer ownership. Evidence:
+`.local/work/desktop-restart-linux-20261012-evidence/unpacked-files.json` and
+`.local/work/desktop-restart-linux-20261012-evidence/platform-comparison.json`.
+Archive SHA-256:
+`901ac028ae9d870c91ca2f76d962d5c8066ce1357fa64fe3f45b935bfae04eeb`.
+Choose short repository-owned directories for `XDG_RUNTIME_DIR` and `TMPDIR`;
+Wayland and Chromium create UNIX sockets in those directories.
+Allocated profile/task acceptance retains its native release requirements.
 
 The `bd8cb9d` diagnostic passes on macOS and Linux with four configured profiles,
 ten packaged files, two window/service cycles and zero browser errors. Linux uses

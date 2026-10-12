@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-12 · Spec v1.142 · v1 release acceptance in progress.
+Updated: 2026-10-12 · Spec v1.143 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -55,6 +55,29 @@ Session/model/policy/simulator/GPU allocations remain zero. Evidence:
 `.local/work/desktop-restart-configuration-20261012/independently-verified.json`.
 Complete source checks pass. Allocated native task and configuration workflows
 retain their release requirements.
+
+Linux source `86c612a` passes the same v2 workflow using a real headless
+Wayland/Pixman CPU compositor with Chromium sandboxing. Independent checks match
+nineteen source/package/configuration identities, twelve profile selections and
+six released processes including the compositor. Its process group and sockets
+release; the canonical server revision, status and tracked-change digest stay
+unchanged. The transferred archive and all 31 original evidence files verify.
+Cross-platform inspection matches all ten ASAR files and the diagnostic source,
+twenty-four selections, six service cycles and unchanged empty production journals.
+Evidence: `.local/work/desktop-restart-linux-20261012-evidence/unpacked-files.json`
+and `.local/work/desktop-restart-linux-20261012-evidence/platform-comparison.json`.
+
+Actual Ubuntu CI `38305942638` at `86c612a` passes complete source and fresh
+installation checks, seven SKILL tests, eight request-option tests, thirteen
+failure tests, fifteen retry-configuration tests and 78 production runtime cases.
+Independent inspection matches fourteen distributions, thirteen imports, 41
+input identities and 89 exact-commit source comparisons. Production readers
+verify seven unchanged plan journals and all 338 native events in 22 Sessions
+with released writers. The three JUnit reports verify their exact case names and
+contain zero failures or skips. Evidence:
+`.local/work/ci-desktop-restart-inspection-20261012.json`,
+`.local/work/ci-desktop-restart-independently-verified-20261012.json` and
+`.local/work/ci-desktop-restart-native-independently-verified-20261012.json`.
 
 Native source relationships now belong to `native-record-references.ts`; the
 workspace factory retains composition, SKILL export leases and image sources.

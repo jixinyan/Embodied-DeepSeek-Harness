@@ -28,6 +28,17 @@ unallocated configuration/lifecycle scope; allocated switching and complete nati
 task/configuration workflows retain their release requirements. See
 [packaged Desktop CPU workflow](cpu-release-validation.md#packaged-desktop-cpu-workflow).
 
+Linux `86c612a` additionally passes the same v2 workflow through actual headless
+Wayland/Pixman windows with Chromium sandboxing. Independent transferred evidence
+verifies all 31 files, nineteen source/package/configuration identities, twelve
+selections, six released processes, compositor-group/socket release and unchanged
+canonical user source. Cross-platform inspection matches all ten ASAR files and
+the diagnostic source, twenty-four selections and six service cycles. Neither
+platform creates a Session or allocates a model, policy, simulator or GPU.
+Its actual Ubuntu source/installation CI also passes all 78 production runtime
+cases; downloaded artifacts independently match 89 exact-commit source comparisons
+and the original production journals.
+
 Fresh CPU installation passes on macOS/Python 3.14, Linux/Python 3.12 and
 GitHub/Python 3.11 with frozen pnpm dependencies, pinned runtime constraints and
 actual installation provenance. Clean `6b63217` passes four-provider readiness,
