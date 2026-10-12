@@ -47,6 +47,25 @@ and image-context checks retain their recorded acceptance boundaries. No model,
 simulator or GPU allocates. Evidence:
 `.local/work/model-retry-cpu-campaign-20261012/independently-verified.json`.
 
+Source `741311c` matches 135 distinct captured production/checker files against
+the exact Git commit. Actual Ubuntu CI `38290122403` passes fresh installation,
+complete source checks, seven SKILL tests, eight model request-option tests,
+thirteen failure tests, fifteen retry-configuration tests and its separate
+74-case production runtime suite. Independent downloaded-artifact admission
+verifies fourteen distributions, thirteen imports, 36 input digests and
+77 exact-commit source comparisons. Native retry streams/journals/Team traces
+retain their original identities. Seven plan journals remain unchanged and
+release writers; all three JUnit reports contain the expected cases with zero
+failures/skips. Configuration/test/workflow sources independently match the
+same revision. No model, simulator or GPU allocates.
+
+Evidence: `.local/work/model-retry-cpu-campaign-20261012/committed-source-verification.json`,
+`.local/work/ci-model-retry-inspection-20261012.json`,
+`.local/work/ci-model-retry-independently-verified-20261012.json`,
+`.local/work/ci-model-retry-configuration-independently-verified-20261012.json`,
+`.local/work/ci-model-retry-failures-independently-verified-20261012.json` and
+`.local/work/ci-model-retry-options-independently-verified-20261012.json`.
+
 Evidence: `.local/work/model-retry-cpu-campaign-20261012/model-retry/acceptance.json`,
 `.local/work/model-retry-configuration-20261011.xml` and
 `.local/work/model-retry-source-independently-verified-20261011.json`.

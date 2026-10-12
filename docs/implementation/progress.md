@@ -59,6 +59,17 @@ journals/images and 37 released diagnostic process groups. The pinned-source
 audit passes 129 files and 25 module bindings; complete source checks also pass.
 Evidence: `.local/work/model-retry-cpu-campaign-20261012/independently-verified.json`.
 
+Source `741311c` additionally matches 135 distinct production/checker files against
+its exact Git commit. Actual Ubuntu CI `38290122403` passes fresh installation,
+complete source checks, seven SKILL tests, eight request-option tests, thirteen
+failure tests, fifteen retry-configuration tests and 74 production runtime cases.
+Downloaded-artifact admission independently verifies fourteen distributions,
+thirteen imports, 36 input digests and 77 exact-commit source comparisons. Native
+retry journals/Team traces and all JUnit cases retain their exact identities;
+seven plan journals remain unchanged with released writers. No native allocation
+occurs. Evidence: `.local/work/ci-model-retry-independently-verified-20261012.json`
+and `.local/work/ci-model-retry-configuration-independently-verified-20261012.json`.
+
 | Source checkpoint | Behavior and checks |
 | --- | --- |
 | `f6a890a` | The complete 36-component/1,165-case CPU campaign independently verifies 574 source/input comparisons, 116 exact-commit production/checker identities and 36 absent process groups. Actual Ubuntu CI `38185797204` passes fresh installation, full source checks, seven SKILL tests, eight model-configuration tests, thirteen model-failure tests and 58 separate production-runtime cases. Downloaded artifacts independently verify fourteen distributions, thirteen imports, fifteen input digests and 53 source comparisons; seven plan journals remain unchanged and release writers. Both JUnit reports and their exact configuration/test/workflow sources match this revision. Native allocations remain zero. |
