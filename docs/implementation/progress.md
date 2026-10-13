@@ -64,6 +64,15 @@ diagnostic writers release and model/simulator/GPU allocations remain zero.
 Evidence: `.local/work/native-deployment-modules-cpu-campaign-20261012/independently-verified.json`
 and its `depth-calibrations/independently-verified.json`.
 
+All 153 captured production/checker files match `2ef31d7`. Actual Ubuntu CI
+`38348086492` passes fresh installation, complete source checks and 78 runtime
+cases. Downloaded evidence independently matches 89 exact-source comparisons and
+41 inputs. Production readers preserve seven unchanged task-plan journals and
+all 338 retry events in 22 native Sessions, with released writers and no native
+allocations. Evidence: `.local/work/ci-native-deployment-modules-inspection-20261012.json`,
+`.local/work/ci-native-deployment-modules-native-independent-20261012.json` and
+`.local/work/native-deployment-modules-cpu-campaign-20261012/committed-source-verification.json`.
+
 Each native environment/launch profile retains its own camera calibration bank.
 Native configuration, deployment preparation and UpperRun admit detached,
 immutable snapshots; Session tasks select their profile bank. Omission inherits

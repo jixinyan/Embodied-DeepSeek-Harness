@@ -3160,6 +3160,16 @@ and its `depth-calibrations/independently-verified.json`.
 These checks establish code ownership and CPU configuration/lifetime boundaries;
 loaded model/policy and complete native task gates retain their release requirements.
 
+All 153 captured production/checker files match `2ef31d7`. Actual Ubuntu CI
+`38348086492` passes fresh installation, complete source checks and 78 runtime
+cases. Downloaded evidence independently verifies 89 exact-source comparisons and
+41 inputs. Production readers preserve seven task-plan journals and all 338 retry
+events in 22 native Sessions, with unchanged journals, released writers and no
+native allocation. Evidence:
+`.local/work/ci-native-deployment-modules-inspection-20261012.json`,
+`.local/work/ci-native-deployment-modules-native-independent-20261012.json` and
+`.local/work/native-deployment-modules-cpu-campaign-20261012/committed-source-verification.json`.
+
 ## Profile camera calibration admission
 
 `perception/src/request-inputs.ts` owns camera-bank admission. Native configuration

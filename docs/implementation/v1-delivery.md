@@ -28,6 +28,14 @@ released writers verify without native allocation. See the
 [source map](../development/code-map.md) and
 [deployment source checks](cpu-release-validation.md#native-deployment-module-ownership).
 
+Source `2ef31d7` matches all 153 captured production/checker files. Actual Ubuntu
+CI `38348086492` passes fresh installation, complete source checks and 78 runtime
+cases. Downloaded evidence verifies 89 exact-source comparisons, 41 inputs, seven
+unchanged task-plan journals and all 338 retry events in 22 native Sessions, with
+released writers and no native allocation. Evidence:
+`.local/work/ci-native-deployment-modules-inspection-20261012.json` and
+`.local/work/ci-native-deployment-modules-native-independent-20261012.json`.
+
 Per-profile camera calibration admission and propagation pass 44 CPU checks
 through four configured native factories and the idle production HTTP server.
 Prepared defaults, explicit profile banks and empty banks preserve their selected
