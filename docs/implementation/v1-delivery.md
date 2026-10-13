@@ -25,7 +25,17 @@ closure and shared admission pass with actual current writer-file observation.
 The complete current CPU campaign passes forty-five components, 1,623 cases and
 1,030 independent source/input/link comparisons with all diagnostic process groups
 released: `.local/work/policy-listener-foundation-cpu-20261013-02/independently-verified.json`.
-Linux and loaded-model acceptance retain their respective requirements.
+Exact source `1c632ba` matches 196 committed campaign files. CI `38415631866`
+passes complete source/installation checks, 97 runtime cases and Team file
+admission on Linux, macOS and Windows. Downloaded artifacts independently match
+fourteen distributions, fourteen import origins, 41 inputs and 99 exact-source
+comparisons: `.local/work/ci-policy-listener-consolidated-independent-20261013.json`.
+The same sixty-two policy and three Console startup outcomes pass on isolated
+Linux at that source. Independent inspection verifies 29 committed files, fifteen
+archived Console source/input files and the unchanged original request; complete
+source checks pass and the actual runner releases. Canonical server changes
+remain unchanged: `.local/work/policy-listener-platforms-independent-20261013.json`.
+Loaded-model acceptance retains its native requirements.
 
 The unified configured CPU campaign passes at `5e737fd` with forty-five components,
 1,607 cases, 1,025 independently checked source/input/link comparisons and 195 exact-commit

@@ -67,8 +67,24 @@ original journals/images and zero model, simulator or GPU allocation. Source
 checks compile 75 Python files, import 30 base modules and verify 1,433 local
 documentation links. Evidence:
 `.local/work/policy-listener-foundation-cpu-20261013-02/independently-verified.json`.
-Linux validation remains required for this source. Loaded policy and physical-task
-acceptance retain their native release gates.
+Exact source `1c632ba` matches all 196 campaign production/checker/package files.
+CI `38415631866` passes fresh installation, complete source checks, 97 runtime
+cases and the Team admission matrix. Downloaded installation/runtime artifacts
+independently match fourteen distributions, fourteen import origins, 41 inputs
+and 99 exact-source comparisons. All seven uploaded/reconstructed evidence
+fields, input hashes and checker identity match. The fifteen previously executed
+installed-policy processor files also match this source without reruns. Evidence:
+`.local/work/policy-listener-foundation-cpu-20261013-02/committed-source-verification.json`,
+`.local/work/ci-policy-listener-consolidated-independent-20261013.json` and
+`.local/work/current-sdk-policy-listener-source-20261013.json`.
+The same sixty-two policy and three Console startup outcomes pass on isolated
+Linux at `1c632ba`. Independent inspection verifies 29 distinct committed files,
+76 source comparisons, fifteen archived Console source/input files and unchanged
+original request bytes. Full Linux source checks pass, the runner releases,
+isolated source stays clean and canonical server status/change bytes remain
+unchanged. Evidence: `.local/work/policy-listener-platforms-independent-20261013.json`
+and `.local/work/policy-listener-linux-receipt-20261013-02/`.
+Loaded policy and physical-task acceptance retain their native release gates.
 
 Native provider selection and construction belong to `environments/factory.py`.
 NativeWorkerSession retains its configuration checks and owner-thread device/reset/

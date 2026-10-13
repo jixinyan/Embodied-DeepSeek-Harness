@@ -24,7 +24,7 @@ Python 3.14 installation does not require it.
 Production CPU CI installs the `policy,robodojo,recording` extras and binds the
 official stable action revisions described in [CI provenance](../provenance/ci-actions.md).
 
-The latest local macOS campaign at `5e737fd` uses Node.js 25.4.0 and pnpm 11.25.0
+The recorded macOS campaign at `5e737fd` uses Node.js 25.4.0 and pnpm 11.25.0
 with the existing isolated Python environment. All forty-five configured components
 pass 1,607 CPU cases. Independent inspection checks 195 committed production/checker/
 package files and confirms release of every diagnostic process group.
@@ -49,7 +49,17 @@ Policy startup checks fifty-six actual CLI processes, six JSON/native/concurrent
 reservation cases, deferred WebSocket admission and same-port service restart
 after traffic. Source checks compile 75 Python files and import 30 base modules.
 Evidence: `.local/work/policy-listener-foundation-cpu-20261013-02/independently-verified.json`.
-Linux validation for this source remains a separate check.
+Exact source `1c632ba` matches all 196 campaign production/checker/package files.
+CI `38415631866` passes complete source/installation checks, 97 runtime cases and
+the three-platform Team admission matrix. Downloaded artifacts independently
+match fourteen distributions, fourteen import origins, 41 inputs and 99 exact-
+source comparisons: `.local/work/ci-policy-listener-consolidated-independent-20261013.json`.
+The same sixty-two policy and three Console startup outcomes pass on isolated
+Linux using Node.js 24.21.0 and Python 3.12.14. Complete source checks pass.
+Independent inspection verifies 29 committed files, fifteen archived Console
+source/input files and the unchanged original request. The runner releases,
+isolated source stays clean and canonical server changes remain unchanged:
+`.local/work/policy-listener-platforms-independent-20261013.json`.
 
 These rows allocate no model, policy network, simulator or physical GPU. Native
 SDK environments have their own dependency constraints and provenance. The

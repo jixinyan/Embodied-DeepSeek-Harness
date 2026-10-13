@@ -11,16 +11,17 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
+| Policy initialization ownership | `1c632ba` on macOS and isolated Linux: 62 matching policy startup/reservation cases, three matching actual Console startup cases, 29 exact-commit files, fifteen captured Console source/input files and released runners; complete source checks pass without allocation |
 | Native environment construction | `5e737fd` on macOS and isolated Linux: 23 matching actual factory checks, nine exact-commit sources, eighteen raw inputs and two independent uninitialized RoboDojo adapters per platform; complete source checks pass with no allocation |
 | Team file admission | `1c7a85d` on local macOS and CI Linux/macOS/Windows: 23 actual authored-Team load checks per platform, 20 source identities, 51 input files, two native directory links and six complete authored role snapshots; independent artifact inspection passes without allocation |
 | Role document admission | `0818111` on macOS and isolated Linux: all ten complete Team snapshots match the captured checkpoint and each other; 25 actual FileTeamLoader document cases verify ten source identities and fifty derivative files per platform without allocation |
-| Configured production campaign | `5e737fd`: 45 components, 1,607 cases, 1,025 independently inspected source/input/link comparisons, 195 exact-commit production/checker/package files and 45 released diagnostic process groups |
+| Configured production campaign | `1c632ba`: 45 components, 1,623 cases, 1,030 independently inspected source/input/link comparisons, 196 exact-commit production/checker/package files and 45 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `5e737fd`, run `38403998420`: 97 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 98 independently checked exact-commit source comparisons |
+| Latest Ubuntu source/installation CI | `1c632ba`, run `38415631866`: 97 production runtime cases, fourteen distributions, fourteen imports, 41 input identities and 99 independently checked exact-commit source comparisons |
 | Configured package entry ownership | `0818111` on macOS and isolated Linux: actual `pnpm start` and `pnpm demo`, nineteen source/input identities per platform, compatible native profiles, empty Sessions and idle provider services; both process groups, listeners and journal writers release |
 | Trusted extension factory assembly | `f7d27e1` on macOS, isolated Linux and Ubuntu CI: twenty exact-source identities, fifteen core cases, nineteen extension cases and ten matching native outcomes per platform; private journals preserve committed file contents and release writers |
 | Native tool names and extension admission | `0a341d6` on macOS and isolated Linux: 47 helper/Team-loader cases, ten authored Teams, 28 original-configuration cases, seven native scope/dispatch checks and fifteen core tool cases; original inputs and canonical server changes remain unchanged |
-| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `5e737fd` without processor reruns |
+| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `1c632ba` without processor reruns |
 | Native Console port admission | `88f1099` on macOS and isolated Linux: 81 cases and 81 independently repeated reads per platform, 66 declared JSON derivatives and 15 source identities; all outcomes match, original bindings remain unchanged and the server checkout is preserved |
 | GPT profile configuration | `b69d927`: 60 declared original-profile derivatives cover modes, demonstration metadata, gateway ports and worker endpoints; 46 reject and 14 admit with unchanged original bindings |
 | Selected GPT file preparation | `8c75a65` on macOS and isolated Linux: 33 cases and 28 independently repeated file checks per platform, 22 source identities, 31 declared configuration derivatives and 15 stored-image fields; eleven macOS and ten Linux production files match the commit, and actual Console process/listener/writer ownership releases |
@@ -2626,6 +2627,27 @@ unchanged original journals/images and release of every diagnostic process group
 Full source checks compile 75 Python files, import 30 base modules and verify
 1,433 local documentation links. Evidence:
 `.local/work/policy-listener-foundation-cpu-20261013-02/independently-verified.json`.
+
+Exact source `1c632ba` matches all 196 campaign production/checker/package files.
+CI `38415631866` passes complete source/installation checks, 97 runtime cases and
+the Team admission matrix. Downloaded evidence independently matches fourteen
+distributions, fourteen import origins, 41 input identities and 99 exact-source
+comparisons. Uploaded/reconstructed fields and all input/checker hashes match.
+Fifteen previously executed policy processor files retain their exact source
+bytes without reruns. Evidence:
+`.local/work/policy-listener-foundation-cpu-20261013-02/committed-source-verification.json`,
+`.local/work/ci-policy-listener-consolidated-independent-20261013.json` and
+`.local/work/current-sdk-policy-listener-source-20261013.json`.
+
+The same sixty-two policy and three Console startup outcomes pass on isolated
+Linux at `1c632ba`. Independent raw-file inspection checks 29 distinct committed
+sources, 76 source comparisons and fifteen archived Console source/input files.
+Original request bytes and canonical server changes remain unchanged, isolated
+source stays clean and the actual runner is absent. Linux preserves its actual
+upstream ConnectionRefusedError, alongside the pre-readiness handshake timeout.
+Complete Linux source checks pass with no model, simulator or GPU allocation.
+Evidence: `.local/work/policy-listener-platforms-independent-20261013.json` and
+`.local/work/policy-listener-linux-receipt-20261013-02/`.
 
 All forty-four entry cases pass on macOS and isolated Linux from clean `43ad63c`.
 The report records eighteen executable/schema hashes, including the original
