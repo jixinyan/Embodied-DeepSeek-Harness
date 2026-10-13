@@ -76,7 +76,8 @@ All Python provider code belongs under
 | Save original policy requests and actual controls | [execution/policy_records.py](../../harness/physical-runtime/src/physical_harness/execution/policy_records.py) |
 | Select and construct the configured native simulator adapter | [environments/factory.py](../../harness/physical-runtime/src/physical_harness/environments/factory.py); Worker retains device ownership and owner-thread reset |
 | Own policy WebSocket requests and shared connection/client shutdown | [policies/client.py](../../harness/physical-runtime/src/physical_harness/policies/client.py) |
-| Bind a policy listener and control connection admission | [policies/server.py](../../harness/physical-runtime/src/physical_harness/policies/server.py) |
+| Reserve exclusive JSON/native policy ports during initialization | [policies/listener.py](../../harness/physical-runtime/src/physical_harness/policies/listener.py) |
+| Admit policy WebSocket handshakes and validated inference after readiness | [policies/server.py](../../harness/physical-runtime/src/physical_harness/policies/server.py) |
 | Bind selected checkpoint identity before inference and action dispatch | [checkpoint bindings](../implementation/checkpoint-bindings.md): native configuration, Worker, policy server/client and ActionGate |
 | Admit actions and enforce execution budgets | [execution/action_gate.py](../../harness/physical-runtime/src/physical_harness/execution/action_gate.py) |
 | Compose an inference client with ActionGate and preserve rollout failures | [execution/policy_rollout.py](../../harness/physical-runtime/src/physical_harness/execution/policy_rollout.py) |

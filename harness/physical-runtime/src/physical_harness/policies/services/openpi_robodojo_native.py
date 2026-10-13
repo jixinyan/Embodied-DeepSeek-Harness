@@ -2,13 +2,12 @@ import argparse
 from functools import partial
 import hashlib
 import json
-import os
 from pathlib import Path
-import socket
 import time
 from uuid import UUID
 
 from physical_harness.policies.openpi_checkpoint import verify_arx_x5_normalization, verify_checkpoint
+from physical_harness.policies.listener import native_policy_listener
 from physical_harness.policies.provenance import validate_checkpoint_sha256
 
 
@@ -22,10 +21,7 @@ def main():
     args = parser.parse_args()
     if not 1 <= args.port <= 65535:
         parser.error("--port must be between 1 and 65535.")
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
-        if os.name == "posix":
-            listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        listener.bind(("127.0.0.1", args.port))
+    with native_policy_listener(args.port) as listener:
         start_native_service(args, listener)
 
 

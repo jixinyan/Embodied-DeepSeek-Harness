@@ -217,6 +217,7 @@ async def inspect(configuration: Path, output: Path):
     for path in (root / "harness/physical-runtime/src/physical_harness/policies/provenance.py",
                  root / "harness/physical-runtime/src/physical_harness/policies/openpi_audit.py",
                  root / "harness/physical-runtime/src/physical_harness/policies/client.py",
+                 root / "harness/physical-runtime/src/physical_harness/policies/listener.py",
                  root / "harness/physical-runtime/src/physical_harness/policies/server.py",
                  root / "harness/physical-runtime/src/physical_harness/execution/action_gate.py",
                  root / "harness/physical-runtime/src/physical_harness/execution/native_device.py",

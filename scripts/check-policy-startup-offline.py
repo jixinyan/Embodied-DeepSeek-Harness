@@ -12,6 +12,7 @@ import sys
 from websockets.asyncio.client import connect
 
 from physical_harness.policies.client import PolicyProtocolError, WebSocketPolicyClient
+from physical_harness.policies.listener import native_policy_listener
 from physical_harness.policies.server import serve_policy
 from physical_harness.validation import ContractValidator
 
@@ -78,6 +79,30 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
                                   "originalListenerPreserved": True, "modelLoaded": False})
     with socket.create_server(("127.0.0.1", port)):
         pass
+    validator = ContractValidator.from_path(root / "harness/contracts/schema/physical.schema.json")
+    upstream = WebSocketPolicyClient("ws://127.0.0.1:1", validator)
+    initializing = await serve_policy(upstream.infer, validator, start_serving=False)
+    initializing_port = initializing.sockets[0].getsockname()[1]
+    try:
+        async with initializing:
+            for name, filename, module_name, arguments in entries:
+                for entry, module in (("example", None), ("module", module_name)):
+                    pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable, filename,
+                        arguments + ["--port", str(initializing_port)], f"{name}.{entry}", "initializing-port", module)
+                    if (exit_code == 0 or b"OSError" not in stderr
+                            or b"address already in use" not in stderr.lower() or b"ModuleNotFoundError" in stderr
+                            or b"FileNotFoundError" in stderr or stdout):
+                        raise AssertionError(f"Initializing policy port did not reject before source/model loading: {name}/{entry}")
+                    if (initializing.is_serving() or initializing.connections or upstream._connection is not None
+                            or initializing.sockets[0].getsockname() != ("127.0.0.1", initializing_port)):
+                        raise AssertionError("Policy CLI changed the original initializing listener or admitted inference.")
+                    cases.append({"service": name, "entry": entry, "mode": "initializing-port", "pid": pid,
+                                  "exitCode": exit_code, "ownedProcessExited": True,
+                                  "originalListenerPreserved": True, "modelLoaded": False})
+    finally:
+        await upstream.close()
+    with native_policy_listener(initializing_port):
+        pass
     for name, filename, module_name, arguments in entries:
         for entry, module in (("example", None), ("module", module_name)):
             pid, exit_code, stdout, stderr = await invoke_cli(root, output, executable, filename,
@@ -138,6 +163,109 @@ async def inspect_cli(root: Path, output: Path, executable: Path) -> list[dict]:
     return cases
 
 
+async def inspect_reservations(root: Path, output: Path) -> list[dict]:
+    validator = ContractValidator.from_path(root / "harness/contracts/schema/physical.schema.json")
+    upstream = WebSocketPolicyClient("ws://127.0.0.1:1", validator)
+    cases = []
+    try:
+        server = await serve_policy(upstream.infer, validator, start_serving=False)
+        port = server.sockets[0].getsockname()[1]
+        async with server:
+            if server.is_serving() or server.connections:
+                raise AssertionError("Initializing JSON policy server did not reserve its port without WebSocket admission.")
+            with socket.create_connection(("127.0.0.1", port), timeout=1) as probe:
+                if probe.getpeername() != ("127.0.0.1", port):
+                    raise AssertionError("Initializing JSON policy TCP listener has a different endpoint.")
+            try:
+                contender = await serve_policy(upstream.infer, validator, port=port, start_serving=False)
+            except OSError as error:
+                if error.errno != errno.EADDRINUSE:
+                    raise
+                cases.append({"owner": "json", "contender": "json", "originalError": type(error).__name__,
+                              "rejected": True, "ownerPreserved": True})
+            else:
+                contender.close()
+                await contender.wait_closed()
+                raise AssertionError("Two initializing JSON policy servers acquired the same port.")
+            try:
+                with native_policy_listener(port):
+                    raise AssertionError("Initializing native policy acquired a JSON policy's port.")
+            except OSError as error:
+                if error.errno != errno.EADDRINUSE:
+                    raise
+                cases.append({"owner": "json", "contender": "native", "originalError": type(error).__name__,
+                              "rejected": True, "ownerPreserved": True})
+            if server.sockets[0].getsockname() != ("127.0.0.1", port) or server.is_serving() or server.connections:
+                raise AssertionError("Rejected contenders changed the JSON listener's ownership.")
+        with native_policy_listener(port) as listener:
+            with socket.create_connection(("127.0.0.1", port), timeout=1) as probe:
+                if probe.getpeername() != listener.getsockname():
+                    raise AssertionError("Initializing native policy TCP listener has a different endpoint.")
+            try:
+                contender = await serve_policy(upstream.infer, validator, port=port, start_serving=False)
+            except OSError as error:
+                if error.errno != errno.EADDRINUSE:
+                    raise
+                cases.append({"owner": "native", "contender": "json", "originalError": type(error).__name__,
+                              "rejected": True, "ownerPreserved": True})
+            else:
+                contender.close()
+                await contender.wait_closed()
+                raise AssertionError("Initializing JSON policy acquired a native policy's port.")
+            try:
+                with native_policy_listener(port):
+                    raise AssertionError("Two initializing native policy services acquired the same port.")
+            except OSError as error:
+                if error.errno != errno.EADDRINUSE:
+                    raise
+                cases.append({"owner": "native", "contender": "native", "originalError": type(error).__name__,
+                              "rejected": True, "ownerPreserved": True})
+            if listener.getsockname() != ("127.0.0.1", port):
+                raise AssertionError("Rejected contenders changed the native listener's ownership.")
+        absent = output / "absent-native-policy-source"
+        try:
+            with native_policy_listener(port):
+                absent.read_bytes()
+        except FileNotFoundError as error:
+            if Path(error.filename) != absent:
+                raise
+            cases.append({"owner": "native", "contender": "source-file", "originalError": type(error).__name__,
+                          "rejected": True, "portReleased": True})
+        else:
+            raise AssertionError("Native initialization did not preserve its original file error.")
+        reopened = await serve_policy(upstream.infer, validator, port=port, start_serving=False)
+        async with reopened:
+            if reopened.is_serving() or reopened.connections:
+                raise AssertionError("Reopened initializing policy admitted WebSocket work.")
+        with native_policy_listener(port):
+            pass
+        attempts = await asyncio.gather(
+            serve_policy(upstream.infer, validator, port=port, start_serving=False),
+            serve_policy(upstream.infer, validator, port=port, start_serving=False),
+            return_exceptions=True,
+        )
+        owners = [value for value in attempts if not isinstance(value, BaseException)]
+        failures = [value for value in attempts if isinstance(value, BaseException)]
+        try:
+            if (len(owners) != 1 or len(failures) != 1
+                    or not isinstance(failures[0], OSError) or failures[0].errno != errno.EADDRINUSE
+                    or owners[0].is_serving() or owners[0].connections):
+                raise AssertionError("Concurrent initializing JSON policy servers did not preserve one exclusive owner.")
+            cases.append({"owner": "json", "contender": "concurrent-json", "originalError": type(failures[0]).__name__,
+                          "rejected": True, "ownerPreserved": True})
+        finally:
+            for owner in owners:
+                owner.close()
+            await asyncio.gather(*(owner.wait_closed() for owner in owners))
+        with native_policy_listener(port):
+            pass
+        if upstream._connection is not None:
+            raise AssertionError("Policy reservation inspection opened the inference upstream.")
+    finally:
+        await upstream.close()
+    return cases
+
+
 async def inspect_listener(root: Path, output: Path, request: dict) -> dict:
     validator = ContractValidator.from_path(root / "harness/contracts/schema/physical.schema.json")
     received = []
@@ -167,6 +295,8 @@ async def inspect_listener(root: Path, output: Path, request: dict) -> dict:
                     raise AssertionError("Policy startup admitted a connection before service readiness.")
             except (ConnectionRefusedError, TimeoutError) as error:
                 cold_connection_error = type(error).__name__
+            if server.is_serving() or server.connections or received:
+                raise AssertionError("Initializing policy admitted a WebSocket handler or original request.")
             await server.start_serving()
             if not server.is_serving():
                 raise AssertionError("Actual policy server did not enter its serving state.")
@@ -190,6 +320,15 @@ async def inspect_listener(root: Path, output: Path, request: dict) -> dict:
             raise AssertionError("Policy startup left actual network resources admitted.")
     with socket.create_server(("127.0.0.1", port)):
         pass
+    restarted = await serve_policy(forward, validator, port=port, start_serving=False)
+    async with restarted:
+        if restarted.is_serving() or restarted.connections:
+            raise AssertionError("Restarted policy admitted work before readiness.")
+        await restarted.start_serving()
+        if not restarted.is_serving():
+            raise AssertionError("Policy could not restart after actual request traffic.")
+    if restarted.is_serving() or restarted.connections:
+        raise AssertionError("Restarted policy retained network resources after closure.")
 
     failed_server = await serve_policy(forward, validator, start_serving=False)
     failed_port = failed_server.sockets[0].getsockname()[1]
@@ -219,7 +358,7 @@ async def inspect_listener(root: Path, output: Path, request: dict) -> dict:
             "actualStartServing": True,
             "actualOriginalRequestForwarded": True, "originalNetworkError": original_failure[0],
             "occupiedPortRejected": True, "originalFileErrorPreserved": actual_file_error,
-            "allPortsReusableAfterClosure": True, "policyResponses": 0}
+            "allPortsReusableAfterClosure": True, "actualPolicyRestartAfterTraffic": True, "policyResponses": 0}
 
 
 async def inspect(args) -> None:
@@ -236,10 +375,12 @@ async def inspect(args) -> None:
     if not executable.is_file():
         raise FileNotFoundError(executable)
     cli = await inspect_cli(root, output, executable)
+    reservations = await inspect_reservations(root, output)
     listener = await inspect_listener(root, output, request)
     if original.read_bytes() != original_data:
         raise AssertionError("Policy startup inspection changed its original request.")
     sources = [Path(__file__), root / "harness/physical-runtime/src/physical_harness/policies/server.py",
+               root / "harness/physical-runtime/src/physical_harness/policies/listener.py",
                root / "harness/physical-runtime/src/physical_harness/policies/client.py",
                root / "harness/physical-runtime/src/physical_harness/policies/inference.py",
                root / "harness/physical-runtime/src/physical_harness/policies/provenance.py",
@@ -250,7 +391,8 @@ async def inspect(args) -> None:
                    "serve_lerobot_pi05_robotwin.py", "serve_openpi_robodojo.py", "serve_openpi_robodojo_native.py")),
                *(root / "harness/physical-runtime/src/physical_harness/policies/services").glob("*.py")]
     report = {"sources": {str(path.relative_to(root)): sha256(path.read_bytes()).hexdigest() for path in sources},
-              "originalRequestSha256": sha256(original_data).hexdigest(), "cliCases": cli, "listener": listener,
+              "originalRequestSha256": sha256(original_data).hexdigest(), "cliCases": cli,
+              "reservationCases": reservations, "listener": listener,
               "gpuJobs": 0, "modelLoads": 0, "modelCalls": 0, "nativeEnvironments": 0, "controls": 0,
               "scope": "Actual policy CLI, bound listeners and original request network failure; no loaded-model acceptance."}
     with (output / "acceptance.json").open("x", encoding="utf-8") as stream:

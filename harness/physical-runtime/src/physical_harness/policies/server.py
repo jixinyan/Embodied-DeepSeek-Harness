@@ -13,6 +13,7 @@ from typing import Any, Awaitable, Callable
 from physical_harness.validation import ContractValidator
 from physical_harness.execution.modes import ExecutionMode, normalize_mode_response
 from .client import JsonPolicyCodec, validate_response
+from .listener import POLICY_LISTEN_BACKLOG, reserve_policy_sockets
 from .provenance import validate_checkpoint_sha256
 
 
@@ -98,6 +99,15 @@ async def serve_policy(infer: Callable[[dict[str, Any]], Awaitable[list[list[flo
                     pass
                 return
 
-    return await serve(handler, host, port, process_request=authenticate, ssl=ssl,
+    server = await serve(handler, host, port, process_request=authenticate, ssl=ssl,
                        compression=None, max_size=max_bytes, max_queue=4, close_timeout=1,
-                       start_serving=start_serving)
+                       backlog=POLICY_LISTEN_BACKLOG, start_serving=start_serving)
+    if not start_serving:
+        try:
+            # model 初始化期间独占 TCP 端口，start_serving 负责开放 WebSocket handler。
+            reserve_policy_sockets(server.sockets)
+        except BaseException:
+            server.close()
+            await server.wait_closed()
+            raise
+    return server

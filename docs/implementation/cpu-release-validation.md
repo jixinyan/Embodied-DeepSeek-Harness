@@ -2573,10 +2573,13 @@ source remains clean. Evidence and independent summary:
 `.local/work/v1-policy-service-ownership-linux-20261008/`; archive SHA-256:
 `3a4a292da43576b4b855cbd7d01d8219aea70fab76c3ebef9bef4a1442a5849d`.
 
-The four EDH JSON service entries bind their configured port before checkpoint
+The four EDH JSON service entries reserve their configured port before checkpoint
 or upstream initialization and before importing their optional model SDKs.
 They use `serve_policy(..., start_serving=False)` and the actual WebSocket Server's
-asynchronous context manager. `server.start_serving()` opens connection admission
+asynchronous context manager. `policies/listener.py` reserves exclusive TCP
+listeners with a backlog of 100 while WebSocket handlers remain unstarted.
+A queued TCP connection provides no completed WebSocket handshake or inference.
+`server.start_serving()` opens WebSocket admission
 after the selected policy is ready. Startup failure closes the bound listener;
 normal shutdown closes connections/listeners and drains the inference owner.
 The OpenPI JSON bridge also closes its actual upstream connection. Ready metadata
@@ -2591,21 +2594,38 @@ CUDA_VISIBLE_DEVICES='' .venv/bin/python scripts/check-policy-startup-offline.py
 ```
 
 Install the base package and `policy` extra in the isolated Python environment.
-Forty-six actual subprocess cases cover ten example/module help commands,
-ten occupied ports, eight missing-checkpoint failures, two native missing-inventory
+Fifty-six actual subprocess cases cover ten example/module help commands,
+ten occupied ports, ten initializing-policy ports, eight missing-checkpoint failures, two native missing-inventory
 failures, six native invalid-port rejections and ten malformed selected-digest
 rejections. Existing listeners retain actual connection
 acceptance after each candidate exits; failed-startup ports become reusable.
 Help completes without optional SDK imports, including the native OpenPI producer.
 The native producer validates its fixed port in `1..65535` and reserves its
-unlistening loopback socket before checkpoint/SDK startup. The actual OpenPI
+exclusive listening loopback socket before checkpoint/SDK startup. The actual OpenPI
 server uses that same socket after readiness, retaining its inherited inference
 handler, codec and health check. Startup errors release the reserved port.
 The producer verifies the complete
 pinned checkpoint and writes the verification report before SDK imports. The
 diagnostic checks named missing-file errors and exit status 2 for invalid ports,
 with no verification report after rejection. Loaded producer readiness and model
-inference retain their native requirements.
+inference retain their native requirements. Six actual reservation cases cover
+JSON/native cross-service ownership, two concurrent JSON starts and original
+native source-file failure. The production JSON server also restarts on its
+original port after actual request traffic. Ready checks require HTTP JSON or a
+completed WebSocket handshake; the reserved TCP backlog supplies no readiness result.
+
+On 2026-10-13, macOS passes all fifty-six CLI processes and six reservation cases,
+with nineteen executable/schema source identities, the unchanged original request,
+rejected pre-readiness handshake and actual same-port restart after request traffic.
+Evidence: `.local/work/policy-listener-startup-cpu-20261013-03/acceptance.json`.
+This scope allocates no model, environment or GPU.
+
+The current configured macOS campaign passes forty-five components and 1,623
+cases. Independent inspection verifies 1,030 source/input/link comparisons,
+unchanged original journals/images and release of every diagnostic process group.
+Full source checks compile 75 Python files, import 30 base modules and verify
+1,433 local documentation links. Evidence:
+`.local/work/policy-listener-foundation-cpu-20261013-02/independently-verified.json`.
 
 All forty-four entry cases pass on macOS and isolated Linux from clean `43ad63c`.
 The report records eighteen executable/schema hashes, including the original
@@ -2987,6 +3007,12 @@ with its actual process owner; resuming allows the installed signal handler to
 complete closure. Two startup admissions share one PID. Cancelling the first
 retains the second's lease, and that second admission receives the actual Console
 readiness response before release.
+
+Writer admission checks the current file through the operating system before
+startup and on every directory notification. Original file errors other than
+absence propagate. On 2026-10-13, all three actual Console process cases pass
+with final PID/lease absence, released writers and reusable listener ports:
+`.local/work/policy-listener-console-startup-cpu-20261013/acceptance.json`.
 
 Each case requires the original cancellation outcome, absent owned process group,
 zero final leases/PIDs, released writer lock and successful listener-port reuse.

@@ -26,11 +26,13 @@ finite statistics and inventory identity before importing the model SDK.
 For example, `python -m physical_harness.policies.services.lerobot_pi05_robotwin`
 accepts the same checkpoint/tokenizer/device/port arguments as its example entry.
 Every module supports `--help` before optional model SDK imports. The four EDH
-JSON servers bind their port before model initialization and open connection
-admission only after readiness. The native producer uses the upstream OpenPI
+JSON servers reserve exclusive TCP listeners before model initialization and open
+WebSocket handshake/handler admission after readiness. The native producer uses the upstream OpenPI
 server. It admits a fixed port in `1..65535` and reserves its loopback socket
-before checkpoint access or SDK imports. That socket starts accepting connections
-only through the actual OpenPI server after model readiness. The inherited
+before checkpoint access or SDK imports. Its bounded TCP backlog is available
+during initialization; the actual OpenPI server starts WebSocket acceptance after
+model readiness. HTTP/WebSocket checks require a completed application handshake
+or ready response. The inherited
 inference handler, codec, metadata and health check retain their SDK implementation.
 The native entry verifies the complete selected
 checkpoint, validates saved normalization and writes its verification report
@@ -40,6 +42,7 @@ these filesystem checks. Startup errors release the reserved socket; its owner
 context also encloses the native server lifetime.
 
 [inference.py](../inference.py) owns model threads and records;
+[listener.py](../listener.py) owns port reservation and the bounded TCP backlog;
 [server.py](../server.py) owns validated WebSocket transport. These launchers
 select the provider-specific adapter. Original normalization/identity manifests
 and the authoritative wire schema retain their existing repository locations.

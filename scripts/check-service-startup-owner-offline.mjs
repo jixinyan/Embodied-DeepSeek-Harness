@@ -106,12 +106,15 @@ for (const mode of ['cancel-admission', 'close-during-startup', 'cancel-one-shar
   });
   const deadline = AbortSignal.timeout(30000);
   const watcher = watch(runtime);
-  const writerCreated = (async () => {
-    for (;;) {
-      const [, filename] = await once(watcher, 'change', { signal: deadline });
-      if (filename === 'writer.lock') return;
-    }
-  })();
+  const writerCreated = new Promise((accept, reject) => {
+    const inspectWriter = () =>
+      access(resolve(runtime, 'writer.lock')).then(accept, (error) => {
+        if (error.code !== 'ENOENT') reject(error);
+      });
+    watcher.on('change', inspectWriter);
+    watcher.on('error', reject);
+    inspectWriter();
+  });
   const waitUntil = async (predicate) => {
     for (;;) {
       deadline.throwIfAborted();

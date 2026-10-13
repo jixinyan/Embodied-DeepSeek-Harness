@@ -42,6 +42,15 @@ Role/schema/directory-link cases per platform on Ubuntu 24.04, macOS 15 and Wind
 2025, using Node.js 22.23.3. This narrow Windows/macOS CI scope allocates no Python
 provider or application service. See [Team file admission](cpu-release-validation.md#team-file-admission).
 
+Current exclusive-listener source passes forty-five macOS CPU components and
+1,623 cases using the same isolated tools. Independent inspection verifies 1,030
+source/input/link comparisons and release of every diagnostic process group.
+Policy startup checks fifty-six actual CLI processes, six JSON/native/concurrent
+reservation cases, deferred WebSocket admission and same-port service restart
+after traffic. Source checks compile 75 Python files and import 30 base modules.
+Evidence: `.local/work/policy-listener-foundation-cpu-20261013-02/independently-verified.json`.
+Linux validation for this source remains a separate check.
+
 These rows allocate no model, policy network, simulator or physical GPU. Native
 SDK environments have their own dependency constraints and provenance. The
 recorded RoboDojo environment and its dependency-admitted candidate are described

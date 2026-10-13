@@ -280,6 +280,7 @@ async def inspect_owned(args, root, output, error_log) -> None:
                 str(path): sha256(path.read_bytes()).hexdigest()
                 for path in (source, root / "harness/physical-runtime/src/physical_harness/policies/inference.py",
                              root / "harness/physical-runtime/src/physical_harness/policies/client.py",
+                             root / "harness/physical-runtime/src/physical_harness/policies/listener.py",
                              root / "harness/physical-runtime/src/physical_harness/policies/server.py",
                              root / "scripts/check-policy-owner-offline.py",
                              *(root / "examples/policies").glob("serve_*.py"),

@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.161 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.162 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,33 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Policy startup reserves exclusive TCP listeners through `policies/listener.py`.
+JSON services defer WebSocket handshake/handler admission until model readiness;
+native OpenPI supplies its reserved socket to the original upstream server.
+HTTP/WebSocket probes retain service readiness ownership. On macOS, fifty-six
+actual example/module CLI processes and six JSON/native/concurrent reservation
+cases pass. Occupied and initializing ports reject before checkpoint or SDK
+access; source errors release the listener. The actual JSON service forwards
+its original request/network failure and restarts on the same port after traffic.
+Nineteen source hashes bind this diagnostic. Evidence:
+`.local/work/policy-listener-startup-cpu-20261013-03/acceptance.json`.
+
+The Console startup diagnostic observes the actual current `writer.lock` state
+at admission and on directory notifications. Three actual cancellation/closure/
+shared-admission cases pass with suspended original processes, preserved
+ownership, ready surviving admission and released process groups/writers/ports.
+Evidence: `.local/work/policy-listener-console-startup-cpu-20261013/acceptance.json`.
+The fresh CPU installation probe includes the listener module's actual import
+origin. The complete current CPU campaign passes forty-five components and
+1,623 cases. Independent inspection repeats 1,030 source/input/link comparisons
+and confirms release of all forty-five diagnostic process groups, unchanged
+original journals/images and zero model, simulator or GPU allocation. Source
+checks compile 75 Python files, import 30 base modules and verify 1,433 local
+documentation links. Evidence:
+`.local/work/policy-listener-foundation-cpu-20261013-02/independently-verified.json`.
+Linux validation remains required for this source. Loaded policy and physical-task
+acceptance retain their native release gates.
 
 Native provider selection and construction belong to `environments/factory.py`.
 NativeWorkerSession retains its configuration checks and owner-thread device/reset/

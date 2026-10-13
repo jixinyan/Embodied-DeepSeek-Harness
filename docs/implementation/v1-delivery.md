@@ -17,6 +17,16 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Exclusive policy listener startup passes fifty-six actual CLI processes and six
+JSON/native/concurrent reservation cases on macOS. WebSocket admission follows
+model readiness, source failure releases its socket and the actual JSON service
+restarts on its original port after request traffic. Console startup cancellation,
+closure and shared admission pass with actual current writer-file observation.
+The complete current CPU campaign passes forty-five components, 1,623 cases and
+1,030 independent source/input/link comparisons with all diagnostic process groups
+released: `.local/work/policy-listener-foundation-cpu-20261013-02/independently-verified.json`.
+Linux and loaded-model acceptance retain their respective requirements.
+
 The unified configured CPU campaign passes at `5e737fd` with forty-five components,
 1,607 cases, 1,025 independently checked source/input/link comparisons and 195 exact-commit
 production/checker/package files. Native core/extension tools and configured task plans

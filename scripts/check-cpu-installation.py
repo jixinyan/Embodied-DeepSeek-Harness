@@ -69,6 +69,7 @@ def main():
         "jsonschema", "filelock", "PIL", "websockets",
         "physical_harness.validation", "physical_harness.physical_boundary",
         "physical_harness.execution.action_gate", "physical_harness.execution.worker",
+        "physical_harness.policies.listener",
         "physical_harness.policies.services.gr00t_n1d6_behavior",
         "physical_harness.policies.services.gr00t_n1d6_robocasa",
         "physical_harness.policies.services.lerobot_pi05_robotwin",

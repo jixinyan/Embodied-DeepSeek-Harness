@@ -36,6 +36,7 @@ core_modules = (
     "physical_harness.policies",
     "physical_harness.policies.client",
     "physical_harness.policies.inference",
+    "physical_harness.policies.listener",
     "physical_harness.policies.server",
     "physical_harness.policies.gr00t_checkpoint",
     "physical_harness.policies.services",

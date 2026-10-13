@@ -210,6 +210,7 @@ async def inspect(args) -> None:
         raise AssertionError("Policy client diagnostic changed its original request source.")
     paths = (Path(__file__), root / "harness/contracts/schema/physical.schema.json",
              root / "harness/physical-runtime/src/physical_harness/policies/client.py",
+             root / "harness/physical-runtime/src/physical_harness/policies/listener.py",
              root / "harness/physical-runtime/src/physical_harness/policies/server.py",
              root / "harness/physical-runtime/src/physical_harness/execution/policy_records.py")
     report = {"sources": {str(path.relative_to(root)): sha256(path.read_bytes()).hexdigest() for path in paths},

@@ -65,6 +65,7 @@ async def run(args: argparse.Namespace) -> None:
                root / "harness/physical-runtime/src/physical_harness/execution/policy_records.py",
                root / "harness/physical-runtime/src/physical_harness/execution/modes.py",
                root / "harness/physical-runtime/src/physical_harness/policies/client.py",
+               root / "harness/physical-runtime/src/physical_harness/policies/listener.py",
                root / "harness/physical-runtime/src/physical_harness/policies/server.py", Path(__file__).resolve()]
     hashes = {str(path): sha256(path.read_bytes()).hexdigest() for path in sources}
     validator = ContractValidator.from_path(args.schema)

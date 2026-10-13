@@ -168,13 +168,16 @@ provides the corresponding direct entry with the same arguments. Repository-root
 resolution, original service logic and manifest/schema bytes have independent
 source/module checks.
 
-The four EDH JSON service entries parse arguments, bind their configured port,
+The four EDH JSON service entries parse arguments, reserve their configured port,
 validate the checkpoint or upstream identity, load the selected policy and then
-accept connections. Their direct optional SDK imports follow port binding. An
+admit WebSocket handshakes and inference. Their direct optional SDK imports follow port reservation. An
 occupied port fails before model loading and leaves its existing listener intact.
 
-`serve_policy(..., start_serving=False)` returns a bound WebSocket Server without
-accepting connections. The service calls `server.start_serving()` after policy
+`serve_policy(..., start_serving=False)` returns a WebSocket Server with exclusive
+TCP listener ownership and a bounded backlog. [listener.py](listener.py) reserves
+the sockets while WebSocket handlers remain unstarted. A queued TCP connection
+does not complete its WebSocket handshake or invoke inference. The service calls
+`server.start_serving()` after policy
 initialization. The default remains `start_serving=True` for callers whose
 inference callback is already ready. The Server's asynchronous context manager
 owns listener and connection closure during startup failure and normal shutdown;
@@ -183,16 +186,16 @@ its upstream connection. Ready metadata reports the actual bound port.
 
 All five JSON/native policy CLI entries support `--help` before optional model
 SDK imports. The native OpenPI producer retains the upstream service and its
-model protocol. It reserves an unlistening loopback socket before checkpoint
+model protocol. It reserves an exclusive listening loopback socket before checkpoint
 access or SDK imports, then supplies that socket to the actual OpenPI server.
 The inherited inference handler, codec and health check keep their SDK ownership.
 Its socket owner encloses verification, model loading and service lifetime;
 startup errors release the port. JAX device selection and model loading follow
 the original inventory/normalization/report admission.
 The [startup diagnostic](../../../../../scripts/check-policy-startup-offline.py)
-exercises forty-six actual CLI processes across the example and module entries,
-delayed connection admission, original
-request forwarding to an unavailable endpoint and port release. It supplies no
+exercises fifty-six actual CLI processes across the example and module entries,
+six JSON/native/concurrent reservation cases, delayed WebSocket admission, original
+request forwarding to an unavailable endpoint, service restart after traffic and port release. It supplies no
 model result or action. See [startup validation](../../../../../docs/implementation/cpu-release-validation.md#policy-service-startup).
 
 GR00T/LeRobot and native OpenPI services support an explicit selected
