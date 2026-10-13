@@ -2913,7 +2913,8 @@ Repeat `--record` and `--require-provider` for the selected original capture
 corpus. Every source file retains its captured digest. This diagnostic performs
 no model inference, simulator allocation, GPU allocation or physical controls.
 Evidence: `.local/work/metric-measurement-admission-current-20261012/acceptance.json`
-and its `independently-verified.json`. The same native backend source additionally
+and its `independently-verified-source.json`. All five captured implementation
+files match committed source `c942b63` exactly. The same native backend source additionally
 passes all thirty-seven configured CPU components and 1,185 cases. Independent
 inspection matches 634 source/input comparisons, unchanged original journals and
 all thirty-seven released diagnostic process groups, with zero native allocations.
@@ -2922,6 +2923,17 @@ Campaign evidence:
 Native BEHAVIOR receipt coverage and additional live camera/calibration workflows
 retain their native acceptance requirements. Original masked depth recomputation
 retains the separate geometry evidence above.
+
+Actual Ubuntu CI `38339782470` passes fresh installation, source checks and all
+78 production runtime cases at `c942b63`. Downloaded artifacts independently match
+89 exact-source comparisons, fourteen installed distributions, thirteen imports
+and 41 input identities. Production readers verify seven unchanged task-plan
+journals and all 338 immutable events from 22 native retry Sessions with released
+writers. Actual transient-failure checks retain 56 refused connections and zero
+provider responses. These checks allocate no models, simulators or GPUs. Evidence:
+`.local/work/ci-metric-measurement-inspection-20261012.json`,
+`.local/work/ci-metric-measurement-independently-verified-20261012.json` and
+`.local/work/ci-metric-measurement-native-independent-20261012.json`.
 
 ### Original measurement and role inspection
 

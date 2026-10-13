@@ -24,6 +24,10 @@ cases. Independent NumPy inspection preserves 44 source/original identities and
 all 494 decoded fields. Native BEHAVIOR receipt coverage and complete live
 perception workflows retain their requirements below. See
 [native metric receipts](cpu-release-validation.md#native-metric-receipt-admission).
+Source `c942b63` also passes actual Ubuntu fresh-installation/source CI and all
+78 runtime cases. Independent downloaded-artifact inspection matches 89 source
+comparisons, 41 inputs, seven unchanged task-plan journals and 338 immutable native
+retry events with released writers. Native allocations remain zero.
 
 Perception result construction now belongs to `perception/src/results.ts`, with
 provider admission, cancellation, retention and grants owned by UpperRun. Five

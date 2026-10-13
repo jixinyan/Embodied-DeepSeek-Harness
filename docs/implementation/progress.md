@@ -55,8 +55,16 @@ The same backend source passes all thirty-seven CPU campaign components and
 1,185 cases; independent inspection matches 634 source/input comparisons and
 all thirty-seven released diagnostic process groups. Original records remain
 unchanged. Evidence:
-`.local/work/metric-measurement-admission-current-20261012/independently-verified.json`
+`.local/work/metric-measurement-admission-current-20261012/independently-verified-source.json`
 and `.local/work/metric-measurement-cpu-campaign-20261012/independently-verified.json`.
+The measurement implementation additionally matches all five captured source
+files against `c942b63`. Actual Ubuntu CI `38339782470` passes fresh installation,
+source checks and all 78 production runtime cases. Downloaded evidence matches
+89 exact-source comparisons and 41 inputs; production reads preserve seven
+task-plan journals and 338 events from 22 native retry Sessions with released
+writers and zero native allocations. Evidence:
+`.local/work/ci-metric-measurement-inspection-20261012.json` and
+`.local/work/ci-metric-measurement-native-independent-20261012.json`.
 
 Perception result construction belongs to `perception/src/results.ts`; UpperRun
 retains provider admission, cancellation, immutable retention and assignment grants.
