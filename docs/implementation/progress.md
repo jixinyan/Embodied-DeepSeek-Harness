@@ -62,6 +62,38 @@ with 74 compiled Python files and 29 actual base imports. Evidence:
 `.local/work/environment-factory-source-preservation-20261013.json` and
 `.local/work/environment-factory-source-check-20261013.log`.
 
+The same twenty-three factory outcomes pass on isolated Linux at `5e737fd`.
+Independent downloaded-file inspection verifies nine exact-commit sources,
+eighteen raw inputs, the unchanged original Worker configuration and matching
+macOS/Linux constructor/admission outcomes. Complete Linux source checks pass;
+the runner releases and isolated source remains clean. Canonical server status
+and tracked-change bytes remain unchanged. Evidence:
+`.local/work/environment-factory-platforms-independent-20261013.json` and
+`.local/work/environment-factory-linux-receipt-20261013-02/`.
+
+Exact source `5e737fd` passes the complete configured CPU campaign: forty-five
+components, 1,607 cases, 1,025 independently checked source/input/link comparisons
+and 195 distinct committed production/checker/package files. Original journals
+and images remain unchanged; all forty-five diagnostic process groups release.
+Three actual interruption cases drain their source checks and release their
+owned processes without admitting the next component or publishing final
+acceptance. Evidence:
+`.local/work/environment-factory-foundation-cpu-20261013/independently-verified.json`,
+`.local/work/environment-factory-foundation-cpu-20261013/committed-source-verification.json`
+and `.local/work/environment-factory-cpu-shutdown-20261013/acceptance.json`.
+
+CI `38403998420` passes complete source/installation checks and 97 production
+runtime cases at this source, alongside the twenty-three Team file-admission
+cases on each of Linux, macOS and Windows. Downloaded runtime/installation
+artifacts verify fourteen distributions, thirteen imports, 41 input identities
+and 98 exact-source comparisons. Their uploaded and independently reconstructed
+evidence fields and input digests match. The fifteen previously executed policy
+processor files match this source without reruns. Evidence:
+`.local/work/ci-environment-factory-runtime-inspection-20261013.json`,
+`.local/work/ci-environment-factory-consolidated-independent-20261013.json` and
+`.local/work/current-sdk-environment-factory-source-20261013.json`.
+All current scopes allocate zero models, simulators and GPUs.
+
 At exact source `1c7a85d`, FileTeamLoader uses the operating system's path separator
 for resolved Role/schema containment and requires explicit own builtin mappings.
 The authored SceneAnalyst configuration passes twenty-three actual load checks on

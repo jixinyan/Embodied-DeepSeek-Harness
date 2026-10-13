@@ -17,20 +17,35 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
-The unified configured CPU campaign passes at `1c7a85d` with forty-four components,
-1,584 cases, 989 independently checked source/input/link comparisons and 190 exact-commit
+The unified configured CPU campaign passes at `5e737fd` with forty-five components,
+1,607 cases, 1,025 independently checked source/input/link comparisons and 195 exact-commit
 production/checker/package files. Native core/extension tools and configured task plans
 join the same process ownership and publication rules as the physical-facing
-diagnostics. Original records/images remain unchanged and all forty-four groups
+diagnostics. Original records/images remain unchanged and all forty-five groups
 release. Independent readers preserve 338 retry events across 22 native Sessions;
 fifteen previously executed installed policy processor files match this source.
 These scopes execute no model, simulator, policy control or GPU. Evidence:
-`.local/work/team-paths-foundation-cpu-20261013/independently-verified.json`,
-`.local/work/team-paths-foundation-cpu-20261013/committed-source-verification.json`
-and `.local/work/current-sdk-team-paths-source-20261013.json`.
-Three actual campaign-interruption cases at `0818111` separately verify drained
+`.local/work/environment-factory-foundation-cpu-20261013/independently-verified.json`,
+`.local/work/environment-factory-foundation-cpu-20261013/committed-source-verification.json`
+and `.local/work/current-sdk-environment-factory-source-20261013.json`.
+Three actual campaign-interruption cases at the same source separately verify drained
 source checks and released runners with no next component or final acceptance
-publication: `.local/work/role-documents-cpu-shutdown-20261013/acceptance.json`.
+publication: `.local/work/environment-factory-cpu-shutdown-20261013/acceptance.json`.
+
+Native provider selection and construction belong to `environments/factory.py`;
+NativeWorkerSession retains its configuration admission and original owner-thread
+reset/description sequence. Actual CPU factory checks admit original path failures
+and two independent uninitialized RoboDojo adapters without RPC reset or SDK
+allocation. CI `38403998420` passes complete source/installation checks and 97
+runtime cases, with twenty-three Team admission cases on each of Linux, macOS and
+Windows. Independent installation/runtime artifact readers verify fourteen
+distributions, thirteen imports, 41 input identities and 98 exact-source comparisons:
+`.local/work/ci-environment-factory-runtime-inspection-20261013.json`.
+Factory admission and constructor outcomes also match across macOS and isolated
+Linux, with nine exact-commit sources and eighteen original/derived input files
+verified independently. Complete source checks pass and the actual Linux runner
+releases, while canonical server status and tracked-change bytes remain unchanged:
+`.local/work/environment-factory-platforms-independent-20261013.json`.
 
 FileTeamLoader admits Role/schema paths through each operating system's actual
 filesystem and requires explicit own builtin mappings. Local macOS and CI Linux,

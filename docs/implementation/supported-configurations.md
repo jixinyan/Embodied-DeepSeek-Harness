@@ -24,9 +24,19 @@ Python 3.14 installation does not require it.
 Production CPU CI installs the `policy,robodojo,recording` extras and binds the
 official stable action revisions described in [CI provenance](../provenance/ci-actions.md).
 
-The latest local macOS campaign at `1c7a85d` uses Node.js 25.4.0 and pnpm 11.25.0
-with the existing isolated Python environment. All forty-four configured components
-pass 1,584 CPU cases. CI retains its pinned pnpm 11.19.0 installation.
+The latest local macOS campaign at `5e737fd` uses Node.js 25.4.0 and pnpm 11.25.0
+with the existing isolated Python environment. All forty-five configured components
+pass 1,607 CPU cases. Independent inspection checks 195 committed production/checker/
+package files and confirms release of every diagnostic process group.
+CI `38403998420` retains its pinned pnpm 11.19.0 installation and passes source,
+installation and 97 production runtime cases. Downloaded artifacts match 98 exact-
+source comparisons and 41 input identities.
+The same source passes twenty-three environment-factory CPU cases on macOS and
+isolated Linux. Linux source checks use Node.js 24.21.0; its Python checks and
+factory diagnostic use Python 3.12.14. Independent readers verify
+nine committed sources, eighteen raw input files and matching actual constructor/
+admission outcomes. No native reset or provider allocation occurs; isolated source
+stays clean and canonical server status and tracked-change bytes remain unchanged.
 A separate Team file-admission matrix at the same source passes twenty-three actual
 Role/schema/directory-link cases per platform on Ubuntu 24.04, macOS 15 and Windows
 2025, using Node.js 22.23.3. This narrow Windows/macOS CI scope allocates no Python
