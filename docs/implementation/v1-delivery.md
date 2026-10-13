@@ -33,6 +33,14 @@ derivatives. The empty production journal reopens unchanged and releases its
 writer. Evidence: `.local/work/depth-calibration-cpu-campaign-20261012/independently-verified.json`
 and its `depth-calibrations/independently-verified.json`. Native allocations remain zero.
 
+Source `38c0a3e` independently matches all 151 captured production/checker files.
+Its actual Ubuntu CI `38346569166` passes fresh installation, complete source
+checks and 78 runtime cases. Downloaded evidence verifies 89 exact-source
+comparisons, 41 inputs, seven unchanged task-plan journals and all 338 native
+retry events in 22 Sessions, with released writers and no native allocation.
+Evidence: `.local/work/ci-depth-calibrations-inspection-20261012.json` and
+`.local/work/ci-depth-calibrations-native-independent-20261012.json`.
+
 SAM3.1/YOLO26 response admission belongs to `perception/src/model-responses.ts`.
 Three original SAM responses and six YOLO results pass 143 CPU checks with exact
 returned values and unchanged source files. Independent NumPy/Pillow inspection

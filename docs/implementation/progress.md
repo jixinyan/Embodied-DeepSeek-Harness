@@ -67,6 +67,17 @@ reopens unchanged, and the writer releases. Model/simulator/GPU allocations rema
 zero. Evidence: `.local/work/depth-calibration-cpu-campaign-20261012/independently-verified.json`
 and its `depth-calibrations/independently-verified.json`.
 
+All 151 captured production/checker files match `38c0a3e`. Actual Ubuntu CI
+`38346569166` passes fresh installation, complete source checks and all 78
+production runtime cases. Downloaded evidence independently matches 89 exact-source
+comparisons and 41 inputs. Production readers preserve seven task-plan journals
+and all 338 retry events in 22 native Sessions, with released writers and zero
+native allocations. Saved SAM/YOLO outputs additionally preserve fifteen PNG
+checks, forty-eight statistic fields and nine exact committed source identities.
+Evidence: `.local/work/ci-depth-calibrations-inspection-20261012.json`,
+`.local/work/ci-depth-calibrations-native-independent-20261012.json` and
+`.local/work/depth-calibration-cpu-campaign-20261012/committed-source-verification.json`.
+
 SAM3.1/YOLO26 response admission belongs to `perception/src/model-responses.ts`.
 The HTTP clients retain transport/deadline ownership; existing client type exports
 and tool results remain available. Three saved SAM camera responses and six YOLO
