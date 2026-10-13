@@ -66,6 +66,20 @@ no model, simulator or GPU. Evidence:
 `.local/work/native-demonstration-port-20261013/independently-verified.json` and
 `.local/work/native-demonstration-uri-20261013/independently-verified.json`.
 
+Source `b69d927` independently matches all 153 campaign production/checker
+files, six demonstration sources, five gateway/configuration sources for each
+port/endpoint check and fifteen loaded installed-processor sources. Actual
+Ubuntu CI `38362872636` passes fresh installation, complete source checks and
+78 production runtime cases. Downloaded artifacts match fourteen distributions,
+thirteen imports, 41 input identities and 89 exact-source comparisons. Production
+readers preserve seven task-plan journals and 338 retry events in 22 independent
+native Sessions with released writers. Separate original-perception inspection
+matches forty source comparisons, fifteen PNG checks, forty-eight depth-statistic
+fields and nine exact-commit sources. Every scope retains zero native allocation.
+Evidence: `.local/work/native-demonstration-cpu-final-20261013/committed-source-verification.json`,
+`.local/work/ci-native-demonstration-inspection-20261013.json` and
+`.local/work/ci-native-demonstration-native-independent-20261013.json`.
+
 Direct/hybrid profiles validate optional `workerPolicyUri` through the existing
 native endpoint schema before service acquisition. Original-profile CPU checks
 admit the saved endpoint, omission, secure WebSocket and localhost values; eight

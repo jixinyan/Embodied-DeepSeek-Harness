@@ -11,10 +11,11 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
-| Configured production campaign | `33ae4e2`: 39 components, 1,394 cases, 737 independently inspected source/input comparisons, 153 exact-commit production/checker files and 39 released diagnostic process groups |
+| Configured production campaign | `b69d927`: 39 components, 1,394 cases, 737 independently inspected source/input comparisons, 153 exact-commit production/checker files and 39 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `33ae4e2`, run `38358983308`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
-| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `33ae4e2` |
+| Latest Ubuntu source/installation CI | `b69d927`, run `38362872636`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
+| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `b69d927` |
+| GPT profile configuration | `b69d927`: 60 declared original-profile derivatives cover modes, demonstration metadata, gateway ports and worker endpoints; 46 reject and 14 admit with unchanged original bindings |
 | Persistent native retries | The latest downloaded CI journals preserve 22 independent native Sessions, 56 genuine failed connections and 338 source-matched event bodies; pending-history release and cancellation retain their declared scope |
 
 Every checkpoint excludes model inference, loaded-policy execution,
@@ -3299,6 +3300,22 @@ independent production-reader checks with original bindings unchanged.
 Evidence: `.local/work/native-demonstration-cpu-final-20261013/independently-verified.json`,
 `.local/work/native-demonstration-port-20261013/independently-verified.json` and
 `.local/work/native-demonstration-uri-20261013/independently-verified.json`.
+
+Checkpoint `b69d927` independently matches all 153 campaign production/checker
+files, six demonstration sources, five gateway/configuration sources for each
+port/endpoint check and fifteen installed-processor sources. Actual Ubuntu CI
+`38362872636` passes fresh installation, full source checks and 78 runtime
+cases. Downloaded artifacts match fourteen distributions, thirteen imports,
+41 input identities and 89 exact-source comparisons. Production readers preserve
+seven task-plan journals and 338 retry events in 22 independent native Sessions
+with released writers. Original-perception inspection matches forty source
+comparisons, fifteen PNG checks, forty-eight depth-statistic fields and nine
+exact-commit sources. All native allocations remain zero. Evidence:
+`.local/work/native-demonstration-cpu-final-20261013/committed-source-verification.json`,
+`.local/work/native-demonstration-final-20261013/committed-source-verification.json`,
+`.local/work/ci-native-demonstration-inspection-20261013.json`,
+`.local/work/ci-native-demonstration-native-independent-20261013.json` and
+`.local/work/native-demonstration-perception-independent-20261013.json`.
 
 `apps/server/src/native-deployment-configuration.mjs` validates the optional
 RoboDojo direct/hybrid `policyGatewayPort` during configuration loading, before

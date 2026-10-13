@@ -29,20 +29,20 @@ Twenty-four port/endpoint derivatives repeat through independent production
 readers. No native resource allocates; see the
 [configuration checks](cpu-release-validation.md#native-policy-gateway-configuration).
 
-Current source `33ae4e2` passes all thirty-nine configured macOS CPU components
+Current source `b69d927` passes all thirty-nine configured macOS CPU components
 and 1,394 cases. Independent inspection matches 737 source/input comparisons,
 153 exact-commit production/checker files, unchanged original journals/images
-and all thirty-nine released diagnostic process groups. Direct-profile gateway
-port and worker endpoint admission additionally pass twenty-four original-
-configuration derivatives through independent production readers. Configuration
+and all thirty-nine released diagnostic process groups. Direct-profile mode,
+demonstration, gateway port and worker endpoint admission additionally pass sixty
+original-configuration derivatives through independent production readers. Configuration
 loading rejects invalid values before managed-service acquisition.
 
 Actual installed Linux processors at isolated source `5b26a5a` pass seventy-two
 CPU cases on forty-six original four-provider requests. Fifteen loaded sources
-match `33ae4e2`; 418 original/checkpoint/SDK/source comparisons and 282 prepared
+match `b69d927`; 418 original/checkpoint/SDK/source comparisons and 282 prepared
 tensor/codec metadata fields pass independent inspection. All diagnostic processes
 release, canonical server changes remain unchanged and CUDA stays uninitialized.
-Actual Ubuntu CI `38358983308` at `33ae4e2` separately passes fresh installation,
+Actual Ubuntu CI `38362872636` at `b69d927` separately passes fresh installation,
 full source checks and 78 production runtime cases. Downloaded evidence matches
 89 exact-source comparisons and 41 inputs. Production readers preserve seven
 task-plan journals and 338 retry events in 22 native Sessions with released writers.

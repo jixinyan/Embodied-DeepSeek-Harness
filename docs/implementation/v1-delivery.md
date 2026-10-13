@@ -37,6 +37,20 @@ resource allocates. Evidence:
 `.local/work/native-demonstration-port-20261013/independently-verified.json` and
 `.local/work/native-demonstration-uri-20261013/independently-verified.json`.
 
+Source `b69d927` independently matches all 153 campaign production/checker
+files, six demonstration sources, five gateway/configuration sources for each
+port/endpoint check and fifteen actual installed-processor sources. Ubuntu CI
+`38362872636` passes fresh installation, complete source checks and 78 runtime
+cases. Downloaded artifacts match fourteen distributions, thirteen imports,
+41 inputs and 89 exact-source comparisons. Production readers preserve seven
+task-plan journals and 338 retry events in 22 independent native Sessions with
+released writers. Original-perception inspection matches forty source comparisons,
+fifteen PNG checks, forty-eight depth-statistic fields and nine exact-commit
+sources. No native resource allocates. Evidence:
+`.local/work/ci-native-demonstration-inspection-20261013.json`,
+`.local/work/ci-native-demonstration-native-independent-20261013.json` and
+`.local/work/native-demonstration-perception-independent-20261013.json`.
+
 Native direct/hybrid configuration validates an optional `workerPolicyUri` with
 the existing native WebSocket schema before acquiring services or allocating a
 gateway/worker. Twenty-four actual original-profile configuration checks cover
