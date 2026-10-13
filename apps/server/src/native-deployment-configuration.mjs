@@ -19,6 +19,7 @@ import {
 
 export const nativeDeploymentRoot = fileURLToPath(new URL('../../../', import.meta.url));
 const nonblank = z.string().trim().min(1);
+export const nativeConsolePortSchema = z.number().int().min(1).max(65535);
 const demonstrationSchema = z
   .object({
     textFile: nonblank,
@@ -90,6 +91,9 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
   const config = JSON.parse(await readFile(resolve(file), 'utf8'));
   if (!config || typeof config !== 'object' || Array.isArray(config))
     throw new Error('Native deployment configuration must be a JSON object.');
+  const { consolePort: configuredPort } = z
+    .object({ consolePort: nativeConsolePortSchema.optional() })
+    .parse(config);
   const managedServices = managedServiceConfigurations.parse(config.managedServices ?? {});
   const serviceIdsSchema = z
     .array(nonblank)
@@ -305,13 +309,14 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
   for (const id of Object.keys(managedServices))
     if (!boundServices.has(id))
       throw new Error(`Managed service has no launch profile binding: ${id}`);
-  const port = Number(
-    provider === 'robocasa'
-      ? (environment.EDH_CONSOLE_PORT ?? config.consolePort ?? selected.port)
-      : (config.consolePort ?? selected.port),
-  );
-  if (!Number.isSafeInteger(port) || port < 1 || port > 65535)
-    throw new Error('Console port must be a valid TCP port.');
+  const port =
+    provider === 'robocasa' && environment.EDH_CONSOLE_PORT !== undefined
+      ? z
+          .object({
+            EDH_CONSOLE_PORT: nonblank.pipe(z.coerce.number().pipe(nativeConsolePortSchema)),
+          })
+          .parse(environment).EDH_CONSOLE_PORT
+      : (configuredPort ?? selected.port);
   return {
     provider,
     selected,

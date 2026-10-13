@@ -12,6 +12,7 @@ production path from Session selection to native commands and formal verificatio
 | Compose configured native providers | [apps/server/src/native-workspace.mjs](../../apps/server/src/native-workspace.mjs) |
 | Bind one provider, Team and launch profile | [apps/server/src/native-deployment.mjs](../../apps/server/src/native-deployment.mjs) |
 | Read native configuration and validate Team/model/task/checkpoint/service bindings | [native-deployment-configuration.mjs](../../apps/server/src/native-deployment-configuration.mjs) |
+| Validate deployment/workspace Console ports and RoboCasa environment overrides | [nativeConsolePortSchema](../../apps/server/src/native-deployment-configuration.mjs) |
 | Allocate learned or direct/hybrid GPT execution and own gateway/host/audit cleanup | [native-policy-environment.mjs](../../apps/server/src/native-policy-environment.mjs) |
 | Prepare selected GPT instructions, demonstration text and decoded images before managed-service acquisition | [readNativeGptPolicyInputs](../../apps/server/src/native-policy-environment.mjs) |
 | Launch the unified Console or a selected backend | [examples/deployments](../../examples/deployments/README.md) |

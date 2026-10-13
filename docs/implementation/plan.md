@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.154 · 2026-10-13
+Version: v1.155 · 2026-10-13
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,15 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+Native deployment and workspace ports share one schema owned by the native
+configuration module. Original four-provider files pass eighty-one Console port
+checks and sixty-six declared configuration derivatives, with valid model/Team/
+checkpoint/worker bindings preserved. Independent readers repeat every case.
+The configured forty-component campaign passes 1,508 cases and 858 independently
+inspected source/input comparisons, with original records unchanged and all
+diagnostic ownership released. See
+[Console admission](cpu-release-validation.md#native-scene-and-configuration-ownership).
 
 The versioned `check-native-policy-inputs-offline.mjs` accepts original profile,
 text/image and workspace sources through a strict manifest. The optional

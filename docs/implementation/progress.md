@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.154 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.155 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,23 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Native deployment and workspace ports use one schema in the native configuration
+module. JSON values are integer numbers from 1 through 65535; omitted native
+provider fields retain their configured defaults and workspace fields remain
+required. RoboCasa's environment override validates its nonblank numeric string
+against the same range. All admission occurs before resource acquisition.
+
+Eighty-one original-configuration Console port checks pass with twenty-five
+admitted and fifty-six rejected cases. Independent readers repeat all cases,
+compare fifteen source identities and verify sixty-six declared configuration
+derivatives. Original model, Team, checkpoint and worker bindings remain unchanged.
+The complete forty-component CPU campaign passes 1,508 cases and 858 independently
+inspected source/input comparisons, with original journals/images unchanged and
+all diagnostic process groups/writers released. No model, policy, simulator or GPU
+executes. Evidence:
+`.local/work/native-console-port-cpu-final-20261013/scene-configuration/independently-verified.json`
+and `.local/work/native-console-port-cpu-final-20261013/independently-verified.json`.
 
 GPT input preparation has a versioned diagnostic at
 `scripts/check-native-policy-inputs-offline.mjs`. A strict original-input manifest

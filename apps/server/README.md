@@ -9,7 +9,8 @@ simulators, embodiments, checkpoints and model services through one Console.
 - [native-deployment-configuration.mjs](src/native-deployment-configuration.mjs):
   provider configuration, task/catalog/checkpoint admission, Team/model/service
   bindings, camera banks and native context-management defaults. It performs no
-  service or environment allocation.
+  service or environment allocation. Shared `nativeConsolePortSchema` admits
+  deployment/workspace JSON ports and RoboCasa's numeric-string environment override.
 - [native-policy-environment.mjs](src/native-policy-environment.mjs): learned
   worker allocation and RoboDojo direct/hybrid GPT gateway lifecycle, including
   independent DSH host, demonstrations, ordered audit writes and confirmed cleanup.

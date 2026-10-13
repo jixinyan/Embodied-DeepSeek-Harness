@@ -13,6 +13,7 @@ import {
   validateNativeWorkerConfiguration,
 } from '../apps/server/src/native-worker-configuration.ts';
 import { readNativeWorkspaceConfiguration } from '../apps/server/src/native-workspace.mjs';
+import { readNativeDeploymentConfiguration } from '../apps/server/src/native-deployment.mjs';
 
 const { values } = parseArgs({
   options: { config: { type: 'string' }, output: { type: 'string' } },
@@ -88,6 +89,248 @@ const processes = [];
 const originals = [];
 const results = [];
 const endpointResults = [];
+const consolePortResults = [];
+const consolePortInputs = [];
+const invalidConsolePorts = [
+  ['boolean', true],
+  ['null', null],
+  ['text', '4323'],
+  ['array', [4323]],
+  ['object', {}],
+  ['fractional', 4323.5],
+  ['zero', 0],
+  ['negative', -1],
+  ['overflow', 65536],
+];
+const deploymentVariables = {
+  robodojo: 'EDH_ROBODOJO_CONFIG',
+  robotwin: 'EDH_ROBOTWIN_CONFIG',
+  robocasa: 'EDH_NATIVE_WORKER_CONFIG',
+  behavior: 'EDH_BEHAVIOR_CONFIG',
+};
+const modelConfiguration = resolve(
+  dirname(configurationPath),
+  settings.configuration.modelConfiguration,
+);
+const portInput = async (name, sourcePath, original, consolePort, fields = ['consolePort']) => {
+  const derivative = { ...original, consolePort };
+  if (consolePort === undefined) delete derivative.consolePort;
+  const path = resolve(output, `${name}.json`);
+  const bytes = `${JSON.stringify(derivative, null, 2)}\n`;
+  await writeFile(path, bytes, { flag: 'wx' });
+  consolePortInputs.push({ name, path, sourcePath, sha256: hash(bytes), fields });
+  return path;
+};
+const preservedPortBindings = (actual, original) => {
+  const profiles = (value) =>
+    Object.fromEntries(
+      Object.entries(value.profiles).map(([id, { entry, ...profile }]) => [
+        id,
+        {
+          ...profile,
+          entry: Object.fromEntries(Object.entries(entry).filter(([key]) => key !== 'consolePort')),
+        },
+      ]),
+    );
+  assert.deepEqual(profiles(actual), profiles(original));
+  for (const field of [
+    'provider',
+    'managedServices',
+    'modelConfiguration',
+    'defaultModel',
+    'teamFile',
+    'roleRoot',
+  ])
+    assert.deepEqual(actual[field], original[field]);
+};
+for (const [deploymentId, entry] of Object.entries(settings.configuration.deployments)) {
+  const prefix = `${deploymentId}-${entry.provider}`;
+  const sourcePath = resolve(dirname(configurationPath), entry.configuration);
+  const original = JSON.parse(await readFile(sourcePath, 'utf8'));
+  const environment = {
+    ...process.env,
+    EDH_CONSOLE_PORT: undefined,
+    EDH_MODEL_CONFIG: modelConfiguration,
+    [deploymentVariables[entry.provider]]: sourcePath,
+  };
+  const baseline = await readNativeDeploymentConfiguration(entry.provider, environment);
+  for (const [label, consolePort, expected] of [
+    ['original', original.consolePort, baseline.port],
+    ['omitted', undefined, baseline.selected.port],
+    ['minimum', 1, 1],
+    ['maximum', 65535, 65535],
+  ]) {
+    const name = `${prefix}-console-${label}`;
+    const path = await portInput(name, sourcePath, original, consolePort);
+    const admitted = await readNativeDeploymentConfiguration(entry.provider, {
+      ...environment,
+      [deploymentVariables[entry.provider]]: path,
+    });
+    assert.equal(admitted.port, expected);
+    preservedPortBindings(admitted, baseline);
+    consolePortResults.push({
+      name,
+      result: 'admitted',
+      port: admitted.port,
+      bindingsPreserved: true,
+    });
+  }
+  for (const [label, consolePort] of invalidConsolePorts) {
+    const name = `${prefix}-console-${label}`;
+    const path = await portInput(name, sourcePath, original, consolePort);
+    await assert.rejects(
+      readNativeDeploymentConfiguration(entry.provider, {
+        ...environment,
+        [deploymentVariables[entry.provider]]: path,
+      }),
+      (error) => {
+        assert(error instanceof ZodError);
+        assert(error.issues.every((issue) => issue.path[0] === 'consolePort'));
+        consolePortResults.push({ name, result: 'rejected', issues: error.issues });
+        return true;
+      },
+    );
+  }
+  if (entry.provider !== 'robocasa') {
+    const admitted = await readNativeDeploymentConfiguration(entry.provider, {
+      ...environment,
+      EDH_CONSOLE_PORT: '0',
+    });
+    assert.equal(admitted.port, baseline.port);
+    preservedPortBindings(admitted, baseline);
+    consolePortResults.push({
+      name: `${prefix}-console-provider-scope`,
+      result: 'admitted',
+      port: admitted.port,
+      bindingsPreserved: true,
+    });
+    continue;
+  }
+  for (const [label, override] of [
+    ['original', String(baseline.port)],
+    ['minimum', '1'],
+    ['maximum', '65535'],
+  ]) {
+    const admitted = await readNativeDeploymentConfiguration(entry.provider, {
+      ...environment,
+      EDH_CONSOLE_PORT: override,
+    });
+    assert.equal(admitted.port, Number(override));
+    preservedPortBindings(admitted, baseline);
+    consolePortResults.push({
+      name: `${prefix}-console-environment-${label}`,
+      result: 'admitted',
+      port: admitted.port,
+      bindingsPreserved: true,
+    });
+  }
+  for (const [label, override] of [
+    ['null', null],
+    ['boolean', true],
+    ['array', []],
+    ['object', {}],
+    ['empty', ''],
+    ['blank', ' '],
+    ['zero', '0'],
+    ['overflow', '65536'],
+    ['fractional', '4323.5'],
+  ])
+    await assert.rejects(
+      readNativeDeploymentConfiguration(entry.provider, {
+        ...environment,
+        EDH_CONSOLE_PORT: override,
+      }),
+      (error) => {
+        assert(error instanceof ZodError);
+        assert(error.issues.every((issue) => issue.path[0] === 'EDH_CONSOLE_PORT'));
+        consolePortResults.push({
+          name: `${prefix}-console-environment-${label}`,
+          result: 'rejected',
+          issues: error.issues,
+        });
+        return true;
+      },
+    );
+  const path = await portInput(
+    `${prefix}-console-invalid-with-override`,
+    sourcePath,
+    original,
+    true,
+  );
+  await assert.rejects(
+    readNativeDeploymentConfiguration(entry.provider, {
+      ...environment,
+      [deploymentVariables[entry.provider]]: path,
+      EDH_CONSOLE_PORT: String(baseline.port),
+    }),
+    (error) => {
+      assert(error instanceof ZodError);
+      assert(error.issues.every((issue) => issue.path[0] === 'consolePort'));
+      consolePortResults.push({
+        name: `${prefix}-console-invalid-with-override`,
+        result: 'rejected',
+        issues: error.issues,
+      });
+      return true;
+    },
+  );
+}
+const originalWorkspace = JSON.parse(await readFile(configurationPath, 'utf8'));
+const relocatedWorkspace = {
+  ...originalWorkspace,
+  modelConfiguration,
+  dataDirectory: resolve(dirname(configurationPath), originalWorkspace.dataDirectory),
+  deployments: Object.fromEntries(
+    Object.entries(originalWorkspace.deployments).map(([id, entry]) => [
+      id,
+      { ...entry, configuration: resolve(dirname(configurationPath), entry.configuration) },
+    ]),
+  ),
+};
+for (const [label, consolePort] of [
+  ['original', originalWorkspace.consolePort],
+  ['minimum', 1],
+  ['maximum', 65535],
+  ...invalidConsolePorts,
+  ['omitted', undefined],
+]) {
+  const name = `workspace-console-${label}`;
+  const path = await portInput(name, configurationPath, relocatedWorkspace, consolePort, [
+    'consolePort',
+    'modelConfiguration',
+    'dataDirectory',
+    'deployments.*.configuration',
+  ]);
+  if (['original', 'minimum', 'maximum'].includes(label)) {
+    const admitted = await readNativeWorkspaceConfiguration({
+      ...process.env,
+      EDH_NATIVE_WORKSPACE_CONFIG: path,
+    });
+    assert.equal(admitted.port, consolePort);
+    const bindings = (deployments) =>
+      deployments.map(({ id, settings: { validator, ...configuration } }) => ({
+        id,
+        settings: configuration,
+      }));
+    assert.deepEqual(bindings(admitted.deployments), bindings(settings.deployments));
+    consolePortResults.push({
+      name,
+      result: 'admitted',
+      port: admitted.port,
+      bindingsPreserved: true,
+    });
+  } else {
+    await assert.rejects(
+      readNativeWorkspaceConfiguration({ ...process.env, EDH_NATIVE_WORKSPACE_CONFIG: path }),
+      (error) => {
+        assert(error instanceof ZodError);
+        assert(error.issues.every((issue) => issue.path[0] === 'consolePort'));
+        consolePortResults.push({ name, result: 'rejected', issues: error.issues });
+        return true;
+      },
+    );
+  }
+}
 try {
   await context.plugin(LocalImageStore, { directory: resolve(output, 'images') });
   for (const { settings: deployment } of settings.deployments) {
@@ -191,13 +434,15 @@ await writeFile(
       originals,
       results,
       endpointResults,
+      consolePortResults,
+      consolePortInputs,
       workerProcessesStarted: processes,
       imageContextDisposed: true,
       modelCalls: 0,
       policyCalls: 0,
       environmentAllocations: 0,
       scope:
-        'Actual configured scene data and native preallocation failures; no simulator or inference.',
+        'Actual configured scene, policy endpoint and Console port admission before allocation; no simulator or inference.',
     },
     null,
     2,
@@ -205,5 +450,5 @@ await writeFile(
   { flag: 'wx' },
 );
 process.stdout.write(
-  `${JSON.stringify({ output, profiles: originals.length, rejectedCases: results.length, rejectedEndpointCases: endpointResults.length })}\n`,
+  `${JSON.stringify({ output, profiles: originals.length, rejectedCases: results.length, rejectedEndpointCases: endpointResults.length, consolePortCases: consolePortResults.length })}\n`,
 );

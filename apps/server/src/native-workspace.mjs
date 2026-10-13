@@ -6,6 +6,7 @@ import { EnvHttpProxyAgent, setGlobalDispatcher } from 'undici';
 import { z } from 'zod';
 import { startServer } from './index.ts';
 import { runConsoleProcess } from './console-process.ts';
+import { nativeConsolePortSchema } from './native-deployment-configuration.mjs';
 import {
   createNativeDeploymentFactory,
   nativeDeploymentRoot,
@@ -19,7 +20,7 @@ const configurationSchema = z
     version: z.literal(1),
     modelConfiguration: nonblank,
     dataDirectory: nonblank,
-    consolePort: z.number().int().min(1).max(65535),
+    consolePort: nativeConsolePortSchema,
     deployments: z
       .record(
         identity,

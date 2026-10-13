@@ -1924,6 +1924,26 @@ The complete evidence archive SHA-256 is
 
 ## Native scene and configuration ownership
 
+Native deployment and workspace readers share `nativeConsolePortSchema` from
+`native-deployment-configuration.mjs`. JSON ports are integer numbers from
+1 through 65535, with omitted-provider defaults and mandatory workspace ports.
+RoboCasa's nonblank numeric-string environment override uses the same range;
+invalid configured fields reject before override selection or resource allocation.
+The existing scene diagnostic additionally checks original four-provider Console
+configuration and preserves all model, Team, checkpoint and worker bindings.
+
+On 2026-10-13, eighty-one Console port cases pass: twenty-five admissions and
+fifty-six rejections, including JSON type/range checks, defaults, workspace
+requirements and provider-scoped environment overrides. Independent production
+readers repeat every case, verify sixty-six declared JSON derivatives and compare
+fifteen source identities. Derivative workspace paths resolve to the unchanged
+original model/provider files. No worker, model, policy, environment or GPU starts.
+The configured forty-component campaign passes 1,508 CPU cases and 858 independent
+source/input comparisons, with original records unchanged and every owned process
+group/writer released. Evidence:
+`.local/work/native-console-port-cpu-final-20261013/scene-configuration/independently-verified.json`
+and `.local/work/native-console-port-cpu-final-20261013/independently-verified.json`.
+
 [native-worker-configuration.ts](../../apps/server/src/native-worker-configuration.ts)
 owns the schema and its derived `NativeWorkerConfiguration` type. Scene parameters
 use Zod's recursive JSON schema: finite scalars, arrays and objects. The environment

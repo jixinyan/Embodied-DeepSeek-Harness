@@ -16,6 +16,16 @@ gateway, audit and host lifetime. The original deployment entry assembles model,
 perception and profile factories, manages service leases and preserves its
 configuration/root exports. The workspace uses that same entry for each provider.
 
+`nativeConsolePortSchema` in the configuration module validates both deployment
+and workspace Console ports. In JSON, `consolePort` is an integer number from
+1 through 65535. A native provider may omit it to select its provider default;
+workspace configuration requires it. Invalid types, explicit `null`, fractional
+values and out-of-range numbers reject before resource acquisition. RoboCasa
+accepts an optional nonblank numeric-string `EDH_CONSOLE_PORT` override after
+provider JSON admission. The remaining providers select their JSON/default port.
+The Desktop launcher and GPT gateway retain their own optional ephemeral-port
+selection. See [configuration checks](cpu-release-validation.md#native-scene-and-configuration-ownership).
+
 RoboDojo direct/hybrid profiles may supply `policyGatewayPort` as an integer
 between 0 and 65535. Omission or zero selects an ephemeral port. Invalid values
 reject during configuration loading before managed-service acquisition or

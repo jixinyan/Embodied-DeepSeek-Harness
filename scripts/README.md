@@ -17,6 +17,13 @@ establish model, simulator, policy, recovery or hardware acceptance.
 
 ## CPU validation
 
+`check-native-scene-configuration.mjs` checks original workspace/provider files
+through production scene, endpoint and Console port readers. Console checks cover
+four-provider JSON types/ranges, omitted defaults, required workspace values and
+RoboCasa environment overrides. Reports retain original source identities,
+explicit configuration/path derivatives and admission issues. No model, worker
+or simulator starts. See [configuration admission](../docs/implementation/cpu-release-validation.md#native-scene-and-configuration-ownership).
+
 `check-native-policy-inputs-offline.mjs` checks selected RoboDojo GPT profile
 instruction/text/image preparation through the production reader and deployment
 factory. Its strict manifest supplies an original direct/hybrid profile, the
@@ -36,8 +43,8 @@ declared invalid source, pixel, depth, matrix and coordinate derivatives. Repeat
 Reports retain source hashes and the decoded original results. See
 [native metric receipts](../docs/implementation/cpu-release-validation.md#native-metric-receipt-admission).
 
-`run-cpu-release-campaign.mjs` executes twenty-six configured production/source
-checks using original requests and journals. Each diagnostic owns a POSIX process
+`run-cpu-release-campaign.mjs` executes configured production/source checks using
+original requests and journals. Each diagnostic owns a POSIX process
 group and retains stdout, stderr, its report and actual process-release receipt.
 SIGINT/SIGTERM finish the active diagnostic and stop subsequent admission.
 `check-cpu-campaign-shutdown.mjs` verifies this behavior with actual configured

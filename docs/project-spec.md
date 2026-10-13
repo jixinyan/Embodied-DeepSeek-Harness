@@ -1,10 +1,21 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.154 · 2026-10-13
+Version: v1.155 · 2026-10-13
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
+
+Native deployment and workspace Console ports use the shared
+`nativeConsolePortSchema` in `native-deployment-configuration.mjs`. JSON
+`consolePort` values must be integer numbers from 1 through 65535. Native provider
+configuration may omit the field to use its provider default; the workspace
+requires it. Explicit `null`, booleans, text, arrays, objects and out-of-range
+numbers reject during configuration loading before resource acquisition.
+RoboCasa's optional `EDH_CONSOLE_PORT` override is a nonblank numeric string
+validated against the same range. Provider JSON still passes its own admission.
+The other providers use their JSON/default port. Desktop launcher port `0` and
+GPT gateway port `0` retain their existing ephemeral-port behavior.
 
 RoboDojo direct/hybrid profiles admit an optional integer `policyGatewayPort`
 between 0 and 65535 during native configuration loading, before managed-service

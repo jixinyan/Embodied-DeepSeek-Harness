@@ -17,6 +17,15 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Native deployment and workspace ports share one schema in the configuration
+module. Original four-provider files pass eighty-one Console port checks and
+sixty-six declared JSON derivatives; independent readers repeat every case,
+match fifteen source identities and preserve original model/Team/checkpoint/worker
+bindings. The forty-component CPU campaign passes 1,508 cases and 858 independent
+source/input comparisons with unchanged original journals/images and released
+diagnostic ownership. These checks allocate no native worker, model, policy,
+simulator or GPU. See [Console admission](cpu-release-validation.md#native-scene-and-configuration-ownership).
+
 The original GPT text/image preparation diagnostic is versioned in `scripts` and
 configurable through a strict source manifest. Source `8c75a65` passes forty
 campaign components and 1,427 cases, with 792 independent source/input comparisons,

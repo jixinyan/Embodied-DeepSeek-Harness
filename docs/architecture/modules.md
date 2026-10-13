@@ -113,6 +113,8 @@ calibration, rigid-transform and coordinate consistency checks. NativeTaskBacken
 retains transport, cancellation, current task identity and closure.
 `apps/server/src/native-deployment-configuration.mjs` owns native configuration,
 Team/model/service bindings, task/checkpoint admission and context defaults.
+Its shared `nativeConsolePortSchema` admits deployment and workspace JSON ports;
+the same range validates RoboCasa's numeric-string environment override.
 `native-policy-environment.mjs` owns learned-worker allocation and the independent
 RoboDojo direct/hybrid gateway/host/audit lifecycle. `native-deployment.mjs` owns
 provider/model/perception assembly, managed-service leases and runnable Console
