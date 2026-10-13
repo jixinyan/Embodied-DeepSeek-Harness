@@ -11,12 +11,12 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
-| Configured production campaign | `b3de927`: 39 components, 1,394 cases, 737 independently inspected source/input comparisons, 153 exact-commit production/checker files and 39 released diagnostic process groups |
+| Configured production campaign | `8c75a65`: 40 components, 1,427 cases, 792 independently inspected source/input comparisons, 157 exact-commit production/checker files and 40 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `b3de927`, run `38366929341`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
-| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `b3de927` |
+| Latest Ubuntu source/installation CI | `8c75a65`, run `38369131528`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
+| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `8c75a65` |
 | GPT profile configuration | `b69d927`: 60 declared original-profile derivatives cover modes, demonstration metadata, gateway ports and worker endpoints; 46 reject and 14 admit with unchanged original bindings |
-| Selected GPT file preparation | `b3de927`: 33 cases, 28 independently repeated file checks, 19 source identities, 31 declared configuration derivatives, 15 stored-image fields and nine exact-commit production sources; actual Console process/listener/writer ownership releases |
+| Selected GPT file preparation | `8c75a65` on macOS and isolated Linux: 33 cases and 28 independently repeated file checks per platform, 22 source identities, 31 declared configuration derivatives and 15 stored-image fields; eleven macOS and ten Linux production files match the commit, and actual Console process/listener/writer ownership releases |
 | Persistent native retries | The latest downloaded CI journals preserve 22 independent native Sessions, 56 genuine failed connections and 338 source-matched event bodies; pending-history release and cancellation retain their declared scope |
 
 Every checkpoint excludes model inference, loaded-policy execution,
@@ -3286,7 +3286,7 @@ the original native deployment retains its production path rules.
 | `workspaceConfiguration` | Valid native workspace JSON whose model configuration permits idle CPU Console startup |
 
 ```sh
-CUDA_VISIBLE_DEVICES='' pnpm exec tsx --tsconfig tsconfig.runtime.json \
+CUDA_VISIBLE_DEVICES='' TSX_TSCONFIG_PATH=tsconfig.runtime.json node --import tsx \
   scripts/check-native-policy-inputs-offline.mjs \
   --config .local/work/native-policy-input-records.json \
   --output .local/work/native-policy-input-check
@@ -3304,17 +3304,44 @@ path to this manifest, to `edh.cpu_release.v1` to include the `native-policy-inp
 component and its process-group receipt in the consolidated campaign. No policy
 gateway, native worker, simulator or GPU starts in this scope.
 
-The manifest-bound diagnostic passes thirty-three original-profile checks on
-2026-10-13. Independent production readers repeat twenty-eight file checks,
-match twenty-two source identities and thirty-one configuration derivatives,
-and verify fifteen stored-image fields. The complete configured campaign with
-`nativePolicyInputRecords` passes forty components and 1,427 cases, with 792
-independently matched source/input comparisons and forty released process groups.
-Original journals/images stay unchanged and writers release. Its sixty-nine
+The manifest-bound diagnostic at `8c75a65` passes thirty-three original-profile
+checks on macOS and isolated Linux on 2026-10-13. Independent production readers
+repeat twenty-eight file checks per platform, match twenty-two source identities
+and thirty-one configuration derivatives, and verify fifteen stored-image fields.
+All thirty-three outcomes and prepared image identities match across platforms.
+Linux uses eleven unchanged original input files with declared configuration-path
+relocations; ten loaded production files match the commit. macOS also reads the
+unchanged repository model example, matching eleven production files. Each actual
+Console starts and closes with its process group, listener and writer released.
+The isolated source stays clean and canonical server changes remain unchanged.
+
+The complete configured macOS campaign with `nativePolicyInputRecords` passes
+forty components and 1,427 cases, with 792 independently matched source/input
+comparisons, 157 exact-commit production/checker files and forty released process
+groups. Original journals/images stay unchanged and writers release. Its sixty-nine
 saved model-output receipts and two original image contexts retain their recorded
-inspection scope; no new provider response or simulator execution occurs.
-Evidence: `.local/work/native-policy-checker-cpu-20261013/independently-verified.json`
-and `.local/work/native-policy-checker-cpu-20261013/native-policy-inputs/independently-verified.json`.
+inspection scope. Actual Ubuntu CI `38369131528` at the same commit independently
+passes fresh installation, complete source checks and 78 runtime cases. Downloaded
+artifacts match fourteen distributions, thirteen imports, 41 original inputs and
+89 exact-source comparisons. Production readers preserve seven task-plan journals
+and 338 retry events in 22 native Sessions, including 56 genuine failed connections
+and zero provider responses. Previously executed Linux SDK checks retain their
+recorded input/preparation scope; fifteen loaded sources match this commit.
+No new model inference, native worker, simulator or GPU execution occurs.
+
+Evidence:
+
+- `.local/work/native-policy-checker-cpu-20261013/independently-verified.json`
+- `.local/work/native-policy-checker-cpu-20261013/committed-source-verification.json`
+- `.local/work/native-policy-checker-cpu-20261013/native-policy-inputs/committed-source-verification.json`
+- `.local/work/native-policy-checker-linux-verified-20261013/local-independent-verification.json`
+- `.local/work/ci-native-policy-checker-inspection-20261013.json`
+- `.local/work/ci-native-policy-checker-plans-independent-20261013.json`
+- `.local/work/ci-native-policy-checker-native-independent-20261013.json`
+- `.local/work/current-sdk-cpu-linux-20261013-verified/committed-policy-checker-source-verification.json`
+
+The independently checked Linux evidence archive has SHA-256
+`c276b5a5157643edb139519f5764ce9d845f3c950128c6ab479794ac714f7eb6`.
 
 `readNativeGptPolicyInputs` in `native-policy-environment.mjs` prepares the selected
 profile's trusted instructions, nonempty demonstration text and native DSH PNG

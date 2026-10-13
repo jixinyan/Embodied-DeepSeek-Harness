@@ -18,14 +18,28 @@ The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
 The original GPT text/image preparation diagnostic is versioned in `scripts` and
-configurable through a strict source manifest. Its optional campaign binding
-passes forty components and 1,427 cases, with 792 independent source/input
-comparisons and forty released process groups. Independent file readers repeat
-twenty-eight selected-input checks, preserve twenty-two source identities and
-thirty-one declared configuration derivatives, and verify fifteen stored-image
-fields. Original journals/images remain unchanged. These scopes exercise
-configuration, files and idle production Console ownership without model
-responses, native workers, simulator execution or GPU allocation. See
+configurable through a strict source manifest. Source `8c75a65` passes forty
+campaign components and 1,427 cases, with 792 independent source/input comparisons,
+157 exact-commit production/checker files and forty released process groups.
+The selected-file diagnostic passes thirty-three cases on both macOS and isolated
+Linux; independent readers repeat twenty-eight checks per platform, preserve
+twenty-two source identities and thirty-one declared configuration derivatives,
+and verify fifteen stored-image fields. All case outcomes and prepared image
+identities match. Eleven original Linux input files remain unchanged, with only
+declared configuration-path relocations. Actual Console resources release and
+canonical server changes remain unchanged.
+
+Ubuntu CI `38369131528` at the same source passes fresh installation, complete
+source checks and 78 production runtime cases. Downloaded artifacts match 89
+exact-source comparisons and 41 inputs; production reads preserve seven task-plan
+journals and 338 retry events in 22 native Sessions with released writers. Fifteen
+previously executed installed-SDK sources match this commit. These scopes exercise
+configuration, files, genuine failed connections and idle production Console
+ownership without provider responses, native workers, simulator execution or GPU
+allocation. Evidence:
+`.local/work/native-policy-checker-cpu-20261013/committed-source-verification.json`,
+`.local/work/native-policy-checker-linux-verified-20261013/local-independent-verification.json`
+and `.local/work/ci-native-policy-checker-inspection-20261013.json`. See
 [GPT input checks](cpu-release-validation.md#native-policy-gateway-configuration).
 
 Selected GPT policy files and images prepare before managed-service acquisition.

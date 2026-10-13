@@ -53,15 +53,29 @@ admission and an idle Console lifecycle, with explicit configuration derivatives
 and preserved original source hashes. This scope allocates no native worker,
 gateway, model, simulator or GPU.
 
-The configured campaign with this binding passes forty components and 1,427
-cases. Independent inspection matches 792 source/input comparisons and all forty
-released diagnostic process groups, with original journals/images unchanged and
-writers released. The new diagnostic separately repeats twenty-eight file checks
-through independent production readers, verifies all thirty-one configuration
-derivatives, matches twenty-two source identities and checks fifteen stored-image
-fields. Its original task snapshot exercises text admission only. Evidence:
-`.local/work/native-policy-checker-cpu-20261013/independently-verified.json`
-and `.local/work/native-policy-checker-cpu-20261013/native-policy-inputs/independently-verified.json`.
+Source `8c75a65` passes the configured forty-component/1,427-case macOS campaign.
+Independent inspection matches 792 source/input comparisons, 157 exact-commit
+production/checker files and all forty released diagnostic process groups, with
+original journals/images unchanged and writers released. The selected-file
+diagnostic also passes thirty-three cases on isolated Linux. Independent readers
+repeat twenty-eight file checks per platform, verify thirty-one configuration
+derivatives, match twenty-two source identities and check fifteen stored-image
+fields. All case outcomes and prepared image identities match across platforms.
+Linux preserves eleven original input files, declares only configuration-path
+relocations, releases its actual Console ownership and preserves canonical server
+changes. Its original task snapshot exercises text admission only.
+
+Actual Ubuntu CI `38369131528` at the same source passes fresh installation,
+complete source checks and 78 production runtime cases. Downloaded artifacts match
+89 exact-source comparisons, 41 inputs, fourteen distributions and thirteen imports.
+Independent production readers preserve seven task-plan journals and all 338 retry
+events in 22 native Sessions, with 56 genuine failed connections, zero provider
+responses and released writers. Fifteen previously executed installed-SDK sources
+match this commit without rerunning unchanged processors. Evidence:
+`.local/work/native-policy-checker-cpu-20261013/committed-source-verification.json`,
+`.local/work/native-policy-checker-linux-verified-20261013/local-independent-verification.json`,
+`.local/work/ci-native-policy-checker-inspection-20261013.json` and
+`.local/work/ci-native-policy-checker-native-independent-20261013.json`.
 
 Selected RoboDojo GPT profiles prepare their instruction text, nonempty
 demonstration text and decoded PNG references before managed-service acquisition.

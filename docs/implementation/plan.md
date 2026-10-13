@@ -22,12 +22,18 @@ cancellation, pre-service failure and production Console lifecycle checks.
 Reports declare all configuration derivatives and preserve original source
 digests; no model response, native worker or environment is allocated.
 
-The manifest-bound campaign passes forty configured components and 1,427 cases,
-with 792 independent source/input comparisons, released process groups and
-unchanged original journals/images. Its selected-input diagnostic separately
-repeats twenty-eight file checks, matches twenty-two source identities and
-thirty-one declared configuration derivatives, and verifies fifteen stored-image
-fields. See [GPT input checks](cpu-release-validation.md#native-policy-gateway-configuration).
+The manifest-bound campaign at `8c75a65` passes forty configured components and
+1,427 cases, with 792 independent source/input comparisons, 157 exact-commit
+production/checker files, released process groups and unchanged original records.
+The selected-input diagnostic passes thirty-three cases on both macOS and isolated
+Linux, independently repeats twenty-eight file checks per platform, matches
+twenty-two source identities and thirty-one declared configuration derivatives,
+and verifies fifteen stored-image fields. Original Linux input bytes remain
+unchanged; all case outcomes and prepared image identities match macOS. Actual
+Console resources release and canonical server changes remain unchanged.
+Ubuntu CI `38369131528` at the same source passes fresh installation, full source
+checks and 78 runtime cases. Downloaded artifacts match 89 exact-source comparisons
+and 41 inputs. See [GPT input checks](cpu-release-validation.md#native-policy-gateway-configuration).
 
 Selected GPT profile instruction/demonstration preparation precedes managed-
 service acquisition. Original files and the real DSH image service pass thirty-
@@ -438,16 +444,20 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 and released ownership. No model or simulator result is supplied by a diagnostic.
 See [CPU release validation](cpu-release-validation.md).
 
-**Verified checkpoint:** `b3de927` passes all thirty-nine configured macOS CPU
-components and 1,394 admission/process/wire/resource cases, 737 independent
-source/input comparisons and released diagnostic ownership. Its actual Ubuntu
-CI `38366929341` separately passes fresh installation, full source checks and 78 production
+**Verified checkpoint:** `8c75a65` passes all forty configured macOS CPU
+components and 1,427 admission/process/wire/resource cases, 792 independent
+source/input comparisons, 157 exact-commit production/checker files and released
+diagnostic ownership. Its actual Ubuntu CI `38369131528` separately passes fresh
+installation, full source checks and 78 production
 runtime cases, with independently inspected artifacts and unchanged plan/retry
 journals. Actual isolated Linux SDK processors pass seventy-two checks on
 forty-six original requests; all fifteen loaded production/checker files match
-`b3de927`. Thirty-three selected-profile file preparation checks establish
+`8c75a65`. Thirty-three selected-profile file preparation checks per platform establish
 pre-service text/image failure admission, cancellation, prepared input binding
-and actual Console shutdown; nine production sources match this commit.
+and actual Console shutdown. All case outcomes and prepared image identities
+match between macOS and isolated Linux, with thirty-one declared configuration
+derivatives and preserved original files. Eleven macOS and ten Linux production
+sources match this commit.
 These scopes perform no model,
 policy or simulator execution. Loaded-model/device behavior and complete task
 workflows retain Steps 13–14's native acceptance requirements.
