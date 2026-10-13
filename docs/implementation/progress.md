@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.159 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.160 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,20 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+FileTeamLoader uses the operating system's path separator for resolved Role/schema
+containment and requires explicit own builtin mappings. The authored SceneAnalyst
+configuration passes twenty-three actual load checks on macOS, including two native
+directory links, external/sibling reference rejection, nested schemas, the 64 KiB
+schema limit and original native DSH structured-output admission. Twenty source
+identities and fifty-one derivative file hashes remain unchanged through each run.
+All admitted roles retain their authored instructions, models, permissions and
+workflow composition. Full source checks pass. Evidence:
+`.local/work/team-paths-admission-20261013-02/acceptance.json` and
+`.local/work/team-paths-source-check-20261013.log`.
+The configured CPU campaign includes this diagnostic. Separate Linux, macOS and
+Windows CI execution is configured; its results retain their actual run requirements.
+No model, simulator or GPU allocates.
 
 Role document syntax belongs to `teams/src/role-document.ts`, using the installed
 mdast/micromark frontmatter extensions. FileTeamLoader retains strict YAML and

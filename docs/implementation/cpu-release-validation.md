@@ -11,6 +11,7 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
+| Team file admission | macOS: 23 actual authored-Team load checks, 20 source identities, 51 input files and two native directory links; result-schema and Role containment, byte limits and builtin mappings pass without allocation |
 | Role document admission | `0818111` on macOS and isolated Linux: all ten complete Team snapshots match the captured checkpoint and each other; 25 actual FileTeamLoader document cases verify ten source identities and fifty derivative files per platform without allocation |
 | Configured production campaign | `0818111`: 43 components, 1,561 cases, 915 independently inspected source/input comparisons, 184 exact-commit production/checker/package files and 43 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
@@ -28,6 +29,32 @@ Every checkpoint excludes model inference, loaded-policy execution,
 simulator allocation and new physical task acceptance. The
 [release requirements](progress.md#remaining-release-requirements) identify the
 native workflows that still require their actual model/policy/simulator runs.
+
+## Team file admission
+
+`scripts/check-team-paths-offline.mjs` calls the production FileTeamLoader with
+the authored RoboTwin SceneAnalyst Team and declared Role/schema derivatives.
+Twenty-three cases exercise actual files and native directory links: custom-role
+and builtin containment, internal/nested schema references, external and sibling
+targets, explicit builtin mappings, a 64 KiB schema boundary, malformed JSON and
+the original native DSH object-rooted schema admission. Windows uses actual
+directory junctions; POSIX platforms use actual directory symlinks. The report
+retains twenty source hashes, fifty-one input-file hashes, two link identities
+and complete admitted Team snapshots. Repeated reads preserve source digests and
+the authored role instructions, models, tools and workflows.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-team-paths-offline.mjs \
+  --output .local/work/team-file-admission
+```
+
+Use a new output directory under `.local/work`. Optional `--source-revision HEAD`
+also requires every recorded source to match the selected commit's original bytes
+before creating diagnostic inputs. The configured CPU campaign includes the same
+diagnostic. A separate source CI matrix runs it on Ubuntu 24.04, macOS 15 and
+Windows 2025 with unchanged Git checkout line endings and pinned Node.js/pnpm.
+Its artifacts preserve the actual input files alongside their report. No Session,
+model, simulator or device is created by this check.
 
 ## Native model-request retries
 

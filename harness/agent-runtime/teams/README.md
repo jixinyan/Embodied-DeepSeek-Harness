@@ -21,6 +21,20 @@ actual role-document derivatives. Its source/input hashes and complete Team
 snapshots are stored under the reported `.local/work/role-documents-*` directory.
 This check starts no model, simulator or device.
 
+Role and result-schema paths are resolved through the actual filesystem before
+checking containment in the configured custom-role or builtin directory. The
+check uses the operating system's path separator, admits directory links that
+resolve inside the configured root, and rejects sibling directories and external
+link targets. Builtin names require an explicit own entry in `builtins.json`.
+Result schemas require the native DSH object-rooted subset and at most 64 KiB.
+
+`scripts/check-team-paths-offline.mjs` exercises twenty-three actual Team loads
+from the authored SceneAnalyst configuration, including directory links, custom
+schemas, their byte limit and builtin mappings. Its report preserves twenty
+source identities, fifty-one input files and two directory-link identities.
+The configured CPU campaign includes this check; a separate source CI job runs
+it on Linux, macOS and Windows without model or simulator allocation.
+
 Decision-owner and formal-verifier bindings also select their shared numbered
 workflows. Their contents contribute to the Team source digest. See
 [prompt composition and schemas](../../../docs/implementation/prompt-workflow.md).

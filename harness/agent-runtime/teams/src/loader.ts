@@ -1,5 +1,5 @@
 import { readFile, realpath } from 'node:fs/promises';
-import { dirname, resolve, relative, isAbsolute } from 'node:path';
+import { dirname, resolve, relative, isAbsolute, sep } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { parseDocument } from 'yaml';
 import { ContractValidator, type RoleDefinition, type TeamDefinition } from '@edh/contracts';
@@ -30,7 +30,7 @@ export interface TeamLoadOptions {
   readonly models: readonly string[];
   readonly tools: readonly string[];
   readonly providers: readonly string[];
-  /** Physical profile context is explicit prompt input, never inferred from a simulator name. */
+  /** Physical profile context 由调用方明确提供。 */
   readonly promptContext?: string;
   readonly rolePromptAdditions?: Readonly<Record<string, string>>;
 }
@@ -50,11 +50,11 @@ function freeze<T>(value: T): T {
 async function within(file: string, root: string): Promise<string> {
   const actual = await realpath(file);
   const rel = relative(await realpath(root), actual);
-  if (rel === '..' || rel.startsWith('../') || isAbsolute(rel))
+  if (rel === '..' || rel.startsWith(`..${sep}`) || isAbsolute(rel))
     throw new Error(`Role escapes configured root: ${file}`);
   return actual;
 }
-/** Configuration preflight only. DSH remains the session and tool authority. */
+/** 检查 Team 配置；Session 和工具由 DSH 管理。 */
 export class FileTeamLoader {
   constructor(private readonly options: TeamLoadOptions) {}
   async inspect(file: string): Promise<LoadedTeam> {
@@ -73,6 +73,8 @@ export class FileTeamLoader {
     const digest = createHash('sha256').update(source);
     for (const [alias, ref] of Object.entries(definition.members)) {
       const builtin = ref.startsWith('builtin:');
+      if (builtin && !Object.hasOwn(builtins, ref.slice(8)))
+        throw new Error(`Unknown builtin role: ${ref}`);
       const target = builtin ? builtins[ref.slice(8)] : ref;
       if (!target) throw new Error(`Unknown builtin role: ${ref}`);
       const location = await within(
@@ -105,7 +107,7 @@ export class FileTeamLoader {
         outputSchema = { reference: role.output_schema, schema };
         digest.update(schemaSource);
       }
-      // Reporting is a framework-owned capability available to every configured role.
+      // 每个配置的 Role 都可以使用框架提供的报告工具。
       const profileContext = [o.promptContext, o.rolePromptAdditions?.[alias]].filter(
         (value): value is string => Boolean(value?.trim()),
       );

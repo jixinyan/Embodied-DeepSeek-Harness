@@ -118,6 +118,7 @@ implementations load in their separately configured service processes.
 | Verify complete CPU CI artifacts against their exact Git source and publish consolidated inspection | [check-cpu-runtime-evidence.py](../../scripts/check-cpu-runtime-evidence.py) |
 | Exercise actual DSH core/extension dispatch, independent Session scopes, private files and local clarification persistence | [check-core-tools-offline.mjs](../../scripts/check-core-tools-offline.mjs) |
 | Check configured task-plan admission, persisted reads and journal compaction without native allocation | [check-task-plans-offline.mjs](../../scripts/check-task-plans-offline.mjs) |
+| Check custom Team file access, native directory links, result schemas and builtin mappings | [check-team-paths-offline.mjs](../../scripts/check-team-paths-offline.mjs) |
 | Find exact configured profiles and their acceptance boundaries | [configuration matrix](../implementation/supported-configurations.md) |
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |
 | Recompute original RGB-D measurements and check numeric calibration admission without a simulator | [check-recorded-metric.py](../../scripts/check-recorded-metric.py), `--check-numeric-admission` |
