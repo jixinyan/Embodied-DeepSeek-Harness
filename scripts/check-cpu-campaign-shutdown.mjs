@@ -115,7 +115,8 @@ for (const signals of [['SIGTERM'], ['SIGINT'], ['SIGTERM', 'SIGINT', 'SIGTERM']
       code: 'ENOENT',
     });
     const sourceOutput = await readFile(resolve(directory, 'source.stdout.txt'), 'utf8');
-    assert(sourceOutput.includes('Verified 128 pinned DSH source files, 25 module bindings'));
+    assert(sourceOutput.includes('pinned DSH source files, '));
+    assert(sourceOutput.includes('module bindings and source closure.'));
     cases.push({ name, signals, exit, diagnostic: receipt, nextComponentNotStarted: true });
   } finally {
     if (!exited) {

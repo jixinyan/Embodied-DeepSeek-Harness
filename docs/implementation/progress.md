@@ -43,6 +43,28 @@ the release requirements below.
 
 ## Latest verified source changes
 
+The unified CPU campaign includes native core/extension tools and configured
+task-plan storage in every configuration. Source `348a06d` passes all forty-two
+selected components and 1,559 cases. Independent readers check 892 source/input
+comparisons and all 180 distinct production/checker files against the commit.
+Original journals/images remain unchanged, private files/plans retain their
+values and all forty-two diagnostic process groups release. The retry reader
+preserves 338 events across 22 actual native Sessions and 56 genuinely failed
+connections, with no provider responses. Fifteen previously executed installed
+policy-processor sources match this commit; processors are not rerun. Evidence:
+`.local/work/complete-foundation-cpu-20261013/independently-verified.json`,
+`.local/work/complete-foundation-cpu-20261013/committed-source-verification.json`,
+`.local/work/complete-foundation-native-retries-independent-20261013.json` and
+`.local/work/current-sdk-foundation-source-20261013.json`.
+
+Campaign shutdown checks SIGTERM, SIGINT and repeated signals against the actual
+source diagnostic. Each interruption drains that diagnostic, releases the runner
+and process group, rejects the next component and publishes no final acceptance.
+The diagnostic verifies successful DSH source-closure output independently of its
+current file count. Three cases pass at
+`.local/work/complete-foundation-cpu-shutdown-20261013/acceptance.json`.
+No model, simulator, policy control or GPU executes in these scopes.
+
 `tools/src/extension-definition.ts` owns trusted extension factory assembly.
 Each factory receives a detached assignment after logical/core binding admission;
 its native definition must carry the selected name and retains its identity.

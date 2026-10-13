@@ -17,6 +17,19 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+The unified configured CPU campaign passes at `348a06d` with forty-two components,
+1,559 cases, 892 independently checked source/input comparisons and 180 exact-commit
+production/checker files. Native core/extension tools and configured task plans
+join the same process ownership and publication rules as the physical-facing
+diagnostics. Original records/images remain unchanged and all forty-two groups
+release. Independent readers preserve 338 retry events across 22 native Sessions;
+fifteen previously executed installed policy processor files match this source.
+Three actual campaign-interruption cases verify drained source checks and released
+runners with no next component or final acceptance publication. These scopes execute
+no model, simulator, policy control or GPU. Evidence:
+`.local/work/complete-foundation-cpu-20261013/independently-verified.json` and
+`.local/work/complete-foundation-cpu-shutdown-20261013/acceptance.json`.
+
 Trusted extension factories use detached assignment inputs and matching logical/
 native names through `tools/src/extension-definition.ts`. Actual CPU checks pass
 fifteen core cases and nineteen extension cases, including independent DSH scopes,

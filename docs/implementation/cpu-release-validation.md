@@ -11,12 +11,12 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
-| Configured production campaign | `88f1099`: 40 components, 1,508 cases, 858 independently inspected source/input comparisons, 157 exact-commit production/checker files and 40 released diagnostic process groups |
+| Configured production campaign | `348a06d`: 42 components, 1,559 cases, 892 independently inspected source/input comparisons, 180 exact-commit production/checker files and 42 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
 | Latest Ubuntu source/installation CI | `f7d27e1`, run `38383628510`: 97 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 95 independently checked exact-commit source comparisons |
 | Trusted extension factory assembly | `f7d27e1` on macOS, isolated Linux and Ubuntu CI: twenty exact-source identities, fifteen core cases, nineteen extension cases and ten matching native outcomes per platform; private journals preserve committed file contents and release writers |
 | Native tool names and extension admission | `0a341d6` on macOS and isolated Linux: 47 helper/Team-loader cases, ten authored Teams, 28 original-configuration cases, seven native scope/dispatch checks and fifteen core tool cases; original inputs and canonical server changes remain unchanged |
-| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `88f1099` |
+| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `348a06d` without processor reruns |
 | Native Console port admission | `88f1099` on macOS and isolated Linux: 81 cases and 81 independently repeated reads per platform, 66 declared JSON derivatives and 15 source identities; all outcomes match, original bindings remain unchanged and the server checkout is preserved |
 | GPT profile configuration | `b69d927`: 60 declared original-profile derivatives cover modes, demonstration metadata, gateway ports and worker endpoints; 46 reject and 14 admit with unchanged original bindings |
 | Selected GPT file preparation | `8c75a65` on macOS and isolated Linux: 33 cases and 28 independently repeated file checks per platform, 22 source identities, 31 declared configuration derivatives and 15 stored-image fields; eleven macOS and ten Linux production files match the commit, and actual Console process/listener/writer ownership releases |
@@ -736,6 +736,22 @@ task-plan storage diagnostic in every configuration. They use the same declared
 output directory, process-group ownership, source hashing and final publication
 rules as policy, transport, perception and Console checks. Private local journals
 and native Session scopes require no model or simulator allocation.
+
+Source `348a06d` passes the complete configured forty-two-component campaign,
+including all 1,559 cases, 892 independently inspected source/input comparisons
+and 180 exact-commit production/checker files. All diagnostic process groups and
+journal writers release, with original records/images unchanged. Independent
+retry inspection preserves all 338 event bodies in 22 native Sessions. Fifteen
+previously executed installed processor files match this source; no SDK/model
+rerun occurs. Evidence: `.local/work/complete-foundation-cpu-20261013/`,
+`.local/work/complete-foundation-native-retries-independent-20261013.json` and
+`.local/work/current-sdk-foundation-source-20261013.json`.
+
+The shutdown diagnostic admits successful source-closure output independently
+of the selected DSH file count. Its three actual SIGTERM/SIGINT/repeated-signal
+cases drain source checking, reject the next component, publish no final
+acceptance and confirm runner/process-group release. Evidence:
+`.local/work/complete-foundation-cpu-shutdown-20261013/acceptance.json`.
 
 Each diagnostic runs asynchronously in its own POSIX process group. A normally
 completed component publishes `<component>.process.json` with the actual PID,
