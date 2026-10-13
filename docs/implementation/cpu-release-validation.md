@@ -3265,6 +3265,70 @@ Evidence: `.local/work/ci-depth-calibrations-inspection-20261012.json`,
 `.local/work/ci-depth-calibrations-native-independent-20261012.json` and
 `.local/work/depth-calibration-cpu-campaign-20261012/committed-source-verification.json`.
 
+## Native policy gateway configuration
+
+`apps/server/src/native-deployment-configuration.mjs` validates the optional
+RoboDojo direct/hybrid `policyGatewayPort` during configuration loading, before
+managed-service acquisition or gateway/worker allocation. Supplied values must
+be integers between 0 and 65535. Omission and zero select an ephemeral gateway
+port. `native-policy-environment.mjs` retains gateway, independent DSH host,
+native worker, audit and confirmed cleanup ownership.
+
+An original Astra direct profile passes twelve declared runtime configuration
+derivatives through the production reader. Explicit `null`, arrays, objects,
+text, booleans, negative values, fractional values and values above the TCP port
+range reject. The original port, omission, zero and 65535 admit. Independent
+production readers compare every derivative with its original configuration,
+repeat the exact Zod rejection issues and preserve complete model, Team, worker,
+checkpoint and managed-service bindings. Four production source digests and both
+original configuration/model files remain unchanged. This scope starts no
+gateway, model service, native worker, simulator or GPU job. Evidence:
+`.local/work/native-gpt-profile-admission-20261013/independently-verified.json`.
+Allocated direct/hybrid tasks and selected endpoint connectivity retain their
+native acceptance requirements.
+
+The same configuration-reader source passes the complete thirty-nine-component
+configured CPU campaign and 1,394 cases. Independent inspection matches 737
+source/input comparisons, unchanged original journals/images and thirty-nine
+released diagnostic process groups. The camera component repeats sixty-six
+cases and twenty-two declared configuration derivatives with released writers.
+Evidence:
+`.local/work/native-gpt-configuration-cpu-campaign-20261013/independently-verified.json`
+and its `depth-calibrations/independently-verified.json`.
+
+## Current installed policy processors
+
+The production [processor diagnostic](../../scripts/check-policy-processors-offline.py)
+reads original requests and actual checkpoint preprocessing in isolated installed
+SDK environments. Select `--provider` from `robotwin`, `robocasa`, `behavior` and
+`robodojo`; supply the original record configuration through `--configuration`.
+RoboTwin requires its saved checkpoint and tokenizer; GR00T providers require
+their selected checkpoint. RoboDojo prepares the actual OpenPI codec without
+allocating a policy network.
+
+On 2026-10-13, clean isolated Linux source `5b26a5a` passes seventy-two CPU cases
+on forty-six original requests: RoboTwin 7/21, RoboCasa 24/30, BEHAVIOR 3/9 and
+RoboDojo 12/12 requests/cases. LeRobot 0.6.1 and GR00T/OpenPI 0.1.0 retain their
+actual checkpoint/SDK sources. CUDA stays uninitialized, model allocations/calls
+and physical controls remain zero. Invalid prepared-input derivatives reject
+before model inference. Canonical server changes remain unchanged.
+
+Independent remote inspection verifies 418 original input/checkpoint/SDK/source
+identities and release of all four diagnostic process groups and the runner.
+Fifteen loaded production/checker files match the current source. Local archive
+inspection matches every provider report and all 282 prepared tensor/codec
+metadata fields against their saved original processor records: request and
+observation identities, instruction digest, tensor paths/shapes/types/digests,
+and RoboDojo packed byte count/digest. Mapping fields are compared by their
+exact tensor paths; indexed image order remains part of those paths.
+The archive SHA256 is
+`4e62d37123b915726330c07e4c326c8cfd54b5fd5fcc3d50296d949f5597f906`.
+Evidence:
+`.local/work/current-sdk-cpu-linux-20261013-verified/independently-verified.json`.
+These checks establish original-request preparation, source identity and CPU
+process ownership. Current loaded-policy and complete native task behavior retain
+their separate release requirements.
+
 ## Required native release evidence
 
 Current-code multi-goal task execution, native stop/timeout races, policy/model

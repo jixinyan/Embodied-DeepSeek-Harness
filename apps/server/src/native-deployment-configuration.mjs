@@ -225,6 +225,7 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
         );
     }
     if (provider === 'robodojo' && mode !== 'policy') {
+      z.number().int().min(0).max(65535).optional().parse(entry.policyGatewayPort);
       const binding = modelConfiguration.models[entry.policyModel ?? defaultModel];
       if (!binding || binding.model !== 'gpt-6-astra')
         throw new Error('RoboDojo GPT policy requires the selected GPT-6 Astra binding.');

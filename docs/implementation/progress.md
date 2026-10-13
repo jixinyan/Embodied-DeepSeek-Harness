@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.149 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.150 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,35 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Native direct/hybrid configuration admits `policyGatewayPort` before managed
+services or the gateway/worker can allocate. Twelve declared port derivatives of
+an original Astra direct profile pass independent production-reader inspection:
+eight invalid values reject and four admitted values preserve exact model, Team,
+worker, checkpoint and service bindings. Original configuration/model bytes
+remain unchanged. Gateway, model, worker, simulator and GPU allocations remain
+zero. Evidence:
+`.local/work/native-gpt-profile-admission-20261013/independently-verified.json`.
+See [gateway admission](cpu-release-validation.md#native-policy-gateway-configuration).
+
+The complete configured CPU campaign passes thirty-nine components and 1,394
+cases on the same configuration-reader source. Independent inspection matches
+737 source/input comparisons, unchanged original journals/images and all
+thirty-nine released diagnostic process groups. Calibration inspection repeats
+all sixty-six cases and twenty-two declared configuration derivatives. Evidence:
+`.local/work/native-gpt-configuration-cpu-campaign-20261013/independently-verified.json`.
+
+Actual installed Linux processors separately pass seventy-two checks on forty-six
+original requests across RoboTwin, RoboCasa, BEHAVIOR and RoboDojo. Execution uses
+an isolated clean checkout at `5b26a5a`; fifteen loaded production/checker files
+match the current source. Independent remote inspection verifies 418 source
+identities; local inspection preserves all 282 prepared tensor/codec metadata
+fields against their original saved processor records. Four diagnostic process
+groups and the runner release, canonical server changes remain unchanged and
+CUDA remains uninitialized. No policy network, inference, simulator or controls
+allocate. Evidence:
+`.local/work/current-sdk-cpu-linux-20261013-verified/independently-verified.json`.
+See [installed processor inspection](cpu-release-validation.md#current-installed-policy-processors).
 
 Camera-bank configuration loading admits an omitted field as an empty default
 and rejects explicit `null`, arrays and text. Empty `{}` remains valid at both

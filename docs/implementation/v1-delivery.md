@@ -17,6 +17,27 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Direct/hybrid gateway port admission occurs during configuration loading before
+managed-service acquisition. An original Astra direct profile passes twelve
+declared port cases with exact original model/Team/worker/checkpoint/service
+bindings: eight invalid values reject and four valid values admit. Independent
+production readers preserve original source files and allocate no native resource.
+The same source passes the full configured thirty-nine-component CPU campaign,
+1,394 cases and 737 independently matched source/input comparisons, with all
+diagnostic process groups and writers released. Evidence:
+`.local/work/native-gpt-profile-admission-20261013/independently-verified.json`
+and `.local/work/native-gpt-configuration-cpu-campaign-20261013/independently-verified.json`.
+
+Current Linux installed processors pass seventy-two CPU checks on forty-six
+original four-provider requests, with 418 original/source identities and 282
+prepared tensor/codec metadata fields independently verified. The isolated source
+checkout is `5b26a5a`; fifteen loaded production/checker files match the current
+source. Original sources and canonical server changes remain unchanged, all
+diagnostic processes release and CUDA remains uninitialized. This inspection
+performs no network allocation, model inference, simulator or physical controls.
+Evidence: `.local/work/current-sdk-cpu-linux-20261013-verified/independently-verified.json`.
+See [installed processor scope](cpu-release-validation.md#current-installed-policy-processors).
+
 Camera-bank loading and propagation pass sixty-six CPU cases across four
 configured providers and the idle production HTTP server. Omitted top-level
 banks and explicit empty banks are admitted; explicit `null`, arrays and text

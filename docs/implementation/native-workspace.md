@@ -16,6 +16,12 @@ gateway, audit and host lifetime. The original deployment entry assembles model,
 perception and profile factories, manages service leases and preserves its
 configuration/root exports. The workspace uses that same entry for each provider.
 
+RoboDojo direct/hybrid profiles may supply `policyGatewayPort` as an integer
+between 0 and 65535. Omission or zero selects an ephemeral port. Invalid values
+reject during configuration loading before managed-service acquisition or
+gateway/worker allocation. The environment owns the selected gateway and its
+independent DSH host until confirmed cleanup.
+
 Create an actual workspace JSON, for example `.local/native-workspace.json`:
 
 ```json
