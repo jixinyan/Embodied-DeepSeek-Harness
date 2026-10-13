@@ -12,7 +12,20 @@ Session admission.
 | --- | --- | --- | --- | --- |
 | macOS arm64 | 25.4.0 | 11.19.0 | 3.14.0 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, packaged Desktop selectors and two service shutdown cycles |
 | Linux x64 | 24.21.0 | 11.19.0 | 3.12.14 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, Linux Desktop packaging and headless Wayland/Pixman window/selector/shutdown checks |
-| GitHub Ubuntu 24.04 x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh fourteen-distribution installation manifest, complete source checks, seven SKILL document/metadata tests and 104 watchdog/device-owner/Session-resource/Worker-transport/native DSH tool/task-plan/model-retry cases |
+| GitHub Ubuntu 24.04 x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh fourteen-distribution installation manifest, complete source checks, seven SKILL document/metadata tests and 118 perception-startup/watchdog/device-owner/Session-resource/Worker-transport/native DSH tool/task-plan/model-retry cases |
+
+Current perception-listener source `22e799a` passes forty-six macOS CPU components,
+1,640 cases, 1,038 independent source/input/link comparisons and 198 committed files.
+All diagnostic process groups release. Fourteen actual SAM/YOLO startup cases match
+on macOS and isolated Linux; six committed-source comparisons preserve original
+model/request processing and Uvicorn configuration. The installed model environments
+use Uvicorn 0.54.0, whose Config/Server socket APIs were inspected without model
+allocation. Linux confirms fifteen released runner/diagnostic processes and
+preserved canonical changes. CI `38429663545` passes source/installation checks,
+118 runtime cases and three-platform Team admission. Downloaded artifacts verify
+fourteen distributions/import origins, 49 inputs and 105 source comparisons.
+Evidence: `.local/work/perception-listener-platforms-independent-20261013.json`
+and `.local/work/ci-perception-listener-consolidated-independent-20261013.json`.
 
 The base CPU dependency versions are in
 [constraints.txt](../../harness/physical-runtime/constraints.txt). Source setup

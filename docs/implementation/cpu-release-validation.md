@@ -11,17 +11,19 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
+| Perception initialization ownership | `22e799a` on macOS and isolated Linux: fourteen actual argument/listener/import-failure outcomes, six committed-source comparisons, preserved model/handler/configuration bodies and fifteen released Linux runner/diagnostic processes; no SDK/model allocation |
+| Watchdog thread ownership | `90c1dba` on macOS and isolated Linux: seven actual lifecycle/thread/OS-lease outcomes, six committed-source comparisons and preserved monitor/constructor/signature behavior; all threads and the Linux runner release |
 | Policy initialization ownership | `1c632ba` on macOS and isolated Linux: 62 matching policy startup/reservation cases, three matching actual Console startup cases, 29 exact-commit files, fifteen captured Console source/input files and released runners; complete source checks pass without allocation |
 | Native environment construction | `5e737fd` on macOS and isolated Linux: 23 matching actual factory checks, nine exact-commit sources, eighteen raw inputs and two independent uninitialized RoboDojo adapters per platform; complete source checks pass with no allocation |
 | Team file admission | `1c7a85d` on local macOS and CI Linux/macOS/Windows: 23 actual authored-Team load checks per platform, 20 source identities, 51 input files, two native directory links and six complete authored role snapshots; independent artifact inspection passes without allocation |
 | Role document admission | `0818111` on macOS and isolated Linux: all ten complete Team snapshots match the captured checkpoint and each other; 25 actual FileTeamLoader document cases verify ten source identities and fifty derivative files per platform without allocation |
-| Configured production campaign | `1c632ba`: 45 components, 1,623 cases, 1,030 independently inspected source/input/link comparisons, 196 exact-commit production/checker/package files and 45 released diagnostic process groups |
+| Configured production campaign | `22e799a`: 46 components, 1,640 cases, 1,038 independently inspected source/input/link comparisons, 198 exact-commit production/checker/package files and 46 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `1c632ba`, run `38415631866`: 97 production runtime cases, fourteen distributions, fourteen imports, 41 input identities and 99 independently checked exact-commit source comparisons |
+| Latest Ubuntu source/installation CI | `22e799a`, run `38429663545`: 118 production runtime cases, fourteen distributions, fourteen imports, 49 input identities and 105 independently checked exact-commit source comparisons |
 | Configured package entry ownership | `0818111` on macOS and isolated Linux: actual `pnpm start` and `pnpm demo`, nineteen source/input identities per platform, compatible native profiles, empty Sessions and idle provider services; both process groups, listeners and journal writers release |
 | Trusted extension factory assembly | `f7d27e1` on macOS, isolated Linux and Ubuntu CI: twenty exact-source identities, fifteen core cases, nineteen extension cases and ten matching native outcomes per platform; private journals preserve committed file contents and release writers |
 | Native tool names and extension admission | `0a341d6` on macOS and isolated Linux: 47 helper/Team-loader cases, ten authored Teams, 28 original-configuration cases, seven native scope/dispatch checks and fifteen core tool cases; original inputs and canonical server changes remain unchanged |
-| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `1c632ba` without processor reruns |
+| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `22e799a` without processor reruns |
 | Native Console port admission | `88f1099` on macOS and isolated Linux: 81 cases and 81 independently repeated reads per platform, 66 declared JSON derivatives and 15 source identities; all outcomes match, original bindings remain unchanged and the server checkout is preserved |
 | GPT profile configuration | `b69d927`: 60 declared original-profile derivatives cover modes, demonstration metadata, gateway ports and worker endpoints; 46 reject and 14 admit with unchanged original bindings |
 | Selected GPT file preparation | `8c75a65` on macOS and isolated Linux: 33 cases and 28 independently repeated file checks per platform, 22 source identities, 31 declared configuration derivatives and 15 stored-image fields; eleven macOS and ten Linux production files match the commit, and actual Console process/listener/writer ownership releases |
@@ -3124,6 +3126,18 @@ and Uvicorn application/configuration values. Full source checks compile 75 Pyth
 files and 58 diagnostics, import 30 base modules and validate the source map.
 Evidence: `.local/work/perception-listener-foundation-cpu-20261013/independently-verified.json`
 and `.local/work/perception-listener-source-preservation-20261013.json`.
+All 198 committed campaign files match `22e799a`. The same fourteen actual startup
+outcomes pass on isolated Linux. Independent inspection repeats six committed-source
+comparisons across both platforms and confirms fifteen released runner/diagnostic
+processes, clean isolated source and preserved canonical server changes.
+CI `38429663545` passes full source/installation checks, 118 runtime cases and the
+Linux/macOS/Windows Team admission matrix. Downloaded artifacts independently match
+fourteen distributions/import origins, 49 inputs, 105 committed-source comparisons
+and all seven consolidated evidence fields. Fifteen previously executed policy
+processor files remain unchanged without reruns. Evidence:
+`.local/work/perception-listener-platforms-independent-20261013.json`,
+`.local/work/ci-perception-listener-consolidated-independent-20261013.json` and
+`.local/work/current-sdk-perception-listener-source-20261013.json`.
 Loaded model startup and original segmentation/depth results require native acceptance.
 
 Standalone SAM3.1 and YOLO26 service CLIs handle argument help, required fields and

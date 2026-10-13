@@ -61,7 +61,20 @@ Complete source checks pass with 75 compiled Python files, 30 base imports and
 Evidence:
 `.local/work/perception-listener-foundation-cpu-20261013/independently-verified.json`
 and `.local/work/perception-listener-source-preservation-20261013.json`.
-Linux/current CI and loaded model service acceptance retain their required scopes.
+Exact source `22e799a` matches all 198 committed campaign files. The same fourteen
+startup outcomes pass on isolated Linux, with six committed-source comparisons
+across both platforms and fifteen released runner/diagnostic processes. Isolated
+source stays clean and canonical server changes remain unchanged. CI `38429663545`
+passes complete source/installation checks, 118 runtime cases and the three-platform
+Team admission matrix. Downloaded artifacts independently match fourteen
+distributions/import origins, 49 inputs, 105 committed-source comparisons and all
+seven consolidated evidence fields. The fifteen previously executed policy
+processor files remain unchanged without reruns. Evidence:
+`.local/work/perception-listener-foundation-cpu-20261013/committed-source-verification.json`,
+`.local/work/perception-listener-platforms-independent-20261013.json`,
+`.local/work/ci-perception-listener-consolidated-independent-20261013.json` and
+`.local/work/current-sdk-perception-listener-source-20261013.json`.
+Loaded model service startup, requests and complete native tasks retain their release gates.
 
 ExecutionWatchdog serializes startup/disarming and joins only its started thread.
 Early and repeated close create no thread, closed startup rejects, and same-thread

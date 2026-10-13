@@ -72,6 +72,13 @@ source comparisons. The same command
 verifies downloaded artifacts locally. Different-source,
 optimized-Python and existing-output invocations terminate before publication.
 
+Actual run `38429663545` at `22e799a` passes source/installation checks, all 118
+runtime cases and Team file admission on Linux, macOS and Windows. Downloaded
+artifacts independently match fourteen distributions/import origins, 49 input
+digests, 105 exact-source comparisons and all seven consolidated fields. The
+checker identity and original input hashes match. Evidence:
+`.local/work/ci-perception-listener-consolidated-independent-20261013.json`.
+
 Actual run `38426518253` at `90c1dba` passes complete source/installation checks,
 all 104 runtime cases and Team file admission on Linux, macOS and Windows.
 Downloaded artifacts independently match fourteen distributions/import origins,

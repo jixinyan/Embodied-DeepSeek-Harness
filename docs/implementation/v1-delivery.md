@@ -17,6 +17,21 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+SAM3.1 and YOLO26 own their loopback listener before SDK/model startup and pass
+that original socket to the native Uvicorn Server. Fourteen actual startup cases
+match across macOS and isolated Linux. The configured CPU campaign at `22e799a`
+passes forty-six components, 1,640 cases, 1,038 independent source/input/link
+comparisons and 198 committed files, with released diagnostic groups. CI
+`38429663545` passes source/installation checks, 118 runtime cases and three-platform
+Team file admission. Downloaded artifacts independently verify 49 inputs and
+105 exact-source comparisons. Original model/request processing and the independent
+SAM MIT scope remain unchanged; fifteen Linux runner/diagnostic processes release
+and canonical server changes remain unchanged. Evidence:
+`.local/work/perception-listener-foundation-cpu-20261013/independently-verified.json`,
+`.local/work/perception-listener-platforms-independent-20261013.json` and
+`.local/work/ci-perception-listener-consolidated-independent-20261013.json`.
+Loaded service and complete native task acceptance retain their release gates.
+
 ExecutionWatchdog serializes thread startup and disarming. Seven actual
 early/active/concurrent-close, repeated-start, deadline, lease-loss and same-thread
 cases pass on macOS and isolated Linux, with released threads and OS leases.
