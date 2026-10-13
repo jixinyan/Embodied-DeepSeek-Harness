@@ -3176,6 +3176,9 @@ native allocation. Evidence:
 and deployment preparation resolve each profile's default or explicit complete
 bank. UpperRun snapshots the selected Session bank for YOLO requests. Banks and
 individual camera values are detached and immutable, with a null-prototype bank.
+Only an omitted deployment field selects an empty default. Explicit `null`,
+arrays and text reject during configuration loading at deployment and profile
+scope. An explicit `{}` remains a valid complete empty bank.
 The native configuration digest retains these bindings, and public launch metadata
 keeps them private. Shared SAM/YOLO endpoints can serve different profile banks.
 
@@ -3197,6 +3200,29 @@ through the actual native factories and `prepareDeployment`. The production idle
 HTTP server preserves profile/checkpoint/model metadata, excludes private banks,
 keeps services idle and closes its listener and journal writer. Invalid calibration
 values reject and caller mutation preserves prepared snapshots.
+
+The four-provider diagnostic passes sixty-six cases. Its
+`configurationAdmissions` manifest records twenty-two declared runtime JSON
+derivatives, each original configuration path, derivative digest and exact
+Zod rejection issues when applicable. Thirteen invalid banks reject; nine
+omitted/empty banks preserve exact worker, checkpoint, model and service
+bindings. Independent production readers repeat these outcomes and compare
+each derivative with its original configuration after only the declared bank
+change. Eighteen original/source identities match; both original camera values
+and the reopened empty journal remain unchanged. Writers/listeners release and
+native allocations remain zero. Evidence:
+`.local/work/calibration-configuration-admission-20261013/independently-verified.json`.
+
+The complete configured campaign passes thirty-nine components and 1,394 cases.
+Independent inspection matches 737 source/input comparisons, all thirty-nine
+released diagnostic process groups, unchanged original journals/images and
+released writers. The calibration component's twenty-two derivative files also
+match their source configurations through independent production readers.
+Separate NumPy/Pillow inspection checks forty source identities, fifteen PNG
+checks and forty-eight depth-statistic fields. Native allocations remain zero.
+Evidence: `.local/work/calibration-configuration-cpu-campaign-20261013/independently-verified.json`,
+its `depth-calibrations/independently-verified.json` and
+`.local/work/calibration-perception-independent-20261013.json`.
 
 The configured four-provider check passes 44 cases with original RoboCasa and
 RoboDojo camera values. Evidence:

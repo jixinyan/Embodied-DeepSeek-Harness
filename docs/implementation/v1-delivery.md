@@ -1,6 +1,6 @@
 # v1 delivery and acceptance
 
-Updated: 2026-10-12. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
+Updated: 2026-10-13. Native Qwen/Pi0.5 RoboTwin retained-scene retry and
 RoboDojo task success, real SAM/YOLO tool calls and source-bound RoboCasa RGB-D
 geometry are verified. Reusable native factories, complete retention bindings,
 packaged Desktop lifecycle and selected DSH recovery/JSON portability have production
@@ -16,6 +16,25 @@ checkpoint or successful simulator reset does not complete a capability. Each ro
 below needs an implementation, executable checks and retained acceptance evidence.
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
+
+Camera-bank loading and propagation pass sixty-six CPU cases across four
+configured providers and the idle production HTTP server. Omitted top-level
+banks and explicit empty banks are admitted; explicit `null`, arrays and text
+reject before provider allocation. Independent inspection verifies twenty-two
+declared configuration derivatives, all eighteen original/source identities and
+unchanged worker/checkpoint/model/service bindings. Original camera values and
+the reopened empty journal remain unchanged, with released writers/listeners and
+zero native allocation. Evidence:
+`.local/work/calibration-configuration-admission-20261013/independently-verified.json`.
+
+The same source passes the complete thirty-nine-component CPU campaign and
+1,394 cases, with 737 independent source/input comparisons and thirty-nine
+released diagnostic process groups. Original model outputs, tool calls, image
+contexts and source files remain unchanged; all writers release. Separate
+NumPy/Pillow inspection verifies forty source identities, fifteen PNG checks
+and forty-eight depth-statistic fields. No native allocation occurs. Evidence:
+`.local/work/calibration-configuration-cpu-campaign-20261013/independently-verified.json`
+and `.local/work/calibration-perception-independent-20261013.json`.
 
 Native configuration admission, policy/environment lifetime and deployment
 assembly have explicit source files. TypeScript parser/printer comparison

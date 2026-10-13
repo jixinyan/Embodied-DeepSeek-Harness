@@ -91,6 +91,8 @@ validation.
 
 The field may appear at the provider configuration's top level and on its native
 profile entries. An omitted profile field inherits that provider's default.
+An omitted top-level field supplies an empty default. Explicit `null`, arrays
+and text reject during configuration loading at either location.
 A supplied bank replaces the complete default bank. An explicit `{}` supplies
 no intrinsic projection metadata. In RoboDojo, each entry under `profiles` can
 declare its own bank. Other providers retain their worker/profile entry location

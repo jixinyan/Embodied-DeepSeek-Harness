@@ -70,6 +70,8 @@ for every provider; optional `depthIntrinsicsByCamera` retains each camera's
 declared calibration. A profile may supply its own complete bank, with omission
 inheriting the deployment default and `{}` selecting an empty bank. Banks are
 admitted and frozen during loading/preparation and remain private to each profile.
+An omitted top-level bank supplies an empty default; explicit `null`, arrays and
+text reject during loading at deployment and profile scope.
 One workspace can share SAM/YOLO endpoints across different camera banks. See
 [profile camera calibrations](../../docs/implementation/native-workspace.md#profile-camera-calibrations).
 Select a Team with its advertised tools when using depth.

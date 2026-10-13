@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
-import { parseArgs } from 'node:util';
+import { isDeepStrictEqual, parseArgs } from 'node:util';
+import { ZodError } from 'zod';
 import { admitDepthIntrinsicsByCamera } from '@edh/perception';
 import { startServer } from '../apps/server/src/index.ts';
 import { prepareDeployment } from '../apps/server/src/deployment.ts';
+import { readNativeDeploymentConfiguration } from '../apps/server/src/native-deployment.mjs';
 import {
   readNativeWorkspaceConfiguration,
   createNativeWorkspaceFactory,
@@ -129,6 +131,87 @@ for (const { id, settings: deployment } of settings.deployments)
     assert.deepEqual(Object.entries(deployment.depthIntrinsicsByCamera), Object.entries(expected));
     assert(Object.isFrozen(deployment.depthIntrinsicsByCamera));
   });
+const configurationAdmissions = [];
+const configurationDirectory = resolve(output, 'configuration-admissions');
+await mkdir(configurationDirectory);
+const modelConfiguration = resolve(dirname(configurationPath), configuration.modelConfiguration);
+for (const { id, settings: deployment } of settings.deployments) {
+  const originalPath = resolve(
+    dirname(configurationPath),
+    configuration.deployments[id].configuration,
+  );
+  const variants = [
+    ['null-bank', null, false],
+    ['array-bank', [], false],
+    ['text-bank', 'invalid', false],
+    ['empty-bank', {}, true],
+    ['omitted-bank', undefined, true],
+  ];
+  if (deployment.provider === 'robodojo')
+    variants.push(['null-profile-bank', null, false], ['empty-profile-bank', {}, true]);
+  for (const [name, bank, accepted] of variants) {
+    const derivative = structuredClone(deployment.config);
+    const profileId = name.includes('profile') ? Object.keys(derivative.profiles)[0] : undefined;
+    const owner = profileId === undefined ? derivative : derivative.profiles[profileId];
+    if (bank === undefined) delete owner.depthIntrinsicsByCamera;
+    else owner.depthIntrinsicsByCamera = bank;
+    const path = resolve(configurationDirectory, `${id}.${name}.json`);
+    const bytes = `${JSON.stringify(derivative, null, 2)}\n`;
+    await writeFile(path, bytes, { flag: 'wx' });
+    const operation = readNativeDeploymentConfiguration(deployment.provider, {
+      ...process.env,
+      EDH_MODEL_CONFIG: modelConfiguration,
+      [deployment.selected.variable]: path,
+    });
+    let rejection;
+    if (accepted) {
+      const decoded = await operation;
+      const selected =
+        profileId === undefined
+          ? decoded.depthIntrinsicsByCamera
+          : Object.values(decoded.profiles).find((profile) =>
+              isDeepStrictEqual(profile.entry, decoded.config.profiles[profileId]),
+            ).depthIntrinsicsByCamera;
+      assert.deepEqual(Object.keys(selected), []);
+      assert(Object.isFrozen(selected));
+      assert.equal(decoded.provider, deployment.provider);
+      assert.deepEqual(Object.keys(decoded.profiles), Object.keys(deployment.profiles));
+      for (const key of Object.keys(decoded.profiles)) {
+        const current = decoded.profiles[key];
+        const original = deployment.profiles[key];
+        for (const field of [
+          'worker',
+          'checkpoint',
+          'checkpointSha256',
+          'plannerModel',
+          'mode',
+          'serviceIds',
+        ])
+          assert.deepEqual(current[field], original[field]);
+      }
+    } else {
+      await assert.rejects(operation, (error) => {
+        assert(error instanceof ZodError);
+        assert(error.issues.length > 0);
+        rejection = { name: error.name, issues: error.issues };
+        return true;
+      });
+    }
+    assert.equal(hash(await readFile(path)), hash(bytes));
+    configurationAdmissions.push({
+      name,
+      group: id,
+      provider: deployment.provider,
+      originalPath,
+      path,
+      sha256: hash(bytes),
+      ...(profileId === undefined ? {} : { profileId }),
+      accepted,
+      ...(rejection === undefined ? {} : { rejection }),
+    });
+    cases.push({ name: `configuration-${id}-${name}`, passed: true });
+  }
+}
 let prepared;
 let input;
 let ids;
@@ -291,6 +374,7 @@ const report = {
   implementation,
   sources: Array.from(sources, ([path, sha256]) => ({ path, sha256 })),
   calibrations,
+  configurationAdmissions,
   cases,
   profiles: ids,
   originalSourcesUnchanged: true,

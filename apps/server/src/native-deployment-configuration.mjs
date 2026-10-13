@@ -122,7 +122,7 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
   z.string().url().optional().parse(segmentationURL);
   z.string().url().optional().parse(config.depthURL);
   const depthIntrinsicsByCamera = admitDepthIntrinsicsByCamera(
-    config.depthIntrinsicsByCamera ?? {},
+    config.depthIntrinsicsByCamera === undefined ? {} : config.depthIntrinsicsByCamera,
   );
   const teamFile = resolve(
     nativeDeploymentRoot,

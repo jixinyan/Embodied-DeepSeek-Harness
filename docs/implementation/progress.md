@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-12 · Spec v1.148 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.149 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,28 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Camera-bank configuration loading admits an omitted field as an empty default
+and rejects explicit `null`, arrays and text. Empty `{}` remains valid at both
+deployment and profile scope. Sixty-six CPU cases pass through all four actual
+provider configurations and the idle production HTTP server. Independent
+inspection verifies twenty-two declared configuration derivatives: thirteen
+rejections and nine accepted defaults/empty banks. Exact worker, checkpoint,
+model and service bindings remain unchanged. Eighteen original/source identities
+match, both original camera values remain exact, the empty journal reopens
+unchanged and all writers/listeners release. No model, simulator or GPU allocates.
+Evidence: `.local/work/calibration-configuration-admission-20261013/independently-verified.json`.
+See [camera-bank admission](cpu-release-validation.md#profile-camera-calibration-admission).
+
+The complete configured CPU campaign passes thirty-nine components and 1,394
+cases. Independent inspection verifies 737 source/input comparisons and all
+thirty-nine released diagnostic process groups. Original journals preserve
+sixty-nine model outputs, seventy tool calls and both model-image contexts;
+all source images remain unchanged. Separate NumPy/Pillow inspection matches
+forty source identities, fifteen PNG checks and forty-eight depth-statistic
+fields. Writers release and native allocations remain zero. Evidence:
+`.local/work/calibration-configuration-cpu-campaign-20261013/independently-verified.json`
+and `.local/work/calibration-perception-independent-20261013.json`.
 
 Native configuration, execution-environment lifetime and deployment assembly have
 explicit source owners. `native-deployment-configuration.mjs` owns provider,
