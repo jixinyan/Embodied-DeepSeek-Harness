@@ -58,6 +58,39 @@ Model-retry and package-startup diagnostics also capture the role document reade
 as a production source input. Their evidence inspection admits the complete
 recorded source set before assessing native journal or Console ownership.
 
+Exact source `0818111` passes the complete configured CPU campaign: forty-three
+components, 1,561 cases, 915 independently inspected source/input comparisons and
+184 distinct committed production/checker/package files. All forty-three diagnostic
+groups release; original journals and images remain unchanged. The retry reader
+preserves 338 durable events across 22 independent native Sessions and 56 genuine
+failed connections, checking thirty-seven source identities, eight pending-history
+releases and eighteen invalid payloads. Three campaign interruption cases drain
+their owned processes without admitting a later component or publishing final
+acceptance. Evidence:
+`.local/work/role-documents-foundation-cpu-20261013/independently-verified.json`,
+`.local/work/role-documents-foundation-cpu-20261013/committed-source-verification.json`,
+`.local/work/role-documents-native-retries-independent-20261013.json` and
+`.local/work/role-documents-cpu-shutdown-20261013/acceptance.json`.
+
+macOS and isolated Linux repeat all twenty-five role document cases, ten source
+identities and fifty derivative file checks per platform. All ten complete Team
+snapshots and every role-file outcome match the captured checkpoint and each other.
+Actual `pnpm start` and `pnpm demo` release both groups, listeners and journal
+writers on both platforms. Nineteen startup source/input identities per platform
+match their recorded bytes; independent readers preserve the empty startup journals.
+The actual Linux runner releases, isolated source remains clean and canonical
+server changes remain unchanged. Evidence:
+`.local/work/role-documents-platforms-independent-20261013.json` and
+`.local/work/role-documents-linux-receipt-20261013-02/entries-independent.json`.
+
+Ubuntu CI `38393263998` at the same source passes fresh installation, full source
+checks and 97 production runtime cases. Downloaded artifacts verify fourteen
+distributions, thirteen imports, 41 input identities and 96 exact-source comparisons.
+The fifteen previously executed policy-processor sources match this source without
+processor reruns. All current scopes allocate zero models, simulators and GPUs.
+Evidence: `.local/work/ci-role-document-inspection-20261013.json` and
+`.local/work/current-sdk-role-document-source-20261013.json`.
+
 `pnpm start` and `pnpm demo` invoke the same configured native workspace entry.
 Application assembly remains in `apps/server/`; existing unit-test model/backend/
 deployment helpers belong to `tests/support/`. Runtime unit-test imports,

@@ -17,18 +17,30 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
-The unified configured CPU campaign passes at `348a06d` with forty-two components,
-1,559 cases, 892 independently checked source/input comparisons and 180 exact-commit
-production/checker files. Native core/extension tools and configured task plans
+The unified configured CPU campaign passes at `0818111` with forty-three components,
+1,561 cases, 915 independently checked source/input comparisons and 184 exact-commit
+production/checker/package files. Native core/extension tools and configured task plans
 join the same process ownership and publication rules as the physical-facing
-diagnostics. Original records/images remain unchanged and all forty-two groups
+diagnostics. Original records/images remain unchanged and all forty-three groups
 release. Independent readers preserve 338 retry events across 22 native Sessions;
 fifteen previously executed installed policy processor files match this source.
 Three actual campaign-interruption cases verify drained source checks and released
 runners with no next component or final acceptance publication. These scopes execute
 no model, simulator, policy control or GPU. Evidence:
-`.local/work/complete-foundation-cpu-20261013/independently-verified.json` and
-`.local/work/complete-foundation-cpu-shutdown-20261013/acceptance.json`.
+`.local/work/role-documents-foundation-cpu-20261013/independently-verified.json` and
+`.local/work/role-documents-cpu-shutdown-20261013/acceptance.json`.
+
+The installed mdast/micromark frontmatter extensions read Role documents with
+strict YAML/schema admission and preserved Markdown instructions. macOS and isolated
+Linux verify all ten authored Team snapshots and twenty-five actual document cases,
+with ten source and fifty derivative-file comparisons per platform. Actual package
+startup/shutdown checks preserve compatible profiles, empty Sessions and idle
+services; both process groups, listeners and writers release. The isolated Linux
+runner releases and canonical server changes remain unchanged. Ubuntu CI
+`38393263998` verifies fresh installation, full source checks and 97 runtime cases;
+downloaded artifacts match 96 exact-source comparisons and 41 input identities.
+Evidence: `.local/work/role-documents-platforms-independent-20261013.json` and
+`.local/work/ci-role-document-inspection-20261013.json`.
 
 Trusted extension factories use detached assignment inputs and matching logical/
 native names through `tools/src/extension-definition.ts`. Actual CPU checks pass
