@@ -43,19 +43,31 @@ the release requirements below.
 
 ## Latest verified source changes
 
-FileTeamLoader uses the operating system's path separator for resolved Role/schema
-containment and requires explicit own builtin mappings. The authored SceneAnalyst
-configuration passes twenty-three actual load checks on macOS, including two native
-directory links, external/sibling reference rejection, nested schemas, the 64 KiB
-schema limit and original native DSH structured-output admission. Twenty source
-identities and fifty-one derivative file hashes remain unchanged through each run.
-All admitted roles retain their authored instructions, models, permissions and
-workflow composition. Full source checks pass. Evidence:
-`.local/work/team-paths-admission-20261013-02/acceptance.json` and
-`.local/work/team-paths-source-check-20261013.log`.
-The configured CPU campaign includes this diagnostic. Separate Linux, macOS and
-Windows CI execution is configured; its results retain their actual run requirements.
-No model, simulator or GPU allocates.
+At exact source `1c7a85d`, FileTeamLoader uses the operating system's path separator
+for resolved Role/schema containment and requires explicit own builtin mappings.
+The authored SceneAnalyst configuration passes twenty-three actual load checks on
+local macOS and CI Linux, macOS and Windows, including two native directory links,
+external/sibling reference rejection, nested schemas, the 64 KiB schema limit and
+original native DSH structured-output admission. Independent readers compare twenty
+exact-commit source identities, fifty-one raw input files and six complete authored
+role snapshots per platform. All admitted roles retain instructions, models, tools
+and workflows. Evidence: `.local/work/team-paths-independent-20261013.json` and
+`.local/work/ci-team-paths-{ubuntu,macos,windows}-inspection-20261013.json`.
+
+The configured CPU campaign passes forty-four components and 1,584 cases at this
+source. Independent readers verify 989 source/input/link comparisons and 190 distinct
+committed production/checker/package files. Original journals/images remain unchanged
+and all forty-four diagnostic groups release. Evidence:
+`.local/work/team-paths-foundation-cpu-20261013/independently-verified.json` and
+`.local/work/team-paths-foundation-cpu-20261013/committed-source-verification.json`.
+CI `38398570632` also passes fresh installation, full source checks and 97 production
+runtime cases. Downloaded artifacts verify fourteen distributions, thirteen imports,
+41 input identities and 96 exact-source comparisons. The fifteen previously executed
+policy-processor files match this source without reruns. Evidence:
+`.local/work/ci-team-paths-runtime-inspection-20261013.json` and
+`.local/work/current-sdk-team-paths-source-20261013.json`.
+All current scopes allocate zero models, simulators and GPUs; native task release
+requirements remain explicit below.
 
 Role document syntax belongs to `teams/src/role-document.ts`, using the installed
 mdast/micromark frontmatter extensions. FileTeamLoader retains strict YAML and

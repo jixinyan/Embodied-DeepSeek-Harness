@@ -11,15 +11,15 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
-| Team file admission | macOS: 23 actual authored-Team load checks, 20 source identities, 51 input files and two native directory links; result-schema and Role containment, byte limits and builtin mappings pass without allocation |
+| Team file admission | `1c7a85d` on local macOS and CI Linux/macOS/Windows: 23 actual authored-Team load checks per platform, 20 source identities, 51 input files, two native directory links and six complete authored role snapshots; independent artifact inspection passes without allocation |
 | Role document admission | `0818111` on macOS and isolated Linux: all ten complete Team snapshots match the captured checkpoint and each other; 25 actual FileTeamLoader document cases verify ten source identities and fifty derivative files per platform without allocation |
-| Configured production campaign | `0818111`: 43 components, 1,561 cases, 915 independently inspected source/input comparisons, 184 exact-commit production/checker/package files and 43 released diagnostic process groups |
+| Configured production campaign | `1c7a85d`: 44 components, 1,584 cases, 989 independently inspected source/input/link comparisons, 190 exact-commit production/checker/package files and 44 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `0818111`, run `38393263998`: 97 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 96 independently checked exact-commit source comparisons |
+| Latest Ubuntu source/installation CI | `1c7a85d`, run `38398570632`: 97 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 96 independently checked exact-commit source comparisons |
 | Configured package entry ownership | `0818111` on macOS and isolated Linux: actual `pnpm start` and `pnpm demo`, nineteen source/input identities per platform, compatible native profiles, empty Sessions and idle provider services; both process groups, listeners and journal writers release |
 | Trusted extension factory assembly | `f7d27e1` on macOS, isolated Linux and Ubuntu CI: twenty exact-source identities, fifteen core cases, nineteen extension cases and ten matching native outcomes per platform; private journals preserve committed file contents and release writers |
 | Native tool names and extension admission | `0a341d6` on macOS and isolated Linux: 47 helper/Team-loader cases, ten authored Teams, 28 original-configuration cases, seven native scope/dispatch checks and fifteen core tool cases; original inputs and canonical server changes remain unchanged |
-| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `0818111` without processor reruns |
+| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `1c7a85d` without processor reruns |
 | Native Console port admission | `88f1099` on macOS and isolated Linux: 81 cases and 81 independently repeated reads per platform, 66 declared JSON derivatives and 15 source identities; all outcomes match, original bindings remain unchanged and the server checkout is preserved |
 | GPT profile configuration | `b69d927`: 60 declared original-profile derivatives cover modes, demonstration metadata, gateway ports and worker endpoints; 46 reject and 14 admit with unchanged original bindings |
 | Selected GPT file preparation | `8c75a65` on macOS and isolated Linux: 33 cases and 28 independently repeated file checks per platform, 22 source identities, 31 declared configuration derivatives and 15 stored-image fields; eleven macOS and ten Linux production files match the commit, and actual Console process/listener/writer ownership releases |
@@ -55,6 +55,12 @@ diagnostic. A separate source CI matrix runs it on Ubuntu 24.04, macOS 15 and
 Windows 2025 with unchanged Git checkout line endings and pinned Node.js/pnpm.
 Its artifacts preserve the actual input files alongside their report. No Session,
 model, simulator or device is created by this check.
+
+Source `1c7a85d` passes on local macOS and all three native CI platforms in run
+`38398570632`. Independent downloaded-artifact readers verify twenty source hashes,
+fifty-one input-file hashes, twenty-three outcomes and six complete admitted role
+snapshots per platform. Evidence: `.local/work/team-paths-independent-20261013.json`
+and `.local/work/ci-team-paths-{ubuntu,macos,windows}-inspection-20261013.json`.
 
 ## Native model-request retries
 

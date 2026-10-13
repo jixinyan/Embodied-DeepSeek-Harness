@@ -17,18 +17,31 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
-The unified configured CPU campaign passes at `0818111` with forty-three components,
-1,561 cases, 915 independently checked source/input comparisons and 184 exact-commit
+The unified configured CPU campaign passes at `1c7a85d` with forty-four components,
+1,584 cases, 989 independently checked source/input/link comparisons and 190 exact-commit
 production/checker/package files. Native core/extension tools and configured task plans
 join the same process ownership and publication rules as the physical-facing
-diagnostics. Original records/images remain unchanged and all forty-three groups
+diagnostics. Original records/images remain unchanged and all forty-four groups
 release. Independent readers preserve 338 retry events across 22 native Sessions;
 fifteen previously executed installed policy processor files match this source.
-Three actual campaign-interruption cases verify drained source checks and released
-runners with no next component or final acceptance publication. These scopes execute
-no model, simulator, policy control or GPU. Evidence:
-`.local/work/role-documents-foundation-cpu-20261013/independently-verified.json` and
-`.local/work/role-documents-cpu-shutdown-20261013/acceptance.json`.
+These scopes execute no model, simulator, policy control or GPU. Evidence:
+`.local/work/team-paths-foundation-cpu-20261013/independently-verified.json`,
+`.local/work/team-paths-foundation-cpu-20261013/committed-source-verification.json`
+and `.local/work/current-sdk-team-paths-source-20261013.json`.
+Three actual campaign-interruption cases at `0818111` separately verify drained
+source checks and released runners with no next component or final acceptance
+publication: `.local/work/role-documents-cpu-shutdown-20261013/acceptance.json`.
+
+FileTeamLoader admits Role/schema paths through each operating system's actual
+filesystem and requires explicit own builtin mappings. Local macOS and CI Linux,
+macOS and Windows pass all twenty-three authored-Team load cases per platform.
+Independent readers verify twenty committed sources, fifty-one input files and six
+complete authored role snapshots per platform, including native directory links
+and schema byte limits. CI `38398570632` also passes complete source/installation
+checks and 97 runtime cases; downloaded artifacts verify 96 exact-source comparisons
+and 41 input identities. Evidence:
+`.local/work/ci-team-paths-{ubuntu,macos,windows}-inspection-20261013.json` and
+`.local/work/ci-team-paths-runtime-inspection-20261013.json`.
 
 The installed mdast/micromark frontmatter extensions read Role documents with
 strict YAML/schema admission and preserved Markdown instructions. macOS and isolated

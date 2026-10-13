@@ -12,7 +12,7 @@ Session admission.
 | --- | --- | --- | --- | --- |
 | macOS arm64 | 25.4.0 | 11.19.0 | 3.14.0 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, packaged Desktop selectors and two service shutdown cycles |
 | Linux x64 | 24.21.0 | 11.19.0 | 3.12.14 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, Linux Desktop packaging and headless Wayland/Pixman window/selector/shutdown checks |
-| GitHub Ubuntu 24.04 x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh fourteen-distribution installation manifest, complete source checks, seven SKILL document/metadata tests and 58 device-owner/Session-resource/Worker-transport/native DSH tool/task-plan cases |
+| GitHub Ubuntu 24.04 x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh fourteen-distribution installation manifest, complete source checks, seven SKILL document/metadata tests and 97 device-owner/Session-resource/Worker-transport/native DSH tool/task-plan/model-retry cases |
 
 The base CPU dependency versions are in
 [constraints.txt](../../harness/physical-runtime/constraints.txt). Source setup
@@ -23,6 +23,14 @@ the schema dependency on the recorded Python 3.11/3.12 installations; the record
 Python 3.14 installation does not require it.
 Production CPU CI installs the `policy,robodojo,recording` extras and binds the
 official stable action revisions described in [CI provenance](../provenance/ci-actions.md).
+
+The latest local macOS campaign at `1c7a85d` uses Node.js 25.4.0 and pnpm 11.25.0
+with the existing isolated Python environment. All forty-four configured components
+pass 1,584 CPU cases. CI retains its pinned pnpm 11.19.0 installation.
+A separate Team file-admission matrix at the same source passes twenty-three actual
+Role/schema/directory-link cases per platform on Ubuntu 24.04, macOS 15 and Windows
+2025, using Node.js 22.23.3. This narrow Windows/macOS CI scope allocates no Python
+provider or application service. See [Team file admission](cpu-release-validation.md#team-file-admission).
 
 These rows allocate no model, policy network, simulator or physical GPU. Native
 SDK environments have their own dependency constraints and provenance. The

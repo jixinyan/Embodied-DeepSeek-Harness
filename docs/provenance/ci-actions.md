@@ -32,7 +32,7 @@ admission is limited to those two named files inside `.local/work`.
 
 ## Production CPU runtime checks
 
-After source and installation admission, the workflow runs five production
+After source and installation admission, the workflow runs six production
 diagnostics using the installed project Node.js and isolated Python environment. Its actual
 installation uses the `policy,robodojo,recording` extras, including the adapter's
 msgpack, NumPy and psutil imports and PyAV 18.1.0 for recording resource checks.
@@ -48,14 +48,15 @@ Native SDK environments retain their provider-specific constraints.
 | `check-native-device-owner-offline.py` | Actual owner-thread file/pipe operations, cancelled and concurrent close, queued bind/stop/resume rejection | 6 |
 | `check-native-session-owner-offline.py` | Shared device/recording closure, original file/publication errors and independent caller cancellation | 4 |
 | `check-worker-transport-offline.mjs` | Actual Python Worker processes, dedicated response pipe, stdin closure, malformed/oversized JSON and disconnected output | 16 |
-| `check-core-tools-offline.mjs` | Actual native DSH dispatch, private file admission/versions, cancelled writes, local question persistence and turn conclusion | 15 |
+| `check-core-tools-offline.mjs` | Actual native DSH core/extension dispatch, detached assignment bindings, private file admission/versions, cancelled writes, local question persistence and turn conclusion | 34 |
 | `check-task-plans-offline.mjs` | Configured task goal/owner admission, persisted plan versions and actual journal compaction | 17 |
+| `check-model-retry-offline.mjs` | Actual refused TCP connections, native retry chains, independent Sessions, cancellation/disposal and durable pending-history release | 20 |
 
 Each diagnostic records production-source hashes and confirmed resource outcomes.
-The actual Ubuntu diagnostics pass all 58 cases without importing model
+The actual Ubuntu diagnostics pass all 97 cases without importing model
 or simulator SDKs or allocating physical environments. Their source hashes match
 the triggering repository revision. The workflow requires each named `acceptance.json` before
-publishing its `cpu-runtime-<commit>` artifact; the artifact contains all five
+publishing its `cpu-runtime-<commit>` artifact; the artifact contains all six
 diagnostic directories. Missing or unsuccessful checks terminate admission.
 
 `check-cpu-runtime-evidence.py` reads the complete installation and runtime
@@ -63,19 +64,21 @@ artifacts and compares their source hashes to the triggering Git commit. It
 requires the expected imports, complete CPU dependency provenance, all runtime
 cases and released-owner/Worker outcomes. Source CI writes its `evidence.json`
 only after this admission; runtime artifact upload includes that consolidated
-report. The current `edh.cpu_runtime_evidence.v3` admission requires 58 cases,
-fifteen input digests, the original agent-tools/task-plan journals and 53 exact-commit
+report. The current `edh.cpu_runtime_evidence.v5` admission requires 97 cases,
+41 input digests, the original tool/plan/retry journals and 96 exact-commit
 source comparisons. The same command
 verifies downloaded artifacts locally. Different-source,
 optimized-Python and existing-output invocations terminate before publication.
 
-Actual source/installation/runtime run `38185797204` passes at `f6a890a` on the
+Actual source/installation/runtime run `38398570632` passes at `1c7a85d` on the
 selected Ubuntu platform. Downloaded artifacts independently match fourteen
-distributions, thirteen imports, fifteen input digests and 53 exact-commit source
+distributions, thirteen imports, 41 input digests and 96 exact-commit source
 comparisons. Uploaded/local inspection matches all seven consolidated fields and
 the checker identity. Seven task-plan journals preserve their bytes and release
-writers; all native allocations remain zero. Exact evidence is recorded in the
-[CPU validation guide](../implementation/cpu-release-validation.md#model-failure-admission).
+writers. The original retry evidence preserves 338 events across 22 independent
+Sessions, with 56 actual failed connections and zero provider responses. All native
+allocations remain zero. Exact evidence is recorded in the
+[CPU validation guide](../implementation/cpu-release-validation.md).
 
 Source CI separately runs seven authored SKILL document/metadata tests and eight
 authored model-request configuration tests. The latter checks the published model
@@ -90,10 +93,28 @@ functions and native retry taxonomy without a provider response or model
 allocation. Actual application HTTP error-reader checks belong to the configured
 workspace diagnostic; loaded-provider failure/recovery acceptance remains separate.
 
-The actual downloaded thirteen-case failure and eight-case configuration JUnit
-reports have zero failures/skips. Their production/test/workflow sources and all
-four published model files independently match `f6a890a`; the XML is read with
-the standard library's ElementTree.
+Source CI also runs fifteen authored retry-configuration cases and preserves
+`model-retry-configuration.xml`. These checks admit provider policy values and
+detached route bindings before native registration.
+
+## Native Team file admission matrix
+
+A separate job runs the same FileTeamLoader diagnostic on Ubuntu 24.04, macOS 15
+and Windows 2025, using Node.js 22.23.3 and pnpm 11.19.0. These stable runner labels
+are listed in the official [runner reference](https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
+The job preserves Git source line endings with an explicit `core.autocrlf=false`
+environment setting before checkout. The pinned actions above provide source,
+package-manager/runtime setup and artifact publication.
+
+Each actual filesystem runs twenty-three Role/schema cases and two native directory
+links. Windows uses directory junctions; Linux/macOS use directory symlinks.
+The diagnostic compares all twenty source hashes to the triggering commit before
+creating inputs. Its artifact includes fifty-one raw input files, link identities
+and admitted Team snapshots. Actual run `38398570632` passes all three jobs at
+`1c7a85d`; independent downloaded-artifact readers match all source/input hashes,
+twenty-three outcomes and six authored role snapshots per platform. The matrix
+creates no Session, model, simulator or device. Its scope covers Team file admission;
+complete product/platform acceptance retains the separate configuration matrix.
 
 The [setup guide](../development/setup.md) documents the equivalent local
 installation checks. The [configuration matrix](../implementation/supported-configurations.md)
