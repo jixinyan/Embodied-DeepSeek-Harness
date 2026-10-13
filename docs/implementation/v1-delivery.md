@@ -36,6 +36,15 @@ and forty-eight depth-statistic fields. No native allocation occurs. Evidence:
 `.local/work/calibration-configuration-cpu-campaign-20261013/independently-verified.json`
 and `.local/work/calibration-perception-independent-20261013.json`.
 
+All 153 campaign production/checker files independently match `f9016c4`.
+Its actual Ubuntu CI `38349877123` passes fresh installation, complete source
+checks and 78 runtime cases. Downloaded artifacts verify fourteen distributions,
+thirteen imports, 41 inputs and 89 exact-source comparisons. Production readers
+preserve seven task-plan journals and 338 retry events in 22 native Sessions,
+with unchanged journals, released writers and zero native allocation. Evidence:
+`.local/work/ci-calibration-configuration-inspection-20261013.json` and
+`.local/work/ci-calibration-configuration-native-independent-20261013.json`.
+
 Native configuration admission, policy/environment lifetime and deployment
 assembly have explicit source files. TypeScript parser/printer comparison
 preserves all five complete original function bodies/parameters and five constant

@@ -11,14 +11,12 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
-| Configured production campaign | `ebf8e76`: 37 components, 1,185 cases, 634 independently inspected source/input comparisons and 37 released diagnostic process groups |
+| Configured production campaign | `f9016c4`: 39 components, 1,394 cases, 737 independently inspected source/input comparisons, 153 exact-commit production/checker files and 39 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `86c612a`, run `38305942638`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
+| Latest Ubuntu source/installation CI | `f9016c4`, run `38349877123`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
 | Persistent native retries | The latest downloaded CI journals preserve 22 independent native Sessions, 56 genuine failed connections and 338 source-matched event bodies; pending-history release and cancellation retain their declared scope |
 
-Between `ebf8e76` and `86c612a`, the source changes consist of the packaged Desktop
-diagnostic and documentation. The campaign's production runtime sources remain
-unchanged. Every checkpoint excludes model inference, loaded-policy execution,
+Every checkpoint excludes model inference, loaded-policy execution,
 simulator allocation and new physical task acceptance. The
 [release requirements](progress.md#remaining-release-requirements) identify the
 native workflows that still require their actual model/policy/simulator runs.
@@ -3223,6 +3221,17 @@ checks and forty-eight depth-statistic fields. Native allocations remain zero.
 Evidence: `.local/work/calibration-configuration-cpu-campaign-20261013/independently-verified.json`,
 its `depth-calibrations/independently-verified.json` and
 `.local/work/calibration-perception-independent-20261013.json`.
+
+All 153 captured production/checker files independently match `f9016c4`.
+Actual Ubuntu CI `38349877123` passes fresh installation, complete source checks
+and 78 runtime cases. Downloaded evidence independently verifies fourteen
+distributions, thirteen imports, 41 input identities and 89 exact-source
+comparisons. Production readers preserve seven task-plan journals and all 338
+retry events in 22 native Sessions, with released writers and no native
+allocation. Evidence:
+`.local/work/calibration-configuration-cpu-campaign-20261013/committed-source-verification.json`,
+`.local/work/ci-calibration-configuration-inspection-20261013.json` and
+`.local/work/ci-calibration-configuration-native-independent-20261013.json`.
 
 The configured four-provider check passes 44 cases with original RoboCasa and
 RoboDojo camera values. Evidence:

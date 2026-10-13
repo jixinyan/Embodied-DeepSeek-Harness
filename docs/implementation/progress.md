@@ -65,6 +65,16 @@ fields. Writers release and native allocations remain zero. Evidence:
 `.local/work/calibration-configuration-cpu-campaign-20261013/independently-verified.json`
 and `.local/work/calibration-perception-independent-20261013.json`.
 
+All 153 captured production/checker files match `f9016c4`. Actual Ubuntu CI
+`38349877123` passes fresh installation, complete source checks and 78 runtime
+cases. Independent downloaded-artifact inspection verifies fourteen
+distributions, thirteen imports, 41 inputs and 89 exact-source comparisons.
+Production readers preserve seven task-plan journals and all 338 retry events
+in 22 native Sessions, with released writers and no native allocation. Evidence:
+`.local/work/ci-calibration-configuration-inspection-20261013.json`,
+`.local/work/ci-calibration-configuration-native-independent-20261013.json` and
+`.local/work/calibration-configuration-cpu-campaign-20261013/committed-source-verification.json`.
+
 Native configuration, execution-environment lifetime and deployment assembly have
 explicit source owners. `native-deployment-configuration.mjs` owns provider,
 Team/model/task/checkpoint/service admission and native context defaults.
