@@ -15,14 +15,14 @@ import { LocalStore, SessionAudits } from '@edh/storage';
 import { RecoveryHistory } from '@edh/tasks';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 import { UpperRun, CORE_TOOLS, terminal } from '../../apps/server/src/application.js';
-import { FixtureModel } from '../../apps/server/src/fixture-model.js';
+import { FixtureModel } from '../support/fixture-model.js';
 import {
   FixtureBackend,
   FIXTURE_GOAL,
   MULTI_GOAL_FIXTURE,
   FIXTURE_SUBGOAL_CHECKS,
   type FixtureScenario,
-} from '../../apps/server/src/fixture-backend.js';
+} from '../support/fixture-backend.js';
 
 async function setup(
   scenario: FixtureScenario,

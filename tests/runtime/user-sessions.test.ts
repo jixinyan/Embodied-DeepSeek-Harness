@@ -7,11 +7,9 @@ import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import { ContractValidator } from '@edh/contracts';
 import { LocalStore } from '@edh/storage';
-import { startDemoServer, startServer } from '../../apps/server/src/http-server.js';
-import {
-  createDemoDeployment,
-  createDemoLaunchProfiles,
-} from '../../apps/server/src/demo-deployment.js';
+import { startServer } from '../../apps/server/src/http-server.js';
+import { startDemoServer } from '../support/demo-server.js';
+import { createDemoDeployment, createDemoLaunchProfiles } from '../support/demo-deployment.js';
 import { UserSessions } from '../../apps/server/src/user-sessions.js';
 
 async function post(url: string, path: string, data: Record<string, unknown>) {

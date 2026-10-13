@@ -39,19 +39,20 @@ to the API root, including `/v1` when required; the adapter appends
 configuration, not an assumed provider catalog. Native Anthropic/Gemini protocols,
 OpenAI Responses and Realtime are outside this adapter.
 
-Run the [configured console example](../../examples/deployments/openai-compatible.mjs)
-from the repository root after supplying actual endpoint/model environment values:
+Run the [configured native workspace](../../examples/deployments/native-workspace.mjs)
+from the repository root. Its `modelConfiguration` selects a
+[cloud API or local vLLM catalog](../../examples/models/README.md):
 
 ```sh
-pnpm exec tsx --tsconfig tsconfig.runtime.json examples/deployments/openai-compatible.mjs
+EDH_NATIVE_WORKSPACE_CONFIG=/absolute/path/native-workspace.json pnpm start
 ```
 
 | Binding                   | Configuration                                                                                                   |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Local vLLM                | `EDH_MODEL_BASE_URL=http://127.0.0.1:8000/v1`; `EDH_MODEL` must match the served model name                     |
-| Remote compatible service | `EDH_MODEL_BASE_URL` is its documented HTTPS API root; use its actual `EDH_MODEL`                               |
-| Authentication            | Optional `EDH_MODEL_API_KEY`, loaded privately from the environment; never put keys in team YAML or commit them |
-| Console                   | Port 4319; starting a task makes model requests; physical execution remains synthetic                           |
+| Local vLLM                | The configured endpoint's `baseURL` is its API root; the alias's `model` matches the served model name |
+| Remote compatible service | The endpoint's `baseURL` is its documented HTTPS API root; select its actual `model` |
+| Authentication            | `authentication: { type: environment, variable: EDH_CLOUD_API_KEY }` names a private environment variable |
+| Console                   | Workspace `consolePort`; Session selection allocates the native environment and task submission starts model requests |
 
 The endpoint must support streaming Chat Completions and function tool calls. A
 vLLM model needs its appropriate chat template and tool parser; protocol compatibility

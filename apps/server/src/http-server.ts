@@ -71,7 +71,6 @@ import { RunHistory, RecoveryHistory, type RunState } from '@edh/tasks';
 import { createDshHost } from './runtime.js';
 import { UpperRun, terminal } from './application.js';
 import { prepareDeployment, type ServerDeployment, type DeploymentServices } from './deployment.js';
-import type { DemoDeploymentOptions } from './demo-deployment.js';
 
 export interface LocalServerOptions {
   root: string;
@@ -92,28 +91,12 @@ export interface LocalServerOptions {
     directory: string,
   ) => void | ImageStorageMaintenance | Promise<void | ImageStorageMaintenance>;
 }
-export interface DemoServerOptions extends DemoDeploymentOptions {
-  dataDirectory: string;
-  port?: number;
-}
 async function readValidator(root: string): Promise<ContractValidator> {
   return new ContractValidator(
     JSON.parse(
       await readFile(resolve(root, 'harness/contracts/schema/physical.schema.json'), 'utf8'),
     ),
   );
-}
-export async function startDemoServer(options: DemoServerOptions) {
-  const { createDemoDeployment, createDemoLaunchProfiles } = await import('./demo-deployment.js');
-  const validator = await readValidator(options.root);
-  return startServer({
-    ...options,
-    imageRetention: { version: 'journal-v1', sources: [] },
-    deployment: {
-      ...createDemoDeployment(options, validator),
-      launchProfiles: createDemoLaunchProfiles(validator, options.tickMs),
-    },
-  });
 }
 function json(res: ServerResponse, status: number, value: unknown): void {
   res.writeHead(status, {

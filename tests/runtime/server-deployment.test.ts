@@ -7,8 +7,8 @@ import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import { ContractValidationError, ContractValidator } from '@edh/contracts';
 import { LocalStore, SessionAudits } from '@edh/storage';
-import { FixtureBackend } from '../../apps/server/src/fixture-backend.js';
-import { createDemoDeployment } from '../../apps/server/src/demo-deployment.js';
+import { FixtureBackend } from '../support/fixture-backend.js';
+import { createDemoDeployment } from '../support/demo-deployment.js';
 import { startServer } from '../../apps/server/src/http-server.js';
 import { prepareDeployment, type ServerDeployment } from '../../apps/server/src/deployment.js';
 

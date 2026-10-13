@@ -4,6 +4,9 @@ The local HTTP/SSE server composes configured native DSH models, Teams, UpperRun
 the domain store and retained environment factories. Use the
 [native workspace](../../docs/implementation/native-workspace.md) to select compatible
 simulators, embodiments, checkpoints and model services through one Console.
+`pnpm start` and `pnpm demo` use that workspace's native entry. Production
+deployment configuration and process ownership belong to this module; existing
+unit-test helpers belong to [tests/support](../../tests/support/README.md).
 
 - [runtime.ts](src/runtime.ts): original DSH services and cooperative timeout policy.
 - [native-deployment-configuration.mjs](src/native-deployment-configuration.mjs):

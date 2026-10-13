@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { GoalBinding } from './application.js';
+import type { GoalBinding } from '../../apps/server/src/application.js';
 import type { ContractValidator, SubgoalRequest, ExecutionStatus } from '@edh/contracts';
 import { LifecycleValidator } from '@edh/contracts';
 import type {

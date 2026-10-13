@@ -2866,7 +2866,7 @@ Validation: `pnpm check` passes with 37 runtime tests, 230 shared TS/Python case
 93 pinned DSH files and 20 bindings. A browser run of the custom example completed
 placement, three TODOs and formal verification. The original seven local demo histories
 were preserved and their legacy snapshot labels inspected. See the
-[deployment guide](deployments.md) and [runnable example](../../examples/deployments/local-cpu.mjs).
+[deployment guide](deployments.md) and [test deployment helpers](../../tests/support/demo-deployment.ts).
 Implementation commit: `6a70456`.
 
 Next: harden long-run retention/checkpoints and restart/shutdown error reconciliation;

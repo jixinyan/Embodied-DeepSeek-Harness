@@ -51,9 +51,9 @@ without automatic compaction; this also supports adapters with unknown capacity.
 Native maintenance is available through `host.compaction.compactNow(agent, signal)`
 while the agent is idle. This is a trusted host API, not a new role tool or HTTP route.
 
-The [HTTP model example](../../examples/deployments/openai-compatible.mjs) enables
-pressure compaction when `EDH_MODEL_CONTEXT_WINDOW` is supplied. Use the deployed
-model's actual capacity, not a guessed maximum. Native policy types and optional
+The [native deployment factory](../../apps/server/src/native-deployment.mjs) binds
+the shared context policy to its configured model catalog. Each model's
+`contextWindow` declares its deployed capacity. Native policy types and optional
 per-provider/model overrides are exported from the absorbed compaction modules.
 Summarization uses the conversation model unless an explicit summarization target
 is configured. These auxiliary model requests incur their own latency and cost.

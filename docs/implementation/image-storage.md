@@ -86,9 +86,10 @@ present in the model input; it does not accept arbitrary URLs or filesystem path
 The adapter retains its independent image-count and request-byte limits. Dispose the
 image context after server consumers stop: `await imageContext.fiber.dispose()`.
 
-The [OpenAI-compatible example](../../examples/deployments/openai-compatible.mjs)
-binds this resolver through the deployment factory. Its physical source is explicitly
-synthetic; running the example does not establish sensor or simulation acceptance.
+The [native deployment factory](../../apps/server/src/native-deployment.mjs)
+binds this resolver through `createConfiguredModels` using the shared application
+image service. Actual sensor and simulation acceptance belongs to the selected
+provider's retained native run.
 
 ## Console image reads
 

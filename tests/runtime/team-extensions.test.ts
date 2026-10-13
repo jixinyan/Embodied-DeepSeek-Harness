@@ -13,7 +13,7 @@ import { LocalStore } from '@edh/storage';
 import { AssignmentReports, type ReportInput } from '@edh/communication';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 import { UpperRun, CORE_TOOLS } from '../../apps/server/src/application.js';
-import { FixtureBackend, FIXTURE_GOAL } from '../../apps/server/src/fixture-backend.js';
+import { FixtureBackend, FIXTURE_GOAL } from '../support/fixture-backend.js';
 import { ScriptedModel, textResponse, toolResponse } from './scripted-model.js';
 
 test(

@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import type { ContractValidator } from '@edh/contracts';
-import type { ServerDeployment, LaunchProfile } from './deployment.js';
+import type { ServerDeployment, LaunchProfile } from '../../apps/server/src/deployment.js';
 import { FixtureModel } from './fixture-model.js';
 import {
   FixtureBackend,

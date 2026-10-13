@@ -250,6 +250,7 @@ if (depthCalibrations.length)
     ...depthCalibrations.flatMap((file) => ['--calibration', file]),
   ]);
 add('service-startup', 'check-service-startup-owner-offline.mjs', ['--workspace', workspace]);
+add('console-entries', 'check-native-console-startup-offline.mjs', ['--workspace', workspace]);
 add('console-startup', 'check-native-startup-offline.mjs', ['--config', workspace]);
 for (const provider of ['behavior', 'robocasa', 'robodojo', 'robotwin'])
   add(`console-startup-${provider}`, 'check-native-startup-offline.mjs', [

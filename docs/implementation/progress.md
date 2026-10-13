@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.157 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.158 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,24 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+`pnpm start` and `pnpm demo` invoke the same configured native workspace entry.
+Application assembly remains in `apps/server/`; existing unit-test model/backend/
+deployment helpers belong to `tests/support/`. Runtime unit-test imports,
+TypeScript admission and formatting checks use that directory. Production source
+inspection uses the installed TypeScript parser/resolver to reject imports into
+the test directory. The native model catalog supplies cloud API and local vLLM
+bindings through the same entry and scoped application image service.
+
+The actual package startup diagnostic passes both commands with seventeen source/
+input identities. Compatible profiles retain their selected checkpoints, policies,
+models and execution modes. Session lists remain empty and provider services remain
+idle. Both owned process groups, HTTP listeners and journal writers release;
+original workspace/provider/model files remain unchanged. Full source checks pass.
+No model, simulator or GPU executes. Evidence:
+`.local/work/native-console-entries-final-20261013/acceptance.json` and
+`.local/work/native-entry-source-complete-20261013.log`.
+The unified CPU campaign includes this diagnostic for every configured workspace.
 
 The unified CPU campaign includes native core/extension tools and configured
 task-plan storage in every configuration. Source `348a06d` passes all forty-two

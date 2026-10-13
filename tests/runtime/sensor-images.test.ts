@@ -22,7 +22,7 @@ import { admitSensorSample, sensorImages } from '@edh/perception';
 import type { SensorSample } from '@edh/execution';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 import { UpperRun, CORE_TOOLS } from '../../apps/server/src/application.js';
-import { FixtureBackend, FIXTURE_GOAL } from '../../apps/server/src/fixture-backend.js';
+import { FixtureBackend, FIXTURE_GOAL } from '../support/fixture-backend.js';
 import type { ContextManagementOptions } from '@edh/memory';
 import { imageReferences } from '../../harness/agent-runtime/memory/src/visual-history.js';
 import { ScriptedModel, textResponse, toolResponse } from './scripted-model.js';
@@ -350,7 +350,7 @@ test(
   'Planner perceives, plans and acts, reads running status, then receives the verifier image',
   { timeout: 10000 },
   async () => {
-    const { FixtureModel } = await import('../../apps/server/src/fixture-model.js');
+    const { FixtureModel } = await import('../support/fixture-model.js');
     const { setTimeout } = await import('node:timers/promises');
     let plannerObserved = false;
     let plannerReceivedVerdictImage = false;

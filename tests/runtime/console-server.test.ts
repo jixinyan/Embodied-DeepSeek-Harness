@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
-import { startDemoServer } from '../../apps/server/src/http-server.js';
+import { startDemoServer } from '../support/demo-server.js';
 import { RunHistory, type RunState } from '@edh/tasks';
 
 async function responseStatus(response: Response): Promise<number> {

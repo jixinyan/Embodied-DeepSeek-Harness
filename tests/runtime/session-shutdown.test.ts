@@ -12,7 +12,7 @@ import { ContractValidator, type InvocationBrief } from '@edh/contracts';
 import { FileTeamLoader } from '@edh/teams';
 import { createDshHost } from '../../apps/server/src/runtime.js';
 import { CORE_TOOLS } from '../../apps/server/src/application.js';
-import { FixtureModel } from '../../apps/server/src/fixture-model.js';
+import { FixtureModel } from '../support/fixture-model.js';
 
 async function setup(audit: SessionHooks['audit'], model: LlmAdapter | null = new FixtureModel(0)) {
   const validator = new ContractValidator(

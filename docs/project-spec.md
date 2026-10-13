@@ -1,10 +1,19 @@
 # Embodied DeepSeek Harness — Project Specification
 
-Version: v1.157 · 2026-10-13
+Version: v1.158 · 2026-10-13
 
 Status: native Qwen/Pi0.5 RoboTwin and RoboDojo recovery have independent formal verification and original action/video evidence. RoboDojo run `897f215d` verifies zero-tool-error retained-scene retry, 58 controls, 580 actual physics steps and four identified inferences; subsequent same-Session run `ca43312e` verifies the unchanged terminal episode with zero additional controls/inferences and released resources. Clean custom-role RoboTwin run `a5d9132e` verifies independent SceneAnalyst communication, 113 controls, eight identified inferences, failed-attempt recovery and formal success with zero tool errors and released resources. Packaged Desktop run `bd3e1606` verifies actual Console submission, 101 controls, seven learned requests and formal retry success; a second task explicitly selects its history, verifies the current ended scene and completes Session/service cleanup. Its synchronized Agent-trace MP4 passes source and full-decoding checks. Actual Planner review/end and concurrent native terminal boundaries pass separate checks. Native Qwen/GR00T RoboCasa CloseDrawer has independent success and retained-scene recovery evidence. BEHAVIOR preserves its observed failed task outcomes. Native perception and R1Pro active observation have separate real checks. Selected DSH recovery/JSON portability, complete default native retention and configured service lifetimes have production acceptance. A unified native workspace has actual four-provider configuration, profile-specific Team, Console selection and cleanup acceptance. CPU transport, service ownership, interrupted admission and source-bound record checks have production validation. Evolver is paused and SceneState is deferred. Multi-goal and the complete installed task/configuration matrix remain pending.
 
 Project: Embodied DeepSeek Harness (EDH).
+
+The package's `start` and `demo` commands invoke the configured native workspace
+entry. Production application assembly belongs to `apps/server/`, native provider
+entries belong to `examples/deployments/`, and existing unit-test deployment/model/
+backend helpers belong to `tests/support/`. The structure check uses TypeScript's
+module parser and resolver to reject production imports into the test directory.
+The CPU campaign exercises both actual package commands, compatible profile
+metadata and confirmed Console process/listener/journal-writer release without
+model or simulator allocation.
 
 Logical tool IDs are admitted by `tools/src/tool-names.ts`. Dots become double
 underscores in native DSH names. The complete deployment core/extension list and

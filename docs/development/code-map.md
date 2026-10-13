@@ -16,8 +16,10 @@ production path from Session selection to native commands and formal verificatio
 | Allocate learned or direct/hybrid GPT execution and own gateway/host/audit cleanup | [native-policy-environment.mjs](../../apps/server/src/native-policy-environment.mjs) |
 | Prepare selected GPT instructions, demonstration text and decoded images before managed-service acquisition | [readNativeGptPolicyInputs](../../apps/server/src/native-policy-environment.mjs) |
 | Launch the unified Console or a selected backend | [examples/deployments](../../examples/deployments/README.md) |
+| Find existing unit-test deployment, model and backend helpers | [tests/support](../../tests/support/README.md) |
 | Start the HTTP/SSE application | [apps/server/src/http-server.ts](../../apps/server/src/http-server.ts) |
 | Own native CLI startup, signals and resource release | [apps/server/src/console-process.ts](../../apps/server/src/console-process.ts) |
+| Validate configured package startup and actual Console process release without provider allocation | [check-native-console-startup-offline.mjs](../../scripts/check-native-console-startup-offline.mjs) |
 | Own shared model/policy service startup, readiness and leases | [apps/server/src/managed-services.ts](../../apps/server/src/managed-services.ts) |
 | Manage retained user Sessions and task admission | [apps/server/src/user-sessions.ts](../../apps/server/src/user-sessions.ts) |
 | Connect domain tools, Planner decisions and independent roles | [apps/server/src/application.ts](../../apps/server/src/application.ts) |

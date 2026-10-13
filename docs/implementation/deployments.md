@@ -1,10 +1,9 @@
 # Configuring a local deployment
 
 `startServer({ root, dataDirectory, port, deployment })` composes the existing DSH
-host, team, UpperRun, local store, HTTP/SSE service and console. `startDemoServer`
-is a wrapper that supplies the CPU configuration from
-[demo-deployment.ts](../../apps/server/src/demo-deployment.ts). There is no second
-agent loop or runtime registration system.
+host, Team, UpperRun, local store, HTTP/SSE service and Console. Production
+deployment factories bind native environments and configured model endpoints.
+Their source entries belong to [apps/server/src](../../apps/server/README.md).
 
 The [desktop launcher](../../apps/desktop/README.md) loads a trusted module whose
 default export is a `DeploymentServices => ServerDeployment` factory. It supplies
@@ -12,19 +11,20 @@ checkout root, data directory and port to this same `startServer` API. A local J
 launch configuration and optional environment file keep process startup separate
 from session-compatible model, checkpoint, embodiment and environment choices.
 
-## Run the configuration example
+## Start the configured workspace
 
 From the repository root:
 
 ```sh
-pnpm exec tsx --tsconfig tsconfig.runtime.json examples/deployments/local-cpu.mjs
+EDH_NATIVE_WORKSPACE_CONFIG=/absolute/path/native-workspace.json pnpm start
 ```
 
-Open `http://127.0.0.1:4318`. The console lists one task, **Place the cup**, using
-model alias `brain` and the existing scripted fixture adapter. This demonstrates
-configuration replacement, not a live VLM or robot. Its history lives in
-`.runs/custom-deployment`; the usual `pnpm demo` history is separate. Stop with
-Ctrl+C. See the [runnable example](../../examples/deployments/local-cpu.mjs).
+Open the URL printed by the process. The workspace JSON selects its Console
+port, data directory, model configuration and native provider files. `pnpm demo`
+uses the same entry. The Console presents compatible environment, embodiment,
+policy, checkpoint and Team selections. **New session** allocates the selected
+environment; task submission starts the Agent workflow. Ctrl+C closes the server
+and its owned resources. See the [workspace configuration](native-workspace.md).
 
 ## Define the bindings
 
@@ -36,9 +36,9 @@ The executable contract is
 | `id`, `version`, `description`         | Public deployment identity; increment `version` when executable adapter/factory behavior changes                                                                                                                                                          |
 | `source`                               | `test_fixture`, `simulation` or `hardware`; each created backend must report the same source                                                                                                                                                              |
 | `teamFile`, `roleRoot`                 | Team YAML and allowed role-file root; roles and result schemas are resolved during preflight                                                                                                                                                              |
-| `models`, `defaultModel`               | Named aliases such as `brain: { provider: 'fixture', model: 'fixture' }`; roles select an alias                                                                                                                                                           |
+| `models`, `defaultModel`               | Named aliases from the configured cloud API or local vLLM catalog; roles select an alias                                                                                                                                                                |
 | `launchProfiles.*.teamFile`, `roleRoot` | Optional trusted Team and role-directory bindings for each profile; inherited from the deployment when omitted. Each resolved Team is validated and included in the immutable deployment digest. |
-| `physicalProfile`, `physicalProviders` | Immutable stack configuration and installed adapter validators; see [physical profiles](physical-profiles.md)                                                                                                                                             |
+| `physicalProfile`, `physicalProviders` | Immutable physical configuration and installed adapter validators; see [physical profiles](physical-profiles.md)                                                                                                                                          |
 | `contextManagement`                    | Optional native DSH compaction/measurement policy; automatic mode requires adapter-declared model capacity; see [context management](context-management.md)                                                                                               |
 | `sessionHistory`                       | Native event-body residency policy; defaults to 256 events and 8 MiB at audit checkpoints; see [history management](session-history.md)                                                                                                                   |
 | `storageRetention`                     | Factory receiving the opened store, validator and installed provider/tool bindings; supplies authoritative record owners and original-image retention. Native example factories use `nativeWorkspaceRetention`; see [maintenance](storage-maintenance.md) |

@@ -197,7 +197,8 @@
     "scripts/**/*.ts",
     "tests/contracts/**/*.ts",
     "tests/console/**/*.ts",
-    "tests/runtime/**/*.ts"
+    "tests/runtime/**/*.ts",
+    "tests/support/**/*.ts"
   ],
   "exclude": [
     "node_modules",

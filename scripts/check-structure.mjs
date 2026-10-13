@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFile, readdir, access } from 'node:fs/promises';
 import path from 'node:path';
+import ts from 'typescript';
+const root = path.resolve('.');
+const configuration = ts.readConfigFile('tsconfig.runtime.json', ts.sys.readFile);
+assert.equal(configuration.error, undefined);
+const compiler = ts.parseJsonConfigFileContent(configuration.config, ts.sys, root);
+assert.equal(compiler.errors.length, 0);
 const ignored = new Set([
   '.git',
   'node_modules',
@@ -59,6 +65,20 @@ for (const { file, data } of manifests.values()) {
   const sourceRoot = path.join(path.dirname(file), 'src');
   for await (const sourceFile of files(sourceRoot)) {
     if (!/\.(?:ts|mjs)$/.test(sourceFile)) continue;
+    const source = await readFile(sourceFile, 'utf8');
+    for (const imported of ts.preProcessFile(source, true, true).importedFiles) {
+      const resolved = ts.resolveModuleName(
+        imported.fileName,
+        sourceFile,
+        compiler.options,
+        ts.sys,
+      ).resolvedModule;
+      if (resolved)
+        assert(
+          !path.relative(root, resolved.resolvedFileName).startsWith(`tests${path.sep}`),
+          `Production module imports test support: ${sourceFile} -> ${imported.fileName}`,
+        );
+    }
     for (const match of (await readFile(sourceFile, 'utf8')).matchAll(
       /from ['"](@deepseek-ai\/[^'"/]+)(?:\/[^'"]+)?['"]/g,
     )) {

@@ -4,6 +4,7 @@
 native deployments into one Console and workspace. Its runnable entry is
 `examples/deployments/native-workspace.mjs`. Environment, embodiment, execution mode, checkpoint
 and model selectors continue to resolve complete compatible launch profiles.
+`pnpm start` and `pnpm demo` invoke this configured workspace entry.
 Each profile retains its own trusted Team file and role directory, so R1Pro and
 arm-based environments can use different planning and verification prompts.
 Profile selection displays its resolved Team before allocating a Session.
@@ -101,7 +102,7 @@ workspace console port is a valid fixed port for direct execution:
 
 ```sh
 EDH_NATIVE_WORKSPACE_CONFIG=/absolute/path/native-workspace.json \
-pnpm exec tsx --tsconfig tsconfig.runtime.json examples/deployments/native-workspace.mjs
+pnpm start
 ```
 
 The provider factories retain their existing managed-service leases. `/api/services`
@@ -113,6 +114,21 @@ contexts. Restart never resumes physical actions automatically.
 
 Actual startup, selector, task switching and confirmed cleanup require retained
 production records. Source checks alone establish no model or simulator outcome.
+
+The CPU entry check starts the actual `pnpm start` and `pnpm demo` processes
+with the configured provider files. It checks compatible profiles, an empty
+Session list, idle provider services and confirmed process/listener/writer
+release. It writes declared port/data-directory configuration derivatives into
+its new output directory and preserves the original configuration bytes:
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-native-console-startup-offline.mjs \
+  --workspace /absolute/path/native-workspace.json \
+  --output .local/work/native-console-entries
+```
+
+This check allocates no model, simulator or native task. The unified CPU
+campaign includes it for every configured workspace.
 
 ## Profile camera calibrations
 
