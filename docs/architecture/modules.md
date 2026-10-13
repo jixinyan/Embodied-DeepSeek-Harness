@@ -102,6 +102,11 @@ assignment lifetime. `tools/core-output.ts` selects model-facing image evidence
 from core results or the calling Verifier's formal-check sample and renders
 canonical JSON with ordered images. UpperRun supplies that check context and
 admits assignment grants/visibility. Native DSH owns registration and dispatch.
+`perception/src/results.ts` constructs segmentation, learned-depth and RGB-D result
+objects and generated sensor metadata from admitted provider values. UpperRun
+retains source identity checks, cancellation, image storage, sample retention and
+assignment grants. These functions introduce no provider calls, runtime registry
+or decision ownership.
 `apps/server/src/native-deployment.mjs` owns native configuration and provider
 assembly; `native-workspace.mjs` composes those providers into one application.
 `examples/deployments` contains runnable entry points that call these modules.

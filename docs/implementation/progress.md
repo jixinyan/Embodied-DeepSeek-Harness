@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-12 · Spec v1.143 · v1 release acceptance in progress.
+Updated: 2026-10-12 · Spec v1.144 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,21 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Perception result construction belongs to `perception/src/results.ts`; UpperRun
+retains provider admission, cancellation, immutable retention and assignment grants.
+Five original journals pass 140 core-result and 120 ordered-image comparisons.
+Eight SAM and three YOLO results match all nineteen generated sensor samples,
+including original observation time, mask references and provider provenance.
+Complete source checks pass. No model, simulator or GPU allocates. Evidence:
+`.local/work/perception-results-recorded-final-20261012/acceptance.json`.
+See [perception result construction](cpu-release-validation.md#perception-result-construction).
+Independent production reads verify twenty-one source/schema/journal identities,
+all 140 native contents and five released writers. The same source passes the
+complete thirty-seven-component CPU campaign: 1,185 cases, 634 source/input
+comparisons and all thirty-seven diagnostic process groups released. Original
+records remain unchanged and native allocations remain zero. Evidence:
+`.local/work/perception-results-cpu-campaign-20261012/independently-verified.json`.
 
 Packaged Desktop source `887d707` passes three service cycles with all four
 configured provider profiles. Application restart retains its saved configuration

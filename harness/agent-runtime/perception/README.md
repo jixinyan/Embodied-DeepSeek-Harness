@@ -1,5 +1,20 @@
 # Perception tools
 
+`results.ts` owns the model-facing SAM segmentation, YOLO depth and RGB-D
+measurement result objects and their generated SensorSamples. It receives admitted
+provider values, source references, evidence identities and processing timestamps.
+Source capture time, coordinate frames, calibration, model provenance and ordered
+image references remain explicit in those results. UpperRun owns provider calls,
+source-image/mask checks, cancellation, attachment storage, immutable sample
+retention and assignment grants. Native DSH owns tool dispatch and rendering.
+
+The original-journal CPU diagnostic compares generated SAM/YOLO results and
+samples with actual persisted native tool receipts. Five supplied journals contain
+eight SAM results, three YOLO results and nineteen generated samples; all match
+exactly. Its 140 core results and 120 ordered images also match their native DSH
+content. This validation invokes no perception providers or physical devices.
+See [result construction](../../../docs/implementation/cpu-release-validation.md#perception-result-construction).
+
 `request-inputs.ts` owns the shared SAM/YOLO request types and admission. Both
 HTTP clients admit inputs before sending a request, preserve the caller's
 cancellation reason and copy image/mask bytes. ROI and calibration metadata are

@@ -17,6 +17,15 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Perception result construction now belongs to `perception/src/results.ts`, with
+provider admission, cancellation, retention and grants owned by UpperRun. Five
+original journals preserve 140 core results and 120 ordered images; eight SAM
+and three YOLO results match all nineteen generated samples. Complete source
+checks pass with zero model, simulator or GPU allocation. The supplied receipts
+verify SAM/YOLO construction; full native perception and RGB-D provider workflows
+retain the requirements below. See
+[perception result construction](cpu-release-validation.md#perception-result-construction).
+
 Current packaged Desktop source `887d707` passes three CPU service cycles,
 application restart and Console reuse/reload/reopening with all four configured
 provider profiles. Restart retains the configuration and remains idle. Independent

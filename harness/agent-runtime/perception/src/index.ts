@@ -17,3 +17,11 @@ export {
   type SegmentationOutput,
 } from './sam31-client.js';
 export { Yolo26HttpClient, type DepthEngine, type DepthOutput } from './yolo26-client.js';
+export {
+  segmentationResult,
+  estimatedDepthResult,
+  measuredObjectResult,
+  type SegmentationResultInput,
+  type EstimatedDepthResultInput,
+  type MeasuredObjectResultInput,
+} from './results.js';

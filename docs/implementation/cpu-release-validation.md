@@ -876,6 +876,51 @@ readiness match. The downloaded Linux campaign archive retains SHA256
 These checks allocate no models, simulators or GPUs. Loaded checkpoints, native
 task completion and the complete configuration matrix retain their release gates.
 
+## Perception result construction
+
+`perception/src/results.ts` constructs model-facing segmentation, learned-depth
+and RGB-D result objects together with their generated SensorSamples. The caller
+supplies admitted provider values, attachment references, evidence identities and
+processing timestamps. Source observation time, camera/world frames, calibration,
+mask identity and model provenance retain their existing meaning. UpperRun owns
+provider calls, source checks, cancellation, image storage and assignment grants;
+the existing DSH dispatcher owns native result delivery.
+
+The v2 original-tool diagnostic passes on five unchanged production journals:
+140 core results, 50 image results, 120 ordered images and six formal checks
+match their persisted DSH content. Eight SAM and three YOLO results additionally
+pass result construction and immutable retention of all nineteen generated
+samples. Matching includes exact source observation/clock metadata, instance
+masks, ordered attachments and learned-depth calibration fields. The supplied
+records establish this SAM/YOLO construction scope. RGB-D retains its separate
+source-bound geometry acceptance and native provider requirements.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-recorded-tool-evidence.mjs \
+  --data-directory /absolute/path/closed-production-journal \
+  --require-tool perception.segment_objects \
+  --require-tool perception.estimate_depth \
+  --output .local/work/<new-perception-result-check>
+```
+
+Repeat `--data-directory` to supply all original journals needed by the requested
+tool coverage. The diagnostic preserves exact source/code/journal identities and
+releases each copied LocalStore writer. It performs no model inference,
+perception-provider requests, environment allocation or physical control.
+Evidence: `.local/work/perception-results-recorded-final-20261012/acceptance.json`.
+Independent production readers additionally verify twenty-one source/schema/journal
+identities, all 140 native result contents, nineteen source-timed sensor samples,
+unchanged copied journals and five released writers. Inspection:
+`.local/work/perception-results-recorded-final-20261012/independently-verified.json`.
+
+The complete configured CPU campaign passes all thirty-seven components and
+1,185 cases with the same perception implementation. Independent inspection
+matches 634 source/input identities and verifies every diagnostic process group
+has released. Original journals and images remain unchanged; actual transient
+model-transport checks retain 56 failed connections and zero provider responses.
+Model, simulator and GPU allocations remain zero. Evidence:
+`.local/work/perception-results-cpu-campaign-20261012/independently-verified.json`.
+
 ## Pre-SDK GR00T configuration admission
 
 The [configuration diagnostic](../../scripts/check-gr00t-configuration-offline.py)

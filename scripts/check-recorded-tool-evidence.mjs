@@ -4,7 +4,13 @@ import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
 import { ContractValidator } from '@edh/contracts';
-import { SensorSamples, sensorImages } from '@edh/perception';
+import {
+  SensorSamples,
+  sensorImages,
+  segmentationResult,
+  estimatedDepthResult,
+  measuredObjectResult,
+} from '@edh/perception';
 import { LocalStore, SessionAudits } from '@edh/storage';
 import { CORE_TOOLS, coreToolEvidenceIds, renderCoreToolResult } from '@edh/tools';
 import { VerificationContexts } from '@edh/verification';
@@ -30,6 +36,8 @@ const implementationPaths = [
   'harness/agent-runtime/tools/src/index.ts',
   'harness/agent-runtime/perception/src/sensor-sample.ts',
   'harness/agent-runtime/perception/src/sensor-samples.ts',
+  'harness/agent-runtime/perception/src/results.ts',
+  'harness/agent-runtime/perception/src/index.ts',
   'harness/agent-runtime/verification/src/contexts.ts',
   'harness/agent-runtime/storage/src/session-audits.ts',
   'apps/server/src/application.ts',
@@ -49,6 +57,130 @@ let results = 0;
 let imageResults = 0;
 let images = 0;
 let formalChecks = 0;
+let perceptionResults = 0;
+let perceptionSamples = 0;
+
+function originalPerceptionResult(tool, args, value, samples) {
+  const source = samples.read(value.sourceEvidenceId);
+  assert(source, 'The original perception source sample is missing.');
+  assert.equal(args.evidenceId, source.evidence.id);
+  assert.equal(args.attachmentId, value.sourceAttachmentId);
+  const reference = source.images?.find((image) => image.attachmentId === value.sourceAttachmentId);
+  assert(reference, 'The original source attachment is missing.');
+  let generated;
+  if (tool === 'perception.segment_objects') {
+    const overlaySample = samples.read(value.overlayEvidenceId);
+    const maskSample = samples.read(value.maskEvidenceId);
+    assert(overlaySample && maskSample);
+    assert.equal(overlaySample.images.length, 1);
+    assert.equal(overlaySample.evidence.created_at, maskSample.evidence.created_at);
+    generated = segmentationResult({
+      source,
+      reference,
+      prediction: {
+        provider: value.provider,
+        sourceRevision: value.sourceRevision,
+        checkpointSha256: value.checkpointSha256,
+        sessionAdapter: value.sessionAdapter,
+        sessionId: overlaySample.visualization.modelSessionId,
+        sourceImageSha256: value.sourceImageSha256,
+        modelInputSha256: value.modelInputSha256,
+        width: value.width,
+        height: value.height,
+        instances: value.instances.map((instance) => ({
+          objectId: instance.sessionObjectId,
+          score: instance.score,
+          bboxXyxy: instance.bboxXyxy,
+          areaPixels: instance.areaPixels,
+        })),
+      },
+      textPrompt: args.textPrompt,
+      overlay: overlaySample.images[0],
+      maskRefs: value.instances.map((instance) => {
+        const reference = maskSample.images.find(
+          (image) => image.attachmentId === instance.maskAttachmentId,
+        );
+        assert(reference, 'The original instance mask attachment is missing.');
+        return reference;
+      }),
+      resultId: value.resultId,
+      overlayEvidenceId: value.overlayEvidenceId,
+      maskEvidenceId: value.maskEvidenceId,
+      createdAt: overlaySample.evidence.created_at,
+    });
+  } else {
+    const mask = samples.read(value.maskEvidenceId);
+    assert(mask);
+    assert.equal(args.maskEvidenceId, mask.evidence.id);
+    assert.equal(args.maskAttachmentId, value.maskAttachmentId);
+    const maskReference = mask.images?.find(
+      (image) => image.attachmentId === value.maskAttachmentId,
+    );
+    assert(maskReference, 'The original object mask attachment is missing.');
+    if (tool === 'perception.estimate_depth') {
+      const {
+        resultId,
+        sourceEvidenceId,
+        sourceAttachmentId,
+        maskEvidenceId,
+        maskAttachmentId,
+        camera,
+        observedAt,
+        overlayEvidenceId,
+        ...metrics
+      } = value;
+      const overlaySample = samples.read(overlayEvidenceId);
+      assert(overlaySample);
+      assert.equal(overlaySample.images.length, 1);
+      generated = estimatedDepthResult({
+        source,
+        reference,
+        mask,
+        maskReference,
+        metrics,
+        overlay: overlaySample.images[0],
+        resultId,
+        overlayEvidenceId,
+        createdAt: overlaySample.evidence.created_at,
+      });
+    } else {
+      assert.equal(tool, 'perception.measure_object');
+      const {
+        resultId,
+        measurementEvidenceId,
+        sourceEvidenceId,
+        sourceAttachmentId,
+        maskEvidenceId,
+        maskAttachmentId,
+        observedAt,
+        ...measurement
+      } = value;
+      const measured = samples.read(measurementEvidenceId);
+      assert(measured);
+      generated = measuredObjectResult({
+        source,
+        reference,
+        mask,
+        maskReference,
+        measurement,
+        resultId,
+        measurementEvidenceId,
+        createdAt: measured.evidence.created_at,
+      });
+    }
+  }
+  assert.deepEqual(JSON.parse(JSON.stringify(generated.result)), value);
+  for (const sample of generated.samples) {
+    const original = samples.read(sample.evidence.id);
+    assert(original, 'The original generated perception sample is missing.');
+    assert.deepEqual(samples.retain(sample), original);
+  }
+  return {
+    resultId: generated.result.resultId,
+    evidenceIds: generated.samples.map((sample) => sample.evidence.id),
+    resultSha256: hash(JSON.stringify(generated.result)),
+  };
+}
 
 for (const [index, sourceDirectory] of values['data-directory'].entries()) {
   const source = resolve(sourceDirectory, 'records.jsonl');
@@ -154,6 +286,18 @@ for (const [index, sourceDirectory] of values['data-directory'].entries()) {
         const attachments = sensorImages(selected);
         const rendered = renderCoreToolResult(value, attachments);
         assert.deepEqual(rendered, blocks[0].content);
+        let perception;
+        if (
+          [
+            'perception.segment_objects',
+            'perception.estimate_depth',
+            'perception.measure_object',
+          ].includes(tool)
+        ) {
+          perception = originalPerceptionResult(tool, started[0].detail.args, value, samples);
+          perceptionResults++;
+          perceptionSamples += perception.evidenceIds.length;
+        }
         results++;
         tools[tool] = (tools[tool] ?? 0) + 1;
         if (attachments.length) imageResults++;
@@ -166,6 +310,7 @@ for (const [index, sourceDirectory] of values['data-directory'].entries()) {
           evidenceIds,
           attachmentIds: attachments.map((attachment) => attachment.attachmentId),
           nativeContentSha256: hash(JSON.stringify(blocks[0].content)),
+          ...(perception ? { perception } : {}),
         });
       }
       runs.push({ runId: run.id, originalOutcome: run.state, results: runResults });
@@ -184,7 +329,7 @@ for (const source of implementationSources)
   assert.equal(hash(await readFile(source.path)), source.sha256);
 assert.equal(hash(await readFile(schemaPath)), hash(schemaBytes));
 const report = {
-  schemaVersion: 'edh.recorded_tool_evidence_cpu.v1',
+  schemaVersion: 'edh.recorded_tool_evidence_cpu.v2',
   recordedAt: new Date().toISOString(),
   journals,
   implementationSources,
@@ -194,14 +339,27 @@ const report = {
   imageResults,
   images,
   formalChecks,
+  perceptionResults,
+  perceptionSamples,
   tools,
   originalSourcesUnchanged: true,
   environmentAllocationPerformed: false,
   modelInferencePerformed: false,
   physicalControlPerformed: false,
-  scope: 'Original domain/native DSH receipts and production image-reference selection.',
+  scope:
+    'Original domain/native DSH receipts, production image-reference selection and source-bound perception result construction.',
 };
 await writeFile(resolve(output, 'acceptance.json'), `${JSON.stringify(report, null, 2)}\n`, {
   flag: 'wx',
 });
-console.log(JSON.stringify({ results, imageResults, images, formalChecks, tools }));
+console.log(
+  JSON.stringify({
+    results,
+    imageResults,
+    images,
+    formalChecks,
+    perceptionResults,
+    perceptionSamples,
+    tools,
+  }),
+);

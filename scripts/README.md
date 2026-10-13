@@ -24,8 +24,10 @@ numeric-output, checkpoint-audit and profile checks, for thirty components.
 `check-recorded-tool-evidence.mjs` compares original successful core tool results
 with their task events and persisted native DSH receipts. It exercises production
 evidence selection and sample/context readers, preserving exact JSON text and
-ordered image metadata. It requires closed original journals and invokes no
-models, tools or devices. See [commands and evidence](../docs/implementation/cpu-release-validation.md#core-tool-evidence-selection).
+ordered image metadata. For original SAM/YOLO/RGB-D tool receipts it additionally
+reconstructs perception results and generated samples through `perception/results.ts`
+and compares their immutable stored content. It requires closed original journals
+and invokes no models, tools or devices. See [commands and evidence](../docs/implementation/cpu-release-validation.md#core-tool-evidence-selection).
 
 `check-recorded-rotation.mjs` admits original active-observation requests and
 measured receipts through the production observation module, then rejects
