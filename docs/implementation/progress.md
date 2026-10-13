@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.164 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.165 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,26 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+SAM3.1 and YOLO26 reserve their actual loopback listeners before SDK imports/model
+initialization and supply those same sockets to Uvicorn's single-worker Server.
+Health and inference require completed model startup. Fourteen actual macOS CLI
+cases pass argument admission, occupied/initializing port rejection, absence of
+premature health responses and port release after original missing-SDK failure.
+Import observation uses Python audit events and actual process suspension, with
+declared invalid source-file checkpoint arguments. No SDK/model, simulator or GPU
+allocates. Evidence: `.local/work/perception-listener-cpu-20261013/acceptance.json`.
+The complete configured CPU campaign passes forty-six components and 1,640 cases.
+Independent inspection checks 1,038 source/input/link comparisons, confirms all
+forty-six diagnostic process groups released and preserves original journals/images.
+Python AST inspection preserves fourteen helper/schema definitions, model
+initialization, request handlers and Uvicorn application/configuration values.
+Complete source checks pass with 75 compiled Python files, 30 base imports and
+58 compiled diagnostics; the updated source map validates 1,438 local links.
+Evidence:
+`.local/work/perception-listener-foundation-cpu-20261013/independently-verified.json`
+and `.local/work/perception-listener-source-preservation-20261013.json`.
+Linux/current CI and loaded model service acceptance retain their required scopes.
 
 ExecutionWatchdog serializes startup/disarming and joins only its started thread.
 Early and repeated close create no thread, closed startup rejects, and same-thread

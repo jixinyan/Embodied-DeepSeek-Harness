@@ -3,6 +3,7 @@ import argparse
 import base64
 import hashlib
 import io
+import socket
 import subprocess
 from pathlib import Path
 from threading import Lock
@@ -27,6 +28,7 @@ def parse_service_arguments():
 
 if __name__ == "__main__":
     service_arguments = parse_service_arguments()
+    service_listener = socket.create_server(("127.0.0.1", service_arguments.port), backlog=100)
 
 import numpy as np
 import ultralytics
@@ -161,7 +163,7 @@ def depth_once(model, request: DepthRequest, provenance: dict, device: str):
     }
 
 
-def main(args):
+def main(args, listener: socket.socket):
     source_root = Path(ultralytics.__file__).resolve().parent.parent
     revision = subprocess.run(
         ["git", "-C", str(source_root), "rev-parse", "HEAD"],
@@ -195,8 +197,12 @@ def main(args):
         with lock:
             return depth_once(model, request, provenance, args.device)
 
-    uvicorn.run(app, host="127.0.0.1", port=args.port, workers=1)
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=args.port, workers=1))
+    server.run(sockets=[listener])
+    if not server.started:
+        raise SystemExit(uvicorn.config.STARTUP_FAILURE)
 
 
 if __name__ == "__main__":
-    main(service_arguments)
+    with service_listener:
+        main(service_arguments, service_listener)

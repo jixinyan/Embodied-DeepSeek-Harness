@@ -3100,6 +3100,32 @@ or GPU is allocated. Reports and the verified summary are under
 
 ## Perception service arguments
 
+SAM3.1 and YOLO26 reserve an exclusive loopback listener after argument admission
+and before optional SDK imports or model initialization. The original socket
+passes to Uvicorn's native single-worker Server after source/checkpoint checks and
+model readiness. Reservation alone provides no health response or inference.
+Initialization failure and normal shutdown release the socket; the SAM service
+preserves its standalone MIT boundary.
+
+The actual CPU CLI diagnostic covers fourteen cases. It observes original Python
+SDK-import audit events and suspends the original process on POSIX, verifies its
+reserved listener, sends a real health request that receives no premature response,
+and rejects a competing CLI on the same initializing port. Resuming the original
+process preserves the actual absent-NumPy error under `-S`; its port is reusable.
+Source-file checkpoint arguments are explicitly invalid admission inputs and never
+reach checkpoint decoding or model initialization. The eight original argument
+checks retain their own errors and source bytes. Evidence:
+`.local/work/perception-listener-cpu-20261013/acceptance.json`.
+The complete configured campaign passes forty-six components and 1,640 cases,
+with 1,038 independent source/input/link comparisons, released diagnostic groups
+and unchanged original journals/images. Python AST inspection preserves fourteen
+helper/schema definitions and the original model initialization, request handlers
+and Uvicorn application/configuration values. Full source checks compile 75 Python
+files and 58 diagnostics, import 30 base modules and validate the source map.
+Evidence: `.local/work/perception-listener-foundation-cpu-20261013/independently-verified.json`
+and `.local/work/perception-listener-source-preservation-20261013.json`.
+Loaded model startup and original segmentation/depth results require native acceptance.
+
 Standalone SAM3.1 and YOLO26 service CLIs handle argument help, required fields and
 port/checkpoint paths before importing their optional model/HTTP SDKs. Valid service
 startup imports its required libraries directly and retains original source and
@@ -3889,7 +3915,7 @@ close, repeated start, deadline, lease loss, same-thread disarming and concurren
 startup/close. Notifications require prior diagnostic lease fencing; final
 readmission confirms actual OS lock availability. The source-bound report records
 the installed filelock version. These cases enter the configured CPU campaign and
-the source CI's seven-diagnostic, 104-case evidence set. The v6 evidence reader
+the source CI's eight-diagnostic, 118-case evidence set. The v7 evidence reader
 requires the watchdog report and exact committed source identities before publication.
 
 The macOS configured campaign passes forty-six components and 1,634 cases, with

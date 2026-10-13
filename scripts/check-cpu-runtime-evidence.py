@@ -65,6 +65,12 @@ def main():
     ]
     watchdog_path = runtime / "watchdog-owner/acceptance.json"
     files.append(watchdog_path)
+    perception_directory = runtime / "perception-startup"
+    perception_path = perception_directory / "acceptance.json"
+    files.append(perception_path)
+    for service in ("sam31", "yolo26_depth"):
+        files.extend(perception_directory / f"{service}.initializing" / name
+                     for name in ("sdk-import.json", "stdout.txt", "stderr.txt"))
     inputs = [identity(path) for path in files]
     report, manifest, device, session, transport, tools = [json.loads(path.read_bytes()) for path in files[:6]]
     plans = json.loads(files[7].read_bytes())
@@ -148,6 +154,40 @@ def main():
         else:
             assert entry["concurrentStartRejected"] is (not entry["threadStarted"])
     cases["watchdog-owner"] = 7
+    perception = json.loads(perception_path.read_bytes())
+    assert len(perception["sources"]) == 3
+    for path, sha256 in perception["sources"].items():
+        compare(path, sha256)
+    for field in ("gpuJobs", "modelLoads", "modelCalls", "nativeEnvironments", "controls"):
+        assert type(perception[field]) is int and perception[field] == 0
+    perception_modes = ("help", "required-arguments", "invalid-port", "missing-checkpoint",
+                        "occupied-port", "initializing-port", "sdk-import-failure")
+    assert [(entry["service"], entry["mode"]) for entry in perception["cases"]] == [
+        (service, mode) for service in ("sam31", "yolo26_depth") for mode in perception_modes
+    ]
+    for entry in perception["cases"]:
+        mode = entry["mode"]
+        assert type(entry["pid"]) is int and entry["pid"] > 0
+        assert entry["exitCode"] == (0 if mode == "help" else 2 if mode == "required-arguments" else 1)
+        assert entry["ownedProcessExited"] is True and entry["sourceUnchanged"] is True
+        assert entry["sdkAdmissionReached"] is (mode == "sdk-import-failure")
+        if mode in ("occupied-port", "initializing-port", "sdk-import-failure"):
+            assert entry["declaredInvalidCheckpointInput"] is True
+        if mode == "occupied-port":
+            assert entry["originalListenerPreserved"] is True
+        elif mode == "initializing-port":
+            assert entry["initializingListenerReserved"] is True and entry["healthResponseBeforeReady"] is False
+        elif mode == "sdk-import-failure":
+            assert entry["originalImportErrorPreserved"] is True and entry["boundPortReusable"] is True
+            directory = perception_directory / f"{entry['service']}.initializing"
+            receipt = json.loads((directory / "sdk-import.json").read_bytes())
+            path = Path(receipt["source"]).relative_to(source_root).as_posix()
+            assert path == f"harness/physical-runtime/src/physical_harness/perception/{entry['service']}.py"
+            assert receipt["pid"] == entry["pid"] and receipt["module"] == "numpy"
+            assert receipt["sourceSha256"] == perception["sources"][path]
+            assert (directory / "stdout.txt").read_bytes() == b""
+            assert b"ModuleNotFoundError: No module named 'numpy'" in (directory / "stderr.txt").read_bytes()
+    cases["perception-startup"] = len(perception["cases"])
     for component, record, expected_count in (
         ("device-owner", device, 6), ("session-owner", session, 4),
         ("worker-transport", transport, 16),
@@ -411,7 +451,7 @@ def main():
     assert [identity(path) for path in files] == inputs, "CPU evidence changed during inspection."
     output.parent.mkdir(parents=True, exist_ok=True)
     result = {
-        "schemaVersion": "edh.cpu_runtime_evidence.v6",
+        "schemaVersion": "edh.cpu_runtime_evidence.v7",
         "sourceRevision": revision,
         "checker": identity(Path(__file__)),
         "inputs": inputs, "sourceComparisons": comparisons,

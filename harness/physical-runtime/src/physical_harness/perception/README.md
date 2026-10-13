@@ -8,11 +8,16 @@ environment. They remain optional modules; the base package imports the
 Wire schema is owned by `harness/contracts/schema/physical.schema.json`.
 
 Both standalone service CLIs handle `--help`, required arguments and declared
-port/checkpoint paths before optional SDK imports. Normal service startup imports
-the required libraries directly and performs its original source/checkpoint
-verification. The SAM service remains independently runnable with its MIT notice.
-Eight actual CLI process checks cover these preallocation boundaries without
-loading SDKs or models. See [perception startup validation](../../../../../docs/implementation/cpu-release-validation.md#perception-service-arguments).
+port/checkpoint paths before optional SDK imports. They reserve the actual loopback
+listener before SDK/model startup and give that original socket to Uvicorn's native
+single-worker Server. Health responses and inference follow completed model
+preparation; startup failure and shutdown release the listener. Normal startup
+imports required libraries directly and preserves source/checkpoint verification.
+The SAM service remains independently runnable with its MIT notice. Fourteen
+actual CLI checks cover arguments, occupied/initializing listeners, pre-ready
+health absence and original missing-SDK failure with reusable ports. Python audit
+events and POSIX suspension observe the original entry without replacing SDK calls.
+See [perception startup validation](../../../../../docs/implementation/cpu-release-validation.md#perception-service-arguments).
 Loaded model startup and segmentation/depth outcomes keep their native gates.
 
 `depth_statistics.summarize_predicted_depth` owns learned float32 depth region

@@ -6,6 +6,7 @@ import inspect
 import io
 import math
 import re
+import socket
 import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -29,6 +30,7 @@ def parse_service_arguments():
 
 if __name__ == "__main__":
     service_arguments = parse_service_arguments()
+    service_listener = socket.create_server(("127.0.0.1", service_arguments.port), backlog=100)
 
 import numpy as np
 import torch
@@ -216,7 +218,7 @@ def segment_once(predictor, request: SegmentRequest, work_root: Path, provenance
     }
 
 
-def main(args):
+def main(args, listener: socket.socket):
     source_root = Path(sam3.__file__).resolve().parent.parent
     source_revision = subprocess.run(
         ["git", "-C", str(source_root), "rev-parse", "HEAD"],
@@ -254,8 +256,12 @@ def main(args):
         with lock:
             return segment_once(predictor, request, args.work_root, provenance)
 
-    uvicorn.run(app, host="127.0.0.1", port=args.port, workers=1)
+    server = uvicorn.Server(uvicorn.Config(app, host="127.0.0.1", port=args.port, workers=1))
+    server.run(sockets=[listener])
+    if not server.started:
+        raise SystemExit(uvicorn.config.STARTUP_FAILURE)
 
 
 if __name__ == "__main__":
-    main(service_arguments)
+    with service_listener:
+        main(service_arguments, service_listener)

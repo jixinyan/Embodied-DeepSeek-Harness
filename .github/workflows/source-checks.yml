@@ -98,6 +98,11 @@ jobs:
         env:
           CUDA_VISIBLE_DEVICES: ''
           PYTHONDONTWRITEBYTECODE: '1'
+      - name: Check perception startup without SDK or model allocation
+        run: .venv/bin/python scripts/check-perception-startup-offline.py --output .local/work/cpu-runtime/perception-startup --python .venv/bin/python
+        env:
+          CUDA_VISIBLE_DEVICES: ''
+          PYTHONDONTWRITEBYTECODE: '1'
       - name: Check native DSH core tools without model allocation
         run: pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-core-tools-offline.mjs --output .local/work/cpu-runtime/agent-tools
         env:
@@ -119,6 +124,7 @@ jobs:
           path: |
             .local/work/cpu-runtime/device-owner/
             .local/work/cpu-runtime/watchdog-owner/
+            .local/work/cpu-runtime/perception-startup/
             .local/work/cpu-runtime/session-owner/
             .local/work/cpu-runtime/worker-transport/
             .local/work/cpu-runtime/agent-tools/

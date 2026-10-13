@@ -100,6 +100,8 @@ All Python provider code belongs under
 | Add an environment | [environments](../../harness/physical-runtime/src/physical_harness/environments/README.md); each provider has one named subdirectory |
 | Adapt physical hardware | [backends](../../harness/physical-runtime/src/physical_harness/backends/README.md) and [embodiments](../../harness/physical-runtime/src/physical_harness/embodiments/README.md) |
 | Compute source-bound RGB-D measurements | [perception/metric_geometry.py](../../harness/physical-runtime/src/physical_harness/perception/metric_geometry.py) |
+| Serve independently configured SAM3.1 segmentation with owned listener/model startup | [perception/sam31.py](../../harness/physical-runtime/src/physical_harness/perception/sam31.py) |
+| Serve YOLO26 learned depth with owned listener/model startup | [perception/yolo26_depth.py](../../harness/physical-runtime/src/physical_harness/perception/yolo26_depth.py) |
 | Compute admitted learned-depth region statistics with scoped numerical checks | [perception/depth_statistics.py](../../harness/physical-runtime/src/physical_harness/perception/depth_statistics.py); the YOLO service uses this helper |
 | Extend cross-language wire schemas | [physical.schema.json](../../harness/contracts/schema/physical.schema.json); regenerate TypeScript declarations with `pnpm generate:contracts` |
 
@@ -160,7 +162,7 @@ implementations load in their separately configured service processes.
 | Verify selected checkpoint identity through original records, wire/Gate admission and actual WebSocket rejection | [check-checkpoint-audit-offline.py](../../scripts/check-checkpoint-audit-offline.py) |
 | Verify four-provider checkpoint profile admission and Console metadata | [check-checkpoint-profiles-offline.mjs](../../scripts/check-checkpoint-profiles-offline.mjs) |
 | Verify configured service startup cancellation and shared admissions | [check-service-startup-owner-offline.mjs](../../scripts/check-service-startup-owner-offline.mjs) |
-| Verify standalone SAM/YOLO argument admission before SDK imports | [check-perception-startup-offline.py](../../scripts/check-perception-startup-offline.py) |
+| Verify standalone SAM/YOLO arguments, owned initializing listeners and original missing-SDK failures | [check-perception-startup-offline.py](../../scripts/check-perception-startup-offline.py) |
 | Verify original SAM/YOLO image requests and reject invalid inputs before HTTP | [check-perception-inputs-offline.mjs](../../scripts/check-perception-inputs-offline.mjs) |
 | Verify saved SAM/YOLO response metadata and binary outputs without inference | [check-recorded-perception-responses.mjs](../../scripts/check-recorded-perception-responses.mjs) |
 | Recompute saved learned-depth statistics and reject invalid arrays/calibrations and numerical overflow | [check-depth-statistics-offline.py](../../scripts/check-depth-statistics-offline.py) |
