@@ -11,7 +11,7 @@ import {
   nativeDeploymentRoot,
   readNativeDeploymentConfiguration,
 } from './native-deployment-configuration.mjs';
-import { openNativeEnvironment } from './native-policy-environment.mjs';
+import { openNativeEnvironment, readNativeGptPolicyInputs } from './native-policy-environment.mjs';
 
 export { nativeDeploymentRoot, readNativeDeploymentConfiguration };
 
@@ -70,6 +70,11 @@ export function createNativeDeploymentFactory(settings) {
           tasks: [],
           taskSource: 'environment',
           createEnvironment: async ({ signal, services }) => {
+            const policyInputs =
+              settings.provider === 'robodojo' && profile.mode !== 'policy'
+                ? await readNativeGptPolicyInputs(profile, services.images, signal)
+                : undefined;
+            signal.throwIfAborted();
             const lease = await serviceLifecycle.acquire(profile.serviceIds, signal);
             let environment;
             let closing;
@@ -100,6 +105,7 @@ export function createNativeDeploymentFactory(settings) {
                 models,
                 services,
                 AbortSignal.any([signal, lease.signal]),
+                policyInputs,
               );
               lease.signal.addEventListener('abort', interrupted, { once: true });
               signal.throwIfAborted();

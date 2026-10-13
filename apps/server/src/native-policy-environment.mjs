@@ -4,10 +4,47 @@ import { serveGptPolicy, requestPolicyProposal } from '@edh/execution';
 import { createDshHost, createNativeWorkerEnvironment } from './index.ts';
 import { contextManagement, nativeDeploymentRoot } from './native-deployment-configuration.mjs';
 
-export async function openNativeEnvironment(settings, profile, models, services, signal) {
+export async function readNativeGptPolicyInputs(profile, images, signal) {
+  signal.throwIfAborted();
+  const controlMode = profile.worker.sceneConfiguration.control_mode ?? '0-shot';
+  const instructions = await readFile(
+    resolve(nativeDeploymentRoot, 'examples/policies/robodojo-astra.md'),
+    { encoding: 'utf8', signal },
+  );
+  let demonstration;
+  if (controlMode !== '0-shot') {
+    const declared = profile.entry.demonstration;
+    const text = await readFile(resolve(declared.textFile), { encoding: 'utf8', signal });
+    if (!text.trim()) throw new Error('One-shot mode requires an explicit demonstration.');
+    const inputs = await Promise.all(
+      (declared.imageFiles ?? []).map(async (file) => ({
+        mediaType: 'image/png',
+        data: new Uint8Array(await readFile(resolve(file), { signal })),
+      })),
+    );
+    signal.throwIfAborted();
+    demonstration = { text, images: await images.saveImages(inputs) };
+  }
+  signal.throwIfAborted();
+  return { controlMode, instructions, ...(demonstration ? { demonstration } : {}) };
+}
+
+export async function openNativeEnvironment(
+  settings,
+  profile,
+  models,
+  services,
+  signal,
+  policyInputs,
+) {
   signal.throwIfAborted();
   if (settings.provider !== 'robodojo' || profile.mode === 'policy')
     return createNativeWorkerEnvironment(profile.worker, services, settings.validator);
+  if (
+    !policyInputs ||
+    policyInputs.controlMode !== (profile.worker.sceneConfiguration.control_mode ?? '0-shot')
+  )
+    throw new Error('Native GPT policy inputs must match the selected profile.');
   let host;
   let gateway;
   let environment;
@@ -52,21 +89,6 @@ export async function openNativeEnvironment(settings, profile, models, services,
     host = await createDshHost(models.adapters, contextManagement);
     signal.throwIfAborted();
     const binding = models.models[profile.entry.policyModel ?? models.defaultModel];
-    const controlMode = profile.worker.sceneConfiguration.control_mode ?? '0-shot';
-    let demonstration;
-    if (controlMode !== '0-shot') {
-      const declared = profile.entry.demonstration;
-      const text = await readFile(resolve(declared.textFile), 'utf8');
-      const images = await services.images.saveImages(
-        await Promise.all(
-          (declared.imageFiles ?? []).map(async (file) => ({
-            mediaType: 'image/png',
-            data: new Uint8Array(await readFile(resolve(file))),
-          })),
-        ),
-      );
-      demonstration = { text, images };
-    }
     gateway = await serveGptPolicy(host, settings.validator, {
       port: profile.entry.policyGatewayPort ?? 0,
       images: services.images,
@@ -75,16 +97,11 @@ export async function openNativeEnvironment(settings, profile, models, services,
       policy: {
         provider: binding.provider,
         model: binding.model,
-        controlMode,
+        ...policyInputs,
         reasoningEffort: binding.reasoningEffort ?? 'xhigh',
-        instructions: await readFile(
-          resolve(nativeDeploymentRoot, 'examples/policies/robodojo-astra.md'),
-          'utf8',
-        ),
         timeoutMs: 300_000,
         maxModelSteps: 24,
         audit,
-        ...(demonstration ? { demonstration } : {}),
         ...(profile.mode === 'hybrid'
           ? {
               propose: (request, signal) =>

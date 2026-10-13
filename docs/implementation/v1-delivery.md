@@ -17,6 +17,23 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Selected GPT policy files and images prepare before managed-service acquisition.
+Thirty-three original-profile CPU cases cover valid text/PNG preparation, twelve
+filesystem/text/image failures through readers and factories, cancellation,
+prepared-input binding and an actual production Console startup/shutdown.
+Independent inspection matches nineteen source identities, thirty-one declared
+configuration derivatives, twenty-eight repeated file checks and fifteen stored-
+image fields. Original files remain unchanged and the Console process group,
+listener and empty journal release. A declared closed endpoint/authentication
+derivative establishes the configuration boundary without model requests; the
+saved task snapshot establishes text admission only. No model, policy, simulator
+or GPU allocates. Complete one-shot task acceptance retains its native gates.
+The same source passes all thirty-nine configured CPU components and 1,394 cases,
+with 737 independent source/input comparisons and released diagnostic groups/
+writers. Evidence:
+`.local/work/native-policy-inputs-final-20261013/independently-verified.json`
+and `.local/work/native-policy-inputs-cpu-20261013/independently-verified.json`.
+
 Direct/hybrid GPT control modes and demonstration metadata pass thirty-six
 original-profile CPU admission checks with ten independently matched original/
 source identities. Thirty invalid inputs reject before service acquisition;

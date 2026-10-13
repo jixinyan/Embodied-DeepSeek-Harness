@@ -3269,6 +3269,43 @@ Evidence: `.local/work/ci-depth-calibrations-inspection-20261012.json`,
 
 ## Native policy gateway configuration
 
+`readNativeGptPolicyInputs` in `native-policy-environment.mjs` prepares the selected
+profile's trusted instructions, nonempty demonstration text and native DSH PNG
+attachments. The deployment factory awaits preparation before managed-service
+acquisition; the independent policy host/gateway/worker consume those values.
+File reads receive the caller's cancellation signal and completed preparation
+rechecks that signal. Existing DSH image byte/count/pixel limits and full decoding
+remain authoritative. Missing/mismatched prepared modes reject at environment entry.
+
+Thirty-three CPU cases use an original direct profile, a saved task snapshot and
+two original camera PNGs. Four valid preparations preserve text and ordered native
+references. Twelve declared invalid inputs pass both reader and factory rejection:
+missing or directory text/image paths, empty/blank text, non-image/truncated bytes,
+an invalid second batch member and byte/count/pixel limits. No invalid batch
+publishes images or starts managed services. Two caller cancellation cases and
+two environment-entry checks preserve idle service state. The real production
+Console separately starts and closes; its process group and listener release,
+its empty journal stays unchanged and its writer releases.
+
+The diagnostic explicitly changes only endpoint/authentication in its model
+configuration derivative to a closed local address and `none`. It makes no model
+request, supplies no provider response and preserves the original model/Team/
+worker/checkpoint bindings. Its saved task snapshot exercises text admission,
+and its original camera images exercise attachment preparation; it does not
+establish demonstration effectiveness. Independent production readers repeat
+twenty-eight file checks, compare all thirty-one configuration derivatives with
+their original input, match nineteen source identities and verify fifteen
+stored-image fields. Console process/listener absence and journal/writer release
+are inspected again. No model, gateway, worker, simulator or GPU allocates.
+Evidence: `.local/work/native-policy-inputs-final-20261013/independently-verified.json`.
+
+The same source passes the complete thirty-nine-component CPU campaign and
+1,394 cases. Independent inspection matches 737 source/input comparisons,
+unchanged original journals/images and all thirty-nine released diagnostic
+process groups. Camera configuration repeats sixty-six cases and twenty-two
+declared derivatives; all writers release. Evidence:
+`.local/work/native-policy-inputs-cpu-20261013/independently-verified.json`.
+
 Direct/hybrid profiles admit `worker.sceneConfiguration.control_mode` as
 `0-shot`, `textual-1-shot` or `visual-1-shot`; omission selects `0-shot`.
 The native reader and GPT policy share `GPT_CONTROL_MODES` and the 64-image

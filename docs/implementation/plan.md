@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.152 · 2026-10-13
+Version: v1.153 · 2026-10-13
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,17 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+Selected GPT profile instruction/demonstration preparation precedes managed-
+service acquisition. Original files and the real DSH image service pass thirty-
+three CPU cases, including reader/factory failures, cancellation, input binding
+and a separate production Console startup/shutdown. Independent checks preserve
+nineteen source identities, thirty-one declared configuration derivatives and
+fifteen stored-image fields. The diagnostic uses a declared closed local endpoint
+and authentication derivative without model requests. The complete thirty-nine-
+component/1,394-case CPU campaign also passes with 737 source/input comparisons,
+unchanged original records and released diagnostic processes/writers. One-shot
+inference and complete native task effectiveness retain their release gates.
 
 Direct/hybrid GPT configuration shares its supported modes and 64-image
 demonstration capacity with the policy constructor. Thirty-six original-profile

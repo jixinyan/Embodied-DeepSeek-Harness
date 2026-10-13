@@ -122,6 +122,11 @@ RoboDojo GPT control modes and demonstration image capacity are exported by
 `execution/src/gpt-policy.ts`. The native configuration reader uses those values
 to admit one-shot metadata before service acquisition; the GPT policy constructor
 admits its loaded text and image references.
+`native-policy-environment.mjs` exposes `readNativeGptPolicyInputs` for selected-
+profile instruction/text reads and native attachment preparation. The deployment
+factory awaits it before acquiring managed services. The independent policy host,
+gateway and worker receive those prepared values; file failures and cancellation
+leave service acquisition unopened.
 `perception/src/request-inputs.ts` admits detached, immutable camera calibration
 banks. Native profile configuration inherits or replaces its deployment default;
 prepared profiles retain the selected values privately. The Session task route

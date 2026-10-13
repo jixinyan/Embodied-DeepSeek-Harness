@@ -104,8 +104,11 @@ or `visual-1-shot`, with `0-shot` as the omitted default. A supplied
 `demonstration` contains a nonblank `textFile` path and optional `imageFiles`,
 an array of nonblank paths with at most 64 entries. One-shot modes require text;
 visual one-shot also requires at least one image. Configuration loading admits
-these fields before services allocate; file content and task effectiveness
-retain their separate startup and native checks.
+these fields before services allocate. Selecting a profile prepares its trusted
+instructions, nonempty demonstration text and decoded PNG images before managed-
+service acquisition. Existing DSH image limits and cancellation remain active.
+The independent policy host/gateway/worker use the prepared values; task
+effectiveness retains native inference and formal verification requirements.
 Learned RoboDojo profiles select the `student` source and retain only applicable
 student execution metadata. Teacher model, context and prompt provenance fields
 belong to a selected GPT policy mode. The native factory also binds the complete

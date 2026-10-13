@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.152 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.153 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,34 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Selected RoboDojo GPT profiles prepare their instruction text, nonempty
+demonstration text and decoded PNG references before managed-service acquisition.
+Preparation uses the existing DSH attachment service and its image limits; file
+reads and completion check the caller's cancellation signal. The independent
+policy host, gateway and worker consume the prepared values.
+
+Thirty-three CPU cases pass on an original direct profile and saved files.
+Four valid preparations preserve original text and three ordered stored camera
+references. Twenty-four reader/factory checks reject twelve genuine filesystem,
+text, decode and image-limit failures before any managed service starts. Two
+cancellation checks preserve idle service state; two environment-entry checks
+reject missing or mismatched preparation. The configured production Console
+separately starts and closes with its process group/listener released and empty
+journal unchanged. The diagnostic declares its closed local endpoint and
+unauthenticated model-configuration derivative, produces no model response and
+uses a saved task snapshot only to check text admission. One-shot effectiveness
+retains native requirements. Independent inspection matches nineteen original/
+source identities, thirty-one configuration derivatives, twenty-eight repeated
+file checks and fifteen stored-image fields. Evidence:
+`.local/work/native-policy-inputs-final-20261013/independently-verified.json`.
+
+The same source passes all thirty-nine configured CPU components and 1,394 cases.
+Independent inspection matches 737 source/input comparisons and all thirty-nine
+released diagnostic process groups. Original journals/images remain unchanged and
+writers release. Camera configuration repeats sixty-six cases and twenty-two
+declared derivatives. These scopes allocate no model, simulator or GPU. Evidence:
+`.local/work/native-policy-inputs-cpu-20261013/independently-verified.json`.
 
 RoboDojo direct/hybrid configuration admits the three supported GPT control
 modes and strict demonstration metadata before service acquisition. The native

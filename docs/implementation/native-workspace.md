@@ -32,10 +32,14 @@ only `textFile` and optional `imageFiles`. Paths must be nonblank strings and
 `imageFiles` may contain at most 64 paths. Both one-shot modes require `textFile`;
 visual one-shot requires at least one image path. Invalid modes, field types,
 unknown demonstration fields and excessive image counts reject before service
-acquisition. The environment reads the declared files at allocation, and the
-policy constructor checks loaded demonstration text and image references.
-Configuration admission alone does not establish file availability or one-shot
-task effectiveness.
+acquisition. When that profile is selected, `readNativeGptPolicyInputs` reads the
+trusted instructions and demonstration files before acquiring managed services.
+Text must be nonempty and PNG images pass the existing DSH decoder, normalization
+and deployment image limits. File reads use the caller's cancellation signal;
+preparation rechecks cancellation before service acquisition. The environment
+uses those prepared values for its independent policy host/gateway/worker.
+Configuration admission retains its metadata scope, and one-shot task effectiveness
+requires native inference and formal verification.
 
 Create an actual workspace JSON, for example `.local/native-workspace.json`:
 
