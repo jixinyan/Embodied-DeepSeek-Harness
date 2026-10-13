@@ -63,6 +63,7 @@ const configuration = z
       .strict()
       .optional(),
     depthCalibrationRecords: z.array(z.string().min(1)).min(2).max(16).optional(),
+    nativePolicyInputRecords: z.string().min(1).optional(),
     checkpointAuditConfiguration: z.string().min(1).optional(),
   })
   .strict()
@@ -103,6 +104,9 @@ const checkpointAudit = configuration.checkpointAuditConfiguration
   ? path(configuration.checkpointAuditConfiguration)
   : undefined;
 const depthCalibrations = configuration.depthCalibrationRecords?.map(path) ?? [];
+const nativePolicyInputs = configuration.nativePolicyInputRecords
+  ? path(configuration.nativePolicyInputRecords)
+  : undefined;
 const perceptionResponses = configuration.perceptionResponseRecords
   ? {
       capturesDirectory: path(configuration.perceptionResponseRecords.capturesDirectory),
@@ -145,6 +149,7 @@ const inputs = [
       ]
     : []),
   ...(checkpointAudit ? [checkpointAudit] : []),
+  ...(nativePolicyInputs ? [nativePolicyInputs] : []),
   ...depthCalibrations,
 ];
 const sources = [...new Set(inputs)].map((path) => ({ path, sha256: digest(path) }));
@@ -177,6 +182,11 @@ const add = (id, script, args) =>
 add('worker-transport', 'check-worker-transport-offline.mjs', ['--python', python]);
 add('worker-client', 'check-worker-client-offline.mjs', ['--python', python, '--config', worker]);
 add('scene-configuration', 'check-native-scene-configuration.mjs', ['--config', workspace]);
+if (nativePolicyInputs)
+  add('native-policy-inputs', 'check-native-policy-inputs-offline.mjs', [
+    '--config',
+    nativePolicyInputs,
+  ]);
 for (const [id, options] of [
   ['worker-host', []],
   ['worker-host-mutation', ['--mutate-caller']],

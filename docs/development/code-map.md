@@ -116,6 +116,7 @@ implementations load in their separately configured service processes.
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |
 | Recompute original RGB-D measurements and check numeric calibration admission without a simulator | [check-recorded-metric.py](../../scripts/check-recorded-metric.py), `--check-numeric-admission` |
 | Execute the configured CPU diagnostic campaign | [run-cpu-release-campaign.mjs](../../scripts/run-cpu-release-campaign.mjs) |
+| Check original GPT text/image preparation, cancellation and pre-service failure admission | [check-native-policy-inputs-offline.mjs](../../scripts/check-native-policy-inputs-offline.mjs) |
 | Inspect original Responses output and native DSH argument records | [check-recorded-responses.mjs](../../scripts/check-recorded-responses.mjs); event envelopes project the original stored records without provider requests |
 | Check original model-facing images through the actual DSH attachment service | [check-recorded-model-images.mjs](../../scripts/check-recorded-model-images.mjs); prepares actual requests and declared invalid derivatives before HTTP |
 | Verify signal-driven CPU campaign closure and actual diagnostic process-group release | [check-cpu-campaign-shutdown.mjs](../../scripts/check-cpu-campaign-shutdown.mjs) |

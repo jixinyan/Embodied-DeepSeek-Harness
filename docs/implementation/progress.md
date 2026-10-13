@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.153 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.154 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,26 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+GPT input preparation has a versioned diagnostic at
+`scripts/check-native-policy-inputs-offline.mjs`. A strict original-input manifest
+selects its deployment/profile, policy-model endpoint, original text, two original
+RGB PNGs and native workspace. The optional `nativePolicyInputRecords` campaign
+binding schedules the diagnostic with the existing owned process-group runner.
+It checks production file preparation, cancellation, pre-service failure
+admission and an idle Console lifecycle, with explicit configuration derivatives
+and preserved original source hashes. This scope allocates no native worker,
+gateway, model, simulator or GPU.
+
+The configured campaign with this binding passes forty components and 1,427
+cases. Independent inspection matches 792 source/input comparisons and all forty
+released diagnostic process groups, with original journals/images unchanged and
+writers released. The new diagnostic separately repeats twenty-eight file checks
+through independent production readers, verifies all thirty-one configuration
+derivatives, matches twenty-two source identities and checks fifteen stored-image
+fields. Its original task snapshot exercises text admission only. Evidence:
+`.local/work/native-policy-checker-cpu-20261013/independently-verified.json`
+and `.local/work/native-policy-checker-cpu-20261013/native-policy-inputs/independently-verified.json`.
 
 Selected RoboDojo GPT profiles prepare their instruction text, nonempty
 demonstration text and decoded PNG references before managed-service acquisition.

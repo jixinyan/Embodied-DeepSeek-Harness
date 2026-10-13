@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.153 · 2026-10-13
+Version: v1.154 · 2026-10-13
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,20 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+The versioned `check-native-policy-inputs-offline.mjs` accepts original profile,
+text/image and workspace sources through a strict manifest. The optional
+`nativePolicyInputRecords` CPU campaign binding includes its file-preparation,
+cancellation, pre-service failure and production Console lifecycle checks.
+Reports declare all configuration derivatives and preserve original source
+digests; no model response, native worker or environment is allocated.
+
+The manifest-bound campaign passes forty configured components and 1,427 cases,
+with 792 independent source/input comparisons, released process groups and
+unchanged original journals/images. Its selected-input diagnostic separately
+repeats twenty-eight file checks, matches twenty-two source identities and
+thirty-one declared configuration derivatives, and verifies fifteen stored-image
+fields. See [GPT input checks](cpu-release-validation.md#native-policy-gateway-configuration).
 
 Selected GPT profile instruction/demonstration preparation precedes managed-
 service acquisition. Original files and the real DSH image service pass thirty-
@@ -417,6 +431,8 @@ See [memory](../../harness/agent-runtime/memory/README.md).
    closure and independent shared service admissions with real owned processes.
 5. Run the affected checks from committed source in isolated Linux dependencies.
 6. Prepare the configured native campaign without allocating a model or environment.
+7. With original GPT profile/text/PNG sources, include `nativePolicyInputRecords`
+   to verify selected file preparation, failure admission and Console shutdown.
 
 **Gate:** Every CPU result records source identity, original inputs, observed outcomes
 and released ownership. No model or simulator result is supplied by a diagnostic.

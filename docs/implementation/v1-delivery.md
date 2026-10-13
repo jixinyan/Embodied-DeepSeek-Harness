@@ -17,6 +17,17 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+The original GPT text/image preparation diagnostic is versioned in `scripts` and
+configurable through a strict source manifest. Its optional campaign binding
+passes forty components and 1,427 cases, with 792 independent source/input
+comparisons and forty released process groups. Independent file readers repeat
+twenty-eight selected-input checks, preserve twenty-two source identities and
+thirty-one declared configuration derivatives, and verify fifteen stored-image
+fields. Original journals/images remain unchanged. These scopes exercise
+configuration, files and idle production Console ownership without model
+responses, native workers, simulator execution or GPU allocation. See
+[GPT input checks](cpu-release-validation.md#native-policy-gateway-configuration).
+
 Selected GPT policy files and images prepare before managed-service acquisition.
 Thirty-three original-profile CPU cases cover valid text/PNG preparation, twelve
 filesystem/text/image failures through readers and factories, cancellation,

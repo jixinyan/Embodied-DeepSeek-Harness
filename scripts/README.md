@@ -17,6 +17,17 @@ establish model, simulator, policy, recovery or hardware acceptance.
 
 ## CPU validation
 
+`check-native-policy-inputs-offline.mjs` checks selected RoboDojo GPT profile
+instruction/text/image preparation through the production reader and deployment
+factory. Its strict manifest supplies an original direct/hybrid profile, the
+selected model endpoint, original text, two original RGB PNGs and a configured
+native workspace. Thirty-three checks cover preparation, genuine file/decode
+failures, limits, cancellation, entry guards and actual Console startup/shutdown.
+It explicitly declares closed-endpoint/authentication and private output/service
+configuration derivatives, invokes no model or simulator and preserves original
+source hashes. Optional `nativePolicyInputRecords` includes this diagnostic in
+the configured CPU campaign. See [GPT input checks](../docs/implementation/cpu-release-validation.md#native-policy-gateway-configuration).
+
 `check-recorded-metric-measurement.mjs` admits original native RGB-D payloads
 through the production perception module. It checks detached requests/results and
 declared invalid source, pixel, depth, matrix and coordinate derivatives. Repeat

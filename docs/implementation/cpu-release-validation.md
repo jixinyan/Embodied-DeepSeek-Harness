@@ -3270,6 +3270,52 @@ Evidence: `.local/work/ci-depth-calibrations-inspection-20261012.json`,
 
 ## Native policy gateway configuration
 
+`scripts/check-native-policy-inputs-offline.mjs` is the versioned CPU entry for
+selected-profile file preparation and service ordering. Supply a strict JSON
+manifest with the following fields. Input paths resolve relative to that manifest;
+the original native deployment retains its production path rules.
+
+| Field | Required source |
+| --- | --- |
+| `schemaVersion` | `edh.native_policy_inputs.v1` |
+| `deploymentConfiguration` | Existing RoboDojo native deployment JSON |
+| `profileId` | Existing direct/hybrid GPT profile in that deployment |
+| `modelEndpoint` | Endpoint bound to that profile's selected policy model |
+| `demonstrationText` | Nonempty original UTF-8 text; a saved task snapshot can check text admission only |
+| `demonstrationImages` | Exactly two original stored RGB PNG paths, in their declared order |
+| `workspaceConfiguration` | Valid native workspace JSON whose model configuration permits idle CPU Console startup |
+
+```sh
+CUDA_VISIBLE_DEVICES='' pnpm exec tsx --tsconfig tsconfig.runtime.json \
+  scripts/check-native-policy-inputs-offline.mjs \
+  --config .local/work/native-policy-input-records.json \
+  --output .local/work/native-policy-input-check
+```
+
+The output directory must be new and inside the repository's `.local/work`.
+The diagnostic stores original source digests, declared private configuration
+derivatives, exact file failures, prepared attachment references and observed
+Console process/listener/journal release. It replaces only the selected endpoint's
+address/authentication in a declared derivative, using a genuinely closed local
+port without issuing model requests. Other original model, Team, task, worker and
+checkpoint bindings remain unchanged. Its separate production Console reaches
+readiness and closes without creating a task. Add `nativePolicyInputRecords`, a
+path to this manifest, to `edh.cpu_release.v1` to include the `native-policy-inputs`
+component and its process-group receipt in the consolidated campaign. No policy
+gateway, native worker, simulator or GPU starts in this scope.
+
+The manifest-bound diagnostic passes thirty-three original-profile checks on
+2026-10-13. Independent production readers repeat twenty-eight file checks,
+match twenty-two source identities and thirty-one configuration derivatives,
+and verify fifteen stored-image fields. The complete configured campaign with
+`nativePolicyInputRecords` passes forty components and 1,427 cases, with 792
+independently matched source/input comparisons and forty released process groups.
+Original journals/images stay unchanged and writers release. Its sixty-nine
+saved model-output receipts and two original image contexts retain their recorded
+inspection scope; no new provider response or simulator execution occurs.
+Evidence: `.local/work/native-policy-checker-cpu-20261013/independently-verified.json`
+and `.local/work/native-policy-checker-cpu-20261013/native-policy-inputs/independently-verified.json`.
+
 `readNativeGptPolicyInputs` in `native-policy-environment.mjs` prepares the selected
 profile's trusted instructions, nonempty demonstration text and native DSH PNG
 attachments. The deployment factory awaits preparation before managed-service
