@@ -11,6 +11,7 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
+| Role document admission | All ten authored Teams retain captured instructions, permissions, model bindings and source digests; 25 actual FileTeamLoader document cases record ten source identities and fifty derivative files without allocation |
 | Configured production campaign | `5a643a4`: 43 components, 1,561 cases, 912 independently inspected source/input comparisons, 183 exact-commit production/checker/package files and 43 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
 | Latest Ubuntu source/installation CI | `5a643a4`, run `38388348095`: 97 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 95 independently checked exact-commit source comparisons |

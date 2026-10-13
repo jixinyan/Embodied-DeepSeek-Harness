@@ -27,6 +27,7 @@ production path from Session selection to native commands and formal verificatio
 | Route native registration and lifecycle scopes | [foundation/src/dsh/scope/index.ts](../../harness/agent-runtime/foundation/src/dsh/scope/index.ts) |
 | Change the absorbed DSH agent loop | [agents/src/dsh/loop/index.ts](../../harness/agent-runtime/agents/src/dsh/loop/index.ts); preserve [source provenance](../provenance/README.md) |
 | Load composable Teams | [teams/src/loader.ts](../../harness/agent-runtime/teams/src/loader.ts) |
+| Read Role Markdown frontmatter and preserve instruction text | [teams/src/role-document.ts](../../harness/agent-runtime/teams/src/role-document.ts); FileTeamLoader owns metadata, tool/model admission and workflow composition |
 | Configure cloud/local upper models | [models/src/configuration.ts](../../harness/agent-runtime/models/src/configuration.ts) |
 | Execute native model-request backoff and cancel retry waits | [agents/src/dsh/model-retry/index.ts](../../harness/agent-runtime/agents/src/dsh/model-retry/index.ts); endpoint policy belongs to models, task retry decisions belong to Planner |
 | Admit stored native event payloads, tools and fractional retry waits | [server/src/native-audit-payloads.ts](../../apps/server/src/native-audit-payloads.ts); shared by native record/image retention |

@@ -15,6 +15,8 @@ This is a source and packaging review, not a legal opinion about every deploymen
 | Mermaid 12.0.0 | MIT package with bundled ELK 0.9.3 | Build its core entry with the reviewed ELK version; the existing prebuilt browser bundle includes the older ELK |
 | ELK 0.12.0 | EPL-2.0 with GPL-3.0-or-later secondary notice | Select the documented GPL-compatible route and retain notices/source availability; validate the actual browser build inputs |
 | khroma 2.1.0 | Installed `license` file is MIT | Retain its copyright notice; the package inventory's unknown label is insufficient by itself |
+| Role frontmatter dependencies: mdast-util-frontmatter 2.0.1, micromark-extension-frontmatter 2.0.0, fault 2.0.1 and escape-string-regexp 5.0.0 | Installed MIT notices | Preserve notices in distributions containing these packages; mdast-util-from-markdown 2.0.3 is already used by SKILL reads |
+| format 0.2.2, required by fault | Installed package metadata, source header and Readme identify MIT; Sami Samhuri copyright | Preserve its source header and author notice with the installed package |
 | SAM 3.1 source and checkpoint | Custom SAM License dated 2025-11-19 | Preserve its terms and attribution; do not label SAM materials as AGPL or include checkpoint files in the repository |
 
 The installed JavaScript inventory also contains Apache-2.0, BSD, ISC,

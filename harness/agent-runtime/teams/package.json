@@ -12,7 +12,10 @@
   },
   "dependencies": {
     "@edh/contracts": "workspace:*",
-    "yaml": "2.8.1",
-    "@edh/tools": "workspace:*"
+    "@edh/tools": "workspace:*",
+    "mdast-util-from-markdown": "2.0.3",
+    "mdast-util-frontmatter": "2.0.1",
+    "micromark-extension-frontmatter": "2.0.0",
+    "yaml": "2.8.1"
   }
 }

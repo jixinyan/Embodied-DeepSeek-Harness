@@ -13,6 +13,15 @@ context, member additions, then responsibility workflow. Workflow contents
 contribute to the immutable Team source digest. Native DSH adds tools, explicit
 assignment context and completion instructions.
 
+[Role document admission](../../harness/agent-runtime/teams/src/role-document.ts)
+uses the installed mdast/micromark frontmatter extensions. Each Role requires a
+closed YAML header, schema-valid metadata and nonblank Markdown instructions.
+The YAML reader rejects duplicate keys and aliases; model and tool bindings must
+be available. Instructions preserve internal line endings and Markdown content.
+An optional leading BOM is excluded from parser positions while original source
+bytes remain in the Team digest. `pnpm check:role-workflows` records all ten
+authored Teams and twenty-five source-derived document cases without allocation.
+
 The numbered sequence is observe/read context, commit plan and TODOs, select a
 ready goal, start one job, yield for host follow-up, assess formal evidence, then
 explicitly retry/replan/finish/abandon. Dependent transitions await successful

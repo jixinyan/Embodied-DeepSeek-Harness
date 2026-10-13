@@ -4,6 +4,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import { parseDocument } from 'yaml';
 import { ContractValidator, type RoleDefinition, type TeamDefinition } from '@edh/contracts';
 import { assertObjectJsonSchema, assertToolBindings, type ObjectJsonSchema } from '@edh/tools';
+import { readRoleDocument } from './role-document.js';
 
 export interface TeamRunSnapshot {
   readonly teamRunId: string;
@@ -79,9 +80,8 @@ export class FileTeamLoader {
         builtin ? o.builtinDirectory : o.roleRoot,
       );
       const markdown = await readFile(location, 'utf8');
-      const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]+)$/.exec(markdown);
-      if (!match) throw new Error(`Role requires YAML frontmatter and instructions: ${location}`);
-      const role = o.validator.parse('RoleDefinition', yaml(match[1]!, location));
+      const document = readRoleDocument(markdown, location);
+      const role = o.validator.parse('RoleDefinition', yaml(document.frontmatter, location));
       const model = role.model ?? o.defaultModel;
       if (!o.models.includes(model))
         throw new Error(`Unknown model binding for ${alias}: ${model}`);
@@ -124,7 +124,7 @@ export class FileTeamLoader {
             'utf8',
           )
         : undefined;
-      const instructions = [match[2]!.trim(), ...profileContext, workflow]
+      const instructions = [document.instructions, ...profileContext, workflow]
         .filter(Boolean)
         .join('\n\n');
       if (workflow) digest.update(workflowRole!).update(workflow);

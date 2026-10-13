@@ -51,6 +51,17 @@ they resolve only to pinned local files. No external DSH product installation or
 upstream CLI is used. JavaScript dependencies retain their own licenses. Model
 weights, simulator assets and datasets are not included and have separate terms.
 
+## Role document dependencies
+
+Role Markdown parsing uses mdast-util-from-markdown 2.0.3,
+mdast-util-frontmatter 2.0.1 and micromark-extension-frontmatter 2.0.0.
+The frontmatter packages carry Titus Wormer's 2020 MIT notice. Their fault 2.0.1
+dependency carries Titus Wormer's 2015 MIT notice; escape-string-regexp 5.0.0
+carries Sindre Sorhus's MIT notice. The format 0.2.2 dependency identifies the MIT
+license in its package metadata, source header and Readme, with Sami Samhuri's
+copyright notice. Their installed source and license notices remain applicable
+to distributions containing these packages.
+
 ## RoboDojo and LitchiAgent
 
 The external RoboDojo service retains its upstream research license. EDH does not

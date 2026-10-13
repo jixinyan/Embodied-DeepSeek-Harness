@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.158 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.159 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,18 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Role document syntax belongs to `teams/src/role-document.ts`, using the installed
+mdast/micromark frontmatter extensions. FileTeamLoader retains strict YAML and
+RoleDefinition admission, configured model/tool availability, workflow composition
+and original-byte source digests. The document reader requires a closed YAML header
+and nonblank instructions, with consistent optional BOM positions and preserved
+Markdown body content. Existing ten-Team snapshots, instructions, tool permissions,
+models and source digests match the captured source checkpoint. The source checker
+adds twenty-five actual FileTeamLoader document cases, ten source identities and
+fifty derivative file identities. It starts no model, simulator or device.
+Evidence: `.local/work/authored-teams-final-frontmatter-20261013.json` and the
+reported `.local/work/role-documents-*/document-checks.json`.
 
 `pnpm start` and `pnpm demo` invoke the same configured native workspace entry.
 Application assembly remains in `apps/server/`; existing unit-test model/backend/
