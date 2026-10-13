@@ -60,6 +60,21 @@ Full source checks pass. No model, simulator or GPU executes. Evidence:
 `.local/work/extension-factory-core-20261013-02/acceptance.json` and
 `.local/work/extension-factory-source-20261013.log`.
 
+Exact source `f7d27e1` matches all twenty recorded source files on macOS,
+isolated Linux and Ubuntu CI. Fifteen core cases, nineteen extension cases and ten
+native outcomes agree across all three platforms. Independent readers reopen the
+private journals, preserve their bytes and verify stored source contents against
+the commit. The actual Linux runner releases; isolated source stays clean and
+canonical server changes remain unchanged. CI `38383628510` passes fresh
+installation, full source checks and 97 runtime cases. Downloaded artifacts match
+95 exact-source comparisons and 41 input identities. Production readers preserve
+seven plan journals and all 338 retry events in 22 native Sessions, with released
+writers. Evidence:
+`.local/work/extension-factory-platforms-independent-20261013.json`,
+`.local/work/ci-extension-factory-inspection-20261013.json`,
+`.local/work/ci-extension-factory-tools-independent-20261013.json` and
+`.local/work/ci-extension-factory-native-independent-20261013.json`.
+
 The tools module owns logical-ID admission and native name projection in
 `tool-names.ts`. Deployment preparation checks the complete core/extension pack;
 Team loading checks available bindings and direct UpperRun construction applies

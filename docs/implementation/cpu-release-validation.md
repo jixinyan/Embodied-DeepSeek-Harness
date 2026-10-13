@@ -13,7 +13,8 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 | --- | --- |
 | Configured production campaign | `88f1099`: 40 components, 1,508 cases, 858 independently inspected source/input comparisons, 157 exact-commit production/checker files and 40 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `0a341d6`, run `38380323559`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 90 independently checked exact-commit source comparisons |
+| Latest Ubuntu source/installation CI | `f7d27e1`, run `38383628510`: 97 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 95 independently checked exact-commit source comparisons |
+| Trusted extension factory assembly | `f7d27e1` on macOS, isolated Linux and Ubuntu CI: twenty exact-source identities, fifteen core cases, nineteen extension cases and ten matching native outcomes per platform; private journals preserve committed file contents and release writers |
 | Native tool names and extension admission | `0a341d6` on macOS and isolated Linux: 47 helper/Team-loader cases, ten authored Teams, 28 original-configuration cases, seven native scope/dispatch checks and fifteen core tool cases; original inputs and canonical server changes remain unchanged |
 | Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `88f1099` |
 | Native Console port admission | `88f1099` on macOS and isolated Linux: 81 cases and 81 independently repeated reads per platform, 66 declared JSON derivatives and 15 source identities; all outcomes match, original bindings remain unchanged and the server checkout is preserved |
@@ -760,6 +761,18 @@ macOS evidence: `.local/work/extension-factory-core-20261013-02/acceptance.json`
 The CI evidence inspector verifies all nineteen extension cases and ten original
 native outcomes, including numeric values recomputed from committed source bytes.
 This diagnostic performs no model inference or physical allocation.
+
+Source `f7d27e1` verifies twenty committed files on macOS, isolated Linux and
+Ubuntu CI. All fifteen core cases, nineteen extension cases and ten native outcomes
+match. The actual Linux runner exits and the canonical server checkout remains
+unchanged. CI `38383628510` passes installation/source checks and 97 runtime cases;
+downloaded artifacts match 95 source comparisons and 41 inputs. Production readers
+reopen private file storage, seven task-plan journals and the retry audit history,
+preserving all source bytes, 338 events and 22 Session identities with released
+writers. Evidence: `.local/work/extension-factory-platforms-independent-20261013.json`,
+`.local/work/ci-extension-factory-inspection-20261013.json`,
+`.local/work/ci-extension-factory-tools-independent-20261013.json` and
+`.local/work/ci-extension-factory-native-independent-20261013.json`.
 
 `tool-names.ts` owns logical-ID admission and the native name projection used by
 Deployment, FileTeamLoader, UpperRun, core definitions and core audit admission.

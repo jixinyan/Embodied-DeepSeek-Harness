@@ -25,6 +25,16 @@ Full source checks pass; both agents, host and journal writer release.
 No model, simulator or GPU executes. Evidence:
 `.local/work/extension-factory-core-20261013-02/acceptance.json`.
 
+Source `f7d27e1` matches twenty committed files on macOS, isolated Linux and
+Ubuntu CI; all fifteen core cases, nineteen extension cases and ten native outcomes
+agree. Private file journals preserve their actual contents and release writers.
+The Linux runner releases and canonical server changes remain unchanged.
+CI `38383628510` passes fresh installation, full source checks and 97 runtime cases.
+Downloaded artifacts match 95 exact-source comparisons and 41 inputs; production
+readers preserve seven plan journals and 338 retry events in 22 native Sessions.
+Evidence: `.local/work/extension-factory-platforms-independent-20261013.json` and
+`.local/work/ci-extension-factory-inspection-20261013.json`.
+
 Native tool name admission is verified at `0a341d6`. The tools module owns
 logical IDs, native name projection and collision checks; Deployment, Team
 loading and direct UpperRun construction apply the same rule before role creation.
