@@ -26,6 +26,12 @@ fields. The configured thirty-eight-component CPU campaign passes 1,328 cases,
 without native allocation. See
 [response admission](cpu-release-validation.md#perception-model-response-admission).
 
+Response/checker source and all 148 campaign implementation files match `953abec`.
+Its actual Ubuntu CI `38343498588` passes fresh installation, source checks and
+78 production runtime cases. Downloaded evidence independently preserves 41 inputs,
+seven task-plan journals and 338 retry events with released writers and no native
+allocations. Complete loaded-model/provider task requirements remain below.
+
 Measurement request snapshots and native RGB-D receipt admission belong to
 `perception/src/metric-measurement.ts`; the backend retains transport and task
 lifetime. Thirteen original RoboCasa/RoboTwin/RoboDojo captures pass 416 CPU

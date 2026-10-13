@@ -61,6 +61,15 @@ release. Evidence:
 `.local/work/perception-response-cpu-campaign-20261012/independently-verified.json`
 and its `perception-responses/independently-verified.json`.
 
+All nine response source/checker files and 148 campaign implementation files match
+`953abec`. Actual Ubuntu CI `38343498588` passes fresh installation, source checks
+and all 78 production runtime cases. Downloaded evidence matches 89 exact-source
+comparisons and 41 inputs; independent production reads preserve seven task-plan
+journals and 338 retry events from 22 native Sessions with released writers and
+zero native allocations. Evidence:
+`.local/work/perception-response-cpu-campaign-20261012/perception-responses/independently-verified-source.json`
+and `.local/work/ci-perception-responses-inspection-20261012.json`.
+
 Measurement request snapshots and native RGB-D receipt admission belong to
 `perception/src/metric-measurement.ts`. NativeTaskBackend retains request transport,
 cancellation, current task identity and closure. Thirteen original captures pass

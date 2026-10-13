@@ -1499,6 +1499,17 @@ and model, simulator and GPU allocations remain zero. Evidence:
 `.local/work/perception-response-cpu-campaign-20261012/perception-responses/independently-verified.json`
 and `.local/work/perception-response-cpu-campaign-20261012/independently-verified.json`.
 
+All nine response implementation/checker files and 148 campaign implementation
+files match committed source `953abec`. Actual Ubuntu CI `38343498588` passes
+fresh installation, complete source checks and 78 production runtime cases.
+Downloaded artifacts match 89 exact-source comparisons and 41 inputs; independent
+production reads preserve seven task-plan journals and all 338 events from 22
+native retry Sessions. Their fifty-six genuine failed connections produce zero
+provider responses; writers release and native allocations remain zero. Evidence:
+`.local/work/perception-response-cpu-campaign-20261012/perception-responses/independently-verified-source.json`,
+`.local/work/ci-perception-responses-inspection-20261012.json` and
+`.local/work/ci-perception-responses-native-independent-20261012.json`.
+
 ## Prior verified CPU checkpoints
 
 Clean `d3336fc` passes all twenty-eight configured components on macOS and isolated
