@@ -44,8 +44,9 @@ profiles. Close the current Session before selecting and allocating another.
 
 The workspace owns one native DSH host, common configured models and the existing
 image/tool services. All provider configurations must declare identical optional
-SAM, YOLO and camera-intrinsic bindings. Conflicting declarations fail during
-configuration loading. Simulator-specific calibrated measurement continues through
+SAM and YOLO service endpoints. Conflicting endpoint declarations fail during
+configuration loading. Each profile retains its own admitted camera calibration
+bank. Simulator-specific calibrated measurement continues through
 the selected native backend. Each provider's ordinary environment factory owns its
 worker, scene, action resources and policy mode; imported modules and service
 startup allocate no simulator or model inference.
@@ -69,6 +70,34 @@ contexts. Restart never resumes physical actions automatically.
 
 Actual startup, selector, task switching and confirmed cleanup require retained
 production records. Source checks alone establish no model or simulator outcome.
+
+## Profile camera calibrations
+
+`depthIntrinsicsByCamera` is an optional complete bank keyed by the image's native
+camera name. Each value contains `calibrationId`, `fx`, `fy`, `cx` and `cy`.
+Declare these values for the selected source camera and image resolution.
+Native measured RGB-D continues to use the calibration returned by that backend.
+YOLO projection uses the selected profile's declared bank when the source image's
+camera name is present; learned-depth accuracy still requires camera-specific
+validation.
+
+The field may appear at the provider configuration's top level and on its native
+profile entries. An omitted profile field inherits that provider's default.
+A supplied bank replaces the complete default bank. An explicit `{}` supplies
+no intrinsic projection metadata. In RoboDojo, each entry under `profiles` can
+declare its own bank. Other providers retain their worker/profile entry location
+from the native deployment guide.
+
+Configuration loading, deployment preparation and UpperRun construction validate
+and snapshot these banks. Invalid fields or nonfinite/nonpositive focal lengths
+reject before use. Banks and camera values remain immutable; public
+`/api/config` profile metadata excludes them. The native factory's version and
+configuration digest include profile calibration bindings. Model and SAM/YOLO
+services remain common workspace services.
+
+The [CPU calibration diagnostic](cpu-release-validation.md#profile-camera-calibration-admission)
+checks saved original calibration values through all four native factories and
+the idle production HTTP server. It starts no worker, model or simulator.
 
 ## Offline readiness
 

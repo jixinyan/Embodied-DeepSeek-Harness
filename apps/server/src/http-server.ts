@@ -806,7 +806,9 @@ async function startApplication(
                   ...(deployment.depth
                     ? {
                         depth: deployment.depth,
-                        depthIntrinsicsByCamera: deployment.depthIntrinsicsByCamera,
+                        ...(profile.depthIntrinsicsByCamera === undefined
+                          ? {}
+                          : { depthIntrinsicsByCamera: profile.depthIntrinsicsByCamera }),
                       }
                     : {}),
                   sessionHistory: deployment.sessionHistory,
@@ -931,7 +933,9 @@ async function startApplication(
                 ...(deployment.depth
                   ? {
                       depth: deployment.depth,
-                      depthIntrinsicsByCamera: deployment.depthIntrinsicsByCamera,
+                      ...(deployment.depthIntrinsicsByCamera === undefined
+                        ? {}
+                        : { depthIntrinsicsByCamera: deployment.depthIntrinsicsByCamera }),
                     }
                   : {}),
                 sessionHistory: deployment.sessionHistory,

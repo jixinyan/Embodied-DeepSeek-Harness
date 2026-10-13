@@ -3133,6 +3133,55 @@ reports preserve every declared case name with zero failures or skips. Evidence:
 `.local/work/ci-native-reference-independently-verified-20261012.json` and
 `.local/work/ci-native-reference-native-independently-verified-20261012.json`.
 
+## Profile camera calibration admission
+
+`perception/src/request-inputs.ts` owns camera-bank admission. Native configuration
+and deployment preparation resolve each profile's default or explicit complete
+bank. UpperRun snapshots the selected Session bank for YOLO requests. Banks and
+individual camera values are detached and immutable, with a null-prototype bank.
+The native configuration digest retains these bindings, and public launch metadata
+keeps them private. Shared SAM/YOLO endpoints can serve different profile banks.
+
+```sh
+pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-depth-calibrations-offline.mjs \
+  --config /absolute/path/native-workspace.json \
+  --calibration /absolute/path/original-camera/intrinsics.json \
+  --calibration /absolute/path/original-native-capture/measurement.json \
+  --output .local/work/<new-calibration-check>
+```
+
+Supply at least two original files with different calibration identities. The
+checker reads either saved snake-case intrinsic fields or a native measurement's
+`intrinsics` object; the camera name comes from the native receipt or original
+camera directory. Standard JSON readers preserve these values. Original workspace,
+model and provider configuration files remain unchanged and have captured digests.
+Explicit configuration derivatives exercise inherited, supplied and empty banks
+through the actual native factories and `prepareDeployment`. The production idle
+HTTP server preserves profile/checkpoint/model metadata, excludes private banks,
+keeps services idle and closes its listener and journal writer. Invalid calibration
+values reject and caller mutation preserves prepared snapshots.
+
+The configured four-provider check passes 44 cases with original RoboCasa and
+RoboDojo camera values. Evidence:
+`.local/work/depth-calibration-binding-final-20261012/acceptance.json`.
+This admission/propagation scope makes zero provider calls and allocates no
+model, worker, simulator or GPU. Source-camera/resolution accuracy and actual
+learned-depth decisions retain their native acceptance requirements.
+
+CPU campaign configuration accepts optional `depthCalibrationRecords`, a list
+of two to sixteen original file paths. The campaign adds `depth-calibrations`
+with the common workspace and isolated diagnostic process ownership. The original
+file list and implementation digests are retained with its report.
+
+The configured CPU campaign passes thirty-nine components and 1,372 cases.
+Independent checks match 694 source/input comparisons and thirty-nine released
+diagnostic process groups. Calibration inspection checks sixteen source identities,
+four profile identities and both configuration derivatives against their original
+native configuration files, with only declared calibration banks added. Original
+camera values remain exact and the empty production journal reopens unchanged.
+Evidence: `.local/work/depth-calibration-cpu-campaign-20261012/independently-verified.json`
+and its `depth-calibrations/independently-verified.json`.
+
 ## Required native release evidence
 
 Current-code multi-goal task execution, native stop/timeout races, policy/model

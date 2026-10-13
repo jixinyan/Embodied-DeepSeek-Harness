@@ -62,7 +62,12 @@ Planner preserves image/mask identity, native calibration, units and stopped-con
 requirements. A RoboTwin configuration with both SAM and `depthURL` retains the
 existing `robotwin-perception.yaml` Team. `depthURL` enables YOLO26 independently
 for every provider; optional `depthIntrinsicsByCamera` retains each camera's
-declared calibration. Select a Team with its advertised tools when using depth.
+declared calibration. A profile may supply its own complete bank, with omission
+inheriting the deployment default and `{}` selecting an empty bank. Banks are
+admitted and frozen during loading/preparation and remain private to each profile.
+One workspace can share SAM/YOLO endpoints across different camera banks. See
+[profile camera calibrations](../../docs/implementation/native-workspace.md#profile-camera-calibrations).
+Select a Team with its advertised tools when using depth.
 
 An optional `profile` object accepts `id`, `label`, and `environment` on each worker
 configuration or RoboDojo profile entry. IDs must satisfy the console's profile

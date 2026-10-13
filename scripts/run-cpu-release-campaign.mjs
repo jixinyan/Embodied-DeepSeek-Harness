@@ -62,6 +62,7 @@ const configuration = z
       })
       .strict()
       .optional(),
+    depthCalibrationRecords: z.array(z.string().min(1)).min(2).max(16).optional(),
     checkpointAuditConfiguration: z.string().min(1).optional(),
   })
   .strict()
@@ -101,6 +102,7 @@ const perception = configuration.perceptionRecords
 const checkpointAudit = configuration.checkpointAuditConfiguration
   ? path(configuration.checkpointAuditConfiguration)
   : undefined;
+const depthCalibrations = configuration.depthCalibrationRecords?.map(path) ?? [];
 const perceptionResponses = configuration.perceptionResponseRecords
   ? {
       capturesDirectory: path(configuration.perceptionResponseRecords.capturesDirectory),
@@ -143,6 +145,7 @@ const inputs = [
       ]
     : []),
   ...(checkpointAudit ? [checkpointAudit] : []),
+  ...depthCalibrations,
 ];
 const sources = [...new Set(inputs)].map((path) => ({ path, sha256: digest(path) }));
 mkdirSync(output, { recursive: false, mode: 0o700 });
@@ -227,6 +230,12 @@ if (perceptionResponses)
     ...(perceptionResponses.uncalibratedDirectory
       ? ['--uncalibrated-captures', perceptionResponses.uncalibratedDirectory]
       : []),
+  ]);
+if (depthCalibrations.length)
+  add('depth-calibrations', 'check-depth-calibrations-offline.mjs', [
+    '--config',
+    workspace,
+    ...depthCalibrations.flatMap((file) => ['--calibration', file]),
   ]);
 add('service-startup', 'check-service-startup-owner-offline.mjs', ['--workspace', workspace]);
 add('console-startup', 'check-native-startup-offline.mjs', ['--config', workspace]);

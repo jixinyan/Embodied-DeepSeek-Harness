@@ -113,6 +113,11 @@ calibration, rigid-transform and coordinate consistency checks. NativeTaskBacken
 retains transport, cancellation, current task identity and closure.
 `apps/server/src/native-deployment.mjs` owns native configuration and provider
 assembly; `native-workspace.mjs` composes those providers into one application.
+`perception/src/request-inputs.ts` admits detached, immutable camera calibration
+banks. Native profile configuration inherits or replaces its deployment default;
+prepared profiles retain the selected values privately. The Session task route
+passes its profile bank to UpperRun, which snapshots the bank for YOLO requests.
+Shared model/perception endpoints can serve profiles with different calibrations.
 `examples/deployments` contains runnable entry points that call these modules.
 Native policy startup, model identity and inference audit belong to
 `physical_harness/policies/services`; existing example scripts import their

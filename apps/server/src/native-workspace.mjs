@@ -65,7 +65,6 @@ export async function readNativeWorkspaceConfiguration(environment = process.env
     models: settings.modelConfiguration,
     segmentation: settings.segmentationURL ?? null,
     depth: settings.config.depthURL ?? null,
-    depthIntrinsicsByCamera: settings.config.depthIntrinsicsByCamera ?? {},
   });
   for (const entry of deployments)
     if (!isDeepStrictEqual(shared(entry.settings), shared(deployments[0].settings)))

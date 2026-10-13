@@ -8,11 +8,16 @@ simulators, embodiments, checkpoints and model services through one Console.
 - [runtime.ts](src/runtime.ts): original DSH services and cooperative timeout policy.
 - [native-deployment.mjs](src/native-deployment.mjs): shared native configuration,
   Team/profile admission, model/perception binding, managed-service leases and
-  policy/environment assembly for all four backends.
+  policy/environment assembly for all four backends. Each profile retains its
+  own admitted camera calibration bank and includes it in configuration identity.
 - [native-workspace.mjs](src/native-workspace.mjs): multiple configured providers
   in one Console, profile namespacing, shared model/perception admission and complete
   service release. Example deployment files supply runnable entry points.
 - [application.ts](src/application.ts): role tools, task/verification/recovery coordination.
+- [deployment.ts](src/deployment.ts): detached deployment/profile admission,
+  immutable default and profile camera banks, and public launch metadata.
+  The Session task route supplies its selected profile's bank to UpperRun;
+  UpperRun snapshots those values for YOLO requests. Calibration banks remain private.
 - [native-worker.ts](src/native-worker.ts): retained native environment assembly,
   task-scoped backend ports, camera attachment storage and control-step frame events.
   The Session keeps one native scene across tasks;

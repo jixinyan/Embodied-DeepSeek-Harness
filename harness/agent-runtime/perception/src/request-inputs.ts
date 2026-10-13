@@ -16,6 +16,8 @@ export interface DepthCameraIntrinsics {
   cy: number;
 }
 
+export type DepthIntrinsicsByCamera = Readonly<Record<string, Readonly<DepthCameraIntrinsics>>>;
+
 export interface DepthInput {
   image: Uint8Array;
   mediaType: ImageMediaType;
@@ -42,6 +44,22 @@ const calibrationId = z
   .min(1)
   .max(256)
   .refine((value) => Array.from(value).length <= 128);
+const camera = z
+  .string()
+  .min(1)
+  .max(256)
+  .refine((value) => value.trim().length > 0);
+const intrinsicsSchema = z
+  .object({
+    calibrationId,
+    fx: z.number().finite().positive(),
+    fy: z.number().finite().positive(),
+    cx: z.number().finite(),
+    cy: z.number().finite(),
+  })
+  .strict()
+  .readonly();
+const intrinsicsByCameraSchema = z.record(camera, intrinsicsSchema);
 const coordinate = z.number().int().nonnegative().safe();
 const segmentationSchema = z.object({ image, mediaType, textPrompt: prompt, signal }).strict();
 const depthSchema = z
@@ -52,20 +70,15 @@ const depthSchema = z
     height: z.number().int().positive().safe(),
     maskPng: image.optional(),
     roiXyxy: z.tuple([coordinate, coordinate, coordinate, coordinate]).readonly().optional(),
-    intrinsics: z
-      .object({
-        calibrationId,
-        fx: z.number().finite().positive(),
-        fy: z.number().finite().positive(),
-        cx: z.number().finite(),
-        cy: z.number().finite(),
-      })
-      .strict()
-      .readonly()
-      .optional(),
+    intrinsics: intrinsicsSchema.optional(),
     signal,
   })
   .strict();
+
+export function admitDepthIntrinsicsByCamera(value: unknown): DepthIntrinsicsByCamera {
+  const parsed = intrinsicsByCameraSchema.parse(value);
+  return Object.freeze(Object.assign(Object.create(null), parsed));
+}
 
 export function admitSegmentationInput(input: SegmentationInput): SegmentationInput {
   const parsed = segmentationSchema.parse(input);

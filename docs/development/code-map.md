@@ -32,6 +32,7 @@ production path from Session selection to native commands and formal verificatio
 | Resolve configured policy/direct/hybrid execution modes | [execution/src/execution-mode.ts](../../harness/agent-runtime/execution/src/execution-mode.ts) |
 | Admit active rotation requests and measured motion receipts | [observation/src/rotation.ts](../../harness/agent-runtime/observation/src/rotation.ts); NativeTaskBackend retains task identity and uses NativeWorkerTransport |
 | Admit and detach SAM/YOLO image, mask, ROI, prompt and calibration inputs | [perception/src/request-inputs.ts](../../harness/agent-runtime/perception/src/request-inputs.ts); both HTTP clients use this admission |
+| Configure independent camera calibrations for environment/launch profiles | [native-deployment.mjs](../../apps/server/src/native-deployment.mjs) resolves defaults and overrides; [deployment.ts](../../apps/server/src/deployment.ts) prepares immutable private banks; the Session route in [http-server.ts](../../apps/server/src/http-server.ts) passes the selected bank to UpperRun |
 | Admit source-bound SAM/YOLO model responses and detached result values | [perception/src/model-responses.ts](../../harness/agent-runtime/perception/src/model-responses.ts); HTTP clients own their endpoints, bounded streams and cancellation |
 | Construct perception tool results and generated evidence metadata | [perception/src/results.ts](../../harness/agent-runtime/perception/src/results.ts); UpperRun owns provider admission, image storage and assignment grants |
 | Admit immutable measurement requests and source-bound RGB-D geometry receipts | [perception/src/metric-measurement.ts](../../harness/agent-runtime/perception/src/metric-measurement.ts); NativeTaskBackend retains transport and task lifetime |
@@ -147,6 +148,7 @@ implementations load in their separately configured service processes.
 | Verify original SAM/YOLO image requests and reject invalid inputs before HTTP | [check-perception-inputs-offline.mjs](../../scripts/check-perception-inputs-offline.mjs) |
 | Verify saved SAM/YOLO response metadata and binary outputs without inference | [check-recorded-perception-responses.mjs](../../scripts/check-recorded-perception-responses.mjs) |
 | Recompute saved learned-depth statistics and reject invalid arrays/calibrations and numerical overflow | [check-depth-statistics-offline.py](../../scripts/check-depth-statistics-offline.py) |
+| Check original camera banks through native configuration, factories, profile preparation and idle HTTP publication | [check-depth-calibrations-offline.mjs](../../scripts/check-depth-calibrations-offline.mjs), repeated `--calibration` arguments |
 | Exercise native RoboCasa worker or SAM-backed measurement | [check-robocasa-worker.ts](../../scripts/check-robocasa-worker.ts) and [check-robocasa-object-measurement.ts](../../scripts/check-robocasa-object-measurement.ts) |
 | Submit and audit actual native tasks | [native release campaign](../implementation/native-release-campaign.md) |
 

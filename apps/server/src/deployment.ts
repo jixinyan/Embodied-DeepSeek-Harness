@@ -18,6 +18,7 @@ import { CORE_TOOLS } from './application.js';
 import type { ModelBinding } from './runtime.js';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
 import type { SegmentationEngine, DepthEngine, DepthCameraIntrinsics } from '@edh/perception';
+import { admitDepthIntrinsicsByCamera } from '@edh/perception';
 import {
   defaultSessionHistory,
   sessionHistoryOptions,
@@ -50,6 +51,7 @@ export interface LaunchProfile {
   readonly teamFile?: string;
   readonly roleRoot?: string;
   readonly plannerReview?: PlannerReviewPolicy;
+  readonly depthIntrinsicsByCamera?: Readonly<Record<string, DepthCameraIntrinsics>>;
   readonly source?: EmbodiedBackend['source'];
   readonly label: string;
   readonly environment: string;
@@ -136,6 +138,10 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     throw new Error('Invalid deployment evidence source.');
   if ([input.teamFile, input.roleRoot].some((value) => typeof value !== 'string' || !value.trim()))
     throw new Error('Deployment requires a Team file and role directory.');
+  const depthIntrinsicsByCamera =
+    input.depthIntrinsicsByCamera === undefined
+      ? undefined
+      : admitDepthIntrinsicsByCamera(input.depthIntrinsicsByCamera);
   if (
     input.serviceLifecycle !== undefined &&
     (typeof input.serviceLifecycle.inspect !== 'function' ||
@@ -216,7 +222,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
       : freeze(plannerReviewSchema.parse(input.plannerReview));
   const launchMetadata: Record<
     string,
-    Omit<LaunchProfile, 'createEnvironment' | 'physicalProviders'>
+    Omit<LaunchProfile, 'createEnvironment' | 'physicalProviders' | 'depthIntrinsicsByCamera'>
   > = Object.create(null);
   for (const [id, profile] of Object.entries(input.launchProfiles ?? {})) {
     if (
@@ -279,7 +285,15 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
       }),
     );
     launchMetadata[id] = data;
-    launchProfiles[id] = Object.freeze({ ...data, createEnvironment: profile.createEnvironment });
+    const profileIntrinsics =
+      profile.depthIntrinsicsByCamera === undefined
+        ? depthIntrinsicsByCamera
+        : admitDepthIntrinsicsByCamera(profile.depthIntrinsicsByCamera);
+    launchProfiles[id] = Object.freeze({
+      ...data,
+      ...(profileIntrinsics === undefined ? {} : { depthIntrinsicsByCamera: profileIntrinsics }),
+      createEnvironment: profile.createEnvironment,
+    });
   }
   const contextManagement =
     input.contextManagement === undefined
@@ -332,7 +346,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     additionalTools,
     segmentation: input.segmentation,
     depth: input.depth,
-    depthIntrinsicsByCamera: input.depthIntrinsicsByCamera,
+    depthIntrinsicsByCamera,
     sessionHistory,
     storageRetention: input.storageRetention,
     serviceLifecycle: input.serviceLifecycle,

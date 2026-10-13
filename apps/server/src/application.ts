@@ -7,6 +7,7 @@ import {
   segmentationResult,
   estimatedDepthResult,
   measuredObjectResult,
+  admitDepthIntrinsicsByCamera,
 } from '@edh/perception';
 import type { SegmentationEngine, DepthEngine, DepthCameraIntrinsics } from '@edh/perception';
 import { createHash, randomUUID } from 'node:crypto';
@@ -158,6 +159,9 @@ export class UpperRun {
   private planToolSchema: Record<string, unknown> | undefined;
   private activeObservation = false;
   private readonly plannerReview: Readonly<PlannerReviewPolicy> | undefined;
+  private readonly depthIntrinsicsByCamera:
+    | Readonly<Record<string, DepthCameraIntrinsics>>
+    | undefined;
   private runningReview:
     | {
         execution: ExecutionStatus;
@@ -168,6 +172,10 @@ export class UpperRun {
       }
     | undefined;
   constructor(private readonly options: ApplicationOptions) {
+    this.depthIntrinsicsByCamera =
+      options.depthIntrinsicsByCamera === undefined
+        ? undefined
+        : admitDepthIntrinsicsByCamera(options.depthIntrinsicsByCamera);
     this.plannerReview =
       options.plannerReview === undefined
         ? undefined
@@ -1468,8 +1476,8 @@ export class UpperRun {
           width: reference.width,
           height: reference.height,
           maskPng: maskImage.data,
-          ...(reference.name && this.options.depthIntrinsicsByCamera?.[reference.name]
-            ? { intrinsics: this.options.depthIntrinsicsByCamera[reference.name] }
+          ...(reference.name && this.depthIntrinsicsByCamera?.[reference.name]
+            ? { intrinsics: this.depthIntrinsicsByCamera[reference.name] }
             : {}),
           signal,
         });

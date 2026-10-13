@@ -10,7 +10,7 @@ import {
   OpenAICompatibleAdapter,
   readModelConfiguration,
 } from '@edh/models';
-import { Sam31HttpClient, Yolo26HttpClient } from '@edh/perception';
+import { Sam31HttpClient, Yolo26HttpClient, admitDepthIntrinsicsByCamera } from '@edh/perception';
 import { serveGptPolicy, requestPolicyProposal } from '@edh/execution';
 import { FileTeamLoader } from '@edh/teams';
 import { CORE_TOOLS } from '@edh/tools';
@@ -134,6 +134,9 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
       : config.segmentationURL;
   z.string().url().optional().parse(segmentationURL);
   z.string().url().optional().parse(config.depthURL);
+  const depthIntrinsicsByCamera = admitDepthIntrinsicsByCamera(
+    config.depthIntrinsicsByCamera ?? {},
+  );
   const teamFile = resolve(
     nativeDeploymentRoot,
     nonblank.optional().parse(config.teamFile) ??
@@ -256,6 +259,10 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
       plannerModel,
       mode,
       serviceIds,
+      depthIntrinsicsByCamera:
+        entry.depthIntrinsicsByCamera === undefined
+          ? depthIntrinsicsByCamera
+          : admitDepthIntrinsicsByCamera(entry.depthIntrinsicsByCamera),
       plannerReview: plannerReviewSchema.parse(
         entry.plannerReview ?? config.plannerReview ?? nativePlannerReview,
       ),
@@ -321,6 +328,7 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
     dataDirectory: resolve(dataDirectory),
     port,
     segmentationURL,
+    depthIntrinsicsByCamera,
     baseURL: environment.EDH_MODEL_BASE_URL,
     model: environment.EDH_MODEL,
   };
@@ -492,6 +500,7 @@ export function createNativeDeploymentFactory(settings) {
           source: 'simulation',
           label: profile.label,
           plannerReview: profile.plannerReview,
+          depthIntrinsicsByCamera: profile.depthIntrinsicsByCamera,
           environment: profile.environment,
           embodiment: settings.selected.embodiment,
           executionMode: profile.mode,
@@ -569,7 +578,7 @@ export function createNativeDeploymentFactory(settings) {
     );
     return {
       id: `${settings.provider}-live`,
-      version: `${settings.selected.version}-factory-v5`,
+      version: `${settings.selected.version}-factory-v6`,
       source: 'simulation',
       description: `Native ${settings.selected.title} with independent DSH role Sessions`,
       teamFile: settings.teamFile,
@@ -581,7 +590,13 @@ export function createNativeDeploymentFactory(settings) {
           JSON.stringify({
             definitions: settings.managedServices,
             bindings: Object.fromEntries(
-              Object.entries(settings.profiles).map(([id, profile]) => [id, profile.serviceIds]),
+              Object.entries(settings.profiles).map(([id, profile]) => [
+                id,
+                {
+                  services: profile.serviceIds,
+                  depthIntrinsicsByCamera: profile.depthIntrinsicsByCamera,
+                },
+              ]),
             ),
           }),
         )
@@ -598,7 +613,7 @@ export function createNativeDeploymentFactory(settings) {
       ...(settings.config.depthURL
         ? {
             depth: new Yolo26HttpClient(settings.config.depthURL),
-            depthIntrinsicsByCamera: settings.config.depthIntrinsicsByCamera ?? {},
+            depthIntrinsicsByCamera: settings.depthIntrinsicsByCamera,
           }
         : {}),
       enableObjectMeasurement: Boolean(settings.segmentationURL),

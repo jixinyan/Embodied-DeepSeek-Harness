@@ -9,9 +9,11 @@ export { readSegmentationResponse, readDepthResponse } from './model-responses.j
 export {
   admitSegmentationInput,
   admitDepthInput,
+  admitDepthIntrinsicsByCamera,
   type SegmentationInput,
   type DepthInput,
   type DepthCameraIntrinsics,
+  type DepthIntrinsicsByCamera,
 } from './request-inputs.js';
 export {
   Sam31HttpClient,

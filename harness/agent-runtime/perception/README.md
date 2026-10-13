@@ -49,6 +49,16 @@ cancellation reason and copy image/mask bytes. ROI and calibration metadata are
 detached and immutable. The public workspace exports and direct client type
 exports remain available.
 
+`admitDepthIntrinsicsByCamera` admits complete camera calibration banks from
+deployment and launch-profile configuration. Camera names are nonblank and at
+most 256 characters; focal lengths are finite and positive, principal points
+are finite, and calibration identities use the same request limits. Admission
+clones and freezes both the bank and each camera's values. The bank has a null
+prototype. Native configuration, prepared profiles and UpperRun each retain an
+admitted snapshot. A profile inherits the deployment bank when its field is
+omitted; a supplied bank replaces that default, including an explicit empty bank.
+See [profile calibration bindings](../../../docs/implementation/native-workspace.md#profile-camera-calibrations).
+
 Requests use PNG, JPEG or WebP, nonempty encoded images/masks up to 32 MiB,
 safe integer dimensions up to four million source pixels, source-bounded integer
 ROIs and finite positive focal lengths. SAM prompts allow 1–1,024 Unicode code

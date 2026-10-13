@@ -17,6 +17,22 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Per-profile camera calibration admission and propagation pass 44 CPU checks
+through four configured native factories and the idle production HTTP server.
+Prepared defaults, explicit profile banks and empty banks preserve their selected
+values after caller mutation. Public launch metadata keeps calibrations private;
+all services remain idle and the writer/listener release. Saved original RoboCasa
+and RoboDojo values establish this configuration scope, with zero native allocation.
+See [profile calibration checks](cpu-release-validation.md#profile-camera-calibration-admission).
+Source-camera accuracy and loaded-model/provider task requirements remain below.
+
+The configured CPU campaign passes thirty-nine components and 1,372 cases.
+Independent checks match 694 source/input comparisons, thirty-nine released
+process groups and exact original camera values from both configuration
+derivatives. The empty production journal reopens unchanged and releases its
+writer. Evidence: `.local/work/depth-calibration-cpu-campaign-20261012/independently-verified.json`
+and its `depth-calibrations/independently-verified.json`. Native allocations remain zero.
+
 SAM3.1/YOLO26 response admission belongs to `perception/src/model-responses.ts`.
 Three original SAM responses and six YOLO results pass 143 CPU checks with exact
 returned values and unchanged source files. Independent NumPy/Pillow inspection

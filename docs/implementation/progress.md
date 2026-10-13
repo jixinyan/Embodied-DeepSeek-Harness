@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-12 · Spec v1.146 · v1 release acceptance in progress.
+Updated: 2026-10-12 · Spec v1.147 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,30 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Each native environment/launch profile retains its own camera calibration bank.
+Native configuration, deployment preparation and UpperRun admit detached,
+immutable snapshots; Session tasks select their profile bank. Omission inherits
+the deployment default and a supplied bank replaces it, including `{}`. Common
+model/SAM/YOLO endpoints can serve profiles with different cameras. Private banks
+participate in native factory identity and remain absent from public metadata.
+Forty-four CPU checks pass through all four actual configured factories and an
+idle production HTTP server using saved RoboCasa and RoboDojo calibration values.
+Invalid fields reject, input mutation preserves prepared values, services remain
+idle, and the empty journal's writer and HTTP listener release. No model,
+simulator or GPU allocates. This scope establishes configuration admission and
+propagation; source-camera accuracy and loaded-provider workflows retain native
+acceptance. See [profile calibration checks](cpu-release-validation.md#profile-camera-calibration-admission).
+Evidence: `.local/work/depth-calibration-binding-final-20261012/acceptance.json`.
+
+The complete configured CPU campaign passes thirty-nine components and 1,372
+cases. Independent checks match 694 source/input comparisons and all thirty-nine
+released diagnostic process groups. Four native profile identities, sixteen
+calibration source/implementation identities and both configuration derivatives
+verify independently. Original camera values remain exact, the empty journal
+reopens unchanged, and the writer releases. Model/simulator/GPU allocations remain
+zero. Evidence: `.local/work/depth-calibration-cpu-campaign-20261012/independently-verified.json`
+and its `depth-calibrations/independently-verified.json`.
 
 SAM3.1/YOLO26 response admission belongs to `perception/src/model-responses.ts`.
 The HTTP clients retain transport/deadline ownership; existing client type exports
