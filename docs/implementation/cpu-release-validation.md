@@ -731,6 +731,12 @@ The [Desktop guide](../../apps/desktop/README.md#acceptance) provides the comman
 
 ## Consolidated CPU campaign
 
+The campaign includes the native DSH core/extension diagnostic and configured
+task-plan storage diagnostic in every configuration. They use the same declared
+output directory, process-group ownership, source hashing and final publication
+rules as policy, transport, perception and Console checks. Private local journals
+and native Session scopes require no model or simulator allocation.
+
 Each diagnostic runs asynchronously in its own POSIX process group. A normally
 completed component publishes `<component>.process.json` with the actual PID,
 exit status and confirmed group release; the campaign records its digest.
