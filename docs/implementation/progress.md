@@ -60,8 +60,22 @@ and disposed scopes. Fifteen core tool cases preserve private files/questions
 and release the journal writer. No model, simulator or GPU executes. Evidence:
 `.local/work/tool-bindings-configured-final-20261013/acceptance.json`,
 `.local/work/tool-bindings-configured-final-20261013/native-tool-outcomes.json`,
-`.local/work/tool-bindings-core-20261013/acceptance.json` and
+`.local/work/tool-bindings-core-final-20261013/acceptance.json` and
 `.local/work/tool-bindings-source-complete-20261013.log`.
+
+Exact source `0a341d6` matches thirty committed source comparisons on macOS
+and twenty-nine on isolated Linux. All twenty-eight configuration cases, seven
+native checks, six native tool outcomes and five original input identities match
+across platforms. Both platforms release their hosts, agents and journal writers.
+The actual Linux runner exits, isolated source stays clean and canonical server
+changes remain unchanged. Ubuntu CI `38380323559` passes fresh installation,
+full source checks and 78 runtime cases at the same commit. Downloaded artifacts
+match 90 source comparisons and 41 inputs; production readers preserve seven
+plan journals and all 338 retry events in 22 native Sessions with released writers.
+Evidence: `.local/work/tool-bindings-independent-20261013.json`,
+`.local/work/tool-bindings-platforms-independent-20261013.json`,
+`.local/work/ci-tool-bindings-inspection-20261013.json` and
+`.local/work/ci-tool-bindings-native-independent-20261013.json`.
 
 Native deployment and workspace ports use one schema in the native configuration
 module. JSON values are integer numbers from 1 through 65535; omitted native

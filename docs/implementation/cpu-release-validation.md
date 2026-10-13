@@ -13,7 +13,8 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 | --- | --- |
 | Configured production campaign | `88f1099`: 40 components, 1,508 cases, 858 independently inspected source/input comparisons, 157 exact-commit production/checker files and 40 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `88f1099`, run `38376212894`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
+| Latest Ubuntu source/installation CI | `0a341d6`, run `38380323559`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 90 independently checked exact-commit source comparisons |
+| Native tool names and extension admission | `0a341d6` on macOS and isolated Linux: 47 helper/Team-loader cases, ten authored Teams, 28 original-configuration cases, seven native scope/dispatch checks and fifteen core tool cases; original inputs and canonical server changes remain unchanged |
 | Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `88f1099` |
 | Native Console port admission | `88f1099` on macOS and isolated Linux: 81 cases and 81 independently repeated reads per platform, 66 declared JSON derivatives and 15 source identities; all outcomes match, original bindings remain unchanged and the server checkout is preserved |
 | GPT profile configuration | `b69d927`: 60 declared original-profile derivatives cover modes, demonstration metadata, gateway ports and worker endpoints; 46 reject and 14 admit with unchanged original bindings |
@@ -757,7 +758,22 @@ argument admission, cancellation and scope disposal. Evidence:
 `native-tool-outcomes.json`. These scopes perform no model or physical execution.
 The core diagnostic now records fifteen production/checker source identities,
 including the shared name module; its fifteen actual tool cases pass with a
-released host and journal writer at `.local/work/tool-bindings-core-20261013/`.
+released host and journal writer at `.local/work/tool-bindings-core-final-20261013/`.
+
+At `0a341d6`, independent inspection matches thirty committed source comparisons
+on macOS and twenty-nine on isolated Linux. All twenty-eight configured cases,
+seven native checks and six original tool outcomes agree across platforms. Five
+original model/provider input identities match. The actual Linux runner exits,
+isolated source stays clean and canonical server changes remain unchanged.
+Ubuntu CI `38380323559` passes full source checks, fresh installation and 78
+runtime cases. Downloaded artifacts match 90 source comparisons and 41 input
+identities; production readers preserve seven plan journals and 338 retry events
+in 22 Sessions, with released writers. Evidence:
+`.local/work/tool-bindings-independent-20261013.json`,
+`.local/work/tool-bindings-platforms-independent-20261013.json`,
+`.local/work/ci-tool-bindings-inspection-20261013.json`,
+`.local/work/ci-tool-bindings-plans-independent-20261013.json` and
+`.local/work/ci-tool-bindings-native-independent-20261013.json`.
 
 `tools/core-definition.ts` owns native core definition assembly, assignment-specific
 parameters, provider timeout selection, existing DSH argument validation, EDH input

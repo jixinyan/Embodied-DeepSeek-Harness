@@ -17,6 +17,22 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Native tool name admission is verified at `0a341d6`. The tools module owns
+logical IDs, native name projection and collision checks; Deployment, Team
+loading and direct UpperRun construction apply the same rule before role creation.
+Forty-seven public helper/Team-loader cases and ten authored Teams pass.
+Twenty-eight original deployment cases, seven actual native DSH checks and six
+tool outcomes match on macOS and isolated Linux, with five original input
+identities preserved. Core dispatch passes fifteen cases with released writers.
+The actual Linux runner releases, isolated source stays clean and canonical
+server changes remain unchanged. Ubuntu CI `38380323559` passes fresh installation,
+full source checks and 78 runtime cases. Downloaded artifacts match 90 exact-source
+comparisons and 41 inputs; production readers preserve seven plan journals and
+all 338 retry events in 22 Sessions. These scopes allocate no model, simulator or
+GPU. Evidence: `.local/work/tool-bindings-platforms-independent-20261013.json`
+and `.local/work/ci-tool-bindings-inspection-20261013.json`. See
+[native tool admission](cpu-release-validation.md#core-tool-definitions-and-native-dispatch).
+
 Native deployment and workspace ports share one schema in the configuration
 module. Original four-provider files pass eighty-one Console port checks and
 sixty-six declared JSON derivatives; independent readers repeat every case,

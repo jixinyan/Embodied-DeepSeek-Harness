@@ -24,6 +24,13 @@ actual native DSH checks establish custom-tool schema, scope, cancellation and
 source-file behavior. Existing core dispatch passes fifteen cases with released
 writers. These checks execute no model or simulator.
 
+Source `0a341d6` preserves the same configuration and native outcomes on macOS
+and isolated Linux, with original model/provider bytes unchanged and the Linux
+runner released. Canonical server changes remain unchanged. Its Ubuntu CI
+`38380323559` passes fresh installation, full source checks and 78 runtime cases;
+downloaded artifacts match 90 source comparisons and 41 inputs. See
+[native tool admission](cpu-release-validation.md#core-tool-definitions-and-native-dispatch).
+
 Native deployment and workspace ports share one schema owned by the native
 configuration module. Original four-provider files pass eighty-one Console port
 checks and sixty-six declared configuration derivatives, with valid model/Team/
