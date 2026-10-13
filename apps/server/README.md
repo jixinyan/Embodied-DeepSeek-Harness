@@ -6,10 +6,17 @@ the domain store and retained environment factories. Use the
 simulators, embodiments, checkpoints and model services through one Console.
 
 - [runtime.ts](src/runtime.ts): original DSH services and cooperative timeout policy.
-- [native-deployment.mjs](src/native-deployment.mjs): shared native configuration,
-  Team/profile admission, model/perception binding, managed-service leases and
-  policy/environment assembly for all four backends. Each profile retains its
-  own admitted camera calibration bank and includes it in configuration identity.
+- [native-deployment-configuration.mjs](src/native-deployment-configuration.mjs):
+  provider configuration, task/catalog/checkpoint admission, Team/model/service
+  bindings, camera banks and native context-management defaults. It performs no
+  service or environment allocation.
+- [native-policy-environment.mjs](src/native-policy-environment.mjs): learned
+  worker allocation and RoboDojo direct/hybrid GPT gateway lifecycle, including
+  independent DSH host, demonstrations, ordered audit writes and confirmed cleanup.
+- [native-deployment.mjs](src/native-deployment.mjs): model/perception assembly,
+  launch-profile factories, managed-service leases and runnable Console startup.
+  Each profile's camera bank participates in configuration identity. Original
+  configuration/root exports remain available from this entry point.
 - [native-workspace.mjs](src/native-workspace.mjs): multiple configured providers
   in one Console, profile namespacing, shared model/perception admission and complete
   service release. Example deployment files supply runnable entry points.

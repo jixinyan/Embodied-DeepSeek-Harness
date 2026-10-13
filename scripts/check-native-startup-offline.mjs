@@ -57,6 +57,8 @@ const sources = [
   resolve(nativeDeploymentRoot, 'examples/deployments/native-workspace.mjs'),
   resolve(nativeDeploymentRoot, 'examples/deployments/native-live.mjs'),
   resolve(nativeDeploymentRoot, 'apps/server/src/native-deployment.mjs'),
+  resolve(nativeDeploymentRoot, 'apps/server/src/native-deployment-configuration.mjs'),
+  resolve(nativeDeploymentRoot, 'apps/server/src/native-policy-environment.mjs'),
   resolve(nativeDeploymentRoot, 'apps/server/src/native-workspace.mjs'),
   resolve(nativeDeploymentRoot, 'scripts/check-native-startup-offline.mjs'),
   ...(selected ? [resolve(nativeDeploymentRoot, `examples/deployments/${entry}-live.mjs`)] : []),

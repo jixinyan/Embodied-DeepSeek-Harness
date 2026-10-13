@@ -42,6 +42,8 @@ const sources = [
   resolve(root, 'apps/server/src/native-worker.ts'),
   resolve(root, 'examples/deployments/native-live.mjs'),
   resolve(root, 'apps/server/src/native-deployment.mjs'),
+  resolve(root, 'apps/server/src/native-deployment-configuration.mjs'),
+  resolve(root, 'apps/server/src/native-policy-environment.mjs'),
   resolve(root, 'apps/server/src/native-workspace.mjs'),
   resolve(root, 'scripts/check-native-scene-configuration.mjs'),
 ];

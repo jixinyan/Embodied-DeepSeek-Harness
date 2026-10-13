@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-12 · Spec v1.147 · v1 release acceptance in progress.
+Updated: 2026-10-12 · Spec v1.148 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,27 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Native configuration, execution-environment lifetime and deployment assembly have
+explicit source owners. `native-deployment-configuration.mjs` owns provider,
+Team/model/task/checkpoint/service admission and native context defaults.
+`native-policy-environment.mjs` owns learned-worker allocation and RoboDojo's
+direct/hybrid gateway, independent host and ordered audit lifetime.
+`native-deployment.mjs` assembles model/perception/profile factories, managed-service
+leases and Console startup, and preserves its original public configuration/root
+exports. TypeScript parser/printer comparison against `f4317f5` verifies all five
+complete function bodies, parameters and five constant initializers. Actual
+module imports verify the five public export names and shared configuration
+function identity. Evidence: `.local/work/native-deployment-move-source-20261012.json`.
+
+The same source passes the complete thirty-nine-component CPU campaign and 1,372
+cases. Independent inspection verifies 715 source/input comparisons and thirty-nine
+released process groups. Four original configured profiles and both camera
+configuration derivatives retain exact selected values; eighteen calibration
+source/implementation identities match. Original journals/images remain unchanged,
+diagnostic writers release and model/simulator/GPU allocations remain zero.
+Evidence: `.local/work/native-deployment-modules-cpu-campaign-20261012/independently-verified.json`
+and its `depth-calibrations/independently-verified.json`.
 
 Each native environment/launch profile retains its own camera calibration bank.
 Native configuration, deployment preparation and UpperRun admit detached,

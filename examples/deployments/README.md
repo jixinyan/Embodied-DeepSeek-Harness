@@ -14,8 +14,13 @@ does not start a server, allocate an environment, or send model requests.
 
 Execute a selected module through `pnpm exec tsx --tsconfig tsconfig.runtime.json`
 with its path as the final argument. The named variable points to an actual JSON
-configuration. The shared configuration loader and factory belong to
-[native-deployment.mjs](../../apps/server/src/native-deployment.mjs); workspace
+configuration. The shared configuration loader belongs to
+[native-deployment-configuration.mjs](../../apps/server/src/native-deployment-configuration.mjs).
+The factory and runnable startup belong to
+[native-deployment.mjs](../../apps/server/src/native-deployment.mjs); its original
+configuration/root exports remain available. Learned-worker and RoboDojo GPT
+gateway/host/audit lifetime belong to
+[native-policy-environment.mjs](../../apps/server/src/native-policy-environment.mjs). Workspace
 composition belongs to [native-workspace.mjs](../../apps/server/src/native-workspace.mjs).
 The example entries select a provider and invoke those production modules.
 The desktop launch configuration selects the same provider module as

@@ -111,8 +111,13 @@ or decision ownership.
 detached native RGB-D receipts with source identity, pixel/depth statistics,
 calibration, rigid-transform and coordinate consistency checks. NativeTaskBackend
 retains transport, cancellation, current task identity and closure.
-`apps/server/src/native-deployment.mjs` owns native configuration and provider
-assembly; `native-workspace.mjs` composes those providers into one application.
+`apps/server/src/native-deployment-configuration.mjs` owns native configuration,
+Team/model/service bindings, task/checkpoint admission and context defaults.
+`native-policy-environment.mjs` owns learned-worker allocation and the independent
+RoboDojo direct/hybrid gateway/host/audit lifecycle. `native-deployment.mjs` owns
+provider/model/perception assembly, managed-service leases and runnable Console
+startup; `native-workspace.mjs` composes those providers into one application.
+The deployment entry preserves its original configuration/root exports.
 `perception/src/request-inputs.ts` admits detached, immutable camera calibration
 banks. Native profile configuration inherits or replaces its deployment default;
 prepared profiles retain the selected values privately. The Session task route

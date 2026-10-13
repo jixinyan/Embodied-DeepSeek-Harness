@@ -30,6 +30,9 @@ const sources = [
   resolve(dirname(configurationPath), settings.configuration.modelConfiguration),
   resolve(nativeDeploymentRoot, 'harness/agent-runtime/models/src/model-failures.ts'),
   resolve(nativeDeploymentRoot, 'scripts/check-native-workspace-readiness.mjs'),
+  resolve(nativeDeploymentRoot, 'apps/server/src/native-deployment.mjs'),
+  resolve(nativeDeploymentRoot, 'apps/server/src/native-deployment-configuration.mjs'),
+  resolve(nativeDeploymentRoot, 'apps/server/src/native-policy-environment.mjs'),
   ...Object.values(settings.configuration.deployments).map((entry) =>
     resolve(dirname(configurationPath), entry.configuration),
   ),

@@ -41,6 +41,8 @@ const sources = [
     'examples/deployments/native-workspace.mjs',
     'examples/deployments/native-live.mjs',
     'apps/server/src/native-deployment.mjs',
+    'apps/server/src/native-deployment-configuration.mjs',
+    'apps/server/src/native-policy-environment.mjs',
     'apps/server/src/native-workspace.mjs',
     'scripts/check-service-startup-owner-offline.mjs',
   ].map((path) => resolve(nativeDeploymentRoot, path)),

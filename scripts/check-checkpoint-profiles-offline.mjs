@@ -208,6 +208,8 @@ for (const [path, digest] of Object.entries(sources))
 for (const file of [
   'apps/server/src/deployment.ts',
   'apps/server/src/native-deployment.mjs',
+  'apps/server/src/native-deployment-configuration.mjs',
+  'apps/server/src/native-policy-environment.mjs',
   'apps/server/src/native-workspace.mjs',
   'apps/server/src/native-worker-configuration.ts',
   'apps/server/src/native-worker.ts',

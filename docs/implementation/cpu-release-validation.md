@@ -3133,6 +3133,33 @@ reports preserve every declared case name with zero failures or skips. Evidence:
 `.local/work/ci-native-reference-independently-verified-20261012.json` and
 `.local/work/ci-native-reference-native-independently-verified-20261012.json`.
 
+## Native deployment module ownership
+
+`native-deployment-configuration.mjs` owns provider settings, Team/model bindings,
+task/checkpoint admission, managed-service references, camera banks and native
+context defaults. `native-policy-environment.mjs` owns learned-worker allocation
+and RoboDojo direct/hybrid gateway, independent DSH host, demonstrations, ordered
+audit writes and cleanup. `native-deployment.mjs` assembles model/perception/profile
+factories, managed-service leases and runnable Console startup. Its original
+configuration/root exports remain available to every existing entry point.
+
+Actual TypeScript parser/printer inspection against committed source `f4317f5`
+matches five complete function bodies, parameters and five constant initializers.
+Actual module imports check all five public exports, repository-root resolution
+and shared configuration function identity. Evidence:
+`.local/work/native-deployment-move-source-20261012.json`.
+
+The complete configured CPU campaign passes thirty-nine components and 1,372
+cases. Independent inspection matches 715 source/input comparisons and thirty-nine
+released diagnostic process groups. Four configured native profiles and both
+camera configuration derivatives preserve their exact values; eighteen calibration
+source/implementation identities match. Original journals and image sources remain
+unchanged, writers release, and model/simulator/GPU allocations remain zero.
+Evidence: `.local/work/native-deployment-modules-cpu-campaign-20261012/independently-verified.json`
+and its `depth-calibrations/independently-verified.json`.
+These checks establish code ownership and CPU configuration/lifetime boundaries;
+loaded model/policy and complete native task gates retain their release requirements.
+
 ## Profile camera calibration admission
 
 `perception/src/request-inputs.ts` owns camera-bank admission. Native configuration

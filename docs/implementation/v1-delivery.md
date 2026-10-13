@@ -17,6 +17,17 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Native configuration admission, policy/environment lifetime and deployment
+assembly have explicit source files. TypeScript parser/printer comparison
+preserves all five complete original function bodies/parameters and five constant
+initializers; actual module imports preserve the public API and configuration
+entry identity. The complete configured CPU campaign passes thirty-nine components
+and 1,372 cases, with 715 independent source/input comparisons and thirty-nine
+released process groups. Four configured profiles, unchanged original evidence and
+released writers verify without native allocation. See the
+[source map](../development/code-map.md) and
+[deployment source checks](cpu-release-validation.md#native-deployment-module-ownership).
+
 Per-profile camera calibration admission and propagation pass 44 CPU checks
 through four configured native factories and the idle production HTTP server.
 Prepared defaults, explicit profile banks and empty banks preserve their selected

@@ -85,6 +85,8 @@ const sources = await Promise.all(
         'scripts/run-live-acceptance.mjs',
         'scripts/native-campaign.mjs',
         'apps/server/src/native-deployment.mjs',
+        'apps/server/src/native-deployment-configuration.mjs',
+        'apps/server/src/native-policy-environment.mjs',
         'apps/server/src/native-workspace.mjs',
         'apps/server/src/managed-services.ts',
       ].map((path) => resolve(nativeDeploymentRoot, path)),

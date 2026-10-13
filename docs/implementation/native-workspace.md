@@ -8,6 +8,14 @@ Each profile retains its own trusted Team file and role directory, so R1Pro and
 arm-based environments can use different planning and verification prompts.
 Profile selection displays its resolved Team before allocating a Session.
 
+Provider configuration admission belongs to
+[native-deployment-configuration.mjs](../../apps/server/src/native-deployment-configuration.mjs).
+[native-policy-environment.mjs](../../apps/server/src/native-policy-environment.mjs)
+owns learned-worker allocation and RoboDojo's independent direct/hybrid GPT
+gateway, audit and host lifetime. The original deployment entry assembles model,
+perception and profile factories, manages service leases and preserves its
+configuration/root exports. The workspace uses that same entry for each provider.
+
 Create an actual workspace JSON, for example `.local/native-workspace.json`:
 
 ```json

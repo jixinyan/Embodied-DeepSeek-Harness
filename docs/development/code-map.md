@@ -11,6 +11,8 @@ production path from Session selection to native commands and formal verificatio
 | --- | --- |
 | Compose configured native providers | [apps/server/src/native-workspace.mjs](../../apps/server/src/native-workspace.mjs) |
 | Bind one provider, Team and launch profile | [apps/server/src/native-deployment.mjs](../../apps/server/src/native-deployment.mjs) |
+| Read native configuration and validate Team/model/task/checkpoint/service bindings | [native-deployment-configuration.mjs](../../apps/server/src/native-deployment-configuration.mjs) |
+| Allocate learned or direct/hybrid GPT execution and own gateway/host/audit cleanup | [native-policy-environment.mjs](../../apps/server/src/native-policy-environment.mjs) |
 | Launch the unified Console or a selected backend | [examples/deployments](../../examples/deployments/README.md) |
 | Start the HTTP/SSE application | [apps/server/src/http-server.ts](../../apps/server/src/http-server.ts) |
 | Own native CLI startup, signals and resource release | [apps/server/src/console-process.ts](../../apps/server/src/console-process.ts) |
@@ -32,7 +34,7 @@ production path from Session selection to native commands and formal verificatio
 | Resolve configured policy/direct/hybrid execution modes | [execution/src/execution-mode.ts](../../harness/agent-runtime/execution/src/execution-mode.ts) |
 | Admit active rotation requests and measured motion receipts | [observation/src/rotation.ts](../../harness/agent-runtime/observation/src/rotation.ts); NativeTaskBackend retains task identity and uses NativeWorkerTransport |
 | Admit and detach SAM/YOLO image, mask, ROI, prompt and calibration inputs | [perception/src/request-inputs.ts](../../harness/agent-runtime/perception/src/request-inputs.ts); both HTTP clients use this admission |
-| Configure independent camera calibrations for environment/launch profiles | [native-deployment.mjs](../../apps/server/src/native-deployment.mjs) resolves defaults and overrides; [deployment.ts](../../apps/server/src/deployment.ts) prepares immutable private banks; the Session route in [http-server.ts](../../apps/server/src/http-server.ts) passes the selected bank to UpperRun |
+| Configure independent camera calibrations for environment/launch profiles | [native-deployment-configuration.mjs](../../apps/server/src/native-deployment-configuration.mjs) resolves defaults and overrides; [deployment.ts](../../apps/server/src/deployment.ts) prepares immutable private banks; the Session route in [http-server.ts](../../apps/server/src/http-server.ts) passes the selected bank to UpperRun |
 | Admit source-bound SAM/YOLO model responses and detached result values | [perception/src/model-responses.ts](../../harness/agent-runtime/perception/src/model-responses.ts); HTTP clients own their endpoints, bounded streams and cancellation |
 | Construct perception tool results and generated evidence metadata | [perception/src/results.ts](../../harness/agent-runtime/perception/src/results.ts); UpperRun owns provider admission, image storage and assignment grants |
 | Admit immutable measurement requests and source-bound RGB-D geometry receipts | [perception/src/metric-measurement.ts](../../harness/agent-runtime/perception/src/metric-measurement.ts); NativeTaskBackend retains transport and task lifetime |

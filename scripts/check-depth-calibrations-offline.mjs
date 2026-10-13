@@ -63,6 +63,8 @@ const implementation = await Promise.all(
     'apps/server/src/deployment.ts',
     'apps/server/src/http-server.ts',
     'apps/server/src/native-deployment.mjs',
+    'apps/server/src/native-deployment-configuration.mjs',
+    'apps/server/src/native-policy-environment.mjs',
     'apps/server/src/native-workspace.mjs',
     'scripts/check-depth-calibrations-offline.mjs',
   ].map(async (path) => ({ path, sha256: hash(await readFile(resolve(root, path))) })),
