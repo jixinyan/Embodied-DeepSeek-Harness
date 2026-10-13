@@ -82,6 +82,7 @@ All Python provider code belongs under
 | Admit actions and enforce execution budgets | [execution/action_gate.py](../../harness/physical-runtime/src/physical_harness/execution/action_gate.py) |
 | Compose an inference client with ActionGate and preserve rollout failures | [execution/policy_rollout.py](../../harness/physical-runtime/src/physical_harness/execution/policy_rollout.py) |
 | Confirm simulator execution and stopping | [execution/native_device.py](../../harness/physical-runtime/src/physical_harness/execution/native_device.py) |
+| Fence new action admission on wall-time expiry or lease loss; own watchdog thread startup and disarming | [execution/watchdog.py](../../harness/physical-runtime/src/physical_harness/execution/watchdog.py) |
 | Add a WebSocket policy protocol or checkpoint | [policies](../../harness/physical-runtime/src/physical_harness/policies/README.md) |
 | Validate observation identity, RGB PNGs and float32 states before model calls | [policies/observation_inputs.py](../../harness/physical-runtime/src/physical_harness/policies/observation_inputs.py) |
 | Own inference threads, cancellation and operation records | [policies/inference.py](../../harness/physical-runtime/src/physical_harness/policies/inference.py) |
@@ -120,6 +121,7 @@ implementations load in their separately configured service processes.
 | Verify complete CPU CI artifacts against their exact Git source and publish consolidated inspection | [check-cpu-runtime-evidence.py](../../scripts/check-cpu-runtime-evidence.py) |
 | Exercise actual DSH core/extension dispatch, independent Session scopes, private files and local clarification persistence | [check-core-tools-offline.mjs](../../scripts/check-core-tools-offline.mjs) |
 | Check configured task-plan admission, persisted reads and journal compaction without native allocation | [check-task-plans-offline.mjs](../../scripts/check-task-plans-offline.mjs) |
+| Check actual watchdog threads, early/active/concurrent close and OS resource-lease fencing | [check-watchdog-owner-offline.py](../../scripts/check-watchdog-owner-offline.py) |
 | Check custom Team file access, native directory links, result schemas and builtin mappings | [check-team-paths-offline.mjs](../../scripts/check-team-paths-offline.mjs) |
 | Find exact configured profiles and their acceptance boundaries | [configuration matrix](../implementation/supported-configurations.md) |
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |

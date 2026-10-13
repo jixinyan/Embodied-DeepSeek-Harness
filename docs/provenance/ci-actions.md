@@ -32,7 +32,7 @@ admission is limited to those two named files inside `.local/work`.
 
 ## Production CPU runtime checks
 
-After source and installation admission, the workflow runs six production
+After source and installation admission, the workflow runs seven production
 diagnostics using the installed project Node.js and isolated Python environment. Its actual
 installation uses the `policy,robodojo,recording` extras, including the adapter's
 msgpack, NumPy and psutil imports and PyAV 18.1.0 for recording resource checks.
@@ -46,6 +46,7 @@ Native SDK environments retain their provider-specific constraints.
 | Diagnostic | Exercised boundary | Cases |
 | --- | --- | --- |
 | `check-native-device-owner-offline.py` | Actual owner-thread file/pipe operations, cancelled and concurrent close, queued bind/stop/resume rejection | 6 |
+| `check-watchdog-owner-offline.py` | Actual watchdog threads, early/active/concurrent disarming, same-thread close, deadline and OS resource-lease fencing | 7 |
 | `check-native-session-owner-offline.py` | Shared device/recording closure, original file/publication errors and independent caller cancellation | 4 |
 | `check-worker-transport-offline.mjs` | Actual Python Worker processes, dedicated response pipe, stdin closure, malformed/oversized JSON and disconnected output | 16 |
 | `check-core-tools-offline.mjs` | Actual native DSH core/extension dispatch, detached assignment bindings, private file admission/versions, cancelled writes, local question persistence and turn conclusion | 34 |
@@ -53,10 +54,10 @@ Native SDK environments retain their provider-specific constraints.
 | `check-model-retry-offline.mjs` | Actual refused TCP connections, native retry chains, independent Sessions, cancellation/disposal and durable pending-history release | 20 |
 
 Each diagnostic records production-source hashes and confirmed resource outcomes.
-The actual Ubuntu diagnostics pass all 97 cases without importing model
-or simulator SDKs or allocating physical environments. Their source hashes match
+The diagnostics require all 104 cases without importing model
+or simulator SDKs or allocating physical environments. Source hashes must match
 the triggering repository revision. The workflow requires each named `acceptance.json` before
-publishing its `cpu-runtime-<commit>` artifact; the artifact contains all six
+publishing its `cpu-runtime-<commit>` artifact; the artifact contains all seven
 diagnostic directories. Missing or unsuccessful checks terminate admission.
 
 `check-cpu-runtime-evidence.py` reads the complete installation and runtime
@@ -64,8 +65,8 @@ artifacts and compares their source hashes to the triggering Git commit. It
 requires the expected imports, complete CPU dependency provenance, all runtime
 cases and released-owner/Worker outcomes. Source CI writes its `evidence.json`
 only after this admission; runtime artifact upload includes that consolidated
-report. The current `edh.cpu_runtime_evidence.v5` admission requires 97 cases,
-41 input digests, the original tool/plan/retry journals and 96 exact-commit
+report. The current `edh.cpu_runtime_evidence.v6` admission requires 104 cases,
+42 input digests, the original tool/plan/retry journals and 102 exact-commit
 source comparisons. The same command
 verifies downloaded artifacts locally. Different-source,
 optimized-Python and existing-output invocations terminate before publication.

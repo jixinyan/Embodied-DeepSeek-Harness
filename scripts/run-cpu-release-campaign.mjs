@@ -196,6 +196,7 @@ for (const [id, options] of [
 ])
   add(id, 'check-worker-host-offline.mjs', ['--python', python, '--config', worker, ...options]);
 add('device-owner', 'check-native-device-owner-offline.py', []);
+add('watchdog-owner', 'check-watchdog-owner-offline.py', []);
 add('model-retry', 'check-model-retry-offline.mjs', []);
 add('agent-tools', 'check-core-tools-offline.mjs', []);
 add('task-plans', 'check-task-plans-offline.mjs', []);

@@ -63,6 +63,8 @@ def main():
         runtime / "task-plans/data/records.jsonl",
         *(runtime / "task-plans/read" / name / "records.jsonl" for name in plan_read_names),
     ]
+    watchdog_path = runtime / "watchdog-owner/acceptance.json"
+    files.append(watchdog_path)
     inputs = [identity(path) for path in files]
     report, manifest, device, session, transport, tools = [json.loads(path.read_bytes()) for path in files[:6]]
     plans = json.loads(files[7].read_bytes())
@@ -125,6 +127,27 @@ def main():
             path.relative_to(Path(manifest["environment"]))
 
     cases = {}
+    watchdog = json.loads(watchdog_path.read_bytes())
+    assert watchdog["schemaVersion"] == "edh.watchdog_owner_cpu.v1"
+    assert watchdog["actualThreadsReleased"] is True
+    assert len(watchdog["sources"]) == 3
+    for path, sha256 in watchdog["sources"].items():
+        compare(path, sha256)
+    assert watchdog["filelockVersion"] == next(entry["version"] for entry in manifest["distributions"] if entry["name"] == "filelock")
+    assert [entry["name"] for entry in watchdog["cases"]] == [
+        "close-unstarted", "close-running", "repeat-start", "deadline", "lease-loss", "self-close", "concurrent-start-close",
+    ]
+    for field in ("gpuJobs", "modelCalls", "nativeEnvironmentAllocations", "controls"):
+        assert type(watchdog[field]) is int and watchdog[field] == 0
+    for entry in watchdog["cases"]:
+        assert entry["threadReleased"] is True and entry["closedStartRejected"] is True and entry["actualResourceReadmitted"] is True
+        expected = ["backend_error"] if entry["name"] == "lease-loss" else ["budget_exhausted"] if entry["name"] in ("deadline", "self-close") else []
+        assert entry["notifications"] == expected
+        if entry["name"] != "concurrent-start-close":
+            assert entry["threadStarted"] is (entry["name"] != "close-unstarted")
+        else:
+            assert entry["concurrentStartRejected"] is (not entry["threadStarted"])
+    cases["watchdog-owner"] = 7
     for component, record, expected_count in (
         ("device-owner", device, 6), ("session-owner", session, 4),
         ("worker-transport", transport, 16),
@@ -256,7 +279,7 @@ def main():
     assert {case["name"]: case["rejected"] for case in plans["checks"]} == expected_plans
     admissions = plans["readAdmissions"]
     assert len(admissions) == len(plan_read_names)
-    for name, admission, saved in zip(plan_read_names, admissions, inputs[9:], strict=True):
+    for name, admission, saved in zip(plan_read_names, admissions, inputs[9:9 + len(plan_read_names)], strict=True):
         assert admission["name"] == name
         assert Path(admission["journalPath"]) == Path("read") / name / "records.jsonl"
         assert admission["journalSha256"] == saved["sha256"]
@@ -388,7 +411,7 @@ def main():
     assert [identity(path) for path in files] == inputs, "CPU evidence changed during inspection."
     output.parent.mkdir(parents=True, exist_ok=True)
     result = {
-        "schemaVersion": "edh.cpu_runtime_evidence.v5",
+        "schemaVersion": "edh.cpu_runtime_evidence.v6",
         "sourceRevision": revision,
         "checker": identity(Path(__file__)),
         "inputs": inputs, "sourceComparisons": comparisons,

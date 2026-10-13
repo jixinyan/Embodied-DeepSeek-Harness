@@ -10,8 +10,10 @@ leases and action progression belong to the physical Worker.
 [native worker client](../../../apps/server/src/native-worker.ts) connects it to
 the Python worker and its simulator owner thread. RoboCasa acceptance includes
 actual GR00T controls, camera events, cancellation, confirmed pause/stop and
-formal GT failure. Shared device resource arbitration and an independent device
-watchdog remain required by the [v1 register](../../../docs/implementation/v1-delivery.md).
+formal GT failure. Shared device resource arbitration and the independent
+watchdog belong to the [physical runtime](../../../docs/implementation/physical-safety.md).
+The [v1 register](../../../docs/implementation/v1-delivery.md) retains additional
+loaded-provider stop/fault and hardware acceptance requirements.
 
 See [upper-runtime integration](../../../docs/implementation/upper-runtime.md),
 [current capability](../../../docs/implementation/features.md) and
@@ -33,7 +35,9 @@ This boundary permits a Planner resume decision and does not trigger formal chec
 A pause failure fails the run and requests stop. Providers must bound acknowledgement
 latency and publish confirmed state; a settled Promise alone is not a device-stop
 confirmation. Stop/close also remain independent of an aborted model call. Cancellation
-does not establish that hardware stopped. An independent device watchdog remains pending.
+does not establish that hardware stopped. The physical Worker's independent
+watchdog fences new action admission on lease loss or deadline and schedules
+ActionGate stopping; native owner-thread confirmation establishes the device boundary.
 
 `query()` reads the client's immediate status projection. The native transport
 updates that projection before notifying `subscribe` listeners; this method does

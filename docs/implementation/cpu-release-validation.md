@@ -3869,6 +3869,38 @@ These checks establish original-request preparation, source identity and CPU
 process ownership. Current loaded-policy and complete native task behavior retain
 their separate release requirements.
 
+## Watchdog thread ownership
+
+`execution/watchdog.py` serializes startup and disarming with its lifecycle lock.
+Close before startup or repeated close creates no thread; startup after closure
+fails before allocation. Active close joins the original thread, and notification
+can disarm from that thread. Deadline/lease-loss fencing preserves callback order
+and its original reason. Worker stopping and native device confirmation retain
+their existing owners.
+
+```sh
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
+  .venv/bin/python scripts/check-watchdog-owner-offline.py \
+  --output .local/work/<new-watchdog-owner-check>
+```
+
+Seven actual thread and ResourceArbiter OS-lease cases verify early/active/repeated
+close, repeated start, deadline, lease loss, same-thread disarming and concurrent
+startup/close. Notifications require prior diagnostic lease fencing; final
+readmission confirms actual OS lock availability. The source-bound report records
+the installed filelock version. These cases enter the configured CPU campaign and
+the source CI's seven-diagnostic, 104-case evidence set. The v6 evidence reader
+requires the watchdog report and exact committed source identities before publication.
+
+The macOS configured campaign passes forty-six components and 1,634 cases, with
+1,036 independently verified source/input/link comparisons and release of all
+forty-six diagnostic process groups. Original journals/images remain unchanged.
+Full source checks compile 75 Python files and 58 diagnostics, import 30 base
+modules and verify 1,436 local documentation links. Evidence:
+`.local/work/watchdog-lifecycle-foundation-cpu-20261013/independently-verified.json`.
+No model, simulator, device action or GPU allocates; loaded-policy and native
+stop/task acceptance retain their release requirements.
+
 ## Required native release evidence
 
 Current-code multi-goal task execution, native stop/timeout races, policy/model

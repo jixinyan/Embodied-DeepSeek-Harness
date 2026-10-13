@@ -13,6 +13,28 @@ not restart when Planner resumes. A budget stop remains eligible for a fresh
 independent Verifier after device confirmation; connection loss remains a failed
 physical boundary. Planner retains all retry and resume decisions.
 
+The watchdog's lifecycle lock serializes startup with disarming. Closing before
+startup or repeating close creates no thread. Closing an active watchdog joins
+its original thread; the notification callback may also disarm its own thread.
+Once closed, startup fails before thread allocation. Concurrent startup/closure
+either releases the started thread or rejects startup before creation. The
+watchdog owns no simulator SDK call or resource-lease release.
+
+```sh
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
+  .venv/bin/python scripts/check-watchdog-owner-offline.py \
+  --output .local/work/<new-watchdog-owner-check>
+```
+
+This diagnostic uses actual watchdog threads and OS ResourceArbiter leases.
+Seven cases cover early/active/repeated close, repeated start, deadline, actual
+lease revocation, same-thread disarming and concurrent startup/closure. Its
+fencing callback releases the diagnostic's actual resource lease, and notification
+requires that release first. The final readmission verifies OS lock availability.
+It supplies no device stop, policy inference or native task-success result.
+Current macOS evidence:
+`.local/work/watchdog-lifecycle-foundation-cpu-20261013/watchdog-owner/acceptance.json`.
+
 ## Shared physical resources
 
 `ResourceArbiter` uses `filelock` OS locks to exclude conflicting commands across

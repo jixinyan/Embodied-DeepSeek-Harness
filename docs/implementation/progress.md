@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.163 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.164 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,20 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+ExecutionWatchdog serializes startup/disarming and joins only its started thread.
+Early and repeated close create no thread, closed startup rejects, and same-thread
+notifications can disarm without self-join. Deadline and lease loss retain their
+original callback order and reasons. The new CPU diagnostic passes seven actual
+thread/OS-lease cases on macOS; final resource readmission and thread release are
+confirmed. The configured campaign and source CI include this diagnostic.
+The complete configured CPU campaign passes forty-six components and 1,634 cases.
+Independent inspection repeats 1,036 source/input/link comparisons and confirms
+release of all forty-six diagnostic groups, unchanged original records/images
+and zero model, simulator or GPU allocation. Full source checks compile 75 Python
+files and 58 diagnostics, import 30 base modules and verify 1,436 local links.
+Evidence: `.local/work/watchdog-lifecycle-foundation-cpu-20261013/independently-verified.json`.
+Linux and current CI validation remain required for this source.
 
 ManagedServices sends graceful shutdown to its complete owned POSIX process group,
 including surviving Console descendants after the package leader has ended.

@@ -78,6 +78,11 @@ jobs:
         env:
           CUDA_VISIBLE_DEVICES: ''
           PYTHONDONTWRITEBYTECODE: '1'
+      - name: Check watchdog threads and lifecycle without allocation
+        run: .venv/bin/python scripts/check-watchdog-owner-offline.py --output .local/work/cpu-runtime/watchdog-owner
+        env:
+          CUDA_VISIBLE_DEVICES: ''
+          PYTHONDONTWRITEBYTECODE: '1'
       - name: Check native model retries with actual refused connections
         run: pnpm exec tsx --tsconfig tsconfig.runtime.json scripts/check-model-retry-offline.mjs --output .local/work/cpu-runtime/model-retry
         env:
@@ -103,8 +108,6 @@ jobs:
         env:
           CUDA_VISIBLE_DEVICES: ''
           TMPDIR: ${{ github.workspace }}/.local/cpu-tmp
-      - name: Require complete CPU runtime artifacts
-        run: test -s .local/work/cpu-runtime/device-owner/acceptance.json && test -s .local/work/cpu-runtime/session-owner/acceptance.json && test -s .local/work/cpu-runtime/worker-transport/acceptance.json && test -s .local/work/cpu-runtime/agent-tools/acceptance.json && test -s .local/work/cpu-runtime/task-plans/acceptance.json
       - name: Verify CPU evidence against the triggering source
         run: .venv/bin/python scripts/check-cpu-runtime-evidence.py --installation .local/work --runtime .local/work/cpu-runtime --source-revision "${{ github.sha }}" --output .local/work/cpu-runtime/evidence.json
       - name: Preserve CPU runtime evidence (v7.0.2)
@@ -115,6 +118,7 @@ jobs:
           include-hidden-files: true
           path: |
             .local/work/cpu-runtime/device-owner/
+            .local/work/cpu-runtime/watchdog-owner/
             .local/work/cpu-runtime/session-owner/
             .local/work/cpu-runtime/worker-transport/
             .local/work/cpu-runtime/agent-tools/

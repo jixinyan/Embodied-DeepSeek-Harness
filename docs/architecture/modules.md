@@ -94,6 +94,9 @@ each responsibility. Native Session operations live in `execution/worker.py`,
 process communication in `execution/worker_transport.py` and original policy
 records in `execution/policy_records.py` inside the physical runtime.
 Native runtime mechanisms remain DSH-owned; see [reuse decision](../implementation/decisions/0003-reuse-dsh-mechanisms.md).
+`execution/watchdog.py` owns the independent monitor thread and its serialized
+start/disarm lifetime. Its callbacks fence native admission and schedule Worker
+stopping; ActionGate and the device owner retain physical boundary confirmation.
 Application assembly connects the runtime services through explicit interfaces.
 `tools/core-definition.ts` assembles core native definitions with assignment
 parameters, provider timeout budgets, DSH argument validation and turn conclusion.

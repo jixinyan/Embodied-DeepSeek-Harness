@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from threading import Event, Thread, current_thread
+from threading import Event, Lock, Thread, current_thread
 import time
 from typing import Callable
 
@@ -18,14 +18,21 @@ class ExecutionWatchdog:
         self._notify = notify
         self._interval_s = interval_s
         self._stop = Event()
+        self._lifecycle = Lock()
         self._thread = Thread(target=self._run, name="edh-device-watchdog", daemon=True)
 
     def start(self) -> None:
-        self._thread.start()
+        with self._lifecycle:
+            if self._stop.is_set():
+                raise RuntimeError("Execution watchdog is closed.")
+            self._thread.start()
 
     def close(self) -> None:
-        self._stop.set()
-        if current_thread() is not self._thread:
+        # start 与 close 使用相同的 Lock，关闭后禁止创建监控线程。
+        with self._lifecycle:
+            self._stop.set()
+            started = self._thread.ident is not None
+        if started and current_thread() is not self._thread:
             self._thread.join()
 
     def _run(self) -> None:
