@@ -11,10 +11,11 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
-| Configured production campaign | `8c75a65`: 40 components, 1,427 cases, 792 independently inspected source/input comparisons, 157 exact-commit production/checker files and 40 released diagnostic process groups |
+| Configured production campaign | `88f1099`: 40 components, 1,508 cases, 858 independently inspected source/input comparisons, 157 exact-commit production/checker files and 40 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `8c75a65`, run `38369131528`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
-| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `8c75a65` |
+| Latest Ubuntu source/installation CI | `88f1099`, run `38376212894`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
+| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `88f1099` |
+| Native Console port admission | `88f1099` on macOS and isolated Linux: 81 cases and 81 independently repeated reads per platform, 66 declared JSON derivatives and 15 source identities; all outcomes match, original bindings remain unchanged and the server checkout is preserved |
 | GPT profile configuration | `b69d927`: 60 declared original-profile derivatives cover modes, demonstration metadata, gateway ports and worker endpoints; 46 reject and 14 admit with unchanged original bindings |
 | Selected GPT file preparation | `8c75a65` on macOS and isolated Linux: 33 cases and 28 independently repeated file checks per platform, 22 source identities, 31 declared configuration derivatives and 15 stored-image fields; eleven macOS and ten Linux production files match the commit, and actual Console process/listener/writer ownership releases |
 | Persistent native retries | The latest downloaded CI journals preserve 22 independent native Sessions, 56 genuine failed connections and 338 source-matched event bodies; pending-history release and cancellation retain their declared scope |
@@ -1943,6 +1944,29 @@ source/input comparisons, with original records unchanged and every owned proces
 group/writer released. Evidence:
 `.local/work/native-console-port-cpu-final-20261013/scene-configuration/independently-verified.json`
 and `.local/work/native-console-port-cpu-final-20261013/independently-verified.json`.
+
+Exact source `88f1099` matches all 157 campaign production/checker files. Isolated
+Linux executes the same original-file diagnostic and independently repeats all
+eighty-one Console port cases, with sixty-six declared derivatives and fifteen
+source identities. Every Console result matches macOS. Six original model/provider
+input files retain their bytes, configuration paths relocate explicitly, the
+runner exits, isolated source remains clean and canonical server changes remain
+unchanged. Nine captured Linux production files match the commit. Evidence:
+`.local/work/native-console-port-linux-verified-20261013/local-independent-verification.json`.
+Its archive SHA-256 is
+`5ae7a1a5a07d7dd50a436b240d0e4f4aba2690672098ab89db8b75826806b571`.
+
+Ubuntu CI `38376212894` at the same source passes fresh installation, complete
+source checks and 78 production runtime cases. Downloaded artifacts independently
+match 89 exact-source comparisons, 41 inputs, fourteen distributions and thirteen
+imports. Production readers preserve seven task-plan journals and 338 retry events
+in 22 native Sessions, with 56 genuine failed connections, zero provider responses
+and released writers. Fifteen previously executed installed-SDK sources match
+this commit; their original-request/prepared-tensor scope remains unchanged.
+Evidence: `.local/work/ci-native-console-port-inspection-20261013.json`,
+`.local/work/ci-native-console-port-plans-independent-20261013.json`,
+`.local/work/ci-native-console-port-native-independent-20261013.json` and
+`.local/work/current-sdk-console-port-source-20261013.json`.
 
 [native-worker-configuration.ts](../../apps/server/src/native-worker-configuration.ts)
 owns the schema and its derived `NativeWorkerConfiguration` type. Scene parameters

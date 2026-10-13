@@ -21,7 +21,12 @@ checks and sixty-six declared configuration derivatives, with valid model/Team/
 checkpoint/worker bindings preserved. Independent readers repeat every case.
 The configured forty-component campaign passes 1,508 cases and 858 independently
 inspected source/input comparisons, with original records unchanged and all
-diagnostic ownership released. See
+diagnostic ownership released. Exact source `88f1099` matches all 157 captured
+production/checker files. Isolated Linux passes and independently repeats all
+eighty-one Console port cases; their outcomes match macOS, original files remain
+unchanged and canonical server changes are preserved. Ubuntu CI `38376212894`
+passes fresh installation, complete source checks and 78 runtime cases with
+89 independently checked source comparisons and 41 inputs. See
 [Console admission](cpu-release-validation.md#native-scene-and-configuration-ownership).
 
 The versioned `check-native-policy-inputs-offline.mjs` accepts original profile,
@@ -453,20 +458,20 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 and released ownership. No model or simulator result is supplied by a diagnostic.
 See [CPU release validation](cpu-release-validation.md).
 
-**Verified checkpoint:** `8c75a65` passes all forty configured macOS CPU
-components and 1,427 admission/process/wire/resource cases, 792 independent
+**Verified checkpoint:** `88f1099` passes all forty configured macOS CPU
+components and 1,508 admission/process/wire/resource cases, 858 independent
 source/input comparisons, 157 exact-commit production/checker files and released
-diagnostic ownership. Its actual Ubuntu CI `38369131528` separately passes fresh
+diagnostic ownership. Its actual Ubuntu CI `38376212894` separately passes fresh
 installation, full source checks and 78 production
 runtime cases, with independently inspected artifacts and unchanged plan/retry
 journals. Actual isolated Linux SDK processors pass seventy-two checks on
 forty-six original requests; all fifteen loaded production/checker files match
-`8c75a65`. Thirty-three selected-profile file preparation checks per platform establish
-pre-service text/image failure admission, cancellation, prepared input binding
-and actual Console shutdown. All case outcomes and prepared image identities
-match between macOS and isolated Linux, with thirty-one declared configuration
-derivatives and preserved original files. Eleven macOS and ten Linux production
-sources match this commit.
+`88f1099`. Console port checks independently repeat all eighty-one original-file
+cases on macOS and isolated Linux, preserve sixty-six declared derivatives and
+match every outcome with the original model/Team/worker/checkpoint bindings intact.
+Selected GPT profile file checks retain their separate original-file preparation,
+cancellation and actual Console shutdown acceptance, with precise source/platform
+boundaries in the [CPU checkpoints](cpu-release-validation.md#current-cpu-checkpoints).
 These scopes perform no model,
 policy or simulator execution. Loaded-model/device behavior and complete task
 workflows retain Steps 13–14's native acceptance requirements.

@@ -26,6 +26,17 @@ source/input comparisons with unchanged original journals/images and released
 diagnostic ownership. These checks allocate no native worker, model, policy,
 simulator or GPU. See [Console admission](cpu-release-validation.md#native-scene-and-configuration-ownership).
 
+Source `88f1099` matches all 157 campaign production/checker files. Isolated Linux
+passes and independently repeats all eighty-one Console port cases, with every
+result matching macOS, unchanged original input bytes, a clean isolated source
+and preserved canonical server changes. Ubuntu CI `38376212894` passes fresh
+installation, full source checks and 78 runtime cases. Downloaded artifacts match
+89 source comparisons and 41 inputs; production readers preserve seven plan
+journals and 338 retry events in 22 native Sessions with released writers.
+Fifteen previously executed installed-SDK sources match this commit. Evidence:
+`.local/work/native-console-port-linux-verified-20261013/local-independent-verification.json`
+and `.local/work/ci-native-console-port-inspection-20261013.json`.
+
 The original GPT text/image preparation diagnostic is versioned in `scripts` and
 configurable through a strict source manifest. Source `8c75a65` passes forty
 campaign components and 1,427 cases, with 792 independent source/input comparisons,

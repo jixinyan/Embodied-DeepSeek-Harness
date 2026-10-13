@@ -60,6 +60,21 @@ executes. Evidence:
 `.local/work/native-console-port-cpu-final-20261013/scene-configuration/independently-verified.json`
 and `.local/work/native-console-port-cpu-final-20261013/independently-verified.json`.
 
+Exact source `88f1099` matches all 157 campaign production/checker files. Isolated
+Linux passes and independently repeats the same eighty-one Console port cases;
+all outcomes match macOS. Sixty-six declared derivatives, fifteen source identities
+and six original model/provider files pass independent inspection. The runner
+exits, isolated source stays clean and canonical server changes remain unchanged.
+Ubuntu CI `38376212894` at the same source passes fresh installation, full source
+checks and 78 runtime cases. Downloaded artifacts match 89 source comparisons and
+41 inputs; production reads preserve seven task-plan journals and 338 retry events
+in 22 native Sessions with released writers. Fifteen previously executed
+installed-SDK sources match the commit. Evidence:
+`.local/work/native-console-port-cpu-final-20261013/committed-source-verification.json`,
+`.local/work/native-console-port-linux-verified-20261013/local-independent-verification.json`,
+`.local/work/ci-native-console-port-inspection-20261013.json` and
+`.local/work/ci-native-console-port-native-independent-20261013.json`.
+
 GPT input preparation has a versioned diagnostic at
 `scripts/check-native-policy-inputs-offline.mjs`. A strict original-input manifest
 selects its deployment/profile, policy-model endpoint, original text, two original
