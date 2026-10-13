@@ -96,6 +96,9 @@ that environment releases those resources and flushes its audit records.
 Their optional `policyGatewayPort` is an integer between 0 and 65535; omission
 or zero selects an ephemeral port. Configuration loading validates it before
 managed services, the gateway or the worker allocate.
+An optional `workerPolicyUri` requires a `ws:` or `wss:` endpoint without embedded
+credentials or a fragment; omission uses the allocated gateway address. Invalid
+explicit values reject before service acquisition.
 Learned RoboDojo profiles select the `student` source and retain only applicable
 student execution metadata. Teacher model, context and prompt provenance fields
 belong to a selected GPT policy mode. The native factory also binds the complete

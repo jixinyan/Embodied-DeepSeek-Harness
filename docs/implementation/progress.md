@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.150 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.151 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -43,6 +43,25 @@ the release requirements below.
 
 ## Latest verified source changes
 
+Direct/hybrid profiles validate optional `workerPolicyUri` through the existing
+native endpoint schema before service acquisition. Original-profile CPU checks
+admit the saved endpoint, omission, secure WebSocket and localhost values; eight
+invalid explicit values reject. Independent readers compare all twelve declared
+derivatives with their original configuration, preserve complete native/model/
+Team/service bindings and match the exact Zod issues. Gateway-port checks repeat
+twelve additional cases on the same source. Both original source files and five
+production source identities remain unchanged; native allocations remain zero.
+Evidence:
+`.local/work/native-gpt-worker-uri-admission-20261013/independently-verified.json`
+and `.local/work/native-gpt-worker-port-admission-20261013/independently-verified.json`.
+
+The same endpoint-admission source passes the complete thirty-nine-component
+CPU campaign and 1,394 cases. Independent readers match 737 source/input
+comparisons, all thirty-nine released diagnostic process groups and unchanged
+original journals/images. The camera component independently repeats sixty-six
+cases and twenty-two configuration derivatives with released writers.
+Evidence: `.local/work/native-gpt-endpoint-cpu-campaign-20261013/independently-verified.json`.
+
 Native direct/hybrid configuration admits `policyGatewayPort` before managed
 services or the gateway/worker can allocate. Twelve declared port derivatives of
 an original Astra direct profile pass independent production-reader inspection:
@@ -71,6 +90,17 @@ CUDA remains uninitialized. No policy network, inference, simulator or controls
 allocate. Evidence:
 `.local/work/current-sdk-cpu-linux-20261013-verified/independently-verified.json`.
 See [installed processor inspection](cpu-release-validation.md#current-installed-policy-processors).
+
+Gateway-port checkpoint `e49ee3c` independently matches all 153 captured campaign
+production/checker files, four gateway/configuration sources and fifteen actual
+installed processor sources. Actual Ubuntu CI `38357884320` passes fresh
+installation, full source checks and 78 production runtime cases. Downloaded
+artifacts match fourteen distributions, thirteen imports, 41 input identities and
+89 exact-source comparisons. Production readers preserve seven task-plan journals
+and 338 native retry events in 22 Sessions, with released writers and zero native
+allocation. Evidence:
+`.local/work/ci-native-gpt-gateway-inspection-20261013.json` and
+`.local/work/ci-native-gpt-gateway-native-independent-20261013.json`.
 
 Camera-bank configuration loading admits an omitted field as an empty default
 and rejects explicit `null`, arrays and text. Empty `{}` remains valid at both

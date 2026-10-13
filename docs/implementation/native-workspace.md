@@ -21,6 +21,10 @@ between 0 and 65535. Omission or zero selects an ephemeral port. Invalid values
 reject during configuration loading before managed-service acquisition or
 gateway/worker allocation. The environment owns the selected gateway and its
 independent DSH host until confirmed cleanup.
+An optional `workerPolicyUri` must pass the existing native `ws:`/`wss:` endpoint
+schema, including its credential and fragment restrictions. Omission uses the
+allocated gateway address. Explicit `null`, empty text and other invalid values
+reject during configuration loading.
 
 Create an actual workspace JSON, for example `.local/native-workspace.json`:
 

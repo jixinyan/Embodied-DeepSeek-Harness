@@ -11,9 +11,10 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
-| Configured production campaign | `f9016c4`: 39 components, 1,394 cases, 737 independently inspected source/input comparisons, 153 exact-commit production/checker files and 39 released diagnostic process groups |
+| Configured production campaign | `e49ee3c`: 39 components, 1,394 cases, 737 independently inspected source/input comparisons, 153 exact-commit production/checker files and 39 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `f9016c4`, run `38349877123`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
+| Latest Ubuntu source/installation CI | `e49ee3c`, run `38357884320`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
+| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source identities and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `e49ee3c` |
 | Persistent native retries | The latest downloaded CI journals preserve 22 independent native Sessions, 56 genuine failed connections and 338 source-matched event bodies; pending-history release and cancellation retain their declared scope |
 
 Every checkpoint excludes model inference, loaded-policy execution,
@@ -3274,6 +3275,28 @@ be integers between 0 and 65535. Omission and zero select an ephemeral gateway
 port. `native-policy-environment.mjs` retains gateway, independent DSH host,
 native worker, audit and confirmed cleanup ownership.
 
+An optional `workerPolicyUri` passes the existing native endpoint schema during
+the same configuration admission. Supplied endpoints use `ws:` or `wss:`, have
+a hostname and contain no embedded credentials or fragment. Omission uses the
+allocated gateway address. Twelve declared derivatives of the original direct
+profile verify admission of the saved URI, omission, secure WebSocket and
+localhost values; explicit `null`, arrays, objects, empty text, booleans, numbers,
+HTTP URLs and fragments reject. Independent production readers preserve every
+original binding and source file, verify five production source digests and
+match the exact Zod issues. Twelve gateway-port cases repeat on the same source.
+These twenty-four configuration cases allocate no gateway, model, worker,
+simulator or GPU. Evidence:
+`.local/work/native-gpt-worker-uri-admission-20261013/independently-verified.json`
+and `.local/work/native-gpt-worker-port-admission-20261013/independently-verified.json`.
+
+The same endpoint-admission source passes the complete thirty-nine-component
+CPU campaign, 1,394 cases and 737 independent source/input comparisons.
+All thirty-nine diagnostic process groups release, original journals/images remain
+unchanged and writers release. Calibration readers repeat sixty-six cases and
+twenty-two declared configuration derivatives with unchanged original values.
+Evidence: `.local/work/native-gpt-endpoint-cpu-campaign-20261013/independently-verified.json`
+and its `depth-calibrations/independently-verified.json`.
+
 An original Astra direct profile passes twelve declared runtime configuration
 derivatives through the production reader. Explicit `null`, arrays, objects,
 text, booleans, negative values, fractional values and values above the TCP port
@@ -3295,6 +3318,17 @@ cases and twenty-two declared configuration derivatives with released writers.
 Evidence:
 `.local/work/native-gpt-configuration-cpu-campaign-20261013/independently-verified.json`
 and its `depth-calibrations/independently-verified.json`.
+
+Port-admission checkpoint `e49ee3c` independently matches all 153 campaign
+production/checker sources. Actual Ubuntu CI `38357884320` passes fresh
+installation, complete source checks and 78 production runtime cases. Downloaded
+artifacts match fourteen distributions, thirteen imports, 41 input identities and
+89 exact-source comparisons. Production readers preserve all seven task-plan
+journals and 338 retry events in 22 native Sessions, with released writers and
+zero native allocation. Evidence:
+`.local/work/native-gpt-configuration-cpu-campaign-20261013/committed-source-verification.json`,
+`.local/work/ci-native-gpt-gateway-inspection-20261013.json` and
+`.local/work/ci-native-gpt-gateway-native-independent-20261013.json`.
 
 ## Current installed policy processors
 

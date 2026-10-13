@@ -232,7 +232,7 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
       if (mode === 'hybrid' && !entry.lowerPolicyUri)
         throw new Error('Hybrid requires an identified learned-policy endpoint.');
       if (mode === 'hybrid') nativePolicyEndpointSchema.parse(entry.lowerPolicyUri);
-      if (entry.workerPolicyUri) nativePolicyEndpointSchema.parse(entry.workerPolicyUri);
+      nativePolicyEndpointSchema.optional().parse(entry.workerPolicyUri);
       if (
         (worker.sceneConfiguration.control_mode ?? '0-shot') !== '0-shot' &&
         !entry.demonstration?.textFile

@@ -17,6 +17,24 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Native direct/hybrid configuration validates an optional `workerPolicyUri` with
+the existing native WebSocket schema before acquiring services or allocating a
+gateway/worker. Twenty-four actual original-profile configuration checks cover
+the endpoint and gateway port, with sixteen invalid derivatives rejected and
+eight admitted derivatives preserving original model/Team/worker/checkpoint/
+service bindings. Independent production readers match all declared derivatives
+and exact rejection issues; five source identities and both original files remain
+unchanged. No native resource allocates. Evidence:
+`.local/work/native-gpt-worker-uri-admission-20261013/independently-verified.json`
+and `.local/work/native-gpt-worker-port-admission-20261013/independently-verified.json`.
+
+That endpoint-admission source also passes the complete thirty-nine-component
+CPU campaign, 1,394 cases and 737 independently matched source/input comparisons.
+All diagnostic process groups and writers release; original journals/images
+remain unchanged. Camera configuration checks independently repeat all sixty-six
+cases and twenty-two declared derivatives. Evidence:
+`.local/work/native-gpt-endpoint-cpu-campaign-20261013/independently-verified.json`.
+
 Direct/hybrid gateway port admission occurs during configuration loading before
 managed-service acquisition. An original Astra direct profile passes twelve
 declared port cases with exact original model/Team/worker/checkpoint/service
@@ -37,6 +55,16 @@ diagnostic processes release and CUDA remains uninitialized. This inspection
 performs no network allocation, model inference, simulator or physical controls.
 Evidence: `.local/work/current-sdk-cpu-linux-20261013-verified/independently-verified.json`.
 See [installed processor scope](cpu-release-validation.md#current-installed-policy-processors).
+
+Checkpoint `e49ee3c` matches all 153 campaign production/checker files and fifteen
+loaded processor sources. Its actual Ubuntu CI `38357884320` passes fresh
+installation, complete source checks and 78 runtime cases. Downloaded artifacts
+independently verify fourteen distributions, thirteen imports, 41 input identities
+and 89 exact-source comparisons. Production readers preserve seven task-plan
+journals and 338 native retry events in 22 Sessions, with released writers and
+zero native allocation. Evidence:
+`.local/work/ci-native-gpt-gateway-inspection-20261013.json` and
+`.local/work/ci-native-gpt-gateway-native-independent-20261013.json`.
 
 Camera-bank loading and propagation pass sixty-six CPU cases across four
 configured providers and the idle production HTTP server. Omitted top-level
