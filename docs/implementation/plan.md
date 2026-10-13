@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.110 · 2026-10-08
+Version: v1.151 · 2026-10-13
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,25 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+Current source `33ae4e2` passes all thirty-nine configured macOS CPU components
+and 1,394 cases. Independent inspection matches 737 source/input comparisons,
+153 exact-commit production/checker files, unchanged original journals/images
+and all thirty-nine released diagnostic process groups. Direct-profile gateway
+port and worker endpoint admission additionally pass twenty-four original-
+configuration derivatives through independent production readers. Configuration
+loading rejects invalid values before managed-service acquisition.
+
+Actual installed Linux processors at isolated source `5b26a5a` pass seventy-two
+CPU cases on forty-six original four-provider requests. Fifteen loaded sources
+match `33ae4e2`; 418 original/checkpoint/SDK/source comparisons and 282 prepared
+tensor/codec metadata fields pass independent inspection. All diagnostic processes
+release, canonical server changes remain unchanged and CUDA stays uninitialized.
+Actual Ubuntu CI `38358983308` at `33ae4e2` separately passes fresh installation,
+full source checks and 78 production runtime cases. Downloaded evidence matches
+89 exact-source comparisons and 41 inputs. Production readers preserve seven
+task-plan journals and 338 retry events in 22 native Sessions with released writers.
+See [CPU checkpoints](cpu-release-validation.md#current-cpu-checkpoints).
 
 All four learned adapters share their online `prepare_policy_input` with installed
 SDK inspection. LeRobot checks tensors after saved preprocessing and before model
@@ -369,12 +388,17 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 and released ownership. No model or simulator result is supplied by a diagnostic.
 See [CPU release validation](cpu-release-validation.md).
 
-**Verified checkpoint:** macOS and frozen `d3336fc` on isolated Linux pass all
-twenty-eight configured components, with 327 admission/process/wire/resource
-cases per platform, matched original input/source identities and independently
-confirmed resource release. Both platforms prepare four actual profiles and eight
-native task submissions. Loaded-model/device behavior and complete task workflows retain
-Steps 13–14's native acceptance requirements.
+**Verified checkpoint:** `33ae4e2` passes all thirty-nine configured macOS CPU
+components and 1,394 admission/process/wire/resource cases, 737 independent
+source/input comparisons and released diagnostic ownership. Its actual Ubuntu
+CI separately passes fresh installation, full source checks and 78 production
+runtime cases, with independently inspected artifacts and unchanged plan/retry
+journals. Actual isolated Linux SDK processors pass seventy-two checks on
+forty-six original requests; all fifteen loaded production/checker files match
+`33ae4e2`. Twenty-four direct-profile port/endpoint configuration derivatives
+preserve complete bindings before allocation. These scopes perform no model,
+policy or simulator execution. Loaded-model/device behavior and complete task
+workflows retain Steps 13–14's native acceptance requirements.
 
 ## Step 12 — Maintain Console, launcher and retained user Sessions
 

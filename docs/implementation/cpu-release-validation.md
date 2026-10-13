@@ -11,10 +11,10 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
-| Configured production campaign | `e49ee3c`: 39 components, 1,394 cases, 737 independently inspected source/input comparisons, 153 exact-commit production/checker files and 39 released diagnostic process groups |
+| Configured production campaign | `33ae4e2`: 39 components, 1,394 cases, 737 independently inspected source/input comparisons, 153 exact-commit production/checker files and 39 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `e49ee3c`, run `38357884320`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
-| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source identities and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `e49ee3c` |
+| Latest Ubuntu source/installation CI | `33ae4e2`, run `38358983308`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
+| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `33ae4e2` |
 | Persistent native retries | The latest downloaded CI journals preserve 22 independent native Sessions, 56 genuine failed connections and 338 source-matched event bodies; pending-history release and cancellation retain their declared scope |
 
 Every checkpoint excludes model inference, loaded-policy execution,
@@ -3297,6 +3297,21 @@ twenty-two declared configuration derivatives with unchanged original values.
 Evidence: `.local/work/native-gpt-endpoint-cpu-campaign-20261013/independently-verified.json`
 and its `depth-calibrations/independently-verified.json`.
 
+Endpoint-admission checkpoint `33ae4e2` independently matches all 153 captured
+campaign production/checker files and all five gateway/configuration sources
+for both twelve-case port/endpoint checks. Actual Ubuntu CI `38358983308` passes
+fresh installation, full source checks and 78 production runtime cases. Downloaded
+artifacts match fourteen distributions, thirteen imports, 41 inputs and 89 exact-
+source comparisons. Production readers preserve seven task-plan journals and
+338 retry events in 22 native Sessions, with released writers and zero native
+allocation. Separate original-perception inspection matches forty source
+comparisons, fifteen PNG checks, forty-eight depth-statistic fields and nine
+exact-commit sources. Evidence:
+`.local/work/native-gpt-endpoint-cpu-campaign-20261013/committed-source-verification.json`,
+`.local/work/ci-native-gpt-endpoint-inspection-20261013.json`,
+`.local/work/ci-native-gpt-endpoint-native-independent-20261013.json` and
+`.local/work/native-gpt-endpoint-perception-independent-20261013.json`.
+
 An original Astra direct profile passes twelve declared runtime configuration
 derivatives through the production reader. Explicit `null`, arrays, objects,
 text, booleans, negative values, fractional values and values above the TCP port
@@ -3359,6 +3374,9 @@ The archive SHA256 is
 `4e62d37123b915726330c07e4c326c8cfd54b5fd5fcc3d50296d949f5597f906`.
 Evidence:
 `.local/work/current-sdk-cpu-linux-20261013-verified/independently-verified.json`.
+Its separate `committed-endpoint-source-verification.json` matches all fifteen
+loaded production/checker files against `33ae4e2` without re-running processors
+or allocating any additional service.
 These checks establish original-request preparation, source identity and CPU
 process ownership. Current loaded-policy and complete native task behavior retain
 their separate release requirements.

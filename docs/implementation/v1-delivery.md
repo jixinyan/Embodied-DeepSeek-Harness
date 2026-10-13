@@ -35,6 +35,19 @@ remain unchanged. Camera configuration checks independently repeat all sixty-six
 cases and twenty-two declared derivatives. Evidence:
 `.local/work/native-gpt-endpoint-cpu-campaign-20261013/independently-verified.json`.
 
+Current source `33ae4e2` matches all 153 campaign production/checker files, five
+configuration/gateway sources for both admission checks and fifteen actual
+installed-processor sources. Actual Ubuntu CI `38358983308` passes fresh
+installation, full source checks and 78 runtime cases. Downloaded artifacts
+match fourteen distributions, thirteen imports, 41 inputs and 89 exact-source
+comparisons. Production readers preserve seven task-plan journals and 338 retry
+events in 22 native Sessions with released writers. Separate perception inspection
+matches forty source comparisons, fifteen PNG checks, forty-eight depth-statistic
+fields and nine exact-commit sources. Native allocations remain zero. Evidence:
+`.local/work/ci-native-gpt-endpoint-inspection-20261013.json`,
+`.local/work/ci-native-gpt-endpoint-native-independent-20261013.json` and
+`.local/work/native-gpt-endpoint-perception-independent-20261013.json`.
+
 Direct/hybrid gateway port admission occurs during configuration loading before
 managed-service acquisition. An original Astra direct profile passes twelve
 declared port cases with exact original model/Team/worker/checkpoint/service

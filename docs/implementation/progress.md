@@ -62,6 +62,20 @@ original journals/images. The camera component independently repeats sixty-six
 cases and twenty-two configuration derivatives with released writers.
 Evidence: `.local/work/native-gpt-endpoint-cpu-campaign-20261013/independently-verified.json`.
 
+Source `33ae4e2` independently matches all 153 campaign production/checker files,
+five configuration/gateway sources for each twelve-case admission check and
+fifteen loaded installed-processor sources. Actual Ubuntu CI `38358983308`
+passes fresh installation, full source checks and 78 production runtime cases.
+Downloaded artifacts match fourteen distributions, thirteen imports, 41 input
+identities and 89 exact-source comparisons. Production readers preserve seven
+task-plan journals and 338 native retry events in 22 Sessions with released
+writers. Separate original-perception inspection matches forty source comparisons,
+fifteen PNG checks, forty-eight depth-statistic fields and nine exact-commit sources.
+All these scopes retain zero native allocation. Evidence:
+`.local/work/ci-native-gpt-endpoint-inspection-20261013.json`,
+`.local/work/ci-native-gpt-endpoint-native-independent-20261013.json` and
+`.local/work/native-gpt-endpoint-perception-independent-20261013.json`.
+
 Native direct/hybrid configuration admits `policyGatewayPort` before managed
 services or the gateway/worker can allocate. Twelve declared port derivatives of
 an original Astra direct profile pass independent production-reader inspection:
