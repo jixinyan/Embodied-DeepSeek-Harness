@@ -1,5 +1,12 @@
 # Development and live acceptance
 
+`check-recorded-perception-responses.mjs` admits saved SAM/YOLO response metadata
+and original PNG/NumPy outputs through `perception/model-responses.ts`. It compares
+all returned values and bytes, tests explicit invalid derivatives and preserves
+cancellation reasons without service calls. Optional `perceptionResponseRecords`
+in the CPU campaign supplies capture/image directories and an optional directory
+of uncalibrated outputs. See [response admission](../docs/implementation/cpu-release-validation.md#perception-model-response-admission).
+
 - `generate-contracts.mjs`: generate TypeScript from the shared JSON Schema; `--check` detects drift.
 - `check-contracts.mjs`: validate wire fixtures, role frontmatter, sample Team/tool references and selected malformed inputs.
 - `check-structure.mjs`: check private package boundaries, declared imports, local documentation links, SVG policy and a guard against untranslated Chinese in public text.

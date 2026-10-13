@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-12 · Spec v1.145 · v1 release acceptance in progress.
+Updated: 2026-10-12 · Spec v1.146 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,24 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+SAM3.1/YOLO26 response admission belongs to `perception/src/model-responses.ts`.
+The HTTP clients retain transport/deadline ownership; existing client type exports
+and tool results remain available. Three saved SAM camera responses and six YOLO
+outputs pass 143 production admission checks, including empty results, mask/ROI
+coverage, calibrated range, detached values and cancellation. Original metadata
+and binary outputs reassemble the service response without provider execution;
+source files remain unchanged. No model, simulator or GPU allocates. See
+[response admission](cpu-release-validation.md#perception-model-response-admission).
+
+Independent NumPy/Pillow inspection verifies forty original/source identities,
+fifteen PNG checks and forty-eight original depth-statistic fields. The configured
+CPU campaign passes all thirty-eight components and 1,328 cases; independent reads
+match 676 source/input comparisons and thirty-eight released diagnostic process
+groups. Original journals/images remain unchanged and all diagnostic writers
+release. Evidence:
+`.local/work/perception-response-cpu-campaign-20261012/independently-verified.json`
+and its `perception-responses/independently-verified.json`.
 
 Measurement request snapshots and native RGB-D receipt admission belong to
 `perception/src/metric-measurement.ts`. NativeTaskBackend retains request transport,

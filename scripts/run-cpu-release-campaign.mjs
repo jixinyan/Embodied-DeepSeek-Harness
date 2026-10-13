@@ -54,6 +54,14 @@ const configuration = z
       })
       .strict()
       .optional(),
+    perceptionResponseRecords: z
+      .object({
+        capturesDirectory: z.string().min(1),
+        imagesDirectory: z.string().min(1),
+        uncalibratedDirectory: z.string().min(1).optional(),
+      })
+      .strict()
+      .optional(),
     checkpointAuditConfiguration: z.string().min(1).optional(),
   })
   .strict()
@@ -92,6 +100,19 @@ const perception = configuration.perceptionRecords
   : undefined;
 const checkpointAudit = configuration.checkpointAuditConfiguration
   ? path(configuration.checkpointAuditConfiguration)
+  : undefined;
+const perceptionResponses = configuration.perceptionResponseRecords
+  ? {
+      capturesDirectory: path(configuration.perceptionResponseRecords.capturesDirectory),
+      imagesDirectory: path(configuration.perceptionResponseRecords.imagesDirectory),
+      ...(configuration.perceptionResponseRecords.uncalibratedDirectory
+        ? {
+            uncalibratedDirectory: path(
+              configuration.perceptionResponseRecords.uncalibratedDirectory,
+            ),
+          }
+        : {}),
+    }
   : undefined;
 const digest = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
 const inputs = [
@@ -197,6 +218,16 @@ if (perception) {
     perception.calibratedDirectory,
   ]);
 }
+if (perceptionResponses)
+  add('perception-responses', 'check-recorded-perception-responses.mjs', [
+    '--captures',
+    perceptionResponses.capturesDirectory,
+    '--images',
+    perceptionResponses.imagesDirectory,
+    ...(perceptionResponses.uncalibratedDirectory
+      ? ['--uncalibrated-captures', perceptionResponses.uncalibratedDirectory]
+      : []),
+  ]);
 add('service-startup', 'check-service-startup-owner-offline.mjs', ['--workspace', workspace]);
 add('console-startup', 'check-native-startup-offline.mjs', ['--config', workspace]);
 for (const provider of ['behavior', 'robocasa', 'robodojo', 'robotwin'])

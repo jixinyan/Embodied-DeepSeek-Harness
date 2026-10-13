@@ -1450,6 +1450,55 @@ context comparisons, 31 Linux process receipts and thirty component reports.
 Original contexts, four-provider readiness and all shared controller cases match
 between platforms; the Linux runner and 31 diagnostic process groups are absent.
 
+## Perception model response admission
+
+`perception/src/model-responses.ts` owns the SAM3.1/YOLO26 response schemas,
+source checks and detached result construction. HTTP clients retain bounded stream
+consumption, endpoint and deadline ownership. Cancellation is checked again before
+completed response admission. Existing client type exports and tool result fields
+remain available.
+
+SAM admission checks its actual multiplex adapter, UUID, model/checkpoint/source
+digests, source area, scores, unique object IDs and bounded mask boxes/areas. Empty
+instance lists remain valid. YOLO admission checks requested camera calibration,
+RGB/mask/ROI identity, complete unmasked region coverage, bounded mask coverage,
+pixel counts, positive ordered quantiles and camera range against axial depth.
+Arrays and binary outputs detach from response data; binary encoding is canonical,
+nonempty and bounded to 32 MiB per output.
+
+The diagnostic reads original service-check metadata and corresponding saved binary
+outputs. It reconstructs their wire representation using those exact bytes and
+compares every returned value. Three original SAM camera responses include two
+empty-instance results. Six original YOLO outputs cover calibrated camera ranges
+and uncalibrated mask/ROI predictions. All 143 response, cancellation and explicitly
+invalid derivative cases pass without service calls, simulator allocation or GPU
+jobs; source images, metadata, masks, overlays and NumPy arrays remain unchanged.
+
+```sh
+CUDA_VISIBLE_DEVICES='' pnpm exec tsx --tsconfig tsconfig.runtime.json \
+  scripts/check-recorded-perception-responses.mjs \
+  --captures .local/work/<original-camera-results> \
+  --images .local/work/<original-camera-images> \
+  --uncalibrated-captures .local/work/<original-uncalibrated-results> \
+  --output .local/work/<new-perception-response-check>
+```
+
+The optional strict `perceptionResponseRecords` CPU campaign binding supplies
+`capturesDirectory`, `imagesDirectory` and optional `uncalibratedDirectory`.
+The `perception-responses` component uses the existing report/source identities and
+process-group ownership. Original calibration and saved binary formats are checked
+with NumPy/Pillow during independent inspection. Loaded inference, segmentation
+accuracy and camera accuracy retain their native acceptance requirements.
+
+Current original-response inspection verifies forty source/original identities,
+fifteen PNG checks and all forty-eight depth-statistic fields. The configured
+campaign passes all thirty-eight components and 1,328 cases. Independent reads
+match 676 source/input comparisons and all thirty-eight absent diagnostic process
+groups. Original journals/images remain unchanged; all diagnostic writers release
+and model, simulator and GPU allocations remain zero. Evidence:
+`.local/work/perception-response-cpu-campaign-20261012/perception-responses/independently-verified.json`
+and `.local/work/perception-response-cpu-campaign-20261012/independently-verified.json`.
+
 ## Prior verified CPU checkpoints
 
 Clean `d3336fc` passes all twenty-eight configured components on macOS and isolated

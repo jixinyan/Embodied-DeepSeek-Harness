@@ -17,6 +17,15 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+SAM3.1/YOLO26 response admission belongs to `perception/src/model-responses.ts`.
+Three original SAM responses and six YOLO results pass 143 CPU checks with exact
+returned values and unchanged source files. Independent NumPy/Pillow inspection
+matches forty source identities, fifteen PNG checks and forty-eight depth-statistic
+fields. The configured thirty-eight-component CPU campaign passes 1,328 cases,
+676 independent source/input comparisons and released diagnostic process groups
+without native allocation. See
+[response admission](cpu-release-validation.md#perception-model-response-admission).
+
 Measurement request snapshots and native RGB-D receipt admission belong to
 `perception/src/metric-measurement.ts`; the backend retains transport and task
 lifetime. Thirteen original RoboCasa/RoboTwin/RoboDojo captures pass 416 CPU

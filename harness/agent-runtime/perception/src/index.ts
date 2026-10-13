@@ -5,6 +5,7 @@ export {
 } from './sensor-sample.js';
 export { SensorSamples } from './sensor-samples.js';
 export { admitObjectMeasurementInput, readObjectMeasurement } from './metric-measurement.js';
+export { readSegmentationResponse, readDepthResponse } from './model-responses.js';
 export {
   admitSegmentationInput,
   admitDepthInput,

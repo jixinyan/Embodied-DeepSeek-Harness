@@ -1,7 +1,6 @@
 import type { ImageAttachmentRef } from '@deepseek-ai/dsh-attachment';
 import type { BackendObjectMeasurement, SensorSample } from '@edh/execution';
-import type { SegmentationInstance, SegmentationOutput } from './sam31-client.js';
-import type { DepthOutput } from './yolo26-client.js';
+import type { SegmentationInstance, SegmentationOutput, DepthOutput } from './model-responses.js';
 
 export interface SegmentationResultInput {
   source: SensorSample;

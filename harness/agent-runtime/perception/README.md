@@ -1,5 +1,22 @@
 # Perception tools
 
+`model-responses.ts` owns SAM3.1/YOLO26 response types and source-bound admission.
+Both HTTP clients keep endpoint, request, timeout and bounded stream ownership;
+they check cancellation before admitting a completed response. Public client type
+exports remain available. Zod validates model identity, dimensions and statistics;
+canonical, nonempty binary outputs remain bounded to 32 MiB each. SAM preserves
+empty instance lists and checks unique object IDs, source-bounded boxes and mask
+area. YOLO checks the requested mask/ROI/calibration, complete unmasked region
+coverage, pixel counts, depth quantiles and camera range against axial depth.
+Decoded arrays and binary outputs detach from provider-owned values.
+
+The original-response CPU diagnostic reads three saved SAM camera responses and
+six actual YOLO outputs, including calibrated ranges and uncalibrated mask/ROI
+predictions. It reassembles the recorded metadata and saved binaries for the same
+production admission functions; no perception service or device executes. The
+143 checks preserve original values, empty results, cancellation reasons and
+source files. See [response admission](../../../docs/implementation/cpu-release-validation.md#perception-model-response-admission).
+
 `metric-measurement.ts` owns bounded, canonical base64 measurement requests and
 native RGB-D receipt admission. Requests have detached immutable scalar fields;
 decoded results detach matrices and coordinate arrays. Admission binds provider,

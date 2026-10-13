@@ -1,119 +1,13 @@
-import { createHash } from 'node:crypto';
 import { admitSegmentationInput, type SegmentationInput } from './request-inputs.js';
+import { readSegmentationResponse, type SegmentationOutput } from './model-responses.js';
 
 export type { SegmentationInput } from './request-inputs.js';
 
-export interface SegmentationInstance {
-  objectId: number;
-  score: number;
-  bboxXyxy: readonly [number, number, number, number];
-  areaPixels: number;
-  maskPng: Uint8Array;
-}
-
-export interface SegmentationOutput {
-  provider: string;
-  sourceRevision: string;
-  checkpointSha256: string;
-  sessionAdapter: string;
-  sessionId: string;
-  sourceImageSha256: string;
-  modelInputSha256: string;
-  width: number;
-  height: number;
-  overlayPng: Uint8Array;
-  instances: readonly SegmentationInstance[];
-}
+export type { SegmentationInstance, SegmentationOutput } from './model-responses.js';
 
 export interface SegmentationEngine {
   readonly timeoutMs?: number;
   segment(input: SegmentationInput): Promise<SegmentationOutput>;
-}
-
-const object = (value: unknown): value is Record<string, unknown> =>
-  value !== null && typeof value === 'object' && !Array.isArray(value);
-const digest = (value: unknown): value is string =>
-  typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
-const boundedInt = (value: unknown, max: number): value is number =>
-  typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 && value <= max;
-
-function imageBytes(value: unknown): Uint8Array {
-  if (typeof value !== 'string' || value.length > 44_739_244)
-    throw new Error('Segmentation image encoding exceeds its limit.');
-  const bytes = Buffer.from(value, 'base64');
-  if (bytes.toString('base64') !== value || bytes.byteLength > 32 * 1024 * 1024)
-    throw new Error('Segmentation image encoding is invalid.');
-  return bytes;
-}
-
-function parseOutput(value: unknown): SegmentationOutput {
-  if (!object(value) || !object(value.model))
-    throw new Error('Segmentation service returned invalid model metadata.');
-  const model = value.model;
-  if (
-    model.provider !== 'sam3.1-object-multiplex' ||
-    typeof model.source_revision !== 'string' ||
-    !/^[a-f0-9]{40}$/.test(model.source_revision) ||
-    !digest(model.checkpoint_sha256) ||
-    model.session_adapter !== 'sam31-multiplex-init-state-v1' ||
-    typeof value.session_id !== 'string' ||
-    !/^[a-f0-9-]{36}$/.test(value.session_id) ||
-    !digest(value.source_image_sha256) ||
-    !object(value.model_input) ||
-    value.model_input.media_type !== 'image/jpeg' ||
-    !digest(value.model_input.sha256) ||
-    value.model_input.conversion !== 'Pillow RGB JPEG quality 100, subsampling 0' ||
-    !boundedInt(value.width, 65_536) ||
-    !boundedInt(value.height, 65_536) ||
-    value.width === 0 ||
-    value.height === 0 ||
-    !Array.isArray(value.instances) ||
-    value.instances.length > 16
-  )
-    throw new Error('Segmentation service returned invalid metadata.');
-  const width = value.width;
-  const height = value.height;
-  const instances = value.instances.map((raw: unknown): SegmentationInstance => {
-    if (
-      !object(raw) ||
-      !boundedInt(raw.object_id, 1_000_000) ||
-      typeof raw.score !== 'number' ||
-      !Number.isFinite(raw.score) ||
-      raw.score < 0 ||
-      raw.score > 1 ||
-      !Array.isArray(raw.bbox_xyxy) ||
-      raw.bbox_xyxy.length !== 4 ||
-      !raw.bbox_xyxy.every((coordinate) => boundedInt(coordinate, Math.max(width, height))) ||
-      !boundedInt(raw.area_pixels, width * height) ||
-      raw.area_pixels === 0
-    )
-      throw new Error('Segmentation service returned an invalid instance.');
-    const [left, top, right, bottom] = raw.bbox_xyxy as number[];
-    if (left! >= right! || top! >= bottom! || right! > width || bottom! > height)
-      throw new Error('Segmentation service returned an invalid bounding box.');
-    return {
-      objectId: raw.object_id,
-      score: raw.score,
-      bboxXyxy: [left!, top!, right!, bottom!],
-      areaPixels: raw.area_pixels,
-      maskPng: imageBytes(raw.mask_png_base64),
-    };
-  });
-  if (new Set(instances.map((instance) => instance.objectId)).size !== instances.length)
-    throw new Error('Segmentation service repeated a session object ID.');
-  return {
-    provider: model.provider,
-    sourceRevision: model.source_revision,
-    checkpointSha256: model.checkpoint_sha256,
-    sessionAdapter: model.session_adapter,
-    sessionId: value.session_id,
-    sourceImageSha256: value.source_image_sha256,
-    modelInputSha256: value.model_input.sha256,
-    width,
-    height,
-    overlayPng: imageBytes(value.overlay_png_base64),
-    instances,
-  };
 }
 
 export class Sam31HttpClient implements SegmentationEngine {
@@ -139,6 +33,7 @@ export class Sam31HttpClient implements SegmentationEngine {
 
   async segment(input: SegmentationInput): Promise<SegmentationOutput> {
     input = admitSegmentationInput(input);
+    const signal = AbortSignal.any([input.signal, AbortSignal.timeout(this.timeoutMs)]);
     const response = await fetch(this.endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -147,7 +42,7 @@ export class Sam31HttpClient implements SegmentationEngine {
         image_mime_type: input.mediaType,
         text_prompt: input.textPrompt,
       }),
-      signal: AbortSignal.any([input.signal, AbortSignal.timeout(this.timeoutMs)]),
+      signal,
     });
     if (!response.ok) throw new Error(`SAM 3.1 service returned HTTP ${response.status}.`);
     const reader = response.body?.getReader();
@@ -164,9 +59,7 @@ export class Sam31HttpClient implements SegmentationEngine {
       }
       chunks.push(part.value);
     }
-    const output = parseOutput(JSON.parse(Buffer.concat(chunks).toString('utf8')));
-    if (output.sourceImageSha256 !== createHash('sha256').update(input.image).digest('hex'))
-      throw new Error('SAM 3.1 response refers to a different source image.');
-    return output;
+    signal.throwIfAborted();
+    return readSegmentationResponse(JSON.parse(Buffer.concat(chunks).toString('utf8')), input);
   }
 }

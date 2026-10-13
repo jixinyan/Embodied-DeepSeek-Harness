@@ -48,6 +48,7 @@ const intrinsics = {
 const implementation = await Promise.all(
   [
     'harness/agent-runtime/perception/src/request-inputs.ts',
+    'harness/agent-runtime/perception/src/model-responses.ts',
     'harness/agent-runtime/perception/src/sam31-client.ts',
     'harness/agent-runtime/perception/src/yolo26-client.ts',
     'harness/agent-runtime/perception/src/index.ts',
