@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.151 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.152 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,29 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+RoboDojo direct/hybrid configuration admits the three supported GPT control
+modes and strict demonstration metadata before service acquisition. The native
+reader and GPT policy share their mode definitions and 64-image capacity.
+Thirty-six declared metadata derivatives of an original direct profile pass
+independent production-reader inspection: thirty invalid inputs reject and six
+valid configurations preserve original model, Team, worker, checkpoint and
+service bindings. Ten original/source identities match, original files remain
+unchanged and native allocations remain zero. Actual saved text/image paths
+establish metadata admission only; one-shot model execution and demonstration
+effectiveness retain native requirements. Evidence:
+`.local/work/native-demonstration-final-20261013/independently-verified.json`.
+
+The same source passes all thirty-nine configured CPU components and 1,394
+cases. Independent inspection matches 737 source/input comparisons and confirms
+all thirty-nine diagnostic process groups and writers released. Original journals
+and images stay unchanged; camera configuration repeats sixty-six cases and
+twenty-two declared derivatives. Twenty-four additional port/endpoint derivatives
+also pass independent production readers on this source. These scopes allocate
+no model, simulator or GPU. Evidence:
+`.local/work/native-demonstration-cpu-final-20261013/independently-verified.json`,
+`.local/work/native-demonstration-port-20261013/independently-verified.json` and
+`.local/work/native-demonstration-uri-20261013/independently-verified.json`.
 
 Direct/hybrid profiles validate optional `workerPolicyUri` through the existing
 native endpoint schema before service acquisition. Original-profile CPU checks

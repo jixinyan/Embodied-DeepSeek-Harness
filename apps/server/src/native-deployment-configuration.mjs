@@ -8,6 +8,7 @@ import { admitDepthIntrinsicsByCamera } from '@edh/perception';
 import { FileTeamLoader } from '@edh/teams';
 import { CORE_TOOLS } from '@edh/tools';
 import { parseTaskCatalog } from '@edh/tasks';
+import { GPT_CONTROL_MODES, MAX_GPT_DEMONSTRATION_IMAGES } from '@edh/execution';
 import {
   managedServiceConfigurations,
   nativePlannerReview,
@@ -18,6 +19,12 @@ import {
 
 export const nativeDeploymentRoot = fileURLToPath(new URL('../../../', import.meta.url));
 const nonblank = z.string().trim().min(1);
+const demonstrationSchema = z
+  .object({
+    textFile: nonblank,
+    imageFiles: z.array(nonblank).max(MAX_GPT_DEMONSTRATION_IMAGES).optional(),
+  })
+  .strict();
 const profileSchema = z
   .object({
     id: z
@@ -233,11 +240,14 @@ export async function readNativeDeploymentConfiguration(provider, environment = 
         throw new Error('Hybrid requires an identified learned-policy endpoint.');
       if (mode === 'hybrid') nativePolicyEndpointSchema.parse(entry.lowerPolicyUri);
       nativePolicyEndpointSchema.optional().parse(entry.workerPolicyUri);
-      if (
-        (worker.sceneConfiguration.control_mode ?? '0-shot') !== '0-shot' &&
-        !entry.demonstration?.textFile
-      )
+      const controlMode =
+        z.enum(GPT_CONTROL_MODES).optional().parse(worker.sceneConfiguration.control_mode) ??
+        '0-shot';
+      const demonstration = demonstrationSchema.optional().parse(entry.demonstration);
+      if (controlMode !== '0-shot' && !demonstration)
         throw new Error('One-shot profile requires demonstration textFile.');
+      if (controlMode === 'visual-1-shot' && !demonstration.imageFiles?.length)
+        throw new Error('Visual one-shot profile requires demonstration imageFiles.');
     }
     profiles[id] = {
       worker,

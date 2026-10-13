@@ -26,6 +26,17 @@ schema, including its credential and fragment restrictions. Omission uses the
 allocated gateway address. Explicit `null`, empty text and other invalid values
 reject during configuration loading.
 
+`worker.sceneConfiguration.control_mode` supports `0-shot`, `textual-1-shot` and
+`visual-1-shot`; omission selects `0-shot`. A supplied `demonstration` contains
+only `textFile` and optional `imageFiles`. Paths must be nonblank strings and
+`imageFiles` may contain at most 64 paths. Both one-shot modes require `textFile`;
+visual one-shot requires at least one image path. Invalid modes, field types,
+unknown demonstration fields and excessive image counts reject before service
+acquisition. The environment reads the declared files at allocation, and the
+policy constructor checks loaded demonstration text and image references.
+Configuration admission alone does not establish file availability or one-shot
+task effectiveness.
+
 Create an actual workspace JSON, for example `.local/native-workspace.json`:
 
 ```json

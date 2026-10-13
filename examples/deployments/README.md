@@ -99,6 +99,13 @@ managed services, the gateway or the worker allocate.
 An optional `workerPolicyUri` requires a `ws:` or `wss:` endpoint without embedded
 credentials or a fragment; omission uses the allocated gateway address. Invalid
 explicit values reject before service acquisition.
+Their `worker.sceneConfiguration.control_mode` selects `0-shot`, `textual-1-shot`
+or `visual-1-shot`, with `0-shot` as the omitted default. A supplied
+`demonstration` contains a nonblank `textFile` path and optional `imageFiles`,
+an array of nonblank paths with at most 64 entries. One-shot modes require text;
+visual one-shot also requires at least one image. Configuration loading admits
+these fields before services allocate; file content and task effectiveness
+retain their separate startup and native checks.
 Learned RoboDojo profiles select the `student` source and retain only applicable
 student execution metadata. Teacher model, context and prompt provenance fields
 belong to a selected GPT policy mode. The native factory also binds the complete

@@ -20,7 +20,13 @@ export interface GptMotion {
   stop_on_reach: boolean;
 }
 
-export type GptControlMode = '0-shot' | 'textual-1-shot' | 'visual-1-shot';
+export const GPT_CONTROL_MODES = Object.freeze([
+  '0-shot',
+  'textual-1-shot',
+  'visual-1-shot',
+] as const);
+export const MAX_GPT_DEMONSTRATION_IMAGES = 64;
+export type GptControlMode = (typeof GPT_CONTROL_MODES)[number];
 export interface GptPolicyOptions {
   provider: string;
   model: string;
@@ -133,16 +139,18 @@ export class DshGptPolicy {
     private readonly options: GptPolicyOptions,
   ) {
     this.mode = options.controlMode ?? '0-shot';
-    if (!['0-shot', 'textual-1-shot', 'visual-1-shot'].includes(this.mode))
-      throw new Error('Unknown GPT control mode.');
+    if (!GPT_CONTROL_MODES.includes(this.mode)) throw new Error('Unknown GPT control mode.');
     if (options.mode === 'hybrid' && !options.propose)
       throw new Error('Hybrid GPT policy requires a lower-policy proposer.');
     if (this.mode !== '0-shot' && !options.demonstration?.text.trim())
       throw new Error('One-shot mode requires an explicit demonstration.');
     if (this.mode === 'visual-1-shot' && !options.demonstration?.images?.length)
       throw new Error('Visual one-shot mode requires admitted demonstration frames.');
-    if (options.demonstration?.images && options.demonstration.images.length > 64)
-      throw new Error('Demonstration exceeds 64 frames.');
+    if (
+      options.demonstration?.images &&
+      options.demonstration.images.length > MAX_GPT_DEMONSTRATION_IMAGES
+    )
+      throw new Error(`Demonstration exceeds ${MAX_GPT_DEMONSTRATION_IMAGES} frames.`);
   }
 
   private request(id?: string): PolicyRequest {

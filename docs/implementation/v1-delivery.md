@@ -17,6 +17,26 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Direct/hybrid GPT control modes and demonstration metadata pass thirty-six
+original-profile CPU admission checks with ten independently matched original/
+source identities. Thirty invalid inputs reject before service acquisition;
+six valid configurations preserve all original model/Team/worker/checkpoint/
+service bindings. The reader and policy constructor share the three supported
+modes and 64-image capacity. Original files stay unchanged and native allocations
+remain zero. Actual file content, one-shot inference and demonstration effectiveness
+retain their startup/native acceptance requirements. Evidence:
+`.local/work/native-demonstration-final-20261013/independently-verified.json`.
+
+The same source passes thirty-nine configured CPU components and 1,394 cases,
+with 737 independent source/input comparisons and all diagnostic process groups
+and writers released. Original journals/images remain unchanged. Port/endpoint
+admission independently repeats twenty-four cases, and camera admission repeats
+sixty-six cases with twenty-two declared configuration derivatives. No native
+resource allocates. Evidence:
+`.local/work/native-demonstration-cpu-final-20261013/independently-verified.json`,
+`.local/work/native-demonstration-port-20261013/independently-verified.json` and
+`.local/work/native-demonstration-uri-20261013/independently-verified.json`.
+
 Native direct/hybrid configuration validates an optional `workerPolicyUri` with
 the existing native WebSocket schema before acquiring services or allocating a
 gateway/worker. Twenty-four actual original-profile configuration checks cover

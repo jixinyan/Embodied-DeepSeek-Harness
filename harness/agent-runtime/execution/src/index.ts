@@ -39,6 +39,8 @@ export {
 
 export {
   DshGptPolicy,
+  GPT_CONTROL_MODES,
+  MAX_GPT_DEMONSTRATION_IMAGES,
   type GptPolicyOptions,
   type GptPolicyResponse,
   type GptControlMode,

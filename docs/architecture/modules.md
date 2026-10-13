@@ -118,6 +118,10 @@ RoboDojo direct/hybrid gateway/host/audit lifecycle. `native-deployment.mjs` own
 provider/model/perception assembly, managed-service leases and runnable Console
 startup; `native-workspace.mjs` composes those providers into one application.
 The deployment entry preserves its original configuration/root exports.
+RoboDojo GPT control modes and demonstration image capacity are exported by
+`execution/src/gpt-policy.ts`. The native configuration reader uses those values
+to admit one-shot metadata before service acquisition; the GPT policy constructor
+admits its loaded text and image references.
 `perception/src/request-inputs.ts` admits detached, immutable camera calibration
 banks. Native profile configuration inherits or replaces its deployment default;
 prepared profiles retain the selected values privately. The Session task route

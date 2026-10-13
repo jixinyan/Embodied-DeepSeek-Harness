@@ -3268,6 +3268,38 @@ Evidence: `.local/work/ci-depth-calibrations-inspection-20261012.json`,
 
 ## Native policy gateway configuration
 
+Direct/hybrid profiles admit `worker.sceneConfiguration.control_mode` as
+`0-shot`, `textual-1-shot` or `visual-1-shot`; omission selects `0-shot`.
+The native reader and GPT policy share `GPT_CONTROL_MODES` and the 64-image
+`MAX_GPT_DEMONSTRATION_IMAGES` capacity from `execution/src/gpt-policy.ts`.
+A supplied `demonstration` is a strict object with nonblank `textFile` and optional
+`imageFiles`, an array of nonblank paths bounded by that capacity. One-shot modes
+require demonstration text, and visual one-shot requires at least one image path.
+Admission occurs during configuration loading before service acquisition.
+
+Thirty-six declared metadata derivatives of an original direct Astra profile
+pass independent production-reader inspection. Thirty invalid modes/types/paths/
+capacities/fields reject with exact admitted failure details; six valid inputs
+cover default/omitted, textual and visual modes and the 64-path capacity.
+Every derivative differs only in its declared mode/demonstration fields. Original
+model, Team, worker, checkpoint and service bindings remain unchanged, along with
+all ten original/source identities. The selected paths reference existing retained
+text and camera files; the capacity check repeats the same original image path
+and does not claim a 64-frame demonstration or one-shot model effectiveness.
+No model, gateway, worker, simulator or GPU allocates. Evidence:
+`.local/work/native-demonstration-final-20261013/independently-verified.json`.
+File availability/content and actual one-shot tasks retain startup/native checks.
+
+The same source passes all thirty-nine configured CPU components and 1,394
+cases. Independent inspection matches 737 source/input comparisons, unchanged
+original journals/images and all thirty-nine released diagnostic process groups.
+Camera configuration repeats sixty-six cases and twenty-two declared derivatives;
+all writers release. Twenty-four port/endpoint derivatives additionally pass
+independent production-reader checks with original bindings unchanged.
+Evidence: `.local/work/native-demonstration-cpu-final-20261013/independently-verified.json`,
+`.local/work/native-demonstration-port-20261013/independently-verified.json` and
+`.local/work/native-demonstration-uri-20261013/independently-verified.json`.
+
 `apps/server/src/native-deployment-configuration.mjs` validates the optional
 RoboDojo direct/hybrid `policyGatewayPort` during configuration loading, before
 managed-service acquisition or gateway/worker allocation. Supplied values must

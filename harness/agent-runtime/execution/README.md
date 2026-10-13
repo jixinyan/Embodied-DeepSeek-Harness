@@ -192,3 +192,10 @@ optional lower-policy proposer and provider-specific EEF transform. This keeps
 RoboDojo, RoboCasa and hardware mappings outside the DSH loop while allowing the
 same GPT-6 Astra Responses adapter to serve all three control modes. Unit tests
 exercise both direct and reviewed hybrid paths with a CPU model fixture.
+
+`GPT_CONTROL_MODES` and `MAX_GPT_DEMONSTRATION_IMAGES` define the supported
+`0-shot`, `textual-1-shot` and `visual-1-shot` values and the 64-image capacity.
+The native configuration reader uses those same definitions before service
+acquisition. The policy constructor checks loaded nonempty demonstration text
+and the required visual references. Configuration metadata checks retain their
+CPU scope; loaded one-shot inference and task effectiveness require native runs.
