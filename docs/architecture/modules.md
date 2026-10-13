@@ -107,6 +107,10 @@ objects and generated sensor metadata from admitted provider values. UpperRun
 retains source identity checks, cancellation, image storage, sample retention and
 assignment grants. These functions introduce no provider calls, runtime registry
 or decision ownership.
+`perception/src/metric-measurement.ts` admits immutable measurement requests and
+detached native RGB-D receipts with source identity, pixel/depth statistics,
+calibration, rigid-transform and coordinate consistency checks. NativeTaskBackend
+retains transport, cancellation, current task identity and closure.
 `apps/server/src/native-deployment.mjs` owns native configuration and provider
 assembly; `native-workspace.mjs` composes those providers into one application.
 `examples/deployments` contains runnable entry points that call these modules.

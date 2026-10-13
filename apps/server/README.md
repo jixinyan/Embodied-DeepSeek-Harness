@@ -17,6 +17,9 @@ simulators, embodiments, checkpoints and model services through one Console.
   task-scoped backend ports, camera attachment storage and control-step frame events.
   The Session keeps one native scene across tasks;
   each task receives a separate run ID before its backend and UpperRun are created.
+  Measurement request snapshots and RGB-D receipt admission belong to
+  [perception/metric-measurement.ts](../../harness/agent-runtime/perception/src/metric-measurement.ts).
+  The backend retains request transport, cancellation and current task/closure checks.
 - [native-worker-configuration.ts](src/native-worker-configuration.ts): authoritative
   worker schema, derived configuration type and detached/frozen admission snapshot.
   Scene parameters contain finite JSON data; preparation and startup use the

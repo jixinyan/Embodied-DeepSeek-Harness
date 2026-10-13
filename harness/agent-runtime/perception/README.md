@@ -1,5 +1,16 @@
 # Perception tools
 
+`metric-measurement.ts` owns bounded, canonical base64 measurement requests and
+native RGB-D receipt admission. Requests have detached immutable scalar fields;
+decoded results detach matrices and coordinate arrays. Admission binds provider,
+observation, camera, RGB and mask identities; pixel coverage, meter-valued depth
+statistics, calibration/matrix consistency, rigid proper camera transforms and
+camera/world centroids are checked before returning the existing backend result.
+NativeTaskBackend retains transport, cancellation, current task identity and closure.
+Original RoboCasa/RoboTwin/RoboDojo records pass 416 CPU checks with 44 unchanged
+file identities and 494 independently compared result fields. See
+[native metric receipts](../../../docs/implementation/cpu-release-validation.md#native-metric-receipt-admission).
+
 `results.ts` owns the model-facing SAM segmentation, YOLO depth and RGB-D
 measurement result objects and their generated SensorSamples. It receives admitted
 provider values, source references, evidence identities and processing timestamps.

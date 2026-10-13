@@ -33,6 +33,7 @@ production path from Session selection to native commands and formal verificatio
 | Admit active rotation requests and measured motion receipts | [observation/src/rotation.ts](../../harness/agent-runtime/observation/src/rotation.ts); NativeTaskBackend retains task identity and uses NativeWorkerTransport |
 | Admit and detach SAM/YOLO image, mask, ROI, prompt and calibration inputs | [perception/src/request-inputs.ts](../../harness/agent-runtime/perception/src/request-inputs.ts); both HTTP clients use this admission |
 | Construct perception tool results and generated evidence metadata | [perception/src/results.ts](../../harness/agent-runtime/perception/src/results.ts); UpperRun owns provider admission, image storage and assignment grants |
+| Admit immutable measurement requests and source-bound RGB-D geometry receipts | [perception/src/metric-measurement.ts](../../harness/agent-runtime/perception/src/metric-measurement.ts); NativeTaskBackend retains transport and task lifetime |
 | Maintain plans and TODO tools | [planning](../../harness/agent-runtime/planning/README.md) and [tools](../../harness/agent-runtime/tools/README.md) |
 | Read and write owner-bound, versioned task plans | [planning/src/plans.ts](../../harness/agent-runtime/planning/src/plans.ts) |
 | Generate assignment-specific model-visible tool parameters | [tools/src/model-schema.ts](../../harness/agent-runtime/tools/src/model-schema.ts) |

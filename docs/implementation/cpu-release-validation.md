@@ -2871,6 +2871,58 @@ SHA256 `cbbe852fe6b0583c38c39c7f8868241e14bb50dad9a647631a5c7a8be5fac374`.
 These checks use stored native capture data. New semantic masks, physical camera
 calibration accuracy and complete loaded-provider tasks require native acceptance.
 
+### Native metric receipt admission
+
+`perception/src/metric-measurement.ts` owns measurement request admission and
+native RGB-D receipt decoding. NativeTaskBackend captures a detached immutable
+request before transport and retains cancellation, current task and closure
+checks. Receipt admission preserves the existing BackendObjectMeasurement shape
+and numeric values while binding observation, camera, RGB/mask and provider
+identities. Geometry checks require consistent pixel counts/coverage, bounded
+meter-valued depth statistics, source-image centroid bounds, matching intrinsic
+parameters/matrices, homogeneous rigid proper camera transforms and consistent
+camera/world surface centroids. World-coordinate comparison uses the recorded
+float64 accumulation allowance with the original valid-pixel count.
+
+Thirteen original native captures pass 416 CPU cases:
+
+| Provider | Original captures | Admission and snapshot cases |
+| --- | --- | --- |
+| RoboCasa | 4 | 128 |
+| RoboTwin | 3 | 96 |
+| RoboDojo | 6 | 192 |
+
+Requests preserve their original values after caller mutation; decoded arrays
+and calibration metadata remain detached from the input payload. Declared
+invalid derivatives reject for foreign source/frame identities, invalid encoding,
+nonfinite/statistically inconsistent fields, singular/inconsistent intrinsics,
+nonrigid/reflected transforms and inconsistent camera/world centroids. Independent
+NumPy inspection matches 44 original/source file identities and all 494 decoded
+fields against the actual payloads, with unchanged original RGB/mask/JSON files.
+The reader supports all four native provider identities; these supplied original
+records establish RoboCasa, RoboTwin and RoboDojo coverage.
+
+```sh
+CUDA_VISIBLE_DEVICES='' pnpm exec tsx --tsconfig tsconfig.runtime.json \
+  scripts/check-recorded-metric-measurement.mjs \
+  --record /absolute/path/to/original-native-measurement \
+  --require-provider robotwin --output .local/work/<new-metric-admission>
+```
+
+Repeat `--record` and `--require-provider` for the selected original capture
+corpus. Every source file retains its captured digest. This diagnostic performs
+no model inference, simulator allocation, GPU allocation or physical controls.
+Evidence: `.local/work/metric-measurement-admission-current-20261012/acceptance.json`
+and its `independently-verified.json`. The same native backend source additionally
+passes all thirty-seven configured CPU components and 1,185 cases. Independent
+inspection matches 634 source/input comparisons, unchanged original journals and
+all thirty-seven released diagnostic process groups, with zero native allocations.
+Campaign evidence:
+`.local/work/metric-measurement-cpu-campaign-20261012/independently-verified.json`.
+Native BEHAVIOR receipt coverage and additional live camera/calibration workflows
+retain their native acceptance requirements. Original masked depth recomputation
+retains the separate geometry evidence above.
+
 ### Original measurement and role inspection
 
 `scripts/check-recorded-metric.py --record DIRECTORY --output .local/work/<new-file>.json`

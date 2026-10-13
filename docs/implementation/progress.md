@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-12 · Spec v1.144 · v1 release acceptance in progress.
+Updated: 2026-10-12 · Spec v1.145 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,21 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Measurement request snapshots and native RGB-D receipt admission belong to
+`perception/src/metric-measurement.ts`. NativeTaskBackend retains request transport,
+cancellation, current task identity and closure. Thirteen original captures pass
+416 admission/snapshot checks across RoboCasa, RoboTwin and RoboDojo. Independent
+NumPy inspection matches 44 source/original file identities and 494 decoded fields;
+original distances, matrices, coordinates and capture metadata remain exact.
+Complete source checks pass with zero model, simulator or GPU allocations. See
+[native metric receipts](cpu-release-validation.md#native-metric-receipt-admission).
+The same backend source passes all thirty-seven CPU campaign components and
+1,185 cases; independent inspection matches 634 source/input comparisons and
+all thirty-seven released diagnostic process groups. Original records remain
+unchanged. Evidence:
+`.local/work/metric-measurement-admission-current-20261012/independently-verified.json`
+and `.local/work/metric-measurement-cpu-campaign-20261012/independently-verified.json`.
 
 Perception result construction belongs to `perception/src/results.ts`; UpperRun
 retains provider admission, cancellation, immutable retention and assignment grants.

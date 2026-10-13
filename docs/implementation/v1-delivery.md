@@ -17,6 +17,14 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Measurement request snapshots and native RGB-D receipt admission belong to
+`perception/src/metric-measurement.ts`; the backend retains transport and task
+lifetime. Thirteen original RoboCasa/RoboTwin/RoboDojo captures pass 416 CPU
+cases. Independent NumPy inspection preserves 44 source/original identities and
+all 494 decoded fields. Native BEHAVIOR receipt coverage and complete live
+perception workflows retain their requirements below. See
+[native metric receipts](cpu-release-validation.md#native-metric-receipt-admission).
+
 Perception result construction now belongs to `perception/src/results.ts`, with
 provider admission, cancellation, retention and grants owned by UpperRun. Five
 original journals preserve 140 core results and 120 ordered images; eight SAM

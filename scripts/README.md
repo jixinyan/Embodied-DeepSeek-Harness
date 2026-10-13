@@ -10,6 +10,14 @@ establish model, simulator, policy, recovery or hardware acceptance.
 
 ## CPU validation
 
+`check-recorded-metric-measurement.mjs` admits original native RGB-D payloads
+through the production perception module. It checks detached requests/results and
+declared invalid source, pixel, depth, matrix and coordinate derivatives. Repeat
+`--record` for original capture directories containing `measurement.json`,
+`source.png` and `mask.png`; `--require-provider` requires actual provider coverage.
+Reports retain source hashes and the decoded original results. See
+[native metric receipts](../docs/implementation/cpu-release-validation.md#native-metric-receipt-admission).
+
 `run-cpu-release-campaign.mjs` executes twenty-six configured production/source
 checks using original requests and journals. Each diagnostic owns a POSIX process
 group and retains stdout, stderr, its report and actual process-release receipt.

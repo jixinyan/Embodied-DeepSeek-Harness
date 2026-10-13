@@ -4,6 +4,7 @@ export {
   validateImageAttachmentReference,
 } from './sensor-sample.js';
 export { SensorSamples } from './sensor-samples.js';
+export { admitObjectMeasurementInput, readObjectMeasurement } from './metric-measurement.js';
 export {
   admitSegmentationInput,
   admitDepthInput,
