@@ -55,7 +55,21 @@ release of all forty-six diagnostic groups, unchanged original records/images
 and zero model, simulator or GPU allocation. Full source checks compile 75 Python
 files and 58 diagnostics, import 30 base modules and verify 1,436 local links.
 Evidence: `.local/work/watchdog-lifecycle-foundation-cpu-20261013/independently-verified.json`.
-Linux and current CI validation remain required for this source.
+Exact source `90c1dba` matches all 198 committed campaign files. The same seven
+thread/OS-lease outcomes pass on isolated Linux. Independent inspection verifies
+six exact-source comparisons across both platforms, unchanged monitor logic,
+constructor bindings and method signatures, released threads/runner and preserved
+canonical server changes. CI `38426518253` passes source/installation checks,
+104 runtime cases and the Linux/macOS/Windows Team admission matrix. Downloaded
+artifacts independently match fourteen distributions, fourteen import origins,
+42 input identities and 102 committed-source comparisons. All seven consolidated
+fields, checker identity and input hashes match; the fifteen previously executed
+installed-policy processor files remain unchanged. Evidence:
+`.local/work/watchdog-lifecycle-foundation-cpu-20261013/committed-source-verification.json`,
+`.local/work/watchdog-lifecycle-platforms-independent-20261013.json`,
+`.local/work/ci-watchdog-lifecycle-consolidated-independent-20261013.json` and
+`.local/work/current-sdk-watchdog-lifecycle-source-20261013.json`.
+Loaded-policy/device stopping and complete native task acceptance retain their release gates.
 
 ManagedServices sends graceful shutdown to its complete owned POSIX process group,
 including surviving Console descendants after the package leader has ended.

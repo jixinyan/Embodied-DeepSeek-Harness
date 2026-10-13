@@ -12,7 +12,7 @@ Session admission.
 | --- | --- | --- | --- | --- |
 | macOS arm64 | 25.4.0 | 11.19.0 | 3.14.0 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, packaged Desktop selectors and two service shutdown cycles |
 | Linux x64 | 24.21.0 | 11.19.0 | 3.12.14 | Fresh editable installation, complete source checks, four-provider HTTP readiness, actual ActionGate/thread/lock checks, Linux Desktop packaging and headless Wayland/Pixman window/selector/shutdown checks |
-| GitHub Ubuntu 24.04 x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh fourteen-distribution installation manifest, complete source checks, seven SKILL document/metadata tests and 97 device-owner/Session-resource/Worker-transport/native DSH tool/task-plan/model-retry cases |
+| GitHub Ubuntu 24.04 x64 | 22.23.3 | 11.19.0 | 3.11.17 | Actual Source checks workflow, fresh fourteen-distribution installation manifest, complete source checks, seven SKILL document/metadata tests and 104 watchdog/device-owner/Session-resource/Worker-transport/native DSH tool/task-plan/model-retry cases |
 
 The base CPU dependency versions are in
 [constraints.txt](../../harness/physical-runtime/constraints.txt). Source setup
@@ -77,6 +77,19 @@ fourteen distributions, fourteen import origins, 41 inputs and 99 exact-source
 comparisons: `.local/work/ci-service-group-consolidated-independent-20261013.json`.
 The package process-group diagnostic requires POSIX and IPv6 loopback. Its Windows
 application-service behavior retains separate acceptance requirements.
+
+Current watchdog source `90c1dba` passes forty-six macOS CPU components and
+1,634 cases using Node.js 25.4.0, pnpm 11.25.0 and Python 3.14.0. Independent
+inspection verifies 1,036 source/input/link comparisons, 198 committed files and
+release of every diagnostic process group. Seven actual watchdog thread/OS-lease
+cases also pass on isolated Linux with Python 3.12.14; six exact-source comparisons
+preserve the original monitor algorithm and constructor bindings. CI `38426518253`
+passes source/installation checks, 104 runtime cases and the three-platform Team
+admission matrix. Downloaded artifacts independently verify fourteen distributions,
+fourteen import origins, 42 inputs and 102 exact-source comparisons. All checks
+allocate no model, simulator or GPU. Evidence:
+`.local/work/watchdog-lifecycle-platforms-independent-20261013.json` and
+`.local/work/ci-watchdog-lifecycle-consolidated-independent-20261013.json`.
 
 These rows allocate no model, policy network, simulator or physical GPU. Native
 SDK environments have their own dependency constraints and provenance. The

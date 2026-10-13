@@ -71,6 +71,13 @@ source comparisons. The same command
 verifies downloaded artifacts locally. Different-source,
 optimized-Python and existing-output invocations terminate before publication.
 
+Actual run `38426518253` at `90c1dba` passes complete source/installation checks,
+all 104 runtime cases and Team file admission on Linux, macOS and Windows.
+Downloaded artifacts independently match fourteen distributions/import origins,
+42 input digests, 102 exact-source comparisons and all seven consolidated fields.
+The checker and original input hashes match. Evidence:
+`.local/work/ci-watchdog-lifecycle-consolidated-independent-20261013.json`.
+
 Actual source/installation/runtime run `38398570632` passes at `1c7a85d` on the
 selected Ubuntu platform. Downloaded artifacts independently match fourteen
 distributions, thirteen imports, 41 input digests and 96 exact-commit source

@@ -17,6 +17,20 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+ExecutionWatchdog serializes thread startup and disarming. Seven actual
+early/active/concurrent-close, repeated-start, deadline, lease-loss and same-thread
+cases pass on macOS and isolated Linux, with released threads and OS leases.
+The configured CPU campaign at `90c1dba` passes forty-six components, 1,634 cases,
+1,036 independent source/input/link comparisons and 198 committed files. CI
+`38426518253` passes source/installation checks, 104 runtime cases and the
+Linux/macOS/Windows Team file-admission matrix. Downloaded artifacts independently
+match fourteen distributions/import origins, 42 inputs and 102 source comparisons.
+Original monitor behavior and constructor bindings remain unchanged; no model,
+simulator or GPU allocates. Evidence:
+`.local/work/watchdog-lifecycle-foundation-cpu-20261013/independently-verified.json`,
+`.local/work/watchdog-lifecycle-platforms-independent-20261013.json` and
+`.local/work/ci-watchdog-lifecycle-consolidated-independent-20261013.json`.
+
 ManagedServices retains and gracefully releases its complete POSIX process group,
 including surviving Console descendants after leader termination. Original exit
 errors remain visible; endpoint admission uses Node's IPv6/IPv4/DNS hostname

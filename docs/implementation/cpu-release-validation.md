@@ -3898,6 +3898,21 @@ forty-six diagnostic process groups. Original journals/images remain unchanged.
 Full source checks compile 75 Python files and 58 diagnostics, import 30 base
 modules and verify 1,436 local documentation links. Evidence:
 `.local/work/watchdog-lifecycle-foundation-cpu-20261013/independently-verified.json`.
+All 198 committed campaign files match `90c1dba`. The same seven watchdog outcomes
+pass on isolated Linux with six independent committed-source comparisons across
+both platforms. Python AST inspection preserves the original monitor algorithm,
+constructor bindings and method signatures. Threads and the Linux runner release;
+isolated source stays clean and canonical server changes remain unchanged.
+Evidence: `.local/work/watchdog-lifecycle-platforms-independent-20261013.json`.
+
+CI `38426518253` passes complete source/installation checks, 104 runtime cases and
+the three-platform Team file-admission matrix. Downloaded artifacts independently
+match fourteen distributions, fourteen import origins, 42 original input digests
+and 102 committed-source comparisons. All seven consolidated fields, checker
+identity and input hashes match. The fifteen previously executed installed-policy
+processor files remain identical to this source without rerunning inference.
+Evidence: `.local/work/ci-watchdog-lifecycle-consolidated-independent-20261013.json`
+and `.local/work/current-sdk-watchdog-lifecycle-source-20261013.json`.
 No model, simulator, device action or GPU allocates; loaded-policy and native
 stop/task acceptance retain their release requirements.
 
