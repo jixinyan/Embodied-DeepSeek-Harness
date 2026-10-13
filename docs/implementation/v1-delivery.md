@@ -17,6 +17,14 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+Trusted extension factories use detached assignment inputs and matching logical/
+native names through `tools/src/extension-definition.ts`. Actual CPU checks pass
+fifteen core cases and nineteen extension cases, including independent DSH scopes,
+private source-file numeric results, caller cancellation and disposed-tool admission.
+Full source checks pass; both agents, host and journal writer release.
+No model, simulator or GPU executes. Evidence:
+`.local/work/extension-factory-core-20261013-02/acceptance.json`.
+
 Native tool name admission is verified at `0a341d6`. The tools module owns
 logical IDs, native name projection and collision checks; Deployment, Team
 loading and direct UpperRun construction apply the same rule before role creation.

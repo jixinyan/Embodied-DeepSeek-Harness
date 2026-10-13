@@ -14,6 +14,7 @@ describe the physical wire format.
 | [core-inputs.ts](src/core-inputs.ts) | Logical tool IDs, argument fields, descriptions and domain input limits |
 | [model-schema.ts](src/model-schema.ts) | Model-facing parameters, role/device-specific fields and canonical domain schema projection |
 | [core-definition.ts](src/core-definition.ts) | Core native definitions, provider timeouts, argument admission and DSH turn conclusion |
+| [extension-definition.ts](src/extension-definition.ts) | Assignment-factory isolation, core binding protection and native extension name matching |
 | [core-output.ts](src/core-output.ts) | Evidence selection and native JSON/image content rendering |
 | [tool-names.ts](src/tool-names.ts) | Logical IDs, native name projection and collision admission |
 | [index.ts](src/index.ts) | Native DSH authoring/validation exports and EDH parameter generation |
@@ -33,6 +34,16 @@ its accepted result reports running execution. Native DSH owns dispatch, timeout
 canonical output admission and cancellation. UpperRun supplies provider availability,
 role permissions, assignment lifetime, actual operations and domain event recording.
 See [CPU dispatch validation](../../../docs/implementation/cpu-release-validation.md#core-tool-definitions-and-native-dispatch).
+
+`createExtensionToolDefinition` assembles each trusted `additionalTools` factory
+from a detached assignment. It admits the logical binding against the full core
+pack before invoking the factory, then requires its native name to match
+`nativeToolName(logicalId)`. The returned native definition retains its identity,
+parameter/output schemas, renderer and execution body. Ordinary names such as
+`constructor` and `toString` are valid distinct bindings. The factory cannot
+change the caller's assignment by mutating its input. Registering that definition
+in a native DSH agent scope preserves independent tool visibility and disposal.
+Use `defineTool` for native argument admission and honor its execution signal.
 
 `coreToolEvidenceIds` selects only references from the current tool result or the
 calling Verifier's formal-check sample. Capture, active observation and evidence

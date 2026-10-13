@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.156 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.157 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,23 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+`tools/src/extension-definition.ts` owns trusted extension factory assembly.
+Each factory receives a detached assignment after logical/core binding admission;
+its native definition must carry the selected name and retains its identity.
+UpperRun uses this assembly before its existing role/lifetime wrapper and native
+DSH registration. `constructor` and `toString` are admitted as distinct ordinary
+tool names. Native DSH retains schemas, dispatch, rendering and cancellation.
+
+Actual macOS CPU dispatch passes fifteen core cases and nineteen extension cases
+with twenty recorded source identities. Two independent native Sessions read
+their private source files through five numeric tool results. Detached assignment
+inputs and schemas, binding admission before factory invocation, caller
+cancellation, argument admission, independent visibility and disposed scopes pass.
+Both agents, the host and journal writer release; persisted files survive reopening.
+Full source checks pass. No model, simulator or GPU executes. Evidence:
+`.local/work/extension-factory-core-20261013-02/acceptance.json` and
+`.local/work/extension-factory-source-20261013.log`.
 
 The tools module owns logical-ID admission and native name projection in
 `tool-names.ts`. Deployment preparation checks the complete core/extension pack;

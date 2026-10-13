@@ -24,6 +24,10 @@ existing DSH argument validation and authoritative turn conclusion. UpperRun own
 the scoped operation, availability, permission and lifetime checks. `core-output.ts`
 selects result evidence references and renders canonical JSON with ordered images;
 UpperRun supplies formal-check context and admits assignment grants/visibility.
+`extension-definition.ts` admits trusted logical bindings before invoking their
+factories, supplies detached assignment inputs and checks native name matching.
+It returns the original native definition; DSH continues to own schemas,
+registration, dispatch, numeric/JSON output, rendering and scope disposal.
 
 The F1 validator is named `PhysicalBoundaryValidator`, with files `physical-boundary.ts`
 and `physical_boundary.py`. Keep it for EDH domain messages, physical/provider wire

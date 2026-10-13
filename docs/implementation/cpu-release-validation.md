@@ -745,6 +745,22 @@ retain the same source and process ownership.
 
 ## Core tool definitions and native dispatch
 
+`extension-definition.ts` owns detached assignment-factory assembly and matching
+native names. UpperRun binds its result through the existing assignment permission
+and lifetime wrapper into the native DSH scope. The public core diagnostic's v2
+report records twenty production/configuration/checker sources, fifteen core
+cases and nineteen extension cases. Actual factory calls read private source files
+and return numeric byte lengths through native schema validation and rendering.
+Two native Sessions independently bind `source.length`; ordinary `constructor`
+and `toString` tools remain scoped to their configured owner. Invalid bindings
+reject before invoking the factory. Caller input/schema changes, invalid
+arguments, cancellation, foreign visibility and disposed scopes are checked
+against actual DSH results. Both agents, host and journal writer release.
+macOS evidence: `.local/work/extension-factory-core-20261013-02/acceptance.json`.
+The CI evidence inspector verifies all nineteen extension cases and ten original
+native outcomes, including numeric values recomputed from committed source bytes.
+This diagnostic performs no model inference or physical allocation.
+
 `tool-names.ts` owns logical-ID admission and the native name projection used by
 Deployment, FileTeamLoader, UpperRun, core definitions and core audit admission.
 The complete core/extension pack requires distinct native names, and DSH's

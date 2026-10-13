@@ -45,6 +45,7 @@ production path from Session selection to native commands and formal verificatio
 | Generate assignment-specific model-visible tool parameters | [tools/src/model-schema.ts](../../harness/agent-runtime/tools/src/model-schema.ts) |
 | Admit logical tool IDs and distinct native names for deployments, Teams and runs | [tools/src/tool-names.ts](../../harness/agent-runtime/tools/src/tool-names.ts) |
 | Bind core native tool definitions, timeouts, argument admission and turn conclusion | [tools/src/core-definition.ts](../../harness/agent-runtime/tools/src/core-definition.ts); UpperRun supplies scoped operations and authority |
+| Assemble trusted extension factories with detached assignments and admitted native names | [tools/src/extension-definition.ts](../../harness/agent-runtime/tools/src/extension-definition.ts); registration and dispatch remain native DSH services |
 | Select evidence references and render model-facing core tool results | [tools/src/core-output.ts](../../harness/agent-runtime/tools/src/core-output.ts); UpperRun admits assignment grants and visibility |
 | Deliver explicit context and reports | [communication](../../harness/agent-runtime/communication/README.md) |
 | Enforce goals, retries and task completion | [tasks](../../harness/agent-runtime/tasks/README.md) |
@@ -112,7 +113,7 @@ implementations load in their separately configured service processes.
 | Check packaged Desktop selectors, restart, Console reopening, isolation and owned-service shutdown using CPU rendering | [check-desktop-configuration-cpu.mjs](../../scripts/check-desktop-configuration-cpu.mjs) |
 | Inspect a fresh isolated CPU installation and optional installation provenance | [check-cpu-installation.py](../../scripts/check-cpu-installation.py) and [setup](setup.md) |
 | Verify complete CPU CI artifacts against their exact Git source and publish consolidated inspection | [check-cpu-runtime-evidence.py](../../scripts/check-cpu-runtime-evidence.py) |
-| Exercise actual DSH core dispatch, private files and local clarification persistence | [check-core-tools-offline.mjs](../../scripts/check-core-tools-offline.mjs) |
+| Exercise actual DSH core/extension dispatch, independent Session scopes, private files and local clarification persistence | [check-core-tools-offline.mjs](../../scripts/check-core-tools-offline.mjs) |
 | Check configured task-plan admission, persisted reads and journal compaction without native allocation | [check-task-plans-offline.mjs](../../scripts/check-task-plans-offline.mjs) |
 | Find exact configured profiles and their acceptance boundaries | [configuration matrix](../implementation/supported-configurations.md) |
 | Verify CPU services, transport and original records | [CPU release validation](../implementation/cpu-release-validation.md) |

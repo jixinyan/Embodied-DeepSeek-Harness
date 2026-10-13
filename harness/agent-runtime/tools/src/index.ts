@@ -32,3 +32,4 @@ export {
 export { createCoreToolDefinition, type CoreToolBinding } from './core-definition.js';
 export { coreToolEvidenceIds, renderCoreToolResult } from './core-output.js';
 export { nativeToolName, assertToolBindings } from './tool-names.js';
+export { createExtensionToolDefinition } from './extension-definition.js';

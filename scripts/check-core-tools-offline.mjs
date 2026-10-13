@@ -3,9 +3,18 @@ import { createHash, randomUUID } from 'node:crypto';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 import { parseArgs } from 'node:util';
+import { ToolCallId } from '@deepseek-ai/dsh-llm';
+import { createDshSession } from '@edh/agents';
 import { AssignmentFiles } from '@edh/files';
+import { readModelConfiguration } from '@edh/models';
 import { LocalStore } from '@edh/storage';
-import { createCoreToolDefinition, renderCoreToolResult } from '@edh/tools';
+import {
+  createCoreToolDefinition,
+  createExtensionToolDefinition,
+  defineTool,
+  nativeToolName,
+  renderCoreToolResult,
+} from '@edh/tools';
 import { UserClarifications } from '../apps/server/src/clarifications.ts';
 import { createDshHost } from '../apps/server/src/runtime.ts';
 
@@ -20,15 +29,20 @@ const sources = await Promise.all(
   [
     'harness/agent-runtime/tools/src/core-definition.ts',
     'harness/agent-runtime/tools/src/tool-names.ts',
+    'harness/agent-runtime/tools/src/extension-definition.ts',
     'harness/agent-runtime/tools/src/index.ts',
     'harness/agent-runtime/tools/src/core-inputs.ts',
     'harness/agent-runtime/tools/src/core-output.ts',
     'harness/agent-runtime/tools/src/model-schema.ts',
     'harness/agent-runtime/tools/src/dsh/tools/index.ts',
     'harness/agent-runtime/tools/src/dsh/tools/json-schema.ts',
+    'harness/agent-runtime/tools/src/dsh/tools/schema.ts',
     'harness/agent-runtime/tools/src/dsh/timeout-policy/index.ts',
     'harness/agent-runtime/files/src/workspace.ts',
     'harness/agent-runtime/storage/src/local-store.ts',
+    'harness/agent-runtime/agents/src/runtime.ts',
+    'harness/agent-runtime/models/src/configuration.ts',
+    'examples/models/qwen38-vllm.yaml',
     'apps/server/src/clarifications.ts',
     'apps/server/src/runtime.ts',
     'apps/server/src/application.ts',
@@ -48,7 +62,12 @@ const notifications = [];
 const clarifications = new UserClarifications(store, runId, (record) => notifications.push(record));
 let host;
 const disposers = [];
+const handles = [];
 const checks = [];
+const extensionChecks = [];
+const extensionOutcomes = [];
+let factoryCalls = 0;
+let extensionReads = 0;
 const path = 'memory/tool-source.ts';
 const call = (tool, args, signal = new AbortController().signal, callId = randomUUID()) =>
   host.tools.execute({
@@ -202,8 +221,190 @@ try {
     /^A tool-call identity cannot change its question\.$/,
   );
   assert.equal(hash(await readFile(journal)), beforeQuestionConflict);
+
+  for (const dispose of disposers.splice(0).reverse()) dispose();
+  const secondAssignmentId = randomUUID();
+  const secondContent = await readFile(
+    resolve(root, 'harness/agent-runtime/tools/src/extension-definition.ts'),
+    'utf8',
+  );
+  files.write(secondAssignmentId, path, secondContent, 0);
+  const firstInput = { id: assignmentId, context: { files: [path] } };
+  const secondInput = { id: secondAssignmentId, context: { files: [path] } };
+  const originalFirstInput = structuredClone(firstInput);
+  const originalSecondInput = structuredClone(secondInput);
+  const beforeExtensions = hash(await readFile(journal));
+  let latestDefinition;
+  const factory = (logical) => (assignment) => {
+    factoryCalls++;
+    assignment.context.files.push('memory/empty.md');
+    latestDefinition = defineTool({
+      name: nativeToolName(logical),
+      description: 'Measure the UTF-8 byte length of a private assignment source file.',
+      parameters: { path: { type: 'string', enum: [path], required: true } },
+      output: {
+        schema: { type: 'integer' },
+        render: (_args, value) => renderCoreToolResult(value, []),
+      },
+      async execute(args, exec) {
+        exec.signal.throwIfAborted();
+        const record = files.read(assignment.id, args.path);
+        extensionReads++;
+        return Buffer.byteLength(record.content);
+      },
+    });
+    return latestDefinition;
+  };
+  const extensionAccept = (name) => extensionChecks.push({ name, rejected: false });
+  const extensionReject = (name, result, code) => {
+    assert.equal(result.isError, true);
+    assert.equal(result.error.info.code, code);
+    extensionChecks.push({ name, rejected: true, errorCode: code });
+  };
+  const firstTool = createExtensionToolDefinition(
+    'source.length',
+    factory('source.length'),
+    firstInput,
+  );
+  assert.equal(firstTool, latestDefinition);
+  assert.deepEqual(firstInput, originalFirstInput);
+  extensionAccept('detached-factory-input');
+  const prototypeTools = ['constructor', 'toString'].map((logical) => {
+    const definition = createExtensionToolDefinition(logical, factory(logical), firstInput);
+    assert.equal(definition, latestDefinition);
+    assert.deepEqual(firstInput, originalFirstInput);
+    extensionAccept(`${logical}-binding`);
+    return definition;
+  });
+  for (const [name, logical] of [
+    ['core-id-before-factory', 'execution.start'],
+    ['core-alias-before-factory', 'execution__start'],
+    ['reserved-name-before-factory', 'run_code'],
+    ['invalid-id-before-factory', 'source.length\n'],
+  ]) {
+    assert.throws(
+      () => createExtensionToolDefinition(logical, factory('source.length'), firstInput),
+      /Tool bindings|reserved|Invalid logical/,
+    );
+    assert.equal(factoryCalls, 3);
+    assert.deepEqual(firstInput, originalFirstInput);
+    extensionChecks.push({ name, rejected: true });
+  }
+  assert.throws(
+    () => createExtensionToolDefinition('source.inspect', factory('source.length'), firstInput),
+    /^Error: Native tool name must match its logical binding\.$/,
+  );
+  assert.equal(factoryCalls, 4);
+  assert.deepEqual(firstInput, originalFirstInput);
+  extensionChecks.push({ name: 'mismatched-native-name', rejected: true });
+  const secondTool = createExtensionToolDefinition(
+    'source.length',
+    factory('source.length'),
+    secondInput,
+  );
+  assert.equal(secondTool, latestDefinition);
+  assert.equal(factoryCalls, 5);
+  assert.deepEqual(secondInput, originalSecondInput);
+  assert.equal(hash(await readFile(journal)), beforeExtensions);
+  const models = await readModelConfiguration(resolve(root, 'examples/models/qwen38-vllm.yaml'));
+  const model = models.models[models.defaultModel];
+  const outcomeDisposer = host.on('tools/result', (exec, result) => {
+    extensionOutcomes.push({
+      name: exec.name,
+      isError: result.isError,
+      value: result.value ?? null,
+      errorCode: result.error?.info?.code ?? null,
+    });
+  });
+  disposers.push(outcomeDisposer);
+  for (const tools of [[firstTool, ...prototypeTools], [secondTool]]) {
+    handles.push(
+      await createDshSession(host, {
+        sessionId: randomUUID(),
+        provider: model.endpoint,
+        model: model.model,
+        instructions: 'Inspect private assignment source files for the CPU tool diagnostic.',
+        tools,
+      }),
+    );
+  }
+  const [first, second] = handles;
+  const schemas = host.tools.schemas(first.agent);
+  assert.deepEqual(
+    schemas,
+    [firstTool, ...prototypeTools].map(({ name, description, parameters }) => ({
+      name,
+      description,
+      parameters,
+    })),
+  );
+  assert.deepEqual(host.tools.schemas(second.agent), [
+    {
+      name: secondTool.name,
+      description: secondTool.description,
+      parameters: secondTool.parameters,
+    },
+  ]);
+  schemas[0].parameters.properties.path.description = 'Caller annotation';
+  assert.deepEqual(host.tools.schemas(first.agent)[0].parameters, firstTool.parameters);
+  extensionAccept('detached-native-schemas');
+  const scopedCall = (agent, logical, args = { path }, signal = new AbortController().signal) =>
+    host.tools.execute({
+      agent,
+      name: nativeToolName(logical),
+      arguments: args,
+      callId: ToolCallId(randomUUID()),
+      signal,
+    });
+  const readLength = async (name, agent, logical, expectedContent) => {
+    const result = await scopedCall(agent, logical);
+    assert.equal(result.isError, false);
+    assert.equal(result.value, Buffer.byteLength(expectedContent));
+    assert.deepEqual(result.content, renderCoreToolResult(result.value, []));
+    assert.notEqual(result.concludesTurn, true);
+    extensionAccept(name);
+  };
+  await readLength('private-scope-source-length', first.agent, 'source.length', updated.content);
+  await readLength('independent-scope-source-length', second.agent, 'source.length', secondContent);
+  await readLength('constructor-source-length', first.agent, 'constructor', updated.content);
+  await readLength('toString-source-length', first.agent, 'toString', updated.content);
+  extensionReject(
+    'native-invalid-arguments',
+    await scopedCall(first.agent, 'source.length', { path: 1 }),
+    'INVALID_ARGS',
+  );
+  extensionReject(
+    'native-caller-cancellation',
+    await scopedCall(first.agent, 'source.length', { path }, aborted.signal),
+    'ABORTED_BEFORE_DISPATCH',
+  );
+  extensionReject(
+    'foreign-scope-tool',
+    await scopedCall(second.agent, 'constructor'),
+    'UNKNOWN_TOOL',
+  );
+  assert.equal(extensionReads, 4);
+  await first.dispose();
+  extensionReject(
+    'released-scope-tool',
+    await scopedCall(first.agent, 'source.length'),
+    'UNKNOWN_TOOL',
+  );
+  await readLength('remaining-scope-operational', second.agent, 'source.length', secondContent);
+  await second.dispose();
+  extensionReject(
+    'released-all-scopes',
+    await scopedCall(second.agent, 'source.length'),
+    'UNKNOWN_TOOL',
+  );
+  assert.equal(extensionReads, 5);
+  assert.equal(extensionOutcomes.length, 10);
+  assert.deepEqual(firstInput, originalFirstInput);
+  assert.deepEqual(secondInput, originalSecondInput);
+  assert.equal(hash(await readFile(journal)), beforeExtensions);
 } finally {
   try {
+    for (const handle of handles.reverse()) await handle.dispose();
     for (const dispose of disposers.reverse()) dispose();
   } finally {
     try {
@@ -227,10 +428,15 @@ await writeFile(
   resolve(output, 'acceptance.json'),
   `${JSON.stringify(
     {
-      schemaVersion: 'edh.core_tools_cpu.v1',
+      schemaVersion: 'edh.core_tools_cpu.v2',
       recordedAt: new Date().toISOString(),
       sources,
       checks,
+      extensionChecks,
+      extensionOutcomes,
+      factoryCalls,
+      extensionReads,
+      agentsDisposed: true,
       journalSha256: hash(await readFile(resolve(output, 'data/records.jsonl'))),
       writerReleased: true,
       hostDisposed: true,
@@ -238,11 +444,20 @@ await writeFile(
       environmentAllocationPerformed: false,
       physicalControlPerformed: false,
       scope:
-        'Actual native DSH dispatch, private file operations and local clarification persistence.',
+        'Actual native DSH dispatch, independent extension scopes, private files and local clarification persistence.',
     },
     null,
     2,
   )}\n`,
   { flag: 'wx' },
 );
-console.log(JSON.stringify({ checks: checks.length, writerReleased: true, hostDisposed: true }));
+console.log(
+  JSON.stringify({
+    checks: checks.length,
+    extensionChecks: extensionChecks.length,
+    sources: sources.length,
+    writerReleased: true,
+    hostDisposed: true,
+    agentsDisposed: true,
+  }),
+);

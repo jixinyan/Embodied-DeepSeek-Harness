@@ -43,7 +43,10 @@ const loadOptions = {
 const loader = new FileTeamLoader(loadOptions);
 const toolBindingChecks = [];
 for (const [name, bindings] of [
-  ['core-and-distinct-extensions', [...CORE_TOOLS, 'source.inspect', 'source__read']],
+  [
+    'core-and-distinct-extensions',
+    [...CORE_TOOLS, 'source.inspect', 'source__read', 'constructor', 'toString'],
+  ],
   ['identifier-length-boundary', ['a'.repeat(80)]],
 ]) {
   assertToolBindings(bindings);

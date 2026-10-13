@@ -158,13 +158,14 @@ def main():
                 assert type(record["recordedFrames"]) is int and record["recordedFrames"] == 0
                 assert all(case["recordingJournalClosed"] is True and case["recordingFrames"] == 0 for case in record["cases"])
         cases[component] = expected_count
-    assert tools["schemaVersion"] == "edh.core_tools_cpu.v1"
+    assert tools["schemaVersion"] == "edh.core_tools_cpu.v2"
     assert tools["journalSha256"] == inputs[6]["sha256"]
     assert tools["writerReleased"] is True and tools["hostDisposed"] is True
+    assert tools["agentsDisposed"] is True
     for field in ("environmentAllocationPerformed", "modelInferencePerformed", "physicalControlPerformed"):
         assert tools[field] is False
-    assert len(tools["sources"]) == 15
-    assert len({entry["path"] for entry in tools["sources"]}) == 15
+    assert len(tools["sources"]) == 20
+    assert len({entry["path"] for entry in tools["sources"]}) == 20
     for entry in tools["sources"]:
         compare(Path(entry["path"]).relative_to(source_root), entry["sha256"])
     expected_tools = {
@@ -184,7 +185,43 @@ def main():
             assert case["concludesTurn"] is (case["name"] in {
                 "persist-question-and-conclude-turn", "same-call-question-identity",
             })
-    cases["agent-tools"] = len(expected_tools)
+    expected_extensions = {
+        "detached-factory-input": False, "constructor-binding": False,
+        "toString-binding": False, "core-id-before-factory": True,
+        "core-alias-before-factory": True, "reserved-name-before-factory": True,
+        "invalid-id-before-factory": True, "mismatched-native-name": True,
+        "detached-native-schemas": False, "private-scope-source-length": False,
+        "independent-scope-source-length": False, "constructor-source-length": False,
+        "toString-source-length": False, "native-invalid-arguments": True,
+        "native-caller-cancellation": True, "foreign-scope-tool": True,
+        "released-scope-tool": True, "remaining-scope-operational": False,
+        "released-all-scopes": True,
+    }
+    assert len(tools["extensionChecks"]) == len(expected_extensions)
+    assert {case["name"]: case["rejected"] for case in tools["extensionChecks"]} == expected_extensions
+    assert all(type(case["rejected"]) is bool for case in tools["extensionChecks"])
+    assert type(tools["factoryCalls"]) is int and tools["factoryCalls"] == 5
+    assert type(tools["extensionReads"]) is int and tools["extensionReads"] == 5
+    first_length = len(source_bytes("harness/agent-runtime/tools/src/core-definition.ts")) + 1
+    second_length = len(source_bytes("harness/agent-runtime/tools/src/extension-definition.ts"))
+    expected_outcomes = [
+        ("source__length", first_length, None),
+        ("source__length", second_length, None),
+        ("constructor", first_length, None),
+        ("toString", first_length, None),
+        ("source__length", None, "INVALID_ARGS"),
+        ("source__length", None, "ABORTED_BEFORE_DISPATCH"),
+        ("constructor", None, "UNKNOWN_TOOL"),
+        ("source__length", None, "UNKNOWN_TOOL"),
+        ("source__length", second_length, None),
+        ("source__length", None, "UNKNOWN_TOOL"),
+    ]
+    assert len(tools["extensionOutcomes"]) == len(expected_outcomes)
+    for actual, (name, value, code) in zip(tools["extensionOutcomes"], expected_outcomes, strict=True):
+        assert actual == {"name": name, "value": value, "errorCode": code, "isError": code is not None}
+        if value is not None:
+            assert type(actual["value"]) is int
+    cases["agent-tools"] = len(expected_tools) + len(expected_extensions)
     assert plans["schemaVersion"] == "edh.task_plans_cpu.v1"
     assert plans["journalSha256"] == inputs[8]["sha256"]
     assert plans["writerReleased"] is True

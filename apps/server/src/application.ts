@@ -69,9 +69,8 @@ import {
   coreToolEvidenceIds,
   renderCoreToolResult,
   modelToolContractSchema,
-  CORE_TOOL_PARAMETERS,
   CORE_TOOLS,
-  nativeToolName,
+  createExtensionToolDefinition,
   assertToolBindings,
 } from '@edh/tools';
 export const terminal = (state: RunState['state']) =>
@@ -749,11 +748,7 @@ export class UpperRun {
         const extra = this.options.additionalTools?.[logical];
         let native: ToolDefinition;
         if (extra) {
-          if (CORE_TOOL_PARAMETERS[logical])
-            throw new Error('Additional tools cannot replace core authority checks.');
-          native = extra(structuredClone(a));
-          if (native.name !== nativeToolName(logical))
-            throw new Error('Native tool name must match its logical binding.');
+          native = createExtensionToolDefinition(logical, extra, a);
         } else {
           if (
             logical === 'perception.segment_objects' &&

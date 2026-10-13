@@ -41,7 +41,9 @@ the configured decision owner's motion authority.
 2. Register the logical tool as available in FileTeamLoader. Missing model/tool/provider
    bindings fail preflight; optional providers are not installed automatically.
 3. Supply `UpperRun.additionalTools[logicalId]` as a trusted factory receiving the
-   assignment. Return a native DSH ToolDefinition using `defineTool` from `@edh/tools`.
+   detached assignment. `createExtensionToolDefinition` admits its binding before
+   invoking the factory and requires the matching native name. Return a native
+   DSH ToolDefinition using `defineTool` from `@edh/tools`.
    For `scene.describe`, the model-facing name must be `scene__describe`.
    Use `nativeToolName(logicalId)` for this projection. Logical IDs contain one
    through eighty ASCII letters, digits, dots, underscores or hyphens and begin
@@ -56,8 +58,11 @@ the configured decision owner's motion authority.
    run-lifetime checks and correlated tool activity. Core authority tools cannot be replaced.
 5. Delegate using team.delegate with member, objective, context and authorized evidence
    references. Reply through team.send or request/respond for missing context.
-6. Run [the configuration-to-role acceptance test](../../tests/runtime/team-extensions.test.ts)
-   as a concrete example, then add behavior-specific provider tests.
+6. Run [the native tool diagnostic](../../scripts/check-core-tools-offline.mjs)
+   with a new output directory under `.local/work`. It checks actual private file
+   operations, detached factories, independent native Session scopes, numeric
+   outputs, cancellation and disposal without a model or simulator. Complete the
+   new role's actual configured model/provider acceptance for its intended behavior.
 
 `startServer` accepts a `ServerDeployment` containing
 model adapters, task presets, tools and backend factories; see the
