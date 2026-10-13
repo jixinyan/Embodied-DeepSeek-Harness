@@ -51,8 +51,13 @@ const sources = await Promise.all(
 );
 await mkdir(output, { recursive: false, mode: 0o700 });
 const cases = [];
-for (const entry of ['start', 'demo']) {
-  const directory = resolve(output, entry);
+for (const [entry, mode] of [
+  ['start', 'normal'],
+  ['start', 'leader-exit'],
+  ['demo', 'normal'],
+  ['demo', 'leader-exit'],
+]) {
+  const directory = resolve(output, mode === 'normal' ? entry : `${entry}-${mode}`);
   await mkdir(directory);
   const dataDirectory = resolve(directory, 'workspace');
   const socket = createServer();
@@ -107,6 +112,7 @@ for (const entry of ['start', 'demo']) {
   });
   let pid;
   let metadata;
+  let originalExitError;
   try {
     const lease = await supervisor.acquire(['console'], AbortSignal.timeout(30000));
     pid = supervisor.inspect()[0].pid;
@@ -146,8 +152,22 @@ for (const entry of ['start', 'demo']) {
     }
     await writeFile(resolve(directory, 'configuration.json'), JSON.stringify(metadata, null, 2));
     await writeFile(resolve(directory, 'services.json'), JSON.stringify(services, null, 2));
+    if (mode === 'leader-exit') {
+      const aborted = once(lease.signal, 'abort', { signal: AbortSignal.timeout(5000) });
+      process.kill(pid, 'SIGKILL');
+      await aborted;
+      assert.equal(supervisor.inspect()[0].state, 'failed');
+      originalExitError = lease.signal.reason;
+      assert(originalExitError instanceof Error);
+      assert.match(originalExitError.message, /exited unexpectedly/);
+      const surviving = await get('/api/config');
+      assert.equal(surviving.deploymentDigest, metadata.deploymentDigest);
+      await access(resolve(dataDirectory, 'writer.lock'));
+    }
     await lease.release();
-    assert.equal(supervisor.inspect()[0].state, 'stopped');
+    assert.equal(supervisor.inspect()[0].state, mode === 'normal' ? 'stopped' : 'failed');
+    if (mode === 'leader-exit')
+      assert.equal(supervisor.inspect()[0].error, originalExitError.message);
   } finally {
     await supervisor.close();
   }
@@ -157,7 +177,11 @@ for (const entry of ['start', 'demo']) {
   await assert.rejects(fetch(`${url}/api/config`, { signal: AbortSignal.timeout(3000) }));
   cases.push({
     entry,
+    mode,
     pid,
+    ...(mode === 'leader-exit'
+      ? { actualConsoleSurvivedLeaderExit: true, originalUnexpectedExitPreserved: true }
+      : {}),
     deploymentDigest: metadata.deploymentDigest,
     profileCount: Object.keys(metadata.launchProfiles).length,
     journalSha256: hash(await readFile(resolve(dataDirectory, 'records.jsonl'))),
@@ -170,7 +194,66 @@ for (const entry of ['start', 'demo']) {
     managedProviderProcessesStarted: false,
   });
 }
+const endpointCases = [];
+const ipv6 = createServer();
+ipv6.listen({ host: '::1', port: 0, ipv6Only: true });
+await once(ipv6, 'listening');
+try {
+  for (const type of ['http_json', 'websocket']) {
+    const port = ipv6.address().port;
+    const supervisor = new ManagedServices({
+      console: {
+        label: 'EDH occupied IPv6 endpoint admission',
+        command: ['pnpm', 'start'],
+        cwd: root,
+        env: { CUDA_VISIBLE_DEVICES: '' },
+        readiness:
+          type === 'http_json'
+            ? { type, url: `http://[::1]:${port}/api/config`, schema: { type: 'object' } }
+            : { type, url: `ws://[::1]:${port}/api/config` },
+        startupTimeoutMs: 30000,
+        probeTimeoutMs: 1000,
+        probeIntervalMs: 100,
+        shutdownTimeoutMs: 15000,
+      },
+    });
+    try {
+      await assert.rejects(supervisor.acquire(['console'], AbortSignal.timeout(3000)), {
+        message: 'Managed service endpoint is already occupied: console',
+      });
+      const state = supervisor.inspect()[0];
+      assert.equal(state.state, 'failed');
+      assert.equal(state.pid, null);
+      assert.equal(state.leases, 0);
+      assert.equal(state.startedAt, null);
+      endpointCases.push({
+        type,
+        family: 'IPv6',
+        occupiedEndpointRejected: true,
+        originalListenerPreserved: ipv6.listening,
+        candidateSpawned: false,
+        modelInferencePerformed: false,
+        nativeEnvironmentAllocated: false,
+      });
+    } finally {
+      await supervisor.close();
+    }
+  }
+} finally {
+  await new Promise((accept, reject) => ipv6.close((error) => (error ? reject(error) : accept())));
+}
 for (const source of sources) assert.equal(hash(await readFile(source.path)), source.sha256);
-const result = { schemaVersion: 'edh.native_console_startup_cpu.v1', sources, cases };
+const result = {
+  schemaVersion: 'edh.native_console_startup_cpu.v1',
+  sources,
+  cases,
+  endpointCases,
+};
 await writeFile(resolve(output, 'acceptance.json'), `${JSON.stringify(result, null, 2)}\n`);
-console.log(JSON.stringify({ caseCount: cases.length, sourceCount: sources.length, output }));
+console.log(
+  JSON.stringify({
+    caseCount: cases.length + endpointCases.length,
+    sourceCount: sources.length,
+    output,
+  }),
+);

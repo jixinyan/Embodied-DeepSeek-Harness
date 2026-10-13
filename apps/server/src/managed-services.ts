@@ -1,6 +1,7 @@
 import { spawn, type ChildProcess } from 'node:child_process';
 import { connect } from 'node:net';
 import { setTimeout as delay } from 'node:timers/promises';
+import { urlToHttpOptions } from 'node:url';
 import { Ajv, type ValidateFunction } from 'ajv';
 import { z } from 'zod';
 
@@ -78,7 +79,7 @@ function errorOf(value: unknown): Error {
 function listening(url: URL, signal: AbortSignal): Promise<boolean> {
   return new Promise((accept, reject) => {
     const socket = connect({
-      host: url.hostname,
+      host: urlToHttpOptions(url).hostname!,
       port: Number(url.port || (['https:', 'wss:'].includes(url.protocol) ? 443 : 80)),
       signal,
     });
@@ -327,7 +328,7 @@ export class ManagedServices implements ManagedServiceLifecycle {
         await waitFor(entry.exit ?? Promise.resolve(), deadline);
         while (alive()) await delay(50, undefined, { signal: deadline });
       };
-      if (child?.exitCode === null && child.signalCode === null) signal('SIGTERM');
+      signal('SIGTERM');
       try {
         await released();
       } catch (error) {

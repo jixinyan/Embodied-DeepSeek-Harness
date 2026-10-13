@@ -3010,6 +3010,10 @@ Shutdown waits for both the leader's exit and complete owned process-group absen
 under the configured graceful deadline. Forced termination also has a bounded
 drain and retains the original graceful/release errors. Confirmed group release
 clears PID ownership; an uncertain boundary retains it.
+Graceful shutdown signals the complete group even after the leader has ended.
+Original unexpected-exit errors remain visible after confirmed resource release.
+Endpoint availability uses Node's URL-to-HTTP hostname conversion, including
+IPv6 literals admitted by the existing readiness schema.
 An EPERM group probe retains ownership and waits within the same bound; it does
 not establish absence. Only ESRCH confirms that no group remains. These meanings
 follow the [Apple kill(2) reference](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/kill.2.html).
@@ -3035,6 +3039,24 @@ startup and on every directory notification. Original file errors other than
 absence propagate. On 2026-10-13, all three actual Console process cases pass
 with final PID/lease absence, released writers and reusable listener ports:
 `.local/work/policy-listener-console-startup-cpu-20261013/acceptance.json`.
+
+The configured package-entry diagnostic exercises both `pnpm start` and
+`pnpm demo` with normal shutdown and actual leader termination while their
+Console descendants remain available. Each case retains compatible profile
+metadata, idle model/policy services and empty Sessions. Shutdown requires the
+complete group, HTTP listener and writer to release; unexpected-exit outcomes
+remain unchanged. Two additional cases use an actual occupied IPv6 loopback
+listener with HTTP and WebSocket readiness declarations. Both reject before
+spawning a candidate and preserve the original listener. This diagnostic
+requires POSIX process groups and available IPv6 loopback.
+On macOS, all six cases pass:
+`.local/work/service-group-console-cpu-20261013/acceptance.json`.
+The complete configured campaign passes forty-five components and 1,627 cases.
+Independent inspection repeats 1,032 source/input/link comparisons, confirms
+release of all forty-five process groups and preserves original journal/image
+bytes. This scope allocates no model, simulator or GPU. Evidence:
+`.local/work/service-group-foundation-cpu-20261013/independently-verified.json`.
+These checks supply no model output, native environment or GPU allocation.
 
 Each case requires the original cancellation outcome, absent owned process group,
 zero final leases/PIDs, released writer lock and successful listener-port reuse.

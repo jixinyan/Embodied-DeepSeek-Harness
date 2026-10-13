@@ -20,7 +20,7 @@ production path from Session selection to native commands and formal verificatio
 | Start the HTTP/SSE application | [apps/server/src/http-server.ts](../../apps/server/src/http-server.ts) |
 | Own native CLI startup, signals and resource release | [apps/server/src/console-process.ts](../../apps/server/src/console-process.ts) |
 | Validate configured package startup and actual Console process release without provider allocation | [check-native-console-startup-offline.mjs](../../scripts/check-native-console-startup-offline.mjs) |
-| Own shared model/policy service startup, readiness and leases | [apps/server/src/managed-services.ts](../../apps/server/src/managed-services.ts) |
+| Own shared model/policy startup, endpoint admission, readiness, leases and complete process-group shutdown | [apps/server/src/managed-services.ts](../../apps/server/src/managed-services.ts) |
 | Manage retained user Sessions and task admission | [apps/server/src/user-sessions.ts](../../apps/server/src/user-sessions.ts) |
 | Connect domain tools, Planner decisions and independent roles | [apps/server/src/application.ts](../../apps/server/src/application.ts) |
 | Manage native DSH role contexts | [agents/src/runtime.ts](../../harness/agent-runtime/agents/src/runtime.ts) |

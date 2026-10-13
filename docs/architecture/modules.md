@@ -124,6 +124,10 @@ the same range validates RoboCasa's numeric-string environment override.
 RoboDojo direct/hybrid gateway/host/audit lifecycle. `native-deployment.mjs` owns
 provider/model/perception assembly, managed-service leases and runnable Console
 startup; `native-workspace.mjs` composes those providers into one application.
+`managed-services.ts` owns readiness and shared leases for configured processes.
+POSIX shutdown signals the complete owned group, including surviving descendants
+after leader termination, and confirms group absence before release. Endpoint
+admission uses Node's URL hostname conversion for IPv6 as well as IPv4/DNS.
 The deployment entry preserves its original configuration/root exports.
 RoboDojo GPT control modes and demonstration image capacity are exported by
 `execution/src/gpt-policy.ts`. The native configuration reader uses those values

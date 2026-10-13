@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.162 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.163 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,20 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+ManagedServices sends graceful shutdown to its complete owned POSIX process group,
+including surviving Console descendants after the package leader has ended.
+Original unexpected-exit errors remain visible after all processes, the listener
+and writer are released. Endpoint availability uses Node's URL conversion for
+IPv6, IPv4 and DNS. The package Console diagnostic exercises `start` and `demo`
+with normal release and actual leader termination, plus occupied HTTP/WebSocket
+IPv6 endpoints. On macOS, all six cases pass with idle provider services and
+empty Sessions. The full configured CPU campaign passes forty-five components
+and 1,627 cases. Independent inspection repeats 1,032 source/input/link comparisons,
+confirms release of all forty-five diagnostic process groups and preserves the
+original journals and images. No model, simulator or GPU allocates. Evidence:
+`.local/work/service-group-foundation-cpu-20261013/independently-verified.json`.
+Linux validation remains required for this source.
 
 Policy startup reserves exclusive TCP listeners through `policies/listener.py`.
 JSON services defer WebSocket handshake/handler admission until model readiness;
