@@ -61,6 +61,40 @@ No model, simulator or GPU executes. Evidence:
 `.local/work/native-entry-source-complete-20261013.log`.
 The unified CPU campaign includes this diagnostic for every configured workspace.
 
+Source `5a643a4` passes all forty-three configured CPU components and 1,561 cases.
+Independent readers verify 912 source/input comparisons and all 183 distinct
+production/checker/package files against the commit. All forty-three diagnostic
+process groups release; original journals/images remain unchanged. Reopened
+Console startup journals contain no admitted Sessions or runs. The native retry
+reader verifies 338 durable events across 22 independent Sessions and 56 genuine
+failed connections, with eight pending-history releases and eighteen invalid
+payload rejections. Campaign shutdown passes SIGTERM, SIGINT and repeated signals,
+publishes no final acceptance after interruption and releases each owned group.
+Evidence:
+`.local/work/native-entry-foundation-cpu-20261013/independently-verified.json`,
+`.local/work/native-entry-foundation-cpu-20261013/committed-source-verification.json`,
+`.local/work/native-entry-native-retries-independent-20261013.json` and
+`.local/work/native-entry-cpu-shutdown-20261013/acceptance.json`.
+
+Ubuntu CI `38388348095` passes fresh installation, full source checks and 97
+runtime cases at the same source. Downloaded installation/runtime artifacts pass
+the production evidence inspector with fourteen distributions, thirteen imports,
+41 input identities and 95 exact-source comparisons. Evidence:
+`.local/work/ci-native-entry-inspection-20261013.json`.
+
+The same package entry and complete source checks pass on isolated Linux with
+Node.js 24.21.0 and the declared Python 3.12.14 environment. Both actual package
+process groups release. Independent readers verify all seventeen source/input
+identities per platform, eleven shared committed production files, and preserved
+empty startup journals. The Linux runner releases, isolated source remains clean,
+and canonical server changes remain unchanged. Evidence:
+`.local/work/native-console-entries-mac-independent-20261013.json`,
+`.local/work/native-console-entries-linux-independent-20261013.json` and
+`.local/work/native-console-entries-linux-receipt-20261013-02/source.stdout.txt`.
+The fifteen previously executed policy-processor sources also match `5a643a4`;
+processors are not rerun. Their original 72 CPU cases retain their original scope.
+Evidence: `.local/work/current-sdk-native-entry-source-20261013.json`.
+
 The unified CPU campaign includes native core/extension tools and configured
 task-plan storage in every configuration. Source `348a06d` passes all forty-two
 selected components and 1,559 cases. Independent readers check 892 source/input
