@@ -26,6 +26,15 @@ component/1,394-case CPU campaign also passes with 737 source/input comparisons,
 unchanged original records and released diagnostic processes/writers. One-shot
 inference and complete native task effectiveness retain their release gates.
 
+Source `b3de927` matches all 153 campaign production/checker files and nine
+selected-input sources. Actual Ubuntu CI `38366929341` passes fresh installation,
+complete source checks and 78 runtime cases; downloaded artifacts independently
+match 89 exact-source comparisons and 41 inputs. Production readers preserve
+seven task-plan journals and 338 retry events in 22 native Sessions. Fifteen
+previously executed installed-processor sources and nine original-perception
+sources also match this commit. Diagnostic ownership releases and all native
+allocations remain zero. See [current CPU checkpoints](cpu-release-validation.md#current-cpu-checkpoints).
+
 Direct/hybrid GPT configuration shares its supported modes and 64-image
 demonstration capacity with the policy constructor. Thirty-six original-profile
 metadata derivatives pass independent production-reader checks, preserving every
@@ -40,7 +49,7 @@ Twenty-four port/endpoint derivatives repeat through independent production
 readers. No native resource allocates; see the
 [configuration checks](cpu-release-validation.md#native-policy-gateway-configuration).
 
-Current source `b69d927` passes all thirty-nine configured macOS CPU components
+Source `b69d927` passes all thirty-nine configured macOS CPU components
 and 1,394 cases. Independent inspection matches 737 source/input comparisons,
 153 exact-commit production/checker files, unchanged original journals/images
 and all thirty-nine released diagnostic process groups. Direct-profile mode,
@@ -413,15 +422,17 @@ See [memory](../../harness/agent-runtime/memory/README.md).
 and released ownership. No model or simulator result is supplied by a diagnostic.
 See [CPU release validation](cpu-release-validation.md).
 
-**Verified checkpoint:** `33ae4e2` passes all thirty-nine configured macOS CPU
+**Verified checkpoint:** `b3de927` passes all thirty-nine configured macOS CPU
 components and 1,394 admission/process/wire/resource cases, 737 independent
 source/input comparisons and released diagnostic ownership. Its actual Ubuntu
-CI separately passes fresh installation, full source checks and 78 production
+CI `38366929341` separately passes fresh installation, full source checks and 78 production
 runtime cases, with independently inspected artifacts and unchanged plan/retry
 journals. Actual isolated Linux SDK processors pass seventy-two checks on
 forty-six original requests; all fifteen loaded production/checker files match
-`33ae4e2`. Twenty-four direct-profile port/endpoint configuration derivatives
-preserve complete bindings before allocation. These scopes perform no model,
+`b3de927`. Thirty-three selected-profile file preparation checks establish
+pre-service text/image failure admission, cancellation, prepared input binding
+and actual Console shutdown; nine production sources match this commit.
+These scopes perform no model,
 policy or simulator execution. Loaded-model/device behavior and complete task
 workflows retain Steps 13–14's native acceptance requirements.
 

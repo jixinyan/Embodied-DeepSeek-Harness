@@ -11,11 +11,12 @@ inference and original-journal inspection use the `policy` and `diagnostics` ext
 
 | Scope | Exact source and verified result |
 | --- | --- |
-| Configured production campaign | `b69d927`: 39 components, 1,394 cases, 737 independently inspected source/input comparisons, 153 exact-commit production/checker files and 39 released diagnostic process groups |
+| Configured production campaign | `b3de927`: 39 components, 1,394 cases, 737 independently inspected source/input comparisons, 153 exact-commit production/checker files and 39 released diagnostic process groups |
 | Packaged Desktop | macOS `887d707` and Linux `86c612a`: identical ten-file ASAR contents and diagnostic source, twenty-four profile selections, six service cycles, application restart and Console reuse/reload/reopening |
-| Latest Ubuntu source/installation CI | `b69d927`, run `38362872636`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
-| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `b69d927` |
+| Latest Ubuntu source/installation CI | `b3de927`, run `38366929341`: 78 production runtime cases, fourteen distributions, thirteen imports, 41 input identities and 89 independently checked exact-commit source comparisons |
+| Installed policy processors | Linux `5b26a5a`: 46 original requests, 72 CPU cases, 418 independently checked input/checkpoint/SDK/source comparisons and 282 exact prepared tensor/codec metadata fields; fifteen loaded sources match `b3de927` |
 | GPT profile configuration | `b69d927`: 60 declared original-profile derivatives cover modes, demonstration metadata, gateway ports and worker endpoints; 46 reject and 14 admit with unchanged original bindings |
+| Selected GPT file preparation | `b3de927`: 33 cases, 28 independently repeated file checks, 19 source identities, 31 declared configuration derivatives, 15 stored-image fields and nine exact-commit production sources; actual Console process/listener/writer ownership releases |
 | Persistent native retries | The latest downloaded CI journals preserve 22 independent native Sessions, 56 genuine failed connections and 338 source-matched event bodies; pending-history release and cancellation retain their declared scope |
 
 Every checkpoint excludes model inference, loaded-policy execution,
@@ -3305,6 +3306,26 @@ unchanged original journals/images and all thirty-nine released diagnostic
 process groups. Camera configuration repeats sixty-six cases and twenty-two
 declared derivatives; all writers release. Evidence:
 `.local/work/native-policy-inputs-cpu-20261013/independently-verified.json`.
+
+Source `b3de927` matches all 153 campaign production/checker files and the nine
+selected-file preparation sources. Actual Ubuntu CI `38366929341` passes fresh
+installation, complete source checks and 78 production runtime cases. Downloaded
+artifacts independently match fourteen distributions, thirteen imports, 41 input
+identities and 89 exact-source comparisons. Production readers preserve seven
+task-plan journals and 338 retry events in 22 independent native Sessions, with
+released writers. The fifteen previously executed Linux SDK processor sources
+also match this commit; their 72-case/46-original-request evidence retains its
+recorded `5b26a5a` execution source. Original-perception inspection matches forty
+source comparisons, fifteen PNG checks, forty-eight depth-statistic fields and
+nine exact-commit sources. These scopes allocate no model, simulator or GPU.
+Evidence:
+`.local/work/native-policy-inputs-final-20261013/committed-source-verification.json`,
+`.local/work/native-policy-inputs-cpu-20261013/committed-source-verification.json`,
+`.local/work/ci-native-policy-inputs-inspection-20261013.json`,
+`.local/work/ci-native-policy-inputs-plans-independent-20261013.json`,
+`.local/work/ci-native-policy-inputs-native-independent-20261013.json`,
+`.local/work/current-sdk-cpu-linux-20261013-verified/committed-policy-input-source-verification.json`
+and `.local/work/native-policy-input-perception-independent-20261013.json`.
 
 Direct/hybrid profiles admit `worker.sceneConfiguration.control_mode` as
 `0-shot`, `textual-1-shot` or `visual-1-shot`; omission selects `0-shot`.

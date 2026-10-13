@@ -34,6 +34,20 @@ writers. Evidence:
 `.local/work/native-policy-inputs-final-20261013/independently-verified.json`
 and `.local/work/native-policy-inputs-cpu-20261013/independently-verified.json`.
 
+Exact source `b3de927` matches all 153 campaign production/checker files and nine
+selected-file sources. Actual Ubuntu CI `38366929341` passes fresh installation,
+complete source checks and 78 production runtime cases. Downloaded artifacts
+independently match fourteen distributions, thirteen imports, 41 inputs and 89
+exact-source comparisons. Production readers preserve seven task-plan journals
+and 338 retry events in 22 native Sessions, with released writers. Fifteen
+previously executed Linux SDK processor sources and nine original-perception
+sources match the same commit. These scopes retain their recorded input/preparation
+and original-response boundaries; loaded-model/task acceptance remains required.
+Evidence: `.local/work/ci-native-policy-inputs-inspection-20261013.json`,
+`.local/work/ci-native-policy-inputs-plans-independent-20261013.json`,
+`.local/work/ci-native-policy-inputs-native-independent-20261013.json`
+and `.local/work/native-policy-input-perception-independent-20261013.json`.
+
 Direct/hybrid GPT control modes and demonstration metadata pass thirty-six
 original-profile CPU admission checks with ten independently matched original/
 source identities. Thirty invalid inputs reject before service acquisition;

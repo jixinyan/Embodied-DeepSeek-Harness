@@ -71,6 +71,23 @@ writers release. Camera configuration repeats sixty-six cases and twenty-two
 declared derivatives. These scopes allocate no model, simulator or GPU. Evidence:
 `.local/work/native-policy-inputs-cpu-20261013/independently-verified.json`.
 
+Exact source `b3de927` independently matches all 153 campaign production/checker
+files and nine selected-input sources. Ubuntu CI `38366929341` passes fresh
+installation, complete source checks and 78 production runtime cases. Downloaded
+artifacts match fourteen distributions, thirteen imports, 41 input identities
+and 89 exact-source comparisons. Independent production reads preserve seven
+task-plan journals and all 338 retry events in 22 native Sessions, with released
+writers. The fifteen sources used by the previously executed Linux SDK checks
+also match `b3de927`; their original-request/prepared-tensor scope remains
+unchanged. Original-perception inspection verifies 143 cases, forty source
+comparisons, fifteen PNG checks, forty-eight statistic fields and nine exact-
+commit sources. No model, policy, simulator or GPU executes. Evidence:
+`.local/work/native-policy-inputs-final-20261013/committed-source-verification.json`,
+`.local/work/native-policy-inputs-cpu-20261013/committed-source-verification.json`,
+`.local/work/ci-native-policy-inputs-inspection-20261013.json`,
+`.local/work/ci-native-policy-inputs-native-independent-20261013.json`
+and `.local/work/native-policy-input-perception-independent-20261013.json`.
+
 RoboDojo direct/hybrid configuration admits the three supported GPT control
 modes and strict demonstration metadata before service acquisition. The native
 reader and GPT policy share their mode definitions and 64-image capacity.
