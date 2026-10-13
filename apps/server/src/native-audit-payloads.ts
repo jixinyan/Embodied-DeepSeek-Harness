@@ -1,14 +1,14 @@
 import { z } from 'zod';
 import { MAX_TIMER_DELAY_MS } from '@deepseek-ai/dsh-timeout';
 import { snapshotSessionEvent, type SessionEvent } from '@deepseek-ai/dsh-session';
-import { CORE_TOOLS } from '@edh/tools';
+import { CORE_TOOLS, nativeToolName } from '@edh/tools';
 
 const text = z.string();
 const count = z.number().int().nonnegative().safe();
 const step = { turn: count.positive(), step: count.positive() };
 const jsonObject = z.record(text, z.unknown());
 const range = z.object({ start: count, end: count }).strict();
-const nativeTools = new Set(CORE_TOOLS.map((name) => name.replaceAll('.', '__')));
+const nativeTools = new Set(CORE_TOOLS.map(nativeToolName));
 const toolName = text.refine((name) => nativeTools.has(name), 'Unknown native tool payload.');
 const retryFields = {
   retryId: text.min(1),

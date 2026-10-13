@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.155 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.156 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,26 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+The tools module owns logical-ID admission and native name projection in
+`tool-names.ts`. Deployment preparation checks the complete core/extension pack;
+Team loading checks available bindings and direct UpperRun construction applies
+the same rule. Duplicate native names, malformed IDs and DSH's reserved transport
+name reject before role creation. Core definitions, extension matching and core
+audit admission use the same projection; native DSH dispatch remains unchanged.
+
+Full source checks pass, including forty-seven name-admission cases through the
+production helper and Team loader, and all ten authored Teams. Twenty-eight
+checks on the original four-provider deployment configurations preserve existing
+model, profile, checkpoint and worker metadata while admitting distinct custom
+tools. Seven actual native DSH checks verify detached schemas, independent tool
+visibility, two production-source file reads, invalid arguments, caller cancellation
+and disposed scopes. Fifteen core tool cases preserve private files/questions
+and release the journal writer. No model, simulator or GPU executes. Evidence:
+`.local/work/tool-bindings-configured-final-20261013/acceptance.json`,
+`.local/work/tool-bindings-configured-final-20261013/native-tool-outcomes.json`,
+`.local/work/tool-bindings-core-20261013/acceptance.json` and
+`.local/work/tool-bindings-source-complete-20261013.log`.
 
 Native deployment and workspace ports use one schema in the native configuration
 module. JSON values are integer numbers from 1 through 65535; omitted native

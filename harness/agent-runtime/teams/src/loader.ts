@@ -3,7 +3,7 @@ import { dirname, resolve, relative, isAbsolute } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { parseDocument } from 'yaml';
 import { ContractValidator, type RoleDefinition, type TeamDefinition } from '@edh/contracts';
-import { assertObjectJsonSchema, type ObjectJsonSchema } from '@edh/tools';
+import { assertObjectJsonSchema, assertToolBindings, type ObjectJsonSchema } from '@edh/tools';
 
 export interface TeamRunSnapshot {
   readonly teamRunId: string;
@@ -58,6 +58,7 @@ export class FileTeamLoader {
   constructor(private readonly options: TeamLoadOptions) {}
   async inspect(file: string): Promise<LoadedTeam> {
     const o = this.options;
+    assertToolBindings(o.tools);
     const source = await readFile(file, 'utf8');
     const definition = o.validator.parse('TeamDefinition', yaml(source, file));
     for (const alias of Object.keys(o.rolePromptAdditions ?? {}))

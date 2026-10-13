@@ -11,6 +11,8 @@ import {
   CORE_TOOL_DESCRIPTIONS,
   assertObjectJsonSchema,
   modelToolContractSchema,
+  assertToolBindings,
+  nativeToolName,
 } from '@edh/tools';
 
 const validator = new ContractValidator(
@@ -29,7 +31,7 @@ assert.deepEqual(
   'Implemented inventory must match the production tool definitions.',
 );
 const configuration = await readModelConfiguration('examples/models/qwen38-vllm.yaml');
-const loader = new FileTeamLoader({
+const loadOptions = {
   validator,
   builtinDirectory: resolve('harness/agent-runtime/agents/roles'),
   roleRoot: resolve('examples'),
@@ -37,7 +39,38 @@ const loader = new FileTeamLoader({
   models: Object.keys(configuration.models),
   tools: CORE_TOOLS,
   providers: ['behavior', 'robotwin', 'robocasa', 'robodojo'],
-});
+};
+const loader = new FileTeamLoader(loadOptions);
+const toolBindingChecks = [];
+for (const [name, bindings] of [
+  ['core-and-distinct-extensions', [...CORE_TOOLS, 'source.inspect', 'source__read']],
+  ['identifier-length-boundary', ['a'.repeat(80)]],
+]) {
+  assertToolBindings(bindings);
+  toolBindingChecks.push({ name, rejected: false });
+}
+const invalidToolBindings = [
+  ...CORE_TOOLS.map((logical) => [
+    `core-alias:${logical}`,
+    [...CORE_TOOLS, nativeToolName(logical)],
+  ]),
+  ['custom-name-collision', [...CORE_TOOLS, 'scene.describe', 'scene__describe']],
+  ['duplicate-logical-id', [...CORE_TOOLS, 'source.inspect', 'source.inspect']],
+  ['dsh-reserved-name', [...CORE_TOOLS, 'run_code']],
+  ...['', 'source/read', 'source inspect', 'source.inspect\n', 'a'.repeat(81)].map(
+    (logical, index) => [`invalid-logical-id:${index}`, [...CORE_TOOLS, logical]],
+  ),
+];
+for (const [name, bindings] of invalidToolBindings) {
+  assert.throws(() => assertToolBindings(bindings), /Tool bindings|Invalid logical|reserved/);
+  await assert.rejects(
+    new FileTeamLoader({ ...loadOptions, tools: bindings }).inspect(
+      resolve('examples/teams/robotwin-live.yaml'),
+    ),
+    /Tool bindings|Invalid logical|reserved/,
+  );
+  toolBindingChecks.push({ name, rejected: true });
+}
 const teams = [
   'behavior-live',
   'behavior-grounded',
@@ -115,6 +148,7 @@ console.log(
     describedCoreTools: Object.keys(CORE_TOOL_PARAMETERS).length,
     canonicalPlanProjection: 'passed',
     sceneAnalystOutputSchema: 'passed',
+    toolBindingChecks: toolBindingChecks.length,
     scope: 'Authored role/schema checks; no model or simulation execution.',
   }),
 );

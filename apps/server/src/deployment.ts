@@ -14,7 +14,7 @@ import type { ApplicationOptions } from './application.js';
 import type { DeploymentRetentionFactory } from './deployment-retention.js';
 import type { ManagedServiceLifecycle } from './managed-services.js';
 import { plannerReviewSchema, type PlannerReviewPolicy } from './planner-review.js';
-import { CORE_TOOLS } from './application.js';
+import { CORE_TOOLS, assertToolBindings } from '@edh/tools';
 import type { ModelBinding } from './runtime.js';
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment';
 import type { SegmentationEngine, DepthEngine, DepthCameraIntrinsics } from '@edh/perception';
@@ -182,6 +182,7 @@ export function prepareDeployment(input: ServerDeployment, validator: ContractVa
     if (!validId(id) || !model.model?.trim() || !providers.has(model.provider))
       throw new Error(`Model binding has no registered adapter: ${id}`);
   const additionalTools = Object.freeze({ ...input.additionalTools });
+  assertToolBindings([...CORE_TOOLS, ...Object.keys(additionalTools)]);
   for (const [id, factory] of Object.entries(additionalTools))
     if (!validId(id) || CORE_TOOLS.includes(id) || typeof factory !== 'function')
       throw new Error(`Invalid or reserved tool binding: ${id}`);

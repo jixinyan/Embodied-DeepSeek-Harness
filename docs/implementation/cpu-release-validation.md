@@ -744,6 +744,21 @@ retain the same source and process ownership.
 
 ## Core tool definitions and native dispatch
 
+`tool-names.ts` owns logical-ID admission and the native name projection used by
+Deployment, FileTeamLoader, UpperRun, core definitions and core audit admission.
+The complete core/extension pack requires distinct native names, and DSH's
+exported transport name remains reserved. `pnpm check:role-workflows` includes
+forty-seven production helper/Team-loader cases with ten authored Teams.
+Original four-provider deployment checks pass twenty-eight cases and preserve
+their existing configuration metadata. Seven actual native DSH checks verify
+detached parameters, scoped visibility, two original production-source reads,
+argument admission, cancellation and scope disposal. Evidence:
+`.local/work/tool-bindings-configured-final-20261013/acceptance.json` and its
+`native-tool-outcomes.json`. These scopes perform no model or physical execution.
+The core diagnostic now records fifteen production/checker source identities,
+including the shared name module; its fifteen actual tool cases pass with a
+released host and journal writer at `.local/work/tool-bindings-core-20261013/`.
+
 `tools/core-definition.ts` owns native core definition assembly, assignment-specific
 parameters, provider timeout selection, existing DSH argument validation, EDH input
 limits and authoritative successful turn conclusion. UpperRun supplies its actual

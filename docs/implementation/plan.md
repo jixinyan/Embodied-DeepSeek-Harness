@@ -1,6 +1,6 @@
 # Step-by-step implementation plan
 
-Version: v1.155 · 2026-10-13
+Version: v1.156 · 2026-10-13
 
 Use the [code map](../development/code-map.md) to locate implementation owners,
 the [progress record](progress.md) for verified checkpoints and the
@@ -14,6 +14,15 @@ role/tool admission, independent contexts, original-record inspection, transport
 resource ownership, shutdown and release preparation. GPU-dependent providers
 receive source, protocol, preallocation and lifecycle checks during this phase.
 Models, policy inference and simulator tasks remain stopped during CPU work.
+
+The tools module admits logical IDs and distinct native names before role
+creation. Deployment preparation checks the complete core/extension pack, Team
+loading checks available bindings and direct UpperRun construction applies the
+same rule. Forty-seven public name-admission cases and ten authored Teams pass.
+Original four-provider deployment preflight passes twenty-eight cases; seven
+actual native DSH checks establish custom-tool schema, scope, cancellation and
+source-file behavior. Existing core dispatch passes fifteen cases with released
+writers. These checks execute no model or simulator.
 
 Native deployment and workspace ports share one schema owned by the native
 configuration module. Original four-provider files pass eighty-one Console port

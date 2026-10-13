@@ -19,6 +19,7 @@ const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const sources = await Promise.all(
   [
     'harness/agent-runtime/tools/src/core-definition.ts',
+    'harness/agent-runtime/tools/src/tool-names.ts',
     'harness/agent-runtime/tools/src/index.ts',
     'harness/agent-runtime/tools/src/core-inputs.ts',
     'harness/agent-runtime/tools/src/core-output.ts',

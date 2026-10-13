@@ -70,6 +70,9 @@ import {
   renderCoreToolResult,
   modelToolContractSchema,
   CORE_TOOL_PARAMETERS,
+  CORE_TOOLS,
+  nativeToolName,
+  assertToolBindings,
 } from '@edh/tools';
 export const terminal = (state: RunState['state']) =>
   ['succeeded', 'failed', 'cancelled', 'interrupted', 'unknown'].includes(state);
@@ -172,6 +175,7 @@ export class UpperRun {
       }
     | undefined;
   constructor(private readonly options: ApplicationOptions) {
+    assertToolBindings([...CORE_TOOLS, ...Object.keys(options.additionalTools ?? {})]);
     this.depthIntrinsicsByCamera =
       options.depthIntrinsicsByCamera === undefined
         ? undefined
@@ -748,7 +752,7 @@ export class UpperRun {
           if (CORE_TOOL_PARAMETERS[logical])
             throw new Error('Additional tools cannot replace core authority checks.');
           native = extra(structuredClone(a));
-          if (native.name !== logical.replaceAll('.', '__'))
+          if (native.name !== nativeToolName(logical))
             throw new Error('Native tool name must match its logical binding.');
         } else {
           if (

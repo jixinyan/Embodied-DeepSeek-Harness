@@ -163,8 +163,8 @@ def main():
     assert tools["writerReleased"] is True and tools["hostDisposed"] is True
     for field in ("environmentAllocationPerformed", "modelInferencePerformed", "physicalControlPerformed"):
         assert tools[field] is False
-    assert len(tools["sources"]) == 14
-    assert len({entry["path"] for entry in tools["sources"]}) == 14
+    assert len(tools["sources"]) == 15
+    assert len({entry["path"] for entry in tools["sources"]}) == 15
     for entry in tools["sources"]:
         compare(Path(entry["path"]).relative_to(source_root), entry["sha256"])
     expected_tools = {

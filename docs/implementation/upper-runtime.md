@@ -43,6 +43,12 @@ the configured decision owner's motion authority.
 3. Supply `UpperRun.additionalTools[logicalId]` as a trusted factory receiving the
    assignment. Return a native DSH ToolDefinition using `defineTool` from `@edh/tools`.
    For `scene.describe`, the model-facing name must be `scene__describe`.
+   Use `nativeToolName(logicalId)` for this projection. Logical IDs contain one
+   through eighty ASCII letters, digits, dots, underscores or hyphens and begin
+   with a letter or digit. The deployment's complete binding list must have
+   distinct native names, including core tools. DSH's reserved transport name
+   is unavailable. Deployment and Team preflight reject conflicting bindings;
+   direct UpperRun construction applies the same check.
 4. Preserve native parameter/output schemas and honor the execution AbortSignal.
    DSH defineTool validates inputs; raw ToolDefinition authors must explicitly use
    the native validator. DSH performs registration, output validation, dispatch and

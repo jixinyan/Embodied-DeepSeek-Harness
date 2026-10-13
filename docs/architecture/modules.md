@@ -102,6 +102,11 @@ assignment lifetime. `tools/core-output.ts` selects model-facing image evidence
 from core results or the calling Verifier's formal-check sample and renders
 canonical JSON with ordered images. UpperRun supplies that check context and
 admits assignment grants/visibility. Native DSH owns registration and dispatch.
+`tools/tool-names.ts` owns EDH logical-ID admission and dot-to-double-underscore
+name projection. Deployment preparation, Team loading and direct UpperRun
+construction reject duplicate native names across their available bindings.
+DSH's exported transport name supplies the reserved-name rule. Core definitions,
+extension name matching and core audit admission use the same projection.
 `perception/src/results.ts` constructs segmentation, learned-depth and RGB-D result
 objects and generated sensor metadata from admitted provider values. UpperRun
 retains source identity checks, cancellation, image storage, sample retention and

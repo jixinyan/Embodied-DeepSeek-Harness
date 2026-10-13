@@ -8,6 +8,7 @@ import {
 import type { ExecutionStatus } from '@edh/contracts';
 import { assertCoreInputLimits, CORE_TOOL_DESCRIPTIONS } from './core-inputs.js';
 import { coreModelToolParameters, type CoreModelToolOptions } from './model-schema.js';
+import { nativeToolName } from './tool-names.js';
 
 export interface CoreToolBinding extends CoreModelToolOptions {
   backendTimeoutMs?: number;
@@ -55,7 +56,7 @@ export function createCoreToolDefinition(
           ? binding.backendTimeoutMs
           : undefined;
   const definition: ToolDefinition = {
-    name: logical.replaceAll('.', '__'),
+    name: nativeToolName(logical),
     ...(timeoutMs !== undefined ? { timeoutMs } : {}),
     description:
       logical === 'execution.query' && binding.executionTurnCompletion !== true

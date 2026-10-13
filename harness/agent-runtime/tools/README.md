@@ -15,6 +15,7 @@ describe the physical wire format.
 | [model-schema.ts](src/model-schema.ts) | Model-facing parameters, role/device-specific fields and canonical domain schema projection |
 | [core-definition.ts](src/core-definition.ts) | Core native definitions, provider timeouts, argument admission and DSH turn conclusion |
 | [core-output.ts](src/core-output.ts) | Evidence selection and native JSON/image content rendering |
+| [tool-names.ts](src/tool-names.ts) | Logical IDs, native name projection and collision admission |
 | [index.ts](src/index.ts) | Native DSH authoring/validation exports and EDH parameter generation |
 
 `coreModelToolParameters` returns independent parameters for each assignment.
@@ -54,6 +55,15 @@ effects. Raw ToolDefinition does not acquire argument validation merely by decla
 parameters; defineTool wraps this automatically. Role result schemas use the same
 native supported subset. EDH separately enforces input-size and version limits.
 Core descriptions identify argument sources, returned fields and admission conditions.
+`nativeToolName` converts dots to double underscores and admits logical IDs of
+one through eighty ASCII letters, digits, dots, underscores or hyphens, beginning
+with a letter or digit. `assertToolBindings` rejects duplicate native names and
+uses DSH's exported reserved transport name. Deployment, Team loading and UpperRun
+apply this admission before creating role Sessions. Custom IDs must produce a
+distinct name across the complete core pack and all deployment additions.
+For example, `scene.describe` produces `scene__describe`; one deployment can bind
+only one of those IDs. `execution__start` shares the core `execution.start` name
+and is rejected. Native DSH retains registration, dispatch and schemas.
 The canonical plan projection retains domain bounds as model-visible annotations.
 `pnpm check:role-workflows` checks actual configured roles and authored schemas across
 ten live Teams. See [workflow and schema composition](../../../docs/implementation/prompt-workflow.md).
