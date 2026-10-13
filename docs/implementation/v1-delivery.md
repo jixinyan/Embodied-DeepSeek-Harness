@@ -25,6 +25,11 @@ checks pass with zero model, simulator or GPU allocation. The supplied receipts
 verify SAM/YOLO construction; full native perception and RGB-D provider workflows
 retain the requirements below. See
 [perception result construction](cpu-release-validation.md#perception-result-construction).
+The same `4f89fd6` source passes actual Ubuntu fresh-installation/source CI and
+all 78 production runtime cases. Independent downloaded-artifact inspection
+matches 89 exact-source comparisons, 41 inputs, seven unchanged task-plan journals
+and all 338 events from 22 native retry Sessions with released writers. Native
+model, policy, simulator and GPU allocations remain zero.
 
 Current packaged Desktop source `887d707` passes three CPU service cycles,
 application restart and Console reuse/reload/reopening with all four configured

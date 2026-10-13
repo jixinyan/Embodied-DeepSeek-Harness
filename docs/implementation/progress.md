@@ -58,6 +58,16 @@ comparisons and all thirty-seven diagnostic process groups released. Original
 records remain unchanged and native allocations remain zero. Evidence:
 `.local/work/perception-results-cpu-campaign-20261012/independently-verified.json`.
 
+Actual Ubuntu CI `38336834409` passes fresh installation, source checks and all
+78 production runtime cases at `4f89fd6`. Downloaded evidence independently
+matches 89 exact-source comparisons and 41 inputs. Production reads preserve
+seven task-plan journals and all 338 events from 22 native retry Sessions, with
+released writers. Eight request-option, thirteen failure-classification and fifteen
+retry-configuration JUnit cases additionally verify their exact names and source
+identities. Native allocations remain zero. Evidence:
+`.local/work/ci-perception-results-inspection-20261012.json` and
+`.local/work/ci-perception-results-native-independently-verified-20261012.json`.
+
 Packaged Desktop source `887d707` passes three service cycles with all four
 configured provider profiles. Application restart retains its saved configuration
 and stays idle; Console reuse, reload, close and reopening preserve the same owned

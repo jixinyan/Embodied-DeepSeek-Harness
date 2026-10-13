@@ -911,7 +911,9 @@ Evidence: `.local/work/perception-results-recorded-final-20261012/acceptance.jso
 Independent production readers additionally verify twenty-one source/schema/journal
 identities, all 140 native result contents, nineteen source-timed sensor samples,
 unchanged copied journals and five released writers. Inspection:
-`.local/work/perception-results-recorded-final-20261012/independently-verified.json`.
+`.local/work/perception-results-recorded-final-20261012/independently-verified-source.json`.
+All eleven captured implementation/schema files additionally match committed
+source `4f89fd6` exactly.
 
 The complete configured CPU campaign passes all thirty-seven components and
 1,185 cases with the same perception implementation. Independent inspection
@@ -920,6 +922,20 @@ has released. Original journals and images remain unchanged; actual transient
 model-transport checks retain 56 failed connections and zero provider responses.
 Model, simulator and GPU allocations remain zero. Evidence:
 `.local/work/perception-results-cpu-campaign-20261012/independently-verified.json`.
+
+Actual Ubuntu CI `38336834409` passes fresh installation, complete source checks,
+seven SKILL cases and all 78 production runtime cases at `4f89fd6`. Independently
+downloaded artifacts match 89 exact-commit source comparisons, fourteen installed
+distributions, thirteen imports and all 41 captured inputs. Production readers
+verify seven unchanged task-plan journals with released writers, plus 22 native
+retry Sessions, 56 actual failed connections and 338 immutable events. Retry
+admission preserves fractional delays and all eight pending-history releases.
+The three JUnit reports independently verify eight model-request, thirteen failure
+classification and fifteen retry-configuration cases with zero failures or skips.
+These checks allocate no models, policies, simulators or GPUs. Evidence:
+`.local/work/ci-perception-results-inspection-20261012.json`,
+`.local/work/ci-perception-results-independently-verified-20261012.json` and
+`.local/work/ci-perception-results-native-independently-verified-20261012.json`.
 
 ## Pre-SDK GR00T configuration admission
 
