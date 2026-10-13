@@ -30,6 +30,40 @@ simulator allocation and new physical task acceptance. The
 [release requirements](progress.md#remaining-release-requirements) identify the
 native workflows that still require their actual model/policy/simulator runs.
 
+## Native environment construction
+
+`environments/factory.py` owns native provider selection and adapter construction.
+NativeWorkerSession calls it after existing configuration admission and before
+the original NativeActionDevice owner-thread reset/description flow. Selected SDK
+imports, source-root checks, constructor parameters, RoboTwin working-directory
+selection and BEHAVIOR process ownership retain their original behavior.
+
+The [factory diagnostic](../../scripts/check-native-environment-factory-offline.py)
+passes twenty-three CPU checks using an original Worker configuration. It admits
+actual file/directory failures before provider imports and constructs two actual
+uninitialized RoboDojo adapters. Those instances preserve independent local state,
+reject observation and episode-status calls before reset, and close repeatedly.
+The report retains ten source identities and eighteen input-file identities.
+Working directory, child-process identities and file-descriptor counts remain
+unchanged. No RPC reset, SDK provider, model, simulator or device allocates.
+
+```sh
+CUDA_VISIBLE_DEVICES='' PYTHONPATH=harness/physical-runtime/src \
+  .venv/bin/python scripts/check-native-environment-factory-offline.py \
+  --config /absolute/path/actual-deployment.json \
+  --output .local/work/environment-factory-check
+```
+
+The configured CPU campaign includes this check using its original
+`workerConfiguration` input. Worker transport/client/host and Session-owner reports
+capture the factory source as part of their executed implementation. Local evidence:
+`.local/work/environment-factory-cpu-20261013-02/acceptance.json`.
+A standard Python AST inspection independently matches four original provider
+branches, 34 initialization-prefix statements, seven initialization-suffix statements
+and all forty remaining NativeWorkerSession class members against `b6ecc22`.
+Evidence: `.local/work/environment-factory-source-preservation-20261013.json`.
+Loaded native provider behavior retains its separate acceptance requirements.
+
 ## Team file admission
 
 `scripts/check-team-paths-offline.mjs` calls the production FileTeamLoader with

@@ -15,6 +15,7 @@ from typing import Any, Awaitable, Callable
 from uuid import uuid4
 
 from physical_harness.environments import NativeEnvironment, NativeFrame, NativeObservation, NativeRotation
+from physical_harness.environments.factory import create_native_environment
 from physical_harness.execution.action_gate import ActionGate
 from physical_harness.execution.modes import ExecutionMode
 from physical_harness.execution.native_device import NativeActionDevice
@@ -296,31 +297,7 @@ class NativeWorkerSession:
         lock_directory = (Path(directory) if directory is not None else
                           Path(arguments["schema_path"]).resolve().parents[3] / ".local" / "physical-resources")
         self._arbiter = ResourceArbiter(lock_directory, scope)
-        if provider == "robocasa":
-            if "source_root" in arguments:
-                raise ValueError("RoboCasa does not use a worker source_root override.")
-            from physical_harness.environments.robocasa import RoboCasaEnvironment
-            environment = RoboCasaEnvironment(self._validator)
-        elif provider == "robotwin":
-            source_root = Path(arguments["source_root"]).resolve(strict=True)
-            if not source_root.is_dir():
-                raise ValueError("RoboTwin source_root must name an installed source directory.")
-            from physical_harness.environments.robotwin import RoboTwinEnvironment
-            os.chdir(source_root)
-            environment = RoboTwinEnvironment(source_root, self._validator)
-        elif provider == "behavior":
-            source_root = Path(arguments["source_root"]).resolve(strict=True)
-            if not source_root.is_dir():
-                raise ValueError("BEHAVIOR source_root must name an installed source directory.")
-            from physical_harness.environments.behavior.process import BehaviorProcessEnvironment
-            environment = BehaviorProcessEnvironment(source_root, self._validator)
-        elif provider == "robodojo":
-            if "source_root" in arguments:
-                raise ValueError("RoboDojo is connected through its external RPC server, not a worker source_root.")
-            from physical_harness.environments.robodojo import RoboDojoEnvironment
-            environment = RoboDojoEnvironment(self._validator)
-        else:
-            raise ValueError("Unsupported native environment provider.")
+        environment = create_native_environment(arguments, self._validator)
         self._environment = environment
         self._device = NativeActionDevice(environment)
         self._initial_observation = await self._device.on_owner(

@@ -25,6 +25,7 @@ core_modules = (
     "physical_harness.wire",
     "physical_harness.lifecycle",
     "physical_harness.environments",
+    "physical_harness.environments.factory",
     "physical_harness.execution",
     "physical_harness.execution.action_gate",
     "physical_harness.execution.native_device",

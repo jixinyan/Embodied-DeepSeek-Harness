@@ -74,6 +74,7 @@ All Python provider code belongs under
 | Manage worker Sessions and execution operations | [execution/worker.py](../../harness/physical-runtime/src/physical_harness/execution/worker.py) |
 | Change worker process communication | [execution/worker_transport.py](../../harness/physical-runtime/src/physical_harness/execution/worker_transport.py) |
 | Save original policy requests and actual controls | [execution/policy_records.py](../../harness/physical-runtime/src/physical_harness/execution/policy_records.py) |
+| Select and construct the configured native simulator adapter | [environments/factory.py](../../harness/physical-runtime/src/physical_harness/environments/factory.py); Worker retains device ownership and owner-thread reset |
 | Own policy WebSocket requests and shared connection/client shutdown | [policies/client.py](../../harness/physical-runtime/src/physical_harness/policies/client.py) |
 | Bind a policy listener and control connection admission | [policies/server.py](../../harness/physical-runtime/src/physical_harness/policies/server.py) |
 | Bind selected checkpoint identity before inference and action dispatch | [checkpoint bindings](../implementation/checkpoint-bindings.md): native configuration, Worker, policy server/client and ActionGate |
@@ -133,6 +134,7 @@ implementations load in their separately configured service processes.
 | Validate configured native scenes and policy endpoints before allocation | [check-native-scene-configuration.mjs](../../scripts/check-native-scene-configuration.mjs) |
 | Verify native CLI startup and signal-driven process release for every provider | [check-native-startup-offline.mjs](../../scripts/check-native-startup-offline.mjs) |
 | Verify real Worker initialization, detached configuration and startup observer failures | [check-worker-host-offline.mjs](../../scripts/check-worker-host-offline.mjs) |
+| Check native provider selection and uninitialized RoboDojo adapter lifecycle without allocation | [check-native-environment-factory-offline.py](../../scripts/check-native-environment-factory-offline.py) |
 | Verify native owner-thread drain, cancellation and concurrent closure without an SDK allocation | [check-native-device-owner-offline.py](../../scripts/check-native-device-owner-offline.py) |
 | Verify shared Session/device/recording finalization and original file errors | [check-native-session-owner-offline.py](../../scripts/check-native-session-owner-offline.py) |
 | Verify retained ActionGate stops and original operation/stop errors | [check-action-gate-owner-offline.py](../../scripts/check-action-gate-owner-offline.py) |

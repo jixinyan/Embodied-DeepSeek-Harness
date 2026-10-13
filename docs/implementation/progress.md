@@ -1,6 +1,6 @@
 # Implementation progress
 
-Updated: 2026-10-13 · Spec v1.160 · v1 release acceptance in progress.
+Updated: 2026-10-13 · Spec v1.161 · v1 release acceptance in progress.
 
 ## Active work and constraints
 
@@ -42,6 +42,25 @@ documented boundaries. Loaded-model and complete native task acceptance retain
 the release requirements below.
 
 ## Latest verified source changes
+
+Native provider selection and construction belong to `environments/factory.py`.
+NativeWorkerSession retains its configuration checks and owner-thread device/reset/
+description sequence. The factory keeps the original provider imports, source-root
+admission, RoboTwin working-directory selection and BEHAVIOR process construction.
+Its CPU diagnostic passes twenty-three checks using an original Worker configuration,
+ten source identities and eighteen input files. Two actual uninitialized RoboDojo
+instances preserve independent local state, reject pre-reset observation and episode
+status, and close repeatedly. Working directory, children and file descriptors remain
+unchanged; no RPC reset, SDK provider, model, simulator or device allocates. Evidence:
+`.local/work/environment-factory-cpu-20261013-02/acceptance.json`.
+The configured CPU campaign includes this diagnostic, and Worker/Session source
+receipts include the factory. Native provider allocation retains its release gate.
+Standard Python AST inspection independently preserves four original provider
+branches, 34 initialization-prefix statements, seven initialization-suffix statements
+and all forty remaining class members against `b6ecc22`. Full source checks pass
+with 74 compiled Python files and 29 actual base imports. Evidence:
+`.local/work/environment-factory-source-preservation-20261013.json` and
+`.local/work/environment-factory-source-check-20261013.log`.
 
 At exact source `1c7a85d`, FileTeamLoader uses the operating system's path separator
 for resolved Role/schema containment and requires explicit own builtin mappings.

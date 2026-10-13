@@ -4,6 +4,7 @@
 | --- | --- |
 | [worker.py](worker.py) | NativeWorkerSession: task and execution operations; process entry point |
 | [worker_transport.py](worker_transport.py) | Host JSON requests on stdin, responses/events on fd 3, pipe shutdown and request tasks |
+| [../environments/factory.py](../environments/factory.py) | Configured native environment construction used during Session initialization |
 | [policy_records.py](policy_records.py) | Recording-directory checks, original inference requests and native control records |
 | [action_gate.py](action_gate.py) | Sole policy-to-device admission boundary |
 | [native_device.py](native_device.py) | Simulator owner thread, action counters, generation fencing and stop acknowledgement |

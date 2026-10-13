@@ -28,6 +28,7 @@ await mkdir(output, { recursive: false });
 const python = resolve(values.python ?? resolve(root, '.venv/bin/python'));
 const sourcePaths = [
   'harness/physical-runtime/src/physical_harness/execution/worker.py',
+  'harness/physical-runtime/src/physical_harness/environments/factory.py',
   'harness/physical-runtime/src/physical_harness/execution/worker_transport.py',
   'harness/physical-runtime/src/physical_harness/execution/policy_records.py',
   'harness/physical-runtime/src/physical_harness/execution/native_device.py',

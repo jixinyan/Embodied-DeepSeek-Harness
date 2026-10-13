@@ -178,6 +178,7 @@ async def inspect(args) -> None:
             "native_device.py", "worker.py", "worker_transport.py", "video.py",
         )),
         root / "harness/physical-runtime/src/physical_harness/environments/robodojo/__init__.py",
+        root / "harness/physical-runtime/src/physical_harness/environments/factory.py",
     ]
     sources = {str(path.relative_to(root)): sha256(path.read_bytes()).hexdigest() for path in paths}
     try:

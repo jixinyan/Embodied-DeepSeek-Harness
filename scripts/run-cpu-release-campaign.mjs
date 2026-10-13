@@ -181,6 +181,7 @@ const add = (id, script, args) =>
   });
 add('worker-transport', 'check-worker-transport-offline.mjs', ['--python', python]);
 add('worker-client', 'check-worker-client-offline.mjs', ['--python', python, '--config', worker]);
+add('environment-factory', 'check-native-environment-factory-offline.py', ['--config', worker]);
 add('scene-configuration', 'check-native-scene-configuration.mjs', ['--config', workspace]);
 if (nativePolicyInputs)
   add('native-policy-inputs', 'check-native-policy-inputs-offline.mjs', [

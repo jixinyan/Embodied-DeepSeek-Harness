@@ -80,7 +80,7 @@ host. Authorized observation tools continue to supply images to models. See
 | `harness/contracts` | Authoritative wire schema and generated declarations | Runtime semantic authorization | physical.schema.json; Step 01 |
 | `harness/physical-runtime/src/physical_harness/execution` | Actual action progression, budget and device job handling | Upper-level retry decision | ExecutionWorker; Step 06 |
 | `harness/physical-runtime/src/physical_harness/policies` | Subgoal-to-action policy adapter plus direct/hybrid GPT gateway normalization | Agent orchestration | SubgoalPolicy; Step 13 |
-| `harness/physical-runtime/src/physical_harness/environments` | Native simulator observation/action/task mapping for BEHAVIOR, RoboCasa, RoboTwin and RoboDojo | Environment-specific host protocol implementation | EnvironmentAdapter; Step 13/15 |
+| `harness/physical-runtime/src/physical_harness/environments` | Configured native adapter construction and simulator observation/action/task mapping for BEHAVIOR, RoboCasa, RoboTwin and RoboDojo | Host protocol, policy execution or upper task decisions | NativeEnvironment and factory.py; Step 13/15 |
 | `harness/physical-runtime/src/physical_harness/embodiments` | Capabilities, units, frames and action/observation specifications | Simulator lifecycle | EmbodimentAdapter; Step 06/13 |
 | `harness/physical-runtime/src/physical_harness/backends` | Device connection, commands and confirmed state | Agent-mediated emergency response | DeviceBackend; Step 06/16 |
 | `harness/physical-runtime/src/physical_harness/perception` | Optional model/provider execution, calibrated RGB-D geometry and learned-depth statistics | Host role permissions | PerceptionProvider, metric_geometry.py and depth_statistics.py; Step 07/13 |

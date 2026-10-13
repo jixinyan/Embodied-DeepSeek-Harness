@@ -130,7 +130,7 @@ def main():
     ):
         assert len(record["cases"]) == expected_count, f"Incomplete runtime evidence: {component}"
         sources = record["sources"]
-        assert len(sources) == {"device-owner": 4, "session-owner": 7, "worker-transport": 5}[component]
+        assert len(sources) == {"device-owner": 4, "session-owner": 8, "worker-transport": 6}[component]
         identities = sources.items() if isinstance(sources, dict) else (
             (entry["path"], entry["sha256"]) for entry in sources
         )

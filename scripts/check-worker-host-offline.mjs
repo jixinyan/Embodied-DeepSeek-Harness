@@ -51,6 +51,7 @@ const sources = await Promise.all(
     resolve(root, 'apps/server/src/native-worker.ts'),
     resolve(root, 'apps/server/src/native-worker-transport.ts'),
     resolve(root, 'harness/physical-runtime/src/physical_harness/execution/worker.py'),
+    resolve(root, 'harness/physical-runtime/src/physical_harness/environments/factory.py'),
     resolve(root, 'harness/physical-runtime/src/physical_harness/execution/worker_transport.py'),
     resolve(root, 'harness/physical-runtime/src/physical_harness/execution/policy_records.py'),
     resolve(root, 'scripts/check-worker-host-offline.mjs'),
