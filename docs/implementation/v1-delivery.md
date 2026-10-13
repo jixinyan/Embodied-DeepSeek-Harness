@@ -17,6 +17,23 @@ below needs an implementation, executable checks and retained acceptance evidenc
 The [project specification](../project-spec.md) defines the behavior; this page
 tracks the remaining work across that behavior.
 
+ManagedServices retains and gracefully releases its complete POSIX process group,
+including surviving Console descendants after leader termination. Original exit
+errors remain visible; endpoint admission uses Node's IPv6/IPv4/DNS hostname
+conversion. Both package entries pass normal and leader-termination release, and
+occupied HTTP/WebSocket IPv6 endpoints reject without spawning candidates. The
+complete configured CPU campaign at `42dcb39` passes forty-five components,
+1,627 cases, 1,032 independent source/input/link comparisons and 196 exact-commit
+files, with all diagnostic groups released. The same six Console and three
+startup-ownership outcomes pass on isolated Linux, with sixteen committed files,
+nineteen archived inputs/sources and matching profiles verified independently.
+CI `38421987639` passes source/installation checks, 97 runtime cases and the Team
+admission matrix; downloaded evidence independently matches 99 exact-source
+comparisons and 41 inputs. This scope allocates no model, simulator or GPU.
+Evidence: `.local/work/service-group-foundation-cpu-20261013/independently-verified.json`,
+`.local/work/service-group-platforms-independent-20261013.json` and
+`.local/work/ci-service-group-consolidated-independent-20261013.json`.
+
 Exclusive policy listener startup passes fifty-six actual CLI processes and six
 JSON/native/concurrent reservation cases on macOS. WebSocket admission follows
 model readiness, source failure releases its socket and the actual JSON service

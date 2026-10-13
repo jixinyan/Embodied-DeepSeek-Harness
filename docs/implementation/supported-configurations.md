@@ -61,6 +61,23 @@ source/input files and the unchanged original request. The runner releases,
 isolated source stays clean and canonical server changes remain unchanged:
 `.local/work/policy-listener-platforms-independent-20261013.json`.
 
+Current process-group ownership source `42dcb39` passes forty-five configured
+macOS components, 1,627 cases and 1,032 independent source/input/link comparisons.
+All 196 campaign production/checker/package files match that commit. Actual package
+Console normal/leader-termination release and HTTP/WebSocket IPv6 admission pass
+on macOS and isolated Linux, alongside all three startup cancellation/shared-owner
+cases. Linux retains Node.js 24.21.0 and Python 3.12.14. Independent readers verify
+sixteen committed files, nineteen archived source/input files, eight unchanged
+journals and sixteen matching configured profiles. Runner/group release, clean
+isolated source and preserved canonical changes are confirmed:
+`.local/work/service-group-platforms-independent-20261013.json`.
+CI `38421987639` passes source/installation checks, 97 runtime cases and the
+three-platform Team admission matrix. Downloaded artifacts independently match
+fourteen distributions, fourteen import origins, 41 inputs and 99 exact-source
+comparisons: `.local/work/ci-service-group-consolidated-independent-20261013.json`.
+The package process-group diagnostic requires POSIX and IPv6 loopback. Its Windows
+application-service behavior retains separate acceptance requirements.
+
 These rows allocate no model, policy network, simulator or physical GPU. Native
 SDK environments have their own dependency constraints and provenance. The
 recorded RoboDojo environment and its dependency-admitted candidate are described

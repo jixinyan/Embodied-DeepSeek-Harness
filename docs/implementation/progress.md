@@ -55,7 +55,24 @@ and 1,627 cases. Independent inspection repeats 1,032 source/input/link comparis
 confirms release of all forty-five diagnostic process groups and preserves the
 original journals and images. No model, simulator or GPU allocates. Evidence:
 `.local/work/service-group-foundation-cpu-20261013/independently-verified.json`.
-Linux validation remains required for this source.
+Exact source `42dcb39` matches all 196 campaign production/checker/package files.
+The same six Console and three startup-ownership outcomes pass on isolated Linux.
+Independent inspection verifies sixteen committed files, 46 source comparisons,
+nineteen archived source/input files, eight unchanged journal reads and sixteen
+matching profile snapshots. The runner and Console groups release; isolated source
+stays clean and canonical server changes remain unchanged. Evidence:
+`.local/work/service-group-platforms-independent-20261013.json` and
+`.local/work/service-group-linux-receipt-20261013/`.
+CI `38421987639` passes source/installation checks, 97 runtime cases and Team file
+admission on Linux, macOS and Windows. Downloaded artifacts independently match
+fourteen distributions, fourteen import origins, 41 inputs and 99 exact-source
+comparisons. All seven uploaded/reconstructed evidence fields, input hashes and
+checker identity match. The fifteen previously executed installed-policy processor
+files match this source without reruns. Evidence:
+`.local/work/service-group-foundation-cpu-20261013/committed-source-verification.json`,
+`.local/work/ci-service-group-consolidated-independent-20261013.json` and
+`.local/work/current-sdk-service-group-source-20261013.json`.
+Loaded policy, simulator and complete native task acceptance retain their release gates.
 
 Policy startup reserves exclusive TCP listeners through `policies/listener.py`.
 JSON services defer WebSocket handshake/handler admission until model readiness;

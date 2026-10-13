@@ -3056,7 +3056,25 @@ Independent inspection repeats 1,032 source/input/link comparisons, confirms
 release of all forty-five process groups and preserves original journal/image
 bytes. This scope allocates no model, simulator or GPU. Evidence:
 `.local/work/service-group-foundation-cpu-20261013/independently-verified.json`.
-These checks supply no model output, native environment or GPU allocation.
+Exact source `42dcb39` matches all 196 campaign production/checker/package files.
+The same six package Console and three startup-ownership cases pass on isolated
+Linux using Node.js 24.21.0 and Python 3.12.14. Independent inspection verifies
+sixteen distinct committed files, 46 source comparisons, nineteen archived source/
+input files, eight unchanged journal reads and sixteen matching configured profile
+snapshots. The actual runner and Console groups release; isolated source stays
+clean and canonical server status/change bytes remain unchanged. Evidence:
+`.local/work/service-group-platforms-independent-20261013.json` and
+`.local/work/service-group-linux-receipt-20261013/`.
+CI `38421987639` passes complete source/installation checks, 97 runtime cases
+and the three-platform Team admission matrix. Downloaded runtime/installation
+artifacts independently match fourteen distributions, fourteen import origins,
+41 inputs and 99 exact-source comparisons. All seven uploaded/reconstructed
+evidence fields, input hashes and checker identity match:
+`.local/work/ci-service-group-consolidated-independent-20261013.json`.
+The fifteen previously executed installed-policy processor files match this
+source without reruns: `.local/work/current-sdk-service-group-source-20261013.json`.
+These checks supply no model output, native environment or GPU allocation;
+loaded-policy and complete native task acceptance retain their release gates.
 
 Each case requires the original cancellation outcome, absent owned process group,
 zero final leases/PIDs, released writer lock and successful listener-port reuse.
