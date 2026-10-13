@@ -42,6 +42,8 @@ const sources = await Promise.all(
       'apps/server/src/native-deployment.mjs',
       'apps/server/src/native-deployment-configuration.mjs',
       'apps/server/src/native-policy-environment.mjs',
+      'harness/agent-runtime/teams/src/loader.ts',
+      'harness/agent-runtime/teams/src/role-document.ts',
       'examples/deployments/native-workspace.mjs',
       'scripts/check-native-console-startup-offline.mjs',
     ].map((path) => resolve(root, path)),

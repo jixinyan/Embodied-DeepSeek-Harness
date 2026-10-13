@@ -272,7 +272,7 @@ def main():
     modes = ("bounded", "fractional", "jitter", "disabled", "independent", "next-turn", "cancel", "dispose", "always-cancel", "team")
     assert len(retry["checks"]) == len(protocols) * len(modes) == 20
     assert {case["name"] for case in retry["checks"]} == {f"{protocol}:{mode}" for protocol in protocols for mode in modes}
-    assert len(retry["sources"]) == len({entry["path"] for entry in retry["sources"]}) == 36
+    assert len(retry["sources"]) == len({entry["path"] for entry in retry["sources"]}) == 37
     for entry in retry["sources"]:
         compare(Path(entry["path"]).relative_to(source_root), entry["sha256"])
     retry_paths = [retry_report_path]

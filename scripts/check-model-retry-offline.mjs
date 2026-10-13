@@ -56,6 +56,7 @@ const sources = await Promise.all(
     'apps/server/src/event-record-owners.ts',
     'apps/console/public/app.js',
     'harness/agent-runtime/teams/src/loader.ts',
+    'harness/agent-runtime/teams/src/role-document.ts',
     'harness/contracts/schema/physical.schema.json',
     'examples/teams/console-demo.yaml',
     'harness/agent-runtime/agents/roles/builtins.json',

@@ -54,6 +54,9 @@ adds twenty-five actual FileTeamLoader document cases, ten source identities and
 fifty derivative file identities. It starts no model, simulator or device.
 Evidence: `.local/work/authored-teams-final-frontmatter-20261013.json` and the
 reported `.local/work/role-documents-*/document-checks.json`.
+Model-retry and package-startup diagnostics also capture the role document reader
+as a production source input. Their evidence inspection admits the complete
+recorded source set before assessing native journal or Console ownership.
 
 `pnpm start` and `pnpm demo` invoke the same configured native workspace entry.
 Application assembly remains in `apps/server/`; existing unit-test model/backend/
